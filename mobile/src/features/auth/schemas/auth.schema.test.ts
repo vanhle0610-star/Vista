@@ -1,0 +1,1 @@
+import { loginSchema } from './auth.schema'; describe('loginSchema', () => { it('rejects invalid input', () => { expect(loginSchema.safeParse({ email: 'x', password: '123' }).success).toBe(false); }); it('accepts valid input', () => { expect(loginSchema.safeParse({ email: 'user@example.com', password: 'password123' }).success).toBe(true); }); });

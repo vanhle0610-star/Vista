@@ -1,0 +1,11 @@
+name: Yêu cầu tính năng
+description: Đề xuất trong phạm vi đã duyệt
+body:
+  - type: input
+    id: requirement
+    attributes: { label: Requirement hoặc task ID }
+    validations: { required: true }
+  - type: textarea
+    id: acceptance
+    attributes: { label: Acceptance criteria }
+    validations: { required: true }

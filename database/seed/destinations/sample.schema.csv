@@ -1,0 +1,2 @@
+name,province,category,latitude,longitude,price_min,price_max,opening_hours,source_url,verified_at,description,image_reference
+"Điểm đến kiểm thử","Tỉnh kiểm thử","Danh mục kiểm thử",16.000000,108.000000,0,0,"{}","https://example.invalid/source","2026-10-17T00:00:00Z","DỮ LIỆU TỔNG HỢP - chỉ dùng kiểm thử","synthetic/example.jpg"

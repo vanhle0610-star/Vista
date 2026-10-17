@@ -1,0 +1,16 @@
+{
+  "name": "@vista/contracts",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "api:validate": "redocly lint openapi/openapi.yaml",
+    "api:generate": "openapi-typescript openapi/openapi.yaml -o ../mobile/src/types/api.generated.ts && openapi-typescript openapi/openapi.yaml -o ../admin/src/types/api.generated.ts",
+    "api:mock": "prism mock openapi/openapi.yaml -p 4010",
+    "api:check": "npm run api:validate && npm run api:generate && git diff --exit-code -- ../mobile/src/types/api.generated.ts ../admin/src/types/api.generated.ts"
+  },
+  "devDependencies": {
+    "@redocly/cli": "2.15.0",
+    "@stoplight/prism-cli": "5.14.2",
+    "openapi-typescript": "7.10.1"
+  }
+}

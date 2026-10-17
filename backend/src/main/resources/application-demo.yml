@@ -1,0 +1,23 @@
+spring:
+  config:
+    activate:
+      on-profile: demo
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require}
+    username: ${DB_USERNAME:postgres.cyqvqehhjpvwovdzscxm}
+    password: ${DB_PASSWORD:}
+    hikari:
+      maximum-pool-size: 5
+      connection-timeout: 30000
+      minimum-idle: 1
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    validate-migration-naming: true
+springdoc:
+  swagger-ui:
+    enabled: true

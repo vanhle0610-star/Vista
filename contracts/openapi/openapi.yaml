@@ -1,0 +1,579 @@
+openapi: 3.1.0
+info:
+  title: VISTA API
+  version: 0.1.0
+  description: Hợp đồng API nền tảng VISTA. Single Source of Truth cho Backend, Mobile và Web Admin.
+  license:
+    name: Proprietary
+    identifier: LicenseRef-Proprietary
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local Development Environment
+tags:
+  - name: Health
+    description: Tình trạng dịch vụ công khai
+  - name: Auth
+    description: Tài khoản, xác thực và phiên đăng nhập
+  - name: Users
+    description: Hồ sơ người dùng cá nhân
+  - name: Destinations
+    description: Điểm đến du lịch (BF-01)
+  - name: Trips
+    description: Quản lý chuyến đi nhóm (BF-02, BF-03)
+paths:
+  /health:
+    get:
+      security: []
+      tags: [Health]
+      operationId: getHealth
+      summary: Kiểm tra dịch vụ công khai
+      responses:
+        '200':
+          description: Dịch vụ hoạt động bình thường
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '500':
+          $ref: '#/components/responses/Problem'
+
+  /auth/register:
+    post:
+      security: []
+      tags: [Auth]
+      operationId: register
+      summary: Đăng ký tài khoản mới (FR-AUTH-01)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Đăng ký thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSession'
+        '400':
+          $ref: '#/components/responses/Problem'
+        '409':
+          $ref: '#/components/responses/Problem'
+
+  /auth/login:
+    post:
+      security: []
+      tags: [Auth]
+      operationId: login
+      summary: Đăng nhập hệ thống (FR-AUTH-02)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Phiên đăng nhập hợp lệ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSession'
+        '400':
+          $ref: '#/components/responses/Problem'
+        '401':
+          $ref: '#/components/responses/Problem'
+
+  /auth/refresh:
+    post:
+      security: []
+      tags: [Auth]
+      operationId: refreshToken
+      summary: Làm mới access token bằng refresh token (FR-AUTH-03)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+      responses:
+        '200':
+          description: Cấp token mới thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSession'
+        '400':
+          $ref: '#/components/responses/Problem'
+        '401':
+          $ref: '#/components/responses/Problem'
+
+  /users/me:
+    get:
+      tags: [Users]
+      security: [{ bearerAuth: [] }]
+      operationId: getCurrentUser
+      summary: Lấy thông tin cá nhân của người dùng hiện tại (FR-AUTH-05)
+      responses:
+        '200':
+          description: Hồ sơ cá nhân
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '401':
+          $ref: '#/components/responses/Problem'
+    patch:
+      tags: [Users]
+      security: [{ bearerAuth: [] }]
+      operationId: updateCurrentUser
+      summary: Cập nhật thông tin cá nhân & liên hệ khẩn cấp (FR-AUTH-05)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileRequest'
+      responses:
+        '200':
+          description: Cập nhật thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '400':
+          $ref: '#/components/responses/Problem'
+        '401':
+          $ref: '#/components/responses/Problem'
+
+  /destinations:
+    get:
+      security: []
+      tags: [Destinations]
+      operationId: listDestinations
+      summary: Tìm kiếm và lọc danh sách điểm đến published (FR-DEST-02, 03)
+      parameters:
+        - in: query
+          name: keyword
+          schema: { type: string }
+          description: Từ khóa tìm kiếm tiếng Việt (có dấu hoặc không dấu)
+        - in: query
+          name: province
+          schema: { type: string }
+          description: Tên tỉnh thành (ví dụ Đà Nẵng, Thừa Thiên Huế)
+        - in: query
+          name: category
+          schema: { type: string }
+          description: Danh mục (Cảnh quan, Di tích, Ẩm thực,...)
+        - in: query
+          name: priceMax
+          schema: { type: number }
+          description: Mức giá vé tối đa
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 0, default: 0 }
+        - in: query
+          name: size
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+      responses:
+        '200':
+          description: Trang danh sách điểm đến
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DestinationPage'
+        '400':
+          $ref: '#/components/responses/Problem'
+
+  /destinations/{id}:
+    get:
+      security: []
+      tags: [Destinations]
+      operationId: getDestinationDetail
+      summary: Xem thông tin chi tiết một điểm đến (FR-DEST-04)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Chi tiết điểm đến
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DestinationDetail'
+        '400':
+          $ref: '#/components/responses/Problem'
+        '404':
+          $ref: '#/components/responses/Problem'
+
+  /destinations/{id}/favorite:
+    put:
+      tags: [Destinations]
+      security: [{ bearerAuth: [] }]
+      operationId: addFavorite
+      summary: Đánh dấu yêu thích điểm đến (FR-DEST-05)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Đã lưu yêu thích
+        '401':
+          $ref: '#/components/responses/Problem'
+        '404':
+          $ref: '#/components/responses/Problem'
+    delete:
+      tags: [Destinations]
+      security: [{ bearerAuth: [] }]
+      operationId: removeFavorite
+      summary: Bỏ yêu thích điểm đến (FR-DEST-05)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Đã bỏ lưu yêu thích
+        '401':
+          $ref: '#/components/responses/Problem'
+        '404':
+          $ref: '#/components/responses/Problem'
+
+  /trips:
+    get:
+      tags: [Trips]
+      security: [{ bearerAuth: [] }]
+      operationId: listMyTrips
+      summary: Lấy danh sách các chuyến đi của người dùng hiện tại (FR-PLAN-01)
+      responses:
+        '200':
+          description: Danh sách chuyến đi
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TripSummary'
+        '401':
+          $ref: '#/components/responses/Problem'
+    post:
+      tags: [Trips]
+      security: [{ bearerAuth: [] }]
+      operationId: createTrip
+      summary: Tạo chuyến đi nhóm mới (FR-PLAN-01)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTripRequest'
+      responses:
+        '201':
+          description: Tạo chuyến đi thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TripDetail'
+        '400':
+          $ref: '#/components/responses/Problem'
+        '401':
+          $ref: '#/components/responses/Problem'
+
+  /trips/{id}:
+    get:
+      tags: [Trips]
+      security: [{ bearerAuth: [] }]
+      operationId: getTripDetail
+      summary: Xem chi tiết chuyến đi (FR-PLAN-01)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Chi tiết chuyến đi và lịch trình các ngày
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TripDetail'
+        '401':
+          $ref: '#/components/responses/Problem'
+        '403':
+          $ref: '#/components/responses/Problem'
+        '404':
+          $ref: '#/components/responses/Problem'
+
+  /trips/{id}/invitations:
+    post:
+      tags: [Trips]
+      security: [{ bearerAuth: [] }]
+      operationId: createInvitation
+      summary: Tạo liên kết mời tham gia chuyến đi (FR-GRP-01)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInvitationRequest'
+      responses:
+        '201':
+          description: Tạo link mời thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationResponse'
+        '400':
+          $ref: '#/components/responses/Problem'
+        '401':
+          $ref: '#/components/responses/Problem'
+        '403':
+          $ref: '#/components/responses/Problem'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    Problem:
+      description: Chi tiết lỗi chuẩn Problem Details theo RFC 9457
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+
+  schemas:
+    HealthResponse:
+      type: object
+      required: [status, service, timestamp]
+      properties:
+        status: { type: string, const: UP }
+        service: { type: string }
+        timestamp: { type: string, format: date-time }
+
+    LoginRequest:
+      type: object
+      additionalProperties: false
+      required: [email, password]
+      properties:
+        email: { type: string, format: email, maxLength: 320 }
+        password: { type: string, minLength: 8, maxLength: 128 }
+
+    RegisterRequest:
+      type: object
+      additionalProperties: false
+      required: [email, password, displayName]
+      properties:
+        email: { type: string, format: email, maxLength: 320 }
+        password: { type: string, minLength: 8, maxLength: 128 }
+        displayName: { type: string, minLength: 2, maxLength: 120 }
+
+    RefreshTokenRequest:
+      type: object
+      additionalProperties: false
+      required: [refreshToken]
+      properties:
+        refreshToken: { type: string }
+
+    AuthSession:
+      type: object
+      required: [accessToken, refreshToken, expiresIn, user]
+      properties:
+        accessToken: { type: string }
+        refreshToken: { type: string }
+        expiresIn: { type: integer, minimum: 1, description: Thời hạn tính bằng giây }
+        user:
+          $ref: '#/components/schemas/UserProfile'
+
+    UserProfile:
+      type: object
+      required: [id, email, displayName, roles]
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, format: email }
+        displayName: { type: string }
+        avatarUrl: { type: [string, 'null'], format: uri }
+        roles:
+          type: array
+          items: { type: string }
+        emergencyContact:
+          type: object
+          properties:
+            name: { type: string }
+            phone: { type: string }
+            relationship: { type: string }
+
+    UpdateProfileRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        displayName: { type: string, minLength: 2, maxLength: 120 }
+        avatarUrl: { type: string, format: uri }
+        emergencyContact:
+          type: object
+          properties:
+            name: { type: string }
+            phone: { type: string }
+            relationship: { type: string }
+
+    DestinationSummary:
+      type: object
+      required: [id, name, province, category, status]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        province: { type: string }
+        category: { type: string }
+        imageUrl: { type: [string, 'null'], format: uri }
+        priceMin: { type: [number, 'null'] }
+        priceMax: { type: [number, 'null'] }
+        latitude: { type: [number, 'null'] }
+        longitude: { type: [number, 'null'] }
+        status: { type: string, enum: [DRAFT, PUBLISHED, ARCHIVED] }
+
+    DestinationDetail:
+      allOf:
+        - $ref: '#/components/schemas/DestinationSummary'
+        - type: object
+          properties:
+            description: { type: [string, 'null'] }
+            openingHours: { type: object, additionalProperties: true }
+            sourceUrl: { type: [string, 'null'], format: uri }
+            verifiedAt: { type: [string, 'null'], format: date-time }
+            isFavorite: { type: boolean, default: false }
+
+    DestinationPage:
+      type: object
+      required: [items, page, size, total]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/DestinationSummary'
+        page: { type: integer }
+        size: { type: integer }
+        total: { type: integer, format: int64 }
+
+    CreateTripRequest:
+      type: object
+      additionalProperties: false
+      required: [title, startDate, endDate]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 200 }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+        destinationSummary: { type: string }
+        budgetTotal: { type: number, minimum: 0 }
+
+    TripSummary:
+      type: object
+      required: [id, title, startDate, endDate, status, role]
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+        status: { type: string, enum: [PLANNING, ACTIVE, ENDED, CANCELLED] }
+        role: { type: string, enum: [OWNER, MEMBER] }
+        memberCount: { type: integer }
+
+    TripDetail:
+      allOf:
+        - $ref: '#/components/schemas/TripSummary'
+        - type: object
+          required: [itineraryDays, members]
+          properties:
+            budgetTotal: { type: [number, 'null'] }
+            currency: { type: string, default: VND }
+            itineraryDays:
+              type: array
+              items:
+                $ref: '#/components/schemas/ItineraryDay'
+            members:
+              type: array
+              items:
+                $ref: '#/components/schemas/TripMemberInfo'
+
+    ItineraryDay:
+      type: object
+      required: [id, dayNumber, tripDate, items]
+      properties:
+        id: { type: string, format: uuid }
+        dayNumber: { type: integer }
+        tripDate: { type: string, format: date }
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItineraryItem'
+
+    ItineraryItem:
+      type: object
+      required: [id, sortOrder]
+      properties:
+        id: { type: string, format: uuid }
+        destinationId: { type: [string, 'null'], format: uuid }
+        customStopName: { type: [string, 'null'] }
+        startTime: { type: [string, 'null'] }
+        endTime: { type: [string, 'null'] }
+        sortOrder: { type: integer }
+        note: { type: [string, 'null'] }
+
+    TripMemberInfo:
+      type: object
+      required: [userId, displayName, role, status]
+      properties:
+        userId: { type: string, format: uuid }
+        displayName: { type: string }
+        avatarUrl: { type: [string, 'null'], format: uri }
+        role: { type: string, enum: [OWNER, MEMBER] }
+        status: { type: string, enum: [PENDING, ACCEPTED, DECLINED] }
+
+    CreateInvitationRequest:
+      type: object
+      additionalProperties: false
+      required: [invitedEmail]
+      properties:
+        invitedEmail: { type: string, format: email }
+
+    InvitationResponse:
+      type: object
+      required: [id, invitationLink, expiresAt, status]
+      properties:
+        id: { type: string, format: uuid }
+        invitationLink: { type: string, format: uri }
+        expiresAt: { type: string, format: date-time }
+        status: { type: string, enum: [PENDING, ACCEPTED, DECLINED, EXPIRED, REVOKED] }
+
+    Problem:
+      type: object
+      required: [type, title, status, detail, instance, code, requestId]
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        instance: { type: string }
+        code: { type: string }
+        requestId: { type: string }
+        errors:
+          type: array
+          items:
+            type: object
+            required: [field, message]
+            properties:
+              field: { type: string }
+              message: { type: string }

@@ -1,0 +1,1 @@
+'use client'; export default function GlobalError({ reset }: { error: Error & { digest?: string }; reset: () => void }) { return <html lang="vi"><body><main className="login card"><h1>Không thể hiển thị trang</h1><button onClick={reset}>Thử lại</button></main></body></html>; }

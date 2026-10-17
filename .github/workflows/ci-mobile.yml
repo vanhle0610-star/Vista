@@ -1,0 +1,22 @@
+name: Mobile CI
+on:
+  pull_request:
+    branches: [develop, main]
+    paths: ['mobile/**', 'contracts/**', '.github/workflows/ci-mobile.yml']
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version-file: '.nvmrc', cache: npm, cache-dependency-path: mobile/package-lock.json }
+      - run: npm ci
+        working-directory: mobile
+      - run: npm run typecheck
+        working-directory: mobile
+      - run: npm run lint
+        working-directory: mobile
+      - run: npm test
+        working-directory: mobile
+      - run: npx expo config --type public
+        working-directory: mobile

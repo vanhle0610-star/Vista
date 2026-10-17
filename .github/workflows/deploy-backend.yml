@@ -1,0 +1,11 @@
+name: Deploy Backend Template
+on:
+  workflow_dispatch:
+jobs:
+  build-image:
+    runs-on: ubuntu-latest
+    permissions: { contents: read }
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t vista-backend:${{ github.sha }} backend
+      - run: echo "Chưa push/deploy. Cấu hình registry, provider, environment approval và secrets trước khi kích hoạt."

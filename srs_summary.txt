@@ -1,0 +1,918 @@
+VISTA
+VIETNAM SMART TRAVEL, COLLABORATIVE PLANNING& GROUP SAFETY PLATFORM
+SOFTWARE REQUIREMENTS SPECIFICATION (SRS)
+Phiên bản: 1.0 — Bản dự thảo cho dự án OJT
+Phạm vi: Nền tảng du lịch toàn Việt Nam; ứng dụng mobile cho khách du lịch và giao diện quản trị web
+Định hướng đội ngũ: 5 thành viên • Kế hoạch tham chiếu: 8 tuần
+Công nghệ đề xuất: React Native + Expo + TypeScript; Java Spring Boot; Supabase PostgreSQL/Storage
+Mục lục
+Kiểm soát tài liệu1
+1. Giới thiệu1
+1.1. Mục đích1
+1.2. Vấn đề cần giải quyết1
+1.3. Mục tiêu sản phẩm1
+1.4. Thuật ngữ1
+2. Phạm vi hệ thống1
+2.1. Trong phạm vi1
+2.2. Ngoài phạm vi MVP1
+2.3. Phạm vi địa lý1
+2.4. Nền tảng và kiến trúc đề xuất1
+3. Người dùng và vai trò1
+4. Các luồng nghiệp vụ cấp cao1
+5. Yêu cầu chức năng1
+5.1. Tài khoản và bảo mật1
+5.2. Khám phá địa điểm1
+5.3. AI Trip Planner và lịch trình1
+5.4. Chuyến đi nhóm và cộng tác1
+5.5. Ngân sách và chi phí1
+5.6. Theo dõi nhóm và an toàn1
+5.7. Cộng đồng và AI kiểm duyệt1
+5.8. Quản trị và thông báo1
+6. Quy tắc nghiệp vụ1
+7. Yêu cầu phi chức năng1
+8. Mô hình dữ liệu đề xuất1
+9. API đề xuất1
+10. Luồng chi tiết cần mô hình hóa1
+10.1. AI tạo lịch trình1
+10.2. Chia sẻ vị trí nhóm1
+10.3. AI kiểm duyệt spam1
+11. Quyền riêng tư và an toàn vị trí1
+12. Quy tắc AI và xử lý lỗi1
+13. Tiêu chí nghiệm thu tổng thể1
+14. Kế hoạch triển khai tham chiếu — 8 tuần, 5 người1
+15. Gợi ý phân công nhóm 5 người1
+16. Bộ tài liệu BA/QA nên bàn giao1
+17. Giả định, phụ thuộc và rủi ro1
+18. Các quyết định cần chốt trước khi bắt đầu code1
+Phụ lục A — Danh sách Use Case cấp cao1
+Phụ lục B — Ghi chú triển khai mobile1
+Phụ lục C — Definition of Done1
+Kết luận1
+Kiểm soát tài liệu
+Thuộc tính
+Giá trị
+Tên tài liệu
+Software Requirements Specification — ViVuGo
+Phiên bản
+1.0
+Trạng thái
+Draft — cần xác nhận với giảng viên/đơn vị OJT
+Đối tượng đọc
+Product Owner, BA, Developer, QA/Tester, người hướng dẫn OJT
+Mục đích
+Thống nhất phạm vi, actor, nghiệp vụ, yêu cầu chức năng/phi chức năng, dữ liệu, API, kiểm thử và kế hoạch triển khai.
+Lưu ý phạm vi
+Hệ thống được thiết kế mở rộng toàn Việt Nam; dữ liệu demo tập trung 3–5 địa phương để kiểm soát khối lượng OJT.
+1. Giới thiệu
+1.1. Mục đích
+Tài liệu xác định các yêu cầu cho ViVuGo — nền tảng hỗ trợ khám phá điểm đến tại Việt Nam, lập lịch trình bằng AI có kiểm tra ràng buộc, phối hợp chuyến đi nhóm, quản lý ngân sách, chia sẻ vị trí có sự đồng ý và xây dựng cộng đồng du lịch có kiểm duyệt nội dung.
+1.2. Vấn đề cần giải quyết
+Thông tin điểm đến và trải nghiệm du lịch phân tán trên nhiều nguồn, khó so sánh theo ngân sách và sở thích.
+Lập lịch trình nhóm thường thực hiện thủ công, khó đồng bộ thay đổi và thống nhất địa điểm.
+Chi phí chung khó theo dõi, đặc biệt khi nhiều thành viên trả tiền thay nhau.
+Khi đi theo nhóm, thành viên có thể bị tách nhau hoặc khó tìm điểm hẹn.
+Nội dung cộng đồng có thể xuất hiện spam, quảng cáo tràn lan hoặc đánh giá không phù hợp.
+1.3. Mục tiêu sản phẩm
+Cho phép khám phá và lưu địa điểm du lịch trên toàn Việt Nam.
+Tạo lịch trình nhiều ngày; AI đề xuất phương án nhưng người dùng quyết định cuối cùng.
+Hỗ trợ nhóm cùng lập kế hoạch, biểu quyết và quản lý chi phí.
+Cung cấp chia sẻ vị trí có thời hạn, bản đồ nhóm, điểm hẹn và check-in; SOS là chức năng hỗ trợ, không thay thế dịch vụ khẩn cấp.
+Phát hiện nội dung có dấu hiệu spam và cung cấp quy trình quản trị minh bạch.
+1.4. Thuật ngữ
+Thuật ngữ
+Định nghĩa
+Trip / Chuyến đi
+Thực thể đại diện cho kế hoạch du lịch có ngày bắt đầu/kết thúc và danh sách thành viên.
+Itinerary / Lịch trình
+Danh sách các điểm dừng được sắp xếp theo ngày, thứ tự và thời gian dự kiến.
+Group location sharing
+Tính năng thành viên tự nguyện chia sẻ vị trí với người thuộc chuyến đi trong thời hạn xác định.
+SOS
+Tín hiệu yêu cầu hỗ trợ gửi tới thành viên trong nhóm; không tự động gọi cứu hộ trừ khi có tích hợp riêng.
+Moderation
+Quy trình kiểm tra, gắn cờ, ẩn tạm thời, duyệt hoặc từ chối nội dung.
+AI confidence / Risk score
+Điểm đánh giá do mô hình trả về, cần được kết hợp với quy tắc hệ thống và không được coi là kết luận tuyệt đối.
+2. Phạm vi hệ thống
+2.1. Trong phạm vi
+Ứng dụng mobile đa nền tảng iOS/Android bằng React Native + Expo + TypeScript.
+Backend REST API bằng Java Spring Boot.
+Supabase PostgreSQL làm cơ sở dữ liệu; Supabase Storage lưu ảnh. Không dùng Neon song song.
+Bản đồ và địa điểm: tích hợp một nhà cung cấp bản đồ/geocoding phù hợp với chính sách và ngân sách dự án; lớp adapter để có thể thay nhà cung cấp.
+AI Trip Planner: tạo đề xuất lịch trình có cấu trúc, sau đó backend kiểm tra các ràng buộc cơ bản.
+Quản lý chuyến đi nhóm, lời mời, biểu quyết, ngân sách và chi phí.
+Chia sẻ vị trí có sự đồng ý, hiển thị vị trí gần nhất, điểm hẹn, check-in, cảnh báo tách nhóm theo cấu hình và SOS trong phạm vi nhóm.
+Cộng đồng bài viết/đánh giá/bình luận, báo cáo nội dung và AI hỗ trợ phát hiện spam.
+Giao diện web quản trị tối thiểu cho admin/moderator (không phải cổng du lịch web đầy đủ).
+Thông báo trong ứng dụng; push/email có thể triển khai theo mức ưu tiên.
+2.2. Ngoài phạm vi MVP
+Đặt vé máy bay, khách sạn, nhà hàng hoặc thanh toán trực tuyến.
+Theo dõi vị trí nền liên tục khi ứng dụng bị hệ điều hành đóng hoàn toàn; chỉ xem xét nếu có thời gian kiểm thử riêng trên thiết bị thật.
+Tự động liên hệ công an, bệnh viện hoặc dịch vụ cứu hộ.
+Xác minh giá/giờ mở cửa theo thời gian thực cho mọi địa điểm trên toàn quốc.
+Phát hiện mọi loại nội dung độc hại bằng AI; hệ thống chỉ hỗ trợ nhận diện nhóm rủi ro được định nghĩa.
+Triển khai dữ liệu chi tiết cho toàn bộ tỉnh/thành ngay trong giai đoạn OJT.
+Tự động xóa vĩnh viễn bài viết chỉ dựa trên điểm AI mà không có cơ chế xem xét.
+2.3. Phạm vi địa lý
+Mô hình dữ liệu hỗ trợ nhiều tỉnh/thành và địa điểm tại Việt Nam. Để demo, nhóm chọn 3–5 địa phương có dữ liệu được rà soát, ví dụ Đà Nẵng, Huế, Hội An, Hà Nội và TP. Hồ Chí Minh. Danh sách cuối cùng phụ thuộc dữ liệu có thể thu thập và xác minh.
+2.4. Nền tảng và kiến trúc đề xuất
+Thành phần
+Công nghệ/định hướng
+Ghi chú
+Mobile app
+React Native, Expo, TypeScript
+Một codebase cho iOS/Android; kiểm tra quyền GPS và hành vi nền trên thiết bị thật.
+Backend API
+Java Spring Boot, Spring Security
+REST API, validation, phân quyền, business rules.
+Database
+Supabase PostgreSQL
+Supabase là lựa chọn DB; không dùng đồng thời Neon.
+File storage
+Supabase Storage
+Ảnh bài viết, ảnh địa điểm; giới hạn dung lượng và kiểm soát quyền truy cập.
+Maps / location
+Map SDK phù hợp + Geocoding/Routes API
+Chốt nhà cung cấp sau khi kiểm tra điều khoản, quota và chi phí.
+Realtime
+WebSocket/SSE hoặc Supabase Realtime qua backend phù hợp
+Chỉ dùng cho cập nhật vị trí/trạng thái cần thiết; không phát vị trí cho người không có quyền.
+AI
+LLM API có schema output + rule-based validation
+AI không phải nguồn sự thật duy nhất cho giá, giờ mở cửa hay tuyến đường.
+Admin web
+Next.js + TypeScript hoặc giao diện web tối giản
+Chỉ dành cho admin/moderator trong MVP.
+Testing
+JUnit, integration tests, Postman, mobile device tests
+Có test nghiệp vụ, API, quyền truy cập và luồng GPS.
+3. Người dùng và vai trò
+Actor
+Mô tả
+Quyền chính
+Guest
+Người chưa đăng nhập
+Xem một phần nội dung công khai và địa điểm; không tạo chuyến đi hoặc đăng nội dung.
+Registered User
+Người dùng đã đăng nhập
+Quản lý hồ sơ, lưu địa điểm, tạo chuyến đi, lập lịch trình, đăng bài và đánh giá.
+Trip Owner
+Người tạo chuyến đi/chủ chuyến
+Quản lý chuyến đi, mời thành viên, chỉnh quyền, quản lý lịch trình và cấu hình chia sẻ vị trí.
+Trip Member
+Thành viên được mời và chấp nhận
+Xem/chỉnh sửa theo quyền, biểu quyết, ghi chi phí, tự bật/tắt chia sẻ vị trí.
+Moderator
+Người kiểm duyệt nội dung
+Xem hàng đợi, xem lý do gắn cờ, duyệt/ẩn/từ chối nội dung, xử lý báo cáo.
+Administrator
+Quản trị hệ thống
+Quản lý tài khoản, vai trò, địa điểm, cấu hình, danh mục và báo cáo hệ thống.
+External AI/Map Services
+Dịch vụ ngoài
+Nhận dữ liệu tối thiểu cần thiết theo tích hợp; không có quyền truy cập toàn bộ cơ sở dữ liệu.
+4. Các luồng nghiệp vụ cấp cao
+Mã
+Luồng chính
+Kết quả nghiệp vụ
+BF-01
+Khám phá địa điểm du lịch
+Người dùng tìm, xem, lọc và lưu địa điểm phù hợp.
+BF-02
+Lập kế hoạch du lịch thông minh
+Người dùng tạo lịch trình, nhận gợi ý AI và xác nhận lịch trình khả thi.
+BF-03
+Phối hợp chuyến đi nhóm
+Nhóm mời thành viên, thống nhất địa điểm và cùng quản lý lịch trình.
+BF-04
+Quản lý ngân sách và chi phí
+Nhóm theo dõi chi phí dự kiến/thực tế và số dư giữa các thành viên.
+BF-05
+Theo dõi nhóm và hỗ trợ an toàn
+Thành viên tự nguyện chia sẻ vị trí, tìm điểm hẹn, check-in hoặc gửi SOS.
+BF-06
+Cộng đồng và kiểm duyệt nội dung
+Người dùng chia sẻ trải nghiệm; hệ thống hỗ trợ phát hiện spam và moderator xử lý.
+5. Yêu cầu chức năng
+Quy ước ưu tiên: Must = cần có trong MVP; Should = nên có nếu còn thời gian; Could = có thể để giai đoạn sau. Mỗi yêu cầu cần được kiểm thử bằng acceptance criteria.
+5.1. Tài khoản và bảo mật
+ID
+Ưu tiên
+Yêu cầu
+Tiêu chí chấp nhận tóm tắt
+FR-AUTH-01
+Must
+Người dùng có thể đăng ký bằng email và mật khẩu hợp lệ.
+Tạo tài khoản thành công; email trùng bị từ chối; mật khẩu không được lưu dạng rõ.
+FR-AUTH-02
+Must
+Người dùng có thể đăng nhập và đăng xuất.
+Thông tin sai trả lỗi chung; token hết hạn không được dùng để truy cập API bảo vệ.
+FR-AUTH-03
+Should
+Người dùng có thể yêu cầu đặt lại mật khẩu qua email.
+Token đặt lại có thời hạn và chỉ dùng một lần.
+FR-AUTH-04
+Must
+Hệ thống phân quyền theo role và membership của chuyến đi.
+Người dùng không thể xem/sửa dữ liệu riêng tư ngoài quyền của mình.
+FR-AUTH-05
+Must
+Người dùng có thể xem, sửa hồ sơ và yêu cầu xóa tài khoản.
+Hệ thống xác nhận thao tác nhạy cảm và xử lý dữ liệu theo chính sách đã công bố.
+5.2. Khám phá địa điểm
+ID
+Ưu tiên
+Yêu cầu
+Tiêu chí chấp nhận tóm tắt
+FR-DEST-01
+Must
+Người dùng xem danh sách địa điểm đã được công bố.
+Chỉ địa điểm có trạng thái Published được hiển thị công khai.
+FR-DEST-02
+Must
+Người dùng tìm kiếm theo tên, tỉnh/thành và từ khóa.
+Kết quả phù hợp truy vấn; trạng thái rỗng có thông báo rõ.
+FR-DEST-03
+Must
+Người dùng lọc theo loại hình, khoảng giá tham khảo và sở thích.
+Có thể kết hợp nhiều bộ lọc; xóa bộ lọc đưa danh sách về trạng thái mặc định.
+FR-DEST-04
+Must
+Người dùng xem chi tiết địa điểm gồm mô tả, ảnh, tọa độ, giá tham khảo, giờ mở cửa và nguồn/cập nhật dữ liệu nếu có.
+Thiếu dữ liệu phải hiển thị 'chưa có thông tin'; không tự bịa dữ liệu.
+FR-DEST-05
+Must
+Người dùng lưu/bỏ lưu địa điểm yêu thích.
+Mỗi người chỉ có một bản ghi yêu thích cho một địa điểm.
+FR-DEST-06
+Should
+Người dùng xem địa điểm trên bản đồ và mở chỉ đường.
+Nếu dịch vụ bản đồ lỗi, vẫn xem được thông tin địa điểm dạng danh sách.
+FR-DEST-07
+Should
+Người dùng gửi đề xuất sửa thông tin địa điểm.
+Đề xuất chờ moderator/admin duyệt, không sửa trực tiếp dữ liệu công khai.
+5.3. AI Trip Planner và lịch trình
+ID
+Ưu tiên
+Yêu cầu
+Tiêu chí chấp nhận tóm tắt
+FR-PLAN-01
+Must
+Người dùng tạo chuyến đi với tên, địa điểm/khu vực, ngày bắt đầu, ngày kết thúc và ngân sách dự kiến.
+Ngày kết thúc không trước ngày bắt đầu; các trường bắt buộc được validate.
+FR-PLAN-02
+Must
+Người dùng thêm, sửa, xóa và sắp xếp điểm dừng trong từng ngày.
+Thứ tự được lưu; điểm dừng có địa điểm, thời gian dự kiến và ghi chú tùy chọn.
+FR-PLAN-03
+Must
+Người dùng nhập yêu cầu AI gồm khu vực, thời gian, ngân sách, sở thích và điều kiện đặc biệt.
+Hệ thống kiểm tra đầu vào và thông báo khi thiếu thông tin cần thiết.
+FR-PLAN-04
+Must
+AI trả về lịch trình có cấu trúc theo ngày và điểm dừng.
+Backend kiểm tra schema, địa điểm hợp lệ và các ràng buộc; kết quả không hợp lệ không được tự động lưu thành lịch trình cuối.
+FR-PLAN-05
+Must
+Người dùng xem lý do đề xuất, chỉnh sửa và xác nhận lịch trình AI.
+Người dùng có quyền sửa/xóa mọi đề xuất; AI không tự đặt dịch vụ hay phát sinh thanh toán.
+FR-PLAN-06
+Must
+Hệ thống kiểm tra thời gian, giờ mở cửa nếu có dữ liệu, khoảng cách/thời gian di chuyển ước tính và ngân sách.
+Cảnh báo xung đột; không khẳng định tuyến đường chính xác nếu API không cung cấp dữ liệu.
+FR-PLAN-07
+Should
+Người dùng sao chép lịch trình hoặc tạo phiên bản mới.
+Lịch trình gốc không bị ghi đè ngoài ý muốn.
+FR-PLAN-08
+Should
+Hệ thống gợi ý địa điểm thay thế khi một điểm dừng không khả thi.
+Gợi ý thay thế phải có lý do và cho phép người dùng chọn hoặc bỏ qua.
+5.4. Chuyến đi nhóm và cộng tác
+ID
+Ưu tiên
+Yêu cầu
+Tiêu chí chấp nhận tóm tắt
+FR-GRP-01
+Must
+Chủ chuyến có thể mời thành viên bằng email hoặc liên kết mời có hạn dùng.
+Lời mời có trạng thái Pending/Accepted/Declined/Expired/Revoked.
+FR-GRP-02
+Must
+Người nhận có thể chấp nhận hoặc từ chối lời mời.
+Chỉ tài khoản hợp lệ và lời mời còn hạn mới được chấp nhận.
+FR-GRP-03
+Must
+Hệ thống áp dụng quyền Owner/Member cho chuyến đi.
+Owner quản lý thành viên; Member chỉ thao tác trong phạm vi được cấp.
+FR-GRP-04
+Must
+Thành viên có thể đề xuất địa điểm và biểu quyết.
+Mỗi thành viên có tối đa một phiếu cho một đề xuất; có thể đổi phiếu trước khi đóng biểu quyết.
+FR-GRP-05
+Must
+Thành viên được phép có thể cập nhật lịch trình chung.
+Lưu người sửa và thời điểm; xử lý xung đột bằng cập nhật mới nhất hoặc cảnh báo phiên bản.
+FR-GRP-06
+Should
+Chủ chuyến có thể khóa lịch trình hoặc kết thúc chuyến đi.
+Sau khi kết thúc, các thao tác thay đổi bị giới hạn; dữ liệu lịch sử vẫn đọc được theo quyền.
+5.5. Ngân sách và chi phí
+ID
+Ưu tiên
+Yêu cầu
+Tiêu chí chấp nhận tóm tắt
+FR-BUD-01
+Must
+Chủ chuyến đặt ngân sách tổng và ngân sách tham khảo mỗi thành viên.
+Ngân sách không âm; đơn vị tiền tệ MVP là VND.
+FR-BUD-02
+Must
+Thành viên có quyền có thể ghi nhận chi phí gồm tiêu đề, số tiền, người trả, thời điểm và danh mục.
+Số tiền lớn hơn 0; chỉ thành viên chuyến đi được ghi nhận chi phí cho chuyến đó.
+FR-BUD-03
+Must
+Hệ thống tính tổng chi phí thực tế và phần ngân sách còn lại.
+Tổng được tính từ các chi phí hợp lệ, không nhập tay thành giá trị nguồn.
+FR-BUD-04
+Must
+Hệ thống tính phần đóng góp và số dư cần hoàn trả theo quy tắc chia đã chọn.
+Quy tắc chia đều là mặc định; cho phép chia theo số tiền cụ thể nếu được triển khai.
+FR-BUD-05
+Should
+Hệ thống cảnh báo khi chi phí đạt/vượt ngưỡng ngân sách.
+Ngưỡng cấu hình, ví dụ 80% và 100%; không gửi lặp thông báo liên tục.
+FR-BUD-06
+Could
+Xuất báo cáo chi phí dạng CSV/PDF.
+Tệp chỉ chứa dữ liệu mà người yêu cầu có quyền xem.
+5.6. Theo dõi nhóm và an toàn
+ID
+Ưu tiên
+Yêu cầu
+Tiêu chí chấp nhận tóm tắt
+FR-SAFE-01
+Must
+Thành viên tự bật chia sẻ vị trí cho một chuyến đi cụ thể.
+Mặc định tắt; phải thể hiện ai có thể xem và thời gian hết hạn trước khi bật.
+FR-SAFE-02
+Must
+Thành viên chọn thời hạn chia sẻ vị trí.
+MVP hỗ trợ các lựa chọn thời hạn cấu hình và tự hết hạn khi đến giờ hoặc chuyến đi kết thúc.
+FR-SAFE-03
+Must
+Bản đồ nhóm hiển thị vị trí gần nhất của thành viên đang chia sẻ, kèm thời điểm cập nhật.
+Nếu vị trí cũ hoặc không có kết nối, hiển thị trạng thái stale/offline thay vì giả lập vị trí trực tiếp.
+FR-SAFE-04
+Must
+Thành viên có thể tắt chia sẻ vị trí bất kỳ lúc nào.
+Vị trí mới không được tiếp tục phát sau khi tắt; quyền xem bị thu hồi theo thiết kế.
+FR-SAFE-05
+Should
+Chủ chuyến có thể thiết lập điểm hẹn; thành viên mở chỉ đường tới điểm hẹn.
+Điểm hẹn có tọa độ và nhãn; dịch vụ định tuyến có lỗi thì thông báo phù hợp.
+FR-SAFE-06
+Should
+Thành viên có thể check-in tại điểm dừng.
+Lưu người check-in, thời gian và điểm dừng; không bắt buộc chia sẻ vị trí liên tục.
+FR-SAFE-07
+Should
+Hệ thống cảnh báo khi khoảng cách tới điểm hẹn vượt ngưỡng trong khoảng thời gian cấu hình.
+Cảnh báo chỉ là tín hiệu hỗ trợ; có chống báo động lặp và cho phép điều chỉnh/ngừng.
+FR-SAFE-08
+Should
+Thành viên gửi SOS tới các thành viên trong chuyến đi.
+Thông báo vị trí gần nhất, thời điểm cập nhật và thông tin liên hệ cần thiết; hiển thị rõ đây không phải dịch vụ cứu hộ khẩn cấp.
+FR-SAFE-09
+Must
+Hệ thống ghi nhật ký truy cập vị trí ở mức cần thiết và giới hạn retention.
+Chỉ thành viên được cấp quyền mới đọc được; không dùng dữ liệu vị trí cho quảng cáo.
+FR-SAFE-10
+Must
+Ứng dụng xử lý từ chối quyền GPS, mất mạng và vị trí không khả dụng.
+Không crash; cung cấp hướng dẫn bật quyền và cho phép dùng các chức năng không cần GPS.
+5.7. Cộng đồng và AI kiểm duyệt
+ID
+Ưu tiên
+Yêu cầu
+Tiêu chí chấp nhận tóm tắt
+FR-COM-01
+Must
+Người dùng đăng bài gồm nội dung văn bản và ảnh trong giới hạn cho phép.
+Kiểm tra nội dung rỗng, loại tệp, dung lượng và trạng thái tài khoản.
+FR-COM-02
+Must
+Người dùng tạo đánh giá địa điểm và bình luận.
+Đánh giá gắn với địa điểm; mỗi tài khoản chỉ có một đánh giá đang hoạt động cho một địa điểm nếu quy tắc sản phẩm được áp dụng.
+FR-COM-03
+Must
+Người dùng chỉnh sửa/xóa nội dung của mình theo chính sách.
+Không thể sửa/xóa nội dung của tài khoản khác nếu không có quyền moderation.
+FR-COM-04
+Must
+Người dùng báo cáo bài viết, bình luận hoặc đánh giá.
+Báo cáo có lý do, trạng thái xử lý và chống spam báo cáo cơ bản.
+FR-MOD-01
+Must
+Bộ lọc phát hiện dấu hiệu spam bằng quy tắc như URL đáng ngờ, nội dung lặp, tần suất đăng và từ khóa.
+Mỗi lần gắn cờ lưu rule/reason để giải thích.
+FR-MOD-02
+Should
+AI phân loại nội dung theo nhóm rủi ro và trả về lý do ngắn.
+Không gửi dữ liệu cá nhân không cần thiết; kết quả AI phải qua kiểm tra schema.
+FR-MOD-03
+Must
+Hệ thống áp dụng hành động theo ngưỡng: cho đăng, gắn cờ/chờ duyệt hoặc tạm ẩn.
+Ngưỡng cấu hình; nội dung có điểm AI cao không bị xóa vĩnh viễn tự động trong MVP.
+FR-MOD-04
+Must
+Moderator xem hàng đợi và quyết định approve/hide/reject/restore.
+Mọi quyết định có người xử lý, thời gian, lý do và trạng thái trước/sau.
+FR-MOD-05
+Should
+Người đăng có thể gửi yêu cầu xem xét lại quyết định kiểm duyệt.
+Yêu cầu được gắn với quyết định gốc và có trạng thái.
+FR-MOD-06
+Must
+Hệ thống thống kê số nội dung được gắn cờ, xác nhận spam và gắn cờ nhầm.
+Có thể xuất dữ liệu tổng hợp; chỉ dùng nhãn đã được con người xác nhận để đánh giá.
+5.8. Quản trị và thông báo
+ID
+Ưu tiên
+Yêu cầu
+Tiêu chí chấp nhận tóm tắt
+FR-ADM-01
+Must
+Admin tạo/sửa/ẩn địa điểm và quản lý danh mục.
+Thay đổi dữ liệu công khai được lưu dấu vết tối thiểu.
+FR-ADM-02
+Must
+Admin quản lý vai trò tài khoản theo quyền được cấp.
+Không cho phép người dùng tự nâng quyền.
+FR-ADM-03
+Must
+Moderator/admin xử lý báo cáo và nội dung chờ duyệt.
+Danh sách có lọc theo trạng thái, thời gian và mức độ rủi ro.
+FR-ADM-04
+Should
+Hệ thống gửi thông báo trong ứng dụng về lời mời, thay đổi lịch trình, check-in và cảnh báo.
+Người dùng có thể cấu hình loại thông báo; không để lộ vị trí cho người không được quyền.
+FR-ADM-05
+Should
+Dashboard hiển thị KPI cơ bản về người dùng, chuyến đi, địa điểm và kiểm duyệt.
+KPI có định nghĩa rõ, thời gian lọc và nguồn dữ liệu.
+6. Quy tắc nghiệp vụ
+Mã
+Quy tắc
+BR-01
+Một chuyến đi phải có chủ chuyến duy nhất đang hoạt động; việc chuyển chủ chuyến phải được xác nhận và ghi log.
+BR-02
+Chỉ thành viên đã chấp nhận lời mời mới truy cập dữ liệu riêng tư của chuyến đi.
+BR-03
+Ngày kết thúc chuyến đi không được trước ngày bắt đầu; điểm dừng phải thuộc một ngày trong lịch trình.
+BR-04
+AI chỉ tạo đề xuất; người dùng phải xem và xác nhận trước khi lịch trình được coi là đã chốt.
+BR-05
+Giá, giờ mở cửa và thời gian di chuyển phải gắn nguồn hoặc thời điểm cập nhật nếu dữ liệu có nguồn; dữ liệu thiếu phải được thể hiện rõ.
+BR-06
+Vị trí mặc định là riêng tư và tắt. Người dùng có thể dừng chia sẻ ngay cả khi là thành viên của nhóm.
+BR-07
+Chỉ chủ chuyến và thành viên được phép mới xem vị trí của người đã bật chia sẻ; không cung cấp endpoint công khai cho dữ liệu vị trí.
+BR-08
+Vị trí được gắn timestamp; hệ thống không được trình bày vị trí cũ như vị trí trực tiếp.
+BR-09
+SOS gửi thông tin đến thành viên nhóm theo cấu hình; ứng dụng phải nói rõ đây không phải kênh cứu hộ được bảo đảm.
+BR-10
+Điểm AI là tín hiệu hỗ trợ, không phải bằng chứng chắc chắn về vi phạm. Nội dung nghi ngờ có quy trình xem xét.
+BR-11
+Mọi hành động moderation quan trọng phải có actor, thời gian, lý do và trạng thái trước/sau.
+BR-12
+Chỉ lưu dữ liệu cá nhân/vị trí cần thiết; đặt chính sách retention và xóa dữ liệu theo yêu cầu hợp lệ.
+BR-13
+Đơn vị tiền tệ MVP là VND; phép tính tiền phải dùng kiểu số chính xác phù hợp, tránh sai lệch floating point.
+BR-14
+Các giới hạn tần suất, kích thước ảnh, thời hạn lời mời và ngưỡng cảnh báo phải cấu hình được.
+7. Yêu cầu phi chức năng
+ID
+Nhóm
+Yêu cầu
+NFR-01
+Hiệu năng
+Với môi trường demo và tải kiểm thử đã thống nhất, 95% API thông thường phản hồi trong ≤ 2 giây; API AI/bản đồ có SLA riêng và hiển thị trạng thái đang xử lý.
+NFR-02
+Bảo mật
+Mọi endpoint riêng tư phải xác thực và kiểm tra quyền ở backend; không dựa vào ẩn nút trên mobile.
+NFR-03
+Bảo mật
+Mật khẩu phải được hash bằng thuật toán chuẩn; token/secret không hard-code trong repository.
+NFR-04
+Quyền riêng tư
+Vị trí phải opt-in, giới hạn theo chuyến đi và thời gian; quyền có thể thu hồi; chỉ lưu lịch sử khi cần thiết.
+NFR-05
+Độ tin cậy
+Nếu AI/map service lỗi, người dùng vẫn có thể xem dữ liệu đã lưu, sửa lịch trình thủ công và sử dụng chức năng không phụ thuộc dịch vụ đó.
+NFR-06
+Khả năng sử dụng
+Các thao tác chính như tìm địa điểm, tạo chuyến đi, bật/tắt chia sẻ vị trí cần có trạng thái loading, success, empty và error.
+NFR-07
+Khả năng tương thích
+Ứng dụng phải được kiểm tra trên ít nhất một thiết bị Android thật và một môi trường iOS simulator/thiết bị nếu có điều kiện.
+NFR-08
+Khả năng bảo trì
+Backend chia lớp Controller/Service/Repository/DTO; mobile chia screens/components/services/types; secrets và cấu hình theo môi trường.
+NFR-09
+Khả năng quan sát
+Ghi log lỗi và hành động quản trị quan trọng; không ghi mật khẩu, token hoặc tọa độ chi tiết vào log thông thường.
+NFR-10
+Khả năng truy cập
+Giao diện có tương phản đủ, nhãn cho điều khiển chính, cỡ chữ phù hợp và thông báo lỗi dễ hiểu.
+NFR-11
+Dữ liệu
+Backup/restore và quy trình seed dữ liệu demo được ghi tài liệu; dữ liệu giả lập được đánh dấu rõ.
+NFR-12
+AI an toàn
+Xác thực schema đầu ra, giới hạn input, timeout, xử lý prompt injection ở nội dung người dùng và không cho AI thực hiện hành động trái quyền.
+8. Mô hình dữ liệu đề xuất
+Các bảng dưới đây là đề xuất logical model; cần tinh chỉnh thành ERD vật lý sau khi chốt quy tắc và cách dùng Supabase.
+Entity
+Thuộc tính chính gợi ý
+Quan hệ / ghi chú
+users
+id, email, password_hash/auth_provider, display_name, avatar_url, status, created_at
+Một user có nhiều trip membership, post, review, expense, location share.
+roles / user_roles
+id, code; user_id, role_id
+Phân quyền global: USER, MODERATOR, ADMIN.
+provinces
+id, name, slug, region_code
+Một tỉnh/thành có nhiều destinations.
+destinations
+id, province_id, name, category_id, description, lat, lng, price_min, price_max, opening_info, status, source_url, verified_at
+Địa điểm du lịch; tọa độ có thể dùng PostGIS geography.
+destination_categories
+id, name, icon
+Danh mục địa điểm.
+destination_images
+id, destination_id, storage_path, alt_text, sort_order
+Ảnh địa điểm.
+favorites
+user_id, destination_id, created_at
+Unique(user_id, destination_id).
+trips
+id, owner_id, title, start_date, end_date, destination_summary, budget_total, status, visibility
+Một trip có members, itinerary days, expenses, location sessions.
+trip_members
+trip_id, user_id, role, status, joined_at
+Unique(trip_id, user_id); status invited/active/left/removed.
+trip_invitations
+id, trip_id, invited_email, token_hash, status, expires_at, invited_by
+Không lưu token mời dạng rõ nếu dùng token bí mật.
+itinerary_days
+id, trip_id, day_number, trip_date
+Một trip có nhiều ngày.
+itinerary_items
+id, itinerary_day_id, destination_id, start_time, end_time, sort_order, note, source
+Một điểm dừng có thể tham chiếu destination; hỗ trợ custom stop nếu cần.
+destination_votes
+id, trip_id, destination_id/proposal_id, user_id, vote, created_at
+Một phiếu đang hoạt động mỗi user/đề xuất.
+expenses
+id, trip_id, title, amount, currency, paid_by, category, occurred_at, status
+Amount dùng numeric/decimal; không dùng float.
+expense_splits
+id, expense_id, user_id, share_amount, settled_status
+Lưu phần chia của từng thành viên.
+location_shares
+id, trip_id, user_id, enabled, expires_at, last_lat, last_lng, last_updated_at
+Chỉ lưu vị trí mới nhất cho MVP; hạn chế lịch sử tọa độ.
+meetup_points
+id, trip_id, created_by, label, lat, lng, target_time
+Điểm hẹn cho nhóm.
+checkins
+id, trip_id, itinerary_item_id, user_id, checked_in_at, lat, lng
+Tọa độ check-in chỉ lưu nếu có mục đích rõ và được thông báo.
+sos_alerts
+id, trip_id, user_id, lat, lng, location_timestamp, message, status, created_at
+Lưu lịch sử xử lý; chỉ nhóm được quyền xem.
+posts
+id, user_id, destination_id, body, status, created_at, updated_at
+Status: pending/visible/hidden/rejected/deleted.
+post_media
+id, post_id, storage_path, media_type
+Giới hạn loại và dung lượng.
+reviews
+id, user_id, destination_id, rating, body, status, created_at
+Có thể áp dụng unique(user_id, destination_id).
+comments
+id, post_id, user_id, body, status, created_at
+Bình luận cộng đồng.
+content_reports
+id, reporter_id, target_type, target_id, reason, status, handled_by, handled_at
+Báo cáo nội dung.
+moderation_events
+id, target_type, target_id, rule_score, ai_score, reasons_json, action, reviewer_id, created_at
+Audit trail cho kiểm duyệt; không coi score là kết luận tuyệt đối.
+notifications
+id, user_id, type, payload_json, read_at, created_at
+Không đưa dữ liệu vị trí nhạy cảm vào thông báo ngoài phạm vi cần thiết.
+audit_logs
+id, actor_id, action, entity_type, entity_id, metadata_json, created_at
+Không lưu secrets hoặc dữ liệu nhạy cảm dư thừa.
+9. API đề xuất
+Đường dẫn minh họa dùng prefix /api/v1. Các endpoint phải được bảo vệ bằng authentication/authorization tương ứng; request/response schema chi tiết sẽ được đặc tả trong API document riêng.
+Nhóm
+Method & endpoint
+Mục đích
+Auth
+POST /auth/register; POST /auth/login; POST /auth/refresh; POST /auth/logout
+Tài khoản và phiên đăng nhập.
+Profile
+GET/PATCH /users/me
+Xem/cập nhật hồ sơ.
+Destinations
+GET /destinations; GET /destinations/{id}
+Tìm kiếm, lọc và xem địa điểm.
+Favorites
+GET /users/me/favorites; PUT/DELETE /destinations/{id}/favorite
+Quản lý yêu thích.
+Trips
+POST /trips; GET /trips; GET/PATCH /trips/{id}; POST /trips/{id}/end
+CRUD chuyến đi và kết thúc chuyến.
+Invitations
+POST /trips/{id}/invitations; POST /invitations/{token}/accept; POST /invitations/{token}/decline
+Mời thành viên và phản hồi.
+Itinerary
+GET/POST /trips/{id}/itinerary-days; POST/PATCH/DELETE /itinerary-items/{id}
+Quản lý lịch trình.
+AI planner
+POST /ai/itinerary-suggestions; POST /trips/{id}/itinerary/validate
+Sinh đề xuất và kiểm tra ràng buộc.
+Votes
+POST /trips/{id}/proposals; PUT /proposals/{id}/vote; GET /trips/{id}/proposals
+Đề xuất và biểu quyết địa điểm.
+Expenses
+GET/POST /trips/{id}/expenses; PATCH/DELETE /expenses/{id}; GET /trips/{id}/expense-summary
+Quản lý chi phí và tổng hợp.
+Location
+POST /trips/{id}/location-sharing/start; POST /trips/{id}/location; POST /trips/{id}/location-sharing/stop; GET /trips/{id}/locations
+Bật/tắt chia sẻ, cập nhật và xem vị trí có quyền.
+Safety
+POST /trips/{id}/meetup-points; POST /trips/{id}/checkins; POST /trips/{id}/sos; GET /trips/{id}/sos
+Điểm hẹn, check-in và SOS.
+Community
+GET/POST /posts; GET/PATCH/DELETE /posts/{id}; POST /posts/{id}/comments; POST /destinations/{id}/reviews
+Bài viết, bình luận và đánh giá.
+Moderation
+POST /reports; GET /admin/moderation-queue; POST /admin/moderation/{id}/decision
+Báo cáo và xử lý nội dung.
+Admin
+CRUD /admin/destinations; GET /admin/dashboard
+Quản trị dữ liệu và thống kê.
+10. Luồng chi tiết cần mô hình hóa
+10.1. AI tạo lịch trình
+Người dùng nhập khu vực, ngày đi, ngân sách, số người và sở thích.
+Backend validate dữ liệu, giới hạn tần suất và lấy danh sách địa điểm hợp lệ từ DB/API được cấp phép.
+Backend gửi dữ liệu tối thiểu cho dịch vụ AI để tạo đề xuất có cấu trúc.
+Backend validate schema, kiểm tra ID địa điểm, tổng thời lượng, ngày và ngân sách ước tính.
+Nếu kết quả lỗi: trả lỗi có thể hiểu được hoặc cho phép tạo lịch trình thủ công.
+Nếu kết quả hợp lệ: trả bản nháp để người dùng xem, sửa và xác nhận.
+10.2. Chia sẻ vị trí nhóm
+Thành viên mở chuyến đi và xem thông báo về phạm vi người được xem vị trí.
+Thành viên chủ động bật chia sẻ, cấp quyền GPS và chọn thời hạn.
+Mobile gửi vị trí kèm timestamp khi được phép; backend kiểm tra membership, consent/session và thời hạn.
+Bản đồ chỉ hiển thị thành viên có phiên chia sẻ đang hoạt động; vị trí cũ được đánh dấu stale.
+Thành viên có thể tắt chia sẻ; backend ngừng nhận/phát vị trí và vô hiệu hóa phiên.
+Khi chuyến đi kết thúc hoặc thời hạn hết, phiên chia sẻ tự động đóng.
+10.3. AI kiểm duyệt spam
+Người dùng gửi bài viết/bình luận.
+Backend kiểm tra nội dung cơ bản, tần suất, URL và dấu hiệu trùng lặp.
+Nếu cần, nội dung được gửi tới AI với dữ liệu tối thiểu; AI trả nhãn/risk score/reason theo schema.
+Rule engine quyết định cho đăng, chờ duyệt hoặc tạm ẩn theo ngưỡng cấu hình.
+Moderator xem bằng chứng, quyết định và ghi log.
+Người đăng có thể gửi khiếu nại nếu chức năng này được bật.
+11. Quyền riêng tư và an toàn vị trí
+Chia sẻ vị trí mặc định tắt; phải có hành động opt-in rõ ràng.
+Người dùng nhìn thấy ai có thể xem vị trí, thời hạn và cách dừng chia sẻ trước khi bật.
+Không cho phép admin tùy ý xem vị trí thành viên nếu không thuộc quy trình hỗ trợ được quy định.
+MVP ưu tiên lưu vị trí mới nhất và timestamp thay vì lưu toàn bộ hành trình GPS.
+Không dùng dữ liệu vị trí để quảng cáo hoặc xây dựng hồ sơ hành vi ngoài mục đích đã thông báo.
+SOS phải hiển thị trạng thái gửi thành công/thất bại và vị trí được gửi có thời điểm cập nhật; không hứa rằng đội cứu hộ sẽ nhận được.
+Cần có chính sách xóa/retention cho vị trí, check-in và SOS; rà soát yêu cầu pháp lý và chính sách nền tảng trước khi phát hành.
+12. Quy tắc AI và xử lý lỗi
+Tình huống
+Hành vi hệ thống
+AI timeout hoặc không khả dụng
+Thông báo lỗi tạm thời; cho phép lập lịch trình thủ công; không tạo dữ liệu giả.
+AI trả JSON/schema không hợp lệ
+Backend từ chối kết quả, ghi log kỹ thuật không chứa dữ liệu nhạy cảm và yêu cầu thử lại.
+AI đề xuất địa điểm không tồn tại
+Backend loại bỏ hoặc đánh dấu không xác minh; không tự tạo địa điểm công khai.
+Thiếu giá/giờ mở cửa
+Hiển thị thiếu dữ liệu; không tự khẳng định giá hoặc giờ.
+Nội dung bị gắn cờ nhầm
+Cho phép moderator khôi phục; lưu kết quả để đo false positive.
+Mô hình không chắc chắn
+Chuyển sang hàng đợi kiểm duyệt thay vì tự động xóa.
+Người dùng cố đưa chỉ dẫn độc hại vào bài viết để tác động AI
+Coi nội dung là dữ liệu không đáng tin; giới hạn quyền và chỉ dùng AI cho nhiệm vụ phân loại được xác định.
+13. Tiêu chí nghiệm thu tổng thể
+Người dùng có thể đăng ký/đăng nhập và dữ liệu được bảo vệ bằng phân quyền backend.
+Tìm kiếm và lọc địa điểm hoạt động trên dữ liệu demo ở ít nhất 3 địa phương.
+Tạo chuyến đi, mời thành viên, chấp nhận lời mời và cập nhật lịch trình hoạt động xuyên suốt.
+AI trả đề xuất lịch trình có cấu trúc; backend kiểm tra ràng buộc và người dùng có thể chỉnh sửa.
+Ngân sách và chi phí được tính đúng trên bộ test mẫu.
+Chia sẻ vị trí chỉ hoạt động sau opt-in, chỉ thành viên có quyền xem và tự dừng/hết hạn được.
+Vị trí cũ/offline được nhận diện rõ; từ chối GPS không làm ứng dụng crash.
+Người dùng đăng bài/đánh giá; nội dung nghi ngờ được gắn cờ và moderator có thể ra quyết định.
+Các thao tác moderation quan trọng có audit log.
+Có bộ test API, test nghiệp vụ chính, tài liệu cài đặt và dữ liệu demo.
+14. Kế hoạch triển khai tham chiếu — 8 tuần, 5 người
+Tuần
+Mục tiêu
+Đầu ra
+1
+Chốt yêu cầu, scope, personas, flow, wireframe, kiến trúc và ERD
+SRS baseline, use case, backlog, ERD v1, prototype luồng chính.
+2
+Thiết lập repo, môi trường, DB, auth và khung mobile/admin
+App chạy được; backend skeleton; migration/seed; CI hoặc quy trình chạy thống nhất.
+3
+Địa điểm, tìm kiếm, bản đồ cơ bản và yêu thích
+BF-01 chạy end-to-end.
+4
+Chuyến đi, lời mời, lịch trình và cộng tác cơ bản
+BF-02/BF-03 phiên bản thủ công chạy được.
+5
+AI Trip Planner, kiểm tra lịch trình và ngân sách
+AI trả structured output; validation; BF-04 cơ bản.
+6
+Chia sẻ vị trí khi app hoạt động, điểm hẹn/check-in; cộng đồng cơ bản
+BF-05 MVP; bài viết/đánh giá hoạt động.
+7
+AI spam moderation, admin queue, test tích hợp và xử lý lỗi
+BF-06; audit log; test cases; fix lỗi.
+8
+Regression, bảo mật/quyền vị trí, UAT, demo và tài liệu
+Bản demo ổn định, test report, hướng dẫn cài đặt, slide và backlog tương lai.
+Rủi ro tiến độ: GPS nền đa nền tảng, realtime và tích hợp AI có thể chiếm nhiều thời gian. Nếu thiếu thời gian, ưu tiên bản đồ nhóm khi app đang mở, chia sẻ vị trí opt-in, điểm hẹn và check-in; chuyển background tracking nâng cao sang giai đoạn sau.
+15. Gợi ý phân công nhóm 5 người
+Vai trò
+Phạm vi phụ trách chính
+Phối hợp
+Member 1 — BA/PM + QA
+SRS, use case, business rules, backlog, acceptance criteria, test plan, theo dõi tiến độ
+Review yêu cầu tất cả luồng; không nên là người duy nhất hiểu nghiệp vụ.
+Member 2 — Backend Core
+Auth, user, destination, search/favorite, API nền tảng
+Hỗ trợ schema và security review.
+Member 3 — Backend Trip/AI
+Trip, itinerary, invitations, voting, budget, AI planner validation
+Phối hợp mobile với API contract.
+Member 4 — Mobile App
+React Native screens, navigation, auth, discovery, trip/itinerary UI
+Tích hợp API; xử lý loading/error/permission states.
+Member 5 — Mobile Safety/Community + Admin
+Location map, group safety UI, community UI; admin moderation web tối giản hoặc phối hợp backend
+Cần phối hợp chặt về quyền vị trí và moderation.
+Đây là phân công tham khảo. Nên phân chia theo năng lực thực tế và tránh để một người vừa gánh toàn bộ mobile, realtime, AI và admin. Nếu thành viên yếu mobile, cần giảm độ sâu của GPS/realtime để bảo vệ tiến độ.
+16. Bộ tài liệu BA/QA nên bàn giao
+SRS đã được review và có version history.
+Use Case Diagram tổng quan và đặc tả cho các Use Case quan trọng.
+Activity Diagram cho AI Trip Planner, mời thành viên, chia sẻ vị trí, SOS và kiểm duyệt spam.
+ERD logical/physical và data dictionary.
+API Specification với request/response, status code, auth và error cases.
+Wireframe/prototype cho mobile app và admin moderation.
+Business Rules catalogue và ma trận phân quyền.
+Test plan, test cases, traceability matrix và test report.
+Hướng dẫn cài đặt, biến môi trường, seed data và demo script.
+Danh sách giới hạn đã biết, rủi ro, giả định và backlog ngoài MVP.
+17. Giả định, phụ thuộc và rủi ro
+Mã
+Rủi ro/phụ thuộc
+Biện pháp giảm thiểu
+R-01
+API bản đồ/geocoding có quota hoặc phí
+Chọn provider sớm, kiểm tra điều khoản; giới hạn request; có trạng thái fallback.
+R-02
+AI tạo lịch trình không chính xác
+Chỉ dùng AI làm đề xuất; lấy địa điểm từ DB đáng tin; validate backend và yêu cầu user xác nhận.
+R-03
+GPS nền bị giới hạn bởi OS
+MVP không phụ thuộc tracking nền; test thiết bị thật; mô tả rõ trạng thái chia sẻ.
+R-04
+Lộ vị trí thành viên
+Opt-in, authorization backend, TTL, audit log tối thiểu, không log tọa độ dư thừa.
+R-05
+Phạm vi quá lớn cho 8 tuần
+Must/Should/Could; ưu tiên luồng end-to-end; cắt background GPS và tính năng cộng đồng nâng cao trước.
+R-06
+Spam false positive
+Ngưỡng cấu hình, hàng đợi moderator, khiếu nại/khôi phục, đo false positive.
+R-07
+Dữ liệu địa điểm không đầy đủ
+Chọn 3–5 địa phương demo, ghi nguồn/cập nhật, hiển thị rõ thông tin chưa xác minh.
+R-08
+Mobile và backend phát triển lệch API
+Chốt API contract sớm, dùng OpenAPI/Postman collection, mock response khi phát triển song song.
+18. Các quyết định cần chốt trước khi bắt đầu code
+Nhà cung cấp bản đồ, geocoding và routing; kiểm tra quota/chi phí.
+Nhà cung cấp AI và giới hạn chi phí; cách quản lý API key phía backend.
+Cách xác thực: Spring Security/JWT hoặc tích hợp Supabase Auth theo một phương án thống nhất.
+Cách realtime cho vị trí: WebSocket/SSE hoặc một giải pháp phù hợp với kiến trúc đã chọn.
+Quy tắc chi phí: chia đều mặc định hay hỗ trợ nhiều kiểu chia ngay từ MVP.
+Thời hạn chia sẻ vị trí, retention dữ liệu và ngưỡng cảnh báo tách nhóm.
+3–5 địa phương và nguồn dữ liệu demo.
+Phạm vi admin web: tối thiểu hàng đợi moderation, quản lý địa điểm và dashboard.
+Phụ lục A — Danh sách Use Case cấp cao
+Mã UC
+Tên Use Case
+Actor chính
+Ưu tiên
+UC-01
+Đăng ký/đăng nhập
+Guest/User
+Must
+UC-02
+Tìm kiếm và xem địa điểm
+Guest/User
+Must
+UC-03
+Lưu địa điểm yêu thích
+User
+Must
+UC-04
+Tạo chuyến đi
+User
+Must
+UC-05
+Yêu cầu AI đề xuất lịch trình
+User
+Must
+UC-06
+Chỉnh sửa/xác nhận lịch trình
+Trip Owner/Member
+Must
+UC-07
+Mời và quản lý thành viên
+Trip Owner
+Must
+UC-08
+Đề xuất và biểu quyết địa điểm
+Trip Member
+Must/Should
+UC-09
+Ghi nhận chi phí và xem tổng hợp
+Trip Member
+Must
+UC-10
+Bật/tắt chia sẻ vị trí
+Trip Member
+Must
+UC-11
+Xem bản đồ nhóm và điểm hẹn
+Trip Member
+Must/Should
+UC-12
+Check-in và gửi SOS
+Trip Member
+Should
+UC-13
+Đăng bài/đánh giá/bình luận
+User
+Must
+UC-14
+Báo cáo nội dung
+User
+Must
+UC-15
+Xử lý hàng đợi kiểm duyệt
+Moderator
+Must
+UC-16
+Quản lý địa điểm và tài khoản
+Admin
+Must
+UC-17
+Xem dashboard thống kê
+Admin
+Should
+Phụ lục B — Ghi chú triển khai mobile
+Cấu trúc gợi ý: src/navigation, src/screens, src/components, src/features, src/services/api, src/hooks, src/types, src/utils.
+Các màn hình MVP: Welcome/Auth, Home/Discover, Search/Filters, Destination Detail, Favorites, Create Trip, Trip Detail, Itinerary, AI Planner, Members/Invitations, Budget, Group Map, Location Sharing Consent, Check-in/SOS, Community Feed, Post Detail, Profile/Settings.
+Mỗi màn hình phải có loading, empty, error và success state; không chỉ làm happy path.
+Quyền GPS cần xin đúng lúc người dùng bật chia sẻ, giải thích mục đích và xử lý trường hợp người dùng từ chối.
+Không nhúng API key bí mật của AI vào app mobile; mobile gọi backend, backend gọi dịch vụ AI.
+Đặt API base URL và cấu hình môi trường riêng cho development/test/demo; không commit secret.
+Kiểm thử trên thiết bị thật các trường hợp GPS permission denied, location disabled, mạng yếu, app chuyển background/foreground và phiên chia sẻ hết hạn.
+Phụ lục C — Definition of Done
+Yêu cầu có ID, tiêu chí chấp nhận và được liên kết với test case.
+API kiểm tra authentication, authorization, validation và error response.
+Mobile có loading/error/empty state và không crash trong luồng chính.
+Có test tối thiểu cho business rules và API quan trọng.
+Không commit secrets; không ghi token/mật khẩu/toạ độ nhạy cảm vào log.
+Luồng được demo bằng dữ liệu rõ nguồn hoặc được đánh dấu là dữ liệu mẫu.
+Có review code, hướng dẫn chạy và ghi nhận giới hạn còn tồn tại.
+Kết luận
+ViVuGo được định hướng là nền tảng du lịch toàn Việt Nam với sáu luồng nghiệp vụ chính: khám phá địa điểm, AI lập lịch trình, phối hợp chuyến đi nhóm, quản lý ngân sách, theo dõi nhóm và hỗ trợ an toàn, cộng đồng và AI kiểm duyệt. Phạm vi mobile được xác định rõ bằng React Native + Expo; backend Spring Boot; Supabase PostgreSQL/Storage; admin web tối giản. Để hoàn thành OJT, nhóm cần ưu tiên luồng end-to-end, giới hạn dữ liệu demo và xem theo dõi GPS nền nâng cao là phần mở rộng sau MVP.

@@ -1,0 +1,1300 @@
+VISTA
+KẾ HOẠCH TRIỂN KHAI 8 TUẦN THEO ACTOR (BẢN BỔ SUNG)
+Nhóm 5 thành viên • Phân công theo Actor, thiết kế Use Case theo luồng tương tác
+Mình sẽ triển khai kế hoạch VISTA trong 8 tuần cho nhóm 5 thành viên, chia theo Actor và luồng nghiệp vụ hoàn chỉnh. Mỗi thành viên sẽ có công việc cụ thể theo tuần, đầu ra cần bàn giao, API/database phụ trách, tiêu chí nghiệm thu và kịch bản demo riêng.
+Nguyên tắc quan trọng: chia theo Actor để phân công, nhưng thiết kế Use Case theo luồng tương tác giữa các Actor. Ví dụ, luồng mời thành viên cần cả TV2 (chủ chuyến đi) và TV3 (người được mời), nhưng mỗi người vẫn có phần việc và kết quả riêng để trình bày.
+1. Phạm vi dự án VISTA
+Tên dự án: VISTA — Vietnam Travel Discovery & Collaborative Trip Planning Platform
+Mục tiêu: giúp người dùng khám phá địa điểm du lịch tại Việt Nam, lập kế hoạch chuyến đi theo nhóm, quản lý lịch trình và ngân sách, đồng thời chia sẻ trải nghiệm du lịch an toàn.
+Phạm vi chức năng trong 8 tuần
+Mức độ
+Chức năng
+Bắt buộc
+Khám phá, tìm kiếm và xem chi tiết địa điểm
+Bắt buộc
+Đăng ký, đăng nhập, hồ sơ và quản lý chuyến đi
+Bắt buộc
+Mời thành viên, tham gia nhóm, lập lịch trình và bình chọn
+Bắt buộc
+Quản lý chi phí, tổng ngân sách và chia chi phí cơ bản
+Bắt buộc
+Bản đồ, bài đăng cộng đồng và báo cáo nội dung
+Nâng cao
+AI đề xuất lịch trình dựa trên ngân sách và sở thích
+Nâng cao
+Chia sẻ vị trí theo sự đồng ý và thời hạn
+Nâng cao
+Phát hiện xung đột chỉnh sửa, kiểm duyệt và tối ưu lịch trình
+Để bảo đảm hoàn thành đúng hạn, nhóm cần làm xong các luồng bắt buộc trước; các tính năng nâng cao chỉ mở rộng sau khi luồng chính chạy ổn định.
+2. Phân công chính thức theo Actor
+Để không bị trùng việc hoặc có thành viên không có chức năng để demo, mình đề xuất chốt bảng sau. Đây là bản điều chỉnh theo Actor từ kế hoạch triển khai 4 tuần đầu của VISTA, vốn đã đặt mục tiêu hoàn thiện khám phá địa điểm và chuyến đi nhóm trước khi mở rộng AI, chi phí, cộng đồng và an toàn.
+Thành viên
+Actor chính
+Phạm vi sở hữu
+Vai trò dùng chung
+Sản phẩm bàn giao
+TV1
+Guest / Visitor
+Khám phá địa điểm
+Khung mobile dùng chung, điều phối dữ liệu địa điểm, kiểm thử tích hợp, admin web tối giản
+Search, Filter, Destination Detail, Favorites, khung mobile, admin
+TV2
+Registered User / Trip Owner
+Tài khoản và quản lý chuyến đi
+Backend core, migration baseline, CI backend, phân quyền, audit log
+Auth, Profile, Create Trip, Trip Management, TripAccessService
+TV3
+Invited User / Trip Member
+Tham gia và cộng tác chuyến đi
+Thông báo trong app và push
+Invitations, Members, Itinerary, Proposals, Voting, Notifications
+TV4
+Trip Owner / Trip Member
+Chi phí và AI Planner
+Giới hạn và chi phí AI
+Expenses, Budget, Split Cost, AI Suggestions
+TV5
+Community User / Safety User
+Bản đồ, cộng đồng và an toàn
+API kiểm duyệt cơ bản, MapView adapter
+Map, Check-in, Posts, Reports, Location Sharing
+Quy tắc chia việc: Mỗi thành viên chịu trách nhiệm chính cho chức năng của mình từ giao diện đến API, nghiệp vụ, dữ liệu và kiểm thử. Những phần dùng chung như đăng nhập, quy ước API, cơ sở dữ liệu và thiết kế giao diện chỉ có một người quản lý chính; các thành viên còn lại tích hợp theo hợp đồng đã thống nhất.
+Người dự phòng (thay thế khi vắng hoặc trễ)
+Cặp
+Phạm vi thay thế
+TV2 ⇄ TV3
+Backend: chuyến đi, quyền, lời mời, lịch trình, thông báo.
+TV1 ⇄ TV4
+Mobile và dữ liệu: màn hình, khung mobile, kiểm thử, nhập dữ liệu địa điểm.
+TV1 → TV5
+TV1 hỗ trợ cộng đồng và admin khi TV5 quá tải.
+3. Quyết định kỹ thuật cần chốt trong tuần 1
+Các quyết định dưới đây ảnh hưởng đến nhiều người cùng lúc. Cột “Đề xuất mặc định” là điểm bắt đầu để nhóm không phải chờ; nếu cả nhóm đồng ý thì ghi vào SRS v1.1 và coi là đã chốt.
+Mã
+Quyết định
+Đề xuất mặc định
+Hạn
+Người chốt
+D1
+Auth và nguồn danh tính
+Dùng Supabase Auth cấp JWT; Spring Boot là resource server xác thực JWT; mobile dùng SDK để đăng ký, đăng nhập, refresh, đăng xuất.
+T3 W1
+TV2
+D2
+Cách truy cập dữ liệu
+Mobile không truy vấn bảng trực tiếp; mọi nghiệp vụ đi qua Spring Boot. Spring kết nối bằng role đặc quyền nên bỏ qua RLS, vì vậy kiểm tra membership phải nằm trong code; RLS là lớp phòng thủ thứ hai và phải có test.
+T3 W1
+TV2
+D3
+Cập nhật vị trí nhóm
+Polling 10–15 giây khi app đang mở; không theo dõi nền trong MVP.
+T5 W1 (sau spike)
+TV5
+D4
+Nhà cung cấp bản đồ
+Chọn sau spike so sánh 2 phương án (marker, chỉ đường, geocoding tiếng Việt, quota).
+T4 W1
+TV5
+D5
+AI: nhà cung cấp và giới hạn
+Một nhà cung cấp, một model; giới hạn token/ngày và số lần gọi mỗi người dùng.
+Chọn T5 W1; giới hạn chốt W4
+TV4
+D6
+SOS và push notification
+Mặc định cắt SOS khỏi MVP nếu push chưa ổn định; giữ bản đồ nhóm, điểm hẹn và check-in.
+Cổng W4
+Cả nhóm
+D7
+Ngôn ngữ giao diện
+Tiếng Việt cho MVP.
+T2 W1
+TV1
+D8
+Cách mời thành viên
+Link mời trước; email là phần làm thêm nếu còn thời gian.
+T5 W3
+TV3
+Hệ quả của D1 và D2
+Nếu chọn Supabase Auth (đề xuất): TV2 không phải tự viết refresh token; các endpoint /api/auth/* không cần làm; policy RLS dùng được vì auth.uid() có giá trị.
+Nếu tự phát JWT trong Spring Boot: auth.uid() luôn rỗng nên các policy RLS hiện có không còn tác dụng bảo vệ; mọi quyền do Spring Boot đảm nhiệm và nhóm phải viết lại phần auth của TV2.
+Dù chọn cách nào: không bao giờ để ứng dụng mobile giữ khóa service role.
+4. Quy tắc sở hữu để 5 người code song song không conflict
+Nguyên tắc: mỗi file, mỗi bảng chỉ có một chủ. Người khác không sửa trực tiếp mà mở issue hoặc PR để chủ duyệt. Dùng file CODEOWNERS để GitHub tự gán người review.
+4.1. Sở hữu thư mục code
+Vùng code
+Chủ
+Ghi chú
+backend: core (security, config, exception, response chuẩn), auth, user, trip, audit
+TV2
+Phần dùng chung của backend.
+backend: destination, favorite, storage ảnh địa điểm
+TV1
+Cung cấp DestinationQueryService.
+backend: invitation, itinerary, vote, notification
+TV3
+Cung cấp NotificationService.
+backend: expense, budget, ai
+TV4
+Chỉ gọi dữ liệu địa điểm qua DestinationQueryService.
+backend: community, moderation, location, checkin
+TV5
+Cung cấp API báo cáo cho admin của TV1.
+mobile: app (khung điều hướng), shared, api-types, cấu hình
+TV1
+Phần dùng chung của mobile; type sinh tự động từ OpenAPI.
+mobile features: auth, profile, trip
+TV2
+mobile features: discovery
+TV1
+mobile features: invitation, itinerary, vote, notification
+TV3
+mobile features: budget, ai
+TV4
+mobile features: map, community, safety
+TV5
+Cung cấp MapView adapter cho các TV khác.
+admin (web quản trị tối giản)
+TV1
+Dùng API của TV5.
+docs/api/<module>.yaml
+Chủ module
+Viết trước khi code.
+CODEOWNERS, CI, quy ước nhánh
+TV2
+Mobile CI do TV1 cấu hình.
+4.2. File dùng chung và cách xử lý
+File
+Chủ
+Quy tắc
+pom.xml / build.gradle
+TV2
+Ai cần thêm thư viện thì mở PR nhỏ gắn nhãn deps; TV2 merge ngay trong ngày.
+application.yml
+TV2
+File chính chỉ chứa cấu hình chung; mỗi module có cấu hình riêng (ConfigurationProperties).
+SecurityConfig, GlobalExceptionHandler
+TV2
+Module khác dùng annotation phân quyền ở controller của mình và exception kế thừa lớp gốc.
+Migration baseline
+TV2
+Mỗi TV nộp DDL bảng của mình trước T3 W1; TV2 hợp nhất và review. Sau đó không sửa migration đã merge.
+Migration phát sinh
+Chủ bảng
+Đặt tên theo timestamp kèm tên chủ, ví dụ V20261104_1030__tv4_add_expense_status.sql.
+package.json, lockfile mobile
+TV1
+Thêm thư viện bằng PR riêng. Lockfile conflict thì không merge tay: lấy bản develop rồi chạy lại npm install.
+Điều hướng gốc, theme, component dùng chung
+TV1
+Thiếu component thì làm tạm trong feature của mình, cuối tuần gom lên shared qua PR.
+4.3. Interface giữa các module
+Module không gọi repository của module khác. Cần dữ liệu thì gọi qua interface công khai; chủ module dựng bản stub từ tuần 1 để người dùng interface không phải chờ.
+Interface
+Chủ
+Người dùng
+Mốc
+TripAccessService (isMember, isOwner, requireMember)
+TV2
+TV3, TV4, TV5
+Stub T5 W1; bản thật T4 W2.
+DestinationQueryService
+TV1
+TV3, TV4
+Stub T5 W1; bản thật T4 W3.
+NotificationService
+TV3
+TV2, TV4, TV5
+Stub T5 W1; bản thật trong W5.
+AuditLogService
+TV2
+Tất cả
+Bản thật trong W4.
+4.4. Quy tắc Git
+Nhánh feature/<tv>-<module>-<việc>, sống tối đa 1–2 ngày; main và develop bắt buộc PR cùng CI xanh.
+Mỗi sáng rebase nhánh của mình lên develop trước khi code tiếp.
+PR nhỏ (dưới khoảng 400 dòng), merge kiểu squash, review trong nửa ngày. Cặp review cố định: TV2 ⇄ TV3 (backend), TV1 ⇄ TV4 (mobile), TV5 do TV1 review.
+Định dạng code thống nhất từ ngày đầu (Spotless cho Java; ESLint và Prettier cho TypeScript; hook pre-commit).
+Không commit .env hoặc khóa bí mật; chỉ commit .env.example.
+Đổi request/response API: sửa OpenAPI trước, báo cả nhóm, rồi mới merge code.
+5. Phụ thuộc giữa các thành viên
+Bảng này cho biết ai phải giao gì cho ai và vào ngày nào. Trong lúc chờ, người nhận làm bằng mock sinh từ OpenAPI hoặc stub, không dừng việc.
+Ai cần từ ai
+Hạng mục
+Hạn giao
+Dùng khi
+Tất cả ← TV2
+Quyết định D1, D2 và ma trận quyền
+T3–T4 W1
+Viết test phân quyền từ W2
+Tất cả ← TV2
+Migration baseline
+T4 W1
+Không ai sửa schema ngoài chủ bảng
+Tất cả ← TV1
+Khung mobile chạy trên máy thật
+T5 W1
+Mọi màn hình từ W2
+TV3, TV4, TV5 ← TV2
+TripAccessService (stub rồi bản thật)
+T5 W1 / T4 W2
+Kiểm tra membership ở mọi API chuyến đi
+TV3 ← TV2
+API trip bản đầu (tạo, đọc)
+T5 W2
+Tạo itinerary_days, lời mời ở W3
+TV3, TV4 ← TV1
+DestinationQueryService bản thật
+T4 W3
+Lịch trình, AI planner
+Tất cả ← TV1
+Dữ liệu địa điểm đã seed
+≥ 60 cuối W2; ≥ 90 cuối W3
+Test mobile, AI, bản đồ
+TV4 ← TV3
+API thành viên và lịch trình
+T5 W3
+Chia chi phí theo thành viên, lưu gợi ý AI
+TV4, TV2 ← TV3
+Link mời và API accept
+T5 W3
+Deep link và màn Members ở W4
+TV5 ← TV3
+API proposals và vote
+T3 W4
+UI biểu quyết nối API thật
+Các TV ← TV5
+MapView adapter
+T5 W2
+Dùng trong màn chuyến đi từ W3
+TV1 ← TV5
+API danh sách và xử lý báo cáo
+T3 W6
+Admin web tối giản
+TV4 ← TV1
+Giá và giờ mở cửa dạng cấu trúc
+T2 W5
+AI Planner kiểm tra giờ mở cửa
+6. Chi tiết nhiệm vụ theo từng thành viên
+TV1 — Guest / Visitor: Khám phá địa điểm
+Mục tiêu
+Hoàn thiện luồng người dùng tìm được một địa điểm muốn đi, xem đầy đủ thông tin và lưu địa điểm yêu thích.
+Chức năng phải có
+Danh sách địa điểm.
+Tìm kiếm theo tên.
+Lọc theo loại địa điểm, tỉnh/thành phố và mức giá nếu dữ liệu có.
+Trang chi tiết địa điểm.
+Lưu và bỏ lưu yêu thích khi đăng nhập.
+Trạng thái tải dữ liệu, không có kết quả và lỗi kết nối.
+Dữ liệu địa điểm có nguồn tham khảo, thời điểm xác minh và thông tin chưa có phải được ghi rõ.
+Đầu ra: Một luồng khám phá địa điểm hoạt động với API thật; dữ liệu mẫu phải đủ để demo nhiều bộ lọc, không chỉ một địa điểm.
+Trách nhiệm dùng chung
+Chủ khung mobile: điều hướng gốc, theme, component dùng chung, API client, type sinh từ OpenAPI, CI mobile.
+Điều phối thu thập dữ liệu địa điểm cho cả nhóm và kiểm tra chất lượng dữ liệu.
+Kiểm thử tích hợp và hồi quy (ma trận E2E ở mục 10), traceability matrix.
+Admin web tối giản cho moderator (dùng API của TV5).
+Tuần
+Công việc cụ thể
+Kết quả cần bàn giao
+W1
+Dựng khung mobile (Expo, TypeScript, Expo Router, theme, component cơ bản, API client, mock server từ OpenAPI); xác định trường dữ liệu địa điểm; viết User Story và Acceptance Criteria; wireframe Discover, Search, Filter, Detail; tạo mẫu CSV có giờ mở cửa dạng cấu trúc.
+Mobile chạy trên máy thật; wireframe, mẫu CSV và khung mobile được nhóm duyệt.
+W2
+Hoàn thiện route guard và tab khung; điều phối nhập dữ liệu (mục tiêu chung ít nhất 60 địa điểm có nguồn và ảnh vào cuối tuần); làm module destination backend và nạp seed; thử API bằng Postman.
+Mobile lấy được danh sách và chi tiết địa điểm thật; dữ liệu seed có nguồn.
+W3
+Hoàn thiện Discover, Search, Filter, Favorites và Destination Detail; kết nối API; xử lý loading, empty, error; kiểm thử bộ lọc; dữ liệu đợt 2 (ít nhất 90 địa điểm); traceability matrix v0.
+Demo tìm kiếm, lọc, xem địa điểm và lưu yêu thích.
+W4
+Kiểm thử E2E luồng nhóm trên thiết bị thật; bổ sung giá và giờ mở cửa có cấu trúc cho AI; chủ trì họp cắt giảm #1.
+Báo cáo test, danh sách lỗi đã xử lý, biên bản cắt giảm.
+W5
+Rà soát chất lượng dữ liệu giá, giờ mở cửa, loại địa điểm phục vụ AI Planner; kiểm thử tích hợp luồng chi phí và AI.
+Dữ liệu đủ cấu trúc để TV4 và TV3 sử dụng; báo cáo test W5.
+W6
+Admin web tối giản: đăng nhập moderator/admin, hàng đợi báo cáo, ẩn và khôi phục bài (dùng API của TV5); hoàn thiện nội dung và nguồn dữ liệu.
+Moderator xử lý được báo cáo qua giao diện; hành động ghi audit log.
+W7
+Kiểm thử hồi quy toàn bộ luồng theo ma trận E2E; kiểm thử Search, Filter, Favorites và quyền truy cập.
+Không có lỗi chặn ở các luồng chính.
+W8
+Chuẩn bị kịch bản demo chung, tài liệu chức năng, báo cáo kiểm thử và traceability matrix hoàn chỉnh.
+Demo độc lập và tài liệu bàn giao.
+Kịch bản demo của TV1: Mở app → tìm “cà phê” → lọc theo Đà Nẵng → mở chi tiết một địa điểm → lưu yêu thích → quay lại danh sách yêu thích.
+TV2 — Registered User / Trip Owner: Tài khoản và chuyến đi
+Mục tiêu
+Người dùng có thể tạo tài khoản, đăng nhập, quản lý hồ sơ và tạo một chuyến đi mà mình là chủ sở hữu.
+Chức năng phải có
+Đăng ký, đăng nhập, đăng xuất.
+Quản lý phiên đăng nhập và token.
+Xem, sửa hồ sơ.
+Tạo, xem và chỉnh sửa thông tin chuyến đi.
+Thiết lập điểm đến, ngày đi, ngày về, ngân sách dự kiến.
+Phân quyền Owner và kiểm tra quyền truy cập.
+Chỉ thành viên của chuyến đi mới được đọc dữ liệu riêng tư của chuyến đi.
+Đầu ra: Tài khoản và chuyến đi lưu trên Backend thật, không chỉ là dữ liệu giả ở giao diện.
+Trách nhiệm dùng chung
+Chủ backend core: cấu trúc module, cấu hình, bảo mật, định dạng lỗi, CODEOWNERS, CI backend.
+Hợp nhất migration baseline từ DDL của từng thành viên; quản lý quy tắc migration.
+Cung cấp TripAccessService và ma trận phân quyền; audit log; bộ test RLS theo 5 vai.
+Môi trường demo, seed và backup (W7–W8).
+Tuần
+Công việc cụ thể
+Kết quả cần bàn giao
+W1
+Khởi tạo Backend (module core, response và lỗi chuẩn, OpenAPI); Supabase demo và Flyway; hợp nhất DDL các thành viên thành migration baseline; chốt D1, D2; ma trận quyền User/Owner/Member/Moderator/Admin.
+Backend chạy, có health check, migration baseline, API contract và quyết định Auth được ghi lại.
+W2
+Auth theo D1 (đăng ký, đăng nhập, refresh, đăng xuất; backend xác thực JWT); GET/PATCH /users/me; phân quyền role; TripAccessService; CI backend; màn Login, Register, Profile; API trip bản đầu.
+Đăng nhập từ app tới DB thật; endpoint riêng tư trả lỗi đúng khi chưa có quyền; TripAccessService dùng được.
+W3
+Hoàn thiện Create Trip, My Trips, chỉnh sửa chuyến đi; quản lý thành viên cơ bản; khung audit log; rà soát bảo mật lần 1.
+Người dùng tạo chuyến đi và xem lại được sau khi tải lại app.
+W4
+Hoàn thiện quản lý chuyến đi, vai trò Owner, rời nhóm, xóa thành viên, chuyển chủ chuyến; kiểm tra quyền sửa và các trường hợp không hợp lệ.
+Tài khoản A tạo chuyến đi, mời B và quản lý được chuyến đi; luôn có đúng một Owner.
+W5
+Rà soát phân quyền cho Expense, AI Planner và dữ liệu thành viên.
+Các API riêng tư đều kiểm tra quyền phía Backend.
+W6
+Hoàn thiện hồ sơ, xử lý phiên hết hạn, bảo vệ endpoint, log hành động quan trọng; viết bộ test RLS theo 5 vai và rà soát policy.
+Luồng tài khoản ổn định; không ghi token hoặc dữ liệu nhạy cảm vào log; bộ test RLS chạy được.
+W7
+Kiểm thử bảo mật, quyền Owner/Member, truy cập bằng ID của người khác; chạy bộ test RLS; chuẩn bị môi trường demo.
+Báo cáo kiểm thử quyền và các lỗi nghiêm trọng đã sửa.
+W8
+Đóng băng API, backup và restore thử, seed dữ liệu demo, hướng dẫn chạy và demo.
+Tài liệu API, cấu hình triển khai và demo tài khoản/chuyến đi.
+Kịch bản demo của TV2: Đăng nhập tài khoản A → tạo chuyến đi “Khám phá Đà Nẵng 3 ngày” → đặt ngày đi và ngân sách → xem trang quản lý → gửi lời mời cho tài khoản B.
+TV3 — Invited User / Trip Member: Tham gia và cộng tác
+Mục tiêu
+Người được mời có thể tham gia chuyến đi và cộng tác với chủ chuyến đi để lập lịch trình chung.
+Chức năng phải có
+Nhận, chấp nhận hoặc từ chối lời mời.
+Xem danh sách thành viên và vai trò.
+Thêm, sửa, xóa và sắp xếp điểm dừng theo ngày.
+Đề xuất địa điểm mới.
+Bình chọn và thay đổi phiếu trước khi kết thúc biểu quyết.
+Cảnh báo khi hai người cùng sửa một dữ liệu đã thay đổi.
+Không cho người ngoài chuyến đi truy cập dữ liệu riêng tư.
+Nhận thông báo trong app và push khi có lời mời hoặc lịch trình thay đổi.
+Tuần
+Công việc cụ thể
+Kết quả cần bàn giao
+W1
+Phân tích luồng Owner → Invitation → Member; thiết kế ERD và OpenAPI cho trip, invitations, itinerary; thống nhất quy tắc ngày đi/ngày về.
+Use Case, API contract và cấu trúc dữ liệu được duyệt.
+W2
+Xây dựng cấu trúc dữ liệu trip, trip_members, invitations, itinerary_days, itinerary_items; hoàn thiện tạo/đọc chuyến đi ở Backend.
+Repository/service có kiểm thử; người ngoài không đọc được trip riêng tư.
+W3
+Làm API gửi lời mời, chấp nhận/từ chối, danh sách thành viên; làm CRUD và sắp xếp điểm dừng.
+Luồng mời và tham gia chạy được; thứ tự lịch trình lưu đúng sau khi tải lại.
+W4
+Hoàn thiện cộng tác lịch trình, đề xuất địa điểm, biểu quyết; lưu phiên bản chỉnh sửa và cảnh báo xung đột.
+Hai tài khoản trên hai thiết bị cùng tham gia và chỉnh sửa được lịch trình.
+W5
+Thêm kiểm tra lịch trình: ngày không hợp lệ, trùng thời gian và các cảnh báo ngân sách cơ bản; hỗ trợ TV4 lưu gợi ý AI vào lịch trình.
+Lịch trình được kiểm tra trước khi xác nhận.
+W6
+Hoàn thiện trải nghiệm thành viên, xử lý người rời nhóm và trường hợp lời mời hết hạn hoặc bị thu hồi; thông báo trong app và push cho lời mời và thay đổi lịch trình (notifications, device_tokens).
+Các trạng thái thành viên/lời mời hoạt động đúng; thành viên nhận được thông báo.
+W7
+Kiểm thử đồng thời, phân quyền, dữ liệu trùng và luồng nhiều thành viên.
+Có test cho các trường hợp lỗi và xung đột.
+W8
+Chuẩn bị demo cộng tác, tài liệu API và hướng dẫn kiểm thử.
+Luồng mời → tham gia → lập lịch trình → bình chọn chạy ổn định.
+Kịch bản demo của TV3: Tài khoản B mở lời mời → chấp nhận tham gia → thêm một điểm đến vào ngày thứ hai → đề xuất địa điểm khác → bình chọn → xem kết quả cập nhật.
+TV4 — Trip Owner / Trip Member: Chi phí và AI Planner
+Mục tiêu
+Nhóm có thể theo dõi chi phí thực tế, biết số tiền mỗi người cần đóng và nhận gợi ý lịch trình theo ngân sách.
+Chức năng phải có
+Thêm, sửa, xóa chi phí.
+Phân loại chi phí.
+Tính tổng chi phí chuyến đi.
+Tính chi phí theo người hoặc chia đều.
+So sánh ngân sách dự kiến và số tiền đã chi.
+Gửi yêu cầu AI lập lịch trình theo ngày, ngân sách, sở thích và dữ liệu địa điểm.
+Kiểm tra dữ liệu AI trả về trước khi hiển thị hoặc lưu.
+Ưu tiên: Hoàn thành quản lý chi phí trước. Không để AI chưa chạy được làm mất chức năng demo của TV4.
+Tuần
+Công việc cụ thể
+Kết quả cần bàn giao
+W1
+Xác định công thức tổng tiền, chia chi phí, quy tắc làm tròn VND; thiết kế wireframe Budget và AI Planner; thử nghiệm AI trả JSON có cấu trúc.
+Bộ quy tắc tính toán, bộ dữ liệu kiểm thử và kết luận khả thi của AI.
+W2
+Thiết kế API contract cho expense; xây dựng giao diện Budget và Expense bằng dữ liệu giả; xác định bảng dữ liệu cần dùng.
+Giao diện và OpenAPI được thống nhất trước khi tích hợp.
+W3
+Xây dựng màn hình thêm/sửa/xóa chi phí; chuẩn bị service và kiểm thử công thức tổng tiền.
+Có thể nhập chi phí và tính tổng bằng dữ liệu mẫu.
+W4
+Hoàn thiện giao diện chi phí cơ bản; kết nối API khi Backend sẵn sàng; tích hợp endpoint AI v0 trả dữ liệu mẫu đúng schema.
+Demo được chi phí và phần giao diện AI, không giả vờ rằng AI thật đã hoàn thiện.
+W5
+Hoàn thiện Expense API và lưu dữ liệu thật; tính tổng, chia chi phí, so sánh ngân sách; triển khai AI Planner phiên bản đầu.
+Chi phí được lưu và tải lại; AI tạo gợi ý có cấu trúc.
+W6
+Thêm kiểm tra dữ liệu AI, xử lý timeout/lỗi, cho phép người dùng xem và chọn gợi ý trước khi lưu vào lịch trình.
+AI không tự động sửa lịch trình nếu người dùng chưa xác nhận.
+W7
+Kiểm thử chi phí chia không đều, dữ liệu thiếu, AI trả JSON sai, hết thời gian chờ và lỗi quyền truy cập.
+Bộ test tính toán và xử lý lỗi đạt yêu cầu.
+W8
+Chuẩn bị dữ liệu demo, tài liệu công thức và luồng AI; chốt các giới hạn đã biết.
+Demo chi phí thật và AI Planner theo phạm vi đã hoàn thành.
+Kịch bản demo của TV4: Mở chuyến đi → nhập tiền ăn và tiền di chuyển → xem tổng chi phí → xem số tiền bình quân mỗi người → nhập ngân sách và sở thích → nhận gợi ý lịch trình → chọn gợi ý để lưu.
+TV5 — Community User / Safety User: Bản đồ, cộng đồng và an toàn
+Mục tiêu
+Người dùng có thể xem địa điểm trên bản đồ, chia sẻ trải nghiệm và sử dụng tính năng an toàn với quyền kiểm soát rõ ràng.
+Chức năng phải có
+Hiển thị bản đồ và marker địa điểm.
+Xem địa điểm trên bản đồ, mở chỉ đường.
+Hiển thị trang chi tiết địa điểm phối hợp với TV1.
+Đăng bài, xem feed và tải ảnh.
+Báo cáo bài viết không phù hợp.
+Check-in hoặc tạo điểm hẹn.
+Chia sẻ vị trí theo sự đồng ý, xác định rõ ai được xem và khi nào dừng.
+Xử lý trường hợp người dùng từ chối quyền vị trí hoặc mất kết nối.
+Quyết định cần chốt: SOS có nằm trong MVP hay không (D6) và cách cập nhật vị trí nhóm (D3), dựa trên kết quả spike ở tuần 1 và tình trạng push notification.
+Tuần
+Công việc cụ thể
+Kết quả cần bàn giao
+W1
+So sánh thư viện bản đồ; thử GPS trên máy thật; kiểm tra quyền vị trí và trường hợp từ chối; chốt phương án cho MVP.
+Báo cáo khả thi và quyết định giữ/cắt tính năng định vị liên tục.
+W2
+Xây dựng MapView adapter, màn bản đồ và marker địa điểm; làm cơ chế xin quyền vị trí.
+Bản đồ hiển thị dữ liệu địa điểm thật hoặc dữ liệu seed.
+W3
+Hoàn thiện trang chi tiết địa điểm và chỉ đường; làm khung feed cộng đồng; kiểm tra fallback khi bản đồ lỗi.
+Người dùng xem được chi tiết và mở chỉ đường; feed có giao diện cơ bản.
+W4
+Kết nối giao diện đề xuất/bình chọn với TV3; làm Group Map và giao diện đồng ý chia sẻ vị trí; kết nối tạo/xem bài viết với TV2.
+Demo được bản đồ, cộng đồng cơ bản và màn hình đồng ý chia sẻ vị trí.
+W5
+Hoàn thiện điểm hẹn/check-in; triển khai cơ chế bắt đầu, dừng và hết hạn chia sẻ vị trí nếu phương án kỹ thuật khả thi.
+Người dùng chủ động bật/tắt chia sẻ vị trí.
+W6
+Hoàn thiện đăng bài, tải ảnh, báo cáo nội dung; kiểm duyệt cơ bản bằng quy tắc (URL, nội dung lặp, tần suất) và hàng đợi cho moderator; cung cấp API báo cáo cho admin của TV1.
+Có thể đăng bài và gửi báo cáo; dữ liệu lưu được; admin của TV1 xử lý được báo cáo.
+W7
+Kiểm thử quyền riêng tư, vị trí hết hạn, quyền ảnh, bài bị báo cáo và trường hợp mất mạng.
+Không chia sẻ vị trí khi chưa có sự đồng ý; lỗi an toàn nghiêm trọng được xử lý.
+W8
+Chuẩn bị demo bản đồ, cộng đồng và an toàn; ghi rõ tính năng nào là bản cơ bản.
+Demo hoàn chỉnh theo phạm vi thực tế.
+Kịch bản demo của TV5: Mở bản đồ → chọn một địa điểm → mở chỉ đường → check-in hoặc tạo điểm hẹn → đăng bài chia sẻ → gửi báo cáo một bài viết → bật và dừng chia sẻ vị trí thử nghiệm.
+7. Backlog chi tiết tuần 1 đến tuần 4
+Mã task có dạng W<tuần>-TV<số>-<thứ tự>. Giả định bắt đầu thứ Hai 19/10/2026 (W1: 19–23/10, W2: 26–30/10, W3: 2–6/11, W4: 9–13/11); nếu bắt đầu ngày khác thì dịch lịch theo. Mỗi tuần chỉ xếp khoảng 80% khả năng; chiều thứ Sáu là thời gian đệm và demo. TV2 là điểm nghẽn của W1–W2: nếu auth chưa xong vào T3 W2, TV3 nhận ma trận quyền và TripAccessService.
+7.1. Tuần 1 (19/10 – 23/10): Nền tảng, quyết định kỹ thuật, spike
+Mã
+Người
+Ngày
+Việc cần làm
+Xong khi
+W1-TV1-01
+TV1
+T2–T3
+Khởi tạo Expo, TypeScript, Expo Router; ESLint, Prettier, Husky; cấu trúc features/shared; CI mobile (lint, type-check).
+App chạy trên Expo Go; CI mobile xanh.
+W1-TV1-02
+TV1
+T3–T4
+Theme và component cơ bản (Button, Input, Card, Loading/Empty/Error); API client, React Query, SecureStore; sinh type từ OpenAPI; mock server (Prism hoặc MSW).
+Có màn showcase component; gọi được mock API.
+W1-TV1-03
+TV1
+T3–T5
+Chốt trường dữ liệu địa điểm và mẫu CSV (giờ mở cửa dạng cấu trúc, nguồn, ngày xác minh); chọn 3 địa phương; viết user story và Given/When/Then cho FR-DEST-01→05.
+Mẫu CSV chốt; tiêu chí có giá trị cụ thể.
+W1-TV1-04
+TV1
+T4–T5
+Wireframe Discover, Search, Filter, Detail; nhập ≥ 10 địa điểm mỗi địa phương.
+Wireframe được duyệt; 30 địa điểm có nguồn.
+W1-TV1-05
+TV1
+T5
+Build chạy trên máy thật; viết hướng dẫn cài bản dev cho cả nhóm.
+Cả nhóm cài được bản dev lên máy.
+W1-TV2-01
+TV2
+T2
+Tạo monorepo (/backend, /mobile, /admin, /docs), branch protection, CODEOWNERS, .env.example, README.
+Clone và chạy theo README trong ≤ 30 phút.
+W1-TV2-02
+TV2
+T2–T3
+Spring Boot theo module; /health; response và lỗi chuẩn; Swagger; Spotless; Docker Compose Postgres local; Supabase demo; Flyway.
+/health trả 200; mỗi người có DB local.
+W1-TV2-03
+TV2
+T2–T3
+Cùng cả nhóm chốt D1 và D2 (Auth, cách truy cập dữ liệu).
+Quyết định ghi vào docs và SRS.
+W1-TV2-04
+TV2
+T3–T4
+Hợp nhất DDL các TV nộp thành migration baseline (mỗi TV nộp DDL bảng của mình trước T3); review chéo.
+Migration merge; mọi bảng có từ cuối W1.
+W1-TV2-05
+TV2
+T4
+CI backend (build và test).
+PR không merge được khi CI đỏ.
+W1-TV2-06
+TV2
+T4–T5
+Ma trận quyền Guest/User/Owner/Member/Moderator/Admin; OpenAPI auth, users, trips; stub TripAccessService.
+Ma trận được cả nhóm duyệt; contract đã review.
+W1-TV3-01
+TV3
+T2–T3
+Phân tích luồng Owner → Invitation → Member; viết DDL invitations, itinerary_days, itinerary_items, proposals, votes, notifications, device_tokens.
+DDL nộp TV2 trước T3.
+W1-TV3-02
+TV3
+T3–T4
+Quy tắc ngày đi/về, trạng thái lời mời (Pending, Accepted, Declined, Expired, Revoked), quy tắc biểu quyết.
+Tài liệu quy tắc được duyệt.
+W1-TV3-03
+TV3
+T4–T5
+OpenAPI invitations, members, itinerary, proposals, vote.
+docs/api đã review với TV2, TV5.
+W1-TV3-04
+TV3
+T4
+Wireframe Invitations, Members, Itinerary, Vote cùng TV1.
+Wireframe được duyệt.
+W1-TV3-05
+TV3
+T5
+Chốt D8 (link mời trước); dựng stub NotificationService.
+Quyết định ghi lại; stub dùng được.
+W1-TV4-01
+TV4
+T2–T3
+Công thức tổng tiền, chia đều và theo người, quy tắc làm tròn VND; bộ test mẫu kết quả tính tay (gồm ca chia không chẵn).
+Bộ test mẫu ≥ 15 ca.
+W1-TV4-02
+TV4
+T2–T4
+Spike AI: gọi LLM với 20 địa điểm mẫu, JSON theo schema, chạy 10 lần; đo tỉ lệ hợp lệ, độ trễ, chi phí token.
+Báo cáo Go/No-Go 1 trang, prompt v0 (D5).
+W1-TV4-03
+TV4
+T3
+Quản lý khóa AI ở backend (biến môi trường); wrapper client có timeout và retry.
+Không có khóa trong repo.
+W1-TV4-04
+TV4
+T3–T4
+Viết DDL expenses, expense_splits, budgets, ai_generation_jobs, ai_feedback; nộp TV2 trước T3.
+DDL đã nộp.
+W1-TV4-05
+TV4
+T4–T5
+Wireframe Budget, AI Planner; OpenAPI expenses.
+Spec đã review.
+W1-TV5-01
+TV5
+T2–T3
+Spike GPS trên máy thật: xin quyền, từ chối, tắt dịch vụ vị trí, chuyển nền và quay lại.
+Bảng kết quả từng trường hợp, không crash.
+W1-TV5-02
+TV5
+T2–T4
+Spike bản đồ 2 phương án: marker, chỉ đường, geocoding tiếng Việt, quota.
+Bảng so sánh; chọn provider (D4).
+W1-TV5-03
+TV5
+T4–T5
+Spike polling vị trí 10–15 giây giữa 2 máy; đo độ trễ và mức hao pin sơ bộ.
+Kết luận D3.
+W1-TV5-04
+TV5
+T3
+Viết DDL posts, post_comments, content_reports, moderation_events, check_ins, location_shares, meetup_points; nộp TV2 trước T3.
+DDL đã nộp.
+W1-TV5-05
+TV5
+T5
+Báo cáo Go/No-Go GPS và bản đồ; đề xuất giữ hay cắt theo dõi nền và SOS.
+Báo cáo gửi cả nhóm trước demo T6.
+7.2. Tuần 2 (26/10 – 30/10): Auth và khung ứng dụng
+Mã
+Người
+Ngày
+Việc cần làm
+Xong khi
+W2-TV1-01
+TV1
+T2–T3
+Route guard và tab khung (Discover, Trips, Community, Profile); bổ sung component dùng chung theo yêu cầu của TV khác.
+Điều hướng không crash khi hết phiên.
+W2-TV1-02
+TV1
+T2–T5
+Điều phối nhập dữ liệu địa điểm (mỗi người ≥ 10 địa điểm mỗi tuần ở W2–W3); kiểm tra nguồn, ảnh, trùng lặp.
+≥ 60 địa điểm đã seed có nguồn và ảnh.
+W2-TV1-03
+TV1
+T3–T5
+Module destination backend: entity, GET /destinations, GET /destinations/{id} (chỉ Published); nạp seed CSV.
+Mobile lấy được danh sách và chi tiết thật.
+W2-TV1-04
+TV1
+T4–T5
+Postman collection cho destination và test case FR-DEST.
+Collection chạy trên môi trường demo.
+W2-TV2-01
+TV2
+T2–T3
+Auth theo D1: đăng ký, đăng nhập, refresh, đăng xuất; backend xác thực JWT; lỗi đăng nhập dùng thông báo chung.
+Test tích hợp pass.
+W2-TV2-02
+TV2
+T3–T4
+Role USER/MODERATOR/ADMIN, method security; TripAccessService bản thật.
+Endpoint riêng tư trả 401/403 đúng; không tự nâng quyền được.
+W2-TV2-03
+TV2
+T4
+GET/PATCH /users/me; yêu cầu xóa tài khoản (xác nhận, xóa mềm).
+Có test.
+W2-TV2-04
+TV2
+T3–T5
+Màn Login, Register, Profile, Settings nối API thật; lưu token và tự refresh.
+Đăng nhập trên máy thật vào DB demo.
+W2-TV2-05
+TV2
+T5
+POST/GET /trips, GET/PATCH /trips/{id} bản đầu; validate ngày; người tạo là Owner.
+Test BR-02, BR-03 pass.
+W2-TV3-01
+TV3
+T2–T4
+Entity và repository invitations, itinerary_days, itinerary_items, proposals, votes; unit test.
+Test repository pass.
+W2-TV3-02
+TV3
+T3–T5
+Service itinerary; kiểm tra membership qua TripAccessService (stub).
+Test với stub pass.
+W2-TV3-03
+TV3
+T4–T5
+Cập nhật OpenAPI theo code; xuất mock cho mobile.
+Spec khớp code.
+W2-TV3-04
+TV3
+T3–T5
+Khung UI Invitations, Members, Itinerary bằng mock.
+Màn hiển thị dữ liệu giả.
+W2-TV4-01
+TV4
+T2–T4
+UI Budget và Expense bằng dữ liệu giả: danh sách và form chi phí.
+UI chạy với mock.
+W2-TV4-02
+TV4
+T3–T5
+Entity, repository expenses, expense_splits; service tính tổng và chia theo bộ test mẫu (chưa mở API).
+15 ca test công thức pass.
+W2-TV4-03
+TV4
+T4–T5
+Module ai: lớp gọi LLM, schema validator, prompt v1 (chưa mở endpoint).
+Test validator với 5 mẫu đúng/sai.
+W2-TV5-01
+TV5
+T2–T3
+MapView adapter trong features/map.
+Hiển thị bản đồ và marker qua adapter.
+W2-TV5-02
+TV5
+T3–T4
+Màn Map hiển thị địa điểm seed.
+Hiển thị đủ dữ liệu seed thật.
+W2-TV5-03
+TV5
+T4–T5
+Component xin quyền GPS dùng lại: giải thích mục đích, xử lý từ chối, hướng dẫn bật trong cài đặt.
+Test 3 trường hợp: cho phép, từ chối, tắt dịch vụ vị trí.
+W2-TV5-04
+TV5
+T5
+Giao MapView adapter cho các TV khác.
+Import được từ features/map.
+7.3. Tuần 3 (02/11 – 06/11): Khám phá địa điểm, API trip và lời mời
+Mã
+Người
+Ngày
+Việc cần làm
+Xong khi
+W3-TV1-01
+TV1
+T2–T3
+FR-DEST-02, 03 backend: tìm kiếm (tên, tỉnh, từ khóa, không phân biệt dấu), lọc loại hình, giá, sở thích; phân trang, sắp xếp.
+Kết hợp nhiều bộ lọc cho kết quả đúng.
+W3-TV1-02
+TV1
+T2–T4
+UI Search, Filters, danh sách Discover (loading, empty, error); Destination Detail (ảnh, giá, giờ mở cửa, nguồn, “chưa có thông tin”).
+Hiển thị đúng với địa điểm đủ và thiếu dữ liệu.
+W3-TV1-03
+TV1
+T3–T4
+FR-DEST-05 yêu thích: backend và UI.
+Gọi lặp chỉ tạo một bản ghi.
+W3-TV1-04
+TV1
+T3–T4
+Supabase Storage cho ảnh địa điểm; script upload; kiểm soát quyền.
+Ảnh hiển thị qua URL từ app.
+W3-TV1-05
+TV1
+T4
+DestinationQueryService bản thật cho TV3, TV4.
+TV3 build và test pass với bản thật.
+W3-TV1-06
+TV1
+T2–T5
+Nhập dữ liệu đợt 2 (≥ 30 địa điểm mỗi địa phương); khởi tạo traceability matrix v0.
+≥ 90 địa điểm có ảnh; mọi FR Must W1–W4 có mã test.
+W3-TV2-01
+TV2
+T2–T4
+Hoàn thiện Create Trip, My Trips, PATCH trip và UI.
+Tạo trip trên máy thật, xem lại sau khi tải lại.
+W3-TV2-02
+TV2
+T3–T4
+Quản lý thành viên cơ bản: danh sách, vai trò Owner/Member; chặn người ngoài đọc trip.
+Test BR-02 pass.
+W3-TV2-03
+TV2
+T4–T5
+Khung audit_logs và AuditLogService.
+Gọi được từ module khác, không ghi dữ liệu nhạy cảm.
+W3-TV2-04
+TV2
+T5
+Rà soát bảo mật nội bộ lần 1.
+Danh sách endpoint đã kiểm, lỗi gán người sửa.
+W3-TV3-01
+TV3
+T2–T3
+POST /trips/{id}/invitations (link mời có hạn, token lưu dạng hash); trạng thái lời mời.
+Test hết hạn, thu hồi, dùng lại đều đúng.
+W3-TV3-02
+TV3
+T3–T4
+Chấp nhận/từ chối lời mời; danh sách thành viên qua TripAccessService; quyền.
+Chỉ tài khoản hợp lệ và lời mời còn hạn mới chấp nhận được.
+W3-TV3-03
+TV3
+T4–T5
+API điểm dừng: thêm, sửa, xóa, sắp xếp theo ngày.
+Thứ tự lưu đúng sau khi tải lại.
+W3-TV3-04
+TV3
+T4–T5
+UI Members, Invitations, Itinerary nối API thật (từng phần).
+Mời và thấy trong danh sách.
+W3-TV4-01
+TV4
+T2–T4
+Màn thêm, sửa, xóa chi phí; chuẩn bị service.
+Nhập chi phí và tính tổng bằng dữ liệu mẫu.
+W3-TV4-02
+TV4
+T3–T5
+Expense API bản đầu (POST, GET, PATCH, DELETE) kiểm tra membership qua TripAccessService.
+Người ngoài nhóm bị chặn.
+W3-TV4-03
+TV4
+T4–T5
+/ai/itinerary-suggestions v0 trả dữ liệu mẫu đúng schema.
+Endpoint trả mẫu hợp lệ.
+W3-TV5-01
+TV5
+T2–T3
+FR-DEST-06: xem địa điểm trên bản đồ và mở chỉ đường từ trang chi tiết; fallback khi bản đồ lỗi.
+Tắt mạng hoặc bản đồ lỗi vẫn xem được thông tin địa điểm.
+W3-TV5-02
+TV5
+T3–T4
+Backend community: posts, post_comments CRUD cơ bản; tải ảnh qua Storage.
+Tạo, xem, xóa bài của chính mình; không sửa được bài người khác.
+W3-TV5-03
+TV5
+T4–T5
+UI feed cộng đồng và tạo bài.
+Đăng và xem bài trên máy thật.
+W3-TV5-04
+TV5
+T5
+Báo cáo nội dung: POST /community/posts/{id}/reports, content_reports; chặn báo cáo trùng.
+Test chặn báo cáo trùng pass.
+7.4. Tuần 4 (09/11 – 13/11): Chuyến đi nhóm và lịch trình cộng tác
+Mã
+Người
+Ngày
+Việc cần làm
+Xong khi
+W4-TV1-01
+TV1
+T2–T5
+Test E2E luồng nhóm bằng 2 tài khoản trên 2 máy theo ma trận ở mục 10.
+Báo cáo test; lỗi chặn đã gán người sửa.
+W4-TV1-02
+TV1
+T2–T4
+Kiểm thử thiết bị thật luồng khám phá; kiểm tra dữ liệu thiếu và không có kết quả.
+Không còn lỗi chặn ở luồng khám phá.
+W4-TV1-03
+TV1
+T3–T4
+Bổ sung giá và giờ mở cửa dạng cấu trúc cho dữ liệu phục vụ AI (W5).
+≥ 90 địa điểm có giá và giờ mở cửa có cấu trúc.
+W4-TV1-04
+TV1
+T5
+Chủ trì họp cắt giảm #1; cập nhật SRS v1.1.
+Biên bản họp và danh sách yêu cầu giữ/cắt.
+W4-TV2-01
+TV2
+T2–T3
+Rời nhóm, xóa thành viên, chuyển chủ chuyến (BR-01); luôn có đúng 1 Owner.
+Test pass; thao tác có audit log.
+W4-TV2-02
+TV2
+T3–T5
+UI quản lý chuyến đi: sửa thông tin, thành viên, rời nhóm.
+Chạy được trên máy thật.
+W4-TV2-03
+TV2
+T4–T5
+Hỗ trợ lỗi quyền của TV3, TV4; rà endpoint thiếu xác thực.
+Danh sách lỗi đã xử lý.
+W4-TV2-04
+TV2
+T5
+Cập nhật ma trận quyền; test quyền Owner/Member bằng 2 tài khoản.
+Test pass.
+W4-TV3-01
+TV3
+T2–T3
+Cộng tác lịch trình: lưu người sửa và thời điểm; khóa lạc quan (version) để cảnh báo xung đột.
+Hai người sửa cùng điểm dừng nhận cảnh báo, không mất dữ liệu.
+W4-TV3-02
+TV3
+T2–T4
+API proposals và vote (1 phiếu mỗi người, đổi phiếu trước khi đóng) cùng UI.
+Test phiếu trùng, đổi phiếu, đóng biểu quyết pass.
+W4-TV3-03
+TV3
+T3–T5
+Deep link nhận lời mời trên máy thật; dự phòng nhập mã mời.
+Mời và chấp nhận giữa 2 thiết bị.
+W4-TV3-04
+TV3
+T4
+Validate lịch trình sơ bộ: ngày, trùng giờ.
+Trả cảnh báo có lý do.
+W4-TV4-01
+TV4
+T2–T4
+Nối UI chi phí với API thật; tổng chi phí, chia đều; so sánh ngân sách.
+Demo chi phí thật.
+W4-TV4-02
+TV4
+T3–T4
+UI AI Planner nối endpoint v0; ghi rõ trên màn hình đây là dữ liệu mẫu.
+Màn chạy; không gây hiểu nhầm là AI thật.
+W4-TV4-03
+TV4
+T4–T5
+Chốt prompt v1; giới hạn token và rate limit mỗi người dùng (D5).
+Con số giới hạn nằm trong cấu hình.
+W4-TV5-01
+TV5
+T2–T3
+UI đề xuất địa điểm và biểu quyết nối API của TV3.
+Hai tài khoản bỏ phiếu, kết quả đúng.
+W4-TV5-02
+TV5
+T3–T5
+Group Map khung (dữ liệu mẫu); UI đồng ý chia sẻ vị trí (ai xem được, thời hạn, cách dừng); backend location_shares (bắt đầu, dừng) kiểm tra membership.
+Màn dùng được; nội dung đồng ý rõ ràng.
+W4-TV5-03
+TV5
+T4–T5
+Quy tắc kiểm duyệt cơ bản (URL, nội dung lặp, tần suất đăng) ghi moderation_events.
+Test 3 quy tắc pass.
+W4-TV5-04
+TV5
+T5
+Đề xuất quyết định D6 (SOS, push) dựa trên kết quả đã có.
+Đề xuất gửi cả nhóm trước họp cắt giảm.
+8. Thiết kế Database và API theo phần việc
+Để 5 thành viên làm song song, không nên để mọi người tự thiết kế bảng và API theo ý mình. Dưới đây là bản phân chia đề xuất để nhóm chốt trong tuần 1.
+8.1. Phân công các nhóm bảng Database (mỗi bảng một chủ)
+Nhóm bảng
+Chủ duy nhất
+Nội dung
+users / profiles (liên kết auth), audit_logs / admin_audit_logs
+TV2
+Tài khoản, hồ sơ, vai trò, nhật ký quản trị
+trips, trip_members
+TV2
+Chuyến đi và thành viên; TV3 chỉ đọc qua TripAccessService
+destinations, destination_categories, destination_images, favorites
+TV1
+Địa điểm, danh mục, ảnh, yêu thích
+invitations, itinerary_days, itinerary_items, proposals, votes
+TV3
+Lời mời, lịch trình, đề xuất, bình chọn
+notifications, device_tokens
+TV3
+Thông báo trong app và token push
+expenses, expense_splits, budgets
+TV4
+Chi phí, phần tiền mỗi người, ngân sách
+ai_generation_jobs, ai_feedback
+TV4
+Yêu cầu AI, kết quả và phản hồi người dùng
+posts, post_comments, content_reports, moderation_events
+TV5
+Bài viết, bình luận, báo cáo, sự kiện kiểm duyệt
+check_ins, meetup_points, location_shares
+TV5
+Check-in, điểm hẹn, chia sẻ vị trí có thời hạn
+Bảng nào có hai bên cùng dùng thì vẫn chỉ một chủ; người còn lại đề xuất thay đổi qua PR và gọi dữ liệu qua interface ở mục 4.3.
+Quy tắc quản lý Database
+TV2 hợp nhất migration baseline và quản lý quy ước tên bảng; mỗi thành viên nộp DDL bảng của mình trước T3 W1.
+Mỗi thành viên chịu trách nhiệm nghiệp vụ của các bảng mình phụ trách.
+Không tự sửa migration đã được merge; thay đổi mới phải tạo migration mới.
+Mọi bảng liên quan đến chuyến đi phải có quy tắc kiểm tra quyền truy cập, vừa trong code Spring Boot vừa trong policy RLS (xem D2).
+Vị trí chia sẻ và dữ liệu riêng tư không được trả về cho người không có quyền.
+8.2. API theo thành viên
+Đây là danh sách API dự kiến. Nhóm cần thống nhất request/response trong OpenAPI trước khi triển khai thật.
+TV1 — Destination Discovery
+API địa điểm và yêu thích
+GET    /api/destinations
+GET    /api/destinations/{id}
+GET    /api/destinations/categories
+GET    /api/destinations?keyword=cafe&city=DaNang
+GET    /api/users/me/favorites
+POST   /api/users/me/favorites/{destinationId}
+DELETE /api/users/me/favorites/{destinationId}
+TV2 — Identity & Trip Owner
+API tài khoản và quản lý chuyến đi (đăng ký, đăng nhập, refresh, đăng xuất do Supabase Auth đảm nhiệm theo D1)
+GET    /api/users/me
+PATCH  /api/users/me
+DELETE /api/users/me
+POST   /api/trips
+GET    /api/trips
+GET    /api/trips/{tripId}
+PATCH  /api/trips/{tripId}
+POST   /api/trips/{tripId}/leave
+DELETE /api/trips/{tripId}/members/{userId}
+POST   /api/trips/{tripId}/transfer-owner
+# Chỉ khi nhóm chọn tự phát JWT (thay D1):
+POST   /api/auth/register
+POST   /api/auth/login
+POST   /api/auth/refresh
+POST   /api/auth/logout
+TV3 — Invitations & Itinerary
+API cộng tác chuyến đi và thông báo
+POST   /api/trips/{tripId}/invitations
+POST   /api/invitations/{id}/revoke
+POST   /api/invitations/{token}/accept
+POST   /api/invitations/{token}/decline
+GET    /api/trips/{tripId}/members
+GET    /api/trips/{tripId}/itinerary
+POST   /api/trips/{tripId}/itinerary/items
+PATCH  /api/itinerary/items/{itemId}
+DELETE /api/itinerary/items/{itemId}
+GET    /api/trips/{tripId}/proposals
+POST   /api/trips/{tripId}/proposals
+PUT    /api/proposals/{proposalId}/vote
+GET    /api/notifications
+PATCH  /api/notifications/{id}/read
+POST   /api/devices/push-token
+TV4 — Budget & AI
+API chi phí và lập lịch trình AI
+GET    /api/trips/{tripId}/expenses
+POST   /api/trips/{tripId}/expenses
+PATCH  /api/expenses/{expenseId}
+DELETE /api/expenses/{expenseId}
+GET    /api/trips/{tripId}/budget-summary
+POST   /api/trips/{tripId}/ai/itinerary-suggestions
+TV5 — Community & Safety
+API bản đồ, cộng đồng, an toàn và kiểm duyệt
+GET    /api/map/destinations
+POST   /api/trips/{tripId}/check-ins
+POST   /api/trips/{tripId}/meetup-points
+GET    /api/trips/{tripId}/location-shares
+POST   /api/trips/{tripId}/location-shares
+DELETE /api/location-shares/{shareId}
+GET    /api/community/posts
+POST   /api/community/posts
+POST   /api/community/posts/{postId}/reports
+GET    /api/admin/reports
+PATCH  /api/admin/reports/{reportId}
+Lưu ý: Các đường dẫn trên là hợp đồng API đề xuất, không phải khẳng định rằng những endpoint này đã tồn tại. TV2 và các thành viên cần xác nhận tên trường, định dạng lỗi, phân trang, xác thực và quyền truy cập trước khi code.
+9. Kế hoạch triển khai chung 8 tuần
+Kế hoạch 4 tuần đầu trong tài liệu hiện có lấy mốc bắt đầu từ ngày 19/10/2026 và đặt mục tiêu hoàn thiện khám phá địa điểm cùng chuyến đi nhóm trước khi mở rộng các tính năng nâng cao. Bảng dưới đây giữ định hướng đó nhưng tổ chức công việc theo Actor.
+Tuần
+Trọng tâm
+Điều kiện nghiệm thu cuối tuần
+W1
+Chốt yêu cầu, kiến trúc, Database, API và UI mẫu
+Repo chạy được; ERD, API contract, wireframe và backlog được duyệt
+W2
+Auth, dữ liệu địa điểm, tạo chuyến đi cơ bản, khung bản đồ
+Đăng nhập thật; địa điểm được lưu; tạo và đọc chuyến đi được
+W3
+Hoàn thiện khám phá, lời mời và lịch trình
+Tìm kiếm/lọc/chi tiết hoạt động; tạo trip và gửi lời mời
+W4
+Cộng tác nhóm, biểu quyết, chi phí cơ bản, feed cơ bản
+Hai tài khoản trên hai thiết bị hoàn thành luồng nhóm
+W5
+Chi phí thật và AI Planner
+Thêm chi phí, tính tổng, AI tạo gợi ý có cấu trúc
+W6
+Chia sẻ vị trí, check-in và cộng đồng
+Có thể bật/tắt chia sẻ vị trí và đăng bài cơ bản
+W7
+Tích hợp, phân quyền, bảo mật và kiểm thử hồi quy
+Luồng chính ổn định; lỗi nghiêm trọng đã được xử lý
+W8
+Đóng băng tính năng, tài liệu và demo
+Build chạy được; có kịch bản demo, tài liệu và báo cáo kiểm thử
+9.1. Cách làm việc mỗi tuần
+Thứ Hai: thống nhất mục tiêu, phân chia task nhỏ và xác nhận đầu vào cần nhận từ thành viên khác.
+Thứ Ba–Thứ Tư: triển khai và kiểm thử từng chức năng; Backend công bố API contract sớm để Mobile có thể dùng mock.
+Thứ Năm: tích hợp, chỉ nhận sửa lỗi và hoàn thiện; báo ngay nếu có nguy cơ trễ.
+Thứ Sáu: merge vào nhánh chung, build trên thiết bị thật, demo và đánh giá tiêu chí nghiệm thu.
+Mỗi task nên có người chịu trách nhiệm, tiêu chí hoàn thành và liên kết Pull Request. Không tính là hoàn thành chỉ vì giao diện đã hiển thị nếu dữ liệu chưa lưu hoặc quyền truy cập chưa được kiểm tra.
+9.2. Cổng kiểm soát cuối mỗi tuần (chấm chiều thứ Sáu)
+“Đạt” nghĩa là mọi điều kiện đều thỏa. Thiếu một điều kiện thì xử lý theo mục “Nếu không đạt” ngay trong tuần đó, không dồn sang tuần sau.
+Cổng W1
+Đạt khi: Repo, CI chạy được; mọi người build được backend và mobile.
+Đạt khi: Backend /health chạy, kết nối Supabase demo; migration baseline đã merge.
+Đạt khi: Mobile chạy trên máy thật và gọi được mock API.
+Đạt khi: D1, D2 đã chốt; D3, D4, D5 có kết luận từ spike; ma trận quyền và OpenAPI nháp đã duyệt.
+Đạt khi: Backlog W2–W4 đã có issue gán người và module.
+Nếu không đạt: Spike AI không đạt: giảm số địa điểm đưa vào prompt, chuyển sang AI chỉ sắp xếp các địa điểm đã chọn.
+Nếu không đạt: Spike GPS không ổn định: hạ chia sẻ vị trí xuống điểm hẹn và check-in, không làm bản đồ trực tiếp.
+Nếu không đạt: Migration baseline trễ: các TV dùng DDL riêng trên DB local trong lúc chờ; TV2 ưu tiên merge trước mọi việc khác.
+Cổng W2
+Đạt khi: Đăng ký, đăng nhập, refresh, đăng xuất chạy từ app tới DB demo.
+Đạt khi: Role và TripAccessService bản thật chạy; endpoint riêng tư chặn đúng.
+Đạt khi: ≥ 60 địa điểm đã seed; API danh sách và chi tiết dùng được; API trip tạo và đọc được.
+Đạt khi: Bản đồ hiển thị địa điểm seed; component xin quyền GPS dùng lại được.
+Nếu không đạt: Auth trễ quá 2 ngày: TV3, TV4, TV5 dùng người dùng giả (chỉ ở profile dev); TV2 ưu tiên auth; TV1 hỗ trợ UI đăng nhập.
+Nếu không đạt: Thiếu dữ liệu địa điểm: giảm xuống 2 địa phương nhưng giữ số địa điểm mỗi địa phương.
+Cổng W3
+Đạt khi: Luồng khám phá chạy end-to-end trên máy thật: tìm, lọc, chi tiết, yêu thích, bản đồ và chỉ đường.
+Đạt khi: ≥ 90 địa điểm (≥ 30 mỗi địa phương) có nguồn và ảnh.
+Đạt khi: Lời mời và quyền Owner/Member chạy, có test; Expense API bản đầu có kiểm tra membership.
+Đạt khi: Tạo trip từ app và hiển thị trong danh sách.
+Nếu không đạt: Khám phá chưa xong: dừng nhận việc mới ở W4 cho đến khi xong; TV4, TV5 hỗ trợ TV1.
+Nếu không đạt: Lời mời trễ: dùng mã mời nhập tay thay cho deep link.
+Cổng W4 (họp cắt giảm #1, điều kiện vào W5)
+Đạt khi: Hai tài khoản trên hai máy thật: tạo trip → mời → chấp nhận → cùng sửa lịch trình → đề xuất và biểu quyết.
+Đạt khi: Có cảnh báo xung đột khi hai người sửa cùng lúc; người ngoài nhóm không đọc được dữ liệu trip.
+Đạt khi: Chi phí cơ bản chạy với dữ liệu thật; AI endpoint v0 trả mẫu đúng schema; giới hạn AI đã ghi vào cấu hình.
+Đạt khi: D6 (SOS, push) đã có quyết định; không còn lỗi chặn ở luồng chính.
+Nếu không đạt: Chưa đạt: cắt ngay theo thứ tự ở mục 14; không chuyển sang W5 việc không nằm trong danh sách Must.
+Cổng W5 đến W8 (tóm tắt)
+Tuần
+Đạt khi
+W5
+Chi phí lưu thật và đúng bộ test ≥ 15 ca; AI thật trả JSON qua validator; người dùng xác nhận trước khi lưu vào lịch trình; thông báo lời mời chạy.
+W6
+Bật, dừng, hết hạn chia sẻ vị trí giữa 2 máy; người ngoài nhóm không đọc được vị trí; đăng bài và báo cáo; moderator xử lý báo cáo qua admin; quyết định D6 đã thực thi.
+W7
+Ma trận E2E ở mục 10 pass; bộ test RLS theo 5 vai pass; không còn lỗi nghiêm trọng mở.
+W8
+Build demo ổn định; tài liệu và báo cáo test hoàn chỉnh; diễn tập demo 2 lần.
+9.3. Quy tắc xử lý trễ
+Việc trễ hơn 1 ngày phải báo trong họp sáng; trễ hơn 2 ngày thì ghép cặp hoặc chuyển cho người dự phòng, không im lặng chờ.
+Mỗi tuần chỉ xếp khoảng 80% khả năng; không giao thêm việc mới vào chiều thứ Sáu.
+Không thêm tính năng ngoài danh sách Must; ý tưởng mới đưa vào backlog giai đoạn sau.
+Chức năng chỉ tính là xong khi đạt tiêu chí “xong khi” của task và checklist ở mục 13.
+Trễ cổng hai tuần liên tiếp thì họp cắt giảm ngay, không chờ đến cổng W4.
+10. Kiểm thử và chất lượng
+Mỗi người tự viết test cho module của mình (luồng chính và ít nhất một ca lỗi). Ngoài ra có người chịu trách nhiệm cho các việc kiểm thử xuyên module để lỗi không dồn về tuần 7–8.
+Hạng mục
+Chủ
+Nội dung
+Kiểm thử tích hợp và hồi quy
+TV1
+Chạy ma trận E2E bên dưới, ghi lỗi, theo dõi traceability matrix (FR → test).
+Kiểm thử quyền và RLS
+TV2
+Thử từng thao tác với 5 vai (khách, người dùng, thành viên, moderator, admin); thử truy cập bằng ID của người khác; phối hợp rà các policy RLS.
+Kiểm thử công thức và AI
+TV4
+Bộ test chi phí; AI trả JSON sai, hết thời gian chờ, dữ liệu thiếu.
+Kiểm thử riêng tư vị trí
+TV5
+Không chia sẻ khi chưa đồng ý; hết hạn tự dừng; người ngoài nhóm không đọc được; mất mạng và từ chối quyền.
+Dữ liệu test cố định
+TV2
+Tài khoản A (Owner), B (Member), C (ngoài nhóm), M (moderator), X (admin) và bộ dữ liệu seed dùng chung; 2 thiết bị thật.
+Ma trận kịch bản E2E
+Mã
+Kịch bản
+Thành viên liên quan
+Chạy từ
+E2E-01
+Khám phá, tìm, lọc, xem chi tiết, lưu yêu thích
+TV1, TV2
+W3
+E2E-02
+Tạo trip, mời, chấp nhận lời mời
+TV2, TV3
+W4
+E2E-03
+Hai người cùng sửa lịch trình, nhận cảnh báo xung đột
+TV3
+W4
+E2E-04
+Đề xuất địa điểm và biểu quyết
+TV3, TV5
+W4
+E2E-05
+Nhập chi phí, chia chi phí, so sánh ngân sách
+TV4, TV3
+W5
+E2E-06
+AI gợi ý, người dùng xác nhận, lưu vào lịch trình
+TV4, TV3, TV1
+W6
+E2E-07
+Bật, dừng, hết hạn chia sẻ vị trí; người ngoài nhóm không đọc được
+TV5, TV2
+W6
+E2E-08
+Đăng bài, báo cáo, moderator xử lý
+TV5, TV1
+W6
+E2E-09
+Truy cập dữ liệu trip, chi phí, vị trí bằng ID của người khác
+TV2
+W7
+11. Hạng mục dễ bị bỏ sót
+Hạng mục
+Chủ
+Tuần
+Đầu ra
+Thu thập dữ liệu địa điểm
+TV1 điều phối
+W1–W3
+3 địa phương, ≥ 30 địa điểm mỗi địa phương; mỗi người nhập ≥ 10 địa điểm mỗi tuần ở W2–W3; mỗi bản ghi có nguồn, ngày xác minh và ảnh được phép sử dụng.
+Thông báo trong app và push
+TV3
+W3–W6
+Stub ở W3; bản thật ở W5 cho lời mời và thay đổi lịch trình; bảng notifications, device_tokens.
+Môi trường demo, seed, backup
+TV2
+W7–W8
+Supabase demo riêng, script seed, thử backup và restore ít nhất 1 lần, hướng dẫn cài đặt.
+Quyết định SOS
+Cả nhóm
+Cổng W4
+TV5 đề xuất; mặc định cắt nếu push chưa ổn định; ghi vào SRS v1.1.
+Quyền riêng tư vị trí và pháp lý
+TV5, TV1
+W4, W7
+Văn bản đồng ý chia sẻ vị trí; thời gian lưu mặc định (chỉ giữ vị trí mới nhất, xóa khi hết phiên; check-in và dữ liệu khác nhóm chốt số ngày); độ tuổi tối thiểu; điều khoản và chính sách quyền riêng tư trong app; đối chiếu quy định bảo vệ dữ liệu cá nhân hiện hành (ví dụ Nghị định 13/2023/NĐ-CP và luật mới), cần xác minh văn bản đang có hiệu lực.
+Admin và kiểm duyệt
+TV1 (giao diện), TV5 (API)
+W6
+Admin web tối giản: hàng đợi báo cáo, ẩn và khôi phục bài; mọi hành động ghi audit log.
+Giới hạn và chi phí AI
+TV4
+W4–W5
+Giới hạn token mỗi ngày, rate limit mỗi người dùng, ghi nhận chi phí mỗi lượt.
+Traceability matrix
+TV1
+W3, W8
+Bản v0 ở W3; bản hoàn chỉnh FR → test case ở W8.
+12. Kịch bản demo giữa kỳ và cuối kỳ
+Demo cuối tuần 4
+Đây là mốc quan trọng nhất để chứng minh dự án có luồng nghiệp vụ thật.
+TV1: tìm kiếm, lọc và lưu một địa điểm yêu thích.
+TV2: đăng nhập tài khoản A, tạo chuyến đi và gửi lời mời.
+TV3: tài khoản B chấp nhận lời mời, thêm địa điểm vào lịch trình và bình chọn.
+TV4: thêm chi phí cho chuyến đi và hiển thị tổng tiền; giao diện AI có thể dùng endpoint mẫu đã công bố.
+TV5: mở bản đồ, xem địa điểm, đăng bài cộng đồng cơ bản và trình bày giao diện xin phép chia sẻ vị trí.
+Điều kiện quan trọng: TV4 phải có chức năng chi phí cơ bản thực sự hoạt động; không nên chỉ làm UI chờ đến tuần 5 mới bắt đầu. Tương tự, TV5 phải có luồng bản đồ hoặc cộng đồng để demo, không chỉ trình bày giao diện tĩnh.
+Demo cuối kỳ tuần 8
+Người dùng tìm địa điểm phù hợp.
+Chủ chuyến đi tạo chuyến đi và mời thành viên.
+Thành viên cùng xây dựng lịch trình và bình chọn.
+Nhóm quản lý ngân sách và chi phí.
+AI đề xuất lịch trình theo các điều kiện đầu vào đã chọn.
+Người dùng xem bản đồ, chia sẻ trải nghiệm và sử dụng các tính năng an toàn đã hoàn thiện.
+13. Tiêu chí nghiệm thu bắt buộc cho từng thành viên
+Một chức năng chỉ được coi là hoàn thành khi đạt các điều kiện sau:
+☐  Giao diện hoạt động trên ứng dụng chung.
+☐  API kết nối Backend thật, trừ những phần mock được ghi rõ.
+☐  Dữ liệu lưu và tải lại chính xác.
+☐  Có trạng thái loading, empty và error phù hợp.
+☐  Có kiểm tra đầu vào và xử lý dữ liệu không hợp lệ.
+☐  Backend kiểm tra xác thực và quyền truy cập.
+☐  Có test cho luồng chính và ít nhất một trường hợp lỗi quan trọng.
+☐  Code đã merge vào nhánh chung và build thành công.
+☐  Thành viên có thể giải thích Use Case, API, Database và cách xử lý lỗi của chức năng mình.
+14. Những phần cần cắt nếu không kịp tiến độ
+Với nhóm 5 người và thời gian 8 tuần, không nên cố làm mọi tính năng ở mức hoàn chỉnh như một sản phẩm thương mại.
+Ưu tiên
+Quyết định
+Giữ bắt buộc
+Auth, địa điểm, chuyến đi nhóm, lịch trình, chi phí cơ bản
+Giữ ở mức đơn giản
+Bình chọn, bài đăng, báo cáo nội dung, bản đồ
+Làm sau khi luồng chính ổn định
+AI nâng cao, chia sẻ vị trí, kiểm duyệt mở rộng
+Có thể cắt trước
+AI phân loại spam, review nâng cao, khiếu nại kiểm duyệt, dashboard KPI, cảnh báo tách nhóm thời gian thực
+Đây cũng là hướng cắt giảm trong kế hoạch 4 tuần hiện có: bảo vệ các luồng cốt lõi và loại bỏ các tính năng nâng cao nếu cổng nghiệm thu tuần 4 chưa đạt.
+Quy tắc kích hoạt cắt giảm: Cắt khi cổng W4 chưa đạt, hoặc khi trễ cổng hai tuần liên tiếp, hoặc có thành viên vắng hơn 3 ngày làm việc. Cắt theo thứ tự trong bảng trên, từ trên xuống; SOS chỉ giữ nếu push notification chạy ổn định.
+Rủi ro chính cần theo dõi hằng tuần
+Rủi ro
+Dấu hiệu sớm
+Hành động
+TV2 trở thành điểm nghẽn
+Auth hoặc migration trễ quá T3 của W2
+TV3 nhận ma trận quyền và TripAccessService; TV1 hỗ trợ UI đăng nhập; TV2 chỉ làm việc trên đường găng.
+Conflict migration và schema
+Hai người cùng tạo migration cùng số
+Dùng baseline hợp nhất ở W1; migration sau đặt tên theo timestamp; mỗi bảng một chủ.
+Dữ liệu địa điểm thiếu
+Cuối W2 dưới 60 địa điểm
+Cả nhóm cùng nhập; nếu vẫn thiếu thì giảm xuống 2 địa phương.
+Lệch API giữa mobile và backend
+Mobile phải sửa nhiều lần một màn
+Sửa OpenAPI trước, báo cả nhóm, rồi mới merge; type sinh tự động.
+AI trả kết quả không hợp lệ
+Tỉ lệ lỗi schema cao khi test
+Siết prompt, giảm số địa điểm đưa vào, giới hạn retry; AI chỉ đề xuất, người dùng xác nhận.
+Rò rỉ dữ liệu vị trí hoặc chuyến đi
+Test người ngoài nhóm đọc được dữ liệu
+Sửa ngay, chặn merge; thêm ca vào bộ test quyền.
+Thành viên vắng hoặc quá tải
+Trễ hai việc liên tiếp
+Người dự phòng nhận việc; cắt theo thứ tự đã định.
+Kết luận: Phân công theo Actor ở trên là cách để mỗi thành viên có chức năng riêng và có thể demo độc lập, nhưng sản phẩm vẫn kết nối thành một luồng thống nhất. Việc cần chốt đầu tiên là ma trận Actor–Use Case, ERD và API contract; sau đó mỗi người mới triển khai theo tuần để tránh trùng chức năng hoặc chờ nhau quá lâu.

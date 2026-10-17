@@ -1,0 +1,649 @@
+Vista
+KẾ HOẠCH THỰC HIỆN CHI TIẾT — TUẦN 1 ĐẾN TUẦN 4
+Nhóm 5 người • Mục tiêu hoàn thành toàn bộ MVP trong 8 tuần (2 tháng)
+1. Mục tiêu 4 tuần đầu
+Sau 4 tuần, nhóm phải có một sản phẩm chạy thật trên điện thoại cho hai luồng: khám phá địa điểm (BF-01) và chuyến đi nhóm làm thủ công (BF-02 bản thủ công, BF-03). Từ tuần 5 trở đi, nhóm chỉ còn phải thêm AI, chi phí, chia sẻ vị trí, cộng đồng và kiểm duyệt trên nền đã ổn định.
+Giả định lịch: bắt đầu thứ Hai 19/10/2026. Nếu bắt đầu ngày khác, chỉ cần dịch toàn bộ lịch theo, các cột T2–T6 vẫn giữ nguyên.
+Tuần
+Thời gian (dự kiến)
+Mục tiêu
+Kết quả cuối tuần
+Tuần 1
+19/10 – 23/10
+Nền tảng, quyết định kỹ thuật, spike rủi ro
+Repo + CI, ERD + migration, kết luận AI/GPS/bản đồ
+Tuần 2
+26/10 – 30/10
+Auth và khung ứng dụng
+Đăng nhập chạy end-to-end, ≥ 60 địa điểm seed
+Tuần 3
+02/11 – 06/11
+Khám phá địa điểm (BF-01), API trip và mời
+BF-01 hoàn chỉnh, ≥ 90 địa điểm
+Tuần 4
+09/11 – 13/11
+Chuyến đi nhóm, lịch trình, biểu quyết (BF-02 thủ công, BF-03)
+Luồng nhóm chạy trên 2 máy; họp cắt giảm #1
+2. Nguyên tắc để giữ đúng tiến độ
+Mỗi tuần chỉ xếp khoảng 80% khả năng của nhóm. Chiều thứ Sáu và các ngày đệm là thời gian dự phòng cho lỗi và việc trễ, không giao thêm việc mới vào đó.
+Backend luôn đi trước mobile ít nhất 2–3 ngày; mobile làm bằng mock từ OpenAPI nên không phải chờ.
+Mỗi việc có “xong khi” kiểm tra được. Việc chưa qua kiểm tra không được tính là xong.
+Cuối mỗi tuần có một cổng kiểm soát (mục 4). Không đạt thì xử lý theo cột “Nếu không đạt” ngay trong tuần đó, không để dồn sang tuần sau.
+Việc trễ hơn 1 ngày phải báo trong họp sáng; trễ hơn 2 ngày thì ghép cặp hoặc chuyển người. Không im lặng chờ.
+Không thêm tính năng ngoài danh sách Must. Ý tưởng mới đưa vào backlog giai đoạn sau.
+Nhịp làm việc hằng tuần
+Ngày
+Hoạt động
+Nội dung
+Thứ Hai
+Planning 30 phút
+Rà task trong tuần, xác nhận phụ thuộc, rebase nhánh lên develop.
+Thứ Ba–Năm
+Họp sáng 10 phút
+Mỗi người: hôm qua xong gì, hôm nay làm gì, đang chờ ai, sửa file dùng chung nào.
+Thứ Năm chiều
+Ngừng nhận việc mới
+Chỉ sửa lỗi và hoàn thiện; các việc sẽ không kịp được báo ngay để xử lý ở T6.
+Thứ Sáu sáng
+Tích hợp
+Merge nhánh vào develop, chạy bản build chung trên máy thật.
+Thứ Sáu chiều
+Demo + cổng kiểm soát + retro
+Demo luồng đã xong, chấm cổng tuần, cập nhật backlog tuần sau.
+3. Kế hoạch từng tuần
+Cách đọc: cột “Người” là M1 (BA/PM + QA), M2 (Backend Core), M3 (Backend Trip/AI), M4 (Mobile chính), M5 (Mobile An toàn/Cộng đồng). Ngày T2–T6 là thứ Hai đến thứ Sáu. Để cân tải, từ tuần 3 M5 nhận màn Destination Detail và bản đồ chỉ đường; M4 giữ danh sách, tìm kiếm và các màn chuyến đi. M2 nhận API proposals/vote ở tuần 4 để M3 tập trung vào lịch trình cộng tác.
+3.1. Tuần 1 (19/10 – 23/10): Nền tảng và spike rủi ro
+Mã
+Người
+Ngày
+Việc cần làm
+Xong khi (đầu ra kiểm tra được)
+W1-01
+M1
+T2
+Họp kickoff: chốt danh sách Must/Should/Could rút gọn cho MVP (cắt AI phân loại spam, dashboard KPI, cảnh báo tách nhóm), ghi vào SRS v1.1.
+Có bảng ưu tiên đã được cả nhóm đồng ý, lưu trong docs/.
+W1-02
+M1
+T2–T3
+Dựng GitHub Projects: board, nhãn (module, người, loại), milestone W1–W8, template issue và PR kèm checklist Definition of Done.
+Mọi task W1–W4 đã có issue, gán người và module.
+W1-03
+M1
+T2–T4
+Soạn ma trận phân quyền: Guest/User/Owner/Member/Moderator/Admin × từng hành động chính.
+File ma trận được M2, M3 xác nhận (M2, M3 ký duyệt trong comment).
+W1-04
+M1
+T3–T5
+Chọn 3 địa phương demo (đề xuất Đà Nẵng, Huế, Hội An). Thiết kế mẫu nhập liệu CSV: tên, loại, tỉnh, tọa độ, giá min/max, giờ mở cửa dạng cấu trúc theo ngày, nguồn, ngày xác minh.
+Mẫu CSV chốt; mỗi địa phương nhập ≥ 10 địa điểm có nguồn.
+W1-05
+M1
+T4–T5
+Viết user story và acceptance criteria Given/When/Then cho FR-AUTH-01→05 và FR-DEST-01→05.
+Tiêu chí có giá trị cụ thể (thời gian, số lượng), không dùng từ “phù hợp”.
+W1-06
+M1
+T3–T5
+Vẽ wireframe low-fi các màn: Auth, Discover, Search/Filter, Destination Detail, Create Trip, Trip Detail, Itinerary.
+Wireframe được M4, M5 review; sửa xong trước cuối tuần.
+W1-07
+M2
+T2
+Tạo monorepo (/backend, /mobile, /admin, /docs), bật branch protection cho main/develop, CODEOWNERS, .gitignore, .env.example, README hướng dẫn chạy local.
+Cả nhóm clone và chạy được theo README trong ≤ 30 phút.
+W1-08
+M2
+T2–T3
+Khởi tạo Spring Boot theo module (core, auth, destination, …); profile dev/demo; endpoint /health; GlobalExceptionHandler; format response chuẩn; Swagger/OpenAPI; Spotless.
+GET /health trả 200; mã lỗi theo một format thống nhất.
+W1-09
+M2
+T2–T3
+Docker Compose Postgres cho local; tạo Supabase project demo; cài Flyway.
+Mỗi người có DB local; migration chạy trên cả local và demo.
+W1-10
+M2
+T3–T4
+Viết migration baseline cho toàn bộ ERD v1 (cùng M3), M3 review.
+Migration merge vào develop; tất cả bảng có sẵn từ cuối tuần 1.
+W1-11
+M2
+T4
+Thiết lập CI GitHub Actions: build + chạy test backend; lint cho mobile.
+PR không merge được khi CI đỏ.
+W1-12
+M2
+T5
+Chốt thiết kế auth (JWT access + refresh), viết OpenAPI cho auth và destination.
+File docs/api/auth.yaml, destination.yaml đã review với M4.
+W1-13
+M3
+T2–T4
+Cùng M2 hoàn thiện ERD v1: thêm bảng proposals, giờ mở cửa dạng cấu trúc, ngân sách theo thành viên, liên hệ khẩn cấp; M3 chịu trách nhiệm nhóm bảng trip, expense, location.
+ERD v1 được M1, M2 duyệt trước T4.
+W1-14
+M3
+T2–T4
+Spike AI: gọi LLM với prompt và 20 địa điểm mẫu, bắt trả JSON theo schema; chạy 10 lần, đo tỉ lệ hợp lệ, độ trễ, chi phí token.
+Báo cáo 1 trang: Go/No-Go, prompt v0, tỉ lệ hợp lệ, chi phí ước tính/lượt.
+W1-15
+M3
+T3
+Thiết lập quản lý khóa AI ở backend (biến môi trường) và wrapper client có timeout, retry giới hạn.
+Không có API key trong repo; gọi AI lỗi thì trả lỗi có kiểm soát.
+W1-16
+M3
+T4–T5
+Viết OpenAPI cho trip, invitations, itinerary.
+docs/api/trip.yaml đã review với M4, M5.
+W1-17
+M3
+T5
+Cùng M2 chốt interface DestinationQueryService (chữ ký hàm) và viết bản stub trả dữ liệu mẫu.
+M3 gọi được stub, không phải chờ module destination thật.
+W1-18
+M4
+T2
+Khởi tạo Expo + TypeScript + Expo Router; ESLint, Prettier, Husky; dựng cấu trúc features/shared.
+App chạy được trên Expo Go; lint pass.
+W1-19
+M4
+T2–T3
+Design tokens (màu, font, khoảng cách) và component cơ bản: Button, Input, Card, trạng thái Loading/Empty/Error.
+Có màn showcase component trong app.
+W1-20
+M4
+T3–T4
+API client, React Query, lưu token bằng SecureStore (khung); sinh type từ OpenAPI; dựng mock server (Prism/MSW).
+Mobile gọi mock API và hiển thị dữ liệu giả.
+W1-21
+M4
+T4–T5
+Làm UI Welcome, Login, Register nối mock API.
+3 màn chạy được, có validate form.
+W1-22
+M4
+T5
+Quy trình build chạy trên 1 Android thật (và iOS simulator nếu có).
+Cả nhóm cài được bản dev lên máy thật theo hướng dẫn.
+W1-23
+M5
+T2–T3
+Spike GPS trên máy thật: xin quyền foreground, lấy vị trí, trường hợp từ chối quyền, tắt dịch vụ vị trí, app chuyển nền/trở lại.
+Bảng kết quả từng trường hợp, không có crash.
+W1-24
+M5
+T2–T4
+Spike bản đồ: so sánh 2 phương án (ví dụ react-native-maps với Google và MapLibre với OSM): marker, chỉ đường, geocoding tiếng Việt, quota, chi phí.
+Bảng so sánh và đề xuất chọn provider, chốt trước T5.
+W1-25
+M5
+T4–T5
+Spike polling vị trí: 2 máy gửi/nhận vị trí qua endpoint giả mỗi 10–15 giây, đo độ trễ và mức hao pin sơ bộ.
+Kết luận polling có đủ dùng cho MVP hay không.
+W1-26
+M5
+T5
+Viết báo cáo Go/No-Go cho GPS + bản đồ; đề xuất giữ hay cắt background tracking.
+Báo cáo 1 trang gửi cả nhóm trước demo T6.
+W1-27
+M5
+T6 sáng
+Hỗ trợ M1 nhập địa điểm đợt 1.
+10 địa điểm nhập đúng mẫu.
+3.2. Tuần 2 (26/10 – 30/10): Auth và khung ứng dụng
+Mã
+Người
+Ngày
+Việc cần làm
+Xong khi (đầu ra kiểm tra được)
+W2-01
+M1
+T2–T3
+Viết acceptance criteria cho FR-PLAN-01, 02 và FR-GRP-01→04.
+Tiêu chí dạng Given/When/Then, gắn vào issue.
+W2-02
+M1
+T2–T4
+Tạo Postman collection cho auth và destination; viết ~15 test case auth.
+Collection chạy được trên môi trường demo.
+W2-03
+M1
+T2–T5
+Nhập dữ liệu địa điểm: mục tiêu ≥ 20 địa điểm/địa phương (cả nhóm hỗ trợ, mỗi người ≥ 10 địa điểm trong W2–W3).
+≥ 60 địa điểm đã seed có nguồn và ảnh.
+W2-04
+M1
+T4
+Chốt wireframe cuối cho Search/Filter, Trip, Itinerary cùng M4, M5.
+Wireframe đóng băng, đổi thêm phải qua M1.
+W2-05
+M1
+T5
+Test thủ công API auth và luồng đăng ký/đăng nhập trên app.
+Danh sách lỗi đã vào backlog, lỗi chặn đã gán người.
+W2-06
+M2
+T2–T3
+FR-AUTH-01, 02: đăng ký, đăng nhập, đăng xuất, refresh token; mật khẩu hash chuẩn; lỗi đăng nhập trả thông báo chung.
+Test tích hợp pass: email trùng bị từ chối, token hết hạn bị chặn.
+W2-07
+M2
+T3–T4
+FR-AUTH-04: role USER/MODERATOR/ADMIN, method security; áp dụng khung kiểm tra membership dùng chung cho M3.
+Endpoint riêng tư trả 401/403 đúng; không tự nâng quyền được.
+W2-08
+M2
+T4
+FR-AUTH-05: GET/PATCH /users/me; yêu cầu xóa tài khoản (xác nhận, xóa mềm theo chính sách).
+Có test; thao tác xóa cần xác nhận.
+W2-09
+M2
+T3–T5
+Module destination: entity, repository, GET /destinations (cơ bản) và GET /destinations/{id}; chỉ trả địa điểm Published.
+Mobile lấy được danh sách và chi tiết từ API thật.
+W2-10
+M2
+T4–T5
+Trình nạp seed CSV cho địa điểm; tách file seed theo địa phương.
+Chạy 1 lệnh nạp được dữ liệu M1 vào DB.
+W2-11
+M3
+T2–T3
+Entity, repository cho trip, trip_members, invitations, itinerary_days, itinerary_items.
+Compile và test repository pass.
+W2-12
+M3
+T2–T4
+FR-PLAN-01: POST/GET /trips, GET/PATCH /trips/{id}; validate ngày (BR-03); người tạo thành Owner; tự tạo itinerary_days theo ngày chuyến đi.
+Test BR-02, BR-03 pass; non-member không đọc được trip.
+W2-13
+M3
+T4–T5
+Cập nhật OpenAPI trip theo thực tế code; xuất mock cho M4.
+Spec khớp code; M4 không cần hỏi lại.
+W2-14
+M3
+T4–T5
+Tiếp tục module ai: tách lớp gọi LLM, schema validator, prompt v1 (chưa mở endpoint công khai).
+Có test validator với 5 mẫu JSON đúng/sai.
+W2-15
+M4
+T2–T3
+Hoàn thiện Login/Register nối API thật; lưu token, tự refresh, đăng xuất.
+Đăng ký và đăng nhập từ máy thật vào DB demo.
+W2-16
+M4
+T3–T4
+Route guard (chưa đăng nhập về màn Auth) và khung tab: Discover, Trips, Community, Profile.
+Điều hướng không crash khi hết phiên.
+W2-17
+M4
+T4–T5
+Màn Profile/Settings: xem, sửa hồ sơ; gửi yêu cầu xóa tài khoản.
+Chạy được trên máy thật, có loading/error/success.
+W2-18
+M5
+T2–T3
+Dựng wrapper MapView (adapter) trong features/map để có thể đổi provider.
+Hiển thị bản đồ và marker qua adapter.
+W2-19
+M5
+T3–T4
+Màn Map hiển thị địa điểm seed với marker và danh sách xem nhanh.
+Hiển thị đủ dữ liệu seed từ API thật.
+W2-20
+M5
+T4–T5
+Component xin quyền GPS dùng lại được: giải thích mục đích, xử lý từ chối, hướng dẫn bật trong cài đặt.
+Test 3 trường hợp: cho phép, từ chối, tắt dịch vụ vị trí.
+W2-21
+M5
+T5
+Giao adapter bản đồ cho M4 (nếu M4 cần dùng ở Trip).
+M4 import được từ features/map.
+3.3. Tuần 3 (02/11 – 06/11): Khám phá địa điểm và API trip
+Mã
+Người
+Ngày
+Việc cần làm
+Xong khi (đầu ra kiểm tra được)
+W3-01
+M1
+T2–T4
+Viết và chạy test case FR-DEST-01→05.
+≥ 20 test case, kết quả ghi lại.
+W3-02
+M1
+T2–T5
+Nhập dữ liệu địa điểm đợt 2: mục tiêu ≥ 30 địa điểm/địa phương, kèm ảnh.
+≥ 90 địa điểm đã seed, có ảnh.
+W3-03
+M1
+T3–T5
+Viết acceptance cho FR-GRP-05, 06, FR-PLAN-02 và Postman collection trip.
+Collection chạy được trên demo.
+W3-04
+M1
+T5
+Khởi tạo traceability matrix v0: FR → UC → test case.
+Mọi FR Must của W1–W4 đã có mã test.
+W3-05
+M2
+T2–T3
+FR-DEST-02, 03: tìm kiếm (tên, tỉnh, từ khóa, không phân biệt dấu), lọc theo loại hình, khoảng giá, sở thích; phân trang, sắp xếp.
+Kết hợp nhiều bộ lọc đúng; trả danh sách rỗng có thông báo.
+W3-06
+M2
+T3
+FR-DEST-04: chi tiết địa điểm đủ trường; trường thiếu trả “chưa có thông tin”, không tự bịa.
+Test với địa điểm thiếu giá/giờ mở cửa.
+W3-07
+M2
+T3–T4
+FR-DEST-05: yêu thích (PUT/DELETE/GET); unique (user, destination).
+Gọi lặp vẫn chỉ có một bản ghi.
+W3-08
+M2
+T3–T4
+Bật Supabase Storage cho ảnh địa điểm; script upload; kiểm soát quyền truy cập.
+Ảnh hiển thị được qua URL từ app.
+W3-09
+M2
+T4
+Thay stub bằng DestinationQueryService thật cho M3.
+M3 build và test pass với implementation thật.
+W3-10
+M2
+T4–T5
+Tối ưu index tìm kiếm; test hiệu năng sơ bộ với dữ liệu seed.
+95% truy vấn tìm kiếm ≤ 2 giây trên dữ liệu demo.
+W3-11
+M3
+T2–T3
+FR-GRP-01: POST /trips/{id}/invitations (link mời có hạn dùng; token lưu dạng hash); trạng thái Pending/Accepted/Declined/Expired/Revoked.
+Test hết hạn, thu hồi, dùng lại đều đúng.
+W3-12
+M3
+T3–T4
+FR-GRP-02, 03: accept/decline lời mời; quyền Owner/Member; danh sách thành viên.
+Chỉ tài khoản hợp lệ và lời mời còn hạn mới chấp nhận được.
+W3-13
+M3
+T4–T5
+FR-PLAN-02: API thêm, sửa, xóa, sắp xếp điểm dừng theo ngày.
+Thứ tự được lưu đúng sau reload.
+W3-14
+M3
+T5
+Chốt cách mời trong MVP: ưu tiên link mời; email là phần thêm nếu còn thời gian.
+Quyết định ghi vào SRS v1.1.
+W3-15
+M4
+T2–T3
+FR-DEST-02, 03: màn Search/Filters và danh sách Discover với trạng thái loading/empty/error.
+Lọc và tìm trên dữ liệu thật; xóa bộ lọc về mặc định.
+W3-16
+M4
+T3–T4
+FR-DEST-05: màn Favorites và nút lưu/bỏ lưu.
+Trạng thái yêu thích đồng bộ giữa các màn.
+W3-17
+M4
+T4–T5
+Màn Create Trip và danh sách chuyến đi của tôi (mock rồi chuyển sang API thật).
+Tạo trip trên máy thật, hiển thị trong danh sách.
+W3-18
+M5
+T2–T3
+FR-DEST-04: màn Destination Detail (mô tả, ảnh, giá, giờ mở cửa, nguồn/cập nhật, “chưa có thông tin”).
+Hiển thị đúng với địa điểm đủ và thiếu dữ liệu.
+W3-19
+M5
+T3–T4
+FR-DEST-06: xem địa điểm trên bản đồ và mở chỉ đường; fallback danh sách khi map lỗi.
+Tắt mạng/map lỗi vẫn xem được thông tin địa điểm.
+W3-20
+M5
+T4–T5
+Test trên máy thật các luồng khám phá; ghi lỗi vào backlog.
+Danh sách lỗi có độ ưu tiên.
+W3-21
+M5
+T5
+Làm skeleton feed cộng đồng (danh sách bài, chưa gọi API).
+Màn hiển thị dữ liệu giả.
+3.4. Tuần 4 (09/11 – 13/11): Chuyến đi nhóm và lịch trình cộng tác
+Mã
+Người
+Ngày
+Việc cần làm
+Xong khi (đầu ra kiểm tra được)
+W4-01
+M1
+T2–T5
+Test E2E luồng chuyến nhóm: tạo trip → mời → chấp nhận → sửa lịch trình → vote, bằng 2 tài khoản trên 2 máy.
+Báo cáo test, lỗi chặn đã gán người sửa.
+W4-02
+M1
+T3–T4
+Chuẩn bị cho tuần 5: acceptance cho AI planner và chi phí; bộ test chi phí mẫu (kể cả chia không chẵn VND).
+Bộ test mẫu có kết quả mong đợi tính tay.
+W4-03
+M1
+T5
+Chủ trì họp cắt giảm #1; cập nhật SRS v1.1 theo quyết định.
+Biên bản họp và danh sách yêu cầu đã cắt/giữ.
+W4-04
+M2
+T2–T3
+FR-GRP-04: API proposals và vote (POST proposals, PUT vote, GET); 1 phiếu/người, đổi phiếu trước khi đóng.
+Test phiếu trùng, đổi phiếu, đóng biểu quyết.
+W4-05
+M2
+T3–T4
+Khung audit_logs trong core (actor, hành động, đối tượng, thời gian) để dùng cho moderation.
+Gọi được từ các module mà không ghi dữ liệu nhạy cảm.
+W4-06
+M2
+T4–T5
+Bắt đầu module community: bảng/entity, CRUD bài viết và bình luận cơ bản; upload ảnh qua Storage.
+Tạo, xem, xóa bài của chính mình; không sửa được bài người khác.
+W4-07
+M2
+T5
+Rà soát bảo mật nội bộ lần 1: endpoint nào thiếu xác thực/phân quyền; không log token.
+Danh sách endpoint đã kiểm, lỗi gán người sửa.
+W4-08
+M3
+T2–T3
+FR-GRP-05: cập nhật lịch trình chung; lưu người sửa và thời điểm; khóa lạc quan (version) để cảnh báo xung đột.
+Hai người sửa cùng điểm dừng sẽ nhận cảnh báo, không mất dữ liệu.
+W4-09
+M3
+T3–T4
+BR-01: chuyển chủ chuyến, rời nhóm, xóa thành viên; FR-GRP-06 (khóa/kết thúc chuyến) nếu kịp.
+Luôn có đúng 1 chủ chuyến; thao tác có log.
+W4-10
+M3
+T4
+POST /trips/{id}/itinerary/validate bản sơ bộ: kiểm tra ngày, trùng giờ, ngân sách giản lược.
+Trả cảnh báo có lý do.
+W4-11
+M3
+T4–T5
+Mở /ai/itinerary-suggestions bản v0 trả dữ liệu mẫu đúng schema để M4 làm UI sớm; chốt prompt v1.
+M4 gọi được endpoint, UI không phải chờ AI thật.
+W4-12
+M3
+T5
+Viết schema và OpenAPI cho expenses để chuẩn bị tuần 5.
+docs/api/expense.yaml đã review.
+W4-13
+M4
+T2–T4
+Màn Trip Detail, Itinerary: thêm, sửa, xóa, đổi thứ tự điểm dừng (nút lên/xuống trước, kéo thả là phần thêm).
+Thao tác lưu đúng, có xử lý cảnh báo xung đột.
+W4-14
+M4
+T3–T5
+Màn Members/Invitations: tạo link mời, danh sách thành viên và trạng thái; nhận lời mời bằng deep link, dự phòng nhập mã mời.
+Mời và chấp nhận thành công giữa 2 thiết bị.
+W4-15
+M4
+T5
+Sửa lỗi tích hợp của W2–W3; kiểm tra trên máy thật.
+Không còn lỗi chặn ở luồng chính.
+W4-16
+M5
+T2–T4
+Màn đề xuất địa điểm và biểu quyết (nối API proposals/vote của M2).
+Hai tài khoản bỏ phiếu, kết quả cập nhật đúng.
+W4-17
+M5
+T3–T5
+Màn Group Map (khung, dữ liệu mẫu) và Location Sharing Consent (UI tĩnh: ai xem được, thời hạn, cách dừng).
+Màn dùng được với dữ liệu giả; nội dung đồng ý rõ ràng.
+W4-18
+M5
+T4–T5
+Nối feed cộng đồng với API của M2; màn tạo bài cơ bản.
+Xem và đăng bài thử trên máy thật.
+W4-19
+M5
+T5
+Hỗ trợ M4 sửa lỗi deep link và tích hợp.
+Luồng mời chạy ổn định.
+3.5. Phụ thuộc giữa các thành viên (giao hàng đúng hạn để không ai bị chặn)
+Ai cần từ ai
+Hạng mục
+Hạn giao
+Dùng khi
+M4 ← M2
+OpenAPI auth + destination
+T5 W1 (bản nháp), mock sẵn từ T3 W1
+API thật đủ dùng từ T3 W2
+M4, M5 ← M3
+OpenAPI trip/invitations/itinerary
+T5 W1 (bản nháp), chốt T5 W2
+API trip thật từ T4 W2; invitations từ T4 W3
+M2 ↔ M3
+ERD v1 và migration baseline
+T4 W1
+Không ai sửa schema ngoài chủ bảng sau mốc này
+M3 ← M2
+DestinationQueryService
+Stub T5 W1
+Bản thật T4 W3
+M2, M3 ← M1
+Ma trận phân quyền
+T4 W1
+Dùng để viết test phân quyền từ W2
+M4 ← M5
+Adapter bản đồ
+T5 W2
+Dùng trong Trip/Itinerary từ W3
+Tất cả ← M1
+Dữ liệu địa điểm đã seed
+≥ 60 địa điểm cuối W2; ≥ 90 cuối W3
+Mobile và AI cần dữ liệu thật để test
+M4 ← M3
+Link mời + API accept
+T5 W3
+Deep link và màn Members ở W4
+M5 ← M2
+API proposals/vote
+T3 W4
+UI vote nối API thật trong W4
+4. Cổng kiểm soát cuối mỗi tuần
+Chấm vào chiều thứ Sáu sau demo. “Đạt” nghĩa là tất cả điều kiện dưới đây đều thỏa; thiếu một điều kiện thì xử lý theo cột bên dưới trong tuần đó.
+Cổng cuối tuần 1 (thứ Sáu)
+Đạt khi:
+Repo, CI, README chạy được; mọi người build được backend và mobile ở máy mình.
+Backend /health chạy, kết nối Supabase demo; migration baseline đã merge.
+Mobile chạy trên máy thật và gọi được mock API.
+Báo cáo Go/No-Go cho AI, GPS, bản đồ đã có kết luận; provider bản đồ và AI đã chọn.
+Ma trận phân quyền, ERD v1, OpenAPI auth/destination/trip bản nháp đã chốt.
+Backlog W2–W4 đã có đầy đủ issue có người và module.
+Nếu không đạt:
+Spike AI không đạt (tỉ lệ JSON hợp lệ thấp): giảm số địa điểm đưa vào prompt, chuyển sang AI chỉ xếp thứ tự các địa điểm đã chọn; vẫn là Must nhưng làm đơn giản hơn.
+Spike GPS không ổn định: hạ chia sẻ vị trí xuống điểm hẹn + check-in, không làm bản đồ trực tiếp.
+Cổng cuối tuần 2
+Đạt khi:
+Đăng ký, đăng nhập, đăng xuất, refresh token chạy từ app tới DB demo.
+Phân quyền role chạy; endpoint riêng tư chặn đúng khi không đăng nhập.
+API trip tạo và đọc được; ≥ 60 địa điểm đã seed, có API danh sách và chi tiết.
+Màn bản đồ hiển thị được địa điểm seed; component xin quyền GPS dùng lại được.
+Nếu không đạt:
+Auth trễ quá 2 ngày: M3 tạm dùng người dùng giả (header test) để không bị chặn; M2 ưu tiên xong auth trước mọi việc khác; M4 tiếp tục với mock.
+Dữ liệu địa điểm thiếu: giảm xuống 2 địa phương cho demo, nhưng giữ nguyên số địa điểm/địa phương.
+Cổng cuối tuần 3
+Đạt khi:
+BF-01 chạy end-to-end trên máy thật: tìm kiếm, lọc, xem chi tiết, lưu yêu thích, xem bản đồ và chỉ đường.
+≥ 90 địa điểm (≥ 30/địa phương) có nguồn và ảnh.
+API invitations và quyền Owner/Member chạy, có test.
+Tạo trip từ app và hiển thị trong danh sách.
+Nếu không đạt:
+BF-01 chưa hoàn tất: dừng nhận việc mới ở W4 cho đến khi xong; M2, M5 hỗ trợ M4.
+Invitations trễ: dùng mã mời nhập tay thay cho deep link ở W4.
+Cổng cuối tuần 4 (họp cắt giảm #1, điều kiện vào tuần 5)
+Đạt khi:
+Hai tài khoản trên hai máy thật: tạo trip → mời → chấp nhận → cùng sửa lịch trình → đề xuất và biểu quyết địa điểm.
+Có cảnh báo xung đột khi hai người sửa cùng lúc; thành viên không thuộc trip không đọc được dữ liệu.
+AI endpoint v0 trả mẫu đúng schema; validate sơ bộ chạy; OpenAPI expenses đã chốt.
+Không còn lỗi chặn ở luồng chính; backlog W5–W8 đã cập nhật.
+Nếu không đạt:
+Nếu chưa đạt: lập tức cắt cộng đồng nâng cao (review, khiếu nại) và các yêu cầu Should còn lại của W5–W6 (xem mục 5).
+Không chuyển việc chưa xong sang W5 nếu nó không nằm trong danh sách Must đã chốt.
+5. Cắt giảm để vẫn kịp 8 tuần
+Các yêu cầu dưới đây đã xếp ra ngoài đường găng. Nếu cổng tuần 4 không đạt hoặc có thành viên nghỉ dài, cắt theo đúng thứ tự này, từ trên xuống:
+Thứ tự
+Cắt
+Lý do
+1
+Xuất báo cáo chi phí, gợi ý địa điểm thay thế, dashboard KPI
+Should/Could, không nằm trên luồng demo chính.
+2
+AI phân loại spam (FR-MOD-02), khiếu nại kiểm duyệt (FR-MOD-05)
+Chỉ giữ kiểm duyệt bằng quy tắc và hàng đợi moderator.
+3
+Review nâng cao trong cộng đồng; giữ bài viết + báo cáo
+Cộng đồng không phải luồng cốt lõi của chuyến đi nhóm.
+4
+Cảnh báo tách nhóm (FR-SAFE-07)
+Cần vị trí cập nhật liên tục, không phù hợp với MVP chỉ chạy khi app mở.
+5
+SOS (FR-SAFE-08) nếu chưa có push notification ổn định
+SOS mà người nhận không được báo thì dễ tạo cảm giác an toàn giả.
+Giữ đến cùng
+Auth, địa điểm, chuyến đi nhóm, lịch trình, chi phí, chia sẻ vị trí opt-in
+Đây là lõi của sản phẩm và của buổi demo.
+6. Rủi ro riêng của 4 tuần đầu
+Rủi ro
+Dấu hiệu sớm
+Hành động
+Dữ liệu địa điểm không đủ
+Cuối W2 dưới 60 địa điểm
+Cả nhóm cùng nhập (mỗi người ≥ 10 địa điểm/tuần ở W2–W3); nếu vẫn thiếu thì giảm xuống 2 địa phương.
+Auth trễ chặn cả hai backend và mobile
+Chưa có đăng nhập thật vào T3 W2
+M2 bỏ mọi việc khác để xong auth; M3 dùng header test; M4 dùng mock.
+Conflict migration/DB
+Hai người cùng tạo migration cùng số
+Dùng baseline từ W1; migration sau đó đặt tên theo timestamp và chủ bảng; không sửa migration đã merge.
+Lệch API giữa mobile và backend
+Mobile phải sửa nhiều lần cùng một màn
+Sửa OpenAPI trước, báo cả nhóm rồi mới merge code; type mobile sinh tự động.
+Deep link mời thành viên lỗi
+Nhận lời mời không mở app trên máy thật
+Dự phòng nhập mã mời tay; deep link làm sau.
+M5 quá tải do spike và nhiều màn
+Trễ hai việc liên tiếp
+M4 nhận feed cộng đồng; M1 nhận thêm nhập liệu.
+Thành viên nghỉ/ốm
+Vắng quá 2 ngày
+Người dự phòng nhận việc (M2↔M3, M4↔M5); cắt theo mục 5 nếu cần.
+7. Điều kiện bắt đầu tuần 5
+Chỉ vào tuần 5 khi cổng tuần 4 đạt. Từ tuần 5 nhóm có 4 tuần để làm AI Trip Planner và chi phí (W5), chia sẻ vị trí và cộng đồng (W6), kiểm duyệt và kiểm thử tích hợp (W7), ổn định và demo (W8). Tuần 8 không nhận tính năng mới, chỉ để sửa lỗi, kiểm tra bảo mật, chuẩn bị tài liệu và diễn tập.

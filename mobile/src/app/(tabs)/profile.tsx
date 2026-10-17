@@ -1,0 +1,1 @@
+import { ScreenContainer } from '@/components/layout/ScreenContainer'; import { AppText } from '@/components/ui/AppText'; export default function ProfileRoute() { return <ScreenContainer><AppText style={{ fontSize: 28, fontWeight: '800' }}>Hồ sơ</AppText><AppText>Khung hồ sơ — kết nối GET/PATCH /users/me ở W2-08.</AppText></ScreenContainer>; }

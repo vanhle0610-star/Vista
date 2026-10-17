@@ -1,0 +1,24 @@
+# QUY TRÌNH PHÁT TRIỂN DÀNH CHO LẬP TRÌNH VIÊN (DEVELOPER WORKFLOW)
+
+Tài liệu hướng dẫn quy chuẩn lập trình chi tiết và bộ quy tắc bắt buộc trước khi code được lưu tại:
+
+👉 **[TEAM_CODING_RULES.md](../../TEAM_CODING_RULES.md)**
+
+---
+
+## TÓM TẮT QUY TRÌNH HÀNG NGÀY
+
+1. **Buổi sáng (9:00):** Họp Standup 10 phút (Hôm qua làm gì? Hôm nay làm gì? Đang chờ ai?).
+2. **Trước khi bắt đầu task:**
+   - Đọc kỹ Acceptance Criteria dạng Given/When/Then trong `docs/requirements/`.
+   - Kiểm tra hợp đồng API trong `contracts/openapi/openapi.yaml`.
+   - Tạo nhánh đúng chuẩn từ `develop`: `feature/W<tuần>-<task_id>-<tên_task>`.
+3. **Trong khi code:**
+   - Backend tuân thủ Package-by-Feature, dùng DTO Java Record, không leak Entity ra ngoài.
+   - Mobile tuân thủ Expo Router, TanStack Query, Zod validation, dùng design tokens.
+4. **Trước khi tạo PR:**
+   - Backend chạy `.\gradlew.bat spotlessApply` và `.\gradlew.bat test`.
+   - Mobile chạy `npm run typecheck`, `npx eslint .`, `npm test`.
+   - Điền đầy đủ PR Template và gán Reviewer theo `CODEOWNERS`.
+5. **Thứ Năm chiều:** Code Freeze (ngừng nhận việc mới, chỉ sửa lỗi).
+6. **Thứ Sáu:** Sáng tích hợp vào `develop`, chiều Demo chung + Chấm cổng kiểm soát tuần.

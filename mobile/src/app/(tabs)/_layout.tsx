@@ -1,0 +1,1 @@
+import { Tabs } from 'expo-router'; export default function TabsLayout() { return <Tabs><Tabs.Screen name="discover" options={{ title: 'Khám phá' }} /><Tabs.Screen name="trips" options={{ title: 'Chuyến đi' }} /><Tabs.Screen name="profile" options={{ title: 'Hồ sơ' }} /></Tabs>; }

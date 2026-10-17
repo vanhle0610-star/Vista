@@ -1,0 +1,14 @@
+name: Báo lỗi
+description: Báo lỗi có thể tái hiện
+body:
+  - type: textarea
+    id: steps
+    attributes: { label: Các bước tái hiện }
+    validations: { required: true }
+  - type: textarea
+    id: expected
+    attributes: { label: Kết quả mong đợi }
+    validations: { required: true }
+  - type: input
+    id: requirement
+    attributes: { label: Requirement hoặc Use Case }

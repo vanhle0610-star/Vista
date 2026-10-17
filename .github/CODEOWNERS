@@ -1,0 +1,79 @@
+# ==============================================================================
+# VISTA CODEOWNERS — Phân chia quyền sở hữu theo 5 Actor (TV1 - TV5)
+# Thay các placeholder @TVx_GITHUB bằng username GitHub thật của 5 thành viên.
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. TÀI LIỆU TOÀN CỤC & HỢP ĐỒNG API
+# ------------------------------------------------------------------------------
+/docs/ @TV1_GITHUB @TV2_GITHUB
+/contracts/ @TV1_GITHUB @TV2_GITHUB @TV3_GITHUB @TV4_GITHUB @TV5_GITHUB
+/.github/ @TV2_GITHUB
+
+# ------------------------------------------------------------------------------
+# 2. BACKEND (Spring Boot Modular Monolith)
+# ------------------------------------------------------------------------------
+# TV2: Backend Core, Security, Migration Baseline & Trip Core
+/backend/src/main/java/com/vista/common/ @TV2_GITHUB
+/backend/src/main/java/com/vista/auth/ @TV2_GITHUB
+/backend/src/main/java/com/vista/user/ @TV2_GITHUB
+/backend/src/main/java/com/vista/trip/ @TV2_GITHUB
+/backend/src/main/resources/db/migration/ @TV2_GITHUB
+/backend/build.gradle @TV2_GITHUB
+
+# TV1: Destination Discovery & Favorites
+/backend/src/main/java/com/vista/destination/ @TV1_GITHUB
+/backend/src/main/java/com/vista/favorite/ @TV1_GITHUB
+
+# TV3: Group Trip Collaboration, Voting & Notifications
+/backend/src/main/java/com/vista/invitation/ @TV3_GITHUB
+/backend/src/main/java/com/vista/itinerary/ @TV3_GITHUB
+/backend/src/main/java/com/vista/voting/ @TV3_GITHUB
+/backend/src/main/java/com/vista/notification/ @TV3_GITHUB
+
+# TV4: Budget, Expenses & AI Planner
+/backend/src/main/java/com/vista/budget/ @TV4_GITHUB
+/backend/src/main/java/com/vista/ai/ @TV4_GITHUB
+
+# TV5: Community, Moderation, Map & Safety
+/backend/src/main/java/com/vista/community/ @TV5_GITHUB
+/backend/src/main/java/com/vista/moderation/ @TV5_GITHUB
+/backend/src/main/java/com/vista/location/ @TV5_GITHUB
+/backend/src/main/java/com/vista/safety/ @TV5_GITHUB
+
+# ------------------------------------------------------------------------------
+# 3. MOBILE (React Native / Expo Router)
+# ------------------------------------------------------------------------------
+# TV1: Khung Mobile dùng chung, Theme, Core Navigation & Types
+/mobile/src/app/ @TV1_GITHUB
+/mobile/src/components/ui/ @TV1_GITHUB
+/mobile/src/theme/ @TV1_GITHUB
+/mobile/src/services/api/ @TV1_GITHUB
+/mobile/src/types/ @TV1_GITHUB
+/mobile/package.json @TV1_GITHUB
+
+# Mobile Features theo Actor:
+/mobile/src/features/destinations/ @TV1_GITHUB
+/mobile/src/features/discovery/ @TV1_GITHUB
+/mobile/src/features/favorites/ @TV1_GITHUB
+
+/mobile/src/features/auth/ @TV2_GITHUB
+/mobile/src/features/profile/ @TV2_GITHUB
+/mobile/src/features/trips/ @TV2_GITHUB
+
+/mobile/src/features/group/ @TV3_GITHUB
+/mobile/src/features/itinerary/ @TV3_GITHUB
+/mobile/src/features/voting/ @TV3_GITHUB
+
+/mobile/src/features/budget/ @TV4_GITHUB
+/mobile/src/features/ai-planner/ @TV4_GITHUB
+
+/mobile/src/features/map/ @TV5_GITHUB
+/mobile/src/features/safety/ @TV5_GITHUB
+/mobile/src/features/community/ @TV5_GITHUB
+
+# ------------------------------------------------------------------------------
+# 4. WEB ADMIN (Next.js App Router)
+# ------------------------------------------------------------------------------
+# TV1 sở hữu khung Web Admin (kết nối API duyệt của TV5 và CMS của TV1)
+/admin/ @TV1_GITHUB
