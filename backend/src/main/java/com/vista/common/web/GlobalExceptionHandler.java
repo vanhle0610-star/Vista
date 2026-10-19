@@ -1,17 +1,30 @@
 package com.vista.common.web;
 
+import com.vista.auth.exception.EmailAlreadyExistsException;
+import com.vista.auth.exception.InvalidPasswordException;
+import com.vista.auth.exception.RateLimitExceededException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.util.Map;
 import org.slf4j.MDC;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class GlobalExceptionHandler {
+
   @ExceptionHandler(MethodArgumentNotValidException.class)
   ProblemDetail validation(MethodArgumentNotValidException exception, HttpServletRequest request) {
     var problem =
@@ -33,6 +46,97 @@ public class GlobalExceptionHandler {
                         "message",
                         e.getDefaultMessage() == null ? "invalid" : e.getDefaultMessage()))
             .toList());
+    return problem;
+  }
+
+  @ExceptionHandler(InvalidPasswordException.class)
+  ProblemDetail invalidPassword(InvalidPasswordException exception, HttpServletRequest request) {
+    var problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
+    problem.setType(URI.create("https://vista.example/errors/validation"));
+    problem.setTitle("Validation failed");
+    problem.setInstance(URI.create(request.getRequestURI()));
+    problem.setProperty("code", "VALIDATION_ERROR");
+    problem.setProperty("requestId", MDC.get("requestId"));
+    return problem;
+  }
+
+  @ExceptionHandler(EmailAlreadyExistsException.class)
+  ProblemDetail emailAlreadyExists(
+      EmailAlreadyExistsException exception, HttpServletRequest request) {
+    var problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, exception.getMessage());
+    problem.setType(URI.create("https://vista.example/errors/conflict"));
+    problem.setTitle("Email already exists");
+    problem.setInstance(URI.create(request.getRequestURI()));
+    problem.setProperty("code", "DUPLICATE_EMAIL");
+    problem.setProperty("requestId", MDC.get("requestId"));
+    return problem;
+  }
+
+  @ExceptionHandler(DataIntegrityViolationException.class)
+  ProblemDetail dataIntegrityViolation(
+      DataIntegrityViolationException exception, HttpServletRequest request) {
+    var problem =
+        ProblemDetail.forStatusAndDetail(
+            HttpStatus.CONFLICT,
+            "Dữ liệu bị trùng lặp hoặc vi phạm ràng buộc toàn vẹn cơ sở dữ liệu");
+    problem.setType(URI.create("https://vista.example/errors/conflict"));
+    problem.setTitle("Conflict");
+    problem.setInstance(URI.create(request.getRequestURI()));
+    problem.setProperty("code", "DUPLICATE_EMAIL");
+    problem.setProperty("requestId", MDC.get("requestId"));
+    return problem;
+  }
+
+  @ExceptionHandler(RateLimitExceededException.class)
+  ResponseEntity<ProblemDetail> rateLimitExceeded(
+      RateLimitExceededException exception, HttpServletRequest request) {
+    var problem =
+        ProblemDetail.forStatusAndDetail(HttpStatus.TOO_MANY_REQUESTS, exception.getMessage());
+    problem.setType(URI.create("https://vista.example/errors/too-many-requests"));
+    problem.setTitle("Too Many Requests");
+    problem.setInstance(URI.create(request.getRequestURI()));
+    problem.setProperty("code", "RATE_LIMIT_EXCEEDED");
+    problem.setProperty("retryAfterSeconds", exception.getRetryAfterSeconds());
+    problem.setProperty("requestId", MDC.get("requestId"));
+
+    return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+        .header(HttpHeaders.RETRY_AFTER, String.valueOf(exception.getRetryAfterSeconds()))
+        .body(problem);
+  }
+
+  @ExceptionHandler(BadCredentialsException.class)
+  ProblemDetail badCredentials(BadCredentialsException exception, HttpServletRequest request) {
+    var problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, exception.getMessage());
+    problem.setType(URI.create("https://vista.example/errors/unauthorized"));
+    problem.setTitle("Unauthorized");
+    problem.setInstance(URI.create(request.getRequestURI()));
+    problem.setProperty("code", "INVALID_CREDENTIALS");
+    problem.setProperty("requestId", MDC.get("requestId"));
+    return problem;
+  }
+
+  @ExceptionHandler(AuthenticationCredentialsNotFoundException.class)
+  ProblemDetail credentialsNotFound(
+      AuthenticationCredentialsNotFoundException exception, HttpServletRequest request) {
+    var problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, exception.getMessage());
+    problem.setType(URI.create("https://vista.example/errors/unauthorized"));
+    problem.setTitle("Unauthorized");
+    problem.setInstance(URI.create(request.getRequestURI()));
+    problem.setProperty("code", "UNAUTHORIZED");
+    problem.setProperty("requestId", MDC.get("requestId"));
+    return problem;
+  }
+
+  @ExceptionHandler(AccessDeniedException.class)
+  ProblemDetail accessDenied(AccessDeniedException exception, HttpServletRequest request) {
+    var problem =
+        ProblemDetail.forStatusAndDetail(
+            HttpStatus.FORBIDDEN, "Bạn không có quyền thực hiện thao tác này");
+    problem.setType(URI.create("https://vista.example/errors/forbidden"));
+    problem.setTitle("Forbidden");
+    problem.setInstance(URI.create(request.getRequestURI()));
+    problem.setProperty("code", "FORBIDDEN");
+    problem.setProperty("requestId", MDC.get("requestId"));
     return problem;
   }
 

@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: vista-backend-test
+  datasource:
+    url: jdbc:postgresql://localhost:5432/vista_test
+    username: vista
+    password: ""
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+  flyway:
+    enabled: false
+server:
+  port: -1
+vista:
+  cors:
+    allowed-origins: http://localhost:3000,http://localhost:8081
+  jwt:
+    secret: test-only-mock-jwt-signing-key-for-unit-and-integration-tests-256bits!
+    access-token-expiration-ms: 900000
+    refresh-token-expiration-ms: 604800000

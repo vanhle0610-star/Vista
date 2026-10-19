@@ -55,6 +55,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/google": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Đăng nhập bằng Google ID Token (OAuth2) */
+        post: operations["loginWithGoogle"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/refresh": {
         parameters: {
             query?: never;
@@ -215,6 +232,11 @@ export interface components {
             email: string;
             password: string;
             displayName: string;
+            phoneNumber?: string;
+        };
+        GoogleLoginRequest: {
+            /** @description Google ID Token (JWT) được cấp từ Google Identity Services hoặc Google Sign-In SDK */
+            idToken: string;
         };
         RefreshTokenRequest: {
             refreshToken: string;
@@ -234,6 +256,7 @@ export interface components {
             displayName: string;
             /** Format: uri */
             avatarUrl?: string | null;
+            phoneNumber?: string | null;
             roles: string[];
             emergencyContact?: {
                 name?: string;
@@ -449,6 +472,30 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["LoginRequest"];
+            };
+        };
+        responses: {
+            /** @description Phiên đăng nhập hợp lệ */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthSession"];
+                };
+            };
+        };
+    };
+    loginWithGoogle: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GoogleLoginRequest"];
             };
         };
         responses: {
