@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
  * implementation in Week 2.
  */
 @Service
-@ConditionalOnMissingBean(name = "realTripAccessService")
+@ConditionalOnMissingBean(TripAccessService.class)
 public class StubTripAccessService implements TripAccessService {
 
   private static final Logger log = LoggerFactory.getLogger(StubTripAccessService.class);

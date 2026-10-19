@@ -1,0 +1,246 @@
+.selectorContainer {
+  position: relative;
+  display: inline-block;
+  user-select: none;
+  z-index: 60;
+}
+
+.triggerBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.42rem 0.85rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: inherit;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.triggerBtn:hover,
+.triggerBtn.active {
+  background: rgba(255, 255, 255, 0.85);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(9, 132, 227, 0.15);
+  border-color: rgba(9, 132, 227, 0.3);
+}
+
+.night .triggerBtn {
+  background: rgba(30, 41, 74, 0.65);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #f1f2f6;
+}
+
+.night .triggerBtn:hover,
+.night .triggerBtn.active {
+  background: rgba(45, 60, 105, 0.9);
+  border-color: rgba(116, 185, 255, 0.4);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.globeIcon {
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.flagIcon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.langCode {
+  letter-spacing: 0.05em;
+  font-size: 0.78rem;
+}
+
+.chevron {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  transition: transform 0.25s ease;
+}
+
+.chevron.rotated {
+  transform: rotate(180deg);
+}
+
+/* Dropdown Menu Glassmorphism */
+.dropdownMenu {
+  position: absolute;
+  top: calc(100% + 8px);
+  width: 270px;
+  max-width: 90vw;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 18px;
+  box-shadow: 0 16px 40px rgba(18, 52, 77, 0.16),
+              0 1px 0 rgba(255, 255, 255, 0.9) inset;
+  padding: 0.65rem;
+  animation: dropIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 100;
+}
+
+.alignRight {
+  right: 0;
+}
+
+.alignLeft {
+  left: 0;
+}
+
+.night .dropdownMenu {
+  background: rgba(20, 29, 56, 0.94);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5),
+              0 1px 0 rgba(255, 255, 255, 0.1) inset;
+  color: #f1f2f6;
+}
+
+@keyframes dropIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.dropdownHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4rem 0.6rem 0.55rem 0.6rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  margin-bottom: 0.4rem;
+}
+
+.night .dropdownHeader {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.headerTitle {
+  font-size: 0.75rem;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #64748b;
+}
+
+.night .headerTitle {
+  color: #94a3b8;
+}
+
+.badgeCount {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(9, 132, 227, 0.1);
+  color: #0984e3;
+}
+
+.night .badgeCount {
+  background: rgba(116, 185, 255, 0.15);
+  color: #74b9ff;
+}
+
+.languagesList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 320px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* Custom sleek scrollbar */
+.languagesList::-webkit-scrollbar {
+  width: 5px;
+}
+.languagesList::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+}
+.night .languagesList::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.langOption {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.45rem 0.65rem;
+  border-radius: 10px;
+  border: 0;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+  transition: all 0.15s ease;
+}
+
+.langOption:hover {
+  background: rgba(9, 132, 227, 0.08);
+  transform: translateX(2px);
+}
+
+.night .langOption:hover {
+  background: rgba(116, 185, 255, 0.12);
+}
+
+.langOption.selected {
+  background: linear-gradient(135deg, rgba(9, 132, 227, 0.12), rgba(0, 206, 201, 0.12));
+  font-weight: 700;
+}
+
+.night .langOption.selected {
+  background: linear-gradient(135deg, rgba(116, 185, 255, 0.2), rgba(129, 236, 236, 0.2));
+}
+
+.optionFlag {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.optionInfo {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.optionNative {
+  font-size: 0.84rem;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.optionCountry {
+  font-size: 0.7rem;
+  color: #64748b;
+  line-height: 1.2;
+}
+
+.night .optionCountry {
+  color: #94a3b8;
+}
+
+.checkIcon {
+  font-size: 0.85rem;
+  font-weight: 850;
+  color: #0984e3;
+}
+
+.night .checkIcon {
+  color: #74b9ff;
+}

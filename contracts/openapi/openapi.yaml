@@ -80,6 +80,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AuthSession'
+  /auth/google:
+    post:
+      security: []
+      tags: [Auth]
+      operationId: loginWithGoogle
+      summary: Đăng nhập bằng Google ID Token (OAuth2)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoogleLoginRequest'
+      responses:
+        '200':
+          description: Phiên đăng nhập hợp lệ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSession'
         '400':
           $ref: '#/components/responses/Problem'
         '401':
@@ -381,6 +400,16 @@ components:
         email: { type: string, format: email, maxLength: 320 }
         password: { type: string, minLength: 8, maxLength: 128 }
         displayName: { type: string, minLength: 2, maxLength: 120 }
+        phoneNumber: { type: string, maxLength: 20 }
+
+    GoogleLoginRequest:
+      type: object
+      additionalProperties: false
+      required: [idToken]
+      properties:
+        idToken:
+          type: string
+          description: Google ID Token (JWT) được cấp từ Google Identity Services hoặc Google Sign-In SDK
 
     RefreshTokenRequest:
       type: object
@@ -407,6 +436,7 @@ components:
         email: { type: string, format: email }
         displayName: { type: string }
         avatarUrl: { type: [string, 'null'], format: uri }
+        phoneNumber: { type: [string, 'null'] }
         roles:
           type: array
           items: { type: string }

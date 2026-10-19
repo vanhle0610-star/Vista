@@ -9,6 +9,7 @@
 backend/.env
 backend/.env.*
 !backend/.env.example
+backend/run-backend.bat
 mobile/.env
 mobile/.env.*
 !mobile/.env.example
