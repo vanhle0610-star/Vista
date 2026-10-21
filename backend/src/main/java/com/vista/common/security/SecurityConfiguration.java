@@ -99,7 +99,9 @@ public class SecurityConfiguration {
                         "/v3/api-docs/**",
                         "/swagger-ui/**",
                         "/swagger-ui.html",
-                        "/api/v1/destinations/**")
+                        "/api/v1/destinations/**",
+                        // W4-TV3-03: preview lời mời — public (deep link / nhập mã)
+                        "/api/v1/invitations/*/preview")
                     .permitAll()
                     .requestMatchers("/api/v1/admin/**")
                     .hasRole("ADMIN")

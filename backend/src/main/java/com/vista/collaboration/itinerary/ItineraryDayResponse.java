@@ -12,12 +12,12 @@ public record ItineraryDayResponse(
     LocalDate tripDate,
     List<ItineraryItemResponse> items,
     Instant createdAt,
-    Instant updatedAt
-) {
+    Instant updatedAt,
+    Long version) {
+
   public static ItineraryDayResponse from(ItineraryDay day) {
-    List<ItineraryItemResponse> itemResponses = day.getItems().stream()
-        .map(ItineraryItemResponse::from)
-        .toList();
+    List<ItineraryItemResponse> itemResponses =
+        day.getItems().stream().map(ItineraryItemResponse::from).toList();
     return new ItineraryDayResponse(
         day.getId(),
         day.getTripId(),
@@ -25,6 +25,7 @@ public record ItineraryDayResponse(
         day.getTripDate(),
         itemResponses,
         day.getCreatedAt(),
-        day.getUpdatedAt());
+        day.getUpdatedAt(),
+        day.getVersion());
   }
 }
