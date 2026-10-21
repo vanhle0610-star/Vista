@@ -211,6 +211,75 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/trips/{tripId}/expenses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lấy danh sách chi phí của chuyến đi (FR-EXP-01) */
+        get: operations["listTripExpenses"];
+        put?: never;
+        /** Tạo khoản chi mới cho chuyến đi (FR-EXP-01) */
+        post: operations["createTripExpense"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/trips/{tripId}/expenses/{expenseId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Xóa một khoản chi của chuyến đi (FR-EXP-02) */
+        delete: operations["deleteTripExpense"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/trips/{tripId}/expenses/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lấy tóm tắt tổng chi phí và ngân sách chuyến đi (FR-EXP-03) */
+        get: operations["getTripExpenseSummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/trips/{tripId}/ai/itinerary-suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Yêu cầu AI gợi ý lịch trình chuyến đi (FR-AI-01) */
+        post: operations["generateAiItinerary"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -394,6 +463,85 @@ export interface components {
             errors?: {
                 field: string;
                 message: string;
+            }[];
+        };
+        CreateExpenseRequest: {
+            title: string;
+            amount: number;
+            /** @default VND */
+            currency: string;
+            /** Format: uuid */
+            paidBy: string;
+            /** @enum {string} */
+            category?: "FOOD" | "TRANSPORT" | "ACCOMMODATION" | "ACTIVITIES" | "OTHER";
+            /** Format: date-time */
+            occurredAt?: string;
+            /** @enum {string} */
+            splitType: "EQUAL" | "EXACT";
+            participantIds?: string[];
+            exactShares?: {
+                [key: string]: number;
+            };
+        };
+        ExpenseSplitResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            userId: string;
+            shareAmount: number;
+            /** @enum {string} */
+            settledStatus: "UNSETTLED" | "SETTLED";
+        };
+        ExpenseResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            tripId: string;
+            title: string;
+            amount: number;
+            currency: string;
+            /** Format: uuid */
+            paidBy: string;
+            category?: string | null;
+            /** Format: date-time */
+            occurredAt: string;
+            status?: string;
+            splits: components["schemas"]["ExpenseSplitResponse"][];
+        };
+        TripExpenseSummaryResponse: {
+            /** Format: uuid */
+            tripId: string;
+            totalSpent: number;
+            budgetTotal: number | null;
+            remainingBudget?: number | null;
+            spentPercentage?: number | null;
+            currency: string;
+        };
+        AiItinerarySuggestionRequest: {
+            destinationProvince: string;
+            totalDays: number;
+            /** @enum {string} */
+            budgetLevel: "LOW" | "MEDIUM" | "HIGH";
+            interests?: string[];
+        };
+        AiItinerarySuggestionResponse: {
+            destinationProvince: string;
+            totalDays: number;
+            budgetLevel: string;
+            estimatedTotalCost: number;
+            isMockData: boolean;
+            days: {
+                dayNumber: number;
+                dateLabel: string;
+                activities: {
+                    /** Format: uuid */
+                    destinationId?: string | null;
+                    timeSlot: string;
+                    destinationName: string;
+                    estimatedCost: number;
+                    category: string;
+                    note?: string | null;
+                }[];
             }[];
         };
     };
@@ -784,6 +932,137 @@ export interface operations {
             400: components["responses"]["Problem"];
             401: components["responses"]["Problem"];
             403: components["responses"]["Problem"];
+        };
+    };
+    listTripExpenses: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tripId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Danh sách các khoản chi */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExpenseResponse"][];
+                };
+            };
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
+        };
+    };
+    createTripExpense: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tripId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateExpenseRequest"];
+            };
+        };
+        responses: {
+            /** @description Tạo khoản chi thành công */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExpenseResponse"];
+                };
+            };
+            400: components["responses"]["Problem"];
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
+        };
+    };
+    deleteTripExpense: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tripId: string;
+                expenseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Đã xóa khoản chi thành công */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
+            404: components["responses"]["Problem"];
+        };
+    };
+    getTripExpenseSummary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tripId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Tóm tắt ngân sách chuyến đi */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TripExpenseSummaryResponse"];
+                };
+            };
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
+        };
+    };
+    generateAiItinerary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tripId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AiItinerarySuggestionRequest"];
+            };
+        };
+        responses: {
+            /** @description Gợi ý lịch trình từ AI thành công */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiItinerarySuggestionResponse"];
+                };
+            };
+            400: components["responses"]["Problem"];
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
+            429: components["responses"]["Problem"];
         };
     };
 }
