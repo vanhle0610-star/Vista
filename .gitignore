@@ -16,6 +16,9 @@ mobile/.env.*
 admin/.env
 admin/.env.*
 !admin/.env.example
+web/.env
+web/.env.*
+!web/.env.example
 
 # 2. Dependencies (Tuyệt đối không đẩy node_modules lên Git)
 node_modules/
@@ -50,3 +53,9 @@ yarn-error.log*
 *.swo
 .DS_Store
 Thumbs.db
+
+# 6. Personal & Local Workspace Files
+CV_Vanh/
+*.docx
+outputs/
+

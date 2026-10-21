@@ -209,6 +209,22 @@ export default function WelcomeRoute() {
             </TouchableOpacity>
 
             <TouchableOpacity
+              style={[styles.secondaryBtn, { backgroundColor: '#F0F9FF', borderColor: '#BAE6FD', marginTop: 10 }]}
+              onPress={() => router.push('/(tabs)/treasury' as any)}
+              activeOpacity={0.85}
+            >
+              <Text style={[styles.secondaryBtnText, { color: '#0284C7' }]}>💎 Mở Treasury & Sổ chi tiêu (Quiet Luxury)</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.secondaryBtn, { backgroundColor: '#0C2340', borderColor: '#38BDF8', marginTop: 10 }]}
+              onPress={() => router.push('/(tabs)/ai-planner' as any)}
+              activeOpacity={0.85}
+            >
+              <Text style={[styles.secondaryBtnText, { color: '#FFFFFF' }]}>✨ Trợ lý Lập lịch trình AI (Gemini v0)</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
               style={styles.guestLinkBtn}
               onPress={() => router.push('/(tabs)/discover')}
               activeOpacity={0.7}

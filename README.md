@@ -1,10 +1,10 @@
 # VISTA Vietnam Smart Travel
 
-VISTA là nền tảng mobile hỗ trợ khám phá điểm đến Việt Nam, lập lịch trình nhóm và an toàn theo cơ chế opt-in; admin web phục vụ quản trị tối thiểu. Repository này là nền tảng Week 1, không phải toàn bộ sáu business flow.
+VISTA là nền tảng du lịch thông minh toàn diện tại Việt Nam (hỗ trợ cả ứng dụng Mobile và Cổng thông tin Web) giúp khám phá điểm đến, lập lịch trình nhóm tối ưu bằng AI, quản lý ngân sách & thủ quỹ chuyến đi minh bạch, chia sẻ vị trí có sự đồng thuận opt-in, và bảng điều khiển quản trị (Admin Console).
 
 ## Trạng thái
 
-Đã hoàn thành nền tảng Tuần 1: Monorepo modular monolith, kết nối Supabase PostgreSQL 17, Flyway baseline 30 bảng, Spring Boot health/error/security/OpenAPI, Expo Router với UI/auth validation, Next.js admin, contract tooling OpenAPI 3.1 và CI.
+Đã hoàn thành nền tảng Tuần 1: Monorepo modular monolith, kết nối Supabase PostgreSQL 17, Flyway baseline 30 bảng, Spring Boot health/error/security/OpenAPI, Expo Router với UI/auth validation, Next.js Web Portal (du khách & admin), contract tooling OpenAPI 3.1 và CI.
 
 ## 📖 Tài liệu quy chuẩn bắt buộc cho cả nhóm
 - 📐 **[Cấu trúc thư mục dự án](PROJECT_STRUCTURE.md):** Bản đồ thư mục toàn diện và phân chia module theo 5 thành viên (M1 - M5).
@@ -20,7 +20,7 @@ VISTA là nền tảng mobile hỗ trợ khám phá điểm đến Việt Nam, l
 
 ## Cấu trúc
 
-`backend/`, `mobile/`, `admin/`, `contracts/openapi/`, `database/`, `docs/`, `infra/`, `scripts/` và `.github/` tách theo ownership.
+`backend/`, `mobile/`, `web/`, `contracts/openapi/`, `database/`, `docs/`, `infra/`, `scripts/` và `.github/` tách theo ownership.
 
 ## Yêu cầu
 
@@ -41,15 +41,15 @@ $env:DB_PASSWORD='mật-khẩu-trùng-với-.env'
 
 Terminal khác: `make setup`, `make db-up`, `make backend-run`. Swagger tại `http://localhost:8080/swagger-ui.html`, health tại `http://localhost:8080/api/v1/health`.
 
-Mobile: sao chép `mobile/.env.example` thành `mobile/.env.local`, đổi URL thành IPv4 LAN khi dùng điện thoại thật, sau đó `cd mobile && npm start`. Android emulator dùng `10.0.2.2`; web/iOS simulator có thể dùng localhost tùy môi trường. Admin: `cd admin && npm run dev`, mở `http://localhost:3000`.
+Mobile: sao chép `mobile/.env.example` thành `mobile/.env.local`, đổi URL thành IPv4 LAN khi dùng điện thoại thật, sau đó `cd mobile && npm start`. Android emulator dùng `10.0.2.2`; web/iOS simulator có thể dùng localhost tùy môi trường. Web: `cd web && npm run dev`, mở `http://localhost:3000`.
 
 ## Kiểm tra
 
-`backend/gradlew.bat spotlessCheck test build`, `mobile: npm run typecheck && npm run lint && npm test`, `admin: npm run typecheck && npm run lint && npm run build`, `contracts: npm run api:validate && npm run api:generate`. Integration test PostgreSQL tự bỏ qua nếu thiếu Docker và phải chạy trong CI/máy có Docker.
+`backend/gradlew.bat spotlessCheck test build`, `mobile: npm run typecheck && npm run lint && npm test`, `web: npm run typecheck && npm run lint && npm run build`, `contracts: npm run api:validate && npm run api:generate`. Integration test PostgreSQL tự bỏ qua nếu thiếu Docker và phải chạy trong CI/máy có Docker.
 
 ## Môi trường và secrets
 
-Root `DB_PASSWORD` chỉ cho Compose. Backend dùng `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `SPRING_PROFILES_ACTIVE`, `SERVER_PORT`, `CORS_ALLOWED_ORIGINS`; `JWT_SIGNING_KEY` và `AI_API_KEY` chưa được code Week 1 sử dụng. Mobile chỉ công khai `EXPO_PUBLIC_API_URL`, `EXPO_PUBLIC_USE_MOCK_AUTH`; admin chỉ công khai `NEXT_PUBLIC_API_URL`. Không đặt secret trong biến `EXPO_PUBLIC_*`/`NEXT_PUBLIC_*`.
+Root `DB_PASSWORD` chỉ cho Compose. Backend dùng `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `SPRING_PROFILES_ACTIVE`, `SERVER_PORT`, `CORS_ALLOWED_ORIGINS`; `JWT_SIGNING_KEY` và `AI_API_KEY` chưa được code Week 1 sử dụng. Mobile chỉ công khai `EXPO_PUBLIC_API_URL`, `EXPO_PUBLIC_USE_MOCK_AUTH`; web chỉ công khai `NEXT_PUBLIC_API_URL`. Không đặt secret trong biến `EXPO_PUBLIC_*`/`NEXT_PUBLIC_*`.
 
 ## Git và ownership
 

@@ -1,0 +1,450 @@
+/**
+ * VISTA Vietnam Smart Travel — Realtime Weather Service
+ * Powered by Open-Meteo API (Free, High Precision, WMO Standard, No API Key Required)
+ */
+
+export interface LocationCoord {
+  id: string;
+  nameVi: string;
+  nameEn: string;
+  lat: number;
+  lon: number;
+}
+
+export const VISTA_REGIONS_COORD: Record<string, LocationCoord> = {
+  north: { id: 'north', nameVi: 'Hà Nội & Miền Bắc', nameEn: 'Hanoi & North', lat: 21.0285, lon: 105.8542 },
+  central: { id: 'central', nameVi: 'Đà Nẵng & Miền Trung', nameEn: 'Da Nang & Central', lat: 16.0544, lon: 108.2022 },
+  south: { id: 'south', nameVi: 'TP. Hồ Chí Minh & Miền Nam', nameEn: 'HCMC & South', lat: 10.8231, lon: 106.6297 },
+  highlands: { id: 'highlands', nameVi: 'Đà Lạt & Tây Nguyên', nameEn: 'Da Lat & Highlands', lat: 11.9404, lon: 108.4583 },
+};
+
+export const VISTA_DESTINATIONS_COORD: Record<string, LocationCoord> = {
+  halong: { id: 'halong', nameVi: 'Vịnh Hạ Long', nameEn: 'Ha Long Bay', lat: 20.9101, lon: 107.1839 },
+  hoian: { id: 'hoian', nameVi: 'Phố Cổ Hội An', nameEn: 'Hoi An Town', lat: 15.8801, lon: 108.3380 },
+  danang: { id: 'danang', nameVi: 'Đà Nẵng & Bà Nà', nameEn: 'Da Nang & Ba Na', lat: 15.9988, lon: 107.9961 },
+  ninhbinh: { id: 'ninhbinh', nameVi: 'Tràng An – Tam Cốc', nameEn: 'Trang An', lat: 20.2506, lon: 105.9048 },
+  phuquoc: { id: 'phuquoc', nameVi: 'Đảo Ngọc Phú Quốc', nameEn: 'Phu Quoc Island', lat: 10.2899, lon: 103.9840 },
+  hagiang: { id: 'hagiang', nameVi: 'Cao Nguyên Đá Hà Giang', nameEn: 'Ha Giang', lat: 22.8233, lon: 104.9839 },
+  saigon: { id: 'saigon', nameVi: 'TP. Hồ Chí Minh', nameEn: 'Ho Chi Minh City', lat: 10.8231, lon: 106.6297 },
+  dalat: { id: 'dalat', nameVi: 'Đà Lạt Mộng Mơ', nameEn: 'Da Lat', lat: 11.9404, lon: 108.4583 },
+};
+
+export interface RealtimeWeather {
+  locationId: string;
+  nameVi: string;
+  nameEn: string;
+  temp: number; // rounded Celsius
+  tempFormatted: string; // e.g. "28°C"
+  apparentTemp: number; // perceived Celsius
+  humidity: number; // %
+  windSpeed: number; // km/h
+  precipitation: number; // mm
+  isDay: boolean;
+  weatherCode: number;
+  icon: string;
+  statusVi: string;
+  statusEn: string;
+  adviceVi: string;
+  adviceEn: string;
+  updatedTime: string;
+  isLive: boolean;
+}
+
+/**
+ * WMO Weather Interpretation Codes (WW)
+ * https://open-meteo.com/en/docs
+ */
+export function interpretWmoCode(code: number, isDay = true): {
+  icon: string;
+  statusVi: string;
+  statusEn: string;
+} {
+  switch (code) {
+    case 0:
+      return {
+        icon: isDay ? '☀️' : '🌙',
+        statusVi: isDay ? 'Nắng đẹp trong lành' : 'Đêm trời quang, mát mẻ',
+        statusEn: isDay ? 'Clear sky, sunny' : 'Clear starry night',
+      };
+    case 1:
+      return {
+        icon: isDay ? '🌤️' : '☁️',
+        statusVi: 'Trời quang, mây rải rác',
+        statusEn: 'Mainly clear, few clouds',
+      };
+    case 2:
+      return {
+        icon: '⛅',
+        statusVi: 'Có mây xen kẽ nắng',
+        statusEn: 'Partly cloudy',
+      };
+    case 3:
+      return {
+        icon: '☁️',
+        statusVi: 'Nhiều mây, trời dịu',
+        statusEn: 'Overcast & gentle',
+      };
+    case 45:
+    case 48:
+      return {
+        icon: '🌫️',
+        statusVi: 'Có sương mù, se lạnh',
+        statusEn: 'Foggy & cool mist',
+      };
+    case 51:
+    case 53:
+    case 55:
+      return {
+        icon: '🌦️',
+        statusVi: 'Mưa phùn lất phất',
+        statusEn: 'Light drizzle',
+      };
+    case 61:
+    case 63:
+    case 65:
+      return {
+        icon: '🌧️',
+        statusVi: 'Trời có mưa rào',
+        statusEn: 'Rainy conditions',
+      };
+    case 80:
+    case 81:
+    case 82:
+      return {
+        icon: '🌧️',
+        statusVi: 'Mưa rào từng đợt',
+        statusEn: 'Passing rain showers',
+      };
+    case 95:
+    case 96:
+    case 99:
+      return {
+        icon: '⛈️',
+        statusVi: 'Có giông bão sấm sét',
+        statusEn: 'Thunderstorm',
+      };
+    default:
+      return {
+        icon: '🌤️',
+        statusVi: 'Tiết trời ôn hòa dễ chịu',
+        statusEn: 'Mild and pleasant',
+      };
+  }
+}
+
+/**
+ * Generate practical travel advice based on weather parameters
+ */
+export function generateTravelAdvice(temp: number, weatherCode: number): {
+  adviceVi: string;
+  adviceEn: string;
+} {
+  if (weatherCode >= 80 || weatherCode === 95 || weatherCode === 96 || weatherCode === 99) {
+    return {
+      adviceVi: 'Có mưa rào hoặc giông, du khách nên mang theo ô/áo mưa và ưu tiên tham quan bảo tàng, quán cafe ngắm cảnh.',
+      adviceEn: 'Rain showers or storm expected. Carry an umbrella and prioritize indoor culture sites or cozy scenic cafes.',
+    };
+  }
+  if (weatherCode >= 51 && weatherCode <= 65) {
+    return {
+      adviceVi: 'Mưa nhẹ rải rác, thích hợp dạo phố có ô che hoặc thưởng thức ẩm thực địa phương nóng hổi.',
+      adviceEn: 'Light intermittent rain, pleasant for umbrella strolls and sampling warm local delicacies.',
+    };
+  }
+  if (temp >= 33) {
+    return {
+      adviceVi: 'Nắng nóng nhiệt đới, hãy bôi kem chống nắng, mang kính râm và bổ sung đủ nước khi tham quan ngoài trời.',
+      adviceEn: 'Tropical sunshine. Stay hydrated, wear sunscreen and sunhats during daytime outdoor activities.',
+    };
+  }
+  if (temp <= 19) {
+    return {
+      adviceVi: 'Tiết trời se lạnh vùng cao, rất thích hợp trekking săn mây; nên chuẩn bị áo khoác mỏng hoặc khăn len.',
+      adviceEn: 'Cool highland air, wonderful for cloud-hunting; pack a light jacket or cardigan for mornings and nights.',
+    };
+  }
+  return {
+    adviceVi: 'Thời tiết tuyệt vời nhất trong ngày! Rất lý tưởng cho chụp ảnh check-in, dạo phố và các hoạt động dã ngoại.',
+    adviceEn: 'Perfect travel weather today! Ideal for photography, outdoor excursions and exploring cultural landmarks.',
+  };
+}
+
+// Fallback data if offline or network error
+const FALLBACK_REGIONS_WEATHER: Record<string, RealtimeWeather> = {
+  north: {
+    locationId: 'north',
+    nameVi: 'Hà Nội & Miền Bắc',
+    nameEn: 'Hanoi & North',
+    temp: 26,
+    tempFormatted: '26°C',
+    apparentTemp: 28,
+    humidity: 70,
+    windSpeed: 10,
+    precipitation: 0,
+    isDay: true,
+    weatherCode: 1,
+    icon: '🌤️',
+    statusVi: 'Mùa thu vàng, nắng nhẹ',
+    statusEn: 'Golden autumn, light breeze',
+    adviceVi: 'Tiết trời thu mát lành, rất đẹp để khám phá phố cổ và vịnh biển.',
+    adviceEn: 'Pleasant autumn weather, ideal for ancient quarters and bay cruises.',
+    updatedTime: 'Vừa cập nhật',
+    isLive: false,
+  },
+  central: {
+    locationId: 'central',
+    nameVi: 'Đà Nẵng & Miền Trung',
+    nameEn: 'Da Nang & Central',
+    temp: 28,
+    tempFormatted: '28°C',
+    apparentTemp: 31,
+    humidity: 74,
+    windSpeed: 12,
+    precipitation: 0,
+    isDay: true,
+    weatherCode: 0,
+    icon: '☀️',
+    statusVi: 'Nắng ấm chan hòa, biển êm',
+    statusEn: 'Warm sunny weather, calm ocean',
+    adviceVi: 'Thời tiết lý tưởng để tắm biển Mỹ Khê và dạo phố cổ Hội An đêm đèn lồng.',
+    adviceEn: 'Ideal for beach outings and romantic candlelit lanterns in Hoi An.',
+    updatedTime: 'Vừa cập nhật',
+    isLive: false,
+  },
+  south: {
+    locationId: 'south',
+    nameVi: 'TP. Hồ Chí Minh & Miền Nam',
+    nameEn: 'HCMC & South',
+    temp: 31,
+    tempFormatted: '31°C',
+    apparentTemp: 36,
+    humidity: 76,
+    windSpeed: 9,
+    precipitation: 0,
+    isDay: true,
+    weatherCode: 2,
+    icon: '⛅',
+    statusVi: 'Nắng ấm nhiệt đới, chiều mát',
+    statusEn: 'Tropical warmth, breezy evening',
+    adviceVi: 'Nắng đẹp ban ngày, chiều tối thoáng mát thích hợp đi du thuyền sông Sài Gòn.',
+    adviceEn: 'Sunny day with breezy evening, great for Saigon River dining cruises.',
+    updatedTime: 'Vừa cập nhật',
+    isLive: false,
+  },
+  highlands: {
+    locationId: 'highlands',
+    nameVi: 'Đà Lạt & Tây Nguyên',
+    nameEn: 'Da Lat & Highlands',
+    temp: 20,
+    tempFormatted: '20°C',
+    apparentTemp: 20,
+    humidity: 68,
+    windSpeed: 11,
+    precipitation: 0,
+    isDay: true,
+    weatherCode: 1,
+    icon: '🌤️',
+    statusVi: 'Se lạnh dễ chịu, sương nhẹ',
+    statusEn: 'Crisp mountain air, gentle mist',
+    adviceVi: 'Không khí trong lành mát mẻ, hoàn hảo để săn mây và thưởng thức cà phê ngắm đồi thông.',
+    adviceEn: 'Crisp fresh air, perfect for cloud-hunting and hot coffee overlooking pine valleys.',
+    updatedTime: 'Vừa cập nhật',
+    isLive: false,
+  },
+};
+
+const CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes cache
+
+interface CacheEntry {
+  data: Record<string, RealtimeWeather>;
+  timestamp: number;
+}
+
+/**
+ * Fetch realtime weather for all 4 main regions in a single batch request
+ */
+export async function fetchAllRegionsWeather(): Promise<Record<string, RealtimeWeather>> {
+  const cacheKey = 'vista_regions_weather_v1';
+
+  // 1. Check local cache
+  if (typeof window !== 'undefined') {
+    try {
+      const cachedStr = localStorage.getItem(cacheKey);
+      if (cachedStr) {
+        const cached: CacheEntry = JSON.parse(cachedStr);
+        if (Date.now() - cached.timestamp < CACHE_TTL_MS) {
+          return cached.data;
+        }
+      }
+    } catch {
+      // Ignore storage read errors
+    }
+  }
+
+  // 2. Fetch from Open-Meteo API in a single batched HTTP request
+  const regionKeys = ['north', 'central', 'south', 'highlands'];
+  const lats = regionKeys.map((k) => VISTA_REGIONS_COORD[k].lat).join(',');
+  const lons = regionKeys.map((k) => VISTA_REGIONS_COORD[k].lon).join(',');
+
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lons}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m&timezone=Asia%2FBangkok`;
+
+  try {
+    const res = await fetch(url, { headers: { Accept: 'application/json' } });
+    if (!res.ok) {
+      throw new Error(`Open-Meteo HTTP error: ${res.status}`);
+    }
+
+    const payload = await res.json();
+    const items = Array.isArray(payload) ? payload : [payload];
+
+    const result: Record<string, RealtimeWeather> = {};
+    const nowFormatted = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+
+    regionKeys.forEach((key, index) => {
+      const item = items[index];
+      const cur = item?.current;
+      const coord = VISTA_REGIONS_COORD[key];
+
+      if (cur) {
+        const temp = Math.round(cur.temperature_2m);
+        const apparentTemp = Math.round(cur.apparent_temperature ?? temp);
+        const humidity = Math.round(cur.relative_humidity_2m ?? 70);
+        const windSpeed = Math.round(cur.wind_speed_10m ?? 10);
+        const precipitation = cur.precipitation ?? 0;
+        const isDay = cur.is_day === 1;
+        const weatherCode = cur.weather_code ?? 0;
+
+        const wmo = interpretWmoCode(weatherCode, isDay);
+        const advice = generateTravelAdvice(temp, weatherCode);
+
+        result[key] = {
+          locationId: key,
+          nameVi: coord.nameVi,
+          nameEn: coord.nameEn,
+          temp,
+          tempFormatted: `${temp}°C`,
+          apparentTemp,
+          humidity,
+          windSpeed,
+          precipitation,
+          isDay,
+          weatherCode,
+          icon: wmo.icon,
+          statusVi: wmo.statusVi,
+          statusEn: wmo.statusEn,
+          adviceVi: advice.adviceVi,
+          adviceEn: advice.adviceEn,
+          updatedTime: `${nowFormatted} (Realtime)`,
+          isLive: true,
+        };
+      } else {
+        result[key] = FALLBACK_REGIONS_WEATHER[key];
+      }
+    });
+
+    // 3. Save to localStorage cache
+    if (typeof window !== 'undefined') {
+      try {
+        const entry: CacheEntry = { data: result, timestamp: Date.now() };
+        localStorage.setItem(cacheKey, JSON.stringify(entry));
+      } catch {
+        // Ignore storage write errors
+      }
+    }
+
+    return result;
+  } catch (err) {
+    console.warn('Realtime weather fetch failed, using fallback guide data:', err);
+    return FALLBACK_REGIONS_WEATHER;
+  }
+}
+
+/**
+ * Fetch realtime weather for 8 specific featured destinations
+ */
+export async function fetchAllDestinationsWeather(): Promise<Record<string, RealtimeWeather>> {
+  const cacheKey = 'vista_destinations_weather_v1';
+
+  if (typeof window !== 'undefined') {
+    try {
+      const cachedStr = localStorage.getItem(cacheKey);
+      if (cachedStr) {
+        const cached: CacheEntry = JSON.parse(cachedStr);
+        if (Date.now() - cached.timestamp < CACHE_TTL_MS) {
+          return cached.data;
+        }
+      }
+    } catch {
+      // Ignore
+    }
+  }
+
+  const destKeys = Object.keys(VISTA_DESTINATIONS_COORD);
+  const lats = destKeys.map((k) => VISTA_DESTINATIONS_COORD[k].lat).join(',');
+  const lons = destKeys.map((k) => VISTA_DESTINATIONS_COORD[k].lon).join(',');
+
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lons}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m&timezone=Asia%2FBangkok`;
+
+  try {
+    const res = await fetch(url, { headers: { Accept: 'application/json' } });
+    if (!res.ok) throw new Error(`Open-Meteo HTTP error: ${res.status}`);
+
+    const payload = await res.json();
+    const items = Array.isArray(payload) ? payload : [payload];
+    const result: Record<string, RealtimeWeather> = {};
+    const nowFormatted = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+
+    destKeys.forEach((key, index) => {
+      const item = items[index];
+      const cur = item?.current;
+      const coord = VISTA_DESTINATIONS_COORD[key];
+
+      if (cur) {
+        const temp = Math.round(cur.temperature_2m);
+        const apparentTemp = Math.round(cur.apparent_temperature ?? temp);
+        const humidity = Math.round(cur.relative_humidity_2m ?? 70);
+        const windSpeed = Math.round(cur.wind_speed_10m ?? 10);
+        const precipitation = cur.precipitation ?? 0;
+        const isDay = cur.is_day === 1;
+        const weatherCode = cur.weather_code ?? 0;
+
+        const wmo = interpretWmoCode(weatherCode, isDay);
+        const advice = generateTravelAdvice(temp, weatherCode);
+
+        result[key] = {
+          locationId: key,
+          nameVi: coord.nameVi,
+          nameEn: coord.nameEn,
+          temp,
+          tempFormatted: `${temp}°C`,
+          apparentTemp,
+          humidity,
+          windSpeed,
+          precipitation,
+          isDay,
+          weatherCode,
+          icon: wmo.icon,
+          statusVi: wmo.statusVi,
+          statusEn: wmo.statusEn,
+          adviceVi: advice.adviceVi,
+          adviceEn: advice.adviceEn,
+          updatedTime: `${nowFormatted} (Realtime)`,
+          isLive: true,
+        };
+      }
+    });
+
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(cacheKey, JSON.stringify({ data: result, timestamp: Date.now() }));
+      } catch {
+        // Ignore
+      }
+    }
+
+    return result;
+  } catch (err) {
+    console.warn('Destinations realtime weather fetch failed:', err);
+    return {};
+  }
+}

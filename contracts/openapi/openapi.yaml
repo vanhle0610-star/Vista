@@ -20,6 +20,10 @@ tags:
     description: Điểm đến du lịch (BF-01)
   - name: Trips
     description: Quản lý chuyến đi nhóm (BF-02, BF-03)
+  - name: Expenses
+    description: Quản lý chi phí chuyến đi và phân chia chi phí (BF-04, TV4)
+  - name: AI Planner
+    description: Trợ lý AI gợi ý lịch trình chuyến đi (BF-02, TV4)
 paths:
   /health:
     get:
@@ -360,6 +364,141 @@ paths:
         '403':
           $ref: '#/components/responses/Problem'
 
+  /trips/{tripId}/expenses:
+    get:
+      tags: [Expenses]
+      security: [{ bearerAuth: [] }]
+      operationId: listTripExpenses
+      summary: Lấy danh sách chi phí của chuyến đi (FR-EXP-01)
+      parameters:
+        - in: path
+          name: tripId
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Danh sách các khoản chi
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExpenseResponse'
+        '401':
+          $ref: '#/components/responses/Problem'
+        '403':
+          $ref: '#/components/responses/Problem'
+    post:
+      tags: [Expenses]
+      security: [{ bearerAuth: [] }]
+      operationId: createTripExpense
+      summary: Tạo khoản chi mới cho chuyến đi (FR-EXP-01)
+      parameters:
+        - in: path
+          name: tripId
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateExpenseRequest'
+      responses:
+        '201':
+          description: Tạo khoản chi thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExpenseResponse'
+        '400':
+          $ref: '#/components/responses/Problem'
+        '401':
+          $ref: '#/components/responses/Problem'
+        '403':
+          $ref: '#/components/responses/Problem'
+
+  /trips/{tripId}/expenses/{expenseId}:
+    delete:
+      tags: [Expenses]
+      security: [{ bearerAuth: [] }]
+      operationId: deleteTripExpense
+      summary: Xóa một khoản chi của chuyến đi (FR-EXP-02)
+      parameters:
+        - in: path
+          name: tripId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: path
+          name: expenseId
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Đã xóa khoản chi thành công
+        '401':
+          $ref: '#/components/responses/Problem'
+        '403':
+          $ref: '#/components/responses/Problem'
+        '404':
+          $ref: '#/components/responses/Problem'
+
+  /trips/{tripId}/expenses/summary:
+    get:
+      tags: [Expenses]
+      security: [{ bearerAuth: [] }]
+      operationId: getTripExpenseSummary
+      summary: Lấy tóm tắt tổng chi phí và ngân sách chuyến đi (FR-EXP-03)
+      parameters:
+        - in: path
+          name: tripId
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Tóm tắt ngân sách chuyến đi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TripExpenseSummaryResponse'
+        '401':
+          $ref: '#/components/responses/Problem'
+        '403':
+          $ref: '#/components/responses/Problem'
+
+  /trips/{tripId}/ai/itinerary-suggestions:
+    post:
+      tags: [AI Planner]
+      security: [{ bearerAuth: [] }]
+      operationId: generateAiItinerary
+      summary: Yêu cầu AI gợi ý lịch trình chuyến đi (FR-AI-01)
+      parameters:
+        - in: path
+          name: tripId
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AiItinerarySuggestionRequest'
+      responses:
+        '200':
+          description: Gợi ý lịch trình từ AI thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiItinerarySuggestionResponse'
+        '400':
+          $ref: '#/components/responses/Problem'
+        '401':
+          $ref: '#/components/responses/Problem'
+        '403':
+          $ref: '#/components/responses/Problem'
+        '429':
+          $ref: '#/components/responses/Problem'
+
 components:
   securitySchemes:
     bearerAuth:
@@ -607,3 +746,102 @@ components:
             properties:
               field: { type: string }
               message: { type: string }
+
+    CreateExpenseRequest:
+      type: object
+      additionalProperties: false
+      required: [title, amount, paidBy, splitType]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 200 }
+        amount: { type: number, minimum: 0 }
+        currency: { type: string, default: 'VND', maxLength: 3 }
+        paidBy: { type: string, format: uuid }
+        category: { type: string, enum: [FOOD, TRANSPORT, ACCOMMODATION, ACTIVITIES, OTHER] }
+        occurredAt: { type: string, format: date-time }
+        splitType: { type: string, enum: [EQUAL, EXACT] }
+        participantIds:
+          type: array
+          items: { type: string, format: uuid }
+        exactShares:
+          type: object
+          additionalProperties: { type: number, minimum: 0 }
+
+    ExpenseSplitResponse:
+      type: object
+      required: [id, userId, shareAmount, settledStatus]
+      properties:
+        id: { type: string, format: uuid }
+        userId: { type: string, format: uuid }
+        shareAmount: { type: number }
+        settledStatus: { type: string, enum: [UNSETTLED, SETTLED] }
+
+    ExpenseResponse:
+      type: object
+      required: [id, tripId, title, amount, currency, paidBy, occurredAt, splits]
+      properties:
+        id: { type: string, format: uuid }
+        tripId: { type: string, format: uuid }
+        title: { type: string }
+        amount: { type: number }
+        currency: { type: string }
+        paidBy: { type: string, format: uuid }
+        category: { type: [string, 'null'] }
+        occurredAt: { type: string, format: date-time }
+        status: { type: string }
+        splits:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExpenseSplitResponse'
+
+    TripExpenseSummaryResponse:
+      type: object
+      required: [tripId, totalSpent, budgetTotal, currency]
+      properties:
+        tripId: { type: string, format: uuid }
+        totalSpent: { type: number }
+        budgetTotal: { type: [number, 'null'] }
+        remainingBudget: { type: [number, 'null'] }
+        spentPercentage: { type: [number, 'null'] }
+        currency: { type: string }
+
+    AiItinerarySuggestionRequest:
+      type: object
+      additionalProperties: false
+      required: [destinationProvince, totalDays, budgetLevel]
+      properties:
+        destinationProvince: { type: string }
+        totalDays: { type: integer, minimum: 1, maximum: 7 }
+        budgetLevel: { type: string, enum: [LOW, MEDIUM, HIGH] }
+        interests:
+          type: array
+          items: { type: string }
+
+    AiItinerarySuggestionResponse:
+      type: object
+      required: [destinationProvince, totalDays, budgetLevel, estimatedTotalCost, isMockData, days]
+      properties:
+        destinationProvince: { type: string }
+        totalDays: { type: integer }
+        budgetLevel: { type: string }
+        estimatedTotalCost: { type: number }
+        isMockData: { type: boolean }
+        days:
+          type: array
+          items:
+            type: object
+            required: [dayNumber, dateLabel, activities]
+            properties:
+              dayNumber: { type: integer }
+              dateLabel: { type: string }
+              activities:
+                type: array
+                items:
+                  type: object
+                  required: [timeSlot, destinationName, estimatedCost, category]
+                  properties:
+                    destinationId: { type: [string, 'null'], format: uuid }
+                    timeSlot: { type: string }
+                    destinationName: { type: string }
+                    estimatedCost: { type: number }
+                    category: { type: string }
+                    note: { type: [string, 'null'] }
