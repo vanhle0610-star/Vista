@@ -10,10 +10,12 @@ import org.slf4j.MDC;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -160,6 +162,24 @@ public class GlobalExceptionHandler {
     problem.setTitle("Conflict");
     problem.setInstance(URI.create(request.getRequestURI()));
     problem.setProperty("code", "CONFLICT");
+    problem.setProperty("requestId", MDC.get("requestId"));
+    return problem;
+  }
+
+  /** W4-TV3-01: Xung đột optimistic locking từ JPA @Version → 409 */
+  @ExceptionHandler({
+    ObjectOptimisticLockingFailureException.class,
+    OptimisticLockingFailureException.class
+  })
+  ProblemDetail optimisticLockConflict(Exception exception, HttpServletRequest request) {
+    var problem =
+        ProblemDetail.forStatusAndDetail(
+            HttpStatus.CONFLICT,
+            "Dữ liệu đã bị cập nhật bởi người dùng khác — vui lòng tải lại và thử lại");
+    problem.setType(URI.create("https://vista.example/errors/conflict"));
+    problem.setTitle("Optimistic Lock Conflict");
+    problem.setInstance(URI.create(request.getRequestURI()));
+    problem.setProperty("code", "VERSION_CONFLICT");
     problem.setProperty("requestId", MDC.get("requestId"));
     return problem;
   }

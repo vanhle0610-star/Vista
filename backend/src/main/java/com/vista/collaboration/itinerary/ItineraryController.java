@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -80,5 +81,29 @@ public class ItineraryController {
     UUID userId = currentUserProvider.getCurrentUserId();
     itineraryService.deleteItem(itemId, userId);
     return ResponseEntity.noContent().build();
+  }
+
+  @PutMapping("/itinerary/days/{dayId}/items/reorder")
+  @Operation(
+      summary = "Sắp xếp lại thứ tự điểm dừng trong 1 ngày — gửi toàn bộ danh sách ID theo thứ tự mới")
+  public ResponseEntity<List<ItineraryItemResponse>> reorderItems(
+      @PathVariable UUID dayId, @Valid @RequestBody ReorderItemsRequest request) {
+    UUID userId = currentUserProvider.getCurrentUserId();
+    return ResponseEntity.ok(itineraryService.reorderItems(dayId, userId, request));
+  }
+
+  // ── W4-TV3-04: Validate lịch trình ────────────────────────────────────────
+
+  @GetMapping("/trips/{tripId}/itinerary/validate")
+  @Operation(
+      summary = "Kiểm tra lịch trình sơ bộ — phát hiện ngày không hợp lệ và trùng giờ",
+      description =
+          "Trả về danh sách cảnh báo (rỗng = hợp lệ). "
+              + "Mỗi cảnh báo có code (OUT_OF_TRIP_DATE / TIME_OVERLAP / INVALID_TIME_RANGE), "
+              + "dayId, itemId (nếu có), và message tiếng Việt rõ ràng.")
+  public ResponseEntity<List<ItineraryValidationWarning>> validateItinerary(
+      @PathVariable UUID tripId) {
+    UUID userId = currentUserProvider.getCurrentUserId();
+    return ResponseEntity.ok(itineraryService.validateItinerary(tripId, userId));
   }
 }
