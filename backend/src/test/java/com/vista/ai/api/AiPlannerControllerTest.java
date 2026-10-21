@@ -1,5 +1,6 @@
 package com.vista.ai.api;
 
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
@@ -9,12 +10,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vista.ai.api.dto.AiItinerarySuggestionRequest;
+import com.vista.ai.api.dto.RouteOptimizationRequest;
+import com.vista.ai.client.AiClientWrapper;
 import com.vista.ai.config.AiRateLimiter;
+import com.vista.budget.util.RouteOptimizer.DestinationPoint;
 import com.vista.common.security.CurrentUserProvider;
 import com.vista.common.security.SecurityConfiguration;
 import com.vista.common.web.GlobalExceptionHandler;
 import com.vista.trip.application.TripAccessService;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -26,8 +31,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import com.vista.ai.api.dto.RouteOptimizationRequest;
-import com.vista.budget.util.RouteOptimizer.DestinationPoint;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(AiPlannerController.class)
@@ -41,6 +44,7 @@ class AiPlannerControllerTest {
   @MockitoBean private TripAccessService tripAccessService;
   @MockitoBean private CurrentUserProvider currentUserProvider;
   @MockitoBean private AiRateLimiter aiRateLimiter;
+  @MockitoBean private AiClientWrapper aiClientWrapper;
 
   private UUID tripId;
   private UUID currentUserId;
@@ -50,11 +54,12 @@ class AiPlannerControllerTest {
     tripId = UUID.randomUUID();
     currentUserId = UUID.randomUUID();
     when(currentUserProvider.getCurrentUserId()).thenReturn(currentUserId);
+    when(aiClientWrapper.isAvailable()).thenReturn(false);
   }
 
   @Test
-  @DisplayName("1. Gợi ý lịch trình AI v0 thành công cho thành viên chuyến đi (200 OK)")
-  void getItinerarySuggestions_shouldReturn200() throws Exception {
+  @DisplayName("1. Gợi ý lịch trình AI fallback thành công cho thành viên chuyến đi (200 OK)")
+  void getItinerarySuggestions_shouldReturn200Fallback() throws Exception {
     doNothing().when(tripAccessService).requireMember(tripId, currentUserId);
 
     AiItinerarySuggestionRequest request =
@@ -155,5 +160,52 @@ class AiPlannerControllerTest {
         .andExpect(jsonPath("$.orderedRoute.length()").value(2))
         .andExpect(jsonPath("$.totalDistanceKm").isNumber())
         .andExpect(jsonPath("$.estimatedTaxiCostVnd").isNumber());
+  }
+
+  @Test
+  @DisplayName("6. Gợi ý lịch trình thành công với Live Gemini AI khi có API key (isMockData = false)")
+  void getItinerarySuggestions_shouldReturnLiveAiData() throws Exception {
+    doNothing().when(tripAccessService).requireMember(tripId, currentUserId);
+    when(aiClientWrapper.isAvailable()).thenReturn(true);
+
+    String mockGeminiJson = """
+        {
+          "tripTitle": "Hành trình khám phá Đà Nẵng",
+          "destination": "Đà Nẵng",
+          "totalDays": 2,
+          "estimatedTotalVnd": 2800000,
+          "days": [
+            {
+              "dayNumber": 1,
+              "title": "Ngày 1: Biển & Bán đảo Sơn Trà",
+              "estimatedDayCostVnd": 1400000,
+              "activities": [
+                {
+                  "timeSlot": "MORNING",
+                  "placeName": "Chùa Linh Ứng",
+                  "activityDescription": "Chiêm bái tượng Phật Bà Quan Âm cao 67m",
+                  "estimatedCostVnd": 100000,
+                  "latitude": 16.1001,
+                  "longitude": 108.2778
+                }
+              ]
+            }
+          ]
+        }
+        """;
+    when(aiClientWrapper.generateContent(anyString())).thenReturn(Optional.of(mockGeminiJson));
+
+    AiItinerarySuggestionRequest request =
+        new AiItinerarySuggestionRequest("Đà Nẵng", 2, "MEDIUM", List.of("Biển", "Tâm linh"));
+
+    mockMvc
+        .perform(
+            post("/api/v1/trips/{tripId}/ai/itinerary-suggestions", tripId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.destinationProvince").value("Đà Nẵng"))
+        .andExpect(jsonPath("$.isMockData").value(false))
+        .andExpect(jsonPath("$.days[0].activities[0].destinationName").value("Chùa Linh Ứng"));
   }
 }
