@@ -19,11 +19,14 @@ import org.springframework.security.authentication.AuthenticationCredentialsNotF
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class GlobalExceptionHandler {
+  private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
   ProblemDetail validation(MethodArgumentNotValidException exception, HttpServletRequest request) {
@@ -46,6 +49,17 @@ public class GlobalExceptionHandler {
                         "message",
                         e.getDefaultMessage() == null ? "invalid" : e.getDefaultMessage()))
             .toList());
+    return problem;
+  }
+
+  @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
+  ProblemDetail malformedJson(org.springframework.http.converter.HttpMessageNotReadableException exception, HttpServletRequest request) {
+    var problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Định dạng dữ liệu yêu cầu không hợp lệ (JSON không đúng chuẩn)");
+    problem.setType(URI.create("https://vista.example/errors/validation"));
+    problem.setTitle("Malformed JSON Request");
+    problem.setInstance(URI.create(request.getRequestURI()));
+    problem.setProperty("code", "MALFORMED_JSON");
+    problem.setProperty("requestId", MDC.get("requestId"));
     return problem;
   }
 
@@ -142,6 +156,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(Exception.class)
   ProblemDetail unexpected(Exception exception, HttpServletRequest request) {
+    log.error("Unhandled exception for request: {}", request.getRequestURI(), exception);
     var problem =
         ProblemDetail.forStatusAndDetail(
             HttpStatus.INTERNAL_SERVER_ERROR, "Đã xảy ra lỗi không mong đợi");

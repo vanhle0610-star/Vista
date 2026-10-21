@@ -5,10 +5,10 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  SafeAreaView,
   TextInput,
   ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { tokens } from '../../../theme/tokens';
 import { expenseApi, AiItineraryResponse } from '../../../services/api/expenseApi';
 
@@ -31,12 +31,22 @@ export function AiPlannerScreen({ tripId = '11111111-1111-1111-1111-111111111111
     const totalDays = Math.max(1, Math.min(7, parseInt(days) || 3));
 
     try {
-      const response = await expenseApi.fetchAiItinerarySuggestions(tripId, {
-        destinationProvince: province.trim() || 'Đà Nẵng',
-        totalDays,
-        budgetLevel,
-        interests: ['Biển', 'Ẩm thực', 'Check-in'],
-      });
+      let response: AiItineraryResponse;
+      try {
+        response = await expenseApi.fetchAiQuickPlan({
+          destinationProvince: province.trim() || 'Đà Nẵng',
+          totalDays,
+          budgetLevel,
+          interests: ['Biển', 'Ẩm thực', 'Check-in'],
+        });
+      } catch {
+        response = await expenseApi.fetchAiItinerarySuggestions(tripId, {
+          destinationProvince: province.trim() || 'Đà Nẵng',
+          totalDays,
+          budgetLevel,
+          interests: ['Biển', 'Ẩm thực', 'Check-in'],
+        });
+      }
       setItineraryData(response);
     } catch (err: unknown) {
       // Check if Rate Limit 429
@@ -141,6 +151,21 @@ export function AiPlannerScreen({ tripId = '11111111-1111-1111-1111-111111111111
             placeholderTextColor={tokens.colors.muted}
           />
 
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipsScroll}>
+            {['Đà Nẵng', 'Hạ Long', 'Hội An', 'Ninh Bình', 'Phú Quốc', 'Hà Giang', 'Đà Lạt'].map((p) => (
+              <TouchableOpacity
+                key={p}
+                style={[styles.destChip, province === p && styles.destChipActive]}
+                onPress={() => setProvince(p)}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.destChipText, province === p && styles.destChipTextActive]}>
+                  {p}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
           <Text style={styles.fieldLabel}>SỐ NGÀY DỰ KIẾN (TỐI ĐA 7 NGÀY)</Text>
           <TextInput
             style={styles.input}
@@ -199,14 +224,21 @@ export function AiPlannerScreen({ tripId = '11111111-1111-1111-1111-111111111111
         {itineraryData && (
           <View style={styles.previewContainer}>
             <View style={styles.badgeRow}>
-              <View style={styles.badge}>
-                <View style={styles.badgeDot} />
-                <Text style={styles.badgeText}>
-                  {itineraryData.isMockData ? 'Gợi ý kiểm nghiệm (v0)' : 'Gemini AI Verified'}
+              <View style={[styles.badge, !itineraryData.isMockData && styles.badgeLive]}>
+                <View style={[styles.badgeDot, !itineraryData.isMockData && styles.badgeDotLive]} />
+                <Text style={[styles.badgeText, !itineraryData.isMockData && styles.badgeTextLive]}>
+                  {itineraryData.isMockData ? '⚡ Lộ trình chuẩn hóa' : '✨ Gemini 2.5 Flash Live AI'}
                 </Text>
               </View>
               <Text style={styles.previewCost}>
-                Ước tính: {formatVnd(itineraryData.estimatedTotalCost)}
+                Tổng: {formatVnd(itineraryData.estimatedTotalCost)}
+              </Text>
+            </View>
+
+            <View style={styles.treasuryGroupCard}>
+              <Text style={styles.treasuryGroupTitle}>👥 THỦ QUỸ & CHIA TIỀN NHÓM (4 người)</Text>
+              <Text style={styles.treasuryGroupAmount}>
+                ~{formatVnd(Math.round(itineraryData.estimatedTotalCost / 4))} / người
               </Text>
             </View>
 
@@ -474,5 +506,62 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: tokens.colors.ink,
     marginLeft: 6,
+  },
+  chipsScroll: {
+    marginTop: 6,
+    marginBottom: 4,
+  },
+  destChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: tokens.radius.full,
+    borderWidth: 1,
+    borderColor: tokens.colors.border,
+    backgroundColor: tokens.colors.surface,
+    marginRight: 6,
+  },
+  destChipActive: {
+    backgroundColor: tokens.colors.navyDeep,
+    borderColor: tokens.colors.navyDeep,
+  },
+  destChipText: {
+    fontSize: tokens.font.micro + 1,
+    fontWeight: '700',
+    color: tokens.colors.muted,
+  },
+  destChipTextActive: {
+    color: tokens.colors.surface,
+  },
+  badgeLive: {
+    backgroundColor: 'rgba(168, 85, 247, 0.1)',
+    borderColor: 'rgba(168, 85, 247, 0.35)',
+  },
+  badgeDotLive: {
+    backgroundColor: '#10B981',
+  },
+  badgeTextLive: {
+    color: '#7C3AED',
+  },
+  treasuryGroupCard: {
+    backgroundColor: tokens.colors.surface,
+    borderRadius: tokens.radius.md,
+    padding: tokens.spacing.sm + 2,
+    marginBottom: tokens.spacing.sm,
+    borderWidth: 1,
+    borderColor: tokens.colors.borderLight,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  treasuryGroupTitle: {
+    fontSize: tokens.font.micro,
+    fontWeight: '800',
+    color: tokens.colors.muted,
+    letterSpacing: 0.5,
+  },
+  treasuryGroupAmount: {
+    fontSize: tokens.font.small,
+    fontWeight: '800',
+    color: tokens.colors.skyBlue,
   },
 });

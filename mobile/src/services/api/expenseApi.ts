@@ -113,4 +113,10 @@ export const expenseApi = {
     );
     return res.data;
   },
+
+  async fetchAiQuickPlan(request: AiItineraryRequest): Promise<AiItineraryResponse> {
+    const res = await api.post<AiItineraryResponse>('/ai/quick-plan', request);
+    return res.data;
+  },
 };
+
