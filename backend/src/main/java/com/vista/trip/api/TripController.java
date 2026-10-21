@@ -1,45 +1,79 @@
 package com.vista.trip.api;
 
 import com.vista.common.security.CurrentUserProvider;
+import com.vista.trip.api.dto.CreateTripRequest;
 import com.vista.trip.api.dto.TripDetailResponse;
 import com.vista.trip.api.dto.TripMemberResponse;
+import com.vista.trip.api.dto.TripResponse;
+import com.vista.trip.api.dto.UpdateTripRequest;
 import com.vista.trip.application.TripAccessService;
+import com.vista.trip.application.TripService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.sql.Date;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/v1/trips")
-@Tag(name = "Trips", description = "Quản lý thông tin chuyến đi và thành viên (TV2 / TV4)")
+@Tag(name = "Trips", description = "Quản lý chuyến đi — tạo, đọc, sửa, xóa và quản lý thành viên (TV2 / TV3 / TV4)")
 @SecurityRequirement(name = "bearerAuth")
 public class TripController {
 
   private final JdbcClient jdbcClient;
   private final TripAccessService tripAccessService;
   private final CurrentUserProvider currentUserProvider;
+  private final TripService tripService;
 
   public TripController(
       JdbcClient jdbcClient,
       TripAccessService tripAccessService,
-      CurrentUserProvider currentUserProvider) {
+      CurrentUserProvider currentUserProvider,
+      TripService tripService) {
     this.jdbcClient = jdbcClient;
     this.tripAccessService = tripAccessService;
     this.currentUserProvider = currentUserProvider;
+    this.tripService = tripService;
+  }
+
+  @PostMapping
+  @Operation(summary = "Tạo chuyến đi mới — người tạo tự động trở thành Owner (TV3)")
+  public ResponseEntity<TripResponse> createTrip(@Valid @RequestBody CreateTripRequest request) {
+    UUID userId = currentUserProvider.getCurrentUserId();
+    TripResponse response = tripService.createTrip(userId, request);
+    return ResponseEntity.status(HttpStatus.CREATED).body(response);
+  }
+
+  @GetMapping
+  @Operation(summary = "Lấy danh sách chuyến đi mà người dùng hiện tại tham gia (TV3)")
+  public ResponseEntity<List<TripResponse>> getMyTrips() {
+    UUID userId = currentUserProvider.getCurrentUserId();
+    return ResponseEntity.ok(tripService.getMyTrips(userId));
   }
 
   @GetMapping("/{tripId}")
-  @Operation(summary = "Lấy thông tin chi tiết chuyến đi")
+  @Operation(summary = "Xem chi tiết chuyến đi — chỉ member hoặc owner mới được xem")
+  public ResponseEntity<TripResponse> getTrip(@PathVariable UUID tripId) {
+    UUID currentUserId = currentUserProvider.getCurrentUserId();
+    return ResponseEntity.ok(tripService.getTrip(tripId, currentUserId));
+  }
+
+  @GetMapping("/{tripId}/detail")
+  @Operation(summary = "Xem chi tiết chuyến đi dạng gọn TripDetailResponse (phục vụ tương thích ngược TV2/TV4)")
   public ResponseEntity<TripDetailResponse> getTripDetail(@PathVariable UUID tripId) {
     UUID currentUserId = currentUserProvider.getCurrentUserId();
     tripAccessService.requireMember(tripId, currentUserId);
@@ -72,8 +106,33 @@ public class TripController {
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy chuyến đi"));
   }
 
+  @PatchMapping("/{tripId}")
+  @Operation(summary = "Cập nhật thông tin chuyến đi — chỉ Owner mới được phép (TV3)")
+  public ResponseEntity<TripResponse> updateTrip(
+      @PathVariable UUID tripId, @Valid @RequestBody UpdateTripRequest request) {
+    UUID userId = currentUserProvider.getCurrentUserId();
+    return ResponseEntity.ok(tripService.updateTrip(tripId, userId, request));
+  }
+
+  @DeleteMapping("/{tripId}")
+  @Operation(summary = "Xóa chuyến đi — chỉ Owner mới được phép (TV3)")
+  public ResponseEntity<Void> deleteTrip(@PathVariable UUID tripId) {
+    UUID userId = currentUserProvider.getCurrentUserId();
+    tripService.deleteTrip(tripId, userId);
+    return ResponseEntity.noContent().build();
+  }
+
+  @DeleteMapping("/{tripId}/members/{userId}")
+  @Operation(summary = "Xóa thành viên — Owner xóa bất kỳ ai, thành viên có thể tự rời (TV3)")
+  public ResponseEntity<Void> removeMember(
+      @PathVariable UUID tripId, @PathVariable UUID userId) {
+    UUID requesterId = currentUserProvider.getCurrentUserId();
+    tripService.removeMember(tripId, userId, requesterId);
+    return ResponseEntity.noContent().build();
+  }
+
   @GetMapping("/{tripId}/members")
-  @Operation(summary = "Lấy danh sách thành viên chuyến đi")
+  @Operation(summary = "Lấy danh sách thành viên chuyến đi kèm phân bổ ngân sách thủ quỹ (TV4)")
   public ResponseEntity<List<TripMemberResponse>> getTripMembers(@PathVariable UUID tripId) {
     UUID currentUserId = currentUserProvider.getCurrentUserId();
     tripAccessService.requireMember(tripId, currentUserId);

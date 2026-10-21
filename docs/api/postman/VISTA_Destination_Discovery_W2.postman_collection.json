@@ -1,0 +1,304 @@
+{
+  "info": {
+    "_postman_id": "c1f7b8d4-5310-4e3f-a219-destination-w2-tv1",
+    "name": "VISTA - Destination Discovery API (W2-TV1)",
+    "description": "Bộ Postman Collection kiểm thử chức năng Khám phá điểm đến du lịch (BF-01) của TV1 tuần 2 (W2).\nBao gồm 7 kịch bản kiểm thử: danh sách, tìm kiếm, lọc theo tỉnh/thành, phân trang, chi tiết hợp lệ, xử lý 404, và kiểm tra tính toàn vẹn trạng thái PUBLISHED.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "sampleDestinationId",
+      "value": "00000000-0000-0000-0000-000000000001",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Lấy danh sách điểm đến công khai (Mặc định)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/destinations",
+          "host": ["{{baseUrl}}"],
+          "path": ["destinations"]
+        },
+        "description": "Lấy danh sách các điểm đến du lịch đã được xuất bản (status = PUBLISHED) có phân trang mặc định."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200 OK\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has correct pagination structure\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('items');",
+              "    pm.expect(jsonData).to.have.property('page');",
+              "    pm.expect(jsonData).to.have.property('size');",
+              "    pm.expect(jsonData).to.have.property('total');",
+              "    pm.expect(Array.isArray(jsonData.items)).to.be.true;",
+              "});",
+              "",
+              "pm.test(\"All returned destinations are PUBLISHED\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    jsonData.items.forEach(function(item) {",
+              "        pm.expect(item.status).to.eql('PUBLISHED');",
+              "    });",
+              "    if (jsonData.items.length > 0) {",
+              "        pm.collectionVariables.set('sampleDestinationId', jsonData.items[0].id);",
+              "    }",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Tìm kiếm điểm đến theo từ khóa tiếng Việt (keyword)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/destinations?keyword=Bà Nà",
+          "host": ["{{baseUrl}}"],
+          "path": ["destinations"],
+          "query": [
+            { "key": "keyword", "value": "Bà Nà" }
+          ]
+        },
+        "description": "Tìm kiếm điểm đến theo tên hoặc mô tả chứa từ khóa 'Bà Nà'."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200 OK\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Found destinations match keyword\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.items.length).to.be.greaterThan(0);",
+              "    var hasBaNa = jsonData.items.some(function(item) { return item.name.includes('Bà Nà'); });",
+              "    pm.expect(hasBaNa).to.be.true;",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Lọc điểm đến theo Tỉnh/Thành phố (province)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/destinations?province=Đà Nẵng",
+          "host": ["{{baseUrl}}"],
+          "path": ["destinations"],
+          "query": [
+            { "key": "province", "value": "Đà Nẵng" }
+          ]
+        },
+        "description": "Lọc danh sách các điểm đến thuộc tỉnh/thành phố Đà Nẵng."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200 OK\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"All items belong to selected province\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.items.length).to.be.greaterThan(0);",
+              "    jsonData.items.forEach(function(item) {",
+              "        pm.expect(item.province).to.eql('Đà Nẵng');",
+              "    });",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Lọc kết hợp Danh mục & Mức giá tối đa",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/destinations?category=Di tích&priceMax=100000",
+          "host": ["{{baseUrl}}"],
+          "path": ["destinations"],
+          "query": [
+            { "key": "category", "value": "Di tích" },
+            { "key": "priceMax", "value": "100000" }
+          ]
+        },
+        "description": "Lọc các điểm đến di tích có giá vé vào cổng không vượt quá 100.000 VNĐ."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200 OK\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Returned destinations respect max price filter\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    jsonData.items.forEach(function(item) {",
+              "        if (item.priceMin !== null) {",
+              "            pm.expect(item.priceMin).to.be.at.most(100000);",
+              "        }",
+              "    });",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Kiểm tra phân trang (page & size)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/destinations?page=0&size=5",
+          "host": ["{{baseUrl}}"],
+          "path": ["destinations"],
+          "query": [
+            { "key": "page", "value": "0" },
+            { "key": "size", "value": "5" }
+          ]
+        },
+        "description": "Kiểm tra phân trang với kích thước trang là 5 bản ghi."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200 OK\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Page size matches request\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.page).to.eql(0);",
+              "    pm.expect(jsonData.size).to.eql(5);",
+              "    pm.expect(jsonData.items.length).to.be.at.most(5);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Xem chi tiết điểm đến hợp lệ (GET by ID)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/destinations/{{sampleDestinationId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["destinations", "{{sampleDestinationId}}"]
+        },
+        "description": "Xem thông tin chi tiết đầy đủ của một điểm đến xuất bản bao gồm giờ mở cửa 7 ngày và nguồn kiểm chứng."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200 OK\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Detail response contains verified schema fields\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('id');",
+              "    pm.expect(jsonData).to.have.property('name');",
+              "    pm.expect(jsonData).to.have.property('province');",
+              "    pm.expect(jsonData).to.have.property('category');",
+              "    pm.expect(jsonData).to.have.property('status');",
+              "    pm.expect(jsonData.status).to.eql('PUBLISHED');",
+              "    pm.expect(jsonData).to.have.property('openingHours');",
+              "    pm.expect(jsonData).to.have.property('sourceUrl');",
+              "    pm.expect(jsonData).to.have.property('verifiedAt');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Xem chi tiết điểm đến không tồn tại (Kiểm tra lỗi 404)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/destinations/00000000-0000-0000-0000-000000000000",
+          "host": ["{{baseUrl}}"],
+          "path": ["destinations", "00000000-0000-0000-0000-000000000000"]
+        },
+        "description": "Kiểm tra phản hồi khi tra cứu điểm đến không tồn tại hoặc ở trạng thái Draft/Hidden. Phải trả về chuẩn RFC 9457 Problem Details với mã lỗi 404."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 404 Not Found\", function () {",
+              "    pm.response.to.have.status(404);",
+              "});",
+              "",
+              "pm.test(\"Response conforms to RFC 9457 Problem Details\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.eql(404);",
+              "    pm.expect(jsonData).to.have.property('code');",
+              "    pm.expect(jsonData.code).to.eql('DESTINATION_NOT_FOUND');",
+              "    pm.expect(jsonData).to.have.property('detail');",
+              "    pm.expect(jsonData).to.have.property('type');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    }
+  ]
+}
