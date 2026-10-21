@@ -127,6 +127,42 @@ public class GlobalExceptionHandler {
     return problem;
   }
 
+  @ExceptionHandler(com.vista.trip.ForbiddenException.class)
+  ProblemDetail forbidden(com.vista.trip.ForbiddenException exception, HttpServletRequest request) {
+    var problem = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, exception.getMessage());
+    problem.setType(URI.create("https://vista.example/errors/forbidden"));
+    problem.setTitle("Forbidden");
+    problem.setInstance(URI.create(request.getRequestURI()));
+    problem.setProperty("code", "FORBIDDEN");
+    problem.setProperty("requestId", MDC.get("requestId"));
+    return problem;
+  }
+
+  @ExceptionHandler(com.vista.collaboration.exception.ConflictException.class)
+  ProblemDetail conflict(
+      com.vista.collaboration.exception.ConflictException exception, HttpServletRequest request) {
+    var problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, exception.getMessage());
+    problem.setType(URI.create("https://vista.example/errors/conflict"));
+    problem.setTitle("Conflict");
+    problem.setInstance(URI.create(request.getRequestURI()));
+    problem.setProperty("code", "CONFLICT");
+    problem.setProperty("requestId", MDC.get("requestId"));
+    return problem;
+  }
+
+  @ExceptionHandler(com.vista.collaboration.exception.ResourceNotFoundException.class)
+  ProblemDetail notFound(
+      com.vista.collaboration.exception.ResourceNotFoundException exception,
+      HttpServletRequest request) {
+    var problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, exception.getMessage());
+    problem.setType(URI.create("https://vista.example/errors/not-found"));
+    problem.setTitle("Not Found");
+    problem.setInstance(URI.create(request.getRequestURI()));
+    problem.setProperty("code", "NOT_FOUND");
+    problem.setProperty("requestId", MDC.get("requestId"));
+    return problem;
+  }
+
   @ExceptionHandler(AccessDeniedException.class)
   ProblemDetail accessDenied(AccessDeniedException exception, HttpServletRequest request) {
     var problem =

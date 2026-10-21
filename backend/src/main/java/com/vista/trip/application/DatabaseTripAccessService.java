@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
  * Production-ready TripAccessService that validates ownership and membership against the real
  * 'trips' and 'trip_members' database tables.
  */
-@Service
+@Service("primary")
 @Primary
 public class DatabaseTripAccessService implements TripAccessService {
 

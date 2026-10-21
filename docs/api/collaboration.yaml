@@ -1,0 +1,618 @@
+openapi: 3.0.3
+info:
+  title: VISTA Collaboration API
+  description: API đặc tả cho Module Group Collaboration (TV3) - Lời mời, Lịch trình, Đề xuất và Biểu quyết.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Local Backend Server
+
+paths:
+  /trips/{tripId}/invitations:
+    post:
+      summary: Tạo lời mời tham gia chuyến đi
+      description: Chỉ Owner hoặc Member của chuyến đi được tạo lời mời. Trả về 409 nếu email đã có lời mời PENDING.
+      operationId: createInvitation
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: ID của người dùng đang đăng nhập
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInvitationRequest'
+      responses:
+        '201':
+          description: Tạo lời mời thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationResponse'
+        '403':
+          description: Không có quyền truy cập chuyến đi
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '409':
+          description: Email đã có lời mời đang ở trạng thái PENDING
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+
+  /invitations/{id}:
+    delete:
+      summary: Thu hồi lời mời
+      description: Chỉ Owner của chuyến đi mới có quyền thu hồi lời mời đang ở trạng thái PENDING.
+      operationId: revokeInvitation
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Thu hồi thành công
+        '403':
+          description: Người dùng không phải là Owner của chuyến đi
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '404':
+          description: Không tìm thấy lời mời
+        '409':
+          description: Lời mời không ở trạng thái PENDING
+
+  /invitations/{token}/accept:
+    post:
+      summary: Chấp nhận lời mời tham gia chuyến đi
+      description: Người được mời gọi API này để chấp nhận tham gia nhóm chuyến đi.
+      operationId: acceptInvitation
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Chấp nhận thành công, trạng thái chuyển thành ACCEPTED
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationResponse'
+        '404':
+          description: Token lời mời không hợp lệ
+        '409':
+          description: Lời mời đã hết hạn hoặc không còn ở trạng thái PENDING
+
+  /invitations/{token}/decline:
+    post:
+      summary: Từ chối lời mời tham gia chuyến đi
+      description: Người được mời từ chối lời mời.
+      operationId: declineInvitation
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Từ chối thành công, trạng thái chuyển thành DECLINED
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationResponse'
+        '404':
+          description: Token không hợp lệ
+        '409':
+          description: Lời mời không ở trạng thái PENDING
+
+  /trips/{tripId}/itinerary/days:
+    post:
+      summary: Thêm ngày mới vào lịch trình chuyến đi
+      description: Chỉ thành viên nhóm mới có quyền tạo ngày. Ràng buộc UNIQUE(trip_id, day_number).
+      operationId: createItineraryDay
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateItineraryDayRequest'
+      responses:
+        '201':
+          description: Tạo ngày thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItineraryDayResponse'
+        '403':
+          description: Không phải thành viên của chuyến đi
+        '409':
+          description: Ngày thứ n (day_number) đã tồn tại
+
+  /itinerary/days/{dayId}/items:
+    post:
+      summary: Thêm điểm dừng / hoạt động vào ngày lịch trình
+      description: Thêm mục lịch trình vào một ngày cụ thể.
+      operationId: createItineraryItem
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: dayId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateItineraryItemRequest'
+      responses:
+        '201':
+          description: Thêm điểm dừng thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItineraryItemResponse'
+        '403':
+          description: Không phải thành viên chuyến đi
+        '404':
+          description: Không tìm thấy ngày lịch trình
+
+  /itinerary/items/{itemId}:
+    patch:
+      summary: Cập nhật thông tin điểm dừng trong lịch trình
+      description: Hỗ trợ Optimistic Concurrency Control qua trường expected_updated_at. Trả về 409 nếu có xung đột phiên bản.
+      operationId: updateItineraryItem
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateItineraryItemRequest'
+      responses:
+        '200':
+          description: Cập nhật thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItineraryItemResponse'
+        '403':
+          description: Không phải thành viên chuyến đi
+        '404':
+          description: Không tìm thấy mục lịch trình
+        '409':
+          description: Xung đột cập nhật đồng thời (phiên bản đã thay đổi)
+    delete:
+      summary: Xóa điểm dừng khỏi lịch trình
+      operationId: deleteItineraryItem
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Xóa thành công
+        '403':
+          description: Không phải thành viên chuyến đi
+        '404':
+          description: Không tìm thấy mục lịch trình
+
+  /trips/{tripId}/proposals:
+    get:
+      summary: Lấy danh sách địa điểm đề xuất của chuyến đi
+      operationId: getProposals
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Danh sách đề xuất kèm số lượng vote
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProposalResponse'
+        '403':
+          description: Không phải thành viên chuyến đi
+    post:
+      summary: Tạo đề xuất địa điểm mới
+      operationId: createProposal
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProposalRequest'
+      responses:
+        '201':
+          description: Tạo đề xuất thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProposalResponse'
+        '403':
+          description: Không phải thành viên chuyến đi
+
+  /proposals/{proposalId}/votes:
+    post:
+      summary: Biểu quyết (+1 hoặc -1) cho đề xuất địa điểm
+      description: Mỗi thành viên có tối đa 1 vote. Có thể đổi vote trước khi đề xuất được chốt.
+      operationId: castVote
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: proposalId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VoteRequest'
+      responses:
+        '200':
+          description: Biểu quyết thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VoteResponse'
+        '403':
+          description: Không phải thành viên chuyến đi
+        '409':
+          description: Đề xuất đã đóng, không thể biểu quyết
+
+components:
+  schemas:
+    CreateInvitationRequest:
+      type: object
+      required:
+        - inviteeEmail
+      properties:
+        inviteeEmail:
+          type: string
+          format: email
+          example: member@vista.vn
+        expiresAt:
+          type: string
+          format: date-time
+
+    InvitationResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        tripId:
+          type: integer
+          format: int64
+        inviterId:
+          type: integer
+          format: int64
+        inviteeEmail:
+          type: string
+          format: email
+        token:
+          type: string
+        status:
+          type: string
+          enum: [PENDING, ACCEPTED, DECLINED, EXPIRED, REVOKED]
+        expiresAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateItineraryDayRequest:
+      type: object
+      required:
+        - dayNumber
+        - date
+      properties:
+        dayNumber:
+          type: integer
+          minimum: 1
+          example: 1
+        date:
+          type: string
+          format: date
+          example: '2026-11-01'
+
+    ItineraryDayResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        tripId:
+          type: integer
+          format: int64
+        dayNumber:
+          type: integer
+        date:
+          type: string
+          format: date
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateItineraryItemRequest:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          example: 'Tham quan Phố cổ Hội An'
+        destinationId:
+          type: integer
+          format: int64
+          nullable: true
+        startTime:
+          type: string
+          format: time
+          example: '08:30:00'
+        endTime:
+          type: string
+          format: time
+          example: '11:00:00'
+        sortOrder:
+          type: integer
+          default: 0
+        notes:
+          type: string
+          nullable: true
+
+    UpdateItineraryItemRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        destinationId:
+          type: integer
+          format: int64
+          nullable: true
+        startTime:
+          type: string
+          format: time
+        endTime:
+          type: string
+          format: time
+        sortOrder:
+          type: integer
+        notes:
+          type: string
+        expected_updated_at:
+          type: string
+          format: date-time
+          description: Timestamp cập nhật gần nhất được client ghi nhận để kiểm tra xung đột lạc quan
+
+    ItineraryItemResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        dayId:
+          type: integer
+          format: int64
+        title:
+          type: string
+        destinationId:
+          type: integer
+          format: int64
+          nullable: true
+        startTime:
+          type: string
+          format: time
+        endTime:
+          type: string
+          format: time
+        sortOrder:
+          type: integer
+        notes:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateProposalRequest:
+      type: object
+      required:
+        - placeName
+      properties:
+        placeName:
+          type: string
+          example: 'Bánh mì Phượng Hội An'
+        description:
+          type: string
+          example: 'Quán ăn sáng ngon nổi tiếng, tiện đường đi'
+
+    ProposalResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        tripId:
+          type: integer
+          format: int64
+        proposerId:
+          type: integer
+          format: int64
+        placeName:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum: [OPEN, APPROVED, REJECTED]
+        upvotes:
+          type: integer
+        downvotes:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+    VoteRequest:
+      type: object
+      required:
+        - value
+      properties:
+        value:
+          type: integer
+          enum: [-1, 1]
+          description: 1 cho tán thành (upvote), -1 cho phản đối (downvote)
+
+    VoteResponse:
+      type: object
+      properties:
+        proposalId:
+          type: integer
+          format: int64
+        voterId:
+          type: integer
+          format: int64
+        value:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+    ProblemDetail:
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        code:
+          type: string
+        instance:
+          type: string
+
