@@ -1,0 +1,13 @@
+@echo off
+rem ==============================================================================
+rem Mau chay Backend Vista (Copy file nay thanh run-backend.bat va dien password)
+rem ==============================================================================
+
+set SPRING_PROFILES_ACTIVE=demo
+set DB_URL=jdbc:postgresql://aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require
+set DB_USERNAME=postgres.cyqvqehhjpvwovdzscxm
+set DB_PASSWORD=your_supabase_password_here
+set JWT_SECRET=vista-local-dev-super-secure-key-2026-minimum-256-bits-random!
+set GOOGLE_CLIENT_ID=577926332144-23qceg2o944n9hg5iv7nai2vr0s9u2d1.apps.googleusercontent.com
+
+call .\gradlew.bat bootRun

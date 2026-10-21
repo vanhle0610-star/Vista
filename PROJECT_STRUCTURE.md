@@ -116,7 +116,7 @@ vista/
 │   ├── .prettierrc.json
 │   └── .env.example                        # Mẫu biến môi trường di động (EXPO_PUBLIC_*)
 │
-├── admin/                                  # Ứng dụng Web Quản trị: Next.js (App Router), TypeScript (TV1)
+├── web/                                    # Ứng dụng Web Portal: Next.js (App Router), TypeScript (TV1)
 │   ├── public/                             # Tài nguyên tĩnh web (icons, images)
 │   ├── src/
 │   │   ├── app/                            # Next.js App Router
