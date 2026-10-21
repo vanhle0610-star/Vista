@@ -1,7 +1,20 @@
 import { create, isAxiosError } from 'axios';
 
+import { Platform } from 'react-native';
+
+const resolveBaseUrl = () => {
+  const envUrl = process.env.EXPO_PUBLIC_API_URL;
+  if (Platform.OS === 'web') {
+    if (!envUrl || envUrl.includes('10.0.2.2')) {
+      return 'http://localhost:8080/api/v1';
+    }
+    return envUrl;
+  }
+  return envUrl ?? 'http://10.0.2.2:8080/api/v1';
+};
+
 export const api = create({
-  baseURL: process.env.EXPO_PUBLIC_API_URL ?? 'http://10.0.2.2:8080/api/v1',
+  baseURL: resolveBaseUrl(),
   timeout: 10_000,
   headers: { Accept: 'application/json' },
 });

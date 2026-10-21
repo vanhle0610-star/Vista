@@ -10,6 +10,7 @@ export default function RootLayout() {
         <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)/register" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="destination/[id]" options={{ headerShown: false }} />
         <Stack.Screen name="showcase" options={{ title: 'Thư viện UI', headerShown: true }} />
       </Stack>
       <StatusBar style="dark" />
