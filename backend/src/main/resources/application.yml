@@ -4,7 +4,7 @@ spring:
   application:
     name: vista-backend
   profiles:
-    default: dev
+    default: demo
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/vista}
     username: ${DB_USERNAME:vista}
