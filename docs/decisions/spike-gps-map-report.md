@@ -1,5 +1,7 @@
 # BÁO CÁO THỬ NGHIỆM KỸ THUẬT GPS & BẢN ĐỒ (SPIKE REPORT — GO/NO-GO)
 
+> **Đính chính kiểm kê 22/10/2026:** nội dung bên dưới là báo cáo cũ chưa có minh chứng đi kèm trong repository. Không sử dụng các dòng PASS Android/iOS, 1.5 giây, 3.5% pin, 1.2 KB/request hay độ trễ 10–16 giây làm kết quả đã xác minh. Đề xuất Google Maps bên dưới mâu thuẫn D4 MapLibre/OpenStreetMap trong roadmap điều hành. Trạng thái triển khai và giới hạn hiện tại được ghi tại [bàn giao TV5 tuần 1–2](../handoff/tv5-week1-week2-mobile.md). Báo cáo gốc được giữ để truy vết, không coi là biên bản nghiệm thu thiết bị thật.
+
 > **Mã công việc:** W1-24, W1-26  
 > **Người phụ trách:** M5 (Mobile Safety/Community Engineer)  
 > **Ngày báo cáo:** 23/10/2026 (Tuần 1)  

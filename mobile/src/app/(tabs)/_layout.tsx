@@ -53,12 +53,32 @@ export default function TabsLayout() {
                 stroke={color}
                 strokeWidth="2"
               />
-              <Path d="M 8 5 V 3 C 8 2.448 8.448 2 9 2 L 15 2 C 15.552 2 16 2.448 16 3 V 5" stroke={color} strokeWidth="2" />
+              <Path
+                d="M 8 5 V 3 C 8 2.448 8.448 2 9 2 L 15 2 C 15.552 2 16 2.448 16 3 V 5"
+                stroke={color}
+                strokeWidth="2"
+              />
             </Svg>
           ),
         }}
       />
 
+      <Tabs.Screen
+        name="map"
+        options={{
+          title: 'Bản đồ',
+          tabBarIcon: ({ color }) => (
+            <Svg width={22} height={22} viewBox="0 0 24 24" fill="none">
+              <Path
+                d="M12 22s8-8 8-14a8 8 0 1 0-16 0c0 6 8 14 8 14Z"
+                stroke={color}
+                strokeWidth="2"
+              />
+              <Circle cx="12" cy="8" r="3" stroke={color} strokeWidth="2" />
+            </Svg>
+          ),
+        }}
+      />
       <Tabs.Screen
         name="community"
         options={{

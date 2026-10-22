@@ -10,9 +10,8 @@ version = '0.0.1-SNAPSHOT'
 description = 'VISTA modular monolith backend'
 
 java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
-	}
+	sourceCompatibility = JavaVersion.VERSION_21
+	targetCompatibility = JavaVersion.VERSION_21
 }
 
 repositories {

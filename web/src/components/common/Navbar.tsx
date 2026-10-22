@@ -5,7 +5,7 @@ import Link from 'next/link';
 import styles from './Navbar.module.css';
 
 export interface NavbarProps {
-  activeModule?: 'explore' | 'planner' | 'trips' | 'treasury' | 'community';
+  activeModule?: 'explore' | 'map' | 'planner' | 'trips' | 'treasury' | 'community';
   lang?: 'vi' | 'en';
   onLangChange?: (lang: 'vi' | 'en') => void;
 }
@@ -54,6 +54,14 @@ export function Navbar({
       labelEn: 'Destinations',
       href: '/',
       icon: '🧭',
+      badge: null,
+    },
+    {
+      id: 'map',
+      labelVi: 'Bản đồ & GPS',
+      labelEn: 'Map & GPS',
+      href: '/map',
+      icon: '📍',
       badge: null,
     },
     {
@@ -125,7 +133,7 @@ export function Navbar({
           </div>
         </Link>
 
-        {/* ─── 5 FUNCTIONAL PILLARS MENU ─── */}
+        {/* Main navigation */}
         <nav className={styles.navMenu} aria-label="Menu chức năng chính">
           {navItems.map((item) => {
             const isActive = activeModule === item.id;

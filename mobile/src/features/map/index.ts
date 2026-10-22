@@ -3,10 +3,12 @@
  * Sở hữu theo Actor: TV5 (Community User / Safety User)
  * Cung cấp: MapViewAdapter cho TV1 (Điểm đến), TV2 (Chuyến đi), TV3 (Lịch trình)
  */
-export interface MapCoordinate {
-  latitude: number;
-  longitude: number;
-  label?: string;
-}
+export type { MapCoordinate } from './types';
 
-export { MapViewAdapter, type MapMarker, type MapViewAdapterProps } from './MapViewAdapter';
+export {
+  MapViewAdapter,
+  type MapMarker,
+  type MapViewAdapterProps,
+} from './MapViewAdapter';
+export { LocationPermissionCard } from './LocationPermissionCard';
+export { useForegroundLocation } from './useForegroundLocation';

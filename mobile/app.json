@@ -8,7 +8,8 @@
     "scheme": "vista",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.vista.mobile"
     },
     "android": {
       "adaptiveIcon": {
@@ -17,7 +18,8 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.vista.mobile"
     },
     "web": {
       "output": "static",
@@ -34,7 +36,19 @@
         }
       ],
       "expo-secure-store",
-      ["expo-location", {"locationWhenInUsePermission": "VISTA chỉ dùng vị trí khi bạn chủ động bật tính năng an toàn nhóm."}]
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "VISTA dùng vị trí khi bạn bấm cho phép để hiển thị bạn trên bản đồ. Không chia sẻ cho người khác.",
+          "locationAlwaysPermission": false,
+          "locationAlwaysAndWhenInUsePermission": false,
+          "motionUsagePermission": false,
+          "isIosBackgroundLocationEnabled": false,
+          "isAndroidBackgroundLocationEnabled": false,
+          "isAndroidForegroundServiceEnabled": false
+        }
+      ],
+      "@maplibre/maplibre-react-native"
     ],
     "experiments": {
       "typedRoutes": true,

@@ -1,0 +1,151 @@
+﻿{
+    "name":  "Cung An Định",
+    "checkedDate":  "2026-10-22",
+    "geocoderUrl":  "https://nominatim.openstreetmap.org/search?format=jsonv2\u0026countrycodes=vn\u0026limit=2\u0026q=An%20Dinh%20Palace%20Hue",
+    "geocoder":  [
+                     {
+                         "place_id":  238802497,
+                         "licence":  "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+                         "osm_type":  "way",
+                         "osm_id":  1172897446,
+                         "lat":  "16.4566343",
+                         "lon":  "107.5983094",
+                         "category":  "building",
+                         "type":  "yes",
+                         "place_rank":  30,
+                         "importance":  6.2976272220905121E-05,
+                         "addresstype":  "building",
+                         "name":  "Cung An Định",
+                         "display_name":  "Cung An Định, 179, Phan Đình Phùng, Tổ dân phố 6, Phường Thuận Hóa, Hương Thuỷ, Thành phố Huế, 49118, Việt Nam",
+                         "boundingbox":  [
+                                             "16.4565098",
+                                             "16.4567588",
+                                             "107.5981536",
+                                             "107.5984652"
+                                         ]
+                     },
+                     {
+                         "place_id":  238970086,
+                         "licence":  "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+                         "osm_type":  "way",
+                         "osm_id":  1172894104,
+                         "lat":  "16.4574134",
+                         "lon":  "107.5979714",
+                         "category":  "historic",
+                         "type":  "manor",
+                         "place_rank":  30,
+                         "importance":  6.2976272220905121E-05,
+                         "addresstype":  "historic",
+                         "name":  "Cung An Định",
+                         "display_name":  "Cung An Định, Nguyễn Huệ, Tổ dân phố 6, Phường Thuận Hóa, Hương Thuỷ, Thành phố Huế, 49118, Việt Nam",
+                         "boundingbox":  [
+                                             "16.4562955",
+                                             "16.4586381",
+                                             "107.5971027",
+                                             "107.5987808"
+                                         ]
+                     }
+                 ],
+    "geocoderError":  null,
+    "imageMetadataUrl":  "https://commons.wikimedia.org/w/api.php?action=query\u0026format=json\u0026generator=search\u0026gsrnamespace=6\u0026gsrlimit=1\u0026prop=imageinfo\u0026iiprop=url%7Cextmetadata\u0026iiurlwidth=480\u0026gsrsearch=%22An%20Dinh%22%20filetype%3Abitmap",
+    "image":  {
+                  "pageid":  147942733,
+                  "ns":  6,
+                  "title":  "File:Census Designated Places to be included in city of St. George, Louisiana.jpg",
+                  "index":  1,
+                  "imagerepository":  "local",
+                  "imageinfo":  [
+                                    {
+                                        "thumburl":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1a/Census_Designated_Places_to_be_included_in_city_of_St._George%2C_Louisiana.jpg/500px-Census_Designated_Places_to_be_included_in_city_of_St._George%2C_Louisiana.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                                        "thumbwidth":  480,
+                                        "thumbheight":  352,
+                                        "responsiveUrls":  {
+                                                               "2":  "https://upload.wikimedia.org/wikipedia/commons/1/1a/Census_Designated_Places_to_be_included_in_city_of_St._George%2C_Louisiana.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail_unscaled"
+                                                           },
+                                        "thumbattribs":  {
+                                                             "src":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1a/Census_Designated_Places_to_be_included_in_city_of_St._George%2C_Louisiana.jpg/500px-Census_Designated_Places_to_be_included_in_city_of_St._George%2C_Louisiana.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                                                             "decoding":  "async",
+                                                             "loading":  "lazy",
+                                                             "width":  480,
+                                                             "height":  352,
+                                                             "srcset":  "https://upload.wikimedia.org/wikipedia/commons/1/1a/Census_Designated_Places_to_be_included_in_city_of_St._George%2C_Louisiana.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail_unscaled 2x"
+                                                         },
+                                        "url":  "https://upload.wikimedia.org/wikipedia/commons/1/1a/Census_Designated_Places_to_be_included_in_city_of_St._George%2C_Louisiana.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=original",
+                                        "descriptionurl":  "https://commons.wikimedia.org/wiki/File:Census_Designated_Places_to_be_included_in_city_of_St._George,_Louisiana.jpg",
+                                        "descriptionshorturl":  "https://commons.wikimedia.org/w/index.php?curid=147942733",
+                                        "extmetadata":  {
+                                                            "DateTime":  {
+                                                                             "value":  "2024-05-01 17:27:35",
+                                                                             "source":  "mediawiki-metadata",
+                                                                             "hidden":  ""
+                                                                         },
+                                                            "ObjectName":  {
+                                                                               "value":  "Census Designated Places to be included in city of St. George, Louisiana",
+                                                                               "source":  "mediawiki-metadata"
+                                                                           },
+                                                            "CommonsMetadataExtension":  {
+                                                                                             "value":  1.2,
+                                                                                             "source":  "extension",
+                                                                                             "hidden":  ""
+                                                                                         },
+                                                            "Categories":  {
+                                                                               "value":  "PD US Government|Census-designated places in the United States|CC-PD-Mark|St. George, Louisiana",
+                                                                               "source":  "commons-categories",
+                                                                               "hidden":  ""
+                                                                           },
+                                                            "Assessments":  {
+                                                                                "value":  "",
+                                                                                "source":  "commons-categories",
+                                                                                "hidden":  ""
+                                                                            },
+                                                            "ImageDescription":  {
+                                                                                     "value":  "Map of Census Designated Places to be included in city of St. George, Louisiana",
+                                                                                     "source":  "commons-desc-page"
+                                                                                 },
+                                                            "DateTimeOriginal":  {
+                                                                                     "value":  "2024-05-01",
+                                                                                     "source":  "commons-desc-page"
+                                                                                 },
+                                                            "Credit":  {
+                                                                           "value":  "Uploaded a work by US Government from \u003ca rel=\"nofollow\" class=\"external free\" href=\"https://tigerweb.geo.census.gov/tigerweb/\"\u003ehttps://tigerweb.geo.census.gov/tigerweb/\u003c/a\u003e",
+                                                                           "source":  "commons-desc-page"
+                                                                       },
+                                                            "Artist":  {
+                                                                           "value":  "Us Census Bureau",
+                                                                           "source":  "commons-desc-page"
+                                                                       },
+                                                            "LicenseShortName":  {
+                                                                                     "value":  "Public domain",
+                                                                                     "source":  "commons-desc-page",
+                                                                                     "hidden":  ""
+                                                                                 },
+                                                            "UsageTerms":  {
+                                                                               "value":  "Public domain",
+                                                                               "source":  "commons-desc-page"
+                                                                           },
+                                                            "AttributionRequired":  {
+                                                                                        "value":  "false",
+                                                                                        "source":  "commons-desc-page",
+                                                                                        "hidden":  ""
+                                                                                    },
+                                                            "Copyrighted":  {
+                                                                                "value":  "False",
+                                                                                "source":  "commons-desc-page",
+                                                                                "hidden":  ""
+                                                                            },
+                                                            "Restrictions":  {
+                                                                                 "value":  "",
+                                                                                 "source":  "commons-desc-page",
+                                                                                 "hidden":  ""
+                                                                             },
+                                                            "License":  {
+                                                                            "value":  "pd",
+                                                                            "source":  "commons-templates",
+                                                                            "hidden":  ""
+                                                                        }
+                                                        }
+                                    }
+                                ]
+              },
+    "imageError":  null
+}

@@ -1,0 +1,261 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background: #fff;
+  border: 1px solid #e2f0f7;
+  border-radius: 20px;
+  overflow: hidden;
+}
+.tabs {
+  display: flex;
+  border-bottom: 1px solid #e5eff5;
+  gap: 12px;
+  padding: 0 14px;
+  flex-shrink: 0;
+}
+.tabs button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: 1;
+  white-space: nowrap;
+  position: relative;
+  padding: 18px 0 16px;
+  min-height: 52px;
+  background: transparent;
+  color: #687991;
+  border-radius: 0;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.tabs button span {
+  font-size: 10px;
+  background: #edf6fa;
+  padding: 2px 5px;
+  border-radius: 6px;
+}
+.tabs .activeTab {
+  color: #008ac4;
+  font-weight: 750;
+}
+.activeTab::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #00acdc;
+  border-radius: 3px;
+}
+.filters {
+  padding: 14px 14px 4px;
+}
+.search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin: 0 0 10px;
+  color: #7a8da1;
+}
+.search svg {
+  position: absolute;
+  left: 11px;
+  pointer-events: none;
+}
+.search input {
+  width: 100%;
+  min-height: 40px;
+  border-radius: 10px;
+  padding: 9px 10px 9px 34px;
+  border: 1px solid #dfebf2;
+  background: #f8fcfe;
+  font-size: 12px;
+  color: #20324d;
+}
+.categoryLabel {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 0;
+  color: #75849a;
+  font-size: 11px;
+  font-weight: 500;
+}
+.categoryLabel select {
+  min-width: 0;
+  flex: 1;
+  min-height: 36px;
+  padding: 6px;
+  background: #fff;
+  color: #52647b;
+  border: 1px solid #dfebf2;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 12px;
+}
+.results {
+  color: #7a8da1;
+  font-size: 11px;
+  padding: 10px 16px 8px;
+}
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 10px 12px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #c8e2ef transparent;
+  flex: 1;
+  min-height: 0;
+}
+.card {
+  position: relative;
+  flex-shrink: 0;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 100px minmax(0, 1fr);
+  gap: 12px;
+  padding: 8px;
+  color: #15243e;
+  background: #fff;
+  border: 1px solid #e2edf4;
+  border-radius: 16px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 400;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+.card:hover {
+  border-color: #77cfe7;
+  background: #f9fdff;
+}
+.card.selected {
+  background: #effaff;
+  border-color: #00b3e6;
+  box-shadow: inset 0 0 0 1px #00b3e625;
+}
+.thumbnail {
+  width: 100px;
+  height: 128px;
+  border-radius: 11px;
+}
+.cardBody {
+  min-width: 0;
+  align-self: center;
+  padding-right: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.cardBody strong {
+  font-size: 16px;
+  letter-spacing: -0.03em;
+  line-height: 1.25;
+  font-weight: 750;
+}
+.province {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #466078;
+  font-size: 12px;
+}
+.province svg {
+  color: #009bd4;
+  flex-shrink: 0;
+}
+.category {
+  color: #0086b8;
+  font-size: 10px;
+  line-height: 1.3;
+}
+.description {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  color: #738096;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.chevron {
+  position: absolute;
+  right: 7px;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 28px;
+  color: #0095cf;
+  transform: translateY(-50%);
+}
+.empty {
+  padding: 30px 12px;
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  text-align: center;
+  color: #61748c;
+  font-size: 13px;
+}
+.empty p {
+  margin: 0;
+}
+.empty button {
+  background: #e9f8ff;
+  color: #007fab;
+  cursor: pointer;
+  font-size: 12px;
+}
+@media (min-width: 901px) and (max-width: 1100px) {
+  .card {
+    grid-template-columns: 82px minmax(0, 1fr);
+    gap: 9px;
+  }
+  .thumbnail {
+    width: 82px;
+    height: 124px;
+  }
+  .cardBody strong {
+    font-size: 14px;
+  }
+  .tabs {
+    gap: 6px;
+    padding: 0 10px;
+  }
+}
+@media (max-width: 900px) {
+  .list {
+    overflow: visible;
+  }
+  .root {
+    height: auto;
+  }
+  .card {
+    grid-template-columns: 112px minmax(0, 1fr);
+  }
+  .thumbnail {
+    width: 112px;
+    height: 120px;
+  }
+  .cardBody strong {
+    font-size: 17px;
+  }
+  .description {
+    font-size: 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+}
