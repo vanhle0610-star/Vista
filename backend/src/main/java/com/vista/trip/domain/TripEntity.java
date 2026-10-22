@@ -26,7 +26,7 @@ public class TripEntity {
   @Column(name = "id", nullable = false, updatable = false)
   private UUID id;
 
-  @Column(name = "owner_id", nullable = false, updatable = false)
+  @Column(name = "owner_id", nullable = false)
   private UUID ownerId;
 
   @Column(name = "title", nullable = false, length = 200)
@@ -68,7 +68,8 @@ public class TripEntity {
   @Column(name = "version", nullable = false)
   private Long version;
 
-  protected TripEntity() {}
+  protected TripEntity() {
+  }
 
   public TripEntity(UUID ownerId, String title, LocalDate startDate, LocalDate endDate) {
     this.id = UUID.randomUUID();
@@ -97,39 +98,95 @@ public class TripEntity {
 
   // ── Getters / Setters ──────────────────────────────────────────────────────
 
-  public UUID getId() { return id; }
+  public UUID getId() {
+    return id;
+  }
 
-  public UUID getOwnerId() { return ownerId; }
+  public UUID getOwnerId() {
+    return ownerId;
+  }
 
-  public String getTitle() { return title; }
-  public void setTitle(String title) { this.title = title; }
+  public void setOwnerId(UUID ownerId) {
+    this.ownerId = ownerId;
+  }
 
-  public LocalDate getStartDate() { return startDate; }
-  public void setStartDate(LocalDate startDate) { this.startDate = startDate; }
+  public String getTitle() {
+    return title;
+  }
 
-  public LocalDate getEndDate() { return endDate; }
-  public void setEndDate(LocalDate endDate) { this.endDate = endDate; }
+  public void setTitle(String title) {
+    this.title = title;
+  }
 
-  public String getDestinationSummary() { return destinationSummary; }
+  public LocalDate getStartDate() {
+    return startDate;
+  }
+
+  public void setStartDate(LocalDate startDate) {
+    this.startDate = startDate;
+  }
+
+  public LocalDate getEndDate() {
+    return endDate;
+  }
+
+  public void setEndDate(LocalDate endDate) {
+    this.endDate = endDate;
+  }
+
+  public String getDestinationSummary() {
+    return destinationSummary;
+  }
+
   public void setDestinationSummary(String destinationSummary) {
     this.destinationSummary = destinationSummary;
   }
 
-  public BigDecimal getBudgetTotal() { return budgetTotal; }
-  public void setBudgetTotal(BigDecimal budgetTotal) { this.budgetTotal = budgetTotal; }
+  public BigDecimal getBudgetTotal() {
+    return budgetTotal;
+  }
 
-  public String getCurrency() { return currency; }
-  public void setCurrency(String currency) { this.currency = currency; }
+  public void setBudgetTotal(BigDecimal budgetTotal) {
+    this.budgetTotal = budgetTotal;
+  }
 
-  public TripStatus getStatus() { return status; }
-  public void setStatus(TripStatus status) { this.status = status; }
+  public String getCurrency() {
+    return currency;
+  }
 
-  public TripVisibility getVisibility() { return visibility; }
-  public void setVisibility(TripVisibility visibility) { this.visibility = visibility; }
+  public void setCurrency(String currency) {
+    this.currency = currency;
+  }
 
-  public List<TripMemberEntity> getMembers() { return members; }
+  public TripStatus getStatus() {
+    return status;
+  }
 
-  public Instant getCreatedAt() { return createdAt; }
-  public Instant getUpdatedAt() { return updatedAt; }
-  public Long getVersion() { return version; }
+  public void setStatus(TripStatus status) {
+    this.status = status;
+  }
+
+  public TripVisibility getVisibility() {
+    return visibility;
+  }
+
+  public void setVisibility(TripVisibility visibility) {
+    this.visibility = visibility;
+  }
+
+  public List<TripMemberEntity> getMembers() {
+    return members;
+  }
+
+  public Instant getCreatedAt() {
+    return createdAt;
+  }
+
+  public Instant getUpdatedAt() {
+    return updatedAt;
+  }
+
+  public Long getVersion() {
+    return version;
+  }
 }

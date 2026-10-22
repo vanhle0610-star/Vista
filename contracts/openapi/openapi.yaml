@@ -332,6 +332,64 @@ paths:
           $ref: '#/components/responses/Problem'
         '404':
           $ref: '#/components/responses/Problem'
+    patch:
+      tags: [Trips]
+      security: [{ bearerAuth: [] }]
+      operationId: updateTrip
+      summary: Cập nhật thông tin chuyến đi (Chỉ dành cho Owner) (FR-PLAN-01)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTripRequest'
+      responses:
+        '200':
+          description: Cập nhật chuyến đi thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TripDetail'
+        '400':
+          $ref: '#/components/responses/Problem'
+        '401':
+          $ref: '#/components/responses/Problem'
+        '403':
+          $ref: '#/components/responses/Problem'
+        '404':
+          $ref: '#/components/responses/Problem'
+
+  /trips/{id}/members:
+    get:
+      tags: [Trips]
+      security: [{ bearerAuth: [] }]
+      operationId: listTripMembers
+      summary: Lấy danh sách thành viên trong chuyến đi (FR-GRP-01)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Danh sách thành viên trong chuyến đi
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TripMemberInfo'
+        '401':
+          $ref: '#/components/responses/Problem'
+        '403':
+          $ref: '#/components/responses/Problem'
+        '404':
+          $ref: '#/components/responses/Problem'
 
   /trips/{id}/invitations:
     post:
@@ -648,6 +706,19 @@ components:
         destinationSummary: { type: string }
         budgetTotal: { type: number, minimum: 0 }
 
+    UpdateTripRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        title: { type: string, minLength: 1, maxLength: 200 }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+        destinationSummary: { type: string }
+        budgetTotal: { type: number, minimum: 0 }
+        currency: { type: string, maxLength: 3 }
+        status: { type: string, enum: [PLANNING, ACTIVE, ENDED, CANCELLED] }
+        visibility: { type: string, enum: [PUBLIC, PRIVATE] }
+
     TripSummary:
       type: object
       required: [id, title, startDate, endDate, status, role]
@@ -709,7 +780,9 @@ components:
         displayName: { type: string }
         avatarUrl: { type: [string, 'null'], format: uri }
         role: { type: string, enum: [OWNER, MEMBER] }
-        status: { type: string, enum: [PENDING, ACCEPTED, DECLINED] }
+        status: { type: string, enum: [ACTIVE, INVITED, LEFT, REMOVED, PENDING, ACCEPTED, DECLINED] }
+        email: { type: string, format: email }
+        joinedAt: { type: string, format: date-time }
 
     CreateInvitationRequest:
       type: object

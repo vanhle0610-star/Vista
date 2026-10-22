@@ -131,6 +131,23 @@ public class TripController {
     return ResponseEntity.noContent().build();
   }
 
+  @PostMapping("/{tripId}/leave")
+  @Operation(summary = "Rời khỏi chuyến đi — chỉ dành cho thành viên (TV2 W4)")
+  public ResponseEntity<Void> leaveTrip(@PathVariable UUID tripId) {
+    UUID currentUserId = currentUserProvider.getCurrentUserId();
+    tripService.leaveTrip(tripId, currentUserId);
+    return ResponseEntity.noContent().build();
+  }
+
+  @PostMapping("/{tripId}/transfer-owner")
+  @Operation(summary = "Chuyển quyền Chủ sở hữu chuyến đi (TV2 W4)")
+  public ResponseEntity<TripResponse> transferOwner(
+      @PathVariable UUID tripId, @Valid @RequestBody com.vista.trip.api.dto.TransferOwnerRequest request) {
+    UUID currentUserId = currentUserProvider.getCurrentUserId();
+    TripResponse response = tripService.transferOwner(tripId, currentUserId, request.newOwnerId());
+    return ResponseEntity.ok(response);
+  }
+
   @GetMapping("/{tripId}/members")
   @Operation(summary = "Lấy danh sách thành viên chuyến đi kèm phân bổ ngân sách thủ quỹ (TV4)")
   public ResponseEntity<List<TripMemberResponse>> getTripMembers(@PathVariable UUID tripId) {

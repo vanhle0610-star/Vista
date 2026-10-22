@@ -18,6 +18,7 @@ import Svg, { Path, Rect, Circle } from 'react-native-svg';
 import { VietnamMobileScenery } from '../components/VietnamMobileScenery';
 import { MobileAnimatedAirplane } from '../components/MobileAnimatedAirplane';
 import { VistaCompassLogo } from '../components/VistaCompassLogo';
+import { authStorage } from '@/services/auth/authStorage';
 
 export function RegisterScreen() {
   const insets = useSafeAreaInsets();
@@ -34,31 +35,42 @@ export function RegisterScreen() {
 
   const topInset = Math.max(insets.top, Platform.OS === 'web' ? 12 : 24);
 
+  const showAlert = (title: string, message: string, onOk?: () => void) => {
+    if (Platform.OS === 'web') {
+      if (typeof window !== 'undefined') {
+        window.alert(`${title}\n\n${message}`);
+      }
+      onOk?.();
+    } else {
+      Alert.alert(title, message, onOk ? [{ text: 'OK', onPress: onOk }] : undefined);
+    }
+  };
+
   const handleRegister = async () => {
     if (!displayName || !email || !password || !confirmPassword) {
-      Alert.alert('Thông báo', 'Vui lòng điền đầy đủ tất cả các trường!');
+      showAlert('Thông báo', 'Vui lòng điền đầy đủ tất cả các trường!');
       return;
     }
 
     if (password.length < 10) {
-      Alert.alert('Mật khẩu yếu', 'Mật khẩu cần tối thiểu 10 ký tự để đảm bảo an toàn.');
+      showAlert('Mật khẩu yếu', 'Mật khẩu cần tối thiểu 10 ký tự để đảm bảo an toàn.');
       return;
     }
 
     if (password.length > 128) {
-      Alert.alert('Lỗi mật khẩu', 'Mật khẩu không được vượt quá 128 ký tự.');
+      showAlert('Lỗi mật khẩu', 'Mật khẩu không được vượt quá 128 ký tự.');
       return;
     }
 
     if (password !== confirmPassword) {
-      Alert.alert('Lỗi xác nhận', 'Mật khẩu xác nhận không khớp với mật khẩu đã nhập.');
+      showAlert('Lỗi xác nhận', 'Mật khẩu xác nhận không khớp với mật khẩu đã nhập.');
       return;
     }
 
     setLoading(true);
     try {
       const apiBase = (
-        process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:8080/api/v1'
+        process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:8081/api/v1'
       ).replace(/\/+$/, '');
 
       const response = await fetch(`${apiBase}/auth/register`, {
@@ -73,20 +85,30 @@ export function RegisterScreen() {
       });
 
       if (response.ok) {
-        Alert.alert(
-          'Đăng ký thành công',
-          'Chào mừng bạn gia nhập VISTA! Hãy bắt đầu hành trình khám phá Việt Nam.',
-          [{ text: 'Bắt đầu ngay', onPress: () => router.replace('/(tabs)/discover') }]
-        );
+        const data = await response.json();
+        await authStorage.setSession({
+          accessToken: data.accessToken,
+          refreshToken: data.refreshToken,
+          user: data.user,
+        });
+        if (Platform.OS === 'web') {
+          router.replace('/(tabs)/discover');
+        } else {
+          Alert.alert(
+            'Đăng ký thành công',
+            'Chào mừng bạn gia nhập VISTA! Hãy bắt đầu hành trình khám phá Việt Nam.',
+            [{ text: 'Bắt đầu ngay', onPress: () => router.replace('/(tabs)/discover') }]
+          );
+        }
       } else {
         const errorData = await response.json().catch(() => null);
-        Alert.alert(
+        showAlert(
           'Đăng ký không thành công',
           errorData?.detail || 'Email này có thể đã được đăng ký trên hệ thống.'
         );
       }
     } catch {
-      Alert.alert(
+      showAlert(
         'Lỗi kết nối',
         'Không thể kết nối đến máy chủ VISTA. Vui lòng kiểm tra kết nối mạng và thử lại sau.'
       );
@@ -98,22 +120,18 @@ export function RegisterScreen() {
   const handleGoogleLogin = async () => {
     const googleClientId = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID;
     if (!googleClientId) {
-      Alert.alert(
+      showAlert(
         'Đăng ký bằng Google',
-        'Tính năng Đăng ký bằng Google trên thiết bị di động yêu cầu cấu hình OAuth Client ID trong biến môi trường EXPO_PUBLIC_GOOGLE_CLIENT_ID.'
+        'Tính năng Đăng nhập Google đang dùng cấu hình demo. Vui lòng đăng ký bằng Email & Mật khẩu để trải nghiệm đầy đủ các tính năng.'
       );
       return;
     }
 
     setLoading(true);
     try {
-      const apiBase = (
-        process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:8080/api/v1'
-      ).replace(/\/+$/, '');
-
-      Alert.alert(
+      showAlert(
         'Thông báo',
-        'Vui lòng cấu hình Expo WebBrowser/AuthSession để hoàn tất phiên đăng ký Google trên thiết bị di động.'
+        'Vui lòng cấu hình Expo WebBrowser/AuthSession để hoàn tất phiên đăng ký Google.'
       );
     } finally {
       setLoading(false);
