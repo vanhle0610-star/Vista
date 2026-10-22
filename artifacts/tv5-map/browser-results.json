@@ -1,0 +1,62 @@
+{
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 960,
+      "scrollWidth": 1440,
+      "headerHeight": 81,
+      "headingFont": "Arial, \"Segoe UI\", sans-serif",
+      "canvasCount": 1,
+      "photos": true
+    },
+    {
+      "width": 1280,
+      "height": 900,
+      "scrollWidth": 1280,
+      "headerHeight": 81,
+      "headingFont": "Arial, \"Segoe UI\", sans-serif",
+      "canvasCount": 1,
+      "photos": true
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "scrollWidth": 768,
+      "headerHeight": 73,
+      "headingFont": "Arial, \"Segoe UI\", sans-serif",
+      "canvasCount": 1,
+      "photos": true
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390,
+      "headerHeight": 73,
+      "headingFont": "Arial, \"Segoe UI\", sans-serif",
+      "canvasCount": 1,
+      "photos": true
+    },
+    {
+      "width": 360,
+      "height": 800,
+      "scrollWidth": 360,
+      "headerHeight": 73,
+      "headingFont": "Arial, \"Segoe UI\", sans-serif",
+      "canvasCount": 1,
+      "photos": true
+    }
+  ],
+  "checks": [
+    "5 viewport widths: no overflow, one map canvas, local thumbnails loaded, sans-serif font",
+    "mobile menu opens and closes",
+    "2D/3D preserves the same map instance",
+    "focus bridge, right-drag rotation, two real WebGL screenshots",
+    "card/marker selection, accent-insensitive search, category filter and empty state",
+    "dismiss GPS banner without requesting location",
+    "GPS success, deny, unavailable and timeout via test doubles; no automatic GPS",
+    "leave route and return: one canvas and model restored",
+    "tile failure reports an error; retry restores tiles and 3D model",
+    "WebGL unavailable: correct notice, destination selection and real directions link still work"
+  ],
+  "errors": []
+}

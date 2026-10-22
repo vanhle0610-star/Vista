@@ -1,0 +1,1701 @@
+openapi: 3.1.0
+info:
+  title: VISTA TV5 Week 1 draft
+  version: 0.1.0
+  description: Proposed only; no TV5 endpoints implemented. Included by main
+    contract. See docs/api/tv5-week1.md.
+  license:
+    name: Proprietary
+    identifier: LicenseRef-Proprietary
+servers:
+  - url: http://localhost:8080/api/v1
+tags:
+  - name: TV5 Map
+    description: Draft map reads
+  - name: TV5 Community
+    description: Draft community operations
+  - name: TV5 Safety
+    description: Draft private trip operations
+paths:
+  /map/destinations:
+    get:
+      tags:
+        - TV5 Map
+      operationId: tv5ListMapDestinations
+      summary: Published destinations with coordinates
+      description: "DRAFT W1: proposed contract for subsequent weeks; endpoint is not
+        implemented."
+      x-status: draft
+      security: []
+      responses:
+        "200":
+          description: Proposed response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - items
+                  - page
+                  - size
+                  - total
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/MapDestination"
+                  page:
+                    type: integer
+                  size:
+                    type: integer
+                  total:
+                    type: integer
+                    format: int64
+        "400":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "404":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+      parameters:
+        - name: minLatitude
+          in: query
+          required: true
+          schema:
+            type: number
+            minimum: -90
+            maximum: 90
+        - name: maxLatitude
+          in: query
+          required: true
+          schema:
+            type: number
+            minimum: -90
+            maximum: 90
+        - name: minLongitude
+          in: query
+          required: true
+          schema:
+            type: number
+            minimum: -180
+            maximum: 180
+        - name: maxLongitude
+          in: query
+          required: true
+          schema:
+            type: number
+            minimum: -180
+            maximum: 180
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+  /posts:
+    get:
+      tags:
+        - TV5 Community
+      operationId: tv5ListPosts
+      summary: Public visible, non-deleted posts
+      description: "DRAFT W1: proposed contract for subsequent weeks; endpoint is not
+        implemented."
+      x-status: draft
+      security: []
+      responses:
+        "200":
+          description: Proposed response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - items
+                  - page
+                  - size
+                  - total
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Post"
+                  page:
+                    type: integer
+                  size:
+                    type: integer
+                  total:
+                    type: integer
+                    format: int64
+        "400":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "404":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+    post:
+      tags:
+        - TV5 Community
+      operationId: tv5CreatePost
+      summary: Create own post; initial PENDING
+      description: "DRAFT W1: proposed contract for subsequent weeks; endpoint is not
+        implemented."
+      x-status: draft
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: Proposed response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+        "400":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "401":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "404":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "409":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostWrite"
+  "/posts/{postId}":
+    get:
+      tags:
+        - TV5 Community
+      operationId: tv5GetPost
+      summary: Public visible, non-deleted post
+      description: "DRAFT W1: proposed contract for subsequent weeks; endpoint is not
+        implemented."
+      x-status: draft
+      security: []
+      responses:
+        "200":
+          description: Proposed response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+        "400":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "404":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+    patch:
+      tags:
+        - TV5 Community
+      operationId: tv5UpdatePost
+      summary: Author only; version required
+      description: "DRAFT W1: proposed contract for subsequent weeks; endpoint is not
+        implemented."
+      x-status: draft
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Proposed response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+        "400":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "401":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "404":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "409":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: If-Match
+          in: header
+          required: true
+          schema:
+            type: string
+            pattern: ^"[0-9]+"$
+          description: Quoted post version, e.g. "0". Atomic comparison; 409 on stale
+            version.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostWrite"
+    delete:
+      tags:
+        - TV5 Community
+      operationId: tv5DeletePost
+      summary: Author soft delete; moderation state retained
+      description: "DRAFT W1: proposed contract for subsequent weeks; endpoint is not
+        implemented."
+      x-status: draft
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Completed; no body
+        "400":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "401":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "404":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "409":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: If-Match
+          in: header
+          required: true
+          schema:
+            type: string
+            pattern: ^"[0-9]+"$
+          description: Quoted post version, e.g. "0". Atomic comparison; 409 on stale
+            version.
+  "/posts/{postId}/comments":
+    get:
+      tags:
+        - TV5 Community
+      operationId: tv5ListComments
+      summary: Visible comments on visible non-deleted post
+      description: "DRAFT W1: proposed contract for subsequent weeks; endpoint is not
+        implemented."
+      x-status: draft
+      security: []
+      responses:
+        "200":
+          description: Proposed response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - items
+                  - page
+                  - size
+                  - total
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Comment"
+                  page:
+                    type: integer
+                  size:
+                    type: integer
+                  total:
+                    type: integer
+                    format: int64
+        "400":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "404":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+    post:
+      tags:
+        - TV5 Community
+      operationId: tv5CreateComment
+      summary: Authenticated comment on visible non-deleted post
+      description: "DRAFT W1: proposed contract for subsequent weeks; endpoint is not
+        implemented."
+      x-status: draft
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: Proposed response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Comment"
+        "400":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "401":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "404":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "409":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommentWrite"
+  "/posts/{postId}/comments/{commentId}":
+    patch:
+      tags:
+        - TV5 Community
+      operationId: tv5UpdateComment
+      summary: Author only; comment must belong to path post
+      description: "DRAFT W1: proposed contract for subsequent weeks; endpoint is not
+        implemented."
+      x-status: draft
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Proposed response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Comment"
+        "400":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "401":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "404":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "409":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommentWrite"
+    delete:
+      tags:
+        - TV5 Community
+      operationId: tv5DeleteComment
+      summary: Author only; soft delete
+      description: "DRAFT W1: proposed contract for subsequent weeks; endpoint is not
+        implemented."
+      x-status: draft
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Completed; no body
+        "400":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "401":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "404":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "409":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+  "/trips/{tripId}/check-ins":
+    get:
+      tags:
+        - TV5 Safety
+      operationId: tv5ListCheckIns
+      summary: Read trip check-ins
+      description: "DRAFT W1: proposed contract for subsequent weeks; endpoint is not
+        implemented. All reads and writes require
+        TripAccessService.requireMember(tripId, currentUserId); OWNER or active
+        MEMBER only."
+      x-status: draft
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Proposed response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - items
+                  - page
+                  - size
+                  - total
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/CheckIn"
+                  page:
+                    type: integer
+                  size:
+                    type: integer
+                  total:
+                    type: integer
+                    format: int64
+        "400":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "401":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "404":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+    post:
+      tags:
+        - TV5 Safety
+      operationId: tv5CreateCheckIn
+      summary: Check in current user; server timestamp
+      description: "DRAFT W1: proposed contract for subsequent weeks; endpoint is not
+        implemented. All reads and writes require
+        TripAccessService.requireMember(tripId, currentUserId); OWNER or active
+        MEMBER only."
+      x-status: draft
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: Proposed response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckIn"
+        "400":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "401":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "404":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "409":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckInWrite"
+  "/trips/{tripId}/meetup-points":
+    get:
+      tags:
+        - TV5 Safety
+      operationId: tv5ListMeetups
+      summary: Read trip meetup points
+      description: "DRAFT W1: proposed contract for subsequent weeks; endpoint is not
+        implemented. All reads and writes require
+        TripAccessService.requireMember(tripId, currentUserId); OWNER or active
+        MEMBER only."
+      x-status: draft
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Proposed response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - items
+                  - page
+                  - size
+                  - total
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Meetup"
+                  page:
+                    type: integer
+                  size:
+                    type: integer
+                  total:
+                    type: integer
+                    format: int64
+        "400":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "401":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "404":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+    post:
+      tags:
+        - TV5 Safety
+      operationId: tv5CreateMeetup
+      summary: Create meetup as current user
+      description: "DRAFT W1: proposed contract for subsequent weeks; endpoint is not
+        implemented. All reads and writes require
+        TripAccessService.requireMember(tripId, currentUserId); OWNER or active
+        MEMBER only."
+      x-status: draft
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: Proposed response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Meetup"
+        "400":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "401":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "404":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "409":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MeetupWrite"
+  "/trips/{tripId}/meetup-points/{meetupId}":
+    patch:
+      tags:
+        - TV5 Safety
+      operationId: tv5UpdateMeetup
+      summary: Creator only, plus active trip membership
+      description: "DRAFT W1: proposed contract for subsequent weeks; endpoint is not
+        implemented. All reads and writes require
+        TripAccessService.requireMember(tripId, currentUserId); OWNER or active
+        MEMBER only."
+      x-status: draft
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Proposed response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Meetup"
+        "400":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "401":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "404":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "409":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: meetupId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MeetupWrite"
+    delete:
+      tags:
+        - TV5 Safety
+      operationId: tv5DeleteMeetup
+      summary: Creator only, plus active trip membership
+      description: "DRAFT W1: proposed contract for subsequent weeks; endpoint is not
+        implemented. All reads and writes require
+        TripAccessService.requireMember(tripId, currentUserId); OWNER or active
+        MEMBER only."
+      x-status: draft
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Completed; no body
+        "400":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "401":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "404":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "409":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: meetupId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+  "/trips/{tripId}/location-shares":
+    get:
+      tags:
+        - TV5 Safety
+      operationId: tv5ListLocationShares
+      summary: Only enabled, unexpired positions with current membership
+      description: "DRAFT W1: proposed contract for subsequent weeks; endpoint is not
+        implemented. All reads and writes require
+        TripAccessService.requireMember(tripId, currentUserId); OWNER or active
+        MEMBER only."
+      x-status: draft
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Proposed response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - items
+                  - page
+                  - size
+                  - total
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Share"
+                  page:
+                    type: integer
+                  size:
+                    type: integer
+                  total:
+                    type: integer
+                    format: int64
+        "400":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "401":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "404":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+  "/trips/{tripId}/location-shares/me":
+    put:
+      tags:
+        - TV5 Safety
+      operationId: tv5StartLocationShare
+      summary: Explicit opt-in; start or replace expired/disabled current session
+      description: "DRAFT W1: proposed contract for subsequent weeks; endpoint is not
+        implemented. All reads and writes require
+        TripAccessService.requireMember(tripId, currentUserId); OWNER or active
+        MEMBER only."
+      x-status: draft
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Proposed response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Share"
+        "400":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "401":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "404":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "409":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShareStart"
+    patch:
+      tags:
+        - TV5 Safety
+      operationId: tv5UpdateLocationShare
+      summary: Update latest coordinates of own active session; never extends expiry
+      description: "DRAFT W1: proposed contract for subsequent weeks; endpoint is not
+        implemented. All reads and writes require
+        TripAccessService.requireMember(tripId, currentUserId); OWNER or active
+        MEMBER only."
+      x-status: draft
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Proposed response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Share"
+        "400":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "401":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "404":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "409":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShareUpdate"
+    delete:
+      tags:
+        - TV5 Safety
+      operationId: tv5StopLocationShare
+      summary: Idempotently disable and clear coordinates atomically
+      description: "DRAFT W1: proposed contract for subsequent weeks; endpoint is not
+        implemented. All reads and writes require
+        TripAccessService.requireMember(tripId, currentUserId); OWNER or active
+        MEMBER only."
+      x-status: draft
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Completed; no body
+        "400":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "401":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "403":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "404":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "409":
+          description: RFC 9457 problem; code identifies validation, access, not found or
+            conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Problem:
+      type: object
+      required:
+        - type
+        - title
+        - status
+        - detail
+        - instance
+        - code
+        - requestId
+      properties:
+        type:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        code:
+          type: string
+        requestId:
+          type: string
+    Coordinates:
+      type: object
+      required:
+        - latitude
+        - longitude
+      properties:
+        latitude:
+          type: number
+          minimum: -90
+          maximum: 90
+        longitude:
+          type: number
+          minimum: -180
+          maximum: 180
+    Image:
+      type: object
+      additionalProperties: false
+      required:
+        - storagePath
+        - mediaType
+      properties:
+        storagePath:
+          type: string
+          minLength: 1
+          description: Relative Storage object path; server must validate ownership. No
+            binary/base64, secret or signed URL.
+        mediaType:
+          type: string
+          enum:
+            - image/jpeg
+            - image/png
+            - image/webp
+    PostWrite:
+      type: object
+      additionalProperties: false
+      required:
+        - body
+      properties:
+        body:
+          type: string
+          minLength: 1
+        destinationId:
+          type:
+            - string
+            - "null"
+          format: uuid
+        media:
+          type: array
+          items:
+            $ref: "#/components/schemas/Image"
+    Post:
+      type: object
+      required:
+        - id
+        - userId
+        - body
+        - status
+        - version
+        - createdAt
+        - updatedAt
+        - media
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        body:
+          type: string
+        destinationId:
+          type:
+            - string
+            - "null"
+          format: uuid
+        status:
+          type: string
+          enum:
+            - PENDING
+            - VISIBLE
+            - HIDDEN
+        version:
+          type: integer
+          format: int64
+          minimum: 0
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        media:
+          type: array
+          items:
+            $ref: "#/components/schemas/Image"
+    CommentWrite:
+      type: object
+      additionalProperties: false
+      required:
+        - body
+      properties:
+        body:
+          type: string
+          minLength: 1
+    Comment:
+      type: object
+      required:
+        - id
+        - postId
+        - userId
+        - body
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        postId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        body:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CheckInWrite:
+      allOf:
+        - $ref: "#/components/schemas/Coordinates"
+        - type: object
+          properties:
+            itineraryItemId:
+              type:
+                - string
+                - "null"
+              format: uuid
+              description: Must belong to this trip; validate through TV3 public interface.
+    CheckIn:
+      allOf:
+        - $ref: "#/components/schemas/CheckInWrite"
+        - type: object
+          required:
+            - id
+            - tripId
+            - userId
+            - checkedInAt
+          properties:
+            id:
+              type: string
+              format: uuid
+            tripId:
+              type: string
+              format: uuid
+            userId:
+              type: string
+              format: uuid
+            checkedInAt:
+              type: string
+              format: date-time
+    MeetupWrite:
+      allOf:
+        - $ref: "#/components/schemas/Coordinates"
+        - type: object
+          required:
+            - label
+          properties:
+            label:
+              type: string
+              minLength: 1
+              maxLength: 200
+            description:
+              type:
+                - string
+                - "null"
+            targetTime:
+              type:
+                - string
+                - "null"
+              format: date-time
+    Meetup:
+      allOf:
+        - $ref: "#/components/schemas/MeetupWrite"
+        - type: object
+          required:
+            - id
+            - tripId
+            - createdBy
+            - createdAt
+            - updatedAt
+          properties:
+            id:
+              type: string
+              format: uuid
+            tripId:
+              type: string
+              format: uuid
+            createdBy:
+              type: string
+              format: uuid
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+    ShareStart:
+      allOf:
+        - $ref: "#/components/schemas/Coordinates"
+        - type: object
+          required:
+            - consent
+            - expiresAt
+          properties:
+            consent:
+              type: boolean
+              const: true
+            expiresAt:
+              type: string
+              format: date-time
+              description: Must be in the future. Maximum duration pending team agreement; no
+                implicit default.
+    ShareUpdate:
+      allOf:
+        - $ref: "#/components/schemas/Coordinates"
+        - type: object
+          required:
+            - sessionStartedAt
+          properties:
+            sessionStartedAt:
+              type: string
+              format: date-time
+              description: Compare to current started_at to reject queued updates from an old
+                session.
+    Share:
+      allOf:
+        - $ref: "#/components/schemas/Coordinates"
+        - type: object
+          required:
+            - id
+            - tripId
+            - userId
+            - startedAt
+            - expiresAt
+            - lastUpdatedAt
+          properties:
+            id:
+              type: string
+              format: uuid
+            tripId:
+              type: string
+              format: uuid
+            userId:
+              type: string
+              format: uuid
+            startedAt:
+              type: string
+              format: date-time
+            expiresAt:
+              type: string
+              format: date-time
+            lastUpdatedAt:
+              type: string
+              format: date-time
+    MapDestination:
+      allOf:
+        - $ref: "#/components/schemas/Coordinates"
+        - type: object
+          required:
+            - id
+            - name
+          properties:
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string

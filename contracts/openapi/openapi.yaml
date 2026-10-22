@@ -498,6 +498,26 @@ paths:
           $ref: '#/components/responses/Problem'
         '429':
           $ref: '#/components/responses/Problem'
+  /map/destinations:
+    $ref: "./tv5-week1.yaml#/paths/~1map~1destinations"
+  /posts:
+    $ref: "./tv5-week1.yaml#/paths/~1posts"
+  /posts/{postId}:
+    $ref: "./tv5-week1.yaml#/paths/~1posts~1{postId}"
+  /posts/{postId}/comments:
+    $ref: "./tv5-week1.yaml#/paths/~1posts~1{postId}~1comments"
+  /posts/{postId}/comments/{commentId}:
+    $ref: "./tv5-week1.yaml#/paths/~1posts~1{postId}~1comments~1{commentId}"
+  /trips/{tripId}/check-ins:
+    $ref: "./tv5-week1.yaml#/paths/~1trips~1{tripId}~1check-ins"
+  /trips/{tripId}/meetup-points:
+    $ref: "./tv5-week1.yaml#/paths/~1trips~1{tripId}~1meetup-points"
+  /trips/{tripId}/meetup-points/{meetupId}:
+    $ref: "./tv5-week1.yaml#/paths/~1trips~1{tripId}~1meetup-points~1{meetupId}"
+  /trips/{tripId}/location-shares:
+    $ref: "./tv5-week1.yaml#/paths/~1trips~1{tripId}~1location-shares"
+  /trips/{tripId}/location-shares/me:
+    $ref: "./tv5-week1.yaml#/paths/~1trips~1{tripId}~1location-shares~1me"
 
 components:
   securitySchemes:

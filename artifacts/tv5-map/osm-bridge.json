@@ -1,0 +1,232 @@
+[
+  {
+    "place_id": 238637789,
+    "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+    "osm_type": "way",
+    "osm_id": 694831926,
+    "lat": "16.0611682",
+    "lon": "108.2278968",
+    "class": "man_made",
+    "type": "bridge",
+    "place_rank": 30,
+    "importance": 0.2791651820367976,
+    "addresstype": "man_made",
+    "name": "Cầu Rồng",
+    "display_name": "Cầu Rồng, Tổ dân phố 39 Phước Ninh, Phường Hải Châu, Thành phố Đà Nẵng, 02363, Việt Nam",
+    "boundingbox": [
+      "16.0608864",
+      "16.0614501",
+      "108.2243387",
+      "108.2314575"
+    ],
+    "geojson": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            108.2243387,
+            16.0612
+          ],
+          [
+            108.2243422,
+            16.0611364
+          ],
+          [
+            108.224349,
+            16.0609809
+          ],
+          [
+            108.2243506,
+            16.0609061
+          ],
+          [
+            108.224351,
+            16.0608873
+          ],
+          [
+            108.224405,
+            16.0608864
+          ],
+          [
+            108.2244466,
+            16.0608904
+          ],
+          [
+            108.2314575,
+            16.0611129
+          ],
+          [
+            108.2314559,
+            16.0611329
+          ],
+          [
+            108.2314498,
+            16.0612092
+          ],
+          [
+            108.2314441,
+            16.0613629
+          ],
+          [
+            108.2314409,
+            16.061428
+          ],
+          [
+            108.2314398,
+            16.0614501
+          ],
+          [
+            108.2301755,
+            16.0614081
+          ],
+          [
+            108.2244251,
+            16.0612171
+          ],
+          [
+            108.2244034,
+            16.0612164
+          ],
+          [
+            108.2243822,
+            16.0612157
+          ],
+          [
+            108.2243387,
+            16.0612
+          ]
+        ]
+      ]
+    }
+  },
+  {
+    "place_id": 238479788,
+    "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+    "osm_type": "way",
+    "osm_id": 199383481,
+    "lat": "16.0610918",
+    "lon": "108.2278995",
+    "class": "highway",
+    "type": "primary",
+    "place_rank": 26,
+    "importance": 0.05339795300221252,
+    "addresstype": "primary",
+    "name": "Cầu Rồng",
+    "display_name": "Cầu Rồng, Tổ dân phố An Trung 1, Phường An Hải, Thành phố Đà Nẵng, 02363, Việt Nam",
+    "boundingbox": [
+      "16.0609809",
+      "16.0612092",
+      "108.2243490",
+      "108.2314498"
+    ],
+    "geojson": {
+      "type": "LineString",
+      "coordinates": [
+        [
+          108.224349,
+          16.0609809
+        ],
+        [
+          108.2300082,
+          16.0611576
+        ],
+        [
+          108.2302571,
+          16.0611661
+        ],
+        [
+          108.2306849,
+          16.0611836
+        ],
+        [
+          108.2314498,
+          16.0612092
+        ]
+      ]
+    }
+  },
+  {
+    "place_id": 238616105,
+    "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+    "osm_type": "way",
+    "osm_id": 295386151,
+    "lat": "16.0612560",
+    "lon": "108.2280017",
+    "class": "highway",
+    "type": "primary",
+    "place_rank": 26,
+    "importance": 0.05339795300221252,
+    "addresstype": "primary",
+    "name": "Cầu Rồng",
+    "display_name": "Cầu Rồng, Tổ dân phố An Mỹ 2, Phường An Hải, Thành phố Đà Nẵng, 02363, Việt Nam",
+    "boundingbox": [
+      "16.0611394",
+      "16.0613629",
+      "108.2245595",
+      "108.2314441"
+    ],
+    "geojson": {
+      "type": "LineString",
+      "coordinates": [
+        [
+          108.2314441,
+          16.0613629
+        ],
+        [
+          108.2313602,
+          16.0613607
+        ],
+        [
+          108.2306844,
+          16.0613426
+        ],
+        [
+          108.2301857,
+          16.0613267
+        ],
+        [
+          108.230005,
+          16.0613239
+        ],
+        [
+          108.2245595,
+          16.0611394
+        ]
+      ]
+    }
+  },
+  {
+    "place_id": 238776254,
+    "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+    "osm_type": "way",
+    "osm_id": 694830396,
+    "lat": "16.0611379",
+    "lon": "108.2244509",
+    "class": "highway",
+    "type": "primary",
+    "place_rank": 26,
+    "importance": 0.05339795300221252,
+    "addresstype": "primary",
+    "name": "Cầu Rồng",
+    "display_name": "Cầu Rồng, Tổ dân phố 39 Phước Ninh, Phường Hải Châu, Thành phố Đà Nẵng, 02363, Việt Nam",
+    "boundingbox": [
+      "16.0611364",
+      "16.0611394",
+      "108.2243422",
+      "108.2245595"
+    ],
+    "geojson": {
+      "type": "LineString",
+      "coordinates": [
+        [
+          108.2245595,
+          16.0611394
+        ],
+        [
+          108.2243422,
+          16.0611364
+        ]
+      ]
+    }
+  }
+]

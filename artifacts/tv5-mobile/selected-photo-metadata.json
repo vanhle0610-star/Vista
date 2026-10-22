@@ -1,0 +1,1056 @@
+﻿{
+    "batchcomplete":  "",
+    "query":  {
+                  "pages":  {
+                                "159818751":  {
+                                                  "pageid":  159818751,
+                                                  "ns":  6,
+                                                  "title":  "File:2024 - Mỹ Sơn Sanctuary Temple E7 - img 01.jpg",
+                                                  "imagerepository":  "local",
+                                                  "imageinfo":  [
+                                                                    {
+                                                                        "thumburl":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f3/2024_-_M%E1%BB%B9_S%C6%A1n_Sanctuary_Temple_E7_-_img_01.jpg/500px-2024_-_M%E1%BB%B9_S%C6%A1n_Sanctuary_Temple_E7_-_img_01.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                                                                        "thumbwidth":  480,
+                                                                        "thumbheight":  360,
+                                                                        "responsiveUrls":  {
+                                                                                               "2":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f3/2024_-_M%E1%BB%B9_S%C6%A1n_Sanctuary_Temple_E7_-_img_01.jpg/960px-2024_-_M%E1%BB%B9_S%C6%A1n_Sanctuary_Temple_E7_-_img_01.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail"
+                                                                                           },
+                                                                        "thumbattribs":  {
+                                                                                             "src":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f3/2024_-_M%E1%BB%B9_S%C6%A1n_Sanctuary_Temple_E7_-_img_01.jpg/500px-2024_-_M%E1%BB%B9_S%C6%A1n_Sanctuary_Temple_E7_-_img_01.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                                                                                             "decoding":  "async",
+                                                                                             "loading":  "lazy",
+                                                                                             "width":  480,
+                                                                                             "height":  360,
+                                                                                             "srcset":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f3/2024_-_M%E1%BB%B9_S%C6%A1n_Sanctuary_Temple_E7_-_img_01.jpg/960px-2024_-_M%E1%BB%B9_S%C6%A1n_Sanctuary_Temple_E7_-_img_01.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail 2x"
+                                                                                         },
+                                                                        "url":  "https://upload.wikimedia.org/wikipedia/commons/f/f3/2024_-_M%E1%BB%B9_S%C6%A1n_Sanctuary_Temple_E7_-_img_01.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=original",
+                                                                        "descriptionurl":  "https://commons.wikimedia.org/wiki/File:2024_-_M%E1%BB%B9_S%C6%A1n_Sanctuary_Temple_E7_-_img_01.jpg",
+                                                                        "descriptionshorturl":  "https://commons.wikimedia.org/w/index.php?curid=159818751",
+                                                                        "extmetadata":  {
+                                                                                            "DateTime":  {
+                                                                                                             "value":  "2025-02-15 17:57:33",
+                                                                                                             "source":  "mediawiki-metadata",
+                                                                                                             "hidden":  ""
+                                                                                                         },
+                                                                                            "ObjectName":  {
+                                                                                                               "value":  "2024 - Mỹ Sơn Sanctuary Temple E7 - img 01",
+                                                                                                               "source":  "mediawiki-metadata"
+                                                                                                           },
+                                                                                            "CommonsMetadataExtension":  {
+                                                                                                                             "value":  1.2,
+                                                                                                                             "source":  "extension",
+                                                                                                                             "hidden":  ""
+                                                                                                                         },
+                                                                                            "Categories":  {
+                                                                                                               "value":  "Self-published work|Files with coordinates missing SDC location of creation|My Son E7",
+                                                                                                               "source":  "commons-categories",
+                                                                                                               "hidden":  ""
+                                                                                                           },
+                                                                                            "Assessments":  {
+                                                                                                                "value":  "quality",
+                                                                                                                "source":  "commons-categories",
+                                                                                                                "hidden":  ""
+                                                                                                            },
+                                                                                            "GPSLatitude":  {
+                                                                                                                "value":  "15.764447",
+                                                                                                                "source":  "commons-desc-page"
+                                                                                                            },
+                                                                                            "GPSLongitude":  {
+                                                                                                                 "value":  "108.125236",
+                                                                                                                 "source":  "commons-desc-page"
+                                                                                                             },
+                                                                                            "GPSMapDatum":  {
+                                                                                                                "value":  "WGS-84",
+                                                                                                                "source":  "commons-desc-page",
+                                                                                                                "hidden":  ""
+                                                                                                            },
+                                                                                            "ImageDescription":  {
+                                                                                                                     "value":  "Mỹ Sơn Sanctuary Kalan E7",
+                                                                                                                     "source":  "commons-desc-page"
+                                                                                                                 },
+                                                                                            "DateTimeOriginal":  {
+                                                                                                                     "value":  "2024-08-02 07:00:47",
+                                                                                                                     "source":  "commons-desc-page"
+                                                                                                                 },
+                                                                                            "Credit":  {
+                                                                                                           "value":  "\u003cspan class=\"int-own-work\" lang=\"en\"\u003eOwn work\u003c/span\u003e",
+                                                                                                           "source":  "commons-desc-page"
+                                                                                                       },
+                                                                                            "Artist":  {
+                                                                                                           "value":  "\u003ca href=\"//commons.wikimedia.org/wiki/User:Chainwit.\" title=\"User:Chainwit.\"\u003eChainwit.\u003c/a\u003e",
+                                                                                                           "source":  "commons-desc-page"
+                                                                                                       },
+                                                                                            "LicenseShortName":  {
+                                                                                                                     "value":  "CC BY 4.0",
+                                                                                                                     "source":  "commons-desc-page",
+                                                                                                                     "hidden":  ""
+                                                                                                                 },
+                                                                                            "UsageTerms":  {
+                                                                                                               "value":  "Creative Commons Attribution 4.0",
+                                                                                                               "source":  "commons-desc-page"
+                                                                                                           },
+                                                                                            "AttributionRequired":  {
+                                                                                                                        "value":  "true",
+                                                                                                                        "source":  "commons-desc-page",
+                                                                                                                        "hidden":  ""
+                                                                                                                    },
+                                                                                            "LicenseUrl":  {
+                                                                                                               "value":  "https://creativecommons.org/licenses/by/4.0",
+                                                                                                               "source":  "commons-desc-page"
+                                                                                                           },
+                                                                                            "Copyrighted":  {
+                                                                                                                "value":  "True",
+                                                                                                                "source":  "commons-desc-page",
+                                                                                                                "hidden":  ""
+                                                                                                            },
+                                                                                            "Restrictions":  {
+                                                                                                                 "value":  "",
+                                                                                                                 "source":  "commons-desc-page",
+                                                                                                                 "hidden":  ""
+                                                                                                             },
+                                                                                            "License":  {
+                                                                                                            "value":  "cc-by-4.0",
+                                                                                                            "source":  "commons-templates",
+                                                                                                            "hidden":  ""
+                                                                                                        }
+                                                                                        }
+                                                                    }
+                                                                ]
+                                              },
+                                "151201453":  {
+                                                  "pageid":  151201453,
+                                                  "ns":  6,
+                                                  "title":  "File:An Dinh Palace - Cung An Định (2024) - front facade - img 01.jpg",
+                                                  "imagerepository":  "local",
+                                                  "imageinfo":  [
+                                                                    {
+                                                                        "thumburl":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c2/An_Dinh_Palace_-_Cung_An_%C4%90%E1%BB%8Bnh_%282024%29_-_front_facade_-_img_01.jpg/500px-An_Dinh_Palace_-_Cung_An_%C4%90%E1%BB%8Bnh_%282024%29_-_front_facade_-_img_01.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                                                                        "thumbwidth":  480,
+                                                                        "thumbheight":  640,
+                                                                        "responsiveUrls":  {
+                                                                                               "2":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c2/An_Dinh_Palace_-_Cung_An_%C4%90%E1%BB%8Bnh_%282024%29_-_front_facade_-_img_01.jpg/960px-An_Dinh_Palace_-_Cung_An_%C4%90%E1%BB%8Bnh_%282024%29_-_front_facade_-_img_01.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail"
+                                                                                           },
+                                                                        "thumbattribs":  {
+                                                                                             "src":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c2/An_Dinh_Palace_-_Cung_An_%C4%90%E1%BB%8Bnh_%282024%29_-_front_facade_-_img_01.jpg/500px-An_Dinh_Palace_-_Cung_An_%C4%90%E1%BB%8Bnh_%282024%29_-_front_facade_-_img_01.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                                                                                             "decoding":  "async",
+                                                                                             "loading":  "lazy",
+                                                                                             "width":  480,
+                                                                                             "height":  640,
+                                                                                             "srcset":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c2/An_Dinh_Palace_-_Cung_An_%C4%90%E1%BB%8Bnh_%282024%29_-_front_facade_-_img_01.jpg/960px-An_Dinh_Palace_-_Cung_An_%C4%90%E1%BB%8Bnh_%282024%29_-_front_facade_-_img_01.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail 2x"
+                                                                                         },
+                                                                        "url":  "https://upload.wikimedia.org/wikipedia/commons/c/c2/An_Dinh_Palace_-_Cung_An_%C4%90%E1%BB%8Bnh_%282024%29_-_front_facade_-_img_01.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=original",
+                                                                        "descriptionurl":  "https://commons.wikimedia.org/wiki/File:An_Dinh_Palace_-_Cung_An_%C4%90%E1%BB%8Bnh_(2024)_-_front_facade_-_img_01.jpg",
+                                                                        "descriptionshorturl":  "https://commons.wikimedia.org/w/index.php?curid=151201453",
+                                                                        "extmetadata":  {
+                                                                                            "DateTime":  {
+                                                                                                             "value":  "2024-08-05 17:47:28",
+                                                                                                             "source":  "mediawiki-metadata",
+                                                                                                             "hidden":  ""
+                                                                                                         },
+                                                                                            "ObjectName":  {
+                                                                                                               "value":  "An Dinh Palace - Cung An Định (2024) - front facade - img 01",
+                                                                                                               "source":  "mediawiki-metadata"
+                                                                                                           },
+                                                                                            "CommonsMetadataExtension":  {
+                                                                                                                             "value":  1.2,
+                                                                                                                             "source":  "extension",
+                                                                                                                             "hidden":  ""
+                                                                                                                         },
+                                                                                            "Categories":  {
+                                                                                                               "value":  "Self-published work|An Dinh Palace|Files with coordinates missing SDC location of creation",
+                                                                                                               "source":  "commons-categories",
+                                                                                                               "hidden":  ""
+                                                                                                           },
+                                                                                            "Assessments":  {
+                                                                                                                "value":  "",
+                                                                                                                "source":  "commons-categories",
+                                                                                                                "hidden":  ""
+                                                                                                            },
+                                                                                            "GPSLatitude":  {
+                                                                                                                "value":  "16.456581",
+                                                                                                                "source":  "commons-desc-page"
+                                                                                                            },
+                                                                                            "GPSLongitude":  {
+                                                                                                                 "value":  "107.598519",
+                                                                                                                 "source":  "commons-desc-page"
+                                                                                                             },
+                                                                                            "GPSMapDatum":  {
+                                                                                                                "value":  "WGS-84",
+                                                                                                                "source":  "commons-desc-page",
+                                                                                                                "hidden":  ""
+                                                                                                            },
+                                                                                            "ImageDescription":  {
+                                                                                                                     "value":  "An Dinh Palace, Hue",
+                                                                                                                     "source":  "commons-desc-page"
+                                                                                                                 },
+                                                                                            "DateTimeOriginal":  {
+                                                                                                                     "value":  "2024-07-31 11:54:22",
+                                                                                                                     "source":  "commons-desc-page"
+                                                                                                                 },
+                                                                                            "Credit":  {
+                                                                                                           "value":  "\u003cspan class=\"int-own-work\" lang=\"en\"\u003eOwn work\u003c/span\u003e",
+                                                                                                           "source":  "commons-desc-page"
+                                                                                                       },
+                                                                                            "Artist":  {
+                                                                                                           "value":  "\u003ca href=\"//commons.wikimedia.org/wiki/User:Chainwit.\" title=\"User:Chainwit.\"\u003eChainwit.\u003c/a\u003e",
+                                                                                                           "source":  "commons-desc-page"
+                                                                                                       },
+                                                                                            "LicenseShortName":  {
+                                                                                                                     "value":  "CC BY 4.0",
+                                                                                                                     "source":  "commons-desc-page",
+                                                                                                                     "hidden":  ""
+                                                                                                                 },
+                                                                                            "UsageTerms":  {
+                                                                                                               "value":  "Creative Commons Attribution 4.0",
+                                                                                                               "source":  "commons-desc-page"
+                                                                                                           },
+                                                                                            "AttributionRequired":  {
+                                                                                                                        "value":  "true",
+                                                                                                                        "source":  "commons-desc-page",
+                                                                                                                        "hidden":  ""
+                                                                                                                    },
+                                                                                            "LicenseUrl":  {
+                                                                                                               "value":  "https://creativecommons.org/licenses/by/4.0",
+                                                                                                               "source":  "commons-desc-page"
+                                                                                                           },
+                                                                                            "Copyrighted":  {
+                                                                                                                "value":  "True",
+                                                                                                                "source":  "commons-desc-page",
+                                                                                                                "hidden":  ""
+                                                                                                            },
+                                                                                            "Restrictions":  {
+                                                                                                                 "value":  "",
+                                                                                                                 "source":  "commons-desc-page",
+                                                                                                                 "hidden":  ""
+                                                                                                             },
+                                                                                            "License":  {
+                                                                                                            "value":  "cc-by-4.0",
+                                                                                                            "source":  "commons-templates",
+                                                                                                            "hidden":  ""
+                                                                                                        }
+                                                                                        }
+                                                                    }
+                                                                ]
+                                              },
+                                "10459910":  {
+                                                 "pageid":  10459910,
+                                                 "ns":  6,
+                                                 "title":  "File:Bach Ma NP2.jpg",
+                                                 "imagerepository":  "local",
+                                                 "imageinfo":  [
+                                                                   {
+                                                                       "thumburl":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/67/Bach_Ma_NP2.jpg/500px-Bach_Ma_NP2.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                                                                       "thumbwidth":  480,
+                                                                       "thumbheight":  667,
+                                                                       "responsiveUrls":  {
+                                                                                              "2":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/67/Bach_Ma_NP2.jpg/960px-Bach_Ma_NP2.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail"
+                                                                                          },
+                                                                       "thumbattribs":  {
+                                                                                            "src":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/67/Bach_Ma_NP2.jpg/500px-Bach_Ma_NP2.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                                                                                            "decoding":  "async",
+                                                                                            "loading":  "lazy",
+                                                                                            "width":  480,
+                                                                                            "height":  667,
+                                                                                            "srcset":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/67/Bach_Ma_NP2.jpg/960px-Bach_Ma_NP2.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail 2x"
+                                                                                        },
+                                                                       "url":  "https://upload.wikimedia.org/wikipedia/commons/6/67/Bach_Ma_NP2.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=original",
+                                                                       "descriptionurl":  "https://commons.wikimedia.org/wiki/File:Bach_Ma_NP2.jpg",
+                                                                       "descriptionshorturl":  "https://commons.wikimedia.org/w/index.php?curid=10459910",
+                                                                       "extmetadata":  {
+                                                                                           "DateTime":  {
+                                                                                                            "value":  "2010-05-27 16:58:32",
+                                                                                                            "source":  "mediawiki-metadata",
+                                                                                                            "hidden":  ""
+                                                                                                        },
+                                                                                           "ObjectName":  {
+                                                                                                              "value":  "Bach Ma NP2",
+                                                                                                              "source":  "mediawiki-metadata"
+                                                                                                          },
+                                                                                           "CommonsMetadataExtension":  {
+                                                                                                                            "value":  1.2,
+                                                                                                                            "source":  "extension",
+                                                                                                                            "hidden":  ""
+                                                                                                                        },
+                                                                                           "Categories":  {
+                                                                                                              "value":  "Waterfalls in Vietnam|License migration completed|GFDL-disclaimers|Bach Ma National Park|Landscapes of Vietnam",
+                                                                                                              "source":  "commons-categories",
+                                                                                                              "hidden":  ""
+                                                                                                          },
+                                                                                           "Assessments":  {
+                                                                                                               "value":  "",
+                                                                                                               "source":  "commons-categories",
+                                                                                                               "hidden":  ""
+                                                                                                           },
+                                                                                           "ImageDescription":  {
+                                                                                                                    "value":  "Bach Ma National Park, Vietnam",
+                                                                                                                    "source":  "commons-desc-page"
+                                                                                                                },
+                                                                                           "DateTimeOriginal":  {
+                                                                                                                    "value":  "2000",
+                                                                                                                    "source":  "commons-desc-page"
+                                                                                                                },
+                                                                                           "Credit":  {
+                                                                                                          "value":  "\u003cspan class=\"int-own-work\" lang=\"\"\u003eOwn work by the original uploader\u003c/span\u003e",
+                                                                                                          "source":  "commons-desc-page"
+                                                                                                      },
+                                                                                           "Artist":  {
+                                                                                                          "value":  "\u003ca href=\"//commons.wikimedia.org/wiki/User:Sabine%27s_Sunbird\" title=\"User:Sabine\u0027s Sunbird\"\u003eDuncan Wright\u003c/a\u003e",
+                                                                                                          "source":  "commons-desc-page"
+                                                                                                      },
+                                                                                           "Permission":  {
+                                                                                                              "value":  "\u003ctable style=\"width:100%; clear:both; text-align:center; margin:0.5em auto; background-color:var(--background-color-neutral-subtle, #f8f9fa); border:var(--border-subtle, 2px solid #c8ccd1); padding: 0; border-spacing: 8px; color:var(--color-base, #202122);\" dir=\"ltr\" class=\"layouttemplate licensetpl\" lang=\"en\"\u003e\n\u003ctbody\u003e\u003ctr\u003e\n\u003ctd style=\"width:90px;\" rowspan=\"4\"\u003e\u003cspan class=\"skin-invert-image\" typeof=\"mw:File\"\u003e\u003cspan title=\"w:en:Creative Commons\"\u003e\u003cimg alt=\"w:en:Creative Commons\" src=\"https://thumb.wikimedia.org/wikipedia/commons/thumb/7/79/CC_some_rights_reserved.svg/120px-CC_some_rights_reserved.svg.png?utm_source=commons.wikimedia.org\u0026amp;utm_campaign=parser\u0026amp;utm_content=thumbnail\" decoding=\"async\" loading=\"lazy\" width=\"90\" height=\"36\" class=\"mw-file-element\" srcset=\"https://thumb.wikimedia.org/wikipedia/commons/thumb/7/79/CC_some_rights_reserved.svg/250px-CC_some_rights_reserved.svg.png?utm_source=commons.wikimedia.org\u0026amp;utm_campaign=parser\u0026amp;utm_content=thumbnail 2x\" data-file-width=\"744\" data-file-height=\"300\"\u003e\u003c/span\u003e\u003c/span\u003e\u003cbr\u003e\u003cspan class=\"skin-invert-image\" typeof=\"mw:File\"\u003e\u003cspan title=\"attribution\"\u003e\u003cimg alt=\"attribution\" src=\"https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3c/Cc-by_new.svg/40px-Cc-by_new.svg.png?utm_source=commons.wikimedia.org\u0026amp;utm_campaign=parser\u0026amp;utm_content=thumbnail\" decoding=\"async\" loading=\"lazy\" width=\"24\" height=\"24\" class=\"mw-file-element\" srcset=\"https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3c/Cc-by_new.svg/60px-Cc-by_new.svg.png?utm_source=commons.wikimedia.org\u0026amp;utm_campaign=parser\u0026amp;utm_content=thumbnail 2x\" data-file-width=\"80\" data-file-height=\"80\"\u003e\u003c/span\u003e\u003c/span\u003e \u003cspan class=\"skin-invert-image\" typeof=\"mw:File\"\u003e\u003cspan title=\"share alike\"\u003e\u003cimg alt=\"share alike\" src=\"https://thumb.wikimedia.org/wikipedia/commons/thumb/2/29/Cc-sa.svg/40px-Cc-sa.svg.png?utm_source=commons.wikimedia.org\u0026amp;utm_campaign=parser\u0026amp;utm_content=thumbnail\" decoding=\"async\" loading=\"lazy\" width=\"24\" height=\"24\" class=\"mw-file-element\" srcset=\"https://thumb.wikimedia.org/wikipedia/commons/thumb/2/29/Cc-sa.svg/60px-Cc-sa.svg.png?utm_source=commons.wikimedia.org\u0026amp;utm_campaign=parser\u0026amp;utm_content=thumbnail 2x\" data-file-width=\"64\" data-file-height=\"64\"\u003e\u003c/span\u003e\u003c/span\u003e\n\u003c/td\u003e\n\u003ctd\u003eThis file is licensed under the \u003ca href=\"https://en.wikipedia.org/wiki/en:Creative_Commons\" class=\"extiw\" title=\"w:en:Creative Commons\"\u003eCreative Commons\u003c/a\u003e \u003ca href=\"//creativecommons.org/licenses/by-sa/3.0/deed.en\" class=\"extiw\" title=\"creativecommons:by-sa/3.0/deed.en\"\u003eAttribution-Share Alike 3.0 Unported\u003c/a\u003e license. Subject to \u003ca href=\"https://en.wikipedia.org/wiki/Wikipedia:General_disclaimer\" class=\"extiw\" title=\"en:Wikipedia:General disclaimer\"\u003edisclaimers\u003c/a\u003e.\n\u003c/td\u003e\n\u003ctd style=\"width:90px;\" rowspan=\"4\"\u003e\n\u003c/td\u003e\u003c/tr\u003e\n\u003ctr style=\"text-align:center;\"\u003e\n\u003ctd\u003e\n\u003c/td\u003e\u003c/tr\u003e\n\u003ctr style=\"text-align:left;\"\u003e\n\u003ctd\u003e\n\u003cdl\u003e\u003cdd\u003eYou are free:\n\u003cul\u003e\u003cli\u003e\u003cb\u003eto share\u003c/b\u003e – to copy, distribute and transmit the work\u003c/li\u003e\n\u003cli\u003e\u003cb\u003eto remix\u003c/b\u003e – to adapt the work\u003c/li\u003e\u003c/ul\u003e\u003c/dd\u003e\n\u003cdd\u003eUnder the following conditions:\n\u003cul\u003e\u003cli\u003e\u003cb\u003eattribution\u003c/b\u003e – You must give appropriate credit, provide a link to the license, and indicate if changes were made. You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use.\u003c/li\u003e\n\u003cli\u003e\u003cb\u003eshare alike\u003c/b\u003e – If you remix, transform, or build upon the material, you must distribute your contributions under the \u003ca href=\"https://creativecommons.org/share-your-work/licensing-considerations/compatible-licenses\" class=\"extiw\" title=\"ccorg:share-your-work/licensing-considerations/compatible-licenses\"\u003esame or compatible license\u003c/a\u003e as the original.\u003c/li\u003e\u003c/ul\u003e\u003c/dd\u003e\u003c/dl\u003e\n\u003c/td\u003e\u003c/tr\u003e\n\u003ctr style=\"text-align:center;\"\u003e\n\u003ctd\u003e\u003cspan style=\"font-size:90%;\"\u003eThis licensing tag was added to this file as part of the GFDL \u003ca href=\"https://meta.wikimedia.org/wiki/Licensing_update\" class=\"extiw\" title=\"meta:Licensing update\"\u003elicensing update\u003c/a\u003e.\u003c/span\u003e\u003cspan class=\"licensetpl_link\" style=\"display:none;\"\u003ehttp://creativecommons.org/licenses/by-sa/3.0/\u003c/span\u003e\u003cspan class=\"licensetpl_short\" style=\"display:none;\"\u003eCC BY-SA 3.0\u003c/span\u003e\u003cspan class=\"licensetpl_long\" style=\"display:none;\"\u003eCreative Commons Attribution-Share Alike 3.0\u003c/span\u003e\u003cspan class=\"licensetpl_link_req\" style=\"display:none;\"\u003etrue\u003c/span\u003e\u003cspan class=\"licensetpl_attr_req\" style=\"display:none;\"\u003etrue\u003c/span\u003e\n\u003c/td\u003e\u003c/tr\u003e\u003c/tbody\u003e\u003c/table\u003e\n\u003ctable style=\"width:100%; clear:both; margin:0.5em auto; background-color: var(--background-color-neutral-subtle, #f9f9f9); color: var(--color-base, #202122); border: var(--border-subtle, 2px solid #e0e0e0); border-spacing: 8px; box-sizing: border-box; padding: 0;\" dir=\"ltr\" lang=\"en\" class=\"layouttemplate licensetpl\"\u003e\n\u003ctbody\u003e\u003ctr\u003e\n\u003ctd\u003e\u003cspan class=\"noviewer\" typeof=\"mw:File\"\u003e\u003ca href=\"//commons.wikimedia.org/wiki/File:Heckert_GNU_white.svg\" class=\"mw-file-description\" title=\"GNU head\"\u003e\u003cimg alt=\"GNU head\" src=\"https://thumb.wikimedia.org/wikipedia/commons/thumb/2/22/Heckert_GNU_white.svg/120px-Heckert_GNU_white.svg.png?utm_source=commons.wikimedia.org\u0026amp;utm_campaign=parser\u0026amp;utm_content=thumbnail\" decoding=\"async\" loading=\"lazy\" width=\"64\" height=\"63\" class=\"mw-file-element\" srcset=\"https://thumb.wikimedia.org/wikipedia/commons/thumb/2/22/Heckert_GNU_white.svg/250px-Heckert_GNU_white.svg.png?utm_source=commons.wikimedia.org\u0026amp;utm_campaign=parser\u0026amp;utm_content=thumbnail 2x\" data-file-width=\"535\" data-file-height=\"523\"\u003e\u003c/a\u003e\u003c/span\u003e\n\u003c/td\u003e\n\u003ctd\u003ePermission is granted to copy, distribute and/or modify this document under the terms of the \u003cb\u003e\u003ca href=\"https://en.wikipedia.org/wiki/en:GNU_Free_Documentation_License\" class=\"extiw\" title=\"w:en:GNU Free Documentation License\"\u003eGNU Free Documentation License\u003c/a\u003e\u003c/b\u003e, Version 1.2 or any later version published by the \u003ca href=\"https://en.wikipedia.org/wiki/en:Free_Software_Foundation\" class=\"extiw\" title=\"w:en:Free Software Foundation\"\u003eFree Software Foundation\u003c/a\u003e; with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. A copy of the license is included in the section entitled \u003ci\u003e\u003ca href=\"//commons.wikimedia.org/wiki/Commons:GNU_Free_Documentation_License,_version_1.2\" title=\"Commons:GNU Free Documentation License, version 1.2\"\u003eGNU Free Documentation License\u003c/a\u003e\u003c/i\u003e. Subject to \u003ca href=\"https://en.wikipedia.org/wiki/Wikipedia:General_disclaimer\" class=\"extiw\" title=\"en:Wikipedia:General disclaimer\"\u003edisclaimers\u003c/a\u003e.\u003cspan class=\"licensetpl_link\" style=\"display:none;\"\u003ehttp://www.gnu.org/copyleft/fdl.html\u003c/span\u003e\u003cspan class=\"licensetpl_short\" style=\"display:none;\"\u003eGFDL\u003c/span\u003e\u003cspan class=\"licensetpl_long\" style=\"display:none;\"\u003eGNU Free Documentation License\u003c/span\u003e\u003cspan class=\"licensetpl_link_req\" style=\"display:none;\"\u003etrue\u003c/span\u003e\u003cspan class=\"licensetpl_attr_req\" style=\"display:none;\"\u003etrue\u003c/span\u003e\n\u003c/td\u003e\u003c/tr\u003e\u003c/tbody\u003e\u003c/table\u003e",
+                                                                                                              "source":  "commons-desc-page",
+                                                                                                              "hidden":  ""
+                                                                                                          },
+                                                                                           "LicenseShortName":  {
+                                                                                                                    "value":  "CC BY-SA 3.0",
+                                                                                                                    "source":  "commons-desc-page",
+                                                                                                                    "hidden":  ""
+                                                                                                                },
+                                                                                           "UsageTerms":  {
+                                                                                                              "value":  "Creative Commons Attribution-Share Alike 3.0",
+                                                                                                              "source":  "commons-desc-page"
+                                                                                                          },
+                                                                                           "AttributionRequired":  {
+                                                                                                                       "value":  "true",
+                                                                                                                       "source":  "commons-desc-page",
+                                                                                                                       "hidden":  ""
+                                                                                                                   },
+                                                                                           "LicenseUrl":  {
+                                                                                                              "value":  "http://creativecommons.org/licenses/by-sa/3.0/",
+                                                                                                              "source":  "commons-desc-page"
+                                                                                                          },
+                                                                                           "Copyrighted":  {
+                                                                                                               "value":  "True",
+                                                                                                               "source":  "commons-desc-page",
+                                                                                                               "hidden":  ""
+                                                                                                           },
+                                                                                           "Restrictions":  {
+                                                                                                                "value":  "",
+                                                                                                                "source":  "commons-desc-page",
+                                                                                                                "hidden":  ""
+                                                                                                            },
+                                                                                           "License":  {
+                                                                                                           "value":  "cc-by-sa-3.0",
+                                                                                                           "source":  "commons-templates",
+                                                                                                           "hidden":  ""
+                                                                                                       }
+                                                                                       }
+                                                                   }
+                                                               ]
+                                             },
+                                "39591239":  {
+                                                 "pageid":  39591239,
+                                                 "ns":  6,
+                                                 "title":  "File:Cầu ngói Thanh Toàn1.jpg",
+                                                 "imagerepository":  "local",
+                                                 "imageinfo":  [
+                                                                   {
+                                                                       "thumburl":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/25/C%E1%BA%A7u_ng%C3%B3i_Thanh_To%C3%A0n1.jpg/500px-C%E1%BA%A7u_ng%C3%B3i_Thanh_To%C3%A0n1.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                                                                       "thumbwidth":  480,
+                                                                       "thumbheight":  320,
+                                                                       "responsiveUrls":  {
+                                                                                              "2":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/25/C%E1%BA%A7u_ng%C3%B3i_Thanh_To%C3%A0n1.jpg/960px-C%E1%BA%A7u_ng%C3%B3i_Thanh_To%C3%A0n1.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail"
+                                                                                          },
+                                                                       "thumbattribs":  {
+                                                                                            "src":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/25/C%E1%BA%A7u_ng%C3%B3i_Thanh_To%C3%A0n1.jpg/500px-C%E1%BA%A7u_ng%C3%B3i_Thanh_To%C3%A0n1.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                                                                                            "decoding":  "async",
+                                                                                            "loading":  "lazy",
+                                                                                            "width":  480,
+                                                                                            "height":  320,
+                                                                                            "srcset":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/25/C%E1%BA%A7u_ng%C3%B3i_Thanh_To%C3%A0n1.jpg/960px-C%E1%BA%A7u_ng%C3%B3i_Thanh_To%C3%A0n1.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail 2x"
+                                                                                        },
+                                                                       "url":  "https://upload.wikimedia.org/wikipedia/commons/2/25/C%E1%BA%A7u_ng%C3%B3i_Thanh_To%C3%A0n1.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=original",
+                                                                       "descriptionurl":  "https://commons.wikimedia.org/wiki/File:C%E1%BA%A7u_ng%C3%B3i_Thanh_To%C3%A0n1.jpg",
+                                                                       "descriptionshorturl":  "https://commons.wikimedia.org/w/index.php?curid=39591239",
+                                                                       "extmetadata":  {
+                                                                                           "DateTime":  {
+                                                                                                            "value":  "2015-04-15 10:06:55",
+                                                                                                            "source":  "mediawiki-metadata",
+                                                                                                            "hidden":  ""
+                                                                                                        },
+                                                                                           "ObjectName":  {
+                                                                                                              "value":  "Cầu ngói Thanh Toàn1",
+                                                                                                              "source":  "mediawiki-metadata"
+                                                                                                          },
+                                                                                           "CommonsMetadataExtension":  {
+                                                                                                                            "value":  1.2,
+                                                                                                                            "source":  "extension",
+                                                                                                                            "hidden":  ""
+                                                                                                                        },
+                                                                                           "Categories":  {
+                                                                                                              "value":  "PD-user|Buildings in Huế|Thanh Toan covered bridge|Tourism in Huế",
+                                                                                                              "source":  "commons-categories",
+                                                                                                              "hidden":  ""
+                                                                                                          },
+                                                                                           "Assessments":  {
+                                                                                                               "value":  "",
+                                                                                                               "source":  "commons-categories",
+                                                                                                               "hidden":  ""
+                                                                                                           },
+                                                                                           "ImageDescription":  {
+                                                                                                                    "value":  "Kiến trúc \u003ca href=\"https://vi.wikipedia.org/wiki/C%E1%BA%A7u_ng%C3%B3i_Thanh_To%C3%A0n\" class=\"extiw\" title=\"vi:Cầu ngói Thanh Toàn\"\u003eCầu ngói Thanh Toàn\u003c/a\u003e.",
+                                                                                                                    "source":  "commons-desc-page"
+                                                                                                                },
+                                                                                           "DateTimeOriginal":  {
+                                                                                                                    "value":  "15 June 2008 (original upload date)",
+                                                                                                                    "source":  "commons-desc-page"
+                                                                                                                },
+                                                                                           "Credit":  {
+                                                                                                          "value":  "\u003cbdi lang=\"en\" dir=\"ltr\"\u003eTransferred from \u003cspan class=\"plainlinks\"\u003e\u003ca class=\"external text\" data-mw-original-href=\"//vi.wikipedia.org\" href=\"https://vi.wikipedia.org\"\u003evi.wikipedia\u003c/a\u003e\u003c/span\u003e to Commons.\u003c/bdi\u003e",
+                                                                                                          "source":  "commons-desc-page"
+                                                                                                      },
+                                                                                           "Artist":  {
+                                                                                                          "value":  "\u003ca href=\"https://en.wikipedia.org/wiki/vi:User:L%C6%B0u_Ly\" class=\"extiw\" title=\"w:vi:User:Lưu Ly\"\u003eLưu Ly\u003c/a\u003e at \u003ca href=\"https://en.wikipedia.org/wiki/vi:\" class=\"extiw\" title=\"w:vi:\"\u003eVietnamese Wikipedia\u003c/a\u003e",
+                                                                                                          "source":  "commons-desc-page"
+                                                                                                      },
+                                                                                           "LicenseShortName":  {
+                                                                                                                    "value":  "Public domain",
+                                                                                                                    "source":  "commons-desc-page",
+                                                                                                                    "hidden":  ""
+                                                                                                                },
+                                                                                           "UsageTerms":  {
+                                                                                                              "value":  "Public domain",
+                                                                                                              "source":  "commons-desc-page"
+                                                                                                          },
+                                                                                           "AttributionRequired":  {
+                                                                                                                       "value":  "false",
+                                                                                                                       "source":  "commons-desc-page",
+                                                                                                                       "hidden":  ""
+                                                                                                                   },
+                                                                                           "Copyrighted":  {
+                                                                                                               "value":  "False",
+                                                                                                               "source":  "commons-desc-page",
+                                                                                                               "hidden":  ""
+                                                                                                           },
+                                                                                           "Restrictions":  {
+                                                                                                                "value":  "",
+                                                                                                                "source":  "commons-desc-page",
+                                                                                                                "hidden":  ""
+                                                                                                            },
+                                                                                           "License":  {
+                                                                                                           "value":  "pd",
+                                                                                                           "source":  "commons-templates",
+                                                                                                           "hidden":  ""
+                                                                                                       }
+                                                                                       }
+                                                                   }
+                                                               ]
+                                             },
+                                "1063973":  {
+                                                "pageid":  1063973,
+                                                "ns":  6,
+                                                "title":  "File:Lang Co beach in Hue, Vietnam.jpg",
+                                                "imagerepository":  "local",
+                                                "imageinfo":  [
+                                                                  {
+                                                                      "thumburl":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/35/Lang_Co_beach_in_Hue%2C_Vietnam.jpg/500px-Lang_Co_beach_in_Hue%2C_Vietnam.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                                                                      "thumbwidth":  480,
+                                                                      "thumbheight":  360,
+                                                                      "responsiveUrls":  {
+                                                                                             "2":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/35/Lang_Co_beach_in_Hue%2C_Vietnam.jpg/960px-Lang_Co_beach_in_Hue%2C_Vietnam.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail"
+                                                                                         },
+                                                                      "thumbattribs":  {
+                                                                                           "src":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/35/Lang_Co_beach_in_Hue%2C_Vietnam.jpg/500px-Lang_Co_beach_in_Hue%2C_Vietnam.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                                                                                           "decoding":  "async",
+                                                                                           "loading":  "lazy",
+                                                                                           "width":  480,
+                                                                                           "height":  360,
+                                                                                           "srcset":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/35/Lang_Co_beach_in_Hue%2C_Vietnam.jpg/960px-Lang_Co_beach_in_Hue%2C_Vietnam.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail 2x"
+                                                                                       },
+                                                                      "url":  "https://upload.wikimedia.org/wikipedia/commons/3/35/Lang_Co_beach_in_Hue%2C_Vietnam.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=original",
+                                                                      "descriptionurl":  "https://commons.wikimedia.org/wiki/File:Lang_Co_beach_in_Hue,_Vietnam.jpg",
+                                                                      "descriptionshorturl":  "https://commons.wikimedia.org/w/index.php?curid=1063973",
+                                                                      "extmetadata":  {
+                                                                                          "DateTime":  {
+                                                                                                           "value":  "2006-08-17 15:15:56",
+                                                                                                           "source":  "mediawiki-metadata",
+                                                                                                           "hidden":  ""
+                                                                                                       },
+                                                                                          "ObjectName":  {
+                                                                                                             "value":  "Lang Co beach in Hue, Vietnam",
+                                                                                                             "source":  "mediawiki-metadata"
+                                                                                                         },
+                                                                                          "CommonsMetadataExtension":  {
+                                                                                                                           "value":  1.2,
+                                                                                                                           "source":  "extension",
+                                                                                                                           "hidden":  ""
+                                                                                                                       },
+                                                                                          "Categories":  {
+                                                                                                             "value":  "Taken with Nikon Coolpix 4100|Files with no machine-readable source|Beaches of Vietnam|Lang Co|Phu Loc District|Self-published work|PD-self|Assumed own work|Photographs taken on 2006-05-11",
+                                                                                                             "source":  "commons-categories",
+                                                                                                             "hidden":  ""
+                                                                                                         },
+                                                                                          "Assessments":  {
+                                                                                                              "value":  "",
+                                                                                                              "source":  "commons-categories",
+                                                                                                              "hidden":  ""
+                                                                                                          },
+                                                                                          "ImageDescription":  {
+                                                                                                                   "value":  "\u003cp\u003e\u003cb\u003eDescription\u003c/b\u003e: Lang Co beach in Hue, Vietnam.\n\u003c/p\u003e\nThursday, July 20, 2006, 4:06:34 AM",
+                                                                                                                   "source":  "commons-desc-page"
+                                                                                                               },
+                                                                                          "DateTimeOriginal":  {
+                                                                                                                   "value":  "11 May 2006 (according to \u003cspan lang=\"en\" dir=\"ltr\"\u003e\u003ca href=\"https://en.wikipedia.org/wiki/Exif\" class=\"extiw\" title=\"en:Exif\"\u003eExif\u003c/a\u003e\u003c/span\u003e data)",
+                                                                                                                   "source":  "commons-desc-page"
+                                                                                                               },
+                                                                                          "Credit":  {
+                                                                                                         "value":  "No machine-readable source provided. Own work assumed (based on copyright claims).",
+                                                                                                         "source":  "commons-desc-page"
+                                                                                                     },
+                                                                                          "Artist":  {
+                                                                                                         "value":  "No machine-readable author provided. \u003ca href=\"//commons.wikimedia.org/w/index.php?title=User:Ruoudevn\u0026amp;action=edit\u0026amp;redlink=1\" class=\"new\" title=\"User:Ruoudevn (page does not exist)\"\u003eRuoudevn\u003c/a\u003e assumed (based on copyright claims).",
+                                                                                                         "source":  "commons-desc-page"
+                                                                                                     },
+                                                                                          "LicenseShortName":  {
+                                                                                                                   "value":  "Public domain",
+                                                                                                                   "source":  "commons-desc-page",
+                                                                                                                   "hidden":  ""
+                                                                                                               },
+                                                                                          "UsageTerms":  {
+                                                                                                             "value":  "Public domain",
+                                                                                                             "source":  "commons-desc-page"
+                                                                                                         },
+                                                                                          "AttributionRequired":  {
+                                                                                                                      "value":  "false",
+                                                                                                                      "source":  "commons-desc-page",
+                                                                                                                      "hidden":  ""
+                                                                                                                  },
+                                                                                          "Copyrighted":  {
+                                                                                                              "value":  "False",
+                                                                                                              "source":  "commons-desc-page",
+                                                                                                              "hidden":  ""
+                                                                                                          },
+                                                                                          "Restrictions":  {
+                                                                                                               "value":  "",
+                                                                                                               "source":  "commons-desc-page",
+                                                                                                               "hidden":  ""
+                                                                                                           },
+                                                                                          "License":  {
+                                                                                                          "value":  "pd",
+                                                                                                          "source":  "commons-templates",
+                                                                                                          "hidden":  ""
+                                                                                                      }
+                                                                                      }
+                                                                  }
+                                                              ]
+                                            },
+                                "86058498":  {
+                                                 "pageid":  86058498,
+                                                 "ns":  6,
+                                                 "title":  "File:Lang Co lagoon, Lap An lagoon, Vietnam.jpg",
+                                                 "imagerepository":  "local",
+                                                 "imageinfo":  [
+                                                                   {
+                                                                       "thumburl":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f0/Lang_Co_lagoon%2C_Lap_An_lagoon%2C_Vietnam.jpg/500px-Lang_Co_lagoon%2C_Lap_An_lagoon%2C_Vietnam.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                                                                       "thumbwidth":  480,
+                                                                       "thumbheight":  320,
+                                                                       "responsiveUrls":  {
+                                                                                              "2":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f0/Lang_Co_lagoon%2C_Lap_An_lagoon%2C_Vietnam.jpg/960px-Lang_Co_lagoon%2C_Lap_An_lagoon%2C_Vietnam.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail"
+                                                                                          },
+                                                                       "thumbattribs":  {
+                                                                                            "src":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f0/Lang_Co_lagoon%2C_Lap_An_lagoon%2C_Vietnam.jpg/500px-Lang_Co_lagoon%2C_Lap_An_lagoon%2C_Vietnam.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                                                                                            "decoding":  "async",
+                                                                                            "loading":  "lazy",
+                                                                                            "width":  480,
+                                                                                            "height":  320,
+                                                                                            "srcset":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f0/Lang_Co_lagoon%2C_Lap_An_lagoon%2C_Vietnam.jpg/960px-Lang_Co_lagoon%2C_Lap_An_lagoon%2C_Vietnam.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail 2x"
+                                                                                        },
+                                                                       "url":  "https://upload.wikimedia.org/wikipedia/commons/f/f0/Lang_Co_lagoon%2C_Lap_An_lagoon%2C_Vietnam.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=original",
+                                                                       "descriptionurl":  "https://commons.wikimedia.org/wiki/File:Lang_Co_lagoon,_Lap_An_lagoon,_Vietnam.jpg",
+                                                                       "descriptionshorturl":  "https://commons.wikimedia.org/w/index.php?curid=86058498",
+                                                                       "extmetadata":  {
+                                                                                           "DateTime":  {
+                                                                                                            "value":  "2020-01-18 20:32:20",
+                                                                                                            "source":  "mediawiki-metadata",
+                                                                                                            "hidden":  ""
+                                                                                                        },
+                                                                                           "ObjectName":  {
+                                                                                                              "value":  "Lang Co lagoon, Lap An lagoon, Vietnam",
+                                                                                                              "source":  "mediawiki-metadata"
+                                                                                                          },
+                                                                                           "CommonsMetadataExtension":  {
+                                                                                                                            "value":  1.2,
+                                                                                                                            "source":  "extension",
+                                                                                                                            "hidden":  ""
+                                                                                                                        },
+                                                                                           "Categories":  {
+                                                                                                              "value":  "Photos by Vyacheslav Argenberg|Lagoons of Asia|Lap An lagoon|Self-published work|Fishing boats of Vietnam|Photos by Vyacheslav Argenberg in 2008|Photos by Vyacheslav Argenberg in Vietnam",
+                                                                                                              "source":  "commons-categories",
+                                                                                                              "hidden":  ""
+                                                                                                          },
+                                                                                           "Assessments":  {
+                                                                                                               "value":  "",
+                                                                                                               "source":  "commons-categories",
+                                                                                                               "hidden":  ""
+                                                                                                           },
+                                                                                           "ImageDescription":  {
+                                                                                                                    "value":  "Lập An lagoon, nestled between Hai Van Pass and Phu Gia Pass. The backdrop for magnificent Bach Ma mountain range.",
+                                                                                                                    "source":  "commons-desc-page"
+                                                                                                                },
+                                                                                           "DateTimeOriginal":  {
+                                                                                                                    "value":  "2008-03-04 17:37:59",
+                                                                                                                    "source":  "commons-desc-page"
+                                                                                                                },
+                                                                                           "Credit":  {
+                                                                                                          "value":  "\u003cspan class=\"int-own-work\" lang=\"en\"\u003eOwn work\u003c/span\u003e",
+                                                                                                          "source":  "commons-desc-page"
+                                                                                                      },
+                                                                                           "Artist":  {
+                                                                                                          "value":  "\u003ca href=\"//commons.wikimedia.org/wiki/User:Argenberg\" title=\"User:Argenberg\"\u003eVyacheslav Argenberg\u003c/a\u003e",
+                                                                                                          "source":  "commons-desc-page"
+                                                                                                      },
+                                                                                           "LicenseShortName":  {
+                                                                                                                    "value":  "CC BY 4.0",
+                                                                                                                    "source":  "commons-desc-page",
+                                                                                                                    "hidden":  ""
+                                                                                                                },
+                                                                                           "UsageTerms":  {
+                                                                                                              "value":  "Creative Commons Attribution 4.0",
+                                                                                                              "source":  "commons-desc-page"
+                                                                                                          },
+                                                                                           "AttributionRequired":  {
+                                                                                                                       "value":  "true",
+                                                                                                                       "source":  "commons-desc-page",
+                                                                                                                       "hidden":  ""
+                                                                                                                   },
+                                                                                           "Attribution":  {
+                                                                                                               "value":  "© \u003ca href=\"//commons.wikimedia.org/wiki/User:Argenberg\" title=\"User:Argenberg\"\u003eVyacheslav Argenberg\u003c/a\u003e",
+                                                                                                               "source":  "commons-desc-page",
+                                                                                                               "hidden":  ""
+                                                                                                           },
+                                                                                           "LicenseUrl":  {
+                                                                                                              "value":  "https://creativecommons.org/licenses/by/4.0",
+                                                                                                              "source":  "commons-desc-page"
+                                                                                                          },
+                                                                                           "Copyrighted":  {
+                                                                                                               "value":  "True",
+                                                                                                               "source":  "commons-desc-page",
+                                                                                                               "hidden":  ""
+                                                                                                           },
+                                                                                           "Restrictions":  {
+                                                                                                                "value":  "",
+                                                                                                                "source":  "commons-desc-page",
+                                                                                                                "hidden":  ""
+                                                                                                            },
+                                                                                           "License":  {
+                                                                                                           "value":  "cc-by-4.0",
+                                                                                                           "source":  "commons-templates",
+                                                                                                           "hidden":  ""
+                                                                                                       }
+                                                                                       }
+                                                                   }
+                                                               ]
+                                             },
+                                "15047067":  {
+                                                 "pageid":  15047067,
+                                                 "ns":  6,
+                                                 "title":  "File:Non nuoc Basket boats.jpg",
+                                                 "imagerepository":  "local",
+                                                 "imageinfo":  [
+                                                                   {
+                                                                       "thumburl":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1b/Non_nuoc_Basket_boats.jpg/500px-Non_nuoc_Basket_boats.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                                                                       "thumbwidth":  480,
+                                                                       "thumbheight":  320,
+                                                                       "responsiveUrls":  {
+                                                                                              "2":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1b/Non_nuoc_Basket_boats.jpg/960px-Non_nuoc_Basket_boats.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail"
+                                                                                          },
+                                                                       "thumbattribs":  {
+                                                                                            "src":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1b/Non_nuoc_Basket_boats.jpg/500px-Non_nuoc_Basket_boats.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                                                                                            "decoding":  "async",
+                                                                                            "loading":  "lazy",
+                                                                                            "width":  480,
+                                                                                            "height":  320,
+                                                                                            "srcset":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1b/Non_nuoc_Basket_boats.jpg/960px-Non_nuoc_Basket_boats.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail 2x"
+                                                                                        },
+                                                                       "url":  "https://upload.wikimedia.org/wikipedia/commons/1/1b/Non_nuoc_Basket_boats.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=original",
+                                                                       "descriptionurl":  "https://commons.wikimedia.org/wiki/File:Non_nuoc_Basket_boats.jpg",
+                                                                       "descriptionshorturl":  "https://commons.wikimedia.org/w/index.php?curid=15047067",
+                                                                       "extmetadata":  {
+                                                                                           "DateTime":  {
+                                                                                                            "value":  "2011-04-27 23:22:15",
+                                                                                                            "source":  "mediawiki-metadata",
+                                                                                                            "hidden":  ""
+                                                                                                        },
+                                                                                           "ObjectName":  {
+                                                                                                              "value":  "Non nuoc Basket boats",
+                                                                                                              "source":  "mediawiki-metadata"
+                                                                                                          },
+                                                                                           "CommonsMetadataExtension":  {
+                                                                                                                            "value":  1.2,
+                                                                                                                            "source":  "extension",
+                                                                                                                            "hidden":  ""
+                                                                                                                        },
+                                                                                           "Categories":  {
+                                                                                                              "value":  "Photos by Vyacheslav Argenberg|Taken with Nikon Coolpix P5100|Non Nuoc Beach|Flickr images uploaded by Flickr upload bot|Boats in Da Nang|Photos by Vyacheslav Argenberg in 2008|Photos by Vyacheslav Argenberg in Vietnam|Coracles of Vietnam",
+                                                                                                              "source":  "commons-categories",
+                                                                                                              "hidden":  ""
+                                                                                                          },
+                                                                                           "Assessments":  {
+                                                                                                               "value":  "",
+                                                                                                               "source":  "commons-categories",
+                                                                                                               "hidden":  ""
+                                                                                                           },
+                                                                                           "ImageDescription":  {
+                                                                                                                    "value":  "Round \"coracle\" fishing boats on Non Nuoc beach, Da Nang.",
+                                                                                                                    "source":  "commons-desc-page"
+                                                                                                                },
+                                                                                           "DateTimeOriginal":  {
+                                                                                                                    "value":  "2008-03-03 15:05:51",
+                                                                                                                    "source":  "commons-desc-page"
+                                                                                                                },
+                                                                                           "Credit":  {
+                                                                                                          "value":  "\u003ca href=\"//commons.wikimedia.org/wiki/Flickr\" class=\"mw-redirect\" title=\"Flickr\"\u003eFlickr\u003c/a\u003e: \u003ca rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/photos/97189870@N00/2676599499\"\u003e2008-03-0286\u003c/a\u003e",
+                                                                                                          "source":  "commons-desc-page"
+                                                                                                      },
+                                                                                           "Artist":  {
+                                                                                                          "value":  "\u003ca rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/people/97189870@N00\"\u003eVyacheslav Argenberg\u003c/a\u003e",
+                                                                                                          "source":  "commons-desc-page"
+                                                                                                      },
+                                                                                           "Permission":  {
+                                                                                                              "value":  "\u003ctable id=\"FlickrReview\" style=\"width:100%; margin:0.3em auto; text-align:start; background-color:var(--background-color-success-subtle,#d5fdf4); padding: 3px; border:1px solid var(--border-color-base,#a2a9b1); color:inherit;\" dir=\"ltr\" lang=\"en\"\u003e\n\n\u003ctbody\u003e\u003ctr\u003e\n\u003ctd\u003e\u003cspan typeof=\"mw:File\"\u003e\u003cspan\u003e\u003cimg src=\"https://thumb.wikimedia.org/wikipedia/commons/thumb/9/95/Checked_copyright_icon.svg/60px-Checked_copyright_icon.svg.png?utm_source=commons.wikimedia.org\u0026amp;utm_campaign=parser\u0026amp;utm_content=thumbnail\" decoding=\"async\" loading=\"lazy\" width=\"50\" height=\"48\" class=\"mw-file-element\" srcset=\"https://thumb.wikimedia.org/wikipedia/commons/thumb/9/95/Checked_copyright_icon.svg/120px-Checked_copyright_icon.svg.png?utm_source=commons.wikimedia.org\u0026amp;utm_campaign=parser\u0026amp;utm_content=thumbnail 2x\" data-file-width=\"160\" data-file-height=\"153\"\u003e\u003c/span\u003e\u003c/span\u003e\n\u003c/td\u003e\n\u003ctd\u003eThis image, which was originally posted to \u003cb\u003e\u003ca href=\"https://en.wikipedia.org/wiki/Flickr\" class=\"extiw\" title=\"en:Flickr\"\u003eFlickr\u003c/a\u003e\u003c/b\u003e, was uploaded to Commons using \u003cb\u003e\u003ca href=\"//commons.wikimedia.org/wiki/User:Flickr_upload_bot\" title=\"User:Flickr upload bot\"\u003eFlickr upload bot\u003c/a\u003e\u003c/b\u003e on 27 April 2011, 23:22 by \u003cspan id=\"flickr_upload_bot_reviewer\"\u003e\u003cb\u003e\u003ca href=\"//commons.wikimedia.org/wiki/User:Dragfyre\" title=\"User:Dragfyre\"\u003eDragfyre\u003c/a\u003e\u003c/b\u003e\u003c/span\u003e. On that date, it was confirmed to be licensed under the terms of the license indicated.\n\u003c/td\u003e\n\u003ctd\u003e\u003cspan typeof=\"mw:File\"\u003e\u003cspan\u003e\u003cimg src=\"https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c8/Flickr_dots.svg/60px-Flickr_dots.svg.png?utm_source=commons.wikimedia.org\u0026amp;utm_campaign=parser\u0026amp;utm_content=thumbnail\" decoding=\"async\" loading=\"lazy\" width=\"50\" height=\"50\" class=\"mw-file-element\" srcset=\"https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c8/Flickr_dots.svg/120px-Flickr_dots.svg.png?utm_source=commons.wikimedia.org\u0026amp;utm_campaign=parser\u0026amp;utm_content=thumbnail 2x\" data-file-width=\"512\" data-file-height=\"512\"\u003e\u003c/span\u003e\u003c/span\u003e\n\u003c/td\u003e\u003c/tr\u003e\u003c/tbody\u003e\u003c/table\u003e\n\u003cdiv class=\"responsive-license-cc layouttemplate licensetpl\" dir=\"ltr\" lang=\"en\"\u003e\u003cdiv class=\"rlicense-icons\"\u003e\u003cspan class=\"skin-invert\" typeof=\"mw:File\"\u003e\u003cspan title=\"w:en:Creative Commons\"\u003e\u003cimg alt=\"w:en:Creative Commons\" src=\"https://thumb.wikimedia.org/wikipedia/commons/thumb/7/79/CC_some_rights_reserved.svg/120px-CC_some_rights_reserved.svg.png?utm_source=commons.wikimedia.org\u0026amp;utm_campaign=parser\u0026amp;utm_content=thumbnail\" decoding=\"async\" loading=\"lazy\" width=\"90\" height=\"36\" class=\"mw-file-element\" srcset=\"https://thumb.wikimedia.org/wikipedia/commons/thumb/7/79/CC_some_rights_reserved.svg/250px-CC_some_rights_reserved.svg.png?utm_source=commons.wikimedia.org\u0026amp;utm_campaign=parser\u0026amp;utm_content=thumbnail 2x\" data-file-width=\"744\" data-file-height=\"300\"\u003e\u003c/span\u003e\u003c/span\u003e\u003cbr\u003e\n\u003cspan class=\"skin-invert\" typeof=\"mw:File\"\u003e\u003cspan title=\"attribution\"\u003e\u003cimg alt=\"attribution\" src=\"https://thumb.wikimedia.org/wikipedia/commons/thumb/1/11/Cc-by_new_white.svg/40px-Cc-by_new_white.svg.png?utm_source=commons.wikimedia.org\u0026amp;utm_campaign=parser\u0026amp;utm_content=thumbnail\" decoding=\"async\" loading=\"lazy\" width=\"24\" height=\"24\" class=\"mw-file-element\" srcset=\"https://thumb.wikimedia.org/wikipedia/commons/thumb/1/11/Cc-by_new_white.svg/60px-Cc-by_new_white.svg.png?utm_source=commons.wikimedia.org\u0026amp;utm_campaign=parser\u0026amp;utm_content=thumbnail 2x\" data-file-width=\"64\" data-file-height=\"64\"\u003e\u003c/span\u003e\u003c/span\u003e\u003c/div\u003e\u003cdiv class=\"rlicense-text\"\u003e\u003cdiv class=\"rlicense-declaration\"\u003eThis file is licensed under the \u003ca href=\"https://en.wikipedia.org/wiki/en:Creative_Commons\" class=\"extiw\" title=\"w:en:Creative Commons\"\u003eCreative Commons\u003c/a\u003e \u003ca href=\"//creativecommons.org/licenses/by/2.0/deed.en\" class=\"extiw\" title=\"creativecommons:by/2.0/deed.en\"\u003eAttribution 2.0 Generic\u003c/a\u003e license.\u003c/div\u003e\u003cdiv class=\"rlicense-desc\" style=\"text-align:start;\" dir=\"ltr\" lang=\"en\"\u003e\n\u003cdl\u003e\u003cdd\u003eYou are free:\n\u003cul\u003e\u003cli\u003e\u003cb\u003eto share\u003c/b\u003e – to copy, distribute and transmit the work\u003c/li\u003e\n\u003cli\u003e\u003cb\u003eto remix\u003c/b\u003e – to adapt the work\u003c/li\u003e\u003c/ul\u003e\u003c/dd\u003e\n\u003cdd\u003eUnder the following conditions:\n\u003cul\u003e\u003cli\u003e\u003cb\u003eattribution\u003c/b\u003e – You must give appropriate credit, provide a link to the license, and indicate if changes were made. You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use.\u003c/li\u003e\u003c/ul\u003e\u003c/dd\u003e\u003c/dl\u003e\n\u003c/div\u003e\u003cspan class=\"licensetpl_link\" style=\"display:none;\"\u003ehttps://creativecommons.org/licenses/by/2.0\u003c/span\u003e\u003cspan class=\"licensetpl_short\" style=\"display:none;\"\u003eCC BY 2.0 \u003c/span\u003e\u003cspan class=\"licensetpl_long\" style=\"display:none;\"\u003eCreative Commons Attribution 2.0 \u003c/span\u003e\u003cspan class=\"licensetpl_link_req\" style=\"display:none;\"\u003etrue\u003c/span\u003e\u003cspan class=\"licensetpl_attr_req\" style=\"display:none;\"\u003etrue\u003c/span\u003e\u003c/div\u003e\u003c/div\u003e",
+                                                                                                              "source":  "commons-desc-page",
+                                                                                                              "hidden":  ""
+                                                                                                          },
+                                                                                           "LicenseShortName":  {
+                                                                                                                    "value":  "CC BY 2.0",
+                                                                                                                    "source":  "commons-desc-page",
+                                                                                                                    "hidden":  ""
+                                                                                                                },
+                                                                                           "UsageTerms":  {
+                                                                                                              "value":  "Creative Commons Attribution 2.0",
+                                                                                                              "source":  "commons-desc-page"
+                                                                                                          },
+                                                                                           "AttributionRequired":  {
+                                                                                                                       "value":  "true",
+                                                                                                                       "source":  "commons-desc-page",
+                                                                                                                       "hidden":  ""
+                                                                                                                   },
+                                                                                           "LicenseUrl":  {
+                                                                                                              "value":  "https://creativecommons.org/licenses/by/2.0",
+                                                                                                              "source":  "commons-desc-page"
+                                                                                                          },
+                                                                                           "Copyrighted":  {
+                                                                                                               "value":  "True",
+                                                                                                               "source":  "commons-desc-page",
+                                                                                                               "hidden":  ""
+                                                                                                           },
+                                                                                           "Restrictions":  {
+                                                                                                                "value":  "",
+                                                                                                                "source":  "commons-desc-page",
+                                                                                                                "hidden":  ""
+                                                                                                            },
+                                                                                           "License":  {
+                                                                                                           "value":  "cc-by-2.0",
+                                                                                                           "source":  "commons-templates",
+                                                                                                           "hidden":  ""
+                                                                                                       }
+                                                                                       }
+                                                                   }
+                                                               ]
+                                             },
+                                "141773025":  {
+                                                  "pageid":  141773025,
+                                                  "ns":  6,
+                                                  "title":  "File:Thuan An Beach, 2023.jpg",
+                                                  "imagerepository":  "local",
+                                                  "imageinfo":  [
+                                                                    {
+                                                                        "thumburl":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f4/Thuan_An_Beach%2C_2023.jpg/500px-Thuan_An_Beach%2C_2023.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                                                                        "thumbwidth":  480,
+                                                                        "thumbheight":  360,
+                                                                        "responsiveUrls":  {
+                                                                                               "2":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f4/Thuan_An_Beach%2C_2023.jpg/960px-Thuan_An_Beach%2C_2023.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail"
+                                                                                           },
+                                                                        "thumbattribs":  {
+                                                                                             "src":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f4/Thuan_An_Beach%2C_2023.jpg/500px-Thuan_An_Beach%2C_2023.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                                                                                             "decoding":  "async",
+                                                                                             "loading":  "lazy",
+                                                                                             "width":  480,
+                                                                                             "height":  360,
+                                                                                             "srcset":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f4/Thuan_An_Beach%2C_2023.jpg/960px-Thuan_An_Beach%2C_2023.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail 2x"
+                                                                                         },
+                                                                        "url":  "https://upload.wikimedia.org/wikipedia/commons/f/f4/Thuan_An_Beach%2C_2023.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=original",
+                                                                        "descriptionurl":  "https://commons.wikimedia.org/wiki/File:Thuan_An_Beach,_2023.jpg",
+                                                                        "descriptionshorturl":  "https://commons.wikimedia.org/w/index.php?curid=141773025",
+                                                                        "extmetadata":  {
+                                                                                            "DateTime":  {
+                                                                                                             "value":  "2023-12-05 14:54:58",
+                                                                                                             "source":  "mediawiki-metadata",
+                                                                                                             "hidden":  ""
+                                                                                                         },
+                                                                                            "ObjectName":  {
+                                                                                                               "value":  "Thuan An Beach, 2023",
+                                                                                                               "source":  "mediawiki-metadata"
+                                                                                                           },
+                                                                                            "CommonsMetadataExtension":  {
+                                                                                                                             "value":  1.2,
+                                                                                                                             "source":  "extension",
+                                                                                                                             "hidden":  ""
+                                                                                                                         },
+                                                                                            "Categories":  {
+                                                                                                               "value":  "Beaches|Self-published work",
+                                                                                                               "source":  "commons-categories",
+                                                                                                               "hidden":  ""
+                                                                                                           },
+                                                                                            "Assessments":  {
+                                                                                                                "value":  "",
+                                                                                                                "source":  "commons-categories",
+                                                                                                                "hidden":  ""
+                                                                                                            },
+                                                                                            "ImageDescription":  {
+                                                                                                                     "value":  "Ảnh chụp bãi biển Thuận An năm 2023",
+                                                                                                                     "source":  "commons-desc-page"
+                                                                                                                 },
+                                                                                            "DateTimeOriginal":  {
+                                                                                                                     "value":  "2023-05-20 18:01:13",
+                                                                                                                     "source":  "commons-desc-page"
+                                                                                                                 },
+                                                                                            "Credit":  {
+                                                                                                           "value":  "\u003cspan class=\"int-own-work\" lang=\"en\"\u003eOwn work\u003c/span\u003e",
+                                                                                                           "source":  "commons-desc-page"
+                                                                                                       },
+                                                                                            "Artist":  {
+                                                                                                           "value":  "\u003ca href=\"//commons.wikimedia.org/wiki/User:Ayane_Fumihiro\" class=\"mw-redirect\" title=\"User:Ayane Fumihiro\"\u003eAyane Fumihiro\u003c/a\u003e",
+                                                                                                           "source":  "commons-desc-page"
+                                                                                                       },
+                                                                                            "LicenseShortName":  {
+                                                                                                                     "value":  "CC BY 4.0",
+                                                                                                                     "source":  "commons-desc-page",
+                                                                                                                     "hidden":  ""
+                                                                                                                 },
+                                                                                            "UsageTerms":  {
+                                                                                                               "value":  "Creative Commons Attribution 4.0",
+                                                                                                               "source":  "commons-desc-page"
+                                                                                                           },
+                                                                                            "AttributionRequired":  {
+                                                                                                                        "value":  "true",
+                                                                                                                        "source":  "commons-desc-page",
+                                                                                                                        "hidden":  ""
+                                                                                                                    },
+                                                                                            "LicenseUrl":  {
+                                                                                                               "value":  "https://creativecommons.org/licenses/by/4.0",
+                                                                                                               "source":  "commons-desc-page"
+                                                                                                           },
+                                                                                            "Copyrighted":  {
+                                                                                                                "value":  "True",
+                                                                                                                "source":  "commons-desc-page",
+                                                                                                                "hidden":  ""
+                                                                                                            },
+                                                                                            "Restrictions":  {
+                                                                                                                 "value":  "",
+                                                                                                                 "source":  "commons-desc-page",
+                                                                                                                 "hidden":  ""
+                                                                                                             },
+                                                                                            "License":  {
+                                                                                                            "value":  "cc-by-4.0",
+                                                                                                            "source":  "commons-templates",
+                                                                                                            "hidden":  ""
+                                                                                                        }
+                                                                                        }
+                                                                    }
+                                                                ]
+                                              },
+                                "3347196":  {
+                                                "pageid":  3347196,
+                                                "ns":  6,
+                                                "title":  "File:Tu Hieu Pagoda.jpg",
+                                                "imagerepository":  "local",
+                                                "imageinfo":  [
+                                                                  {
+                                                                      "thumburl":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/03/Tu_Hieu_Pagoda.jpg/500px-Tu_Hieu_Pagoda.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                                                                      "thumbwidth":  480,
+                                                                      "thumbheight":  315,
+                                                                      "responsiveUrls":  {
+                                                                                             "2":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/03/Tu_Hieu_Pagoda.jpg/960px-Tu_Hieu_Pagoda.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail"
+                                                                                         },
+                                                                      "thumbattribs":  {
+                                                                                           "src":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/03/Tu_Hieu_Pagoda.jpg/500px-Tu_Hieu_Pagoda.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                                                                                           "decoding":  "async",
+                                                                                           "loading":  "lazy",
+                                                                                           "width":  480,
+                                                                                           "height":  315,
+                                                                                           "srcset":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/03/Tu_Hieu_Pagoda.jpg/960px-Tu_Hieu_Pagoda.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail 2x"
+                                                                                       },
+                                                                      "url":  "https://upload.wikimedia.org/wikipedia/commons/0/03/Tu_Hieu_Pagoda.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=original",
+                                                                      "descriptionurl":  "https://commons.wikimedia.org/wiki/File:Tu_Hieu_Pagoda.jpg",
+                                                                      "descriptionshorturl":  "https://commons.wikimedia.org/w/index.php?curid=3347196",
+                                                                      "extmetadata":  {
+                                                                                          "DateTime":  {
+                                                                                                           "value":  "2023-06-19 09:59:24",
+                                                                                                           "source":  "mediawiki-metadata",
+                                                                                                           "hidden":  ""
+                                                                                                       },
+                                                                                          "ObjectName":  {
+                                                                                                             "value":  "Tu Hieu Pagoda",
+                                                                                                             "source":  "mediawiki-metadata"
+                                                                                                         },
+                                                                                          "CommonsMetadataExtension":  {
+                                                                                                                           "value":  1.2,
+                                                                                                                           "source":  "extension",
+                                                                                                                           "hidden":  ""
+                                                                                                                       },
+                                                                                          "Categories":  {
+                                                                                                             "value":  "Tu Hieu Temple|Self-published work|PD-self|Files by User:Lưu Ly",
+                                                                                                             "source":  "commons-categories",
+                                                                                                             "hidden":  ""
+                                                                                                         },
+                                                                                          "Assessments":  {
+                                                                                                              "value":  "",
+                                                                                                              "source":  "commons-categories",
+                                                                                                              "hidden":  ""
+                                                                                                          },
+                                                                                          "ImageDescription":  {
+                                                                                                                   "value":  "Tu Hieu Pagoda, Hue, Viet Nam",
+                                                                                                                   "source":  "commons-desc-page"
+                                                                                                               },
+                                                                                          "DateTimeOriginal":  {
+                                                                                                                   "value":  "2008-01-06 08:23",
+                                                                                                                   "source":  "commons-desc-page"
+                                                                                                               },
+                                                                                          "Credit":  {
+                                                                                                         "value":  "\u003cspan class=\"int-own-work\" lang=\"en\"\u003eOwn work\u003c/span\u003e",
+                                                                                                         "source":  "commons-desc-page"
+                                                                                                     },
+                                                                                          "Artist":  {
+                                                                                                         "value":  "\u003ca href=\"//commons.wikimedia.org/wiki/User:L%C6%B0u_Ly\" title=\"User:Lưu Ly\"\u003eLưu Ly\u003c/a\u003e",
+                                                                                                         "source":  "commons-desc-page"
+                                                                                                     },
+                                                                                          "LicenseShortName":  {
+                                                                                                                   "value":  "Public domain",
+                                                                                                                   "source":  "commons-desc-page",
+                                                                                                                   "hidden":  ""
+                                                                                                               },
+                                                                                          "UsageTerms":  {
+                                                                                                             "value":  "Public domain",
+                                                                                                             "source":  "commons-desc-page"
+                                                                                                         },
+                                                                                          "AttributionRequired":  {
+                                                                                                                      "value":  "false",
+                                                                                                                      "source":  "commons-desc-page",
+                                                                                                                      "hidden":  ""
+                                                                                                                  },
+                                                                                          "Copyrighted":  {
+                                                                                                              "value":  "False",
+                                                                                                              "source":  "commons-desc-page",
+                                                                                                              "hidden":  ""
+                                                                                                          },
+                                                                                          "Restrictions":  {
+                                                                                                               "value":  "",
+                                                                                                               "source":  "commons-desc-page",
+                                                                                                               "hidden":  ""
+                                                                                                           },
+                                                                                          "License":  {
+                                                                                                          "value":  "pd",
+                                                                                                          "source":  "commons-templates",
+                                                                                                          "hidden":  ""
+                                                                                                      }
+                                                                                      }
+                                                                  }
+                                                              ]
+                                            },
+                                "10804842":  {
+                                                 "pageid":  10804842,
+                                                 "ns":  6,
+                                                 "title":  "File:Wood Carver Kim Bong.JPG",
+                                                 "imagerepository":  "local",
+                                                 "imageinfo":  [
+                                                                   {
+                                                                       "thumburl":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ed/Wood_Carver_Kim_Bong.JPG/500px-Wood_Carver_Kim_Bong.JPG?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                                                                       "thumbwidth":  480,
+                                                                       "thumbheight":  360,
+                                                                       "responsiveUrls":  {
+                                                                                              "2":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ed/Wood_Carver_Kim_Bong.JPG/960px-Wood_Carver_Kim_Bong.JPG?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail"
+                                                                                          },
+                                                                       "thumbattribs":  {
+                                                                                            "src":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ed/Wood_Carver_Kim_Bong.JPG/500px-Wood_Carver_Kim_Bong.JPG?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                                                                                            "decoding":  "async",
+                                                                                            "loading":  "lazy",
+                                                                                            "width":  480,
+                                                                                            "height":  360,
+                                                                                            "srcset":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ed/Wood_Carver_Kim_Bong.JPG/960px-Wood_Carver_Kim_Bong.JPG?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail 2x"
+                                                                                        },
+                                                                       "url":  "https://upload.wikimedia.org/wikipedia/commons/e/ed/Wood_Carver_Kim_Bong.JPG?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=original",
+                                                                       "descriptionurl":  "https://commons.wikimedia.org/wiki/File:Wood_Carver_Kim_Bong.JPG",
+                                                                       "descriptionshorturl":  "https://commons.wikimedia.org/w/index.php?curid=10804842",
+                                                                       "extmetadata":  {
+                                                                                           "DateTime":  {
+                                                                                                            "value":  "2010-07-05 04:40:30",
+                                                                                                            "source":  "mediawiki-metadata",
+                                                                                                            "hidden":  ""
+                                                                                                        },
+                                                                                           "ObjectName":  {
+                                                                                                              "value":  "Wood Carver Kim Bong",
+                                                                                                              "source":  "mediawiki-metadata"
+                                                                                                          },
+                                                                                           "CommonsMetadataExtension":  {
+                                                                                                                            "value":  1.2,
+                                                                                                                            "source":  "extension",
+                                                                                                                            "hidden":  ""
+                                                                                                                        },
+                                                                                           "Categories":  {
+                                                                                                              "value":  "Taken with iPhone 3GS|Vises|Artists from Vietnam|Kim Bồng Village|Self-published work|Photos of Hoi An by Dragfyre|Wooden sculptures in Vietnam|Woodcarvers at work in Asia",
+                                                                                                              "source":  "commons-categories",
+                                                                                                              "hidden":  ""
+                                                                                                          },
+                                                                                           "Assessments":  {
+                                                                                                               "value":  "",
+                                                                                                               "source":  "commons-categories",
+                                                                                                               "hidden":  ""
+                                                                                                           },
+                                                                                           "ImageDescription":  {
+                                                                                                                    "value":  "A woodworker (possibly Huynh Suong, son of master carver Huynh Ri) carves designs into a wooden pot, which he holds between his feet. Kim Bong village, Hoi An, Vietnam.",
+                                                                                                                    "source":  "commons-desc-page"
+                                                                                                                },
+                                                                                           "DateTimeOriginal":  {
+                                                                                                                    "value":  "2010-03-08",
+                                                                                                                    "source":  "commons-desc-page"
+                                                                                                                },
+                                                                                           "Credit":  {
+                                                                                                          "value":  "\u003cspan class=\"int-own-work\" lang=\"en\"\u003eOwn work\u003c/span\u003e",
+                                                                                                          "source":  "commons-desc-page"
+                                                                                                      },
+                                                                                           "Artist":  {
+                                                                                                          "value":  "\u003ca href=\"//commons.wikimedia.org/wiki/User:Dragfyre\" title=\"User:Dragfyre\"\u003eDragfyre\u003c/a\u003e",
+                                                                                                          "source":  "commons-desc-page"
+                                                                                                      },
+                                                                                           "LicenseShortName":  {
+                                                                                                                    "value":  "CC BY-SA 3.0",
+                                                                                                                    "source":  "commons-desc-page",
+                                                                                                                    "hidden":  ""
+                                                                                                                },
+                                                                                           "UsageTerms":  {
+                                                                                                              "value":  "Creative Commons Attribution-Share Alike 3.0",
+                                                                                                              "source":  "commons-desc-page"
+                                                                                                          },
+                                                                                           "AttributionRequired":  {
+                                                                                                                       "value":  "true",
+                                                                                                                       "source":  "commons-desc-page",
+                                                                                                                       "hidden":  ""
+                                                                                                                   },
+                                                                                           "LicenseUrl":  {
+                                                                                                              "value":  "https://creativecommons.org/licenses/by-sa/3.0",
+                                                                                                              "source":  "commons-desc-page"
+                                                                                                          },
+                                                                                           "Copyrighted":  {
+                                                                                                               "value":  "True",
+                                                                                                               "source":  "commons-desc-page",
+                                                                                                               "hidden":  ""
+                                                                                                           },
+                                                                                           "Restrictions":  {
+                                                                                                                "value":  "",
+                                                                                                                "source":  "commons-desc-page",
+                                                                                                                "hidden":  ""
+                                                                                                            },
+                                                                                           "License":  {
+                                                                                                           "value":  "cc-by-sa-3.0",
+                                                                                                           "source":  "commons-templates",
+                                                                                                           "hidden":  ""
+                                                                                                       }
+                                                                                       }
+                                                                   }
+                                                               ]
+                                             }
+                            }
+              }
+}
