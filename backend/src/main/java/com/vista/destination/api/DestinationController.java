@@ -1,25 +1,32 @@
 package com.vista.destination.api;
 
+import com.vista.common.security.CurrentUserProvider;
 import com.vista.common.security.UserPrincipal;
 import com.vista.destination.api.dto.DestinationDetailDto;
 import com.vista.destination.api.dto.DestinationPageDto;
+import com.vista.destination.api.dto.DestinationSummaryDto;
 import com.vista.destination.service.DestinationNotFoundException;
 import com.vista.destination.service.DestinationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
 import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,9 +37,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class DestinationController {
 
   private final DestinationService destinationService;
+  private final CurrentUserProvider currentUserProvider;
 
-  public DestinationController(DestinationService destinationService) {
+  public DestinationController(
+      DestinationService destinationService, CurrentUserProvider currentUserProvider) {
     this.destinationService = destinationService;
+    this.currentUserProvider = currentUserProvider;
   }
 
   @GetMapping
@@ -63,6 +73,27 @@ public class DestinationController {
     return ResponseEntity.ok(result);
   }
 
+  @GetMapping("/favorites")
+  @Operation(
+      summary = "Lấy danh sách các điểm đến yêu thích của người dùng hiện tại",
+      security = @SecurityRequirement(name = "bearerAuth"))
+  public ResponseEntity<List<DestinationSummaryDto>> getFavorites() {
+    UUID userId = currentUserProvider.getCurrentUserId();
+    return ResponseEntity.ok(destinationService.getFavorites(userId));
+  }
+
+  @GetMapping("/history")
+  @Operation(
+      summary = "Lấy danh sách điểm đến đã xem gần đây của người dùng hiện tại",
+      security = @SecurityRequirement(name = "bearerAuth"))
+  public ResponseEntity<List<DestinationSummaryDto>> getHistory(
+      @Parameter(description = "Số lượng bản ghi tối đa (mặc định 10, tối đa 50)")
+          @RequestParam(defaultValue = "10")
+          int limit) {
+    UUID userId = currentUserProvider.getCurrentUserId();
+    return ResponseEntity.ok(destinationService.getRecentHistory(userId, limit));
+  }
+
   @GetMapping("/{id}")
   @Operation(
       summary = "Xem thông tin chi tiết một điểm đến (FR-DEST-04)",
@@ -73,9 +104,65 @@ public class DestinationController {
           UUID id,
       @AuthenticationPrincipal UserPrincipal userPrincipal) {
 
-    UUID currentUserId = userPrincipal != null ? userPrincipal.getId() : null;
+    UUID currentUserId =
+        userPrincipal != null
+            ? userPrincipal.getId()
+            : currentUserProvider.findCurrentUserId().orElse(null);
+
     DestinationDetailDto detail = destinationService.getPublishedDetail(id, currentUserId);
     return ResponseEntity.ok(detail);
+  }
+
+  @PutMapping("/{id}/favorite")
+  @Operation(
+      summary = "Đánh dấu yêu thích điểm đến (FR-DEST-05)",
+      security = @SecurityRequirement(name = "bearerAuth"))
+  public ResponseEntity<Void> addFavoritePut(
+      @Parameter(description = "Mã định danh duy nhất của điểm đến (UUID)", required = true)
+          @PathVariable
+          UUID id) {
+    UUID userId = currentUserProvider.getCurrentUserId();
+    destinationService.addFavorite(id, userId);
+    return ResponseEntity.noContent().build();
+  }
+
+  @PostMapping("/{id}/favorite")
+  @Operation(
+      summary = "Đánh dấu yêu thích điểm đến (POST alias)",
+      security = @SecurityRequirement(name = "bearerAuth"))
+  public ResponseEntity<Void> addFavoritePost(
+      @Parameter(description = "Mã định danh duy nhất của điểm đến (UUID)", required = true)
+          @PathVariable
+          UUID id) {
+    UUID userId = currentUserProvider.getCurrentUserId();
+    destinationService.addFavorite(id, userId);
+    return ResponseEntity.noContent().build();
+  }
+
+  @DeleteMapping("/{id}/favorite")
+  @Operation(
+      summary = "Bỏ yêu thích điểm đến (FR-DEST-05)",
+      security = @SecurityRequirement(name = "bearerAuth"))
+  public ResponseEntity<Void> removeFavorite(
+      @Parameter(description = "Mã định danh duy nhất của điểm đến (UUID)", required = true)
+          @PathVariable
+          UUID id) {
+    UUID userId = currentUserProvider.getCurrentUserId();
+    destinationService.removeFavorite(id, userId);
+    return ResponseEntity.noContent().build();
+  }
+
+  @PostMapping("/{id}/history")
+  @Operation(
+      summary = "Ghi nhận lượt xem điểm đến vào lịch sử",
+      security = @SecurityRequirement(name = "bearerAuth"))
+  public ResponseEntity<Void> recordView(
+      @Parameter(description = "Mã định danh duy nhất của điểm đến (UUID)", required = true)
+          @PathVariable
+          UUID id) {
+    UUID userId = currentUserProvider.getCurrentUserId();
+    destinationService.recordView(id, userId);
+    return ResponseEntity.noContent().build();
   }
 
   @ExceptionHandler(DestinationNotFoundException.class)
