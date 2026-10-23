@@ -4,10 +4,14 @@ import {
   ApiExpense,
   TripExpenseSummaryDto,
   CreateExpensePayload,
+  UpdateExpensePayload,
 } from '../../../services/api/expenseApi';
 import { apiErrorMessage } from '../../../services/api/client';
 
-export function useTripExpenses(tripId: string, budgetTarget: number = 5000000) {
+export function useTripExpenses(
+  tripId: string,
+  budgetTarget: number = 5000000,
+) {
   const [expenses, setExpenses] = useState<ApiExpense[]>([]);
   const [summary, setSummary] = useState<TripExpenseSummaryDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -33,7 +37,10 @@ export function useTripExpenses(tripId: string, budgetTarget: number = 5000000) 
   }, [tripId, budgetTarget]);
 
   useEffect(() => {
-    loadExpenses();
+    const timer = setTimeout(() => {
+      void loadExpenses();
+    }, 0);
+    return () => clearTimeout(timer);
   }, [loadExpenses]);
 
   const addExpense = useCallback(
@@ -71,6 +78,31 @@ export function useTripExpenses(tripId: string, budgetTarget: number = 5000000) 
     [tripId, loadExpenses],
   );
 
+  const updateExpense = useCallback(
+    async (expenseId: string, payload: UpdateExpensePayload) => {
+      setIsSubmitting(true);
+      setError(null);
+      try {
+        const updated = await expenseApi.updateTripExpense(
+          tripId,
+          expenseId,
+          payload,
+        );
+        setExpenses((prev) =>
+          prev.map((expense) => (expense.id === expenseId ? updated : expense)),
+        );
+        await loadExpenses();
+        return updated;
+      } catch (err) {
+        setError(apiErrorMessage(err));
+        throw err;
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [tripId, loadExpenses],
+  );
+
   return {
     expenses,
     summary,
@@ -79,6 +111,7 @@ export function useTripExpenses(tripId: string, budgetTarget: number = 5000000) 
     error,
     reload: loadExpenses,
     addExpense,
+    updateExpense,
     removeExpense,
   };
 }

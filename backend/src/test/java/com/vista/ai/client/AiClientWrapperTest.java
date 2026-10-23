@@ -102,4 +102,29 @@ class AiClientWrapperTest {
     Optional<String> result = wrapper.generateContent("Gợi ý lịch trình");
     assertTrue(result.isEmpty());
   }
+
+  @Test
+  @DisplayName("Retry có giới hạn khi Gemini lỗi tạm thời và thành công ở lần kế tiếp")
+  @SuppressWarnings("unchecked")
+  void testRetryableFailureThenSuccess() throws Exception {
+    AiProperties props =
+        new AiProperties("gemini", "dummy-api-key", "gemini-2.5-flash", Duration.ofSeconds(5), 1);
+    HttpClient mockHttpClient = mock(HttpClient.class);
+    HttpResponse<String> failedResponse = mock(HttpResponse.class);
+    HttpResponse<String> successResponse = mock(HttpResponse.class);
+
+    when(failedResponse.statusCode()).thenReturn(503);
+    when(successResponse.statusCode()).thenReturn(200);
+    when(successResponse.body())
+        .thenReturn(
+            "{\"candidates\":[{\"content\":{\"parts\":[{\"text\":\"valid-json\"}]}}]}");
+    when(mockHttpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
+        .thenReturn(failedResponse, successResponse);
+
+    AiClientWrapper wrapper = new AiClientWrapper(props, mockHttpClient, new ObjectMapper());
+
+    assertEquals(Optional.of("valid-json"), wrapper.generateContent("Lập lịch trình"));
+    verify(mockHttpClient, times(2))
+        .send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class));
+  }
 }

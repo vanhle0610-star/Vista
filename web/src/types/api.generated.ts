@@ -243,7 +243,8 @@ export interface paths {
         delete: operations["deleteTripExpense"];
         options?: never;
         head?: never;
-        patch?: never;
+        /** Cập nhật khoản chi của chuyến đi (FR-EXP-02) */
+        patch: operations["updateTripExpense"];
         trace?: never;
     };
     "/trips/{tripId}/expenses/summary": {
@@ -718,6 +719,23 @@ export interface components {
             occurredAt?: string;
             /** @enum {string} */
             splitType: "EQUAL" | "EXACT";
+            participantIds?: string[];
+            exactShares?: {
+                [key: string]: number;
+            };
+        };
+        UpdateExpenseRequest: {
+            title?: string;
+            amount?: number;
+            currency?: string;
+            /** Format: uuid */
+            paidBy?: string;
+            /** @enum {string} */
+            category?: "FOOD" | "TRANSPORT" | "ACCOMMODATION" | "ACTIVITIES" | "OTHER";
+            /** Format: date-time */
+            occurredAt?: string;
+            /** @enum {string} */
+            splitType?: "EQUAL" | "EXACT";
             participantIds?: string[];
             exactShares?: {
                 [key: string]: number;
@@ -1376,6 +1394,37 @@ export interface operations {
                 };
                 content?: never;
             };
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
+            404: components["responses"]["Problem"];
+        };
+    };
+    updateTripExpense: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tripId: string;
+                expenseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateExpenseRequest"];
+            };
+        };
+        responses: {
+            /** @description Cập nhật khoản chi thành công */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExpenseResponse"];
+                };
+            };
+            400: components["responses"]["Problem"];
             401: components["responses"]["Problem"];
             403: components["responses"]["Problem"];
             404: components["responses"]["Problem"];

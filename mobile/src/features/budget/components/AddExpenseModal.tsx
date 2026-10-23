@@ -144,12 +144,7 @@ export function AddExpenseModal({
         <Pressable style={styles.backdropDismiss} onPress={onClose} />
 
         <View style={styles.modalSheet}>
-          <LinearGradient
-            colors={['#0e1e3e', '#0b1329']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 0, y: 1 }}
-            style={styles.sheetGradient}
-          >
+          <View style={styles.sheetContainer}>
             {/* Grab Handle */}
             <View style={styles.grabHandleRow}>
               <View style={styles.grabHandle} />
@@ -166,7 +161,7 @@ export function AddExpenseModal({
                 style={styles.closeButton}
                 activeOpacity={0.7}
               >
-                <CloseIcon size={20} color="#81ecec" />
+                <CloseIcon size={18} color="#64748b" />
               </TouchableOpacity>
             </View>
 
@@ -213,7 +208,7 @@ export function AddExpenseModal({
                   value={title}
                   onChangeText={setTitle}
                   placeholder="Ví dụ: Hải sản Năm Đảnh, Novotel..."
-                  placeholderTextColor="#64748B"
+                  placeholderTextColor="#94a3b8"
                   style={styles.textInput}
                 />
               </View>
@@ -366,7 +361,7 @@ export function AddExpenseModal({
                             ]}
                           >
                             {isSelected && (
-                              <CheckIcon size={12} color="#0b1329" />
+                              <CheckIcon size={12} color="#ffffff" />
                             )}
                           </View>
                           <Text
@@ -407,7 +402,7 @@ export function AddExpenseModal({
                 activeOpacity={0.85}
               >
                 <LinearGradient
-                  colors={['#0984e3', '#00cec9']}
+                  colors={['#005ea5', '#0284c7']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                   style={styles.submitBtnGradient}
@@ -416,7 +411,7 @@ export function AddExpenseModal({
                 </LinearGradient>
               </TouchableOpacity>
             </ScrollView>
-          </LinearGradient>
+          </View>
         </View>
       </KeyboardAvoidingView>
     </Modal>
@@ -427,7 +422,7 @@ const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
     justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    backgroundColor: 'rgba(15, 23, 42, 0.45)',
   },
   backdropDismiss: {
     flex: 1,
@@ -442,10 +437,17 @@ const styles = StyleSheet.create({
     borderRadius: Platform.OS === 'web' ? 28 : undefined,
     marginBottom: Platform.OS === 'web' ? 20 : 0,
     overflow: 'hidden',
+    backgroundColor: '#ffffff',
     borderWidth: 1,
-    borderColor: 'rgba(0, 206, 201, 0.45)',
+    borderColor: '#e2e7ff',
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 24,
+    elevation: 8,
   },
-  sheetGradient: {
+  sheetContainer: {
+    backgroundColor: '#ffffff',
     paddingBottom: Platform.OS === 'ios' ? 32 : 20,
   },
   grabHandleRow: {
@@ -456,7 +458,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 4,
     borderRadius: 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    backgroundColor: '#cbd5e1',
   },
   header: {
     flexDirection: 'row',
@@ -465,48 +467,46 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 14,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(9, 132, 227, 0.2)',
+    borderBottomColor: '#f1f5f9',
   },
   eyebrow: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '800',
-    color: '#00cec9',
+    color: '#005ea5',
     letterSpacing: 1.2,
     marginBottom: 2,
   },
   title: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#F8FAFC',
-    letterSpacing: 0.5,
+    color: '#131b2e',
+    letterSpacing: 0.3,
   },
   closeButton: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: 'rgba(16, 32, 68, 0.8)',
-    borderWidth: 1,
-    borderColor: 'rgba(0, 206, 201, 0.3)',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#f1f5f9',
     alignItems: 'center',
     justifyContent: 'center',
   },
   scrollBody: {
     paddingHorizontal: 20,
     paddingTop: 16,
-    paddingBottom: 20,
+    paddingBottom: 24,
   },
   amountHeroBox: {
-    backgroundColor: 'rgba(16, 32, 68, 0.75)',
+    backgroundColor: '#f8fafc',
     borderRadius: 20,
     padding: 16,
     borderWidth: 1,
-    borderColor: 'rgba(9, 132, 227, 0.35)',
+    borderColor: '#e2e8f0',
     marginBottom: 16,
   },
   amountHeroLabel: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#94A3B8',
+    color: '#64748b',
     letterSpacing: 0.8,
     marginBottom: 6,
   },
@@ -518,13 +518,13 @@ const styles = StyleSheet.create({
   amountHeroValue: {
     fontSize: 32,
     fontWeight: '800',
-    color: '#00cec9',
+    color: '#005ea5',
     letterSpacing: -0.5,
   },
   amountCurrency: {
     fontSize: 20,
-    fontWeight: '600',
-    color: '#74b9ff',
+    fontWeight: '700',
+    color: '#0284c7',
     marginLeft: 6,
   },
   quickChipsRow: {
@@ -536,23 +536,23 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 14,
-    backgroundColor: 'rgba(9, 132, 227, 0.2)',
+    backgroundColor: '#ffffff',
     borderWidth: 1,
-    borderColor: 'rgba(0, 206, 201, 0.35)',
+    borderColor: '#cbd5e1',
   },
   quickChipText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#81ecec',
+    color: '#005ea5',
   },
   resetChip: {
-    backgroundColor: 'rgba(15, 23, 42, 0.6)',
-    borderColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: '#f1f5f9',
+    borderColor: '#e2e8f0',
   },
   resetChipText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#94A3B8',
+    color: '#64748b',
   },
   inputGroup: {
     marginBottom: 16,
@@ -560,20 +560,20 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontSize: 11,
     fontWeight: '800',
-    color: '#94A3B8',
+    color: '#475569',
     letterSpacing: 0.8,
     marginBottom: 8,
   },
   textInput: {
-    backgroundColor: 'rgba(16, 32, 68, 0.75)',
+    backgroundColor: '#f8fafc',
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'rgba(9, 132, 227, 0.35)',
+    borderColor: '#e2e8f0',
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 14,
     fontWeight: '600',
-    color: '#F8FAFC',
+    color: '#131b2e',
   },
   categoryScroll: {
     gap: 8,
@@ -581,39 +581,40 @@ const styles = StyleSheet.create({
   categoryChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(16, 32, 68, 0.75)',
+    backgroundColor: '#f8fafc',
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(9, 132, 227, 0.3)',
+    borderColor: '#e2e8f0',
     gap: 6,
   },
   categoryChipSelected: {
-    backgroundColor: '#0984e3',
-    borderColor: '#00cec9',
-    shadowColor: '#00cec9',
+    backgroundColor: '#005ea5',
+    borderColor: '#005ea5',
+    shadowColor: '#005ea5',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.25,
     shadowRadius: 6,
+    elevation: 2,
   },
   categoryDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#64748B',
+    backgroundColor: '#94a3b8',
   },
   categoryDotSelected: {
-    backgroundColor: '#00cec9',
+    backgroundColor: '#ffffff',
   },
   categoryChipText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#94A3B8',
+    color: '#64748b',
     letterSpacing: 0.4,
   },
   categoryChipTextSelected: {
-    color: '#FFFFFF',
+    color: '#ffffff',
   },
   payerRow: {
     flexDirection: 'row',
@@ -623,49 +624,50 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(16, 32, 68, 0.75)',
+    backgroundColor: '#f8fafc',
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'rgba(9, 132, 227, 0.3)',
+    borderColor: '#e2e8f0',
     paddingVertical: 10,
     paddingHorizontal: 8,
     gap: 6,
   },
   payerCardSelected: {
-    backgroundColor: 'rgba(9, 132, 227, 0.25)',
-    borderColor: '#00cec9',
-    shadowColor: '#00cec9',
+    backgroundColor: '#eef2ff',
+    borderColor: '#005ea5',
+    shadowColor: '#005ea5',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.35,
+    shadowOpacity: 0.15,
     shadowRadius: 6,
+    elevation: 2,
   },
   payerAvatar: {
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: 'rgba(9, 132, 227, 0.4)',
+    backgroundColor: '#e2e8f0',
     alignItems: 'center',
     justifyContent: 'center',
   },
   payerAvatarSelected: {
-    backgroundColor: '#00cec9',
+    backgroundColor: '#005ea5',
   },
   payerAvatarText: {
     fontSize: 10,
     fontWeight: '800',
-    color: '#74b9ff',
+    color: '#475569',
   },
   payerAvatarTextSelected: {
-    color: '#0b1329',
+    color: '#ffffff',
   },
   payerName: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#94A3B8',
+    color: '#64748b',
     flexShrink: 1,
   },
   payerNameSelected: {
-    color: '#FFFFFF',
+    color: '#005ea5',
   },
   splitHeaderRow: {
     flexDirection: 'row',
@@ -675,10 +677,10 @@ const styles = StyleSheet.create({
   },
   splitToggleContainer: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(16, 32, 68, 0.75)',
+    backgroundColor: '#f1f5f9',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(9, 132, 227, 0.25)',
+    borderColor: '#e2e8f0',
     padding: 2,
   },
   toggleBtn: {
@@ -687,15 +689,15 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   toggleBtnActive: {
-    backgroundColor: '#0984e3',
+    backgroundColor: '#005ea5',
   },
   toggleBtnText: {
     fontSize: 9,
     fontWeight: '700',
-    color: '#94A3B8',
+    color: '#64748b',
   },
   toggleBtnTextActive: {
-    color: '#FFFFFF',
+    color: '#ffffff',
   },
   participantsList: {
     gap: 6,
@@ -704,16 +706,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: 'rgba(16, 32, 68, 0.65)',
+    backgroundColor: '#ffffff',
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'rgba(9, 132, 227, 0.25)',
+    borderColor: '#e2e8f0',
     paddingVertical: 10,
     paddingHorizontal: 12,
   },
   participantRowActive: {
-    borderColor: 'rgba(0, 206, 201, 0.45)',
-    backgroundColor: 'rgba(16, 32, 68, 0.9)',
+    borderColor: '#93c5fd',
+    backgroundColor: '#f8fafc',
   },
   participantLeft: {
     flexDirection: 'row',
@@ -725,42 +727,44 @@ const styles = StyleSheet.create({
     height: 18,
     borderRadius: 6,
     borderWidth: 1.5,
-    borderColor: '#64748B',
+    borderColor: '#94a3b8',
     alignItems: 'center',
     justifyContent: 'center',
   },
   checkboxActive: {
-    backgroundColor: '#00cec9',
-    borderColor: '#00cec9',
+    backgroundColor: '#005ea5',
+    borderColor: '#005ea5',
   },
   participantName: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#94A3B8',
+    color: '#64748b',
   },
   participantNameActive: {
-    color: '#F8FAFC',
+    color: '#131b2e',
     fontWeight: '700',
   },
   participantShare: {
     fontSize: 13,
-    fontWeight: '700',
-    color: '#64748B',
+    fontWeight: '600',
+    color: '#94a3b8',
   },
   participantShareActive: {
-    color: '#00cec9',
+    color: '#005ea5',
+    fontWeight: '700',
   },
   submitBtn: {
     marginTop: 8,
     borderRadius: 24,
     overflow: 'hidden',
-    shadowColor: '#00cec9',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
-    shadowRadius: 14,
+    shadowColor: '#005ea5',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 3,
   },
   submitBtnDisabled: {
-    opacity: 0.5,
+    opacity: 0.45,
     shadowOpacity: 0,
   },
   submitBtnGradient: {
@@ -772,7 +776,7 @@ const styles = StyleSheet.create({
   submitBtnText: {
     fontSize: 13,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: '#ffffff',
     letterSpacing: 0.8,
   },
 });

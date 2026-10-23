@@ -34,6 +34,8 @@ export interface CreateExpensePayload {
   exactShares?: Record<string, number>;
 }
 
+export type UpdateExpensePayload = Partial<CreateExpensePayload>;
+
 export interface SettlementTransferDto {
   fromUserId: string;
   toUserId: string;
@@ -64,18 +66,18 @@ export interface AiItineraryResponse {
   budgetLevel: string;
   estimatedTotalCost: number;
   isMockData: boolean;
-  days: Array<{
+  days: {
     dayNumber: number;
     dateLabel: string;
-    activities: Array<{
+    activities: {
       destinationId?: string | null;
       timeSlot: string;
       destinationName: string;
       estimatedCost: number;
       category: string;
       note?: string | null;
-    }>;
-  }>;
+    }[];
+  }[];
 }
 
 export const expenseApi = {
@@ -84,8 +86,26 @@ export const expenseApi = {
     return res.data;
   },
 
-  async createTripExpense(tripId: string, payload: CreateExpensePayload): Promise<ApiExpense> {
-    const res = await api.post<ApiExpense>(`/trips/${tripId}/expenses`, payload);
+  async createTripExpense(
+    tripId: string,
+    payload: CreateExpensePayload,
+  ): Promise<ApiExpense> {
+    const res = await api.post<ApiExpense>(
+      `/trips/${tripId}/expenses`,
+      payload,
+    );
+    return res.data;
+  },
+
+  async updateTripExpense(
+    tripId: string,
+    expenseId: string,
+    payload: UpdateExpensePayload,
+  ): Promise<ApiExpense> {
+    const res = await api.patch<ApiExpense>(
+      `/trips/${tripId}/expenses/${expenseId}`,
+      payload,
+    );
     return res.data;
   },
 
@@ -97,9 +117,12 @@ export const expenseApi = {
     tripId: string,
     budgetTarget?: number,
   ): Promise<TripExpenseSummaryDto> {
-    const res = await api.get<TripExpenseSummaryDto>(`/trips/${tripId}/expenses/summary`, {
-      params: budgetTarget ? { budgetTarget } : undefined,
-    });
+    const res = await api.get<TripExpenseSummaryDto>(
+      `/trips/${tripId}/expenses/summary`,
+      {
+        params: budgetTarget ? { budgetTarget } : undefined,
+      },
+    );
     return res.data;
   },
 
@@ -114,9 +137,10 @@ export const expenseApi = {
     return res.data;
   },
 
-  async fetchAiQuickPlan(request: AiItineraryRequest): Promise<AiItineraryResponse> {
+  async fetchAiQuickPlan(
+    request: AiItineraryRequest,
+  ): Promise<AiItineraryResponse> {
     const res = await api.post<AiItineraryResponse>('/ai/quick-plan', request);
     return res.data;
   },
 };
-

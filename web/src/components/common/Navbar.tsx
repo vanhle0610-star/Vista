@@ -50,10 +50,9 @@ export function Navbar({
   const navItems = [
     {
       id: 'explore',
-      labelVi: 'Khám phá điểm đến',
-      labelEn: 'Destinations',
+      labelVi: 'Khám phá',
+      labelEn: 'Explore',
       href: '/',
-      icon: '🧭',
       badge: null,
     },
     {
@@ -66,36 +65,32 @@ export function Navbar({
     },
     {
       id: 'planner',
-      labelVi: 'AI Lập lịch trình',
+      labelVi: 'AI Planner',
       labelEn: 'AI Planner',
       href: '/planner',
-      icon: '✨',
-      badge: 'AI PRO',
+      badge: 'PRO',
       badgeType: 'ai',
     },
     {
       id: 'trips',
-      labelVi: 'Tổ chức chuyến đi',
-      labelEn: 'Group Trips',
+      labelVi: 'Chuyến đi',
+      labelEn: 'Trips',
       href: '/trips',
-      icon: '🎒',
       badge: 'Nhóm',
       badgeType: 'group',
     },
     {
       id: 'treasury',
-      labelVi: 'Thủ quỹ & Chia tiền',
-      labelEn: 'Treasury & Split',
+      labelVi: 'Thủ quỹ',
+      labelEn: 'Treasury',
       href: '/trips/demo-danang-2026/treasury',
-      icon: '💰',
       badge: null,
     },
     {
       id: 'community',
-      labelVi: 'Cộng đồng & An toàn',
-      labelEn: 'Community & Safety',
+      labelVi: 'Cộng đồng',
+      labelEn: 'Community',
       href: '/#community',
-      icon: '👥',
       badge: null,
     },
   ];
@@ -144,7 +139,6 @@ export function Navbar({
                 className={`${styles.navLink} ${isActive ? styles.navLinkActive : ''}`}
                 id={`nav-${item.id}`}
               >
-                <span className={styles.navIcon}>{item.icon}</span>
                 <span>{internalLang === 'vi' ? item.labelVi : item.labelEn}</span>
                 {item.badge && item.badgeType === 'ai' && (
                   <span className={styles.navBadgeAI}>{item.badge}</span>
@@ -247,7 +241,6 @@ export function Navbar({
                   className={`${styles.navLink} ${isActive ? styles.navLinkActive : ''}`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  <span className={styles.navIcon}>{item.icon}</span>
                   <span style={{ flex: 1 }}>{internalLang === 'vi' ? item.labelVi : item.labelEn}</span>
                   {item.badge && item.badgeType === 'ai' && (
                     <span className={styles.navBadgeAI}>{item.badge}</span>

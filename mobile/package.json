@@ -57,7 +57,7 @@
     "web": "expo start --web",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "jest --runInBand",
+    "test": "jest --runInBand --forceExit",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

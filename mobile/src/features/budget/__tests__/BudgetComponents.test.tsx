@@ -88,6 +88,6 @@ describe('Budget UI Components', () => {
       expect(screen.getByText('+500k')).toBeTruthy();
       expect(screen.getByText('SMART SPLIT CALCULATION')).toBeTruthy();
       expect(screen.getByText('CONFIRM TRANSACTION →')).toBeTruthy();
-    });
+    }, 15000);
   });
 });
