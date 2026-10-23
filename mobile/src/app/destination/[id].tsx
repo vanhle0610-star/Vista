@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 import { api, apiErrorMessage } from '../../services/api/client';
 import { LoadingState, ErrorState } from '../../components/feedback/States';
+import { useFavorites, useDestinationHistory } from '../../features/favorites';
 
 export interface DestinationDetail {
   id: string;
@@ -45,6 +46,9 @@ const DAY_LABELS: Record<string, string> = {
 
 export default function DestinationDetailRoute() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const { recordView } = useDestinationHistory();
+  const recordedRef = React.useRef(false);
 
   const { data, isPending, isError, error, refetch } = useQuery<DestinationDetail>({
     queryKey: ['destination', id],
@@ -55,6 +59,42 @@ export default function DestinationDetailRoute() {
     },
     enabled: Boolean(id),
   });
+
+  const isFav = data ? isFavorite(data.id) || Boolean(data.isFavorite) : false;
+
+  React.useEffect(() => {
+    if (data && !recordedRef.current) {
+      recordedRef.current = true;
+      recordView({
+        id: data.id,
+        name: data.name,
+        province: data.province,
+        category: data.category,
+        imageUrl: data.imageUrl,
+        priceMin: data.priceMin,
+        priceMax: data.priceMax,
+        latitude: data.latitude,
+        longitude: data.longitude,
+        status: data.status,
+      });
+    }
+  }, [data, recordView]);
+
+  const handleToggleFavorite = async () => {
+    if (!data) return;
+    await toggleFavorite({
+      id: data.id,
+      name: data.name,
+      province: data.province,
+      category: data.category,
+      imageUrl: data.imageUrl,
+      priceMin: data.priceMin,
+      priceMax: data.priceMax,
+      latitude: data.latitude,
+      longitude: data.longitude,
+      status: data.status,
+    });
+  };
 
   const formatPrice = (min?: number | null, max?: number | null) => {
     if (min === null || min === undefined || max === null || max === undefined) {
@@ -95,10 +135,21 @@ export default function DestinationDetailRoute() {
             />
           </Svg>
         </TouchableOpacity>
-        <Text style={styles.topBarTitle} numberOfLines={1}>
-          {data?.name ?? 'Chi tiết điểm đến'}
-        </Text>
-        <View style={{ width: 38 }} />
+        <TouchableOpacity
+          style={[styles.favBtn, isFav && styles.favBtnActive]}
+          onPress={handleToggleFavorite}
+          activeOpacity={0.7}
+        >
+          <Svg width={20} height={20} viewBox="0 0 24 24" fill={isFav ? '#ef4444' : 'none'}>
+            <Path
+              d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+              stroke={isFav ? '#ef4444' : '#64748b'}
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </Svg>
+        </TouchableOpacity>
       </View>
 
       {/* Nội dung chi tiết */}
@@ -244,6 +295,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#f1f5f9',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  favBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#f1f5f9',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  favBtnActive: {
+    backgroundColor: '#fee2e2',
   },
   topBarTitle: {
     fontSize: 16,

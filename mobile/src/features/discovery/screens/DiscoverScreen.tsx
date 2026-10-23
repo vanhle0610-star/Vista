@@ -16,6 +16,7 @@ import { AppText } from '../../../components/ui/AppText';
 import { ErrorState, LoadingState, EmptyState } from '../../../components/feedback/States';
 import { api, apiErrorMessage } from '../../../services/api/client';
 import { tokens } from '../../../theme/tokens';
+import { useFavorites } from '../../favorites';
 
 export interface DestinationSummary {
   id: string;
@@ -39,19 +40,23 @@ export interface DestinationPage {
 
 const PROVINCE_FILTERS = [
   'Tất cả',
+  'Hà Nội',
   'Đà Nẵng',
+  'Hồ Chí Minh',
   'Thừa Thiên Huế',
   'Quảng Nam',
-  'Hà Nội',
-  'Hồ Chí Minh',
-  'Lâm Đồng',
   'Quảng Ninh',
+  'Ninh Bình',
+  'Hải Phòng',
+  'Cần Thơ',
+  'Lâm Đồng',
 ];
 
 export function DiscoverScreen() {
   const [searchInput, setSearchInput] = useState('');
   const [keyword, setKeyword] = useState('');
   const [selectedProvince, setSelectedProvince] = useState('Tất cả');
+  const { isFavorite, toggleFavorite } = useFavorites();
 
   const { data, isPending, isError, error, refetch } = useQuery<DestinationPage>({
     queryKey: ['destinations', keyword, selectedProvince],
@@ -224,6 +229,24 @@ export function DiscoverScreen() {
                   <View style={styles.provinceTag}>
                     <Text style={styles.provinceTagText}>{item.province}</Text>
                   </View>
+                  <TouchableOpacity
+                    style={[styles.cardFavBtn, isFavorite(item.id) && styles.cardFavBtnActive]}
+                    onPress={(e) => {
+                      e.stopPropagation?.();
+                      toggleFavorite(item);
+                    }}
+                    activeOpacity={0.75}
+                  >
+                    <Svg width={16} height={16} viewBox="0 0 24 24" fill={isFavorite(item.id) ? '#ef4444' : 'none'}>
+                      <Path
+                        d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                        stroke={isFavorite(item.id) ? '#ef4444' : '#ffffff'}
+                        strokeWidth="2.2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </Svg>
+                  </TouchableOpacity>
                 </View>
 
                 {/* Thông tin */}
@@ -424,7 +447,7 @@ const styles = StyleSheet.create({
   provinceTag: {
     position: 'absolute',
     top: 10,
-    right: 10,
+    left: 10,
     backgroundColor: 'rgba(15, 23, 42, 0.75)',
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -434,6 +457,21 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 11,
     fontWeight: '700',
+  },
+  cardFavBtn: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(15, 23, 42, 0.5)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
+  },
+  cardFavBtnActive: {
+    backgroundColor: '#ffffff',
   },
   cardContent: {
     padding: tokens.spacing.md,

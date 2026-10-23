@@ -8,9 +8,14 @@ import com.vista.destination.api.dto.DestinationSummaryDto;
 import com.vista.destination.application.DestinationQueryService;
 import com.vista.destination.application.DestinationSummary;
 import com.vista.destination.domain.Destination;
+import com.vista.destination.domain.DestinationHistory;
+import com.vista.destination.domain.Favorite;
+import com.vista.destination.repository.DestinationHistoryRepository;
 import com.vista.destination.repository.DestinationRepository;
+import com.vista.destination.repository.FavoriteRepository;
 import jakarta.persistence.criteria.Predicate;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -20,6 +25,7 @@ import java.util.UUID;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -33,10 +39,17 @@ public class DestinationService implements DestinationQueryService {
   private static final String STATUS_PUBLISHED = "PUBLISHED";
 
   private final DestinationRepository destinationRepository;
+  private final FavoriteRepository favoriteRepository;
+  private final DestinationHistoryRepository historyRepository;
   private final ObjectMapper objectMapper;
 
-  public DestinationService(DestinationRepository destinationRepository) {
+  public DestinationService(
+      DestinationRepository destinationRepository,
+      FavoriteRepository favoriteRepository,
+      DestinationHistoryRepository historyRepository) {
     this.destinationRepository = destinationRepository;
+    this.favoriteRepository = favoriteRepository;
+    this.historyRepository = historyRepository;
     this.objectMapper = new ObjectMapper();
   }
 
@@ -98,24 +111,158 @@ public class DestinationService implements DestinationQueryService {
                     new DestinationNotFoundException(
                         "Không tìm thấy địa điểm du lịch hoặc địa điểm chưa được xuất bản: " + id));
 
-    return toDetailDto(dest, false);
+    boolean isFavorite =
+        currentUserId != null
+            && favoriteRepository.existsByIdUserIdAndIdDestinationId(currentUserId, id);
+
+    return toDetailDto(dest, isFavorite);
   }
+
+  // --- FAVORITES API (TV1 W3) ---
+
+  @Transactional
+  public void addFavorite(UUID destinationId, UUID userId) {
+    Destination destination =
+        destinationRepository
+            .findByIdAndStatus(destinationId, STATUS_PUBLISHED)
+            .orElseThrow(
+                () ->
+                    new DestinationNotFoundException(
+                        "Không tìm thấy địa điểm du lịch hoặc chưa công bố: " + destinationId));
+
+    if (!favoriteRepository.existsByIdUserIdAndIdDestinationId(userId, destinationId)) {
+      favoriteRepository.save(new Favorite(userId, destination));
+    }
+  }
+
+  @Transactional
+  public void removeFavorite(UUID destinationId, UUID userId) {
+    if (!destinationRepository.existsByIdAndStatus(destinationId, STATUS_PUBLISHED)) {
+      throw new DestinationNotFoundException(
+          "Không tìm thấy địa điểm du lịch hoặc chưa công bố: " + destinationId);
+    }
+    favoriteRepository.deleteByIdUserIdAndIdDestinationId(userId, destinationId);
+  }
+
+  public List<DestinationSummaryDto> getFavorites(UUID userId) {
+    List<Favorite> favorites = favoriteRepository.findByIdUserIdOrderByCreatedAtDesc(userId);
+    return favorites.stream()
+        .map(Favorite::getDestination)
+        .filter(d -> STATUS_PUBLISHED.equals(d.getStatus()))
+        .map(this::toSummaryDto)
+        .toList();
+  }
+
+  public boolean isFavorite(UUID destinationId, UUID userId) {
+    if (userId == null) {
+      return false;
+    }
+    return favoriteRepository.existsByIdUserIdAndIdDestinationId(userId, destinationId);
+  }
+
+  // --- DESTINATION HISTORY API (TV1 W3) ---
+
+  @Transactional
+  public void recordView(UUID destinationId, UUID userId) {
+    Destination destination =
+        destinationRepository
+            .findByIdAndStatus(destinationId, STATUS_PUBLISHED)
+            .orElseThrow(
+                () ->
+                    new DestinationNotFoundException(
+                        "Không tìm thấy địa điểm du lịch hoặc chưa công bố: " + destinationId));
+
+    Optional<DestinationHistory> existing =
+        historyRepository.findByUserIdAndDestinationId(userId, destinationId);
+
+    if (existing.isPresent()) {
+      DestinationHistory history = existing.get();
+      history.setViewedAt(Instant.now());
+      historyRepository.save(history);
+    } else {
+      historyRepository.save(new DestinationHistory(userId, destination));
+    }
+  }
+
+  public List<DestinationSummaryDto> getRecentHistory(UUID userId, int limit) {
+    int validLimit = Math.min(50, Math.max(1, limit));
+    Pageable pageable = PageRequest.of(0, validLimit);
+    List<DestinationHistory> histories =
+        historyRepository.findByUserIdOrderByViewedAtDesc(userId, pageable);
+
+    return histories.stream()
+        .map(DestinationHistory::getDestination)
+        .filter(d -> STATUS_PUBLISHED.equals(d.getStatus()))
+        .map(this::toSummaryDto)
+        .toList();
+  }
+
+  // --- CONTRACT DESTINATION QUERY SERVICE (TV3 / TV4) ---
 
   @Override
   public Optional<DestinationSummary> findPublishedById(UUID id) {
     return destinationRepository
         .findByIdAndStatus(id, STATUS_PUBLISHED)
+        .map(this::toDestinationSummary);
+  }
+
+  @Override
+  public List<DestinationSummary> findPublishedByIds(List<UUID> ids) {
+    if (ids == null || ids.isEmpty()) {
+      return Collections.emptyList();
+    }
+    return destinationRepository.findAllByIdInAndStatus(ids, STATUS_PUBLISHED).stream()
+        .map(this::toDestinationSummary)
+        .toList();
+  }
+
+  @Override
+  public List<DestinationSummary> searchPublished(
+      String keyword, String province, String category, int limit) {
+    int validLimit = Math.min(50, Math.max(1, limit));
+    DestinationPageDto page =
+        searchPublished(keyword, province, category, null, 0, validLimit);
+
+    return page.items().stream()
         .map(
-            d ->
+            item ->
                 new DestinationSummary(
-                    d.getId(),
-                    d.getName(),
-                    d.getProvince() != null ? d.getProvince().getName() : "",
-                    d.getCategory() != null ? d.getCategory().getName() : "",
-                    d.getPriceMin() != null ? d.getPriceMin() : BigDecimal.ZERO,
-                    d.getPriceMax() != null ? d.getPriceMax() : BigDecimal.ZERO,
-                    d.getLatitude() != null ? d.getLatitude().doubleValue() : null,
-                    d.getLongitude() != null ? d.getLongitude().doubleValue() : null));
+                    item.id(),
+                    item.name(),
+                    item.province(),
+                    item.category(),
+                    item.priceMin() != null ? item.priceMin() : BigDecimal.ZERO,
+                    item.priceMax() != null ? item.priceMax() : BigDecimal.ZERO,
+                    item.latitude(),
+                    item.longitude(),
+                    item.imageUrl()))
+        .toList();
+  }
+
+  @Override
+  public boolean isPublished(UUID id) {
+    return id != null && destinationRepository.existsByIdAndStatus(id, STATUS_PUBLISHED);
+  }
+
+  // --- HELPER MAPPERS ---
+
+  private DestinationSummary toDestinationSummary(Destination d) {
+    String imageUrl = null;
+    if (d.getImages() != null && !d.getImages().isEmpty()) {
+      imageUrl = d.getImages().get(0).getStoragePath();
+    }
+
+    return new DestinationSummary(
+        d.getId(),
+        d.getName(),
+        d.getProvince() != null ? d.getProvince().getName() : "",
+        d.getCategory() != null ? d.getCategory().getName() : "",
+        d.getPriceMin() != null ? d.getPriceMin() : BigDecimal.ZERO,
+        d.getPriceMax() != null ? d.getPriceMax() : BigDecimal.ZERO,
+        d.getLatitude() != null ? d.getLatitude().doubleValue() : null,
+        d.getLongitude() != null ? d.getLongitude().doubleValue() : null,
+        imageUrl,
+        d.getOpeningHours());
   }
 
   private DestinationSummaryDto toSummaryDto(Destination dest) {

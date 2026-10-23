@@ -13,6 +13,10 @@ public interface DestinationRepository
 
   Optional<Destination> findByIdAndStatus(UUID id, String status);
 
+  java.util.List<Destination> findAllByIdInAndStatus(java.util.Collection<UUID> ids, String status);
+
+  boolean existsByIdAndStatus(UUID id, String status);
+
   Optional<Destination> findBySlug(String slug);
 
   boolean existsByName(String name);
