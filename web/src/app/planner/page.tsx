@@ -852,6 +852,13 @@ export default function PlannerPage() {
   const [startDate, setStartDate] = useState<string>(getTodayIso());
   const [duration, setDuration] = useState<string>('3n2d');
   const [selectedStyles, setSelectedStyles] = useState<string[]>(['beach', 'cuisine']);
+  const [showAllStyles, setShowAllStyles] = useState<boolean>(false);
+
+  // Balanced styles: show top 6 by default, plus any item user currently selected
+  const displayedStyles = useMemo(() => {
+    if (showAllStyles) return TRAVEL_STYLES;
+    return TRAVEL_STYLES.filter((st, idx) => idx < 6 || selectedStyles.includes(st.id));
+  }, [showAllStyles, selectedStyles]);
   const [peopleCount, setPeopleCount] = useState<number>(2);
   const [budgetTier, setBudgetTier] = useState<string>('standard');
   const [showWishes, setShowWishes] = useState<boolean>(false);
@@ -1532,7 +1539,7 @@ export default function PlannerPage() {
             <p className={styles.fieldSubLabel}>Có thể chọn nhiều sở thích.</p>
 
             <div className={styles.stylesPillsGrid}>
-              {TRAVEL_STYLES.map((st) => {
+              {displayedStyles.map((st) => {
                 const isSelected = selectedStyles.includes(st.id);
                 return (
                   <button
@@ -1551,6 +1558,24 @@ export default function PlannerPage() {
                 );
               })}
             </div>
+
+            <button
+              type="button"
+              className={styles.btnToggleMoreStyles}
+              onClick={() => setShowAllStyles((prev) => !prev)}
+            >
+              {showAllStyles ? (
+                <>
+                  <span>Thu gọn bớt</span>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+                </>
+              ) : (
+                <>
+                  <span>Xem thêm +{TRAVEL_STYLES.length - 6} phong cách khác</span>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </>
+              )}
+            </button>
           </div>
 
           {/* GROUP C — BẠN ĐỒNG HÀNH & NGÂN SÁCH */}
