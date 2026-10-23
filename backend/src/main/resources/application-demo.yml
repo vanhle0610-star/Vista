@@ -18,6 +18,7 @@ spring:
     enabled: true
     baseline-on-migrate: true
     validate-migration-naming: true
+    out-of-order: true
 springdoc:
   swagger-ui:
     enabled: true
