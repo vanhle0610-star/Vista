@@ -1,8 +1,9 @@
 # MA TRẬN PHÂN QUYỀN HỆ THỐNG VÀ CHUYẾN ĐI (RBAC MATRIX)
 
-> **Mã công việc:** W1-03  
-> **Người phụ trách:** M1 (BA / PM / QA)  
-> **Xác nhận kỹ thuật:** M2 (Backend Core), M3 (Backend Trip)
+> **Mã công việc:** W1-03<br>
+> **Người phụ trách:** M1 (BA / PM / QA)<br>
+> **Xác nhận kỹ thuật:** TV2 (Backend Core & Identity Lead) — Đã rà soát kỹ thuật Tuần 1<br>
+> **Trạng thái:** REVIEW COMPLETED (PENDING TEAM FINAL APPROVAL)
 
 ---
 
@@ -72,3 +73,15 @@ Chỉ áp dụng khi người dùng đã đăng nhập (`USER`).
    - Dùng `@PreAuthorize("@tripSecurity.isOwner(#tripId, authentication.name)")` cho quyền Owner chuyến đi.
    - Dùng `@PreAuthorize("@tripSecurity.isMember(#tripId, authentication.name)")` cho quyền Member chuyến đi.
 2. **Bảo mật tuyệt đối:** Người ngoài chuyến đi (`NON_MEMBER`) truy cập vào API Trip trả về **HTTP 403 Forbidden** hoặc **HTTP 404 Not Found** (để tránh rò rỉ ID chuyến đi bí mật).
+3. **Quy ước dữ liệu vai trò và trạng thái (`trips` & `trip_members`):**
+   - **Xác thực Chủ sở hữu (Owner):** Kiểm tra đồng thời cả 2 điều kiện:
+     - `trips.owner_id = currentUserId`.
+     - Tồn tại bản ghi tương ứng trong `trip_members` với `user_id = trips.owner_id`, `role = 'OWNER'` và `status = 'ACTIVE'`.
+     - *Bảo vệ dữ liệu:* Nếu `trips.owner_id` khớp nhưng thiếu bản ghi `OWNER/ACTIVE` trong `trip_members`, hệ thống log cảnh báo dữ liệu không nhất quán và từ chối cấp quyền.
+   - **Xác thực Thành viên (Member):**
+     - Người dùng là Owner hợp lệ theo quy tắc trên, HOẶC
+     - Có bản ghi trong `trip_members` với `status = 'ACTIVE'`. Các trạng thái `PENDING`, `REMOVED` tuyệt đối không được cấp quyền.
+   - **Giao dịch tạo chuyến đi (Trip Creation Invariant):**
+     Khi tạo chuyến đi (`POST /trips`), transaction BẮT BUỘC ghi đồng thời vào cả hai bảng trong cùng một `@Transactional`:
+     1. Thêm bản ghi `trips` với `owner_id = currentUserId`.
+     2. Thêm bản ghi `trip_members` với `trip_id`, `user_id = owner_id`, `role = 'OWNER'`, `status = 'ACTIVE'`, `joined_at = now()`.

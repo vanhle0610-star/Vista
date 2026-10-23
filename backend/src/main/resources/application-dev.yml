@@ -5,3 +5,6 @@ spring:
 springdoc:
   api-docs:
     enabled: true
+vista:
+  jwt:
+    secret: ${JWT_SECRET:vista-local-dev-super-secure-key-2026-minimum-256-bits-random!}

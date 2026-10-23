@@ -1,6 +1,7 @@
 import { create, isAxiosError } from 'axios';
 import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
+import { authStorage } from '../auth/authStorage';
 
 export const storage = {
   async getItem(key: string): Promise<string | null> {
@@ -47,26 +48,18 @@ export const storage = {
   },
 };
 
-const resolveBaseUrl = () => {
-  const envUrl = process.env.EXPO_PUBLIC_API_URL;
-  if (Platform.OS === 'web') {
-    if (!envUrl || envUrl.includes('10.0.2.2')) {
-      return 'http://localhost:8080/api/v1';
-    }
-    return envUrl;
-  }
-  return envUrl ?? 'http://10.0.2.2:8080/api/v1';
-};
+const defaultBaseUrl =
+  Platform.OS === 'android' ? 'http://10.0.2.2:8081/api/v1' : 'http://localhost:8081/api/v1';
 
 export const api = create({
-  baseURL: resolveBaseUrl(),
+  baseURL: process.env.EXPO_PUBLIC_API_URL ?? defaultBaseUrl,
   timeout: 10_000,
   headers: { Accept: 'application/json' },
 });
 
 api.interceptors.request.use(async (config) => {
-  const token = await storage.getItem('vista_token');
-  if (token && !config.headers['Authorization']) {
+  const token = (await authStorage.getAccessToken()) ?? (await storage.getItem('vista_token'));
+  if (token && config.headers && !config.headers['Authorization']) {
     config.headers['Authorization'] = `Bearer ${token}`;
   }
   return config;
