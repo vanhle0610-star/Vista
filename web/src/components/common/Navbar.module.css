@@ -1,21 +1,18 @@
 /* ─── VISTA UNIFIED GLOBAL NAVBAR STYLES ───────────────────────────────── */
 .navbarWrapper {
   width: 100%;
-  background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: #ffffff;
   position: sticky;
   top: 0;
   z-index: 1000;
-  border-bottom: 1px solid rgba(226, 232, 240, 0.85);
-  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.04);
 }
 
 .navbarContainer {
   max-width: 1320px;
   margin: 0 auto;
-  padding: 12px 24px;
+  padding: 10px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -101,21 +98,28 @@
 .navMenu {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
+  flex-wrap: nowrap;
 }
 
 .navLink {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
-  font-size: 14px;
+  gap: 6px;
+  padding: 8px 13px;
+  font-size: 13.5px;
   font-weight: 600;
   color: #475569;
   text-decoration: none;
   border-radius: 999px;
   position: relative;
+  white-space: nowrap;
+  flex-shrink: 0;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.navLink span {
+  white-space: nowrap;
 }
 
 .navLink:hover {
@@ -125,7 +129,7 @@
 
 .navLinkActive {
   color: #0284c7;
-  background: rgba(2, 132, 199, 0.08);
+  background: rgba(2, 132, 199, 0.09);
   font-weight: 700;
 }
 
@@ -133,9 +137,9 @@
   content: '';
   position: absolute;
   bottom: 2px;
-  left: 18px;
-  right: 18px;
-  height: 2.5px;
+  left: 14px;
+  right: 14px;
+  height: 2px;
   background: #0284c7;
   border-radius: 99px;
 }
@@ -185,15 +189,17 @@
 .navActions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   flex-shrink: 0;
 }
 
 .langSelector {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 7px 12px;
+  justify-content: center;
+  gap: 5px;
+  width: 74px;
+  padding: 7px 8px;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 999px;
@@ -202,6 +208,8 @@
   color: #334155;
   cursor: pointer;
   transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .langSelector:hover {
@@ -212,13 +220,14 @@
 
 .flagEmoji {
   font-size: 14px;
+  line-height: 1;
 }
 
 .btnLogin {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 16px;
+  padding: 8px 14px;
   background: #ffffff;
   border: 1px solid #cbd5e1;
   border-radius: 999px;
@@ -228,6 +237,8 @@
   cursor: pointer;
   transition: all 0.2s;
   text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .btnLogin:hover {
@@ -241,7 +252,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 18px;
+  padding: 8px 16px;
   background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
   color: #ffffff;
   border: none;
@@ -250,9 +261,9 @@
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
-  transition: all 0.2s;
-  text-decoration: none;
   white-space: nowrap;
+  flex-shrink: 0;
+  text-decoration: none;
 }
 
 .btnCreateTrip:hover {

@@ -3,6 +3,7 @@ package com.vista.budget.api;
 import com.vista.budget.api.dto.CreateExpenseRequest;
 import com.vista.budget.api.dto.ExpenseResponse;
 import com.vista.budget.api.dto.TripExpenseSummaryResponse;
+import com.vista.budget.api.dto.UpdateExpenseRequest;
 import com.vista.budget.application.ExpenseService;
 import com.vista.common.security.CurrentUserProvider;
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -53,6 +55,18 @@ public class ExpenseController {
     UUID currentUserId = currentUserProvider.getCurrentUserId();
     ExpenseResponse created = expenseService.createExpense(tripId, currentUserId, request);
     return ResponseEntity.status(HttpStatus.CREATED).body(created);
+  }
+
+  @PatchMapping("/{expenseId}")
+  @Operation(summary = "Cập nhật một khoản chi tiêu của chuyến đi (FR-EXP-02)")
+  public ResponseEntity<ExpenseResponse> updateTripExpense(
+      @PathVariable UUID tripId,
+      @PathVariable UUID expenseId,
+      @Valid @RequestBody UpdateExpenseRequest request) {
+    UUID currentUserId = currentUserProvider.getCurrentUserId();
+    ExpenseResponse updated =
+        expenseService.updateExpense(tripId, expenseId, currentUserId, request);
+    return ResponseEntity.ok(updated);
   }
 
   @DeleteMapping("/{expenseId}")

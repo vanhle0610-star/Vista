@@ -7,6 +7,7 @@ export * from './components/BudgetSummaryCard';
 export * from './components/SettlementDeltaRow';
 export * from './components/ExpenseItem';
 export * from './components/AddExpenseModal';
+export * from './components/VietQRModal';
 export * from './components/BudgetIcons';
 export * from './screens/TripBudgetScreen';
 export * from './hooks/useTripExpenses';

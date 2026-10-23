@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 import com.vista.budget.api.dto.CreateExpenseRequest;
 import com.vista.budget.api.dto.ExpenseResponse;
 import com.vista.budget.api.dto.TripExpenseSummaryResponse;
+import com.vista.budget.api.dto.UpdateExpenseRequest;
 import com.vista.budget.application.ExpenseCalculationService.SettlementTransfer;
 import com.vista.budget.domain.ExpenseCategory;
 import com.vista.budget.domain.ExpenseEntity;
@@ -289,5 +290,155 @@ class ExpenseServiceTest {
     assertThatThrownBy(() -> expenseService.deleteExpense(tripId, expenseId, currentUserId))
         .isInstanceOf(ResponseStatusException.class)
         .matches(e -> ((ResponseStatusException) e).getStatusCode() == HttpStatus.BAD_REQUEST);
+  }
+
+  @Test
+  @DisplayName("9. Người trả cập nhật khoản chi và tính lại phần chia thành công")
+  void updateExpense_payer_updatesFieldsAndSplits() {
+    UUID expenseId = UUID.randomUUID();
+    ExpenseEntity expense =
+        new ExpenseEntity(
+            tripId,
+            "Bữa sáng",
+            BigDecimal.valueOf(100000),
+            "VND",
+            currentUserId,
+            ExpenseCategory.FOOD,
+            Instant.now());
+    expense.addSplit(
+        new ExpenseSplitEntity(expense, currentUserId, BigDecimal.valueOf(100000)));
+
+    UpdateExpenseRequest request =
+        new UpdateExpenseRequest(
+            "Bữa sáng và cà phê",
+            BigDecimal.valueOf(120000),
+            null,
+            null,
+            null,
+            null,
+            "EQUAL",
+            List.of(currentUserId, partnerId),
+            null);
+    List<ExpenseSplitEntity> recalculated =
+        List.of(
+            new ExpenseSplitEntity(expense, currentUserId, BigDecimal.valueOf(60000)),
+            new ExpenseSplitEntity(expense, partnerId, BigDecimal.valueOf(60000)));
+
+    when(expenseRepository.findById(expenseId)).thenReturn(Optional.of(expense));
+    when(calculationService.createEqualSplits(
+            expense, List.of(currentUserId, partnerId)))
+        .thenReturn(recalculated);
+    when(expenseRepository.save(expense)).thenReturn(expense);
+
+    ExpenseResponse result =
+        expenseService.updateExpense(tripId, expenseId, currentUserId, request);
+
+    assertThat(result.title()).isEqualTo("Bữa sáng và cà phê");
+    assertThat(result.amount()).isEqualByComparingTo("120000");
+    assertThat(result.splits()).hasSize(2);
+    verify(tripAccessService).requireMember(tripId, partnerId);
+  }
+
+  @Test
+  @DisplayName("10. Thành viên không phải người trả hoặc owner không được sửa khoản chi")
+  void updateExpense_nonManager_throws403() {
+    UUID expenseId = UUID.randomUUID();
+    ExpenseEntity expense =
+        new ExpenseEntity(
+            tripId,
+            "Khách sạn",
+            BigDecimal.valueOf(1000000),
+            "VND",
+            partnerId,
+            ExpenseCategory.ACCOMMODATION,
+            Instant.now());
+    UpdateExpenseRequest request =
+        new UpdateExpenseRequest(
+            "Khách sạn mới", null, null, null, null, null, null, null, null);
+
+    when(expenseRepository.findById(expenseId)).thenReturn(Optional.of(expense));
+    when(tripAccessService.isOwner(tripId, currentUserId)).thenReturn(false);
+
+    assertThatThrownBy(
+            () -> expenseService.updateExpense(tripId, expenseId, currentUserId, request))
+        .isInstanceOf(ResponseStatusException.class)
+        .matches(e -> ((ResponseStatusException) e).getStatusCode() == HttpStatus.FORBIDDEN);
+
+    verify(expenseRepository, never()).save(any());
+  }
+
+  @Test
+  @DisplayName("11. Owner được sửa khoản chi do thành viên khác thanh toán")
+  void updateExpense_ownerCanUpdateAnotherPayersExpense() {
+    UUID expenseId = UUID.randomUUID();
+    ExpenseEntity expense =
+        new ExpenseEntity(
+            tripId,
+            "Vé xe",
+            BigDecimal.valueOf(200000),
+            "VND",
+            partnerId,
+            ExpenseCategory.TRANSPORT,
+            Instant.now());
+    UpdateExpenseRequest request =
+        new UpdateExpenseRequest(
+            "Vé xe khứ hồi", null, null, null, null, null, null, null, null);
+
+    when(expenseRepository.findById(expenseId)).thenReturn(Optional.of(expense));
+    when(tripAccessService.isOwner(tripId, currentUserId)).thenReturn(true);
+    when(expenseRepository.save(expense)).thenReturn(expense);
+
+    ExpenseResponse result =
+        expenseService.updateExpense(tripId, expenseId, currentUserId, request);
+
+    assertThat(result.title()).isEqualTo("Vé xe khứ hồi");
+  }
+
+  @Test
+  @DisplayName("12. Không cho đổi số tiền nếu không gửi lại cách chia")
+  void updateExpense_amountWithoutSplits_throws400() {
+    UUID expenseId = UUID.randomUUID();
+    ExpenseEntity expense =
+        new ExpenseEntity(
+            tripId,
+            "Ăn tối",
+            BigDecimal.valueOf(300000),
+            "VND",
+            currentUserId,
+            ExpenseCategory.FOOD,
+            Instant.now());
+    UpdateExpenseRequest request =
+        new UpdateExpenseRequest(
+            null, BigDecimal.valueOf(350000), null, null, null, null, null, null, null);
+
+    when(expenseRepository.findById(expenseId)).thenReturn(Optional.of(expense));
+
+    assertThatThrownBy(
+            () -> expenseService.updateExpense(tripId, expenseId, currentUserId, request))
+        .isInstanceOf(ResponseStatusException.class)
+        .matches(e -> ((ResponseStatusException) e).getStatusCode() == HttpStatus.BAD_REQUEST);
+  }
+
+  @Test
+  @DisplayName("13. Thành viên không phải người trả hoặc owner không được xóa khoản chi")
+  void deleteExpense_nonManager_throws403() {
+    UUID expenseId = UUID.randomUUID();
+    ExpenseEntity expense =
+        new ExpenseEntity(
+            tripId,
+            "Tour đảo",
+            BigDecimal.valueOf(800000),
+            "VND",
+            partnerId,
+            ExpenseCategory.ACTIVITIES,
+            Instant.now());
+
+    when(expenseRepository.findById(expenseId)).thenReturn(Optional.of(expense));
+    when(tripAccessService.isOwner(tripId, currentUserId)).thenReturn(false);
+
+    assertThatThrownBy(() -> expenseService.deleteExpense(tripId, expenseId, currentUserId))
+        .isInstanceOf(ResponseStatusException.class)
+        .matches(e -> ((ResponseStatusException) e).getStatusCode() == HttpStatus.FORBIDDEN);
+    assertThat(expense.getStatus()).isEqualTo("ACTIVE");
   }
 }

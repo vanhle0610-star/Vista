@@ -195,4 +195,9 @@ public class ExpenseEntity {
     this.splits.remove(split);
     split.setExpense(null);
   }
+
+  public void replaceSplits(List<ExpenseSplitEntity> replacementSplits) {
+    this.splits.clear();
+    replacementSplits.forEach(this::addSplit);
+  }
 }

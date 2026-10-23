@@ -7,6 +7,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -16,6 +17,7 @@ import com.vista.budget.api.dto.CreateExpenseRequest;
 import com.vista.budget.api.dto.ExpenseResponse;
 import com.vista.budget.api.dto.ExpenseSplitResponse;
 import com.vista.budget.api.dto.TripExpenseSummaryResponse;
+import com.vista.budget.api.dto.UpdateExpenseRequest;
 import com.vista.budget.application.ExpenseService;
 import com.vista.budget.domain.ExpenseCategory;
 import com.vista.common.security.CurrentUserProvider;
@@ -218,5 +220,66 @@ class ExpenseControllerTest {
         .andExpect(jsonPath("$.totalSpent").value(3450000))
         .andExpect(jsonPath("$.remainingBudget").value(1550000))
         .andExpect(jsonPath("$.spentPercentage").value(69));
+  }
+
+  @Test
+  @DisplayName("7. Tuần 7 Bảo mật: Chặn 403 Forbidden khi người ngoài cố tình truy cập xem danh sách chi tiêu (IDOR)")
+  void listTripExpenses_shouldReturn403_whenUserNotMember() throws Exception {
+    doThrow(new AccessDeniedException("User is not a member of trip"))
+        .when(expenseService)
+        .getTripExpenses(eq(tripId), eq(currentUserId));
+
+    mockMvc
+        .perform(get("/api/v1/trips/{tripId}/expenses", tripId))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.title").value("Forbidden"));
+  }
+
+  @Test
+  @DisplayName("8. Tuần 7 Bảo mật: Chặn 403 Forbidden khi người ngoài cố tình lấy tóm tắt ngân sách (IDOR)")
+  void getTripExpenseSummary_shouldReturn403_whenUserNotMember() throws Exception {
+    doThrow(new AccessDeniedException("User is not a member of trip"))
+        .when(expenseService)
+        .getTripExpenseSummary(eq(tripId), eq(currentUserId), any());
+
+    mockMvc
+        .perform(get("/api/v1/trips/{tripId}/expenses/summary", tripId))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.title").value("Forbidden"));
+  }
+
+  @Test
+  @DisplayName("9. Cập nhật khoản chi thành công trả về 200 OK")
+  void updateTripExpense_shouldReturn200() throws Exception {
+    UUID expenseId = UUID.randomUUID();
+    UpdateExpenseRequest request =
+        new UpdateExpenseRequest(
+            "Taxi sân bay", null, null, null, null, null, null, null, null);
+    ExpenseResponse response =
+        new ExpenseResponse(
+            expenseId,
+            tripId,
+            "Taxi sân bay",
+            BigDecimal.valueOf(150000),
+            "VND",
+            currentUserId,
+            ExpenseCategory.TRANSPORT,
+            Instant.now(),
+            "ACTIVE",
+            Instant.now(),
+            List.of());
+
+    when(expenseService.updateExpense(
+            eq(tripId), eq(expenseId), eq(currentUserId), any(UpdateExpenseRequest.class)))
+        .thenReturn(response);
+
+    mockMvc
+        .perform(
+            patch("/api/v1/trips/{tripId}/expenses/{expenseId}", tripId, expenseId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(expenseId.toString()))
+        .andExpect(jsonPath("$.title").value("Taxi sân bay"));
   }
 }

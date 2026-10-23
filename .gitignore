@@ -57,5 +57,8 @@ Thumbs.db
 # 6. Personal & Local Workspace Files
 CV_Vanh/
 *.docx
+*.xlsx
+Vietnam_300_dia_diem*
 outputs/
+stitch_vista_travel_expense_app_ui/
 
