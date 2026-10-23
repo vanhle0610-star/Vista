@@ -26,6 +26,7 @@ export interface SettlementDeltaRowProps {
   selectedMemberId?: string | null;
   onSelectMember?: (memberId: string | null) => void;
   onCopyAccount?: (item: SettlementTransferItem) => void;
+  onOpenVietQr?: (item: SettlementTransferItem) => void;
 }
 
 const DEFAULT_TRANSFERS: SettlementTransferItem[] = [
@@ -53,6 +54,7 @@ export function SettlementDeltaRow({
   myBalance = 1250000,
   transfers = DEFAULT_TRANSFERS,
   onCopyAccount,
+  onOpenVietQr,
 }: SettlementDeltaRowProps) {
   const formatVndNumber = (val: number) => {
     return new Intl.NumberFormat('vi-VN').format(Math.abs(val));
@@ -124,16 +126,25 @@ export function SettlementDeltaRow({
               </Text>
             </View>
 
-            {/* Amount & Copy STK Button */}
+            {/* Amount & Actions */}
             <View style={styles.rightGroup}>
               <Text style={styles.transferAmount}>{formatVndNumber(item.amount)} ₫</Text>
-              <TouchableOpacity
-                activeOpacity={0.7}
-                style={styles.copyButton}
-                onPress={() => onCopyAccount?.(item)}
-              >
-                <Text style={styles.copyButtonText}>SAO CHÉP STK</Text>
-              </TouchableOpacity>
+              <View style={styles.actionsRow}>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  style={styles.qrButton}
+                  onPress={() => onOpenVietQr?.(item)}
+                >
+                  <Text style={styles.qrButtonText}>VIETQR</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  style={styles.copyButton}
+                  onPress={() => onCopyAccount?.(item)}
+                >
+                  <Text style={styles.copyButtonText}>SAO CHÉP STK</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         ))}
@@ -144,53 +155,54 @@ export function SettlementDeltaRow({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: 'rgba(16, 32, 68, 0.85)',
-    borderRadius: 24,
-    padding: 18,
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: 16,
     marginHorizontal: 16,
     marginVertical: 8,
-    borderWidth: 1.2,
-    borderColor: 'rgba(9, 132, 227, 0.35)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.25,
-    shadowRadius: 16,
+    borderWidth: 1,
+    borderColor: '#e2e7ff',
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
   eyebrow: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
-    color: '#94A3B8',
+    color: '#005ea5',
     letterSpacing: 0.8,
     textTransform: 'uppercase',
     marginBottom: 6,
   },
   statusRow: {
-    marginBottom: 14,
+    marginBottom: 12,
   },
   statusPrefix: {
     fontSize: 13,
-    color: '#94A3B8',
+    color: '#404752',
     marginBottom: 2,
   },
   balanceAmount: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '800',
-    color: '#F8FAFC',
+    color: '#131b2e',
   },
   balanceCreditor: {
-    color: '#00cec9',
+    color: '#10B981',
   },
   balanceDebtor: {
-    color: '#FCD34D',
+    color: '#dc2626',
   },
   statusSuffix: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '400',
-    color: '#94A3B8',
+    color: '#707784',
   },
   transfersList: {
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.08)',
+    borderTopColor: '#f1f5f9',
     paddingTop: 12,
     gap: 10,
   },
@@ -211,13 +223,13 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     marginRight: 6,
     borderWidth: 1,
-    borderColor: 'rgba(0, 206, 201, 0.45)',
+    borderColor: '#e2e7ff',
   },
   avatarFallback: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#0984e3',
+    backgroundColor: '#005ea5',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 6,
@@ -230,35 +242,55 @@ const styles = StyleSheet.create({
   personName: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#F1F5F9',
+    color: '#131b2e',
   },
   arrowIcon: {
     fontSize: 14,
-    color: '#00cec9',
+    color: '#005ea5',
     marginHorizontal: 4,
   },
   rightGroup: {
+    flexDirection: 'column',
+    alignItems: 'flex-end',
+    gap: 4,
+  },
+  actionsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
   },
   transferAmount: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#F8FAFC',
+    color: '#131b2e',
+  },
+  qrButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    backgroundColor: '#e2e7ff',
+    borderWidth: 1,
+    borderColor: '#005ea5',
+  },
+  qrButtonText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#005ea5',
+    letterSpacing: 0.4,
   },
   copyButton: {
     paddingHorizontal: 8,
-    paddingVertical: 5,
+    paddingVertical: 4,
     borderRadius: 12,
-    backgroundColor: 'rgba(9, 132, 227, 0.2)',
+    backgroundColor: '#f2f3ff',
     borderWidth: 1,
-    borderColor: 'rgba(0, 206, 201, 0.4)',
+    borderColor: '#c0c7d4',
   },
   copyButtonText: {
     fontSize: 10,
-    fontWeight: '700',
-    color: '#81ecec',
+    fontWeight: '600',
+    color: '#404752',
     letterSpacing: 0.4,
   },
 });
+

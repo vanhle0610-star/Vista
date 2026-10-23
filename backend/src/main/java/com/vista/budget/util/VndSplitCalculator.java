@@ -49,12 +49,18 @@ public final class VndSplitCalculator {
       throw new IllegalArgumentException("participantIds must not be empty");
     }
 
-    // Loại bỏ ID trùng lặp nhưng giữ nguyên thứ tự
+    requireWholeVnd(totalAmount, "totalAmount");
+
     Set<UUID> uniqueParticipants = new LinkedHashSet<>(participantIds);
+    if (uniqueParticipants.size() != participantIds.size()) {
+      throw new IllegalArgumentException("participantIds must not contain duplicates");
+    }
+    if (uniqueParticipants.contains(null)) {
+      throw new IllegalArgumentException("participantIds must not contain null");
+    }
     int count = uniqueParticipants.size();
 
-    // Làm tròn tổng tiền về số nguyên VND
-    BigDecimal normalizedTotal = totalAmount.setScale(0, RoundingMode.HALF_UP);
+    BigDecimal normalizedTotal = totalAmount.setScale(0, RoundingMode.UNNECESSARY);
     if (normalizedTotal.compareTo(BigDecimal.ZERO) == 0) {
       return uniqueParticipants.stream()
           .map(id -> new SplitResult(id, BigDecimal.ZERO.setScale(0)))
@@ -109,15 +115,20 @@ public final class VndSplitCalculator {
     if (totalAmount == null || exactShares == null || exactShares.isEmpty()) {
       throw new IllegalArgumentException("totalAmount and exactShares must not be empty");
     }
-    BigDecimal normalizedTotal = totalAmount.setScale(0, RoundingMode.HALF_UP);
+    requireWholeVnd(totalAmount, "totalAmount");
+    BigDecimal normalizedTotal = totalAmount.setScale(0, RoundingMode.UNNECESSARY);
     BigDecimal sum = BigDecimal.ZERO;
     for (Map.Entry<UUID, BigDecimal> entry : exactShares.entrySet()) {
+      if (entry.getKey() == null) {
+        throw new IllegalArgumentException("Exact split userId must not be null");
+      }
       BigDecimal share = entry.getValue();
       if (share == null || share.compareTo(BigDecimal.ZERO) < 0) {
         throw new IllegalArgumentException(
             "Exact share for user " + entry.getKey() + " must be non-negative");
       }
-      sum = sum.add(share.setScale(0, RoundingMode.HALF_UP));
+      requireWholeVnd(share, "Exact share for user " + entry.getKey());
+      sum = sum.add(share.setScale(0, RoundingMode.UNNECESSARY));
     }
     if (sum.compareTo(normalizedTotal) != 0) {
       throw new IllegalArgumentException(
@@ -126,6 +137,12 @@ public final class VndSplitCalculator {
               + ") does not equal total amount ("
               + normalizedTotal
               + ")");
+    }
+  }
+
+  private static void requireWholeVnd(BigDecimal amount, String fieldName) {
+    if (amount.stripTrailingZeros().scale() > 0) {
+      throw new IllegalArgumentException(fieldName + " must be a whole VND amount");
     }
   }
 }

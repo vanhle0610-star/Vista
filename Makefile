@@ -1,4 +1,6 @@
-.PHONY: setup db-up db-down backend-run mobile-run web-run admin-run test lint
+.PHONY: dev setup db-up db-down backend-run mobile-run web-run admin-run test lint
+dev:
+	npm run dev
 setup:
 	cd mobile && npm ci
 	cd web && npm ci

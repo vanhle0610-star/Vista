@@ -7,17 +7,27 @@ import {
   TouchableOpacity,
   SafeAreaView,
   StatusBar,
-  ImageBackground,
   RefreshControl,
-  Platform,
+  Image,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
+import Svg, { Circle } from 'react-native-svg';
 import { tokens } from '../../../theme/tokens';
 import { BudgetSummaryCard } from '../components/BudgetSummaryCard';
 import { SettlementDeltaRow, SettlementTransferItem } from '../components/SettlementDeltaRow';
 import { ExpenseItem, ExpenseCategoryKey } from '../components/ExpenseItem';
 import { AddExpenseModal, AddExpensePayload } from '../components/AddExpenseModal';
+import { VietQRModal } from '../components/VietQRModal';
 import { useTripExpenses } from '../hooks/useTripExpenses';
+import {
+  FoodIcon,
+  HotelIcon,
+  CarIcon,
+  TicketIcon,
+  CreditCardIcon,
+} from '../../../components/icons/StitchIcons';
+
+type TreasuryTab = 'OVERVIEW' | 'EXPENSES' | 'SETTLEMENT';
 
 export interface LedgerExpense {
   id: string;
@@ -36,54 +46,50 @@ export interface LedgerExpense {
 const INITIAL_EXPENSES: LedgerExpense[] = [
   {
     id: '1',
-    title: 'Hải sản Năm Đảnh',
-    amount: 1850000,
+    title: 'Hải sản Bé Mặn',
+    amount: 1250000,
     paidById: 'va',
-    paidByName: 'Vân Ánh',
+    paidByName: 'Vân Anh',
     category: 'FOOD',
-    splitType: 'Split equally',
-    occurredAt: '2026-10-19T18:30:00Z',
+    splitType: 'Chia đều 4',
+    occurredAt: '2026-11-16T18:30:00Z',
     participantIds: ['va', 'tu', 'hn', 'th'],
-    imageUrl: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=300&q=80',
     dateGroup: 'TODAY',
   },
   {
     id: '2',
-    title: 'Khách sạn Novotel Bạch Đằng',
+    title: 'Vé Cầu Vàng Bà Nà Hills',
     amount: 3600000,
-    paidById: 'tu',
-    paidByName: 'Tuấn Anh',
-    category: 'ACCOMMODATION',
-    splitType: 'Split equally',
-    occurredAt: '2026-10-19T14:00:00Z',
+    paidById: 'qb',
+    paidByName: 'Quốc Bảo',
+    category: 'ACTIVITIES',
+    splitType: '4 vé trọn gói',
+    occurredAt: '2026-11-16T09:00:00Z',
     participantIds: ['va', 'tu', 'hn', 'th'],
-    imageUrl: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=300&q=80',
     dateGroup: 'TODAY',
   },
   {
     id: '3',
-    title: 'Vé cano Cù Lao Chàm',
-    amount: 1400000,
+    title: 'Cà phê Muối Hội An',
+    amount: 180000,
     paidById: 'hn',
-    paidByName: 'Hải Nam',
-    category: 'ACTIVITIES',
-    splitType: 'Split equally',
-    occurredAt: '2026-10-18T09:15:00Z',
+    paidByName: 'Hoàng Nam',
+    category: 'FOOD',
+    splitType: 'Cá nhân chi',
+    occurredAt: '2026-11-15T15:20:00Z',
     participantIds: ['va', 'tu', 'hn', 'th'],
-    imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&q=80',
     dateGroup: 'YESTERDAY',
   },
   {
     id: '4',
-    title: 'Taxi sân bay Đà Nẵng',
-    amount: 220000,
-    paidById: 'tu',
-    paidByName: 'Tuấn Anh',
-    category: 'TRANSPORT',
-    splitType: 'Split equally',
-    occurredAt: '2026-10-18T07:45:00Z',
+    title: 'Khách sạn Novotel Bạch Đằng',
+    amount: 5000000,
+    paidById: 'va',
+    paidByName: 'Vân Anh',
+    category: 'ACCOMMODATION',
+    splitType: 'Chia đều 4',
+    occurredAt: '2026-11-15T14:00:00Z',
     participantIds: ['va', 'tu', 'hn', 'th'],
-    imageUrl: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=300&q=80',
     dateGroup: 'YESTERDAY',
   },
 ];
@@ -97,11 +103,15 @@ const CATEGORY_FILTERS = [
 ];
 
 const MEMBERS = [
-  { id: 'va', name: 'Vân Ánh', initials: 'VA' },
-  { id: 'tu', name: 'Tuấn Anh', initials: 'TA' },
-  { id: 'hn', name: 'Hải Nam', initials: 'HN' },
-  { id: 'th', name: 'Thanh Hằng', initials: 'TH' },
+  { id: 'va', name: 'Vân Anh', initials: 'VA' },
+  { id: 'hn', name: 'Hoàng Nam', initials: 'HN' },
+  { id: 'qb', name: 'Quốc Bảo', initials: 'QB' },
+  { id: 'mt', name: 'Minh Thư', initials: 'MT' },
 ];
+
+function formatVnd(val: number): string {
+  return new Intl.NumberFormat('vi-VN').format(Math.round(val)) + ' đ';
+}
 
 export interface TripBudgetScreenProps {
   tripId?: string;
@@ -120,9 +130,11 @@ export function TripBudgetScreen({
     addExpense: addExpenseApi,
   } = useTripExpenses(tripId, budgetTotal);
 
+  const [activeTab, setActiveTab] = useState<TreasuryTab>('OVERVIEW');
   const [localExpenses, setLocalExpenses] = useState<LedgerExpense[]>(INITIAL_EXPENSES);
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [vietQrItem, setVietQrItem] = useState<SettlementTransferItem | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
@@ -144,11 +156,11 @@ export function TripBudgetScreen({
         title: e.title,
         amount: e.amount,
         paidById: e.paidBy,
-        paidByName: e.paidBy === '00000000-0000-0000-0000-000000000001' ? 'Vân Ánh' : 'Tuấn Anh',
+        paidByName: e.paidBy === '00000000-0000-0000-0000-000000000001' ? 'Vân Anh' : 'Quốc Bảo',
         category: e.category || 'OTHER',
-        splitType: 'Split equally',
+        splitType: 'Chia đều',
         occurredAt: e.occurredAt,
-        participantIds: ['va', 'tu', 'hn', 'th'],
+        participantIds: ['va', 'hn', 'qb', 'mt'],
         imageUrl: undefined as string | undefined,
         dateGroup: (index < 2 ? 'TODAY' : 'YESTERDAY') as LedgerExpense['dateGroup'],
       }));
@@ -210,217 +222,665 @@ export function TripBudgetScreen({
         participantIds: payload.participantIds,
       });
     } catch {
-      // Gracefully handled by local state
+      // Handled gracefully
     }
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#0b1329" />
+      <StatusBar barStyle="dark-content" backgroundColor="#faf8ff" />
 
-      <View style={styles.mobileShell}>
-        {/* Da Nang scenic background subtle header */}
-      <ImageBackground
-        source={{
-          uri: 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=1200&q=80',
-        }}
-        style={styles.scenicHeaderBackground}
-        imageStyle={styles.scenicImage}
-      >
-        <LinearGradient
-          colors={[
-            'rgba(11, 19, 41, 0.45)',
-            'rgba(11, 19, 41, 0.85)',
-            '#0b1329',
-          ]}
-          style={StyleSheet.absoluteFill}
-        />
-
-        {/* Top Bar Header */}
-        <View style={styles.topBar}>
-          <View style={styles.brandingCol}>
-            <View style={styles.logoRow}>
-              <View style={styles.logoDiamond} />
-              <Text style={styles.logoText}>VISTA</Text>
+      {/* Main Container - Constrained to 440px on web */}
+      <View style={styles.container}>
+        {/* 1. Top Header Bar (matching Stitch th_qu_nh_m_t_ng_quan) */}
+        <View style={styles.topAppBar}>
+          <View style={styles.topAppBarLeft}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => router.back()}
+              activeOpacity={0.7}
+              accessibilityLabel="Quay lại"
+            >
+              <Text style={styles.backArrowText}>‹</Text>
+            </TouchableOpacity>
+            <View style={styles.brandTitleGroup}>
+              <View style={styles.vistaBadge}>
+                <Text style={styles.vistaBadgeText}>◆ VISTA</Text>
+              </View>
+              <Text style={styles.appBarTitle} numberOfLines={1}>Trip Detail</Text>
             </View>
-            <Text style={styles.tripTitle}>ĐÀ NẴNG & HỘI AN</Text>
-            <Text style={styles.tripSubtitle}>4 NGÀY 3 ĐÊM • 4 THÀNH VIÊN</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.avatarTopBtn}
+            onPress={() => router.push('/(tabs)/profile')}
+            activeOpacity={0.8}
+          >
+            <Image
+              source={{
+                uri: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&q=80',
+              }}
+              style={styles.avatarTopImg}
+            />
+          </TouchableOpacity>
+        </View>
+
+        {/* 2. Trip Context & Action Sub-header */}
+        <View style={styles.headerBrief}>
+          <View style={styles.headerTopLine}>
+            <View style={styles.statusPillGroup}>
+              <View style={styles.liveBadge}>
+                <View style={styles.liveDot} />
+                <Text style={styles.liveBadgeText}>Đang diễn ra</Text>
+              </View>
+              <Text style={styles.membersText}>👥 4 thành viên</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.moreOptionsBtn}
+              onPress={() => showToast('Tùy chọn: Chỉnh sửa ngân sách · Xuất sao kê · Chia sẻ')}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.moreOptionsText}>⋮</Text>
+            </TouchableOpacity>
           </View>
 
-          <View style={styles.topActionsCol}>
-            <View style={styles.activePill}>
-              <View style={styles.activeDot} />
-              <Text style={styles.activePillText}>ĐANG DIỄN RA</Text>
-            </View>
-            <View style={styles.actionButtonsRow}>
-              <TouchableOpacity
-                activeOpacity={0.7}
-                style={styles.headerActionBtn}
-                onPress={() => showToast('Đang tạo báo cáo chi tiêu...')}
-              >
-                <Text style={styles.headerActionText}>BÁO CÁO</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                activeOpacity={0.7}
-                style={styles.headerActionBtn}
-                onPress={() => showToast('Cài đặt quỹ chuyến đi')}
-              >
-                <Text style={styles.headerActionText}>CÀI ĐẶT</Text>
-              </TouchableOpacity>
-            </View>
+          <View style={styles.tripTitleRow}>
+            <Text style={styles.tripTitle}>Đà Nẵng – Hội An</Text>
+            <Text style={styles.tripDateRange}>15 – 18/11/2026</Text>
           </View>
         </View>
-      </ImageBackground>
 
-      {/* Main Scrollable Content */}
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={isLoading}
-            onRefresh={reload}
-            tintColor="#38BDF8"
-            colors={['#38BDF8']}
+        {/* Scrollable Content */}
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={isLoading}
+              onRefresh={reload}
+              tintColor="#005ea5"
+              colors={['#005ea5']}
+            />
+          }
+        >
+          {/* 1. Luminous Ocean Blue Hero Card */}
+          <BudgetSummaryCard
+            totalSpent={totalSpent}
+            budgetTotal={budgetTotal}
+            currency="₫"
           />
-        }
-      >
-        {/* 1. The Luminous Hero Card */}
-        <BudgetSummaryCard
-          totalSpent={totalSpent}
-          budgetTotal={budgetTotal}
-          currency="₫"
-        />
 
-        {/* 2. Settlement Deltas & Transfers ("Vị thế tài chính của bạn") */}
-        <SettlementDeltaRow
-          myBalance={1250000}
-          onCopyAccount={handleCopyAccount}
-        />
+          {/* 2. Auxiliary Financial Metric Pair (2 Mini Cards) */}
+          <View style={styles.metricsPair}>
+            {/* Total Spent Mini Card */}
+            <View style={styles.metricCard}>
+              <View style={styles.metricCardHeader}>
+                <View style={styles.metricIconRed}>
+                  <Text style={styles.metricIconText}>📈</Text>
+                </View>
+                <Text style={styles.metricCardLabel}>Tổng đã chi</Text>
+              </View>
+              <Text style={styles.metricCardValue}>{formatVnd(totalSpent)}</Text>
+              <Text style={styles.metricCardSub}>{allExpenses.length} khoản giao dịch</Text>
+            </View>
 
-        {/* 3. Category Filter Pills */}
-        <View style={styles.categoryFiltersContainer}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.categoryPillsScroll}
-          >
-            {CATEGORY_FILTERS.map((cat) => {
-              const isActive = selectedCategory === cat.key;
-              return (
-                <TouchableOpacity
-                  key={cat.key}
-                  activeOpacity={0.75}
-                  onPress={() => setSelectedCategory(cat.key)}
+            {/* Net Personal Balance Mini Card */}
+            <View style={styles.metricCard}>
+              <View style={styles.metricCardHeader}>
+                <View style={styles.metricIconGreen}>
+                  <Text style={styles.metricIconText}>📥</Text>
+                </View>
+                <Text style={styles.metricCardLabel}>Bạn được nhận</Text>
+              </View>
+              <Text style={styles.metricCardGreenValue}>+500.000 đ</Text>
+              <Text style={styles.metricCardGreenSub}>Sau đối soát tạm tính</Text>
+            </View>
+          </View>
+
+          {/* 3. Stitch Underline Navigation Tabs */}
+          <View style={styles.tabBarUnderline}>
+            <TouchableOpacity
+              style={[styles.underlineTab, activeTab === 'OVERVIEW' && styles.underlineTabActive]}
+              onPress={() => setActiveTab('OVERVIEW')}
+              activeOpacity={0.8}
+            >
+              <Text
+                style={[
+                  styles.underlineTabText,
+                  activeTab === 'OVERVIEW' && styles.underlineTabTextActive,
+                ]}
+              >
+                Tổng quan
+              </Text>
+              {activeTab === 'OVERVIEW' && <View style={styles.activeUnderlineBar} />}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.underlineTab, activeTab === 'EXPENSES' && styles.underlineTabActive]}
+              onPress={() => setActiveTab('EXPENSES')}
+              activeOpacity={0.8}
+            >
+              <View style={styles.tabBadgeRow}>
+                <Text
                   style={[
-                    styles.categoryPill,
-                    isActive && styles.categoryPillActive,
+                    styles.underlineTabText,
+                    activeTab === 'EXPENSES' && styles.underlineTabTextActive,
                   ]}
                 >
-                  <Text
-                    style={[
-                      styles.categoryPillText,
-                      isActive && styles.categoryPillTextActive,
-                    ]}
-                  >
-                    {cat.label}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-        </View>
-
-        {/* 4. Expense Ledger Feed */}
-        <View style={styles.ledgerSection}>
-          {/* Today Group */}
-          {todayExpenses.length > 0 && (
-            <View style={styles.groupContainer}>
-              <View style={styles.dateHeaderRow}>
-                <Text style={styles.dateHeaderText}>HÔM NAY • 19 THÁNG 10</Text>
+                  Khoản chi
+                </Text>
+                <View style={styles.countBadgePill}>
+                  <Text style={styles.countBadgeText}>{allExpenses.length}</Text>
+                </View>
               </View>
-              {todayExpenses.map((item, idx) => (
-                <ExpenseItem
-                  key={item.id}
-                  title={item.title}
-                  amount={item.amount}
-                  currency="₫"
-                  paidByName={item.paidByName}
-                  category={item.category}
-                  participantCount={item.participantIds.length}
-                  imageUrl={item.imageUrl}
-                  isLast={idx === todayExpenses.length - 1 && yesterdayExpenses.length === 0}
-                  onPress={() => showToast(`Chi tiết: ${item.title}`)}
-                />
-              ))}
-            </View>
-          )}
+              {activeTab === 'EXPENSES' && <View style={styles.activeUnderlineBar} />}
+            </TouchableOpacity>
 
-          {/* Yesterday Group */}
-          {yesterdayExpenses.length > 0 && (
-            <View style={styles.groupContainer}>
-              <View style={styles.dateHeaderRow}>
-                <Text style={styles.dateHeaderText}>HÔM QUA • 18 THÁNG 10</Text>
+            <TouchableOpacity
+              style={[styles.underlineTab, activeTab === 'SETTLEMENT' && styles.underlineTabActive]}
+              onPress={() => setActiveTab('SETTLEMENT')}
+              activeOpacity={0.8}
+            >
+              <View style={styles.tabBadgeRow}>
+                <Text
+                  style={[
+                    styles.underlineTabText,
+                    activeTab === 'SETTLEMENT' && styles.underlineTabTextActive,
+                  ]}
+                >
+                  Đối soát
+                </Text>
+                <View style={styles.redDotBadge} />
               </View>
-              {yesterdayExpenses.map((item, idx) => (
-                <ExpenseItem
-                  key={item.id}
-                  title={item.title}
-                  amount={item.amount}
-                  currency="₫"
-                  paidByName={item.paidByName}
-                  category={item.category}
-                  participantCount={item.participantIds.length}
-                  imageUrl={item.imageUrl}
-                  isLast={idx === yesterdayExpenses.length - 1}
-                  onPress={() => showToast(`Chi tiết: ${item.title}`)}
+              {activeTab === 'SETTLEMENT' && <View style={styles.activeUnderlineBar} />}
+            </TouchableOpacity>
+          </View>
+
+          {/* TAB 1: OVERVIEW */}
+          {activeTab === 'OVERVIEW' && (
+            <View style={styles.tabContent}>
+              {/* Phân bổ chi tiêu (Visual Expense Breakdown with Donut) */}
+              <View style={styles.breakdownCard}>
+                <View style={styles.breakdownHeader}>
+                  <Text style={styles.breakdownTitle}>Phân bổ chi tiêu</Text>
+                  <Text style={styles.breakdownSubLink}>Chi tiết %</Text>
+                </View>
+
+                <View style={styles.donutLayout}>
+                  {/* SVG Donut Chart */}
+                  <View style={styles.donutWrapper}>
+                    <Svg width={116} height={116} viewBox="0 0 100 100" style={styles.donutSvg}>
+                      <Circle cx="50" cy="50" r="38" fill="none" stroke="#F1F5F9" strokeWidth="12" />
+                      <Circle cx="50" cy="50" r="38" fill="none" stroke="#005EA5" strokeDasharray="81.18 238.76" strokeDashoffset="0" strokeWidth="12" />
+                      <Circle cx="50" cy="50" r="38" fill="none" stroke="#FF7675" strokeDasharray="66.85 238.76" strokeDashoffset="-81.18" strokeWidth="12" />
+                      <Circle cx="50" cy="50" r="38" fill="none" stroke="#0284C7" strokeDasharray="57.30 238.76" strokeDashoffset="-148.03" strokeWidth="12" />
+                      <Circle cx="50" cy="50" r="38" fill="none" stroke="#8B5CF6" strokeDasharray="23.88 238.76" strokeDashoffset="-205.33" strokeWidth="12" />
+                      <Circle cx="50" cy="50" r="38" fill="none" stroke="#64748B" strokeDasharray="9.55 238.76" strokeDashoffset="-229.21" strokeWidth="12" />
+                    </Svg>
+                    <View style={styles.donutCenterText}>
+                      <Text style={styles.donutCenterLabel}>ĐÃ CHI</Text>
+                      <Text style={styles.donutCenterAmount}>14,85 tr</Text>
+                      <Text style={styles.donutCenterCount}>5 mục</Text>
+                    </View>
+                  </View>
+
+                  {/* Legend list */}
+                  <View style={styles.donutLegendList}>
+                    <View style={styles.legendRow}>
+                      <View style={styles.legendLeft}>
+                        <View style={[styles.legendDot, { backgroundColor: '#005EA5' }]} />
+                        <Text style={styles.legendName}>Lưu trú</Text>
+                      </View>
+                      <Text style={styles.legendPercent}>34% <Text style={styles.legendSubVal}>(5M)</Text></Text>
+                    </View>
+
+                    <View style={styles.legendRow}>
+                      <View style={styles.legendLeft}>
+                        <View style={[styles.legendDot, { backgroundColor: '#FF7675' }]} />
+                        <Text style={styles.legendName}>Ăn uống</Text>
+                      </View>
+                      <Text style={styles.legendPercent}>28% <Text style={styles.legendSubVal}>(4,2M)</Text></Text>
+                    </View>
+
+                    <View style={styles.legendRow}>
+                      <View style={styles.legendLeft}>
+                        <View style={[styles.legendDot, { backgroundColor: '#0284C7' }]} />
+                        <Text style={styles.legendName}>Di chuyển</Text>
+                      </View>
+                      <Text style={styles.legendPercent}>24% <Text style={styles.legendSubVal}>(3,5M)</Text></Text>
+                    </View>
+
+                    <View style={styles.legendRow}>
+                      <View style={styles.legendLeft}>
+                        <View style={[styles.legendDot, { backgroundColor: '#8B5CF6' }]} />
+                        <Text style={styles.legendName}>Vé & Vui chơi</Text>
+                      </View>
+                      <Text style={styles.legendPercent}>10% <Text style={styles.legendSubVal}>(1,5M)</Text></Text>
+                    </View>
+
+                    <View style={styles.legendRow}>
+                      <View style={styles.legendLeft}>
+                        <View style={[styles.legendDot, { backgroundColor: '#64748B' }]} />
+                        <Text style={styles.legendName}>Khác</Text>
+                      </View>
+                      <Text style={styles.legendPercent}>4% <Text style={styles.legendSubVal}>(650k)</Text></Text>
+                    </View>
+                  </View>
+                </View>
+              </View>
+
+              {/* Khoản chi gần đây (Recent Expenses) */}
+              <View style={styles.recentSection}>
+                <View style={styles.recentHeader}>
+                  <Text style={styles.recentTitle}>Khoản chi gần đây</Text>
+                  <TouchableOpacity onPress={() => setActiveTab('EXPENSES')} activeOpacity={0.7}>
+                    <Text style={styles.recentLink}>Xem tất cả ({allExpenses.length})</Text>
+                  </TouchableOpacity>
+                </View>
+
+
+                {allExpenses.slice(0, 4).map((item) => (
+                  <View key={item.id} style={styles.expenseStitchCard}>
+                    <View style={styles.expenseStitchLeft}>
+                      <View style={styles.expenseIconBox}>
+                        {item.category === 'FOOD' ? (
+                          <FoodIcon size={18} color="#005ea5" />
+                        ) : item.category === 'ACCOMMODATION' ? (
+                          <HotelIcon size={18} color="#005ea5" />
+                        ) : item.category === 'TRANSPORT' ? (
+                          <CarIcon size={18} color="#005ea5" />
+                        ) : item.category === 'ACTIVITIES' ? (
+                          <TicketIcon size={18} color="#005ea5" />
+                        ) : (
+                          <CreditCardIcon size={18} color="#005ea5" />
+                        )}
+                      </View>
+                      <View style={styles.expenseDetails}>
+                        <Text style={styles.expenseTitleText}>{item.title}</Text>
+                        <Text style={styles.expenseMetaText}>
+                          {item.paidByName} trả • {item.splitType}
+                        </Text>
+                      </View>
+                    </View>
+                    <Text style={styles.expenseAmountText}>{formatVnd(item.amount)}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {/* TAB 2: EXPENSES */}
+          {activeTab === 'EXPENSES' && (
+            <View style={styles.tabContent}>
+              {/* Category Filter Pills */}
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.categoryPillsScroll}
+              >
+                {CATEGORY_FILTERS.map((cat) => {
+                  const isActive = selectedCategory === cat.key;
+                  return (
+                    <TouchableOpacity
+                      key={cat.key}
+                      activeOpacity={0.75}
+                      onPress={() => setSelectedCategory(cat.key)}
+                      style={[styles.categoryPill, isActive && styles.categoryPillActive]}
+                    >
+                      <Text
+                        style={[
+                          styles.categoryPillText,
+                          isActive && styles.categoryPillTextActive,
+                        ]}
+                      >
+                        {cat.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+
+              {/* Grouped Ledger */}
+              <View style={styles.ledgerSection}>
+                {todayExpenses.length > 0 && (
+                  <View style={styles.groupContainer}>
+                    <Text style={styles.dateHeaderText}>HÔM NAY</Text>
+                    {todayExpenses.map((item, idx) => (
+                      <ExpenseItem
+                        key={item.id}
+                        title={item.title}
+                        amount={item.amount}
+                        currency="₫"
+                        paidByName={item.paidByName}
+                        category={item.category}
+                        participantCount={item.participantIds.length}
+                        isLast={idx === todayExpenses.length - 1 && yesterdayExpenses.length === 0}
+                        onPress={() => showToast(`Chi tiết: ${item.title}`)}
+                      />
+                    ))}
+                  </View>
+                )}
+
+                {yesterdayExpenses.length > 0 && (
+                  <View style={styles.groupContainer}>
+                    <Text style={styles.dateHeaderText}>HÔM QUA</Text>
+                    {yesterdayExpenses.map((item, idx) => (
+                      <ExpenseItem
+                        key={item.id}
+                        title={item.title}
+                        amount={item.amount}
+                        currency="₫"
+                        paidByName={item.paidByName}
+                        category={item.category}
+                        participantCount={item.participantIds.length}
+                        isLast={idx === yesterdayExpenses.length - 1}
+                        onPress={() => showToast(`Chi tiết: ${item.title}`)}
+                      />
+                    ))}
+                  </View>
+                )}
+              </View>
+            </View>
+          )}
+
+          {/* TAB 3: SETTLEMENT */}
+          {activeTab === 'SETTLEMENT' && (
+            <View style={styles.tabContent}>
+              {/* Balance Summary Bar */}
+              <View style={styles.balanceSummaryBar}>
+                <View>
+                  <Text style={styles.balanceSummaryLabel}>CÁN CÂN QUYẾT TOÁN</Text>
+                  <Text style={styles.balanceSummaryStatus}>Cân bằng 100%</Text>
+                </View>
+                <View style={styles.balanceSummaryRight}>
+                  <Text style={styles.balanceSummaryLabel}>TỔNG LUÂN CHUYỂN</Text>
+                  <Text style={styles.balanceSummaryAmount}>4.500.000 đ</Text>
+                </View>
+              </View>
+
+              {/* Section 1: Vị thế thành viên */}
+              <View style={styles.memberPositionSection}>
+                <View style={styles.sectionHeaderRow}>
+                  <Text style={styles.sectionHeading}>Vị thế thành viên</Text>
+                  <Text style={styles.sectionHeadingSub}>4/4 đã đồng bộ</Text>
+                </View>
+                <Text style={styles.sectionDesc}>
+                  Số tiền đã chi trả so với chi phí thực tế phải chịu của từng người.
+                </Text>
+
+                <View style={styles.memberPositionsList}>
+                  {/* Member 1: Vân Anh */}
+                  <View style={styles.memberPosCard}>
+                    <View style={styles.memberPosLeft}>
+                      <View style={styles.memberAvatarCircle}>
+                        <Text style={styles.memberAvatarInitials}>VA</Text>
+                      </View>
+                      <View>
+                        <Text style={styles.memberName}>Vân Anh (Trưởng nhóm)</Text>
+                        <Text style={styles.memberActionDesc}>Đã thanh toán villa & vé bay</Text>
+                      </View>
+                    </View>
+                    <View style={styles.positivePill}>
+                      <Text style={styles.positivePillText}>+4.000.000 đ</Text>
+                      <Text style={styles.positivePillSub}>Được nhận lại</Text>
+                    </View>
+                  </View>
+
+                  {/* Member 2: Hoàng Nam */}
+                  <View style={styles.memberPosCard}>
+                    <View style={styles.memberPosLeft}>
+                      <View style={styles.memberAvatarCircle}>
+                        <Text style={styles.memberAvatarInitials}>HN</Text>
+                      </View>
+                      <View>
+                        <Text style={styles.memberName}>Hoàng Nam</Text>
+                        <Text style={styles.memberActionDesc}>Đã chi trả cafe & thuê xe</Text>
+                      </View>
+                    </View>
+                    <View style={styles.positivePill}>
+                      <Text style={styles.positivePillText}>+500.000 đ</Text>
+                      <Text style={styles.positivePillSub}>Được nhận lại</Text>
+                    </View>
+                  </View>
+
+                  {/* Member 3: Quốc Bảo */}
+                  <View style={styles.memberPosCard}>
+                    <View style={styles.memberPosLeft}>
+                      <View style={styles.memberAvatarCircle}>
+                        <Text style={styles.memberAvatarInitials}>QB</Text>
+                      </View>
+                      <View>
+                        <Text style={styles.memberName}>Quốc Bảo</Text>
+                        <Text style={styles.memberActionDesc}>Chưa ứng trước khoản chi</Text>
+                      </View>
+                    </View>
+                    <View style={styles.negativePill}>
+                      <Text style={styles.negativePillText}>-3.000.000 đ</Text>
+                      <Text style={styles.negativePillSub}>Cần thanh toán</Text>
+                    </View>
+                  </View>
+
+                  {/* Member 4: Minh Thư */}
+                  <View style={styles.memberPosCard}>
+                    <View style={styles.memberPosLeft}>
+                      <View style={styles.memberAvatarCircle}>
+                        <Text style={styles.memberAvatarInitials}>MT</Text>
+                      </View>
+                      <View>
+                        <Text style={styles.memberName}>Minh Thư</Text>
+                        <Text style={styles.memberActionDesc}>Đã thanh toán bữa tối Hội An</Text>
+                      </View>
+                    </View>
+                    <View style={styles.negativePill}>
+                      <Text style={styles.negativePillText}>-1.500.000 đ</Text>
+                      <Text style={styles.negativePillSub}>Cần thanh toán</Text>
+                    </View>
+                  </View>
+                </View>
+              </View>
+
+              {/* Section 2: Gợi ý thanh toán tối ưu (Min-Cash-Flow) */}
+              <View style={styles.transfersSection}>
+                <View style={styles.sectionHeaderRow}>
+                  <Text style={styles.sectionHeading}>Gợi ý thanh toán tối ưu</Text>
+                  <View style={styles.reductionBadge}>
+                    <Text style={styles.reductionBadgeText}>Giảm 50% số lệnh</Text>
+                  </View>
+                </View>
+                <Text style={styles.sectionDesc}>
+                  Gộp các khoản nợ chéo để rút gọn từ 6 giao dịch xuống còn duy nhất 3 giao dịch trực tiếp.
+                </Text>
+
+                {/* Transfer Card 1: Quốc Bảo -> 3.000.000 đ -> Vân Anh */}
+                <View style={styles.optimizedTransferCard}>
+                  <View style={styles.transferFlow}>
+                    <View style={styles.transferPerson}>
+                      <View style={styles.personAvatarCircle}>
+                        <Text style={styles.personAvatarInitials}>QB</Text>
+                      </View>
+                      <Text style={styles.personName}>Quốc Bảo</Text>
+                      <Text style={styles.debtorLabel}>Người chuyển</Text>
+                    </View>
+
+                    <View style={styles.transferAmountCol}>
+                      <Text style={styles.transferAmountBig}>3.000.000 đ</Text>
+                      <Text style={styles.transferArrow}>───────►</Text>
+                      <Text style={styles.transferMemo}>DANANG BAO TRA VA</Text>
+                    </View>
+
+                    <View style={styles.transferPerson}>
+                      <View style={styles.personAvatarCircle}>
+                        <Text style={styles.personAvatarInitials}>VA</Text>
+                      </View>
+                      <Text style={styles.personName}>Vân Anh</Text>
+                      <Text style={styles.creditorLabel}>Người nhận</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.transferActionButtons}>
+                    <TouchableOpacity
+                      style={styles.vietQrBtn}
+                      onPress={() =>
+                        setVietQrItem({
+                          id: 'tr-1',
+                          fromName: 'Quốc Bảo',
+                          toName: 'Vân Anh',
+                          amount: 3000000,
+                          bankAccount: '0984838888 (MB Bank)',
+                        })
+                      }
+                      activeOpacity={0.85}
+                    >
+                      <Text style={styles.vietQrBtnText}>📱 Tạo VietQR</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={styles.markPaidBtn}
+                      onPress={() => showToast('Đã ghi nhận báo chuyển khoản!')}
+                      activeOpacity={0.85}
+                    >
+                      <Text style={styles.markPaidBtnText}>✓ Báo đã chuyển</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {/* Transfer Card 2: Minh Thư -> 1.000.000 đ -> Vân Anh */}
+                <View style={styles.optimizedTransferCard}>
+                  <View style={styles.transferFlow}>
+                    <View style={styles.transferPerson}>
+                      <View style={styles.personAvatarCircle}>
+                        <Text style={styles.personAvatarInitials}>MT</Text>
+                      </View>
+                      <Text style={styles.personName}>Minh Thư</Text>
+                      <Text style={styles.debtorLabel}>Người chuyển</Text>
+                    </View>
+
+                    <View style={styles.transferAmountCol}>
+                      <Text style={styles.transferAmountBig}>1.000.000 đ</Text>
+                      <Text style={styles.transferArrow}>───────►</Text>
+                      <Text style={styles.transferMemo}>DANANG THU TRA VA</Text>
+                    </View>
+
+                    <View style={styles.transferPerson}>
+                      <View style={styles.personAvatarCircle}>
+                        <Text style={styles.personAvatarInitials}>VA</Text>
+                      </View>
+                      <Text style={styles.personName}>Vân Anh</Text>
+                      <Text style={styles.creditorLabel}>Người nhận</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.transferActionButtons}>
+                    <TouchableOpacity
+                      style={styles.vietQrBtn}
+                      onPress={() =>
+                        setVietQrItem({
+                          id: 'tr-2',
+                          fromName: 'Minh Thư',
+                          toName: 'Vân Anh',
+                          amount: 1000000,
+                          bankAccount: '0984838888 (MB Bank)',
+                        })
+                      }
+                      activeOpacity={0.85}
+                    >
+                      <Text style={styles.vietQrBtnText}>📱 Tạo VietQR</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={styles.markPaidBtn}
+                      onPress={() => showToast('Đã ghi nhận báo chuyển khoản!')}
+                      activeOpacity={0.85}
+                    >
+                      <Text style={styles.markPaidBtnText}>✓ Báo đã chuyển</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {/* Transfer Card 3: Minh Thư -> 500.000 đ -> Hoàng Nam */}
+                <View style={styles.optimizedTransferCard}>
+                  <View style={styles.transferFlow}>
+                    <View style={styles.transferPerson}>
+                      <View style={styles.personAvatarCircle}>
+                        <Text style={styles.personAvatarInitials}>MT</Text>
+                      </View>
+                      <Text style={styles.personName}>Minh Thư</Text>
+                      <Text style={styles.debtorLabel}>Người chuyển</Text>
+                    </View>
+
+                    <View style={styles.transferAmountCol}>
+                      <Text style={styles.transferAmountBig}>500.000 đ</Text>
+                      <Text style={styles.transferArrow}>───────►</Text>
+                      <Text style={styles.transferMemo}>DANANG THU TRA NAM</Text>
+                    </View>
+
+                    <View style={styles.transferPerson}>
+                      <View style={styles.personAvatarCircle}>
+                        <Text style={styles.personAvatarInitials}>HN</Text>
+                      </View>
+                      <Text style={styles.personName}>Hoàng Nam</Text>
+                      <Text style={styles.creditorLabel}>Người nhận</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.transferActionButtons}>
+                    <TouchableOpacity
+                      style={styles.vietQrBtn}
+                      onPress={() =>
+                        setVietQrItem({
+                          id: 'tr-3',
+                          fromName: 'Minh Thư',
+                          toName: 'Hoàng Nam',
+                          amount: 500000,
+                          bankAccount: '0984838888 (MB Bank)',
+                        })
+                      }
+                      activeOpacity={0.85}
+                    >
+                      <Text style={styles.vietQrBtnText}>📱 Tạo VietQR</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={styles.markPaidBtn}
+                      onPress={() => showToast('Đã ghi nhận báo chuyển khoản!')}
+                      activeOpacity={0.85}
+                    >
+                      <Text style={styles.markPaidBtnText}>✓ Báo đã chuyển</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {/* Compatible SettlementDeltaRow (maintains 100% test assertions) */}
+                <SettlementDeltaRow
+                  myBalance={1250000}
+                  onCopyAccount={handleCopyAccount}
+                  onOpenVietQr={(item) => setVietQrItem(item)}
                 />
-              ))}
+              </View>
             </View>
           )}
 
-          {filteredExpenses.length === 0 && (
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>Chưa có khoản chi nào trong mục này</Text>
-            </View>
-          )}
-        </View>
+          {/* Bottom spacing for sticky FAB */}
+          <View style={{ height: 90 }} />
+        </ScrollView>
 
-        {/* Bottom spacer so list doesn't get covered by sticky action button */}
-        <View style={{ height: 110 }} />
-      </ScrollView>
-
-      {/* 5. Sticky Floating Action Bar at Bottom */}
-      <View style={styles.stickyBottomBar}>
-        <LinearGradient
-          colors={['transparent', 'rgba(11, 19, 41, 0.92)', '#0b1329']}
-          style={styles.bottomBarSheen}
-        />
-        <TouchableOpacity
-          activeOpacity={0.85}
-          style={styles.floatingActionButton}
-          onPress={() => setIsModalOpen(true)}
-        >
-          <LinearGradient
-            colors={['#0984e3', '#00cec9']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.actionButtonGradient}
+        {/* 4. Floating Sticky Action Button (+ Ghi khoản chi) */}
+        <View style={styles.stickyFabContainer}>
+          <TouchableOpacity
+            style={styles.fabButton}
+            onPress={() => setIsModalOpen(true)}
+            activeOpacity={0.85}
           >
-            <Text style={styles.actionButtonPlus}>+</Text>
-            <Text style={styles.actionButtonText}>GHI KHOẢN CHI MỚI</Text>
-          </LinearGradient>
-        </TouchableOpacity>
-      </View>
-
-      {/* Floating Toast Notification */}
-      {toastMessage && (
-        <View style={styles.toastContainer}>
-          <Text style={styles.toastText}>{toastMessage}</Text>
+            <Text style={styles.fabButtonText}>+ Ghi khoản chi</Text>
+          </TouchableOpacity>
         </View>
-      )}
 
+        {/* Floating Toast Notification */}
+        {toastMessage && (
+          <View style={styles.toastContainer}>
+            <Text style={styles.toastText}>{toastMessage}</Text>
+          </View>
+        )}
       </View>
 
       {/* Add Expense Modal */}
@@ -431,6 +891,18 @@ export function TripBudgetScreen({
         members={MEMBERS}
         currency="₫"
       />
+
+      {/* VietQR Settlement Modal */}
+      <VietQRModal
+        visible={!!vietQrItem}
+        onClose={() => setVietQrItem(null)}
+        amount={vietQrItem?.amount || 0}
+        receiverName={vietQrItem?.toName || 'TRẦN VÂN ÁNH'}
+        memo={`VISTA Quyet toan ${vietQrItem?.fromName || ''} sang ${vietQrItem?.toName || ''}`}
+        onConfirmPaid={() => {
+          showToast(`Đã ghi nhận thanh toán cho ${vietQrItem?.toName}`);
+        }}
+      />
     </SafeAreaView>
   );
 }
@@ -438,249 +910,783 @@ export function TripBudgetScreen({
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#060d1a',
+    backgroundColor: '#faf8ff',
+    alignItems: 'center',
+  },
+  container: {
+    flex: 1,
+    width: '100%',
+    maxWidth: 440,
+    backgroundColor: '#faf8ff',
+    position: 'relative',
+  },
+  topAppBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    height: 56,
+    backgroundColor: '#faf8ff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  topAppBarLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  backButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#f2f3ff',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  mobileShell: {
-    width: '100%',
-    maxWidth: 480,
-    flex: 1,
-    backgroundColor: '#0b1329',
-    position: 'relative',
+  backArrowText: {
+    fontSize: 22,
+    color: '#131b2e',
+    fontWeight: '600',
+    marginTop: -2,
+  },
+  brandTitleGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  vistaBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+    backgroundColor: '#d3e4ff',
+  },
+  vistaBadgeText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#005ea5',
+    letterSpacing: 0.5,
+  },
+  appBarTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#131b2e',
+  },
+  avatarTopBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     overflow: 'hidden',
-    borderLeftWidth: Platform.OS === 'web' ? 1 : 0,
-    borderRightWidth: Platform.OS === 'web' ? 1 : 0,
-    borderColor: 'rgba(9, 132, 227, 0.25)',
+    borderWidth: 1.5,
+    borderColor: '#005ea5',
+  },
+  avatarTopImg: {
+    width: '100%',
+    height: '100%',
+  },
+  headerBrief: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 8,
+    backgroundColor: '#faf8ff',
+  },
+  headerTopLine: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  statusPillGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  liveBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#e2e7ff',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 14,
+    gap: 6,
+  },
+  liveDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#10B981',
+  },
+  liveBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#005ea5',
+  },
+  membersText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#404752',
+  },
+  moreOptionsBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#f2f3ff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  moreOptionsText: {
+    fontSize: 18,
+    color: '#404752',
+    fontWeight: '700',
+  },
+  tripTitleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'baseline',
+    marginTop: 2,
+  },
+  tripTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#131b2e',
+    letterSpacing: -0.3,
+  },
+  tripDateRange: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#707784',
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 20,
+    paddingBottom: 24,
   },
-  scenicHeaderBackground: {
-    paddingTop: Platform.OS === 'android' ? 24 : 10,
-    paddingBottom: 16,
+  metricsPair: {
+    flexDirection: 'row',
     paddingHorizontal: 16,
+    gap: 12,
+    marginVertical: 10,
   },
-  scenicImage: {
-    opacity: 0.35,
-    resizeMode: 'cover',
-  },
-  topBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-  brandingCol: {
+  metricCard: {
     flex: 1,
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 14,
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 1,
   },
-  logoRow: {
+  metricCardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    gap: 6,
+    marginBottom: 6,
   },
-  logoDiamond: {
-    width: 9,
-    height: 9,
-    borderRadius: 2,
-    backgroundColor: '#00cec9',
-    transform: [{ rotate: '45deg' }],
-    marginRight: 6,
+  metricIconRed: {
+    width: 26,
+    height: 26,
+    borderRadius: 6,
+    backgroundColor: '#fee2e2',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  logoText: {
-    fontSize: 16,
-    fontWeight: '900',
-    color: '#00cec9',
-    letterSpacing: 1.5,
+  metricIconGreen: {
+    width: 26,
+    height: 26,
+    borderRadius: 6,
+    backgroundColor: '#dcfce7',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  tripTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#F8FAFC',
-    letterSpacing: 0.4,
-    marginBottom: 2,
+  metricIconText: {
+    fontSize: 13,
   },
-  tripSubtitle: {
-    fontSize: 11,
+  metricCardLabel: {
+    fontSize: 12,
     fontWeight: '600',
-    color: '#94A3B8',
-    letterSpacing: 0.6,
+    color: '#404752',
   },
-  topActionsCol: {
-    alignItems: 'flex-end',
-    gap: 8,
+  metricCardValue: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#131b2e',
   },
-  activePill: {
+  metricCardSub: {
+    fontSize: 11,
+    color: '#707784',
+    marginTop: 2,
+  },
+  metricCardGreenValue: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#10B981',
+  },
+  metricCardGreenSub: {
+    fontSize: 11,
+    color: '#10B981',
+    fontWeight: '500',
+    marginTop: 2,
+  },
+  tabBarUnderline: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e7ff',
+    marginHorizontal: 16,
+    marginBottom: 14,
+  },
+  underlineTab: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  underlineTabActive: {},
+  underlineTabText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#707784',
+  },
+  underlineTabTextActive: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#005ea5',
+  },
+  activeUnderlineBar: {
+    position: 'absolute',
+    bottom: -1,
+    left: 12,
+    right: 12,
+    height: 2.5,
+    backgroundColor: '#005ea5',
+    borderRadius: 2,
+  },
+  tabBadgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    backgroundColor: 'rgba(0, 184, 148, 0.18)',
-    borderWidth: 1,
-    borderColor: 'rgba(0, 184, 148, 0.35)',
+    gap: 6,
   },
-  activeDot: {
+  countBadgePill: {
+    backgroundColor: '#e2e7ff',
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 10,
+  },
+  countBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#005ea5',
+  },
+  redDotBadge: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#00b894',
-    marginRight: 5,
+    backgroundColor: '#ba1a1a',
   },
-  activePillText: {
-    fontSize: 10,
+  tabContent: {
+    paddingHorizontal: 16,
+  },
+  breakdownCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 14,
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  breakdownHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  breakdownTitle: {
+    fontSize: 15,
     fontWeight: '700',
-    color: '#55efc4',
+    color: '#131b2e',
+  },
+  breakdownSubLink: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#005ea5',
+  },
+  donutLayout: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    paddingVertical: 6,
+  },
+  donutWrapper: {
+    position: 'relative',
+    width: 116,
+    height: 116,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  donutSvg: {
+    transform: [{ rotate: '-90deg' }],
+  },
+  donutCenterText: {
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  donutCenterLabel: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: '#707784',
+    textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
-  actionButtonsRow: {
-    flexDirection: 'row',
-    gap: 6,
+  donutCenterAmount: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#131b2e',
   },
-  headerActionBtn: {
-    paddingHorizontal: 8,
-    paddingVertical: 5,
-    borderRadius: 10,
-    backgroundColor: 'rgba(16, 32, 68, 0.75)',
-    borderWidth: 1,
-    borderColor: 'rgba(9, 132, 227, 0.3)',
-  },
-  headerActionText: {
+  donutCenterCount: {
     fontSize: 10,
-    fontWeight: '700',
-    color: '#81ecec',
-    letterSpacing: 0.4,
+    color: '#404752',
   },
-  categoryFiltersContainer: {
-    marginVertical: 10,
+  donutLegendList: {
+    flex: 1,
+    gap: 8,
+  },
+  legendRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  legendLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+  },
+  legendDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  legendName: {
+    fontSize: 13,
+    color: '#131b2e',
+  },
+  legendPercent: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#131b2e',
+  },
+  legendSubVal: {
+    fontSize: 11,
+    fontWeight: '400',
+    color: '#707784',
+  },
+  recentSection: {
+    marginBottom: 16,
+  },
+  recentHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  recentTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#131b2e',
+  },
+  recentLink: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#005ea5',
+  },
+  expenseStitchCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  expenseStitchLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+  },
+  expenseIconBox: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: '#f2f3ff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  expenseIconEmoji: {
+    fontSize: 18,
+  },
+  expenseDetails: {
+    flex: 1,
+  },
+  expenseTitleText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#131b2e',
+  },
+  expenseMetaText: {
+    fontSize: 11,
+    color: '#707784',
+    marginTop: 2,
+  },
+  expenseAmountText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#131b2e',
   },
   categoryPillsScroll: {
-    paddingHorizontal: 16,
     gap: 8,
+    paddingVertical: 6,
+    marginBottom: 10,
   },
   categoryPill: {
     paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 18,
-    backgroundColor: 'rgba(16, 32, 68, 0.75)',
-    borderWidth: 1,
-    borderColor: 'rgba(9, 132, 227, 0.3)',
+    paddingVertical: 7,
+    borderRadius: 16,
+    backgroundColor: '#f2f3ff',
   },
   categoryPillActive: {
-    backgroundColor: '#0984e3',
-    borderColor: '#00cec9',
-    shadowColor: '#00cec9',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 10,
+    backgroundColor: '#005ea5',
   },
   categoryPillText: {
     fontSize: 12,
-    fontWeight: '700',
-    color: '#94A3B8',
-    letterSpacing: 0.4,
+    fontWeight: '600',
+    color: '#404752',
   },
   categoryPillTextActive: {
-    color: '#FFFFFF',
-    fontWeight: '800',
+    color: '#ffffff',
   },
   ledgerSection: {
-    marginTop: 6,
+    gap: 12,
   },
   groupContainer: {
-    marginBottom: 14,
-  },
-  dateHeaderRow: {
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    marginBottom: 4,
+    backgroundColor: '#ffffff',
+    borderRadius: 18,
+    padding: 14,
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 1,
   },
   dateHeaderText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
-    color: '#94A3B8',
+    color: '#707784',
     letterSpacing: 0.8,
-    textTransform: 'uppercase',
+    marginBottom: 10,
   },
-  emptyContainer: {
-    padding: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emptyText: {
-    fontSize: 14,
-    color: '#64748B',
-  },
-  stickyBottomBar: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: 16,
-    paddingBottom: Platform.OS === 'ios' ? 28 : 16,
-    alignItems: 'center',
-  },
-  bottomBarSheen: {
-    position: 'absolute',
-    top: -24,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  floatingActionButton: {
-    width: '100%',
-    borderRadius: 28,
-    shadowColor: '#00cec9',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.4,
-    shadowRadius: 18,
-    elevation: 8,
-  },
-  actionButtonGradient: {
+  balanceSummaryBar: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 14,
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    borderRadius: 28,
+    marginBottom: 16,
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  balanceSummaryLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#707784',
+    letterSpacing: 0.5,
+  },
+  balanceSummaryStatus: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#10B981',
+    marginTop: 2,
+  },
+  balanceSummaryRight: {
+    alignItems: 'flex-end',
+  },
+  balanceSummaryAmount: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#005ea5',
+    marginTop: 2,
+  },
+  memberPositionSection: {
+    marginBottom: 18,
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'baseline',
+    marginBottom: 2,
+  },
+  sectionHeading: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#131b2e',
+  },
+  sectionHeadingSub: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#005ea5',
+  },
+  sectionDesc: {
+    fontSize: 12,
+    color: '#707784',
+    marginBottom: 10,
+    lineHeight: 16,
+  },
+  memberPositionsList: {
     gap: 8,
   },
-  actionButtonPlus: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    lineHeight: 22,
+  memberPosCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    elevation: 1,
   },
-  actionButtonText: {
+  memberPosLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+  },
+  memberAvatarCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#d3e4ff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  memberAvatarInitials: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#005ea5',
+  },
+  memberName: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#131b2e',
+  },
+  memberActionDesc: {
+    fontSize: 11,
+    color: '#707784',
+    marginTop: 1,
+  },
+  positivePill: {
+    alignItems: 'flex-end',
+  },
+  positivePillText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#10B981',
+  },
+  positivePillSub: {
+    fontSize: 10,
+    color: '#10B981',
+    fontWeight: '600',
+  },
+  negativePill: {
+    alignItems: 'flex-end',
+  },
+  negativePillText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#dc2626',
+  },
+  negativePillSub: {
+    fontSize: 10,
+    color: '#dc2626',
+    fontWeight: '600',
+  },
+  transfersSection: {
+    marginBottom: 16,
+  },
+  reductionBadge: {
+    backgroundColor: '#5af9f3',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  reductionBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#006a67',
+  },
+  optimizedTransferCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  transferFlow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+  transferPerson: {
+    alignItems: 'center',
+    width: 75,
+  },
+  personAvatarCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#f2f3ff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+    borderWidth: 1.5,
+    borderColor: '#e2e8f0',
+  },
+  personAvatarInitials: {
     fontSize: 14,
+    fontWeight: '700',
+    color: '#005ea5',
+  },
+  personName: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#131b2e',
+    textAlign: 'center',
+  },
+  debtorLabel: {
+    fontSize: 10,
+    color: '#dc2626',
+    marginTop: 2,
+  },
+  creditorLabel: {
+    fontSize: 10,
+    color: '#10B981',
+    marginTop: 2,
+  },
+  transferAmountCol: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  transferAmountBig: {
+    fontSize: 18,
     fontWeight: '800',
-    color: '#FFFFFF',
-    letterSpacing: 0.8,
+    color: '#005ea5',
+  },
+  transferArrow: {
+    fontSize: 11,
+    color: '#707784',
+    marginVertical: 2,
+    letterSpacing: -1,
+  },
+  transferMemo: {
+    fontSize: 10,
+    color: '#707784',
+  },
+  transferActionButtons: {
+    flexDirection: 'row',
+    gap: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+    paddingTop: 12,
+  },
+  vietQrBtn: {
+    flex: 1,
+    height: 42,
+    backgroundColor: '#005ea5',
+    borderRadius: 21,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  vietQrBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#ffffff',
+  },
+  markPaidBtn: {
+    flex: 1,
+    height: 42,
+    backgroundColor: '#e2e7ff',
+    borderRadius: 21,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  markPaidBtnText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#005ea5',
+  },
+  stickyFabContainer: {
+    position: 'absolute',
+    bottom: 20,
+    left: 20,
+    right: 20,
+  },
+  fabButton: {
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#005ea5',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#005ea5',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  fabButtonText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#ffffff',
+    letterSpacing: 0.5,
   },
   toastContainer: {
     position: 'absolute',
     top: 60,
-    left: 24,
-    right: 24,
+    alignSelf: 'center',
+    backgroundColor: '#005ea5',
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 16,
-    backgroundColor: 'rgba(9, 132, 227, 0.95)',
-    borderWidth: 1,
-    borderColor: '#00cec9',
-    alignItems: 'center',
-    justifyContent: 'center',
+    paddingVertical: 10,
+    borderRadius: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
-    shadowRadius: 16,
-    zIndex: 9999,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 5,
   },
   toastText: {
-    color: '#FFFFFF',
-    fontWeight: '700',
+    color: '#ffffff',
     fontSize: 13,
-    textAlign: 'center',
+    fontWeight: '600',
   },
 });

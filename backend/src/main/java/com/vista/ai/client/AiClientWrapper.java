@@ -74,11 +74,8 @@ public class AiClientWrapper {
               .POST(HttpRequest.BodyPublishers.ofString(requestBody))
               .build();
 
-      HttpResponse<String> response =
-          httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-      if (response.statusCode() != 200) {
-        log.error("Gemini API returned error code {}: {}", response.statusCode(), response.body());
+      HttpResponse<String> response = sendWithBoundedRetry(request);
+      if (response == null) {
         return Optional.empty();
       }
 
@@ -91,13 +88,52 @@ public class AiClientWrapper {
         }
       }
 
-      log.warn("Unexpected Gemini API response structure: {}", response.body());
+      log.warn("Unexpected Gemini API response structure");
       return Optional.empty();
 
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      log.warn("AI request was interrupted");
+      return Optional.empty();
     } catch (Exception e) {
-      log.error("Failed to generate content from AI provider: {}", e.getMessage(), e);
+      log.warn("Failed to generate content from AI provider: {}", e.getClass().getSimpleName());
       return Optional.empty();
     }
+  }
+
+  private HttpResponse<String> sendWithBoundedRetry(HttpRequest request)
+      throws InterruptedException {
+    int maxAttempts = Math.max(1, properties.maxRetries() + 1);
+    for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        HttpResponse<String> response =
+            httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        int status = response.statusCode();
+        if (status == 200) {
+          return response;
+        }
+
+        boolean retryable = status == 429 || status >= 500;
+        log.warn(
+            "Gemini API request failed with status {} (attempt {}/{})",
+            status,
+            attempt,
+            maxAttempts);
+        if (!retryable || attempt == maxAttempts) {
+          return null;
+        }
+      } catch (java.io.IOException e) {
+        log.warn(
+            "Gemini API transport failure {} (attempt {}/{})",
+            e.getClass().getSimpleName(),
+            attempt,
+            maxAttempts);
+        if (attempt == maxAttempts) {
+          return null;
+        }
+      }
+    }
+    return null;
   }
 
   public boolean isAvailable() {

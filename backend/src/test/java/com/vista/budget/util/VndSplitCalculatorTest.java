@@ -214,4 +214,24 @@ class VndSplitCalculatorTest {
         IllegalArgumentException.class,
         () -> VndSplitCalculator.validateExactSplit(total, invalidShares));
   }
+
+  @Test
+  @DisplayName("Ca 14: Từ chối danh sách thành viên bị trùng ID")
+  void testDuplicateParticipantsThrows() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            VndSplitCalculator.calculateEqualSplit(
+                new BigDecimal("100000"), userA, List.of(userA, userB, userA)));
+  }
+
+  @Test
+  @DisplayName("Ca 15: Từ chối số tiền VND có phần thập phân")
+  void testFractionalVndThrows() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            VndSplitCalculator.calculateEqualSplit(
+                new BigDecimal("1000.50"), userA, List.of(userA, userB)));
+  }
 }

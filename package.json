@@ -1,0 +1,19 @@
+{
+  "name": "vista-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "VISTA - Travel Expense & Itinerary Platform",
+  "scripts": {
+    "dev": "concurrently -k --names \"BACKEND,WEB,MOBILE\" -c \"blue.bold,green.bold,magenta.bold\" \"npm run dev:backend\" \"npm run dev:web\" \"npm run dev:mobile\"",
+    "dev:backend": "node scripts/run-backend.mjs",
+    "dev:web": "npm run dev --prefix web",
+    "dev:mobile": "npm start --prefix mobile",
+    "db:up": "docker compose --env-file .env up -d postgres",
+    "db:down": "docker compose down",
+    "test": "npm run test --prefix web && npm run test --prefix mobile",
+    "lint": "npm run lint --prefix web && npm run lint --prefix mobile"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

@@ -78,6 +78,24 @@ export default function TabsLayout() {
       />
 
       <Tabs.Screen
+        name="ai-planner"
+        options={{
+          title: 'AI Planner',
+          tabBarIcon: ({ color }) => (
+            <Svg width={22} height={22} viewBox="0 0 24 24" fill="none">
+              <Path
+                d="M 12 2 L 14.5 9.5 L 22 12 L 14.5 14.5 L 12 22 L 9.5 14.5 L 2 12 L 9.5 9.5 Z"
+                stroke={color}
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </Svg>
+          ),
+        }}
+      />
+
+      <Tabs.Screen
         name="profile"
         options={{
           title: 'Hồ sơ',
@@ -96,15 +114,9 @@ export default function TabsLayout() {
         }}
       />
 
-      {/* Internal sub-screens hidden from bottom bar */}
+      {/* Internal sub-screens accessible via routing */}
       <Tabs.Screen
         name="treasury"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="ai-planner"
         options={{
           href: null,
         }}

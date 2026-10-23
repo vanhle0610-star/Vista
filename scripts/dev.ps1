@@ -1,6 +1,7 @@
-param([ValidateSet('setup','db-up','db-down','backend','mobile','web','admin','test','lint','api-validate','api-generate')][string]$Task='setup')
+param([ValidateSet('setup','db-up','db-down','backend','mobile','web','admin','test','lint','api-validate','api-generate','all','dev')][string]$Task='dev')
 $ErrorActionPreference = 'Stop'
 switch ($Task) {
+  'all', 'dev' { npm run dev }
   'setup' { Push-Location mobile; npm ci; Pop-Location; Push-Location web; npm ci; Pop-Location }
   'db-up' { docker compose --env-file .env up -d postgres }
   'db-down' { docker compose down }

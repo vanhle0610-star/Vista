@@ -331,4 +331,105 @@ class ExpenseCalculationServiceTest {
     assertThatThrownBy(() -> calculationService.createEqualSplits(expense, List.of()))
         .isInstanceOf(IllegalArgumentException.class);
   }
+
+  @Test
+  @DisplayName("11. Tuần 7 Edge Case: Thành viên chuyến đi không tham gia chia tiền (Excluded Members)")
+  void calculateSettlementDeltas_withExcludedMembers_shouldHaveZeroBalanceForNonParticipants() {
+    UUID memberD = UUID.randomUUID();
+    UUID memberE = UUID.randomUUID();
+
+    // Hóa đơn 900.000đ do Vân Ánh trả, chỉ chia cho Vân Ánh, Tuấn, Nam (mỗi người 300k). D và E không tham gia.
+    ExpenseEntity expense =
+        new ExpenseEntity(
+            tripId,
+            "Bữa tối hải sản",
+            BigDecimal.valueOf(900000),
+            "VND",
+            vanAnhId,
+            ExpenseCategory.FOOD,
+            Instant.now());
+    expense.addSplit(new ExpenseSplitEntity(vanAnhId, BigDecimal.valueOf(300000)));
+    expense.addSplit(new ExpenseSplitEntity(tuanId, BigDecimal.valueOf(300000)));
+    expense.addSplit(new ExpenseSplitEntity(namId, BigDecimal.valueOf(300000)));
+
+    List<UUID> allTripMembers = List.of(vanAnhId, tuanId, namId, memberD, memberE);
+    Map<UUID, BigDecimal> balances =
+        calculationService.calculateSettlementDeltas(List.of(expense), allTripMembers);
+
+    // Vân Ánh bỏ ra 900k, chịu 300k -> số dư +600k (được nhận về)
+    assertThat(balances.get(vanAnhId)).isEqualByComparingTo(BigDecimal.valueOf(600000));
+    // Tuấn chịu 300k -> nợ -300k
+    assertThat(balances.get(tuanId)).isEqualByComparingTo(BigDecimal.valueOf(-300000));
+    // Nam chịu 300k -> nợ -300k
+    assertThat(balances.get(namId)).isEqualByComparingTo(BigDecimal.valueOf(-300000));
+    // D và E không tham gia -> số dư đúng bằng 0
+    assertThat(balances.get(memberD)).isEqualByComparingTo(BigDecimal.ZERO);
+    assertThat(balances.get(memberE)).isEqualByComparingTo(BigDecimal.ZERO);
+  }
+
+  @Test
+  @DisplayName("12. Tuần 7 Edge Case: 1.000.000đ chia 7 người không chia hết, bù lẻ VND chính xác")
+  void createEqualSplits_oneMillionVndDividedBySeven_shouldBalanceExactly() {
+    BigDecimal amount = BigDecimal.valueOf(1000000);
+    ExpenseEntity expense =
+        new ExpenseEntity(
+            tripId,
+            "Vé tham quan nhóm",
+            amount,
+            "VND",
+            vanAnhId,
+            ExpenseCategory.ACTIVITIES,
+            Instant.now());
+
+    List<UUID> sevenUsers =
+        List.of(
+            vanAnhId,
+            tuanId,
+            namId,
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            UUID.randomUUID());
+
+    List<ExpenseSplitEntity> splits = calculationService.createEqualSplits(expense, sevenUsers);
+
+    assertThat(splits).hasSize(7);
+    BigDecimal sumSplits =
+        splits.stream()
+            .map(ExpenseSplitEntity::getShareAmount)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+    // Tổng từng phần phải bằng đúng 1.000.000đ không lệch 1 xu
+    assertThat(sumSplits).isEqualByComparingTo(amount);
+
+    // Người trả (Vân Ánh) chịu phần dư 1đ: 142.858đ, 6 người còn lại 142.857đ
+    ExpenseSplitEntity payerSplit =
+        splits.stream().filter(s -> s.getUserId().equals(vanAnhId)).findFirst().orElseThrow();
+    assertThat(payerSplit.getShareAmount()).isEqualByComparingTo(BigDecimal.valueOf(142858));
+
+    long otherSharesCount =
+        splits.stream()
+            .filter(s -> !s.getUserId().equals(vanAnhId))
+            .filter(s -> s.getShareAmount().compareTo(BigDecimal.valueOf(142857)) == 0)
+            .count();
+    assertThat(otherSharesCount).isEqualTo(6);
+  }
+
+  @Test
+  @DisplayName("13. Tuần 7 Edge Case: Cấn trừ công nợ đa phương (A nợ B 100k, B nợ C 100k -> A trả C 100k)")
+  void simplifyDebts_transitiveDebt_shouldOptimizeToSingleTransfer() {
+    // Vân Ánh nợ Tuấn 100k (-100k), Tuấn số dư ròng 0k, Nam được nhận 100k (+100k)
+    Map<UUID, BigDecimal> balances =
+        Map.of(
+            vanAnhId, BigDecimal.valueOf(-100000),
+            tuanId, BigDecimal.ZERO,
+            namId, BigDecimal.valueOf(100000));
+
+    List<SettlementTransfer> transfers = calculationService.simplifyDebts(balances);
+
+    assertThat(transfers).hasSize(1);
+    SettlementTransfer transfer = transfers.get(0);
+    assertThat(transfer.fromUserId()).isEqualTo(vanAnhId);
+    assertThat(transfer.toUserId()).isEqualTo(namId);
+    assertThat(transfer.amount()).isEqualByComparingTo(BigDecimal.valueOf(100000));
+  }
 }
