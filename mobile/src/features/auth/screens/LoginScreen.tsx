@@ -18,6 +18,7 @@ import Svg, { Path, Rect, Circle } from 'react-native-svg';
 import { VietnamMobileScenery } from '../components/VietnamMobileScenery';
 import { MobileAnimatedAirplane } from '../components/MobileAnimatedAirplane';
 import { VistaCompassLogo } from '../components/VistaCompassLogo';
+import { authStorage } from '@/services/auth/authStorage';
 
 export interface LoginScreenProps {
   initialRegister?: boolean;
@@ -33,16 +34,27 @@ export function LoginScreen({ initialRegister = false }: LoginScreenProps = {}) 
 
   const topInset = Math.max(insets.top, Platform.OS === 'web' ? 12 : 24);
 
+  const showAlert = (title: string, message: string, onOk?: () => void) => {
+    if (Platform.OS === 'web') {
+      if (typeof window !== 'undefined') {
+        window.alert(`${title}\n\n${message}`);
+      }
+      onOk?.();
+    } else {
+      Alert.alert(title, message, onOk ? [{ text: 'OK', onPress: onOk }] : undefined);
+    }
+  };
+
   const handleSubmit = async () => {
     if (!email || !password) {
-      Alert.alert('Thông báo', 'Vui lòng nhập đầy đủ email và mật khẩu!');
+      showAlert('Thông báo', 'Vui lòng nhập đầy đủ email và mật khẩu!');
       return;
     }
 
     setLoading(true);
     try {
       const apiBase = (
-        process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:8080/api/v1'
+        process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:8081/api/v1'
       ).replace(/\/+$/, '');
 
       const response = await fetch(`${apiBase}/auth/login`, {
@@ -52,20 +64,30 @@ export function LoginScreen({ initialRegister = false }: LoginScreenProps = {}) 
       });
 
       if (response.ok) {
-        Alert.alert(
-          'Thành công',
-          'Đăng nhập thành công! Chào mừng bạn trở lại VISTA.',
-          [{ text: 'Khám phá ngay', onPress: () => router.replace('/(tabs)/discover') }]
-        );
+        const data = await response.json();
+        await authStorage.setSession({
+          accessToken: data.accessToken,
+          refreshToken: data.refreshToken,
+          user: data.user,
+        });
+        if (Platform.OS === 'web') {
+          router.replace('/(tabs)/discover');
+        } else {
+          Alert.alert(
+            'Thành công',
+            'Đăng nhập thành công! Chào mừng bạn trở lại VISTA.',
+            [{ text: 'Khám phá ngay', onPress: () => router.replace('/(tabs)/discover') }]
+          );
+        }
       } else {
         const errorData = await response.json().catch(() => null);
-        Alert.alert(
+        showAlert(
           'Lỗi đăng nhập',
           errorData?.detail || 'Email hoặc mật khẩu chưa chính xác.'
         );
       }
     } catch {
-      Alert.alert(
+      showAlert(
         'Lỗi kết nối',
         'Không thể kết nối đến máy chủ VISTA. Vui lòng kiểm tra mạng và thử lại sau.'
       );
@@ -77,22 +99,18 @@ export function LoginScreen({ initialRegister = false }: LoginScreenProps = {}) 
   const handleGoogleLogin = async () => {
     const googleClientId = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID;
     if (!googleClientId) {
-      Alert.alert(
+      showAlert(
         'Đăng nhập Google',
-        'Tính năng Đăng nhập bằng Google trên thiết bị di động yêu cầu cấu hình OAuth Client ID trong biến môi trường EXPO_PUBLIC_GOOGLE_CLIENT_ID.'
+        'Tính năng Đăng nhập Google đang dùng cấu hình demo. Vui lòng đăng nhập bằng Email & Mật khẩu để trải nghiệm đầy đủ các tính năng.'
       );
       return;
     }
 
     setLoading(true);
     try {
-      const apiBase = (
-        process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:8080/api/v1'
-      ).replace(/\/+$/, '');
-
-      Alert.alert(
+      showAlert(
         'Thông báo',
-        'Vui lòng cấu hình Expo WebBrowser/AuthSession để hoàn tất phiên đăng nhập Google trên thiết bị di động.'
+        'Vui lòng cấu hình Expo WebBrowser/AuthSession để hoàn tất phiên đăng nhập Google.'
       );
     } finally {
       setLoading(false);
@@ -100,10 +118,9 @@ export function LoginScreen({ initialRegister = false }: LoginScreenProps = {}) 
   };
 
   const handleForgotPassword = () => {
-    Alert.alert(
+    showAlert(
       'Quên mật khẩu',
-      'Vui lòng nhập email đăng ký tài khoản của bạn để nhận liên kết đặt lại mật khẩu.',
-      [{ text: 'Đã hiểu' }]
+      'Vui lòng nhập email đăng ký tài khoản của bạn để nhận liên kết đặt lại mật khẩu.'
     );
   };
 

@@ -93,18 +93,23 @@ export function AuthCard({ isNight }: AuthCardProps) {
   const [statusMsg, setStatusMsg] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
 
   // International Country Dial Code State
-  const [selectedDialCode, setSelectedDialCode] = useState<CountryDialCode>(
-    COUNTRY_DIAL_CODES[0]
-  );
+  const [selectedDialCode, setSelectedDialCode] = useState<CountryDialCode>(() => {
+    return (
+      COUNTRY_DIAL_CODES.find((c) => c.dialCode === currentLangConfig.defaultDialCode) ||
+      COUNTRY_DIAL_CODES[0]
+    );
+  });
+  const [prevDefaultDialCode, setPrevDefaultDialCode] = useState(currentLangConfig.defaultDialCode);
   const [showDialDropdown, setShowDialDropdown] = useState(false);
 
   // Automatically sync dial code with language selection if user hasn't explicitly chosen another country
-  useEffect(() => {
+  if (prevDefaultDialCode !== currentLangConfig.defaultDialCode) {
+    setPrevDefaultDialCode(currentLangConfig.defaultDialCode);
     const matched = COUNTRY_DIAL_CODES.find((c) => c.dialCode === currentLangConfig.defaultDialCode);
     if (matched) {
       setSelectedDialCode(matched);
     }
-  }, [currentLangConfig]);
+  }
 
   // Close dial dropdown on outside click
   useEffect(() => {
@@ -202,6 +207,7 @@ export function AuthCard({ isNight }: AuthCardProps) {
               roles: data.roles || [],
             };
             localStorage.setItem('vista_user', JSON.stringify(safeProfile));
+            window.dispatchEvent(new Event('vista-auth-change'));
           }
           setTimeout(() => {
             navigateToDestination();
@@ -390,6 +396,7 @@ export function AuthCard({ isNight }: AuthCardProps) {
             roles: data.roles || [],
           };
           localStorage.setItem('vista_user', JSON.stringify(safeProfile));
+          window.dispatchEvent(new Event('vista-auth-change'));
         }
         setTimeout(() => {
           navigateToDestination();

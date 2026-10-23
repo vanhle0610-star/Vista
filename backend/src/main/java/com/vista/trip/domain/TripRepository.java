@@ -11,7 +11,14 @@ import org.springframework.stereotype.Repository;
 public interface TripRepository extends JpaRepository<TripEntity, UUID> {
 
   /** Lấy toàn bộ trip mà user là owner. */
+  List<TripEntity> findByOwnerId(UUID ownerId);
+
   List<TripEntity> findByOwnerIdOrderByCreatedAtDesc(UUID ownerId);
+
+  @Query(
+      "SELECT t FROM TripEntity t JOIN t.members m "
+          + "WHERE m.userId = :userId AND m.status = 'ACTIVE' ORDER BY t.startDate ASC")
+  List<TripEntity> findActiveTripsByUserId(@Param("userId") UUID userId);
 
   /**
    * Lấy toàn bộ trip mà user là thành viên hoặc là owner (dùng cho màn hình "Chuyến đi của tôi").

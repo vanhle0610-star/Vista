@@ -76,6 +76,29 @@ public class GlobalExceptionHandler {
     return problem;
   }
 
+  @ExceptionHandler(com.vista.trip.exception.InvalidTripDateException.class)
+  ProblemDetail invalidTripDate(
+      com.vista.trip.exception.InvalidTripDateException exception, HttpServletRequest request) {
+    var problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
+    problem.setType(URI.create("https://vista.example/errors/validation"));
+    problem.setTitle("Validation failed");
+    problem.setInstance(URI.create(request.getRequestURI()));
+    problem.setProperty("code", "VALIDATION_ERROR");
+    problem.setProperty("requestId", MDC.get("requestId"));
+    return problem;
+  }
+
+  @ExceptionHandler(IllegalArgumentException.class)
+  ProblemDetail illegalArgument(IllegalArgumentException exception, HttpServletRequest request) {
+    var problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
+    problem.setType(URI.create("https://vista.example/errors/validation"));
+    problem.setTitle("Validation failed");
+    problem.setInstance(URI.create(request.getRequestURI()));
+    problem.setProperty("code", "VALIDATION_ERROR");
+    problem.setProperty("requestId", MDC.get("requestId"));
+    return problem;
+  }
+
   @ExceptionHandler(EmailAlreadyExistsException.class)
   ProblemDetail emailAlreadyExists(
       EmailAlreadyExistsException exception, HttpServletRequest request) {

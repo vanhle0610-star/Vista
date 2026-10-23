@@ -3,11 +3,18 @@ package com.vista.destination.api;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.vista.common.security.CurrentUserProvider;
 import com.vista.common.security.SecurityConfiguration;
 import com.vista.destination.api.dto.DestinationDetailDto;
 import com.vista.destination.api.dto.DestinationPageDto;
@@ -23,6 +30,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -33,6 +41,7 @@ class DestinationControllerTest {
   @Autowired MockMvc mvc;
 
   @MockitoBean DestinationService destinationService;
+  @MockitoBean CurrentUserProvider currentUserProvider;
 
   @Test
   void listDestinationsReturnsPublishedDestinations() throws Exception {
@@ -104,6 +113,109 @@ class DestinationControllerTest {
         .thenThrow(new DestinationNotFoundException("Không tìm thấy"));
 
     mvc.perform(get("/api/v1/destinations/{id}", id))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.status").value(404))
+        .andExpect(jsonPath("$.code").value("DESTINATION_NOT_FOUND"));
+  }
+
+  @Test
+  @WithMockUser
+  void addFavoriteReturns204NoContent() throws Exception {
+    UUID destId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
+    when(currentUserProvider.getCurrentUserId()).thenReturn(userId);
+    doNothing().when(destinationService).addFavorite(destId, userId);
+
+    mvc.perform(put("/api/v1/destinations/{id}/favorite", destId).with(csrf()))
+        .andExpect(status().isNoContent());
+
+    mvc.perform(post("/api/v1/destinations/{id}/favorite", destId).with(csrf()))
+        .andExpect(status().isNoContent());
+  }
+
+  @Test
+  @WithMockUser
+  void removeFavoriteReturns204NoContent() throws Exception {
+    UUID destId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
+    when(currentUserProvider.getCurrentUserId()).thenReturn(userId);
+    doNothing().when(destinationService).removeFavorite(destId, userId);
+
+    mvc.perform(delete("/api/v1/destinations/{id}/favorite", destId).with(csrf()))
+        .andExpect(status().isNoContent());
+  }
+
+  @Test
+  @WithMockUser
+  void getFavoritesReturnsListOfUserFavorites() throws Exception {
+    UUID userId = UUID.randomUUID();
+    UUID destId = UUID.randomUUID();
+    when(currentUserProvider.getCurrentUserId()).thenReturn(userId);
+
+    var fav =
+        new DestinationSummaryDto(
+            destId,
+            "Phố cổ Hội An",
+            "Quảng Nam",
+            "Di sản & Văn hóa",
+            "destinations/quangnam/hoi-an.jpg",
+            BigDecimal.ZERO,
+            BigDecimal.ZERO,
+            15.8801,
+            108.3380,
+            "PUBLISHED");
+
+    when(destinationService.getFavorites(userId)).thenReturn(List.of(fav));
+
+    mvc.perform(get("/api/v1/destinations/favorites"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].name").value("Phố cổ Hội An"))
+        .andExpect(jsonPath("$[0].province").value("Quảng Nam"));
+  }
+
+  @Test
+  @WithMockUser
+  void recordViewAndGetHistoryWorkSuccessfully() throws Exception {
+    UUID destId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
+    when(currentUserProvider.getCurrentUserId()).thenReturn(userId);
+    doNothing().when(destinationService).recordView(destId, userId);
+
+    mvc.perform(post("/api/v1/destinations/{id}/history", destId).with(csrf()))
+        .andExpect(status().isNoContent());
+
+    var summary =
+        new DestinationSummaryDto(
+            destId,
+            "Hồ Gươm",
+            "Hà Nội",
+            "Di tích & Cảnh quan",
+            "destinations/hanoi/ho-guom.jpg",
+            BigDecimal.ZERO,
+            BigDecimal.ZERO,
+            21.0285,
+            105.8542,
+            "PUBLISHED");
+
+    when(destinationService.getRecentHistory(userId, 10)).thenReturn(List.of(summary));
+
+    mvc.perform(get("/api/v1/destinations/history").param("limit", "10"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].name").value("Hồ Gươm"))
+        .andExpect(jsonPath("$[0].province").value("Hà Nội"));
+  }
+
+  @Test
+  @WithMockUser
+  void addFavoriteReturns404WhenDestinationNotFound() throws Exception {
+    UUID destId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
+    when(currentUserProvider.getCurrentUserId()).thenReturn(userId);
+    doThrow(new DestinationNotFoundException("Không tìm thấy địa điểm: " + destId))
+        .when(destinationService)
+        .addFavorite(destId, userId);
+
+    mvc.perform(put("/api/v1/destinations/{id}/favorite", destId).with(csrf()))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.status").value(404))
         .andExpect(jsonPath("$.code").value("DESTINATION_NOT_FOUND"));

@@ -12,7 +12,7 @@
 | Tên file | Mục đích | Số lượng bản ghi | Trạng thái |
 |---|---|:---:|:---:|
 | `sample.schema.csv` | File mẫu mô tả tiêu đề cột (header) và 1 dòng dữ liệu giả định chuẩn | 1 mẫu | Đã chốt cấu trúc |
-| `demo_destinations_seed.csv` | Bộ dữ liệu mục tiêu 30 địa điểm có nguồn kiểm chứng của 3 địa phương | 30 địa điểm | Đã kiểm chứng (15/10/2026) |
+| `demo_destinations_seed.csv` | Bộ dữ liệu mục tiêu 90 địa điểm có nguồn kiểm chứng của 10 địa phương | 90 địa điểm | Đã kiểm chứng (W1-W3) |
 
 ---
 

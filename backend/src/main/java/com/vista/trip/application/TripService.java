@@ -124,6 +124,73 @@ public class TripService {
     tripMemberRepository.save(member);
   }
 
+  /** Rời khỏi trip (TV2 W4) — chỉ member tự rời, owner phải chuyển quyền trước. */
+  public void leaveTrip(UUID tripId, UUID userId) {
+    boolean isOwner = tripAccessService.isOwner(tripId, userId);
+    if (isOwner) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Chủ sở hữu không thể tự rời chuyến đi. Vui lòng chuyển quyền trước.");
+    }
+    tripAccessService.requireMember(tripId, userId);
+
+    TripMemberEntity member =
+        tripMemberRepository
+            .findByTripIdAndUserId(tripId, userId)
+            .orElseThrow(
+                () ->
+                    new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Không tìm thấy thành viên trong chuyến đi"));
+    member.setStatus(TripMemberStatus.REMOVED);
+    tripMemberRepository.save(member);
+  }
+
+  /** Chuyển quyền Owner (TV2 W4) — chỉ owner hiện tại mới được phép chuyển cho một active member. */
+  public TripResponse transferOwner(UUID tripId, UUID currentUserId, UUID newOwnerId) {
+    if (currentUserId.equals(newOwnerId)) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Bạn đã là chủ sở hữu hiện tại của chuyến đi");
+    }
+
+    tripAccessService.requireOwner(tripId, currentUserId);
+
+    TripEntity trip = findTripOrThrow(tripId);
+
+    TripMemberEntity newOwnerMember =
+        tripMemberRepository
+            .findByTripIdAndUserId(tripId, newOwnerId)
+            .orElseThrow(
+                () ->
+                    new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST, "Người nhận quyền phải là thành viên của chuyến đi"));
+
+    if (newOwnerMember.getStatus() != TripMemberStatus.ACTIVE) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Người nhận quyền phải là thành viên đang hoạt động");
+    }
+
+    TripMemberEntity oldOwnerMember =
+        tripMemberRepository
+            .findByTripIdAndUserId(tripId, currentUserId)
+            .orElseThrow(
+                () ->
+                    new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Không tìm thấy bản ghi thành viên của chủ sở hữu hiện tại"));
+
+    // 1. Demote old owner to VIEWER (hoặc EDITOR)
+    oldOwnerMember.setRole(TripMemberRole.VIEWER);
+    tripMemberRepository.save(oldOwnerMember);
+
+    // 2. Promote new owner to OWNER
+    newOwnerMember.setRole(TripMemberRole.OWNER);
+    tripMemberRepository.save(newOwnerMember);
+
+    // 3. Update trip ownerId
+    trip.setOwnerId(newOwnerId);
+    TripEntity savedTrip = tripRepository.save(trip);
+
+    return TripResponse.from(savedTrip);
+  }
+
   // ── Private helpers ────────────────────────────────────────────────────────
 
   private TripEntity findTripOrThrow(UUID tripId) {

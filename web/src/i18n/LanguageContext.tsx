@@ -1,6 +1,14 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useSyncExternalStore,
+  ReactNode,
+  useMemo,
+  useState,
+  useCallback,
+} from 'react';
 import {
   SUPPORTED_LANGUAGES,
   TRANSLATIONS,
@@ -20,36 +28,60 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 const STORAGE_KEY = 'vista_lang';
 
-export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [currentLanguage, setCurrentLanguageState] = useState<string>('vi');
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved && TRANSLATIONS[saved]) {
-        setCurrentLanguageState(saved);
-      } else {
-        // Detect browser language if available
-        const navLang = navigator.language.slice(0, 2).toLowerCase();
-        if (TRANSLATIONS[navLang]) {
-          setCurrentLanguageState(navLang);
-        }
-      }
-    } catch {
-      // LocalStorage might fail in restricted iframe / SSR
+function getStoredLanguage(): string {
+  if (typeof window === 'undefined') return 'vi';
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved && TRANSLATIONS[saved]) {
+      return saved;
     }
-  }, []);
+    const navLang = navigator.language.slice(0, 2).toLowerCase();
+    if (TRANSLATIONS[navLang]) {
+      return navLang;
+    }
+  } catch {
+    // LocalStorage might fail in restricted iframe / SSR
+  }
+  return 'vi';
+}
 
-  const setLanguage = (lang: string) => {
+function subscribe(callback: () => void) {
+  window.addEventListener('storage', callback);
+  window.addEventListener('vista-lang-change', callback);
+  return () => {
+    window.removeEventListener('storage', callback);
+    window.removeEventListener('vista-lang-change', callback);
+  };
+}
+
+function getServerSnapshot(): string {
+  return 'vi';
+}
+
+export function LanguageProvider({ children }: { children: ReactNode }) {
+  // Component-scoped fallback state for restricted environments where localStorage is blocked
+  const [memoryLang, setMemoryLang] = useState<string | null>(null);
+
+  const storedLanguage = useSyncExternalStore(
+    subscribe,
+    getStoredLanguage,
+    getServerSnapshot
+  );
+
+  const currentLanguage = memoryLang || storedLanguage;
+
+  const setLanguage = useCallback((lang: string) => {
     if (TRANSLATIONS[lang]) {
-      setCurrentLanguageState(lang);
       try {
         localStorage.setItem(STORAGE_KEY, lang);
+        setMemoryLang(null);
+        window.dispatchEvent(new Event('vista-lang-change'));
       } catch {
-        // Ignore storage error
+        // Fallback to component-scoped state if localStorage is blocked
+        setMemoryLang(lang);
       }
     }
-  };
+  }, []);
 
   const t = useMemo(() => {
     return TRANSLATIONS[currentLanguage] || TRANSLATIONS['vi'];

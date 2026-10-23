@@ -22,3 +22,22 @@ Tài liệu hướng dẫn quy chuẩn lập trình chi tiết và bộ quy tắ
    - Điền đầy đủ PR Template và gán Reviewer theo `CODEOWNERS`.
 5. **Thứ Năm chiều:** Code Freeze (ngừng nhận việc mới, chỉ sửa lỗi).
 6. **Thứ Sáu:** Sáng tích hợp vào `develop`, chiều Demo chung + Chấm cổng kiểm soát tuần.
+
+---
+
+## HƯỚNG DẪN CẤU HÌNH GITHUB BRANCH PROTECTION (QUẢN TRỊ VIÊN)
+
+Cấu hình Branch Protection không thể thực hiện qua lệnh Git local mà bắt buộc phải thiết lập trên giao diện Web GitHub của Repository:
+
+1. Truy cập Repository trên GitHub: `Settings` > `Branches` > `Add classic branch protection rule` (hoặc `Rules` > `Rulesets`).
+2. Nhập `Branch name pattern`: `main` và `dev` (hoặc `develop`).
+3. Tích chọn các điều kiện bắt buộc:
+   - **Require a pull request before merging:** Yêu cầu ít nhất 1 approval từ CODEOWNERS.
+   - **Require review from Code Owners:** Bắt buộc reviewer phụ trách module phê duyệt trước khi merge.
+   - **Require status checks to pass before merging:**
+     - Chọn `Backend CI / build` (kiểm tra Gradle build & test).
+     - Chọn `Mobile CI / check` (kiểm tra TypeScript, ESLint, Jest).
+     - Chọn `Admin CI / build` (kiểm tra Next.js build).
+     - Chọn `Contract CI / lint` (kiểm tra OpenAPI contract).
+   - **Require branches to be up to date before merging:** Đảm bảo code được rebase/merge mới nhất từ nhánh đích.
+   - **Do not allow bypassing the above settings:** Áp dụng cho cả Administrators.
