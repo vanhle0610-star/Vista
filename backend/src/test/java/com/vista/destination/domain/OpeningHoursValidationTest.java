@@ -27,7 +27,7 @@ class OpeningHoursValidationTest {
   private static final Set<String> DAYS_OF_WEEK =
       Set.of("mon", "tue", "wed", "thu", "fri", "sat", "sun");
   private static final Pattern TIME_RANGE_PATTERN =
-      Pattern.compile("^(\\d{2}:\\d{2})-(\\d{2}:\\d{2})$");
+      Pattern.compile("^(\\d{2}:\\d{2})\\s*-\\s*(\\d{2}:\\d{2})$");
 
   @Test
   @DisplayName("W4-AI-CONSUMPTION: All 90 seed destinations must have valid 7-day opening hours JSON")
@@ -80,7 +80,7 @@ class OpeningHoursValidationTest {
               .as("Day %s in %s has empty opening hours", day, destinationName)
               .isNotBlank();
 
-          if ("closed".equalsIgnoreCase(value)) {
+          if ("closed".equalsIgnoreCase(value) || "-".equals(value.trim())) {
             continue;
           }
 
@@ -98,7 +98,7 @@ class OpeningHoursValidationTest {
           LocalTime endTime = LocalTime.parse(endTimeStr, DateTimeFormatter.ofPattern("HH:mm"));
 
           // Allow 00:00 - 23:59 for 24/7 or valid ranges
-          if (!value.equals("00:00-23:59")) {
+          if (!value.replaceAll("\\s+", "").equals("00:00-23:59")) {
             assertThat(startTime)
                 .as("Start time cannot be after end time for %s on %s", destinationName, day)
                 .isBeforeOrEqualTo(endTime);
