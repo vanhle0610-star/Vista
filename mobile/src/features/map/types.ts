@@ -10,9 +10,20 @@ export interface MapMarker extends MapCoordinate {
   title?: string;
   description?: string;
 }
+export interface MapDestination extends MapMarker {
+  name: string;
+  province?: string;
+  category?: string;
+  thumbnailUrl?: string;
+}
 export interface MapViewAdapterProps {
-  center: MapCoordinate;
+  center?: MapCoordinate;
+  destinations?: MapDestination[];
+  onSelectDestination?: (destination: MapMarker | null) => void;
+  routeGeometry?: MapCoordinate[];
+  onStatusChange?: (status: 'loading' | 'ready' | 'error') => void;
   zoom?: number;
+  /** Compatibility alias for existing consumers; prefer destinations. */
   markers?: MapMarker[];
   routePoints?: MapCoordinate[];
   userLocation?: MapCoordinate | null;

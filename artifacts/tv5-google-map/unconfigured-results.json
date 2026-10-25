@@ -1,0 +1,13 @@
+{
+  "mode": "unconfigured",
+  "googleLiveVerified": false,
+  "checks": [
+    "Missing config shows state; no Google script requested",
+    "Public TV1 API loaded with pagination",
+    "Directions opens inside VISTA",
+    "390/768/1440 no horizontal overflow",
+    "Destination API failure and retry (response mock)",
+    "Empty destination API (response mock)"
+  ],
+  "errors": []
+}

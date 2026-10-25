@@ -288,6 +288,33 @@
   background: #f1f5f9;
 }
 
+@media (max-width: 640px) {
+  .navbarContainer {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .navActions {
+    gap: 8px;
+  }
+
+  /* These actions remain available in the existing mobile menu. */
+  .navActions > .btnLogin,
+  .navActions > .btnCreateTrip {
+    display: none;
+  }
+}
+
+@media (max-width: 420px) {
+  .brandSub {
+    display: none;
+  }
+
+  .brandLogo {
+    gap: 8px;
+  }
+}
+
 /* ─── MOBILE DRAWER OVERLAY ─────────────────────────────────────────── */
 .mobileDrawerOverlay {
   display: none;

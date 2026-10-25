@@ -1,2 +1,2 @@
-import { MapLocationHarness } from '@/features/map/MapLocationHarness';
-export default MapLocationHarness;
+import { Redirect } from 'expo-router';
+export default function LegacyMapRoute() { return <Redirect href="/(tabs)/map" />; }

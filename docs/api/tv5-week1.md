@@ -1,16 +1,17 @@
 # TV5 — hợp đồng API đề xuất tuần 1
 
-Trạng thái: **DRAFT, chưa triển khai endpoint**. Nguồn máy đọc là
-`contracts/openapi/tv5-week1.yaml`, được tham chiếu từ `contracts/openapi/openapi.yaml`.
-Repository chưa có `docs/api`; tài liệu này bổ sung phần giải thích, không thay thế OpenAPI.
+Trạng thái cập nhật 25/10/2026: phần cộng đồng đã được triển khai theo
+`contracts/openapi/tv5-week3.json`, định tuyến theo `tv5-routing.json`.
+Các endpoint check-in, chia sẻ vị trí và meetup trong `tv5-week1.yaml` vẫn là **thiết kế, chưa triển khai**.
+Map dùng API địa điểm công khai của TV1, không tạo nguồn dữ liệu điểm đến riêng.
 Base URL `/api/v1`; UUID, JSON camelCase, timestamp RFC 3339 có múi giờ; lưu DB timestamptz.
 
 | API dự kiến | Quyền và dữ liệu |
 |---|---|
 | GET `/map/destinations` | Guest; bounding box bắt buộc, chỉ PUBLISHED có tọa độ; kiểm tra min ≤ max, chưa hỗ trợ bbox qua kinh tuyến 180 |
 | GET `/posts`, `/posts/{postId}` | Guest; chỉ VISIBLE, deleted_at IS NULL |
-| POST `/posts` | Đăng nhập; body, destinationId tùy chọn, metadata media; tác giả lấy từ principal, mặc định PENDING theo baseline |
-| PATCH, DELETE `/posts/{postId}` | Chính tác giả; If-Match chứa version, so sánh và tăng version trong transaction; DELETE đặt deleted_at |
+| POST `/posts` | Đăng nhập; body, clientRequestId bắt buộc; destinationId/uploadIds tùy chọn; tác giả từ JWT. Bảng tin cơ bản tuần 3 tạo VISIBLE; baseline PENDING không bị sửa |
+| PATCH, DELETE `/posts/{postId}` | Chính tác giả; PATCH gửi body và version trong JSON, so sánh và tăng version trong transaction; DELETE đặt deleted_at |
 | GET, POST `/posts/{postId}/comments` | GET công khai trên bài đang hiển thị; POST cần đăng nhập; bình luận VISIBLE, chưa xóa |
 | PATCH, DELETE `/posts/{postId}/comments/{commentId}` | Chính tác giả; xác minh comment thuộc post; DELETE đặt deleted_at; không sửa/xóa qua bài bị ẩn/xóa |
 | GET, POST `/trips/{tripId}/check-ins` | OWNER hoặc MEMBER hợp lệ; tọa độ bắt buộc; thời điểm do server cấp; itineraryItemId tùy chọn |
@@ -21,13 +22,13 @@ Base URL `/api/v1`; UUID, JSON camelCase, timestamp RFC 3339 có múi giờ; lư
 | PATCH `/trips/{tripId}/location-shares/me` | Thành viên; cập nhật tọa độ mới nhất, sessionStartedAt phải khớp; không kéo dài expiresAt |
 | DELETE `/trips/{tripId}/location-shares/me` | Thành viên; dừng idempotent, xóa tọa độ và timestamp vị trí trong cùng transaction |
 
-Danh sách dùng `page` từ 0, `size` 1–100, mặc định 20; trả `{items,page,size,total}`.
-Feed/check-in sắp xếp thời gian giảm dần rồi id; bình luận tăng dần rồi id;
+Danh sách cộng đồng dùng `page` từ 0, `size` 1–50, mặc định 20; trả `{items,page,size,total}`.
+Feed và bình luận sắp xếp createdAt giảm dần rồi id giảm dần. Thiết kế tương lai cho
 map theo id, điểm hẹn theo targetTime NULLS LAST rồi id, chia sẻ theo userId.
 Danh sách vị trí chỉ phân trang dữ liệu đã lọc hết hạn/quyền, kể cả khi tính total.
-POST trả 201 (bài mới PENDING chưa đồng nghĩa công khai), đọc/sửa trả 200, DELETE trả 204.
+POST bài/ảnh trả 201; bình luận trả 200; đọc/sửa trả 200, DELETE trả 204.
 Body/label phải có ký tự sau trim; schema minLength không thay thế kiểm tra whitespace.
-PATCH bài là thay thế body bắt buộc, destination/media bỏ qua thì giữ nguyên; mảng media rỗng xóa liên kết.
+PATCH bài hiện chỉ sửa body với version bắt buộc; liên kết địa điểm và ảnh được giữ nguyên.
 Không cho tác giả đổi status/deletedAt/version trực tiếp. PATCH meetup cần label và tọa độ đầy đủ;
 description/targetTime bỏ qua giữ nguyên, null để xóa. Mọi resource con phải thuộc trip/post trên URL.
 

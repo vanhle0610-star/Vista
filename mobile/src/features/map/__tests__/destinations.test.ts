@@ -36,12 +36,22 @@ describe('Map destination integration', () => {
     expect((await loadMapDestinations()).markers).toHaveLength(2);
     expect(api.get).toHaveBeenLastCalledWith(
       '/destinations',
-      expect.objectContaining({ params: { page: 1, size: 100 } }),
+      expect.objectContaining({ params: { page: 1, size: 20 } }),
     );
   });
   it('does not silently replace network failure with fixtures', async () => {
     jest.mocked(api.get).mockRejectedValue(new Error('offline'));
     await expect(loadMapDestinations()).rejects.toThrow('offline');
+  });
+  it('keeps completed pages available when a later page fails', async () => {
+    const progress = jest.fn();
+    jest.mocked(api.get)
+      .mockResolvedValueOnce({ data: { items: [a], total: 2 } })
+      .mockRejectedValueOnce(new Error('offline on next page'));
+    await expect(loadMapDestinations(undefined, progress)).rejects.toThrow('offline');
+    expect(progress).toHaveBeenCalledWith(expect.objectContaining({
+      markers: [expect.objectContaining({ id: 'a' })],
+    }));
   });
   it('rejects stuck pagination rather than reporting partial data as complete', async () => {
     jest.mocked(api.get).mockResolvedValue({ data: { items: [a], total: 2 } });

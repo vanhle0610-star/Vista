@@ -1,0 +1,5 @@
+.content { max-width: 900px; margin: 32px auto; padding: 28px; color: #142c46; background: #f3fbff; border-radius: 20px; }
+.content h1 { font-size: clamp(28px, 5vw, 46px); margin: 12px 0; }
+.description { white-space: pre-wrap; line-height: 1.8; }
+.actions { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 28px; }
+.actions a, .content button { border: 0; border-radius: 12px; background: #087fbe; color: white; padding: 14px 20px; cursor: pointer; }

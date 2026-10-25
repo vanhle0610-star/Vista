@@ -46,3 +46,18 @@ it('shows map failure with an explicit retry action', async () => {
   await fireEvent(screen.getByTestId('sdk-map'), 'onDidFinishLoadingMap');
   expect(screen.getByText('Chưa có địa điểm có tọa độ hợp lệ.')).toBeTruthy();
 });
+it('does not reset the camera when only the user location changes', async () => {
+  const view = await render(<NativeMap center={marker} markers={[marker]} />);
+  const previousCenter = screen.getByTestId('sdk-camera').props.center;
+  await view.rerender(
+    <NativeMap
+      center={{ ...marker }}
+      markers={[marker]}
+      userLocation={{ latitude: 16.07, longitude: 108.24 }}
+    />,
+  );
+  expect(screen.getByTestId('sdk-camera').props.center).toBe(previousCenter);
+  expect(screen.getByTestId('marker-vista-current-user').props.lngLat).toEqual([
+    108.24, 16.07,
+  ]);
+});

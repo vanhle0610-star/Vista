@@ -86,6 +86,10 @@ export class LocationController {
     this.wanted = true;
     await this.locate(true);
   };
+  resumeOptIn = () => {
+    this.wanted = true;
+    if (this.active) void this.locate(false);
+  };
   private async locate(ask: boolean) {
     if (!this.active) return;
     this.cancel();

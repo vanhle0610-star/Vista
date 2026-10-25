@@ -1,6 +1,7 @@
 'use client';
 
 import type { DestinationMarker } from '../types';
+import Link from 'next/link';
 import { DestinationThumbnail } from './DestinationThumbnail';
 import { MapIcon } from './MapIcon';
 import styles from './DestinationCard.module.css';
@@ -8,13 +9,12 @@ import styles from './DestinationCard.module.css';
 export function DestinationCard({
   destination,
   onClose,
-  onView3D,
+  onDirections,
 }: {
   destination: DestinationMarker;
   onClose?: () => void;
-  onView3D?: () => void;
+  onDirections?: () => void;
 }) {
-  const directions = `https://www.google.com/maps/dir/?api=1&destination=${destination.latitude},${destination.longitude}`;
   return (
     <article
       className={styles.card}
@@ -32,14 +32,8 @@ export function DestinationCard({
           {destination.province} · {destination.category}
         </p>
         <div className={styles.actions}>
-          {destination.id === 'dest-01' && onView3D && (
-            <button onClick={onView3D}>
-              Xem Cầu Rồng <MapIcon name="cube" size={13} />
-            </button>
-          )}
-          <a href={directions} target="_blank" rel="noopener noreferrer">
-            Chỉ đường <MapIcon name="arrow" size={13} />
-          </a>
+          <Link href={`/destination/${destination.id}`}>Xem chi tiết</Link>
+          {onDirections && <button onClick={onDirections}>Chỉ đường <MapIcon name="arrow" size={13} /></button>}
         </div>
       </div>
       {onClose && (

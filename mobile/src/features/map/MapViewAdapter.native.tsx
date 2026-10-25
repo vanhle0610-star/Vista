@@ -16,8 +16,7 @@ class NativeMapBoundary extends Component<
   render() {
     return this.state.failed ? (
       <AppText>
-        Không khởi tạo được SDK bản đồ. Hãy cài lại development build có
-        MapLibre.
+        Không mở được bản đồ. Hãy kiểm tra kết nối hoặc cài lại bản VISTA hỗ trợ bản đồ.
       </AppText>
     ) : (
       this.props.children
@@ -29,8 +28,7 @@ export function MapViewAdapter(props: MapViewAdapterProps) {
     return (
       <View style={props.style}>
         <AppText>
-          Bản đồ MapLibre cần development build VISTA, không có trong Expo Go.
-          Hãy dùng bản Android/iOS theo hướng dẫn bàn giao.
+          Bản ứng dụng hiện tại chưa hỗ trợ bản đồ. Hãy dùng bản VISTA Android/iOS theo hướng dẫn bàn giao.
         </AppText>
       </View>
     );
@@ -39,7 +37,7 @@ export function MapViewAdapter(props: MapViewAdapterProps) {
     <NativeMapBoundary>
       <Suspense
         fallback={
-          <ActivityIndicator accessibilityLabel="Đang nạp SDK bản đồ" />
+          <ActivityIndicator accessibilityLabel="Đang mở bản đồ" />
         }
       >
         <NativeMap {...props} />

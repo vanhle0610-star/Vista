@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import type { DestinationMarker } from '../types';
 import { DestinationThumbnail } from './DestinationThumbnail';
 import { MapIcon } from './MapIcon';
@@ -46,6 +47,7 @@ interface Props {
   onSearch: (s: string) => void;
   onCategory: (s: string) => void;
   onFeatured: (s: boolean) => void;
+  showFeatured?: boolean;
 }
 export function DestinationList({
   destinations,
@@ -58,19 +60,29 @@ export function DestinationList({
   onSearch,
   onCategory,
   onFeatured,
+  showFeatured = true,
 }: Props) {
+  const listRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!selectedId) return;
+    const list = listRef.current;
+    const card = list?.querySelector(`[data-destination-id="${CSS.escape(selectedId)}"]`);
+    if (!list || !card) return;
+    const offset = card.getBoundingClientRect().top - list.getBoundingClientRect().top;
+    list.scrollTo({ top: list.scrollTop + offset, behavior: 'smooth' });
+  }, [selectedId]);
   const categories = [...new Set(destinations.map((d) => d.category))];
   return (
     <div className={styles.root}>
       <div className={styles.tabs} role="group" aria-label="Nhóm điểm đến">
-        <button
+        {showFeatured && <button
           aria-pressed={featured}
           className={featured ? styles.activeTab : ''}
           onClick={() => onFeatured(true)}
         >
           <MapIcon name="pin" size={19} />
           Nổi bật
-        </button>
+        </button>}
         <button
           aria-pressed={!featured}
           className={!featured ? styles.activeTab : ''}
@@ -112,11 +124,12 @@ export function DestinationList({
       <div className={styles.results} aria-live="polite">
         {filtered.length} điểm đến{search && ' phù hợp'}
       </div>
-      <div className={styles.list}>
+      <div className={styles.list} ref={listRef}>
         {filtered.length ? (
           filtered.map((d) => (
             <button
               key={d.id}
+              data-destination-id={d.id}
               className={`${styles.card} ${d.id === selectedId ? styles.selected : ''}`}
               onClick={() => onSelect(d)}
               aria-pressed={d.id === selectedId}
