@@ -2481,8 +2481,6 @@ export default function PlannerPage() {
                         longitude: currentDayPlan.activities[0]?.longitude || activeDestObj.lng,
                         zoom: 12.5,
                       }}
-                      mode="2d"
-                      showBridge3D={activeDestObj.province === 'Đà Nẵng'}
                       showSelectedCard={false}
                     />
                   </div>
