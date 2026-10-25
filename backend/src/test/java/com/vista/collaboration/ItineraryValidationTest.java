@@ -28,8 +28,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
- * W4-TV3-04: Test validate lịch trình sơ bộ.
- * Kiểm tra: ngày ngoài khoảng trip, trùng giờ trong 1 ngày, giờ không hợp lệ.
+ * W4-TV3-04: Test validate lịch trình sơ bộ. Kiểm tra: ngày ngoài khoảng trip, trùng giờ trong 1
+ * ngày, giờ không hợp lệ.
  */
 @ExtendWith(MockitoExtension.class)
 class ItineraryValidationTest {
@@ -49,8 +49,9 @@ class ItineraryValidationTest {
 
   @BeforeEach
   void setUp() {
-    trip = new TripEntity(UUID.randomUUID(), "Test Trip",
-        LocalDate.of(2026, 11, 10), LocalDate.of(2026, 11, 12));
+    trip =
+        new TripEntity(
+            UUID.randomUUID(), "Test Trip", LocalDate.of(2026, 11, 10), LocalDate.of(2026, 11, 12));
     ReflectionTestUtils.setField(trip, "id", TRIP_ID);
     ReflectionTestUtils.setField(trip, "createdAt", Instant.now());
     ReflectionTestUtils.setField(trip, "updatedAt", Instant.now());
@@ -65,8 +66,8 @@ class ItineraryValidationTest {
   }
 
   /** Helper tạo ItineraryItem mock với giờ. */
-  private ItineraryItem makeItem(UUID itemId, ItineraryDay day, String name,
-      LocalTime start, LocalTime end) {
+  private ItineraryItem makeItem(
+      UUID itemId, ItineraryDay day, String name, LocalTime start, LocalTime end) {
     ItineraryItem item = new ItineraryItem(day, null, name, start, end, 0, null, USER_ID);
     ReflectionTestUtils.setField(item, "id", itemId);
     ReflectionTestUtils.setField(item, "updatedAt", Instant.now());
@@ -80,16 +81,17 @@ class ItineraryValidationTest {
   void validate_noIssues_returnsEmptyWarnings() {
     UUID dayId = UUID.randomUUID();
     ItineraryDay day = makeDay(dayId, 1, LocalDate.of(2026, 11, 10));
-    ItineraryItem item1 = makeItem(UUID.randomUUID(), day, "Bãi Mỹ Khê",
-        LocalTime.of(8, 0), LocalTime.of(10, 0));
-    ItineraryItem item2 = makeItem(UUID.randomUUID(), day, "Ngũ Hành Sơn",
-        LocalTime.of(14, 0), LocalTime.of(16, 0));
+    ItineraryItem item1 =
+        makeItem(UUID.randomUUID(), day, "Bãi Mỹ Khê", LocalTime.of(8, 0), LocalTime.of(10, 0));
+    ItineraryItem item2 =
+        makeItem(UUID.randomUUID(), day, "Ngũ Hành Sơn", LocalTime.of(14, 0), LocalTime.of(16, 0));
 
     when(tripRepository.findById(TRIP_ID)).thenReturn(Optional.of(trip));
     when(dayRepository.findByTripIdOrderByDayNumberAsc(TRIP_ID)).thenReturn(List.of(day));
     when(itemRepository.findByDayIdOrderBySortOrderAsc(dayId)).thenReturn(List.of(item1, item2));
 
-    List<ItineraryValidationWarning> warnings = itineraryService.validateItinerary(TRIP_ID, USER_ID);
+    List<ItineraryValidationWarning> warnings =
+        itineraryService.validateItinerary(TRIP_ID, USER_ID);
     assertThat(warnings).isEmpty();
   }
 
@@ -106,7 +108,8 @@ class ItineraryValidationTest {
     when(dayRepository.findByTripIdOrderByDayNumberAsc(TRIP_ID)).thenReturn(List.of(day));
     when(itemRepository.findByDayIdOrderBySortOrderAsc(dayId)).thenReturn(List.of());
 
-    List<ItineraryValidationWarning> warnings = itineraryService.validateItinerary(TRIP_ID, USER_ID);
+    List<ItineraryValidationWarning> warnings =
+        itineraryService.validateItinerary(TRIP_ID, USER_ID);
 
     assertThat(warnings).hasSize(1);
     assertThat(warnings.get(0).code()).isEqualTo("OUT_OF_TRIP_DATE");
@@ -125,7 +128,8 @@ class ItineraryValidationTest {
     when(dayRepository.findByTripIdOrderByDayNumberAsc(TRIP_ID)).thenReturn(List.of(day));
     when(itemRepository.findByDayIdOrderBySortOrderAsc(dayId)).thenReturn(List.of());
 
-    List<ItineraryValidationWarning> warnings = itineraryService.validateItinerary(TRIP_ID, USER_ID);
+    List<ItineraryValidationWarning> warnings =
+        itineraryService.validateItinerary(TRIP_ID, USER_ID);
 
     assertThat(warnings).hasSize(1);
     assertThat(warnings.get(0).code()).isEqualTo("OUT_OF_TRIP_DATE");
@@ -139,16 +143,17 @@ class ItineraryValidationTest {
     UUID dayId = UUID.randomUUID();
     ItineraryDay day = makeDay(dayId, 1, LocalDate.of(2026, 11, 10));
     // item1: 08:00–11:00, item2: 10:00–12:00 → chồng 10:00–11:00
-    ItineraryItem item1 = makeItem(UUID.randomUUID(), day, "Điểm A",
-        LocalTime.of(8, 0), LocalTime.of(11, 0));
-    ItineraryItem item2 = makeItem(UUID.randomUUID(), day, "Điểm B",
-        LocalTime.of(10, 0), LocalTime.of(12, 0));
+    ItineraryItem item1 =
+        makeItem(UUID.randomUUID(), day, "Điểm A", LocalTime.of(8, 0), LocalTime.of(11, 0));
+    ItineraryItem item2 =
+        makeItem(UUID.randomUUID(), day, "Điểm B", LocalTime.of(10, 0), LocalTime.of(12, 0));
 
     when(tripRepository.findById(TRIP_ID)).thenReturn(Optional.of(trip));
     when(dayRepository.findByTripIdOrderByDayNumberAsc(TRIP_ID)).thenReturn(List.of(day));
     when(itemRepository.findByDayIdOrderBySortOrderAsc(dayId)).thenReturn(List.of(item1, item2));
 
-    List<ItineraryValidationWarning> warnings = itineraryService.validateItinerary(TRIP_ID, USER_ID);
+    List<ItineraryValidationWarning> warnings =
+        itineraryService.validateItinerary(TRIP_ID, USER_ID);
 
     assertThat(warnings).hasSize(1);
     assertThat(warnings.get(0).code()).isEqualTo("TIME_OVERLAP");
@@ -163,16 +168,17 @@ class ItineraryValidationTest {
     UUID dayId = UUID.randomUUID();
     ItineraryDay day = makeDay(dayId, 1, LocalDate.of(2026, 11, 10));
     // item1: 08:00–10:00, item2: 10:00–12:00 → kề nhau, không chồng
-    ItineraryItem item1 = makeItem(UUID.randomUUID(), day, "Điểm A",
-        LocalTime.of(8, 0), LocalTime.of(10, 0));
-    ItineraryItem item2 = makeItem(UUID.randomUUID(), day, "Điểm B",
-        LocalTime.of(10, 0), LocalTime.of(12, 0));
+    ItineraryItem item1 =
+        makeItem(UUID.randomUUID(), day, "Điểm A", LocalTime.of(8, 0), LocalTime.of(10, 0));
+    ItineraryItem item2 =
+        makeItem(UUID.randomUUID(), day, "Điểm B", LocalTime.of(10, 0), LocalTime.of(12, 0));
 
     when(tripRepository.findById(TRIP_ID)).thenReturn(Optional.of(trip));
     when(dayRepository.findByTripIdOrderByDayNumberAsc(TRIP_ID)).thenReturn(List.of(day));
     when(itemRepository.findByDayIdOrderBySortOrderAsc(dayId)).thenReturn(List.of(item1, item2));
 
-    List<ItineraryValidationWarning> warnings = itineraryService.validateItinerary(TRIP_ID, USER_ID);
+    List<ItineraryValidationWarning> warnings =
+        itineraryService.validateItinerary(TRIP_ID, USER_ID);
     assertThat(warnings).isEmpty();
   }
 
@@ -185,14 +191,14 @@ class ItineraryValidationTest {
     UUID itemId = UUID.randomUUID();
     ItineraryDay day = makeDay(dayId, 1, LocalDate.of(2026, 11, 10));
     // startTime 14:00, endTime 08:00 — ngược chiều
-    ItineraryItem item = makeItem(itemId, day, "Điểm lạ",
-        LocalTime.of(14, 0), LocalTime.of(8, 0));
+    ItineraryItem item = makeItem(itemId, day, "Điểm lạ", LocalTime.of(14, 0), LocalTime.of(8, 0));
 
     when(tripRepository.findById(TRIP_ID)).thenReturn(Optional.of(trip));
     when(dayRepository.findByTripIdOrderByDayNumberAsc(TRIP_ID)).thenReturn(List.of(day));
     when(itemRepository.findByDayIdOrderBySortOrderAsc(dayId)).thenReturn(List.of(item));
 
-    List<ItineraryValidationWarning> warnings = itineraryService.validateItinerary(TRIP_ID, USER_ID);
+    List<ItineraryValidationWarning> warnings =
+        itineraryService.validateItinerary(TRIP_ID, USER_ID);
 
     assertThat(warnings).hasSize(1);
     assertThat(warnings.get(0).code()).isEqualTo("INVALID_TIME_RANGE");
@@ -204,14 +210,15 @@ class ItineraryValidationTest {
   void validate_endEqualsStart_returnsInvalidRange() {
     UUID dayId = UUID.randomUUID();
     ItineraryDay day = makeDay(dayId, 1, LocalDate.of(2026, 11, 10));
-    ItineraryItem item = makeItem(UUID.randomUUID(), day, "Điểm X",
-        LocalTime.of(9, 0), LocalTime.of(9, 0));
+    ItineraryItem item =
+        makeItem(UUID.randomUUID(), day, "Điểm X", LocalTime.of(9, 0), LocalTime.of(9, 0));
 
     when(tripRepository.findById(TRIP_ID)).thenReturn(Optional.of(trip));
     when(dayRepository.findByTripIdOrderByDayNumberAsc(TRIP_ID)).thenReturn(List.of(day));
     when(itemRepository.findByDayIdOrderBySortOrderAsc(dayId)).thenReturn(List.of(item));
 
-    List<ItineraryValidationWarning> warnings = itineraryService.validateItinerary(TRIP_ID, USER_ID);
+    List<ItineraryValidationWarning> warnings =
+        itineraryService.validateItinerary(TRIP_ID, USER_ID);
 
     assertThat(warnings).anyMatch(w -> "INVALID_TIME_RANGE".equals(w.code()));
   }
@@ -225,16 +232,17 @@ class ItineraryValidationTest {
     UUID dayId = UUID.randomUUID();
     ItineraryDay day = makeDay(dayId, 0, LocalDate.of(2026, 11, 9));
     // 2 điểm dừng chồng giờ
-    ItineraryItem item1 = makeItem(UUID.randomUUID(), day, "Điểm sớm",
-        LocalTime.of(8, 0), LocalTime.of(12, 0));
-    ItineraryItem item2 = makeItem(UUID.randomUUID(), day, "Điểm giữa",
-        LocalTime.of(10, 0), LocalTime.of(14, 0));
+    ItineraryItem item1 =
+        makeItem(UUID.randomUUID(), day, "Điểm sớm", LocalTime.of(8, 0), LocalTime.of(12, 0));
+    ItineraryItem item2 =
+        makeItem(UUID.randomUUID(), day, "Điểm giữa", LocalTime.of(10, 0), LocalTime.of(14, 0));
 
     when(tripRepository.findById(TRIP_ID)).thenReturn(Optional.of(trip));
     when(dayRepository.findByTripIdOrderByDayNumberAsc(TRIP_ID)).thenReturn(List.of(day));
     when(itemRepository.findByDayIdOrderBySortOrderAsc(dayId)).thenReturn(List.of(item1, item2));
 
-    List<ItineraryValidationWarning> warnings = itineraryService.validateItinerary(TRIP_ID, USER_ID);
+    List<ItineraryValidationWarning> warnings =
+        itineraryService.validateItinerary(TRIP_ID, USER_ID);
 
     assertThat(warnings.stream().map(ItineraryValidationWarning::code).toList())
         .containsExactlyInAnyOrder("OUT_OF_TRIP_DATE", "TIME_OVERLAP");

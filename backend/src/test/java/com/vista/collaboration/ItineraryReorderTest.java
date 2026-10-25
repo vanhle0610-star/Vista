@@ -98,7 +98,8 @@ class ItineraryReorderTest {
     ItineraryDay otherDay = new ItineraryDay(TRIP_ID, 2, LocalDate.now().plusDays(1));
     ReflectionTestUtils.setField(otherDay, "id", otherDayId);
 
-    ItineraryItem foreignItem = new ItineraryItem(otherDay, null, "Other", null, null, 0, null, USER_ID);
+    ItineraryItem foreignItem =
+        new ItineraryItem(otherDay, null, "Other", null, null, 0, null, USER_ID);
     ReflectionTestUtils.setField(foreignItem, "id", itemId1);
 
     when(dayRepository.findById(DAY_ID)).thenReturn(Optional.of(day));

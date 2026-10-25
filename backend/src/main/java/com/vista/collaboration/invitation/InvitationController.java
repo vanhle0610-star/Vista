@@ -35,8 +35,7 @@ public class InvitationController {
   @PostMapping("/trips/{tripId}/invitations")
   @Operation(
       summary = "Tạo lời mời — chỉ member/owner mới tạo được",
-      description =
-          "rawToken và inviteLink chỉ xuất hiện trong response này, không lưu vào DB.")
+      description = "rawToken và inviteLink chỉ xuất hiện trong response này, không lưu vào DB.")
   public ResponseEntity<InvitationResponse> createInvitation(
       @PathVariable UUID tripId, @Valid @RequestBody CreateInvitationRequest request) {
     UUID userId = currentUserProvider.getCurrentUserId();
@@ -60,9 +59,9 @@ public class InvitationController {
   }
 
   /**
-   * W4-TV3-03: Xem trước lời mời theo raw token — deep link / nhập mã.
-   * Không yêu cầu đăng nhập (public endpoint): người nhận link bấm vào sẽ thấy
-   * thông tin chuyến đi trước khi quyết định chấp nhận/từ chối.
+   * W4-TV3-03: Xem trước lời mời theo raw token — deep link / nhập mã. Không yêu cầu đăng nhập
+   * (public endpoint): người nhận link bấm vào sẽ thấy thông tin chuyến đi trước khi quyết định
+   * chấp nhận/từ chối.
    */
   @GetMapping("/invitations/{token}/preview")
   @Operation(

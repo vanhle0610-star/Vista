@@ -119,7 +119,8 @@ public class ExpenseService {
     if (request.title() != null) {
       String title = request.title().trim();
       if (title.isEmpty()) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Expense title must not be blank");
+        throw new ResponseStatusException(
+            HttpStatus.BAD_REQUEST, "Expense title must not be blank");
       }
       expense.setTitle(title);
     }
@@ -238,8 +239,7 @@ public class ExpenseService {
     return expense;
   }
 
-  private void requireExpenseManager(
-      UUID tripId, UUID currentUserId, ExpenseEntity expense) {
+  private void requireExpenseManager(UUID tripId, UUID currentUserId, ExpenseEntity expense) {
     if (!currentUserId.equals(expense.getPaidBy())
         && !tripAccessService.isOwner(tripId, currentUserId)) {
       throw new ResponseStatusException(

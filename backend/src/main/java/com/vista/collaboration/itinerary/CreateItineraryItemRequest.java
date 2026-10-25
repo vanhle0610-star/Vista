@@ -19,26 +19,55 @@ public class CreateItineraryItemRequest {
 
   public CreateItineraryItemRequest() {}
 
-  @AssertTrue(message = "Phải cung cấp destinationId hoặc customStopName")
-  public boolean isDestinationOrCustomStop() {
+  @AssertTrue(message = "Phải cung cấp destinationId hoặc customStopName") public boolean isDestinationOrCustomStop() {
     return destinationId != null || (customStopName != null && !customStopName.isBlank());
   }
 
-  public UUID getDestinationId() { return destinationId; }
-  public void setDestinationId(UUID destinationId) { this.destinationId = destinationId; }
+  public UUID getDestinationId() {
+    return destinationId;
+  }
 
-  public String getCustomStopName() { return customStopName; }
-  public void setCustomStopName(String customStopName) { this.customStopName = customStopName; }
+  public void setDestinationId(UUID destinationId) {
+    this.destinationId = destinationId;
+  }
 
-  public LocalTime getStartTime() { return startTime; }
-  public void setStartTime(LocalTime startTime) { this.startTime = startTime; }
+  public String getCustomStopName() {
+    return customStopName;
+  }
 
-  public LocalTime getEndTime() { return endTime; }
-  public void setEndTime(LocalTime endTime) { this.endTime = endTime; }
+  public void setCustomStopName(String customStopName) {
+    this.customStopName = customStopName;
+  }
 
-  public Integer getSortOrder() { return sortOrder; }
-  public void setSortOrder(Integer sortOrder) { this.sortOrder = sortOrder; }
+  public LocalTime getStartTime() {
+    return startTime;
+  }
 
-  public String getNote() { return note; }
-  public void setNote(String note) { this.note = note; }
+  public void setStartTime(LocalTime startTime) {
+    this.startTime = startTime;
+  }
+
+  public LocalTime getEndTime() {
+    return endTime;
+  }
+
+  public void setEndTime(LocalTime endTime) {
+    this.endTime = endTime;
+  }
+
+  public Integer getSortOrder() {
+    return sortOrder;
+  }
+
+  public void setSortOrder(Integer sortOrder) {
+    this.sortOrder = sortOrder;
+  }
+
+  public String getNote() {
+    return note;
+  }
+
+  public void setNote(String note) {
+    this.note = note;
+  }
 }

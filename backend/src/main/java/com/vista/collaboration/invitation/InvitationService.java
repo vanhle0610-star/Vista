@@ -65,8 +65,9 @@ public class InvitationService {
     }
 
     // Sinh raw token ngẫu nhiên đủ mạnh (256-bit entropy), chỉ lưu SHA-256 hash vào DB
-    String rawToken = UUID.randomUUID().toString().replace("-", "")
-        + UUID.randomUUID().toString().replace("-", "");
+    String rawToken =
+        UUID.randomUUID().toString().replace("-", "")
+            + UUID.randomUUID().toString().replace("-", "");
     String tokenHash = sha256Hex(rawToken);
 
     Instant expiresAt =
@@ -123,10 +124,9 @@ public class InvitationService {
   // ── W4-TV3-03: Xem trước lời mời theo raw token (deep link / nhập mã) ────
 
   /**
-   * Xem trước thông tin lời mời bằng raw token — không yêu cầu đăng nhập.
-   * Dùng cho deep link (bấm link mở app) hoặc nhập mã thủ công.
-   * Trả về thông tin chuyến đi + trạng thái lời mời để người dùng quyết định chấp nhận/từ chối.
-   * Không thay đổi trạng thái.
+   * Xem trước thông tin lời mời bằng raw token — không yêu cầu đăng nhập. Dùng cho deep link (bấm
+   * link mở app) hoặc nhập mã thủ công. Trả về thông tin chuyến đi + trạng thái lời mời để người
+   * dùng quyết định chấp nhận/từ chối. Không thay đổi trạng thái.
    */
   @Transactional(readOnly = true)
   public InvitationPreviewResponse previewInvitation(String rawToken) {
@@ -184,9 +184,8 @@ public class InvitationService {
   // ── Private helpers ────────────────────────────────────────────────────────
 
   /**
-   * Thêm user vào trip_members với role MEMBER.
-   * Dùng TripMemberRepository trực tiếp (TV2 đã expose qua domain layer).
-   * Nếu đã là member (ACTIVE) thì bỏ qua. Nếu bị REMOVED thì kích hoạt lại.
+   * Thêm user vào trip_members với role MEMBER. Dùng TripMemberRepository trực tiếp (TV2 đã expose
+   * qua domain layer). Nếu đã là member (ACTIVE) thì bỏ qua. Nếu bị REMOVED thì kích hoạt lại.
    */
   private void addTripMember(UUID tripId, UUID userId) {
     TripEntity trip =
@@ -209,8 +208,7 @@ public class InvitationService {
               // Nếu đã ACTIVE thì không làm gì
             },
             () -> {
-              TripMemberEntity member =
-                  new TripMemberEntity(trip, userId, TripMemberRole.VIEWER);
+              TripMemberEntity member = new TripMemberEntity(trip, userId, TripMemberRole.VIEWER);
               tripMemberRepository.save(member);
             });
   }

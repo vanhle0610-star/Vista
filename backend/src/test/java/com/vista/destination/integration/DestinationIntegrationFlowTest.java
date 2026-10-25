@@ -1,7 +1,6 @@
 package com.vista.destination.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -20,7 +19,6 @@ import com.vista.destination.domain.Province;
 import com.vista.destination.repository.DestinationHistoryRepository;
 import com.vista.destination.repository.DestinationRepository;
 import com.vista.destination.repository.FavoriteRepository;
-import com.vista.destination.service.DestinationNotFoundException;
 import com.vista.destination.service.DestinationService;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -77,7 +75,8 @@ class DestinationIntegrationFlowTest {
   }
 
   @Test
-  @DisplayName("W4-FLOW-01: End-to-end Visitor Discovery Flow (Search -> Detail -> Favorite -> History)")
+  @DisplayName(
+      "W4-FLOW-01: End-to-end Visitor Discovery Flow (Search -> Detail -> Favorite -> History)")
   void testVisitorEndToEndDiscoveryFlow() {
     UUID userId = UUID.randomUUID();
     UUID destId = UUID.randomUUID();
@@ -105,7 +104,8 @@ class DestinationIntegrationFlowTest {
     assertThat(detail.openingHours()).containsKey("mon");
 
     // 3. Record history
-    when(historyRepository.findByUserIdAndDestinationId(userId, destId)).thenReturn(Optional.empty());
+    when(historyRepository.findByUserIdAndDestinationId(userId, destId))
+        .thenReturn(Optional.empty());
     destinationService.recordView(destId, userId);
 
     // 4. Toggle favorite
@@ -128,12 +128,17 @@ class DestinationIntegrationFlowTest {
   }
 
   @Test
-  @DisplayName("W4-TV3-INTEGRATION: TV3 Itinerary Service consumes DestinationQueryService contract")
+  @DisplayName(
+      "W4-TV3-INTEGRATION: TV3 Itinerary Service consumes DestinationQueryService contract")
   void testTv3ItineraryIntegration() {
     UUID destId1 = UUID.randomUUID();
     UUID destId2 = UUID.randomUUID();
-    Destination d1 = createPublishedDestination(destId1, "Cầu Vàng Bà Nà", "Đà Nẵng", "Giải trí", BigDecimal.valueOf(900000));
-    Destination d2 = createPublishedDestination(destId2, "Bán đảo Sơn Trà", "Đà Nẵng", "Thiên nhiên", BigDecimal.ZERO);
+    Destination d1 =
+        createPublishedDestination(
+            destId1, "Cầu Vàng Bà Nà", "Đà Nẵng", "Giải trí", BigDecimal.valueOf(900000));
+    Destination d2 =
+        createPublishedDestination(
+            destId2, "Bán đảo Sơn Trà", "Đà Nẵng", "Thiên nhiên", BigDecimal.ZERO);
 
     when(destinationRepository.findByIdAndStatus(destId1, "PUBLISHED")).thenReturn(Optional.of(d1));
     when(destinationRepository.existsByIdAndStatus(destId1, "PUBLISHED")).thenReturn(true);
@@ -155,10 +160,13 @@ class DestinationIntegrationFlowTest {
   }
 
   @Test
-  @DisplayName("W4-TV4-INTEGRATION: TV4 Gemini AI & Budget Estimator consumes DestinationQueryService")
+  @DisplayName(
+      "W4-TV4-INTEGRATION: TV4 Gemini AI & Budget Estimator consumes DestinationQueryService")
   void testTv4AiPlannerAndBudgetIntegration() {
     UUID destId = UUID.randomUUID();
-    Destination d = createPublishedDestination(destId, "Quần thể Tràng An", "Ninh Bình", "Di sản", BigDecimal.valueOf(250000));
+    Destination d =
+        createPublishedDestination(
+            destId, "Quần thể Tràng An", "Ninh Bình", "Di sản", BigDecimal.valueOf(250000));
 
     when(destinationRepository.findAll(any(Specification.class), any(Pageable.class)))
         .thenReturn(new PageImpl<>(List.of(d)));
@@ -175,14 +183,13 @@ class DestinationIntegrationFlowTest {
     // 2. Budget attraction calculation
     List<DestinationSummary> planned = destinationQueryService.findPublishedByIds(List.of(destId));
     BigDecimal totalBudget =
-        planned.stream()
-            .map(DestinationSummary::priceMin)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        planned.stream().map(DestinationSummary::priceMin).reduce(BigDecimal.ZERO, BigDecimal::add);
     assertThat(totalBudget).isEqualByComparingTo("250000");
   }
 
   @Test
-  @DisplayName("W4-STUB-INTEGRATION: TV3/TV4 can use StubDestinationQueryService for completely decoupled testing")
+  @DisplayName(
+      "W4-STUB-INTEGRATION: TV3/TV4 can use StubDestinationQueryService for completely decoupled testing")
   void testStubServiceDecoupledTesting() {
     StubDestinationQueryService stub = new StubDestinationQueryService();
     UUID sampleId = UUID.fromString("11111111-1111-1111-1111-111111111111");

@@ -40,7 +40,9 @@ public class ItineraryService {
 
     if (dayRepository.existsByTripIdAndDayNumber(tripId, request.getDayNumber())) {
       throw new ConflictException(
-          "Ng\u00e0y s\u1ed1 " + request.getDayNumber() + " \u0111\u00e3 t\u1ed3n t\u1ea1i trong l\u1ecbch tr\u00ecnh chuy\u1ebfn \u0111i");
+          "Ng\u00e0y s\u1ed1 "
+              + request.getDayNumber()
+              + " \u0111\u00e3 t\u1ed3n t\u1ea1i trong l\u1ecbch tr\u00ecnh chuy\u1ebfn \u0111i");
     }
 
     ItineraryDay day = new ItineraryDay(tripId, request.getDayNumber(), request.getTripDate());
@@ -118,7 +120,8 @@ public class ItineraryService {
 
     List<UUID> orderedIds = request.orderedItemIds();
     if (orderedIds == null || orderedIds.isEmpty()) {
-      throw new ConflictException("Danh s\u00e1ch th\u1ee9 t\u1ef1 kh\u00f4ng \u0111\u01b0\u1ee3c r\u1ed7ng");
+      throw new ConflictException(
+          "Danh s\u00e1ch th\u1ee9 t\u1ef1 kh\u00f4ng \u0111\u01b0\u1ee3c r\u1ed7ng");
     }
 
     for (int i = 0; i < orderedIds.size(); i++) {
@@ -155,7 +158,9 @@ public class ItineraryService {
         tripRepository
             .findById(tripId)
             .orElseThrow(
-                () -> new ResourceNotFoundException("Kh\u00f4ng t\u00ecm th\u1ea5y chuy\u1ebfn \u0111i: " + tripId));
+                () ->
+                    new ResourceNotFoundException(
+                        "Kh\u00f4ng t\u00ecm th\u1ea5y chuy\u1ebfn \u0111i: " + tripId));
 
     List<ItineraryDay> days = dayRepository.findByTripIdOrderByDayNumberAsc(tripId);
     List<ItineraryValidationWarning> warnings = new ArrayList<>();
@@ -169,9 +174,14 @@ public class ItineraryService {
                   "OUT_OF_TRIP_DATE",
                   day.getId(),
                   null,
-                  "Ng\u00e0y " + day.getTripDate() + " (ng\u00e0y " + day.getDayNumber()
+                  "Ng\u00e0y "
+                      + day.getTripDate()
+                      + " (ng\u00e0y "
+                      + day.getDayNumber()
                       + ") n\u1eb1m ngo\u00e0i kho\u1ea3ng chuy\u1ebfn \u0111i "
-                      + trip.getStartDate() + " - " + trip.getEndDate()));
+                      + trip.getStartDate()
+                      + " - "
+                      + trip.getEndDate()));
         }
       }
 
@@ -250,7 +260,8 @@ public class ItineraryService {
         .orElseThrow(
             () ->
                 new ResourceNotFoundException(
-                    "Kh\u00f4ng t\u00ecm th\u1ea5y ng\u00e0y l\u1ecbch tr\u00ecnh v\u1edbi ID: " + dayId));
+                    "Kh\u00f4ng t\u00ecm th\u1ea5y ng\u00e0y l\u1ecbch tr\u00ecnh v\u1edbi ID: "
+                        + dayId));
   }
 
   private ItineraryItem findItemOrThrow(UUID itemId) {
@@ -259,6 +270,7 @@ public class ItineraryService {
         .orElseThrow(
             () ->
                 new ResourceNotFoundException(
-                    "Kh\u00f4ng t\u00ecm th\u1ea5y m\u1ee5c l\u1ecbch tr\u00ecnh v\u1edbi ID: " + itemId));
+                    "Kh\u00f4ng t\u00ecm th\u1ea5y m\u1ee5c l\u1ecbch tr\u00ecnh v\u1edbi ID: "
+                        + itemId));
   }
 }

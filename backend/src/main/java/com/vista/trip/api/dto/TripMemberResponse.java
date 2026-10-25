@@ -12,15 +12,10 @@ public record TripMemberResponse(
     String role,
     String status,
     BigDecimal budgetShare,
-    Instant joinedAt
-) {
+    Instant joinedAt) {
   /** Constructor tương thích ngược cho truy vấn thành viên thủ quỹ TV4. */
   public TripMemberResponse(
-      UUID userId,
-      String displayName,
-      String email,
-      String role,
-      BigDecimal budgetShare) {
+      UUID userId, String displayName, String email, String role, BigDecimal budgetShare) {
     this(userId, displayName, email, role, "ACTIVE", budgetShare, null);
   }
 
