@@ -43,8 +43,7 @@ public class FavoriteId implements Serializable {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     FavoriteId that = (FavoriteId) o;
-    return Objects.equals(userId, that.userId)
-        && Objects.equals(destinationId, that.destinationId);
+    return Objects.equals(userId, that.userId) && Objects.equals(destinationId, that.destinationId);
   }
 
   @Override

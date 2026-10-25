@@ -6,7 +6,9 @@ export function destinationMarkers(items: DestinationPage['items']) {
   const markers: MapMarker[] = [];
   let rejected = 0;
   for (const item of items) {
-    if (!validCoordinate(item)) {
+    if (!validCoordinate(item) || item.status !== 'PUBLISHED' ||
+        typeof item.id !== 'string' || !item.id.trim() ||
+        typeof item.name !== 'string' || !item.name.trim()) {
       rejected++;
       continue;
     }
@@ -20,12 +22,15 @@ export function destinationMarkers(items: DestinationPage['items']) {
   }
   return { markers, rejected };
 }
-export async function loadMapDestinations(signal?: AbortSignal) {
+export async function loadMapDestinations(
+  signal?: AbortSignal,
+  onPage?: (result: ReturnType<typeof destinationMarkers>) => void,
+) {
   const items: DestinationPage['items'] = [];
   const ids = new Set<string>();
-  for (let page = 0; page < 100; page++) {
+  for (let page = 0; page < 500; page++) {
     const { data } = await api.get<DestinationPage>('/destinations', {
-      params: { page, size: 100 },
+      params: { page, size: 20 },
       signal,
     });
     if (!Array.isArray(data.items) || !Number.isFinite(data.total))
@@ -37,7 +42,9 @@ export async function loadMapDestinations(signal?: AbortSignal) {
         items.push(item);
         added++;
       }
-    if (ids.size >= data.total) return destinationMarkers(items);
+    const result = destinationMarkers(items);
+    onPage?.(result);
+    if (ids.size >= data.total) return result;
     if (!added) throw new Error('Không thể tải đầy đủ phân trang địa điểm.');
   }
   throw new Error('Danh sách địa điểm vượt giới hạn tải của bản đồ.');

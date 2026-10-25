@@ -97,37 +97,91 @@ public class ItineraryItem {
 
   // ── Getters / Setters ──────────────────────────────────────────────────────
 
-  public UUID getId() { return id; }
+  public UUID getId() {
+    return id;
+  }
 
-  public ItineraryDay getDay() { return day; }
-  public void setDay(ItineraryDay day) { this.day = day; }
+  public ItineraryDay getDay() {
+    return day;
+  }
 
-  public UUID getDestinationId() { return destinationId; }
-  public void setDestinationId(UUID destinationId) { this.destinationId = destinationId; }
+  public void setDay(ItineraryDay day) {
+    this.day = day;
+  }
 
-  public String getCustomStopName() { return customStopName; }
-  public void setCustomStopName(String customStopName) { this.customStopName = customStopName; }
+  public UUID getDestinationId() {
+    return destinationId;
+  }
 
-  public LocalTime getStartTime() { return startTime; }
-  public void setStartTime(LocalTime startTime) { this.startTime = startTime; }
+  public void setDestinationId(UUID destinationId) {
+    this.destinationId = destinationId;
+  }
 
-  public LocalTime getEndTime() { return endTime; }
-  public void setEndTime(LocalTime endTime) { this.endTime = endTime; }
+  public String getCustomStopName() {
+    return customStopName;
+  }
 
-  public Integer getSortOrder() { return sortOrder; }
-  public void setSortOrder(Integer sortOrder) { this.sortOrder = sortOrder; }
+  public void setCustomStopName(String customStopName) {
+    this.customStopName = customStopName;
+  }
 
-  public String getNote() { return note; }
-  public void setNote(String note) { this.note = note; }
+  public LocalTime getStartTime() {
+    return startTime;
+  }
 
-  public String getSource() { return source; }
-  public void setSource(String source) { this.source = source; }
+  public void setStartTime(LocalTime startTime) {
+    this.startTime = startTime;
+  }
 
-  public UUID getUpdatedBy() { return updatedBy; }
-  public void setUpdatedBy(UUID updatedBy) { this.updatedBy = updatedBy; }
+  public LocalTime getEndTime() {
+    return endTime;
+  }
 
-  public Instant getUpdatedAt() { return updatedAt; }
-  public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
+  public void setEndTime(LocalTime endTime) {
+    this.endTime = endTime;
+  }
 
-  public Long getVersion() { return version; }
+  public Integer getSortOrder() {
+    return sortOrder;
+  }
+
+  public void setSortOrder(Integer sortOrder) {
+    this.sortOrder = sortOrder;
+  }
+
+  public String getNote() {
+    return note;
+  }
+
+  public void setNote(String note) {
+    this.note = note;
+  }
+
+  public String getSource() {
+    return source;
+  }
+
+  public void setSource(String source) {
+    this.source = source;
+  }
+
+  public UUID getUpdatedBy() {
+    return updatedBy;
+  }
+
+  public void setUpdatedBy(UUID updatedBy) {
+    this.updatedBy = updatedBy;
+  }
+
+  public Instant getUpdatedAt() {
+    return updatedAt;
+  }
+
+  public void setUpdatedAt(Instant updatedAt) {
+    this.updatedAt = updatedAt;
+  }
+
+  public Long getVersion() {
+    return version;
+  }
 }

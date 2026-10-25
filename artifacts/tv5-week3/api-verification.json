@@ -1,0 +1,152 @@
+{
+  "date": "2026-10-25T06:10:47.201Z",
+  "base": "http://localhost:8080/api/v1",
+  "checks": [
+    {
+      "name": "guest public feed",
+      "status": "passed"
+    },
+    {
+      "name": "guest cannot create post",
+      "status": "passed"
+    },
+    {
+      "name": "authenticate QA account 1",
+      "status": "passed"
+    },
+    {
+      "name": "authenticate QA account 2",
+      "status": "passed"
+    },
+    {
+      "name": "reject blank body",
+      "status": "passed"
+    },
+    {
+      "name": "create persisted post",
+      "status": "passed"
+    },
+    {
+      "name": "retry same request",
+      "status": "passed"
+    },
+    {
+      "name": "no duplicate on concurrent retry",
+      "status": "passed"
+    },
+    {
+      "name": "server-derived author ignores spoofed authorId",
+      "status": "passed"
+    },
+    {
+      "name": "public persisted detail",
+      "status": "passed"
+    },
+    {
+      "name": "second user cannot edit post",
+      "status": "passed"
+    },
+    {
+      "name": "second user cannot delete post",
+      "status": "passed"
+    },
+    {
+      "name": "guest cannot delete post",
+      "status": "passed"
+    },
+    {
+      "name": "missing post version rejected",
+      "status": "passed"
+    },
+    {
+      "name": "reused request with changed body rejected",
+      "status": "passed"
+    },
+    {
+      "name": "author edits post",
+      "status": "passed"
+    },
+    {
+      "name": "stale version rejected",
+      "status": "passed"
+    },
+    {
+      "name": "guest cannot comment",
+      "status": "passed"
+    },
+    {
+      "name": "create comment",
+      "status": "passed"
+    },
+    {
+      "name": "public comment list",
+      "status": "passed"
+    },
+    {
+      "name": "other author cannot edit comment",
+      "status": "passed"
+    },
+    {
+      "name": "other author cannot delete comment",
+      "status": "passed"
+    },
+    {
+      "name": "missing comment version rejected",
+      "status": "passed"
+    },
+    {
+      "name": "comment author edits",
+      "status": "passed"
+    },
+    {
+      "name": "comment author deletes",
+      "status": "passed"
+    },
+    {
+      "name": "reject fake image bytes",
+      "status": "passed"
+    },
+    {
+      "name": "guest upload rejected",
+      "status": "passed"
+    },
+    {
+      "name": "reject oversized image",
+      "status": "passed"
+    },
+    {
+      "name": "missing parent comments hidden",
+      "status": "passed"
+    },
+    {
+      "name": "missing parent comment write rejected",
+      "status": "passed"
+    },
+    {
+      "name": "author deletes post",
+      "status": "passed"
+    },
+    {
+      "name": "deleted post is not public",
+      "status": "passed"
+    },
+    {
+      "name": "deleted parent comments inaccessible",
+      "status": "passed"
+    },
+    {
+      "name": "missing ORS key returns explicit unavailable",
+      "status": "passed"
+    },
+    {
+      "name": "missing ORS key has correct code",
+      "status": "passed"
+    },
+    {
+      "name": "invalid route rejected",
+      "status": "passed"
+    }
+  ],
+  "storageLive": "Not verified; requires private bucket configuration",
+  "realDevice": "Not verified"
+}

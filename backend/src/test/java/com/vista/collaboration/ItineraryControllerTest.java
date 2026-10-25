@@ -27,8 +27,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
@@ -106,8 +106,9 @@ class ItineraryControllerTest {
     request.setExpectedUpdatedAt(outdatedTime);
 
     when(itineraryService.updateItem(eq(ITEM_ID), eq(MEMBER_ID), any()))
-        .thenThrow(new ConflictException(
-            "Dữ liệu lịch trình đã bị cập nhật bởi người khác (xung đột phiên bản)"));
+        .thenThrow(
+            new ConflictException(
+                "Dữ liệu lịch trình đã bị cập nhật bởi người khác (xung đột phiên bản)"));
 
     mockMvc
         .perform(

@@ -345,8 +345,7 @@ public class DestinationService implements DestinationQueryService {
   public List<DestinationSummary> searchPublished(
       String keyword, String province, String category, int limit) {
     int validLimit = Math.min(50, Math.max(1, limit));
-    DestinationPageDto page =
-        searchPublished(keyword, province, category, null, 0, validLimit);
+    DestinationPageDto page = searchPublished(keyword, province, category, null, 0, validLimit);
 
     return page.items().stream()
         .map(

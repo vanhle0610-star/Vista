@@ -67,13 +67,15 @@ class DestinationServiceTest {
   class FavoriteTests {
 
     @Test
-    @DisplayName("addFavorite saves new favorite when destination is published and not yet favorited")
+    @DisplayName(
+        "addFavorite saves new favorite when destination is published and not yet favorited")
     void addFavoriteSuccess() {
       UUID destId = UUID.randomUUID();
       UUID userId = UUID.randomUUID();
       Destination dest = createMockDestination(destId, "Cầu Rồng", "PUBLISHED");
 
-      when(destinationRepository.findByIdAndStatus(destId, "PUBLISHED")).thenReturn(Optional.of(dest));
+      when(destinationRepository.findByIdAndStatus(destId, "PUBLISHED"))
+          .thenReturn(Optional.of(dest));
       when(favoriteRepository.existsByIdUserIdAndIdDestinationId(userId, destId)).thenReturn(false);
 
       destinationService.addFavorite(destId, userId);
@@ -91,7 +93,8 @@ class DestinationServiceTest {
       UUID userId = UUID.randomUUID();
       Destination dest = createMockDestination(destId, "Cầu Rồng", "PUBLISHED");
 
-      when(destinationRepository.findByIdAndStatus(destId, "PUBLISHED")).thenReturn(Optional.of(dest));
+      when(destinationRepository.findByIdAndStatus(destId, "PUBLISHED"))
+          .thenReturn(Optional.of(dest));
       when(favoriteRepository.existsByIdUserIdAndIdDestinationId(userId, destId)).thenReturn(true);
 
       destinationService.addFavorite(destId, userId);
@@ -100,12 +103,14 @@ class DestinationServiceTest {
     }
 
     @Test
-    @DisplayName("addFavorite throws DestinationNotFoundException when destination not found or unpublished")
+    @DisplayName(
+        "addFavorite throws DestinationNotFoundException when destination not found or unpublished")
     void addFavoriteThrowsWhenNotFound() {
       UUID destId = UUID.randomUUID();
       UUID userId = UUID.randomUUID();
 
-      when(destinationRepository.findByIdAndStatus(destId, "PUBLISHED")).thenReturn(Optional.empty());
+      when(destinationRepository.findByIdAndStatus(destId, "PUBLISHED"))
+          .thenReturn(Optional.empty());
 
       assertThatThrownBy(() -> destinationService.addFavorite(destId, userId))
           .isInstanceOf(DestinationNotFoundException.class)
@@ -128,7 +133,8 @@ class DestinationServiceTest {
     }
 
     @Test
-    @DisplayName("removeFavorite throws DestinationNotFoundException when destination does not exist")
+    @DisplayName(
+        "removeFavorite throws DestinationNotFoundException when destination does not exist")
     void removeFavoriteThrowsWhenNotFound() {
       UUID destId = UUID.randomUUID();
       UUID userId = UUID.randomUUID();
@@ -184,8 +190,10 @@ class DestinationServiceTest {
       UUID userId = UUID.randomUUID();
       Destination dest = createMockDestination(destId, "Chùa Cầu", "PUBLISHED");
 
-      when(destinationRepository.findByIdAndStatus(destId, "PUBLISHED")).thenReturn(Optional.of(dest));
-      when(historyRepository.findByUserIdAndDestinationId(userId, destId)).thenReturn(Optional.empty());
+      when(destinationRepository.findByIdAndStatus(destId, "PUBLISHED"))
+          .thenReturn(Optional.of(dest));
+      when(historyRepository.findByUserIdAndDestinationId(userId, destId))
+          .thenReturn(Optional.empty());
 
       destinationService.recordView(destId, userId);
 
@@ -206,7 +214,8 @@ class DestinationServiceTest {
       DestinationHistory existingHistory = new DestinationHistory(userId, dest);
       existingHistory.setViewedAt(oldTime);
 
-      when(destinationRepository.findByIdAndStatus(destId, "PUBLISHED")).thenReturn(Optional.of(dest));
+      when(destinationRepository.findByIdAndStatus(destId, "PUBLISHED"))
+          .thenReturn(Optional.of(dest));
       when(historyRepository.findByUserIdAndDestinationId(userId, destId))
           .thenReturn(Optional.of(existingHistory));
 
@@ -222,7 +231,8 @@ class DestinationServiceTest {
       UUID destId = UUID.randomUUID();
       UUID userId = UUID.randomUUID();
 
-      when(destinationRepository.findByIdAndStatus(destId, "PUBLISHED")).thenReturn(Optional.empty());
+      when(destinationRepository.findByIdAndStatus(destId, "PUBLISHED"))
+          .thenReturn(Optional.empty());
 
       assertThatThrownBy(() -> destinationService.recordView(destId, userId))
           .isInstanceOf(DestinationNotFoundException.class);
@@ -262,7 +272,8 @@ class DestinationServiceTest {
       UUID userId = UUID.randomUUID();
       Destination dest = createMockDestination(destId, "Fansipan", "PUBLISHED");
 
-      when(destinationRepository.findByIdAndStatus(destId, "PUBLISHED")).thenReturn(Optional.of(dest));
+      when(destinationRepository.findByIdAndStatus(destId, "PUBLISHED"))
+          .thenReturn(Optional.of(dest));
       when(favoriteRepository.existsByIdUserIdAndIdDestinationId(userId, destId)).thenReturn(true);
 
       DestinationDetailDto detail = destinationService.getPublishedDetail(destId, userId);
@@ -273,12 +284,14 @@ class DestinationServiceTest {
     }
 
     @Test
-    @DisplayName("getPublishedDetail sets isFavorite = false for unauthenticated guest (null userId)")
+    @DisplayName(
+        "getPublishedDetail sets isFavorite = false for unauthenticated guest (null userId)")
     void getPublishedDetailWithGuestUser() {
       UUID destId = UUID.randomUUID();
       Destination dest = createMockDestination(destId, "Fansipan", "PUBLISHED");
 
-      when(destinationRepository.findByIdAndStatus(destId, "PUBLISHED")).thenReturn(Optional.of(dest));
+      when(destinationRepository.findByIdAndStatus(destId, "PUBLISHED"))
+          .thenReturn(Optional.of(dest));
 
       DestinationDetailDto detail = destinationService.getPublishedDetail(destId, null);
 

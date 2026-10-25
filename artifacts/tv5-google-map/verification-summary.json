@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-23",
+  "route": "http://localhost:3000/map",
+  "productionBuild": "passed",
+  "typecheck": "passed",
+  "changedFileLint": "passed",
+  "wholeWebLint": { "errorsOutsideChangedFiles": 12, "warnings": 21 },
+  "logicTests": "passed; Google Routes mocked",
+  "browserProductionChecks": 6,
+  "browserMockChecks": 13,
+  "browserJavaScriptErrors": [],
+  "realDestinationApiLastTotal": 367,
+  "googleLiveVerified": false,
+  "missingConfiguration": ["NEXT_PUBLIC_GOOGLE_MAPS_API_KEY", "NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID", "Google Cloud billing and API permissions must be verified by project owner"],
+  "bridge3d": "Preserved at /dev/map-3d; not integrated into Google Maps",
+  "native": "Unchanged by web integration"
+}

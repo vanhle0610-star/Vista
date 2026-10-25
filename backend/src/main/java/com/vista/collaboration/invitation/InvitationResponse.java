@@ -7,8 +7,8 @@ import java.util.UUID;
 /**
  * Response cho lời mời chuyến đi.
  *
- * <p>{@code rawToken} và {@code inviteLink} chỉ có giá trị ngay sau khi TẠO lời mời —
- * sau đó 2 trường này là null (token gốc không bao giờ lưu vào DB).
+ * <p>{@code rawToken} và {@code inviteLink} chỉ có giá trị ngay sau khi TẠO lời mời — sau đó 2
+ * trường này là null (token gốc không bao giờ lưu vào DB).
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record InvitationResponse(

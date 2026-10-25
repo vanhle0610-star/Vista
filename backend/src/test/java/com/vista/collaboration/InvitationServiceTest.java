@@ -126,9 +126,12 @@ class InvitationServiceTest {
   @DisplayName("W3-02 accept - hợp lệ → trạng thái ACCEPTED, thêm vào trip_members")
   void accept_valid_setsAcceptedAndAddsMember() {
     Invitation inv = makeInvitation(InvitationStatus.PENDING, Instant.now().plusSeconds(86400));
-    com.vista.trip.domain.TripEntity mockTrip = new com.vista.trip.domain.TripEntity(
-        INVITER_ID, "Test trip",
-        java.time.LocalDate.now(), java.time.LocalDate.now().plusDays(3));
+    com.vista.trip.domain.TripEntity mockTrip =
+        new com.vista.trip.domain.TripEntity(
+            INVITER_ID,
+            "Test trip",
+            java.time.LocalDate.now(),
+            java.time.LocalDate.now().plusDays(3));
     ReflectionTestUtils.setField(mockTrip, "id", TRIP_ID);
 
     when(invitationRepository.findByTokenHash(TOKEN_HASH)).thenReturn(Optional.of(inv));

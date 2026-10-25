@@ -1,0 +1,38 @@
+{
+  "errors": 12,
+  "warnings": 21,
+  "files": [
+    {
+      "file": "D:\\Du_An_OJT\\Vista\\web\\src\\app\\(protected)\\dashboard\\page.tsx",
+      "errors": 1
+    },
+    {
+      "file": "D:\\Du_An_OJT\\Vista\\web\\src\\app\\(protected)\\layout.tsx",
+      "errors": 2
+    },
+    {
+      "file": "D:\\Du_An_OJT\\Vista\\web\\src\\app\\planner\\page.tsx",
+      "errors": 3
+    },
+    {
+      "file": "D:\\Du_An_OJT\\Vista\\web\\src\\app\\trips\\[tripId]\\treasury\\page.tsx",
+      "errors": 1
+    },
+    {
+      "file": "D:\\Du_An_OJT\\Vista\\web\\src\\components\\auth\\AuthCard.tsx",
+      "errors": 1
+    },
+    {
+      "file": "D:\\Du_An_OJT\\Vista\\web\\src\\components\\common\\Navbar.tsx",
+      "errors": 1
+    },
+    {
+      "file": "D:\\Du_An_OJT\\Vista\\web\\src\\features\\budget\\components\\ExpenseLedgerTable.tsx",
+      "errors": 2
+    },
+    {
+      "file": "D:\\Du_An_OJT\\Vista\\web\\src\\i18n\\LanguageContext.tsx",
+      "errors": 1
+    }
+  ]
+}

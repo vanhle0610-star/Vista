@@ -25,7 +25,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
@@ -144,11 +144,9 @@ class AiPlannerControllerTest {
         new DestinationPoint(UUID.randomUUID(), "Khách sạn Novotel", 16.0778, 108.2241);
     DestinationPoint spot1 =
         new DestinationPoint(UUID.randomUUID(), "Chùa Linh Ứng", 16.1001, 108.2778);
-    DestinationPoint spot2 =
-        new DestinationPoint(UUID.randomUUID(), "Cầu Rồng", 16.0611, 108.2208);
+    DestinationPoint spot2 = new DestinationPoint(UUID.randomUUID(), "Cầu Rồng", 16.0611, 108.2208);
 
-    RouteOptimizationRequest request =
-        new RouteOptimizationRequest(hotel, List.of(spot1, spot2));
+    RouteOptimizationRequest request = new RouteOptimizationRequest(hotel, List.of(spot1, spot2));
 
     mockMvc
         .perform(
@@ -163,12 +161,14 @@ class AiPlannerControllerTest {
   }
 
   @Test
-  @DisplayName("6. Gợi ý lịch trình thành công với Live Gemini AI khi có API key (isMockData = false)")
+  @DisplayName(
+      "6. Gợi ý lịch trình thành công với Live Gemini AI khi có API key (isMockData = false)")
   void getItinerarySuggestions_shouldReturnLiveAiData() throws Exception {
     doNothing().when(tripAccessService).requireMember(tripId, currentUserId);
     when(aiClientWrapper.isAvailable()).thenReturn(true);
 
-    String mockGeminiJson = """
+    String mockGeminiJson =
+        """
         {
           "tripTitle": "Hành trình khám phá Đà Nẵng",
           "destination": "Đà Nẵng",

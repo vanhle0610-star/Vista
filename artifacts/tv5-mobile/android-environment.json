@@ -1,0 +1,12 @@
+﻿{
+    "sdk":  "D:\\Android\\Sdk",
+    "gradle":  "D:\\Android\\Gradle",
+    "jdk":  "D:\\Android\\Gradle\\jdks\\eclipse_adoptium-17-amd64-windows.2",
+    "androidUserHome":  "D:\\Android\\UserHome",
+    "avdRegistry":  "D:\\Android\\UserHome\\avd",
+    "avdData":  "D:\\Android\\Avd\\Vista_TV5_API36.avd",
+    "downloads":  "D:\\Android\\Downloads",
+    "buildTemp":  "D:\\Android\\Temp",
+    "sourceFileVerification":  "102106 Gradle files; 268 Android home files; 16 legacy SDK files; 1 Kotlin file",
+    "compatibility":  "Old directories are junctions to D:\\Android; no second data copy"
+}

@@ -77,17 +77,37 @@ public class ItineraryDay {
 
   // ── Getters / Setters ──────────────────────────────────────────────────────
 
-  public UUID getId() { return id; }
-  public UUID getTripId() { return tripId; }
-  public void setTripId(UUID tripId) { this.tripId = tripId; }
+  public UUID getId() {
+    return id;
+  }
 
-  public Integer getDayNumber() { return dayNumber; }
-  public void setDayNumber(Integer dayNumber) { this.dayNumber = dayNumber; }
+  public UUID getTripId() {
+    return tripId;
+  }
 
-  public LocalDate getTripDate() { return tripDate; }
-  public void setTripDate(LocalDate tripDate) { this.tripDate = tripDate; }
+  public void setTripId(UUID tripId) {
+    this.tripId = tripId;
+  }
 
-  public List<ItineraryItem> getItems() { return items; }
+  public Integer getDayNumber() {
+    return dayNumber;
+  }
+
+  public void setDayNumber(Integer dayNumber) {
+    this.dayNumber = dayNumber;
+  }
+
+  public LocalDate getTripDate() {
+    return tripDate;
+  }
+
+  public void setTripDate(LocalDate tripDate) {
+    this.tripDate = tripDate;
+  }
+
+  public List<ItineraryItem> getItems() {
+    return items;
+  }
 
   public void addItem(ItineraryItem item) {
     items.add(item);
@@ -99,8 +119,19 @@ public class ItineraryDay {
     item.setDay(null);
   }
 
-  public Instant getCreatedAt() { return createdAt; }
-  public Instant getUpdatedAt() { return updatedAt; }
-  public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
-  public Long getVersion() { return version; }
+  public Instant getCreatedAt() {
+    return createdAt;
+  }
+
+  public Instant getUpdatedAt() {
+    return updatedAt;
+  }
+
+  public void setUpdatedAt(Instant updatedAt) {
+    this.updatedAt = updatedAt;
+  }
+
+  public Long getVersion() {
+    return version;
+  }
 }

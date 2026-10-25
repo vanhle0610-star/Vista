@@ -11,15 +11,9 @@ import java.util.UUID;
 
 /** Fields omitted from a PATCH request retain their current value. */
 public record UpdateExpenseRequest(
-    @Size(min = 1, max = 200, message = "Title must contain between 1 and 200 characters")
-        String title,
-    @DecimalMin(
-            value = "0.0",
-            inclusive = false,
-            message = "Amount must be strictly positive")
-        BigDecimal amount,
-    @Size(min = 3, max = 3, message = "Currency must contain exactly 3 characters")
-        String currency,
+    @Size(min = 1, max = 200, message = "Title must contain between 1 and 200 characters") String title,
+    @DecimalMin(value = "0.0", inclusive = false, message = "Amount must be strictly positive") BigDecimal amount,
+    @Size(min = 3, max = 3, message = "Currency must contain exactly 3 characters") String currency,
     UUID paidBy,
     ExpenseCategory category,
     Instant occurredAt,

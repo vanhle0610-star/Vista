@@ -16,8 +16,7 @@ public record ItineraryItemResponse(
     String source,
     UUID updatedBy,
     Instant updatedAt,
-    Long version
-) {
+    Long version) {
   public static ItineraryItemResponse from(ItineraryItem item) {
     return new ItineraryItemResponse(
         item.getId(),

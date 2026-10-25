@@ -22,17 +22,23 @@ public record TripResponse(
     TripVisibility visibility,
     List<TripMemberResponse> members,
     Instant createdAt,
-    Instant updatedAt
-) {
+    Instant updatedAt) {
   public static TripResponse from(TripEntity t) {
-    List<TripMemberResponse> memberList = t.getMembers().stream()
-        .map(TripMemberResponse::from)
-        .toList();
+    List<TripMemberResponse> memberList =
+        t.getMembers().stream().map(TripMemberResponse::from).toList();
     return new TripResponse(
-        t.getId(), t.getOwnerId(), t.getTitle(),
-        t.getStartDate(), t.getEndDate(), t.getDestinationSummary(),
-        t.getBudgetTotal(), t.getCurrency(),
-        t.getStatus(), t.getVisibility(),
-        memberList, t.getCreatedAt(), t.getUpdatedAt());
+        t.getId(),
+        t.getOwnerId(),
+        t.getTitle(),
+        t.getStartDate(),
+        t.getEndDate(),
+        t.getDestinationSummary(),
+        t.getBudgetTotal(),
+        t.getCurrency(),
+        t.getStatus(),
+        t.getVisibility(),
+        memberList,
+        t.getCreatedAt(),
+        t.getUpdatedAt());
   }
 }

@@ -1,0 +1,12 @@
+{
+  "status": "passed",
+  "date": "2026-10-25T06:06:14.799Z",
+  "checks": [
+    "MapLibre worker and its shared module are served as JavaScript",
+    "Home, login and actual OpenFreeMap street map render",
+    "Actual destination card and marker select each other",
+    "Saved defer stays quiet with denied browser permission until an explicit location action",
+    "Blocked map style preserves actual destination information and retry at 390px"
+  ],
+  "errors": []
+}

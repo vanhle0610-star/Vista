@@ -116,8 +116,7 @@ class AiClientWrapperTest {
     when(failedResponse.statusCode()).thenReturn(503);
     when(successResponse.statusCode()).thenReturn(200);
     when(successResponse.body())
-        .thenReturn(
-            "{\"candidates\":[{\"content\":{\"parts\":[{\"text\":\"valid-json\"}]}}]}");
+        .thenReturn("{\"candidates\":[{\"content\":{\"parts\":[{\"text\":\"valid-json\"}]}}]}");
     when(mockHttpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
         .thenReturn(failedResponse, successResponse);
 

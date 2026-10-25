@@ -32,7 +32,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
@@ -223,7 +223,8 @@ class ExpenseControllerTest {
   }
 
   @Test
-  @DisplayName("7. Tuần 7 Bảo mật: Chặn 403 Forbidden khi người ngoài cố tình truy cập xem danh sách chi tiêu (IDOR)")
+  @DisplayName(
+      "7. Tuần 7 Bảo mật: Chặn 403 Forbidden khi người ngoài cố tình truy cập xem danh sách chi tiêu (IDOR)")
   void listTripExpenses_shouldReturn403_whenUserNotMember() throws Exception {
     doThrow(new AccessDeniedException("User is not a member of trip"))
         .when(expenseService)
@@ -236,7 +237,8 @@ class ExpenseControllerTest {
   }
 
   @Test
-  @DisplayName("8. Tuần 7 Bảo mật: Chặn 403 Forbidden khi người ngoài cố tình lấy tóm tắt ngân sách (IDOR)")
+  @DisplayName(
+      "8. Tuần 7 Bảo mật: Chặn 403 Forbidden khi người ngoài cố tình lấy tóm tắt ngân sách (IDOR)")
   void getTripExpenseSummary_shouldReturn403_whenUserNotMember() throws Exception {
     doThrow(new AccessDeniedException("User is not a member of trip"))
         .when(expenseService)
@@ -253,8 +255,7 @@ class ExpenseControllerTest {
   void updateTripExpense_shouldReturn200() throws Exception {
     UUID expenseId = UUID.randomUUID();
     UpdateExpenseRequest request =
-        new UpdateExpenseRequest(
-            "Taxi sân bay", null, null, null, null, null, null, null, null);
+        new UpdateExpenseRequest("Taxi sân bay", null, null, null, null, null, null, null, null);
     ExpenseResponse response =
         new ExpenseResponse(
             expenseId,

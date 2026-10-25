@@ -7,7 +7,7 @@
   color: var(--map-ink);
   background:
     radial-gradient(ellipse at 70% 10%, #f6fcff, transparent 65%), #eaf8ff;
-  font-family: Arial, 'Segoe UI', sans-serif;
+  font-family: Inter, 'Segoe UI', sans-serif;
 }
 .page :is(button, input, select) {
   font-family: inherit;
@@ -56,6 +56,7 @@
 .map {
   position: relative;
 }
+.sidebar { display: flex; flex-direction: column; gap: 8px; }
 .footer {
   margin-top: 12px;
   text-align: center;
@@ -63,6 +64,8 @@
   line-height: 1.6;
   color: #6d8097;
 }
+.dataNotice { padding: 24px; background: white; border: 1px solid #dcecf4; border-radius: 20px; line-height: 1.6; }
+.dataNotice button { margin-top: 12px; background: #008fc7; color: white; padding: 12px 18px; border: 0; border-radius: 12px; cursor: pointer; }
 .footer details {
   display: inline;
   margin-left: 10px;

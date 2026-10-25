@@ -35,6 +35,7 @@ build/
 **/build/
 .gradle/
 **/.gradle/
+backend/.gradle-local/
 out/
 **/out/
 
@@ -62,3 +63,5 @@ Vietnam_300_dia_diem*
 outputs/
 stitch_vista_travel_expense_app_ui/
 
+
+artifacts/tv5-mobile/*.apk

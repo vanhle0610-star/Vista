@@ -30,7 +30,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/v1/trips")
-@Tag(name = "Trips", description = "Quản lý chuyến đi — tạo, đọc, sửa, xóa và quản lý thành viên (TV2 / TV3 / TV4)")
+@Tag(
+    name = "Trips",
+    description = "Quản lý chuyến đi — tạo, đọc, sửa, xóa và quản lý thành viên (TV2 / TV3 / TV4)")
 @SecurityRequirement(name = "bearerAuth")
 public class TripController {
 
@@ -73,7 +75,9 @@ public class TripController {
   }
 
   @GetMapping("/{tripId}/detail")
-  @Operation(summary = "Xem chi tiết chuyến đi dạng gọn TripDetailResponse (phục vụ tương thích ngược TV2/TV4)")
+  @Operation(
+      summary =
+          "Xem chi tiết chuyến đi dạng gọn TripDetailResponse (phục vụ tương thích ngược TV2/TV4)")
   public ResponseEntity<TripDetailResponse> getTripDetail(@PathVariable UUID tripId) {
     UUID currentUserId = currentUserProvider.getCurrentUserId();
     tripAccessService.requireMember(tripId, currentUserId);
@@ -103,7 +107,8 @@ public class TripController {
             })
         .optional()
         .map(ResponseEntity::ok)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy chuyến đi"));
+        .orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy chuyến đi"));
   }
 
   @PatchMapping("/{tripId}")
@@ -124,8 +129,7 @@ public class TripController {
 
   @DeleteMapping("/{tripId}/members/{userId}")
   @Operation(summary = "Xóa thành viên — Owner xóa bất kỳ ai, thành viên có thể tự rời (TV3)")
-  public ResponseEntity<Void> removeMember(
-      @PathVariable UUID tripId, @PathVariable UUID userId) {
+  public ResponseEntity<Void> removeMember(@PathVariable UUID tripId, @PathVariable UUID userId) {
     UUID requesterId = currentUserProvider.getCurrentUserId();
     tripService.removeMember(tripId, userId, requesterId);
     return ResponseEntity.noContent().build();
@@ -142,7 +146,8 @@ public class TripController {
   @PostMapping("/{tripId}/transfer-owner")
   @Operation(summary = "Chuyển quyền Chủ sở hữu chuyến đi (TV2 W4)")
   public ResponseEntity<TripResponse> transferOwner(
-      @PathVariable UUID tripId, @Valid @RequestBody com.vista.trip.api.dto.TransferOwnerRequest request) {
+      @PathVariable UUID tripId,
+      @Valid @RequestBody com.vista.trip.api.dto.TransferOwnerRequest request) {
     UUID currentUserId = currentUserProvider.getCurrentUserId();
     TripResponse response = tripService.transferOwner(tripId, currentUserId, request.newOwnerId());
     return ResponseEntity.ok(response);

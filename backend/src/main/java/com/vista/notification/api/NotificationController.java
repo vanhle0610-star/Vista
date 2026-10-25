@@ -29,8 +29,7 @@ public class NotificationController {
   private final CurrentUserProvider currentUserProvider;
 
   public NotificationController(
-      NotificationRepository notificationRepository,
-      CurrentUserProvider currentUserProvider) {
+      NotificationRepository notificationRepository, CurrentUserProvider currentUserProvider) {
     this.notificationRepository = notificationRepository;
     this.currentUserProvider = currentUserProvider;
   }
@@ -74,8 +73,7 @@ public class NotificationController {
             .orElseThrow(
                 () ->
                     new org.springframework.web.server.ResponseStatusException(
-                        org.springframework.http.HttpStatus.NOT_FOUND,
-                        "Không tìm thấy thông báo"));
+                        org.springframework.http.HttpStatus.NOT_FOUND, "Không tìm thấy thông báo"));
     notification.markRead();
     return ResponseEntity.ok(NotificationResponse.from(notificationRepository.save(notification)));
   }
@@ -101,8 +99,13 @@ public class NotificationController {
       Instant createdAt) {
     public static NotificationResponse from(NotificationEntity n) {
       return new NotificationResponse(
-          n.getId(), n.getUserId(), n.getType(),
-          n.getPayloadJson(), n.isRead(), n.getReadAt(), n.getCreatedAt());
+          n.getId(),
+          n.getUserId(),
+          n.getType(),
+          n.getPayloadJson(),
+          n.isRead(),
+          n.getReadAt(),
+          n.getCreatedAt());
     }
   }
 

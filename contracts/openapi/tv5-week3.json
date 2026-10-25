@@ -1,0 +1,1010 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "VISTA TV5 Week 3 Community",
+    "version": "0.1.0",
+    "license": {
+      "name": "Proprietary",
+      "identifier": "LicenseRef-Proprietary"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8081/api/v1"
+    }
+  ],
+  "paths": {
+    "/posts": {
+      "get": {
+        "tags": [
+          "TV5 Community"
+        ],
+        "operationId": "tv5ListCommunityPosts",
+        "summary": "tv5ListCommunityPosts",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "401": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "403": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "404": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "409": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "413": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "415": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "503": {
+            "description": "RFC 9457 ProblemDetail"
+          }
+        },
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            }
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "TV5 Community"
+        ],
+        "operationId": "tv5CreateCommunityPost",
+        "summary": "tv5CreateCommunityPost",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Post"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "401": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "403": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "404": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "409": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "413": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "415": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "503": {
+            "description": "RFC 9457 ProblemDetail"
+          }
+        }
+      }
+    },
+    "/posts/{postId}": {
+      "parameters": [
+        {
+          "name": "postId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ],
+      "get": {
+        "tags": [
+          "TV5 Community"
+        ],
+        "operationId": "tv5GetCommunityPost",
+        "summary": "tv5GetCommunityPost",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Post"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "401": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "403": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "404": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "409": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "413": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "415": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "503": {
+            "description": "RFC 9457 ProblemDetail"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "TV5 Community"
+        ],
+        "operationId": "tv5UpdateCommunityPost",
+        "summary": "tv5UpdateCommunityPost",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Post"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "401": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "403": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "404": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "409": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "413": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "415": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "503": {
+            "description": "RFC 9457 ProblemDetail"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "TV5 Community"
+        ],
+        "operationId": "tv5DeleteCommunityPost",
+        "summary": "tv5DeleteCommunityPost",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted"
+          },
+          "400": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "401": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "403": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "404": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "409": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "413": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "415": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "503": {
+            "description": "RFC 9457 ProblemDetail"
+          }
+        }
+      }
+    },
+    "/posts/{postId}/comments": {
+      "parameters": [
+        {
+          "name": "postId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ],
+      "get": {
+        "tags": [
+          "TV5 Community"
+        ],
+        "operationId": "tv5ListPostComments",
+        "summary": "tv5ListPostComments",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommentPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "401": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "403": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "404": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "409": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "413": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "415": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "503": {
+            "description": "RFC 9457 ProblemDetail"
+          }
+        },
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            }
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "TV5 Community"
+        ],
+        "operationId": "tv5CreatePostComment",
+        "summary": "tv5CreatePostComment",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommentWrite"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Comment"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "401": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "403": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "404": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "409": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "413": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "415": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "503": {
+            "description": "RFC 9457 ProblemDetail"
+          }
+        }
+      }
+    },
+    "/posts/{postId}/comments/{commentId}": {
+      "parameters": [
+        {
+          "name": "postId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        {
+          "name": "commentId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ],
+      "patch": {
+        "tags": [
+          "TV5 Community"
+        ],
+        "operationId": "tv5UpdatePostComment",
+        "summary": "tv5UpdatePostComment",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommentUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Comment"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "401": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "403": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "404": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "409": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "413": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "415": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "503": {
+            "description": "RFC 9457 ProblemDetail"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "TV5 Community"
+        ],
+        "operationId": "tv5DeletePostComment",
+        "summary": "tv5DeletePostComment",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted"
+          },
+          "400": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "401": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "403": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "404": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "409": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "413": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "415": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "503": {
+            "description": "RFC 9457 ProblemDetail"
+          }
+        }
+      }
+    },
+    "/post-uploads": {
+      "post": {
+        "tags": [
+          "TV5 Community"
+        ],
+        "operationId": "tv5UploadPostPhoto",
+        "summary": "Upload an owned JPEG or PNG up to 5 MiB",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Upload"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "401": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "403": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "404": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "409": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "413": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "415": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "503": {
+            "description": "RFC 9457 ProblemDetail"
+          }
+        }
+      }
+    },
+    "/post-uploads/{uploadId}": {
+      "parameters": [
+        {
+          "name": "uploadId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ],
+      "delete": {
+        "tags": [
+          "TV5 Community"
+        ],
+        "operationId": "tv5DiscardOwnedUpload",
+        "summary": "tv5DiscardOwnedUpload",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted"
+          },
+          "400": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "401": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "403": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "404": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "409": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "413": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "415": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "503": {
+            "description": "RFC 9457 ProblemDetail"
+          }
+        }
+      }
+    },
+    "/post-media/{mediaId}": {
+      "parameters": [
+        {
+          "name": "mediaId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ],
+      "get": {
+        "tags": [
+          "TV5 Community"
+        ],
+        "operationId": "tv5ReadPublicPostPhoto",
+        "summary": "Read photo only while its parent post is visible",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Image bytes",
+            "content": {
+              "image/jpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Missing or inaccessible parent post"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Author": {
+        "type": "object",
+        "required": [
+          "id",
+          "displayName"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "displayName": {
+            "type": "string"
+          }
+        }
+      },
+      "Media": {
+        "type": "object",
+        "required": [
+          "id",
+          "path"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "path": {
+            "type": "string"
+          }
+        }
+      },
+      "Post": {
+        "type": "object",
+        "required": [
+          "id",
+          "author",
+          "body",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "media"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "author": {
+            "$ref": "#/components/schemas/Author"
+          },
+          "destinationId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "media": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Media"
+            }
+          }
+        }
+      },
+      "PostCreate": {
+        "type": "object",
+        "required": [
+          "body",
+          "clientRequestId"
+        ],
+        "properties": {
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "clientRequestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "destinationId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "uploadIds": {
+            "type": "array",
+            "maxItems": 4,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        }
+      },
+      "PostUpdate": {
+        "type": "object",
+        "required": [
+          "body",
+          "version"
+        ],
+        "properties": {
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
+      "Comment": {
+        "type": "object",
+        "required": [
+          "id",
+          "postId",
+          "author",
+          "body",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "postId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "author": {
+            "$ref": "#/components/schemas/Author"
+          }
+        }
+      },
+      "CommentWrite": {
+        "type": "object",
+        "required": [
+          "body"
+        ],
+        "properties": {
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          }
+        }
+      },
+      "CommentUpdate": {
+        "type": "object",
+        "required": [
+          "body",
+          "version"
+        ],
+        "properties": {
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
+      "Upload": {
+        "type": "object",
+        "required": [
+          "id",
+          "expiresAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PostPage": {
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "size"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Post"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "CommentPage": {
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "size"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Comment"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
+    }
+  }
+}

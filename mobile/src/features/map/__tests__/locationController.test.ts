@@ -165,4 +165,22 @@ describe('Foreground location privacy and lifecycle', () => {
     await flush();
     expect(s.driver.watch).toHaveBeenCalledTimes(1);
   });
+  it('resumes saved opt-in only with current system permission, without requesting again', async () => {
+    const s = setup(granted);
+    s.controller.resumeOptIn();
+    await flush();
+    expect(s.driver.request).not.toHaveBeenCalled();
+    expect(s.driver.watch).toHaveBeenCalledTimes(1);
+    s.controller.setActive(false);
+    s.driver.permission.mockResolvedValue({
+      status: 'denied',
+      granted: false,
+      canAskAgain: true,
+    });
+    s.controller.setActive(true);
+    await flush();
+    expect(s.driver.watch).toHaveBeenCalledTimes(1);
+    expect(s.driver.request).not.toHaveBeenCalled();
+    expect(s.controller.getSnapshot().position).toBeNull();
+  });
 });

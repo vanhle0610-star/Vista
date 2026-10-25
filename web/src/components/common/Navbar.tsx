@@ -175,7 +175,7 @@ export function Navbar({
       id: 'community',
       labelVi: 'Cộng đồng',
       labelEn: 'Community',
-      href: '/#community',
+      href: '/community',
       badge: null,
     },
   ];

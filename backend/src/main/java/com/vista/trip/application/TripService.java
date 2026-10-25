@@ -11,11 +11,11 @@ import com.vista.trip.domain.TripMemberStatus;
 import com.vista.trip.domain.TripRepository;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.http.HttpStatus;
 
 @Service
 @Transactional
@@ -43,10 +43,13 @@ public class TripService {
           HttpStatus.BAD_REQUEST, "Ngày kết thúc phải sau hoặc bằng ngày bắt đầu");
     }
 
-    TripEntity trip = new TripEntity(ownerId, request.title(), request.startDate(), request.endDate());
-    if (request.destinationSummary() != null) trip.setDestinationSummary(request.destinationSummary());
+    TripEntity trip =
+        new TripEntity(ownerId, request.title(), request.startDate(), request.endDate());
+    if (request.destinationSummary() != null)
+      trip.setDestinationSummary(request.destinationSummary());
     if (request.budgetTotal() != null) trip.setBudgetTotal(request.budgetTotal());
-    if (request.currency() != null && !request.currency().isBlank()) trip.setCurrency(request.currency());
+    if (request.currency() != null && !request.currency().isBlank())
+      trip.setCurrency(request.currency());
 
     TripEntity saved = tripRepository.save(trip);
 
@@ -68,10 +71,7 @@ public class TripService {
   /** Lấy danh sách trip của user hiện tại (owner + member). */
   @Transactional(readOnly = true)
   public List<TripResponse> getMyTrips(UUID userId) {
-    return tripRepository.findAllAccessibleByUser(userId)
-        .stream()
-        .map(TripResponse::from)
-        .toList();
+    return tripRepository.findAllAccessibleByUser(userId).stream().map(TripResponse::from).toList();
   }
 
   /** Cập nhật trip — chỉ owner mới được phép. */
@@ -82,9 +82,11 @@ public class TripService {
     if (request.title() != null) trip.setTitle(request.title());
     if (request.startDate() != null) trip.setStartDate(request.startDate());
     if (request.endDate() != null) trip.setEndDate(request.endDate());
-    if (request.destinationSummary() != null) trip.setDestinationSummary(request.destinationSummary());
+    if (request.destinationSummary() != null)
+      trip.setDestinationSummary(request.destinationSummary());
     if (request.budgetTotal() != null) trip.setBudgetTotal(request.budgetTotal());
-    if (request.currency() != null && !request.currency().isBlank()) trip.setCurrency(request.currency());
+    if (request.currency() != null && !request.currency().isBlank())
+      trip.setCurrency(request.currency());
     if (request.status() != null) trip.setStatus(request.status());
     if (request.visibility() != null) trip.setVisibility(request.visibility());
 
@@ -118,8 +120,7 @@ public class TripService {
             .orElseThrow(
                 () ->
                     new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Không tìm thấy thành viên trong chuyến đi"));
+                        HttpStatus.NOT_FOUND, "Không tìm thấy thành viên trong chuyến đi"));
     member.setStatus(TripMemberStatus.REMOVED);
     tripMemberRepository.save(member);
   }
@@ -129,7 +130,8 @@ public class TripService {
     boolean isOwner = tripAccessService.isOwner(tripId, userId);
     if (isOwner) {
       throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST, "Chủ sở hữu không thể tự rời chuyến đi. Vui lòng chuyển quyền trước.");
+          HttpStatus.BAD_REQUEST,
+          "Chủ sở hữu không thể tự rời chuyến đi. Vui lòng chuyển quyền trước.");
     }
     tripAccessService.requireMember(tripId, userId);
 
@@ -144,7 +146,9 @@ public class TripService {
     tripMemberRepository.save(member);
   }
 
-  /** Chuyển quyền Owner (TV2 W4) — chỉ owner hiện tại mới được phép chuyển cho một active member. */
+  /**
+   * Chuyển quyền Owner (TV2 W4) — chỉ owner hiện tại mới được phép chuyển cho một active member.
+   */
   public TripResponse transferOwner(UUID tripId, UUID currentUserId, UUID newOwnerId) {
     if (currentUserId.equals(newOwnerId)) {
       throw new ResponseStatusException(
@@ -161,7 +165,8 @@ public class TripService {
             .orElseThrow(
                 () ->
                     new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST, "Người nhận quyền phải là thành viên của chuyến đi"));
+                        HttpStatus.BAD_REQUEST,
+                        "Người nhận quyền phải là thành viên của chuyến đi"));
 
     if (newOwnerMember.getStatus() != TripMemberStatus.ACTIVE) {
       throw new ResponseStatusException(
@@ -174,7 +179,8 @@ public class TripService {
             .orElseThrow(
                 () ->
                     new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Không tìm thấy bản ghi thành viên của chủ sở hữu hiện tại"));
+                        HttpStatus.NOT_FOUND,
+                        "Không tìm thấy bản ghi thành viên của chủ sở hữu hiện tại"));
 
     // 1. Demote old owner to VIEWER (hoặc EDITOR)
     oldOwnerMember.setRole(TripMemberRole.VIEWER);

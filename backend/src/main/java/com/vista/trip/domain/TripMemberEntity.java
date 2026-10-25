@@ -81,21 +81,51 @@ public class TripMemberEntity {
 
   // ── Getters / Setters ──────────────────────────────────────────────────────
 
-  public TripEntity getTrip() { return trip; }
-  public void setTrip(TripEntity trip) { this.trip = trip; }
+  public TripEntity getTrip() {
+    return trip;
+  }
 
-  public UUID getUserId() { return userId; }
-  public void setUserId(UUID userId) { this.userId = userId; }
+  public void setTrip(TripEntity trip) {
+    this.trip = trip;
+  }
 
-  public TripMemberRole getRole() { return role; }
-  public void setRole(TripMemberRole role) { this.role = role; }
+  public UUID getUserId() {
+    return userId;
+  }
 
-  public TripMemberStatus getStatus() { return status; }
-  public void setStatus(TripMemberStatus status) { this.status = status; }
+  public void setUserId(UUID userId) {
+    this.userId = userId;
+  }
 
-  public Instant getJoinedAt() { return joinedAt; }
-  public void setJoinedAt(Instant joinedAt) { this.joinedAt = joinedAt; }
+  public TripMemberRole getRole() {
+    return role;
+  }
 
-  public BigDecimal getBudgetShare() { return budgetShare; }
-  public void setBudgetShare(BigDecimal budgetShare) { this.budgetShare = budgetShare; }
+  public void setRole(TripMemberRole role) {
+    this.role = role;
+  }
+
+  public TripMemberStatus getStatus() {
+    return status;
+  }
+
+  public void setStatus(TripMemberStatus status) {
+    this.status = status;
+  }
+
+  public Instant getJoinedAt() {
+    return joinedAt;
+  }
+
+  public void setJoinedAt(Instant joinedAt) {
+    this.joinedAt = joinedAt;
+  }
+
+  public BigDecimal getBudgetShare() {
+    return budgetShare;
+  }
+
+  public void setBudgetShare(BigDecimal budgetShare) {
+    this.budgetShare = budgetShare;
+  }
 }
