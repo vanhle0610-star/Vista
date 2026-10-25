@@ -1,6 +1,17 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
+import {
+  ArrowLeft,
+  Calendar,
+  MapPin,
+  Users,
+  Plus,
+  Compass,
+  FileDown,
+  Share2,
+} from 'lucide-react';
 import type { TripDetail } from '../types';
 import styles from '../treasury.module.css';
 
@@ -10,70 +21,123 @@ interface TripHeaderProps {
   onOpenAddExpense: () => void;
 }
 
-export function TripHeader({ trip, memberCount, onOpenAddExpense }: TripHeaderProps) {
+export function TripHeader({
+  trip,
+  memberCount,
+  onOpenAddExpense,
+}: TripHeaderProps) {
+  const normalizeDateStr = (dateStr?: string) => {
+    if (!dateStr) return '';
+    const clean = dateStr.trim();
+    if (clean.includes('-')) {
+      const parts = clean.split('-');
+      if (parts.length === 3) {
+        return `${parts[2].padStart(2, '0')}/${parts[1].padStart(2, '0')}/${parts[0]}`;
+      }
+    }
+    if (clean.includes('/')) {
+      const parts = clean.split('/');
+      if (parts.length === 2) {
+        return `${parts[0].padStart(2, '0')}/${parts[1].padStart(2, '0')}/2026`;
+      }
+      if (parts.length === 3) {
+        return `${parts[0].padStart(2, '0')}/${parts[1].padStart(2, '0')}/${parts[2]}`;
+      }
+    }
+    return clean;
+  };
+
   const formatDateRange = (start?: string, end?: string) => {
-    if (!start || !end) return '24/10/2026 – 27/10/2026';
-    const s = new Date(start);
-    const e = new Date(end);
-    const sStr = `${String(s.getDate()).padStart(2, '0')}/${String(s.getMonth() + 1).padStart(2, '0')}/${s.getFullYear()}`;
-    const eStr = `${String(e.getDate()).padStart(2, '0')}/${String(e.getMonth() + 1).padStart(2, '0')}/${e.getFullYear()}`;
-    return `${sStr} – ${eStr}`;
+    const s = normalizeDateStr(start);
+    const e = normalizeDateStr(end);
+    if (!s && !e) return 'Chưa thiết lập ngày';
+    if (s && e) return `${s} – ${e}`;
+    return s || e;
+  };
+
+  const getStatusLabel = (status?: string) => {
+    switch (status) {
+      case 'ACTIVE':
+      case 'IN_PROGRESS':
+        return 'Đang diễn ra';
+      case 'COMPLETED':
+        return 'Hoàn tất';
+      default:
+        return 'Chuẩn bị';
+    }
   };
 
   return (
-    <header>
-      <div className={styles.breadcrumbRow}>
-        <span>‹</span>
-        <span>Chuyến đi của nhóm</span>
+    <header className={styles.headerWrapper}>
+      {/* Breadcrumb Navigation */}
+      <div className={styles.breadcrumbBar}>
+        <Link href={`/trips/${trip.id}`} className={styles.breadcrumbLink}>
+          <ArrowLeft size={16} />
+          <span>Chi tiết chuyến đi</span>
+        </Link>
+        <span className={styles.breadcrumbDivider}>/</span>
+        <span className={styles.breadcrumbCurrent}>Sổ quỹ & Quản lý Chi tiêu</span>
       </div>
 
       <div className={styles.tripHeaderBox}>
         <div className={styles.tripTitleGroup}>
           <div className={styles.titleWithBadge}>
             <h1 className={styles.tripTitle}>{trip.title}</h1>
-            <span style={{ cursor: 'pointer', fontSize: '18px' }} title="Chỉnh sửa">
-              ✏️
-            </span>
             <div className={styles.statusPill}>
               <span className={styles.statusDot} />
-              <span>{trip.status === 'IN_PROGRESS' ? 'ĐANG DIỄN RA' : trip.status}</span>
+              <span>{getStatusLabel(trip.status)}</span>
             </div>
           </div>
 
           <div className={styles.tripMetaRow}>
+            {trip.destinationSummary && (
+              <>
+                <div className={styles.tripMetaItem}>
+                  <MapPin size={15} color="#0284c7" />
+                  <span>{trip.destinationSummary}</span>
+                </div>
+                <span className={styles.metaDot}>•</span>
+              </>
+            )}
             <div className={styles.tripMetaItem}>
-              <span>📅</span>
+              <Calendar size={15} color="#0284c7" />
               <span>{formatDateRange(trip.startDate, trip.endDate)}</span>
             </div>
-            <span>•</span>
+            <span className={styles.metaDot}>•</span>
             <div className={styles.tripMetaItem}>
-              <span>👥</span>
-              <span>{memberCount} thành viên</span>
+              <Users size={15} color="#0284c7" />
+              <span>{memberCount} thành viên tham gia</span>
             </div>
           </div>
         </div>
 
         <div className={styles.headerActionButtons}>
-          <button type="button" className={styles.btnSecondary} onClick={() => alert('Chỉnh sửa thông tin chuyến đi')}>
-            <span>✏️</span>
-            <span>Chỉnh sửa chuyến đi</span>
-          </button>
-          <button type="button" className={styles.btnSecondary} onClick={() => window.print()}>
-            <span>📥</span>
-            <span>Xuất báo cáo</span>
-          </button>
+          <Link
+            href={`/trips/${trip.id}`}
+            className={styles.btnSecondary}
+            title="Xem lịch trình chi tiết từng ngày"
+          >
+            <Compass size={16} />
+            <span>Lịch trình</span>
+          </Link>
+
           <button
             type="button"
             className={styles.btnSecondary}
-            onClick={() => {
-              if (navigator.clipboard) {
-                navigator.clipboard.writeText(window.location.href);
-                alert('Đã sao chép liên kết chuyến đi!');
-              }
-            }}
+            onClick={() => window.print()}
+            title="Xuất báo cáo thu chi nhóm"
           >
-            <span>🔗</span>
-            <span>Chia sẻ</span>
+            <FileDown size={16} />
+            <span>Xuất báo cáo</span>
+          </button>
+
+          <button
+            type="button"
+            className={styles.btnPrimaryHighlight}
+            onClick={onOpenAddExpense}
+          >
+            <Plus size={18} />
+            <span>Ghi nhận chi tiêu</span>
           </button>
         </div>
       </div>

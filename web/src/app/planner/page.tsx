@@ -6,7 +6,23 @@ import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { Navbar } from '@/components/common/Navbar';
 import type { DestinationMarker } from '@/features/map-location/types';
+import { getRealPlacesByProvince } from '@/data/realDestinationsData';
 import styles from './planner.module.css';
+import {
+  Palmtree,
+  Landmark,
+  UtensilsCrossed,
+  Trees,
+  FerrisWheel,
+  Camera,
+  Coffee,
+  MoonStar,
+  Mountain,
+  Flower2,
+  Sailboat,
+  ShoppingBag,
+  Check,
+} from 'lucide-react';
 
 // Dynamic import for MapLibre map adapter (client-side only to avoid SSR issues)
 const MapViewAdapter = dynamic(
@@ -73,62 +89,62 @@ export interface DestinationOption {
 // 34 Provinces integrated from database seed (T4)
 const DESTINATION_LIST: DestinationOption[] = [
   // Miền Trung & Tây Nguyên
-  { id: 'danang', nameVi: 'Đà Nẵng', province: 'Đà Nẵng', region: 'Trung', lat: 16.0544, lng: 108.2022, photo: '/images/danang_bana_day.jpg' },
-  { id: 'hue', nameVi: 'Thừa Thiên Huế', province: 'Thừa Thiên Huế', region: 'Trung', lat: 16.4637, lng: 107.5909, photo: '/images/vietnam_panoramic_day.jpg' },
-  { id: 'quangnam', nameVi: 'Hội An (Quảng Nam)', province: 'Quảng Nam', region: 'Trung', lat: 15.8801, lng: 108.3380, photo: '/images/vietnam_panoramic_day.jpg' },
-  { id: 'khanhhoa', nameVi: 'Nha Trang (Khánh Hòa)', province: 'Khánh Hòa', region: 'Trung', lat: 12.2388, lng: 109.1967, photo: '/images/vietnam_panoramic_day.jpg' },
-  { id: 'lamdong', nameVi: 'Đà Lạt (Lâm Đồng)', province: 'Lâm Đồng', region: 'Trung', lat: 11.9404, lng: 108.4583, photo: '/images/tay_nguyen_highlands.jpg' },
-  { id: 'thanhhoa', nameVi: 'Thanh Hóa', province: 'Thanh Hóa', region: 'Trung', lat: 19.8075, lng: 105.7764, photo: '/images/halong_hanoi_day.jpg' },
-  { id: 'nghean', nameVi: 'Nghệ An', province: 'Nghệ An', region: 'Trung', lat: 18.6734, lng: 105.6813, photo: '/images/vietnam_panoramic_day.jpg' },
-  { id: 'hatinh', nameVi: 'Hà Tĩnh', province: 'Hà Tĩnh', region: 'Trung', lat: 18.3432, lng: 105.9059, photo: '/images/vietnam_panoramic_day.jpg' },
-  { id: 'quangtri', nameVi: 'Quảng Trị', province: 'Quảng Trị', region: 'Trung', lat: 16.7497, lng: 107.1854, photo: '/images/vietnam_panoramic_day.jpg' },
-  { id: 'quangngai', nameVi: 'Quảng Ngãi', province: 'Quảng Ngãi', region: 'Trung', lat: 15.1205, lng: 108.7923, photo: '/images/vietnam_panoramic_day.jpg' },
-  { id: 'gialai', nameVi: 'Gia Lai (Pleiku)', province: 'Gia Lai', region: 'Trung', lat: 13.9833, lng: 108.0000, photo: '/images/tay_nguyen_highlands.jpg' },
-  { id: 'daklak', nameVi: 'Đắk Lắk (Buôn Ma Thuột)', province: 'Đắk Lắk', region: 'Trung', lat: 12.6667, lng: 108.0500, photo: '/images/tay_nguyen_highlands.jpg' },
+  { id: 'danang', nameVi: 'Đà Nẵng', province: 'Đà Nẵng', region: 'Trung', lat: 16.0544, lng: 108.2022, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_real.jpg' },
+  { id: 'hue', nameVi: 'Thừa Thiên Huế', province: 'Thừa Thiên Huế', region: 'Trung', lat: 16.4637, lng: 107.5909, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/hue_real.jpg' },
+  { id: 'quangnam', nameVi: 'Hội An (Quảng Nam)', province: 'Quảng Nam', region: 'Trung', lat: 15.8801, lng: 108.3380, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/hoian_real.jpg' },
+  { id: 'khanhhoa', nameVi: 'Nha Trang (Khánh Hòa)', province: 'Khánh Hòa', region: 'Trung', lat: 12.2388, lng: 109.1967, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_real.jpg' },
+  { id: 'lamdong', nameVi: 'Đà Lạt (Lâm Đồng)', province: 'Lâm Đồng', region: 'Trung', lat: 11.9404, lng: 108.4583, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/dalat_real.jpg' },
+  { id: 'thanhhoa', nameVi: 'Thanh Hóa', province: 'Thanh Hóa', region: 'Trung', lat: 19.8075, lng: 105.7764, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/ninhbinh_real.jpg' },
+  { id: 'nghean', nameVi: 'Nghệ An', province: 'Nghệ An', region: 'Trung', lat: 18.6734, lng: 105.6813, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/hue_real.jpg' },
+  { id: 'hatinh', nameVi: 'Hà Tĩnh', province: 'Hà Tĩnh', region: 'Trung', lat: 18.3432, lng: 105.9059, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/hue_real.jpg' },
+  { id: 'quangtri', nameVi: 'Quảng Trị', province: 'Quảng Trị', region: 'Trung', lat: 16.7497, lng: 107.1854, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/hue_real.jpg' },
+  { id: 'quangngai', nameVi: 'Quảng Ngãi', province: 'Quảng Ngãi', region: 'Trung', lat: 15.1205, lng: 108.7923, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/hoian_real.jpg' },
+  { id: 'gialai', nameVi: 'Gia Lai (Pleiku)', province: 'Gia Lai', region: 'Trung', lat: 13.9833, lng: 108.0000, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/dalat_real.jpg' },
+  { id: 'daklak', nameVi: 'Đắk Lắk (Buôn Ma Thuột)', province: 'Đắk Lắk', region: 'Trung', lat: 12.6667, lng: 108.0500, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/dalat_real.jpg' },
 
   // Miền Bắc
-  { id: 'hanoi', nameVi: 'Hà Nội', province: 'Hà Nội', region: 'Bắc', lat: 21.0285, lng: 105.8542, photo: '/images/halong_hanoi_day.jpg' },
-  { id: 'quangninh', nameVi: 'Vịnh Hạ Long (Quảng Ninh)', province: 'Quảng Ninh', region: 'Bắc', lat: 20.9505, lng: 107.0734, photo: '/images/halong_hanoi_day.jpg' },
-  { id: 'ninhbinh', nameVi: 'Ninh Bình', province: 'Ninh Bình', region: 'Bắc', lat: 20.2506, lng: 105.9745, photo: '/images/vietnam_panoramic_night.jpg' },
-  { id: 'haiphong', nameVi: 'Hải Phòng', province: 'Hải Phòng', region: 'Bắc', lat: 20.8449, lng: 106.6881, photo: '/images/halong_hanoi_day.jpg' },
-  { id: 'laocai', nameVi: 'Sa Pa (Lào Cai)', province: 'Lào Cai', region: 'Bắc', lat: 22.3364, lng: 103.8438, photo: '/images/tay_nguyen_highlands.jpg' },
-  { id: 'laichau', nameVi: 'Lai Châu', province: 'Lai Châu', region: 'Bắc', lat: 22.3964, lng: 103.4619, photo: '/images/tay_nguyen_highlands.jpg' },
-  { id: 'dienbien', nameVi: 'Điện Biên', province: 'Điện Biên', region: 'Bắc', lat: 21.3860, lng: 103.0230, photo: '/images/tay_nguyen_highlands.jpg' },
-  { id: 'sonla', nameVi: 'Mộc Châu (Sơn La)', province: 'Sơn La', region: 'Bắc', lat: 20.8456, lng: 104.6496, photo: '/images/tay_nguyen_highlands.jpg' },
-  { id: 'caobang', nameVi: 'Cao Bằng', province: 'Cao Bằng', region: 'Bắc', lat: 22.6657, lng: 105.9739, photo: '/images/tay_nguyen_highlands.jpg' },
-  { id: 'langson', nameVi: 'Lạng Sơn', province: 'Lạng Sơn', region: 'Bắc', lat: 21.8537, lng: 106.7615, photo: '/images/tay_nguyen_highlands.jpg' },
-  { id: 'tuyenquang', nameVi: 'Tuyên Quang', province: 'Tuyên Quang', region: 'Bắc', lat: 21.8234, lng: 105.2140, photo: '/images/tay_nguyen_highlands.jpg' },
-  { id: 'thainguyen', nameVi: 'Thái Nguyên', province: 'Thái Nguyên', region: 'Bắc', lat: 21.5928, lng: 105.8442, photo: '/images/tay_nguyen_highlands.jpg' },
-  { id: 'phutho', nameVi: 'Phú Thọ', province: 'Phú Thọ', region: 'Bắc', lat: 21.3228, lng: 105.4019, photo: '/images/tay_nguyen_highlands.jpg' },
-  { id: 'bacninh', nameVi: 'Bắc Ninh', province: 'Bắc Ninh', region: 'Bắc', lat: 21.1861, lng: 106.0763, photo: '/images/vietnam_panoramic_day.jpg' },
-  { id: 'hungyen', nameVi: 'Hưng Yên', province: 'Hưng Yên', region: 'Bắc', lat: 20.6464, lng: 106.0511, photo: '/images/vietnam_panoramic_day.jpg' },
+  { id: 'hanoi', nameVi: 'Hà Nội', province: 'Hà Nội', region: 'Bắc', lat: 21.0285, lng: 105.8542, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/hanoi_real.jpg' },
+  { id: 'quangninh', nameVi: 'Vịnh Hạ Long (Quảng Ninh)', province: 'Quảng Ninh', region: 'Bắc', lat: 20.9505, lng: 107.0734, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/halong_real.jpg' },
+  { id: 'ninhbinh', nameVi: 'Ninh Bình', province: 'Ninh Bình', region: 'Bắc', lat: 20.2506, lng: 105.9745, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/ninhbinh_real.jpg' },
+  { id: 'haiphong', nameVi: 'Hải Phòng', province: 'Hải Phòng', region: 'Bắc', lat: 20.8449, lng: 106.6881, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/halong_real.jpg' },
+  { id: 'laocai', nameVi: 'Sa Pa (Lào Cai)', province: 'Lào Cai', region: 'Bắc', lat: 22.3364, lng: 103.8438, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/sapa_real.jpg' },
+  { id: 'laichau', nameVi: 'Lai Châu', province: 'Lai Châu', region: 'Bắc', lat: 22.3964, lng: 103.4619, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_lungcu_hero.jpg' },
+  { id: 'dienbien', nameVi: 'Điện Biên', province: 'Điện Biên', region: 'Bắc', lat: 21.3860, lng: 103.0230, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_lungcu_hero.jpg' },
+  { id: 'sonla', nameVi: 'Mộc Châu (Sơn La)', province: 'Sơn La', region: 'Bắc', lat: 20.8456, lng: 104.6496, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/sapa_real.jpg' },
+  { id: 'caobang', nameVi: 'Cao Bằng', province: 'Cao Bằng', region: 'Bắc', lat: 22.6657, lng: 105.9739, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_lungcu_hero.jpg' },
+  { id: 'langson', nameVi: 'Lạng Sơn', province: 'Lạng Sơn', region: 'Bắc', lat: 21.8537, lng: 106.7615, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_lungcu_hero.jpg' },
+  { id: 'tuyenquang', nameVi: 'Tuyên Quang', province: 'Tuyên Quang', region: 'Bắc', lat: 21.8234, lng: 105.2140, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/sapa_real.jpg' },
+  { id: 'thainguyen', nameVi: 'Thái Nguyên', province: 'Thái Nguyên', region: 'Bắc', lat: 21.5928, lng: 105.8442, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/dalat_real.jpg' },
+  { id: 'phutho', nameVi: 'Phú Thọ', province: 'Phú Thọ', region: 'Bắc', lat: 21.3228, lng: 105.4019, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/ninhbinh_real.jpg' },
+  { id: 'bacninh', nameVi: 'Bắc Ninh', province: 'Bắc Ninh', region: 'Bắc', lat: 21.1861, lng: 106.0763, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/hanoi_real.jpg' },
+  { id: 'hungyen', nameVi: 'Hưng Yên', province: 'Hưng Yên', region: 'Bắc', lat: 20.6464, lng: 106.0511, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/hanoi_real.jpg' },
 
   // Miền Nam & ĐBSCL
-  { id: 'saigon', nameVi: 'TP. Hồ Chí Minh', province: 'Hồ Chí Minh', region: 'Nam', lat: 10.7769, lng: 106.7009, photo: '/images/saigon_south_day.jpg' },
-  { id: 'phuquoc', nameVi: 'Phú Quốc (Kiên Giang)', province: 'Kiên Giang', region: 'Nam', lat: 10.2899, lng: 103.9840, photo: '/images/vietnam_panoramic_day.jpg' },
-  { id: 'cantho', nameVi: 'Cần Thơ', province: 'Cần Thơ', region: 'Nam', lat: 10.0452, lng: 105.7469, photo: '/images/saigon_south_day.jpg' },
-  { id: 'tayninh', nameVi: 'Tây Ninh', province: 'Tây Ninh', region: 'Nam', lat: 11.3100, lng: 106.0983, photo: '/images/saigon_south_day.jpg' },
-  { id: 'dongnai', nameVi: 'Đồng Nai', province: 'Đồng Nai', region: 'Nam', lat: 10.9574, lng: 106.8427, photo: '/images/saigon_south_day.jpg' },
-  { id: 'vinhlong', nameVi: 'Vĩnh Long', province: 'Vĩnh Long', region: 'Nam', lat: 10.2537, lng: 105.9722, photo: '/images/saigon_south_day.jpg' },
-  { id: 'dongthap', nameVi: 'Đồng Tháp', province: 'Đồng Tháp', region: 'Nam', lat: 10.4638, lng: 105.6328, photo: '/images/saigon_south_day.jpg' },
-  { id: 'angiang', nameVi: 'An Giang', province: 'An Giang', region: 'Nam', lat: 10.3831, lng: 105.4358, photo: '/images/saigon_south_day.jpg' },
-  { id: 'camau', nameVi: 'Cà Mau', province: 'Cà Mau', region: 'Nam', lat: 9.1769, lng: 105.1524, photo: '/images/saigon_south_day.jpg' },
+  { id: 'saigon', nameVi: 'TP. Hồ Chí Minh', province: 'Hồ Chí Minh', region: 'Nam', lat: 10.7769, lng: 106.7009, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/saigon_real.jpg' },
+  { id: 'phuquoc', nameVi: 'Phú Quốc (Kiên Giang)', province: 'Kiên Giang', region: 'Nam', lat: 10.2899, lng: 103.9840, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/phuquoc_real.jpg' },
+  { id: 'cantho', nameVi: 'Cần Thơ', province: 'Cần Thơ', region: 'Nam', lat: 10.0452, lng: 105.7469, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/cantho_cairang.jpg' },
+  { id: 'tayninh', nameVi: 'Tây Ninh', province: 'Tây Ninh', region: 'Nam', lat: 11.3100, lng: 106.0983, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/tayninh_nuibaden.jpg' },
+  { id: 'dongnai', nameVi: 'Đồng Nai', province: 'Đồng Nai', region: 'Nam', lat: 10.9574, lng: 106.8427, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/saigon_real.jpg' },
+  { id: 'vinhlong', nameVi: 'Vĩnh Long', province: 'Vĩnh Long', region: 'Nam', lat: 10.2537, lng: 105.9722, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/saigon_real.jpg' },
+  { id: 'dongthap', nameVi: 'Đồng Tháp', province: 'Đồng Tháp', region: 'Nam', lat: 10.4638, lng: 105.6328, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/dongthap_tramchim.jpg' },
+  { id: 'angiang', nameVi: 'An Giang', province: 'An Giang', region: 'Nam', lat: 10.3831, lng: 105.4358, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/angiang_trasu.jpg' },
+  { id: 'camau', nameVi: 'Cà Mau', province: 'Cà Mau', region: 'Nam', lat: 9.1769, lng: 105.1524, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/camau_real.jpg' },
 ];
 
-// 12 Refined & Compact Travel Styles (T2)
+// 12 Refined & Compact Travel Styles (T2) with professional vector icons & themed colors
 const TRAVEL_STYLES = [
-  { id: 'beach', label: 'Biển & Nghỉ dưỡng', emoji: '🌊' },
-  { id: 'culture', label: 'Văn hóa & Di sản', emoji: '🏛️' },
-  { id: 'cuisine', label: 'Ẩm thực bản địa', emoji: '🍜' },
-  { id: 'nature', label: 'Thiên nhiên sinh thái', emoji: '🌲' },
-  { id: 'entertainment', label: 'Vui chơi giải trí', emoji: '🎡' },
-  { id: 'photo', label: 'Check-in sống ảo', emoji: '📸' },
-  { id: 'cafe', label: 'Cà phê & Thư giãn', emoji: '☕' },
-  { id: 'nightlife', label: 'Chợ đêm & Phố đi bộ', emoji: '🏮' },
-  { id: 'adventure', label: 'Trekking & Khám phá', emoji: '⛰️' },
-  { id: 'wellness', label: 'Khoáng nóng & Spa', emoji: '🧖' },
-  { id: 'watersports', label: 'Chèo Sup & Lặn biển', emoji: '🛶' },
-  { id: 'crafts', label: 'Làng nghề & Mua sắm', emoji: '🛍️' },
+  { id: 'beach', label: 'Biển & Nghỉ dưỡng', icon: Palmtree, color: '#0284C7', bg: '#E0F2FE', activeBg: '#BAE6FD' },
+  { id: 'culture', label: 'Văn hóa & Di sản', icon: Landmark, color: '#B45309', bg: '#FEF3C7', activeBg: '#FDE68A' },
+  { id: 'cuisine', label: 'Ẩm thực bản địa', icon: UtensilsCrossed, color: '#E11D48', bg: '#FFE4E6', activeBg: '#FECDD3' },
+  { id: 'nature', label: 'Thiên nhiên sinh thái', icon: Trees, color: '#16A34A', bg: '#DCFCE7', activeBg: '#BBF7D0' },
+  { id: 'entertainment', label: 'Vui chơi giải trí', icon: FerrisWheel, color: '#7C3AED', bg: '#F3E8FF', activeBg: '#DDD6FE' },
+  { id: 'photo', label: 'Check-in sống ảo', icon: Camera, color: '#DB2777', bg: '#FCE7F3', activeBg: '#FBCFE8' },
+  { id: 'cafe', label: 'Cà phê & Thư giãn', icon: Coffee, color: '#92400E', bg: '#FEF3C7', activeBg: '#FDE68A' },
+  { id: 'nightlife', label: 'Chợ đêm & Phố đi bộ', icon: MoonStar, color: '#4F46E5', bg: '#EEF2FF', activeBg: '#E0E7FF' },
+  { id: 'adventure', label: 'Trekking & Khám phá', icon: Mountain, color: '#0D9488', bg: '#CCFBF1', activeBg: '#99F6E4' },
+  { id: 'wellness', label: 'Khoáng nóng & Spa', icon: Flower2, color: '#059669', bg: '#D1FAE5', activeBg: '#A7F3D0' },
+  { id: 'watersports', label: 'Chèo Sup & Lặn biển', icon: Sailboat, color: '#0284C7', bg: '#E0F2FE', activeBg: '#BAE6FD' },
+  { id: 'crafts', label: 'Làng nghề & Mua sắm', icon: ShoppingBag, color: '#D97706', bg: '#FEF3C7', activeBg: '#FDE68A' },
 ];
 
 const DURATION_CHIPS = [
@@ -163,7 +179,7 @@ const INITIAL_DANANG_DAYS: DayPlan[] = [
         costVnd: 0,
         costLabel: 'Miễn phí',
         tip: 'Ưu tiên trang phục lịch sự khi vào khuôn viên chùa.',
-        photoUrl: '/images/danang_bana_day.jpg',
+        photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_bana_day.jpg',
         transferTimeAfter: 'Di chuyển khoảng 25 phút',
       },
       {
@@ -176,7 +192,7 @@ const INITIAL_DANANG_DAYS: DayPlan[] = [
         location: 'Quận Hải Châu, Đà Nẵng',
         costVnd: 240000,
         costLabel: '240.000đ / nhóm',
-        photoUrl: '/images/vietnam_panoramic_day.jpg',
+        photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_panoramic_day.jpg',
         transferTimeAfter: 'Di chuyển khoảng 15 phút',
       },
       {
@@ -189,7 +205,7 @@ const INITIAL_DANANG_DAYS: DayPlan[] = [
         location: 'Bãi biển Mỹ Khê, Đà Nẵng',
         costVnd: 120000,
         costLabel: '120.000đ / nhóm',
-        photoUrl: '/images/halong_hanoi_day.jpg',
+        photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/halong_hanoi_day.jpg',
         transferTimeAfter: 'Di chuyển khoảng 20 phút',
       },
       {
@@ -202,7 +218,7 @@ const INITIAL_DANANG_DAYS: DayPlan[] = [
         location: 'Bờ Đông Sông Hàn, Đà Nẵng',
         costVnd: 500000,
         costLabel: '500.000đ / nhóm',
-        photoUrl: '/images/danang_bana_night.jpg',
+        photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_bana_night.jpg',
       },
     ],
   },
@@ -221,7 +237,7 @@ const INITIAL_DANANG_DAYS: DayPlan[] = [
         location: 'Sun World Bà Nà Hills, Đà Nẵng',
         costVnd: 900000,
         costLabel: '900.000đ / người',
-        photoUrl: '/images/danang_bana_day.jpg',
+        photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_bana_day.jpg',
         transferTimeAfter: 'Di chuyển nội khu cáp treo',
       },
       {
@@ -234,7 +250,7 @@ const INITIAL_DANANG_DAYS: DayPlan[] = [
         location: 'Làng Pháp, Bà Nà Hills',
         costVnd: 700000,
         costLabel: '700.000đ / nhóm',
-        photoUrl: '/images/saigon_south_day.jpg',
+        photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/saigon_south_day.jpg',
         transferTimeAfter: 'Di chuyển 5 phút',
       },
       {
@@ -247,7 +263,7 @@ const INITIAL_DANANG_DAYS: DayPlan[] = [
         location: 'Fantasy Park, Bà Nà Hills',
         costVnd: 0,
         costLabel: 'Miễn phí kèm vé',
-        photoUrl: '/images/tay_nguyen_highlands.jpg',
+        photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/tay_nguyen_highlands.jpg',
         transferTimeAfter: 'Di chuyển về trung tâm 45 phút',
       },
       {
@@ -260,7 +276,7 @@ const INITIAL_DANANG_DAYS: DayPlan[] = [
         location: 'Bến du thuyền sông Hàn',
         costVnd: 300000,
         costLabel: '300.000đ / nhóm',
-        photoUrl: '/images/danang_bana_night.jpg',
+        photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_bana_night.jpg',
       },
     ],
   },
@@ -279,7 +295,7 @@ const INITIAL_DANANG_DAYS: DayPlan[] = [
         location: 'Quận Ngũ Hành Sơn, Đà Nẵng',
         costVnd: 80000,
         costLabel: '80.000đ / nhóm',
-        photoUrl: '/images/vietnam_panoramic_day.jpg',
+        photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_panoramic_day.jpg',
         transferTimeAfter: 'Di chuyển khoảng 20 phút',
       },
       {
@@ -292,7 +308,7 @@ const INITIAL_DANANG_DAYS: DayPlan[] = [
         location: 'Kiệt 280 Hoàng Diệu, Hải Châu',
         costVnd: 180000,
         costLabel: '180.000đ / nhóm',
-        photoUrl: '/images/saigon_south_day.jpg',
+        photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/saigon_south_day.jpg',
         transferTimeAfter: 'Di chuyển khoảng 10 phút',
       },
       {
@@ -305,7 +321,7 @@ const INITIAL_DANANG_DAYS: DayPlan[] = [
         location: 'Đường Trần Phú, Hải Châu',
         costVnd: 200000,
         costLabel: '200.000đ / nhóm',
-        photoUrl: '/images/danang_bana_day.jpg',
+        photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_bana_day.jpg',
         transferTimeAfter: 'Di chuyển khoảng 15 phút',
       },
       {
@@ -318,7 +334,7 @@ const INITIAL_DANANG_DAYS: DayPlan[] = [
         location: 'Đường Bạch Đằng, Đà Nẵng',
         costVnd: 80000,
         costLabel: '80.000đ / nhóm',
-        photoUrl: '/images/danang_bana_night.jpg',
+        photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_bana_night.jpg',
       },
     ],
   },
@@ -342,7 +358,7 @@ const INITIAL_PHUQUOC_DAYS: DayPlan[] = [
         costVnd: 0,
         costLabel: 'Miễn phí',
         tip: 'Nên đi sáng sớm để chụp ảnh vắng người và ánh sáng đẹp nhất.',
-        photoUrl: '/images/vietnam_panoramic_day.jpg',
+        photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_panoramic_day.jpg',
         transferTimeAfter: 'Di chuyển khoảng 15 phút',
       },
       {
@@ -355,7 +371,7 @@ const INITIAL_PHUQUOC_DAYS: DayPlan[] = [
         location: 'Dương Đông, Phú Quốc',
         costVnd: 130000,
         costLabel: '130.000đ / nhóm',
-        photoUrl: '/images/danang_bana_day.jpg',
+        photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_bana_day.jpg',
         transferTimeAfter: 'Di chuyển khoảng 20 phút',
       },
       {
@@ -368,7 +384,7 @@ const INITIAL_PHUQUOC_DAYS: DayPlan[] = [
         location: 'Gành Dầu, Phú Quốc',
         costVnd: 1300000,
         costLabel: '1.300.000đ / nhóm',
-        photoUrl: '/images/tay_nguyen_highlands.jpg',
+        photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/tay_nguyen_highlands.jpg',
         transferTimeAfter: 'Di chuyển khoảng 25 phút',
       },
       {
@@ -381,7 +397,7 @@ const INITIAL_PHUQUOC_DAYS: DayPlan[] = [
         location: 'Phường Dương Đông, Phú Quốc',
         costVnd: 500000,
         costLabel: '500.000đ / nhóm',
-        photoUrl: '/images/danang_bana_night.jpg',
+        photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_bana_night.jpg',
       },
     ],
   },
@@ -400,7 +416,7 @@ const INITIAL_PHUQUOC_DAYS: DayPlan[] = [
         location: 'Ga An Thới, Phú Quốc',
         costVnd: 1300000,
         costLabel: '1.300.000đ / nhóm',
-        photoUrl: '/images/vietnam_panoramic_day.jpg',
+        photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_panoramic_day.jpg',
         transferTimeAfter: 'Di chuyển khoảng 20 phút',
       },
       {
@@ -413,7 +429,7 @@ const INITIAL_PHUQUOC_DAYS: DayPlan[] = [
         location: 'Làng chài Hàm Ninh, Phú Quốc',
         costVnd: 450000,
         costLabel: '450.000đ / nhóm',
-        photoUrl: '/images/saigon_south_day.jpg',
+        photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/saigon_south_day.jpg',
         transferTimeAfter: 'Di chuyển khoảng 15 phút',
       },
       {
@@ -426,7 +442,7 @@ const INITIAL_PHUQUOC_DAYS: DayPlan[] = [
         location: 'Bãi Sao, Phú Quốc',
         costVnd: 200000,
         costLabel: '200.000đ / nhóm',
-        photoUrl: '/images/halong_hanoi_day.jpg',
+        photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/halong_hanoi_day.jpg',
         transferTimeAfter: 'Di chuyển khoảng 20 phút',
       },
       {
@@ -439,7 +455,7 @@ const INITIAL_PHUQUOC_DAYS: DayPlan[] = [
         location: 'Sunset Town, Nam Phú Quốc',
         costVnd: 300000,
         costLabel: '300.000đ / nhóm',
-        photoUrl: '/images/danang_bana_night.jpg',
+        photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_bana_night.jpg',
       },
     ],
   },
@@ -458,7 +474,7 @@ const INITIAL_PHUQUOC_DAYS: DayPlan[] = [
         location: 'An Thới, Phú Quốc',
         costVnd: 40000,
         costLabel: '40.000đ / nhóm',
-        photoUrl: '/images/halong_hanoi_day.jpg',
+        photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/halong_hanoi_day.jpg',
         transferTimeAfter: 'Di chuyển khoảng 15 phút',
       },
       {
@@ -471,7 +487,7 @@ const INITIAL_PHUQUOC_DAYS: DayPlan[] = [
         location: 'Dương Đông, Phú Quốc',
         costVnd: 300000,
         costLabel: '300.000đ / nhóm',
-        photoUrl: '/images/vietnam_panoramic_day.jpg',
+        photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_panoramic_day.jpg',
         transferTimeAfter: 'Di chuyển khoảng 15 phút',
       },
       {
@@ -484,7 +500,7 @@ const INITIAL_PHUQUOC_DAYS: DayPlan[] = [
         location: 'Dương Tơ, Phú Quốc',
         costVnd: 60000,
         costLabel: '60.000đ / nhóm',
-        photoUrl: '/images/tay_nguyen_highlands.jpg',
+        photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/tay_nguyen_highlands.jpg',
         transferTimeAfter: 'Di chuyển khoảng 15 phút',
       },
       {
@@ -497,42 +513,22 @@ const INITIAL_PHUQUOC_DAYS: DayPlan[] = [
         location: 'Bãi Trường, Phú Quốc',
         costVnd: 240000,
         costLabel: '240.000đ / nhóm',
-        photoUrl: '/images/vietnam_panoramic_night.jpg',
+        photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_panoramic_night.jpg',
       },
     ],
   },
 ];
 
-// Alternative spots for Replace Drawer
-const REPLACEMENT_PLACES = [
-  {
-    id: 'alt-1',
-    category: 'Tham quan & Thiên nhiên',
-    title: 'Danh thắng Ngũ Hành Sơn',
-    description: 'Khám phá động Huyền Không kỳ ảo và viếng chùa Tam Thai cổ kính.',
-    costLabel: '80.000đ / nhóm',
-    costVnd: 80000,
-    photoUrl: '/images/tay_nguyen_highlands.jpg',
-  },
-  {
-    id: 'alt-2',
-    category: 'Ẩm thực truyền thống',
-    title: 'Bánh xèo nem lụi Bà Dưỡng',
-    description: 'Bánh xèo giòn rụm cuốn rau sống với nước chấm gan thịt trứ danh.',
-    costLabel: '180.000đ / nhóm',
-    costVnd: 180000,
-    photoUrl: '/images/saigon_south_day.jpg',
-  },
-  {
-    id: 'alt-3',
-    category: 'Check-in & Đi dạo',
-    title: 'Cầu Rồng & Cầu Tình Yêu Đà Nẵng',
-    description: 'Biểu tượng kiến trúc hiện đại rực rỡ sắc màu cạnh tượng cá chép hóa rồng.',
-    costLabel: 'Miễn phí',
-    costVnd: 0,
-    photoUrl: '/images/danang_bana_night.jpg',
-  },
-];
+// Interface for Replacement spots in Replace Drawer
+export interface ReplacementPlace {
+  id: string;
+  category: string;
+  title: string;
+  description: string;
+  costLabel: string;
+  costVnd: number;
+  photoUrl: string;
+}
 
 // Date helpers for smart quick planning (T1)
 function getTodayIso(): string {
@@ -574,161 +570,63 @@ function generateDistinctDayPlan(
   baseLng: number,
   photoUrl: string
 ): DayPlan[] {
+  const realPlaces = getRealPlacesByProvince(destName);
   const days: DayPlan[] = [];
 
+  // Categorize real places to pick smart daily slots
+  const landmarks = realPlaces.filter((p) =>
+    /di tích|lịch sử|thắng cảnh|kiến trúc|tâm linh|văn hóa|khám phá|bảo tàng/i.test(p.category)
+  );
+  const culinary = realPlaces.filter((p) =>
+    /ẩm thực|chợ|quán|đặc sản|mua sắm/i.test(p.category) || /chợ|ẩm thực|quán|bún|cơm|bánh/i.test(p.name)
+  );
+  const natureCraft = realPlaces.filter((p) =>
+    /thiên nhiên|sinh thái|làng|nghỉ dưỡng|check-in|ngắm cảnh|phượt|biển/i.test(p.category)
+  );
+  const eveningSpots = realPlaces.filter((p) =>
+    /cầu|sông|đêm|phố|thuyền|biển/i.test(p.category) || /cầu|sông|đêm|phố|chợ|hồ/i.test(p.name)
+  );
+
+  const fallbackList = realPlaces.length > 0 ? realPlaces : [
+    {
+      name: `Khu di tích danh thắng ${destName}`,
+      province: destName,
+      category: 'Di tích & Thắng cảnh',
+      latitude: baseLat,
+      longitude: baseLng,
+      priceMin: 50000,
+      priceMax: 100000,
+      openingHours: '07:30 - 17:30',
+      description: `Điểm đến di sản tiêu biểu tại ${destName}, nơi lưu giữ nét đẹp văn hóa và cảnh quan thiên nhiên.`,
+      image: photoUrl,
+    }
+  ];
+
+  const pickPlace = (list: typeof realPlaces, index: number) => {
+    if (list.length > 0) {
+      return list[index % list.length];
+    }
+    return fallbackList[index % fallbackList.length];
+  };
+
   const dayThemes = [
-    {
-      titleSuffix: 'Chạm ngõ & Khám phá biểu tượng',
-      morning: {
-        cat: 'Tham quan & Di tích',
-        title: `Biểu tượng văn hóa & Danh thắng trung tâm ${destName}`,
-        desc: `Bắt đầu hành trình với điểm đến tiêu biểu nhất của ${destName}, tìm hiểu lịch sử và chụp ảnh lưu niệm.`,
-        cost: 40000,
-        tip: 'Khởi hành sớm để tận hưởng bầu không khí trong lành và ánh sáng đẹp.',
-      },
-      noon: {
-        cat: 'Ẩm thực bản địa',
-        title: `Thưởng thức ẩm thực đặc sắc ${destName}`,
-        desc: 'Nếm thử món ngon truyền thống trứ danh tại quán ăn gia truyền nổi tiếng.',
-        cost: 150000,
-      },
-      afternoon: {
-        cat: 'Thiên nhiên & Check-in',
-        title: `Khám phá cảnh quan & Không gian thư thái`,
-        desc: `Dạo bước ngắm nhìn vẻ đẹp tự nhiên, hòa mình vào không gian khoáng đạt của ${destName}.`,
-        cost: 80000,
-      },
-      evening: {
-        cat: 'Khám phá buổi tối',
-        title: `Phố đêm, chợ đêm & Ẩm thực đường phố`,
-        desc: 'Trải nghiệm nhịp sống về đêm nhộn nhịp, thưởng thức đặc sản vỉa hè và mua quà lưu niệm.',
-        cost: 250000,
-      },
-    },
-    {
-      titleSuffix: 'Trải nghiệm điểm nhấn & Kỳ quan nổi tiếng',
-      morning: {
-        cat: 'Thắng cảnh nổi tiếng',
-        title: `Hành trình kỳ quan & Điểm đến đỉnh cao ${destName}`,
-        desc: `Chiêm ngưỡng danh thắng quy mô hàng đầu được đông đảo du khách trong nước và quốc tế yêu thích.`,
-        cost: budgetTier === 'luxury' ? 950000 : 250000,
-        tip: 'Nên đặt trước vé tham quan trực tuyến để tiết kiệm thời gian xếp hàng.',
-      },
-      noon: {
-        cat: 'Ẩm thực & Thư giãn',
-        title: `Bữa trưa đặc sản vùng miền & Nghỉ ngơi`,
-        desc: 'Thưởng thức mâm cơm địa phương đậm đà với nguyên liệu tươi ngon theo mùa.',
-        cost: 180000,
-      },
-      afternoon: {
-        cat: 'Giải trí & Trải nghiệm',
-        title: `Khu du lịch sinh thái & Trải nghiệm bản sắc`,
-        desc: 'Tham gia các hoạt động ngoài trời, chụp ảnh góc rộng và tìm hiểu phong tục địa phương.',
-        cost: 120000,
-      },
-      evening: {
-        cat: 'Du thuyền & Ngắm cảnh',
-        title: `Ngắm cảnh lung linh & Thưởng thức trà chiều/cà phê`,
-        desc: 'Chiêm ngưỡng toàn cảnh thành phố lung linh ánh đèn và tận hưởng làn gió mát lành.',
-        cost: 160000,
-      },
-    },
-    {
-      titleSuffix: 'Di sản, làng nghề & Bản sắc truyền thống',
-      morning: {
-        cat: 'Di sản & Văn hóa',
-        title: `Làng nghề truyền thống & Không gian xưa`,
-        desc: 'Tự tay trải nghiệm làm đồ thủ công mỹ nghệ cùng các nghệ nhân bản địa lâu năm.',
-        cost: 60000,
-        tip: 'Có thể mua sản phẩm thủ công mỹ nghệ trực tiếp tại xưởng làm kỷ niệm.',
-      },
-      noon: {
-        cat: 'Ẩm thực gia truyền',
-        title: `Bữa trưa món ăn dân dã nức tiếng`,
-        desc: 'Thưởng thức những món ăn dân dã mộc mạc mang hương vị đặc trưng khó quên.',
-        cost: 140000,
-      },
-      afternoon: {
-        cat: 'Mua sắm & Check-in',
-        title: `Chợ truyền thống lâu đời & Mua quà đặc sản`,
-        desc: `Tham quan khu chợ sầm uất nhất ${destName}, chọn mua hải sản khô, bánh mứt đặc sản.`,
-        cost: 200000,
-      },
-      evening: {
-        cat: 'Thư giãn & Chill',
-        title: `Cà phê view đẹp & Nghe nhạc acoustic nhẹ nhàng`,
-        desc: 'Thả lỏng tinh thần trong quán cà phê có phong cách mộc mạc, trò chuyện cùng bạn đồng hành.',
-        cost: 90000,
-      },
-    },
-    {
-      titleSuffix: 'Thiên nhiên sinh thái & Khám phá ngoại ô',
-      morning: {
-        cat: 'Sinh thái & Hoang sơ',
-        title: `Cung đường ven thiên nhiên & Rừng sinh thái`,
-        desc: 'Hít thở không khí trong lành, ngắm thung lũng/bờ biển hoang sơ tuyệt đẹp.',
-        cost: 50000,
-      },
-      noon: {
-        cat: 'Ẩm thực đồng quê',
-        title: `Ẩm thực miệt vườn/ven biển tươi sống`,
-        desc: 'Thưởng thức các món ngon chế biến ngay tại chỗ giữa không gian thiên nhiên trong lành.',
-        cost: 190000,
-      },
-      afternoon: {
-        cat: 'Thể thao & Trải nghiệm',
-        title: `Chèo thuyền kayak/sup hoặc đạp xe khám phá`,
-        desc: 'Vận động nhẹ nhàng giữa thiên nhiên, ghi lại những thước phim và góc ảnh ấn tượng.',
-        cost: 150000,
-      },
-      evening: {
-        cat: 'Tiệc nướng BBQ',
-        title: `Bữa tối ấm cúng & Ngắm trời đêm lộng gió`,
-        desc: 'Thưởng thức bữa tối ngoài trời cùng âm nhạc và những câu chuyện hành trình đáng nhớ.',
-        cost: 280000,
-      },
-    },
-    {
-      titleSuffix: 'Khép lại hành trình & Kỷ niệm trọn vẹn',
-      morning: {
-        cat: 'Thư giãn sáng sớm',
-        title: `Đón bình minh & Dạo bộ ngắm bình yên`,
-        desc: `Khoảnh khắc thanh bình nhất trong ngày để cảm nhận nhịp sống chậm rãi của ${destName}.`,
-        cost: 0,
-      },
-      noon: {
-        cat: 'Bữa trưa chia tay',
-        title: `Thưởng thức bữa trưa yêu thích nhất chuyến đi`,
-        desc: 'Trở lại quán ăn mà bạn ấn tượng nhất để thưởng thức lại hương vị đặc sản.',
-        cost: 160000,
-      },
-      afternoon: {
-        cat: 'Mua sắm & Đóng gói',
-        title: `Kiểm tra hành lý & Mua quà lưu niệm cuối cùng`,
-        desc: 'Hoàn tất đóng gói đặc sản làm quà cho người thân, sẵn sàng di chuyển ra sân bay/nhà ga.',
-        cost: 120000,
-      },
-      evening: {
-        cat: 'Khởi hành về',
-        title: `Tạm biệt ${destName} — Hẹn ngày hội ngộ`,
-        desc: 'Kết thúc chuyến du lịch nhiều trải nghiệm và lưu giữ những kỷ niệm đẹp.',
-        cost: 0,
-      },
-    },
+    'Chạm ngõ & Khám phá biểu tượng di sản',
+    'Trải nghiệm điểm nhấn & Kỳ quan nổi tiếng',
+    'Di sản làng nghề & Bản sắc truyền thống',
+    'Thiên nhiên sinh thái & Khám phá phong cảnh',
+    'Khép lại hành trình & Kỷ niệm trọn vẹn',
   ];
 
   for (let d = 1; d <= totalDays; d++) {
-    const theme = dayThemes[(d - 1) % dayThemes.length];
     const dayNumber = d;
-    const title = `Ngày ${d} · ${theme.titleSuffix}`;
-
-    const latOffset = (idx: number) => baseLat + (Math.sin(d * 1.8 + idx * 1.2) * 0.02);
-    const lngOffset = (idx: number) => baseLng + (Math.cos(d * 1.8 + idx * 1.2) * 0.02);
-
+    const themeIndex = (d - 1) % dayThemes.length;
+    const title = `Ngày ${d} · ${dayThemes[themeIndex]}`;
     let activities: Activity[] = [];
 
     // T1: If Day 1 and Late Evening Departure (>= 20:00)
     if (d === 1 && isLateDeparture) {
+      const nightPlace = eveningSpots.length > 0 ? eveningSpots[0] : (culinary[0] || fallbackList[0]);
+      const nCost = nightPlace.priceMin || 120000;
       activities = [
         {
           id: `act-${d}-late-1`,
@@ -736,92 +634,103 @@ function generateDistinctDayPlan(
           timeRange: '20:30–21:30',
           category: 'Nhận phòng & Nghỉ ngơi',
           title: `Nhận phòng khách sạn & Nghỉ ngơi sau chuyến đi`,
-          description: `Check-in tại khách sạn, sắp xếp hành lý và thư giãn nhẹ nhàng sau thời gian di chuyển đến ${destName}.`,
-          location: `Trung tâm ${destName}`,
+          description: `Check-in tại khách sạn trung tâm ${destName}, sắp xếp hành lý và thư giãn nhẹ nhàng sau thời gian di chuyển.`,
+          location: `Khách sạn trung tâm ${destName}`,
           costVnd: 0,
           costLabel: 'Đã bao gồm',
-          photoUrl: photoUrl,
+          photoUrl: photoUrl || 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_bana_day.jpg',
           transferTimeAfter: 'Di chuyển khoảng 10 phút',
-          latitude: latOffset(0),
-          longitude: lngOffset(0),
+          latitude: baseLat,
+          longitude: baseLng,
         },
         {
           id: `act-${d}-late-2`,
           timeSlot: 'NIGHT',
           timeRange: '21:45–23:15',
-          category: 'Ăn khuya & Dạo phố đêm',
-          title: `Thưởng thức ẩm thực đêm & Dạo phố lung linh ánh đèn`,
-          description: `Thưởng thức món ăn khuya nóng hổi đặc trưng của ${destName} và hít thở bầu không khí mát mẻ về đêm.`,
-          location: `Phố đi bộ / Phố đêm ${destName}`,
-          costVnd: 180000,
-          costLabel: '180.000đ / nhóm',
-          tip: 'Các quán ăn đêm mở cửa khá muộn, bạn có thể thong thả tận hưởng buổi tối đầu tiên.',
-          photoUrl: '/images/danang_bana_night.jpg',
-          latitude: latOffset(1),
-          longitude: lngOffset(1),
+          category: nightPlace.category || 'Ăn khuya & Dạo phố đêm',
+          title: nightPlace.name,
+          description: nightPlace.description || `Thưởng thức ẩm thực đêm và dạo bộ tận hưởng nhịp sống về đêm của ${destName}.`,
+          location: `${nightPlace.name}, ${destName}`,
+          costVnd: nCost,
+          costLabel: nCost === 0 ? 'Miễn phí' : `${new Intl.NumberFormat('vi-VN').format(nCost)}đ / nhóm`,
+          tip: 'Các hoạt động buổi tối thường kéo dài đến 23h30, không khí rất dễ chịu và mát mẻ.',
+          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_bana_night.jpg',
+          latitude: nightPlace.latitude || baseLat + 0.005,
+          longitude: nightPlace.longitude || baseLng + 0.005,
         },
       ];
     } else {
+      const morningPlace = pickPlace(landmarks.length > 0 ? landmarks : realPlaces, (d - 1) * 2);
+      const noonPlace = pickPlace(culinary.length > 0 ? culinary : realPlaces, d - 1);
+      const afternoonPlace = pickPlace(natureCraft.length > 0 ? natureCraft : realPlaces, (d - 1) * 2 + 1);
+      const eveningPlace = pickPlace(eveningSpots.length > 0 ? eveningSpots : realPlaces, d);
+
+      const mCost = morningPlace.priceMin || (budgetTier === 'luxury' ? 250000 : 80000);
+      const nCost = noonPlace.priceMin || 150000;
+      const aCost = afternoonPlace.priceMin || 60000;
+      const eCost = eveningPlace.priceMin || 120000;
+
       activities = [
         {
           id: `act-${d}-1`,
           timeSlot: 'MORNING',
           timeRange: '08:00–10:30',
-          category: theme.morning.cat,
-          title: theme.morning.title,
-          description: theme.morning.desc,
-          location: `Khu vực phía Bắc, ${destName}`,
-          costVnd: theme.morning.cost,
-          costLabel: theme.morning.cost === 0 ? 'Miễn phí' : `${new Intl.NumberFormat('vi-VN').format(theme.morning.cost)}đ / nhóm`,
-          tip: theme.morning.tip,
-          photoUrl: photoUrl,
-          transferTimeAfter: 'Di chuyển khoảng 20 phút',
-          latitude: latOffset(0),
-          longitude: lngOffset(0),
+          category: morningPlace.category,
+          title: morningPlace.name,
+          description: morningPlace.description,
+          location: `${morningPlace.name}, ${destName}`,
+          costVnd: mCost,
+          costLabel: mCost === 0 ? 'Miễn phí' : `${new Intl.NumberFormat('vi-VN').format(mCost)}đ / người`,
+          tip: 'Nên khởi hành sớm vào buổi sáng để tận hưởng ánh sáng đẹp và không khí trong lành.',
+          photoUrl: photoUrl || 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_panoramic_day.jpg',
+          transferTimeAfter: 'Di chuyển khoảng 15 phút',
+          latitude: morningPlace.latitude,
+          longitude: morningPlace.longitude,
         },
         {
           id: `act-${d}-2`,
           timeSlot: 'NOON',
           timeRange: '11:30–13:00',
-          category: theme.noon.cat,
-          title: theme.noon.title,
-          description: theme.noon.desc,
-          location: `Trung tâm ẩm thực ${destName}`,
-          costVnd: theme.noon.cost,
-          costLabel: `${new Intl.NumberFormat('vi-VN').format(theme.noon.cost)}đ / nhóm`,
-          photoUrl: '/images/saigon_south_day.jpg',
+          category: noonPlace.category || 'Ẩm thực bản địa',
+          title: noonPlace.name.includes('Chợ') || noonPlace.name.includes('Ẩm thực') || noonPlace.name.includes('Thưởng thức') ? noonPlace.name : `Thưởng thức đặc sản tại ${noonPlace.name}`,
+          description: noonPlace.description,
+          location: `${noonPlace.name}, ${destName}`,
+          costVnd: nCost,
+          costLabel: `${new Intl.NumberFormat('vi-VN').format(nCost)}đ / nhóm`,
+          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/saigon_south_day.jpg',
           transferTimeAfter: 'Di chuyển khoảng 15 phút',
-          latitude: latOffset(1),
-          longitude: lngOffset(1),
+          latitude: noonPlace.latitude,
+          longitude: noonPlace.longitude,
         },
         {
           id: `act-${d}-3`,
           timeSlot: 'AFTERNOON',
           timeRange: '14:30–17:00',
-          category: theme.afternoon.cat,
-          title: theme.afternoon.title,
-          description: theme.afternoon.desc,
-          location: `Khu danh thắng ${destName}`,
-          costVnd: theme.afternoon.cost,
-          costLabel: `${new Intl.NumberFormat('vi-VN').format(theme.afternoon.cost)}đ / nhóm`,
-          photoUrl: '/images/halong_hanoi_day.jpg',
-          transferTimeAfter: 'Di chuyển khoảng 25 phút',
-          latitude: latOffset(2),
-          longitude: lngOffset(2),
+          category: afternoonPlace.category,
+          title: afternoonPlace.name,
+          description: afternoonPlace.description,
+          location: `${afternoonPlace.name}, ${destName}`,
+          costVnd: aCost,
+          costLabel: aCost === 0 ? 'Miễn phí' : `${new Intl.NumberFormat('vi-VN').format(aCost)}đ / người`,
+          tip: 'Không gian lý tưởng để chụp ảnh lưu niệm và tìm hiểu văn hóa bản xứ.',
+          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/tay_nguyen_highlands.jpg',
+          transferTimeAfter: 'Di chuyển khoảng 20 phút',
+          latitude: afternoonPlace.latitude,
+          longitude: afternoonPlace.longitude,
         },
         {
           id: `act-${d}-4`,
           timeSlot: 'EVENING',
           timeRange: '18:30–21:00',
-          category: theme.evening.cat,
-          title: theme.evening.title,
-          description: theme.evening.desc,
-          location: `Phố đi bộ ven sông/biển ${destName}`,
-          costVnd: theme.evening.cost,
-          costLabel: `${new Intl.NumberFormat('vi-VN').format(theme.evening.cost)}đ / nhóm`,
-          photoUrl: '/images/danang_bana_night.jpg',
-          latitude: latOffset(3),
-          longitude: lngOffset(3),
+          category: eveningPlace.category || 'Cảnh quan & Phố đêm',
+          title: eveningPlace.name,
+          description: eveningPlace.description,
+          location: `${eveningPlace.name}, ${destName}`,
+          costVnd: eCost,
+          costLabel: eCost === 0 ? 'Miễn phí' : `${new Intl.NumberFormat('vi-VN').format(eCost)}đ / nhóm`,
+          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_bana_night.jpg',
+          latitude: eveningPlace.latitude,
+          longitude: eveningPlace.longitude,
         },
       ];
     }
@@ -878,7 +787,20 @@ export default function PlannerPage() {
   const [itineraryDays, setItineraryDays] = useState<DayPlan[]>(INITIAL_DANANG_DAYS);
   const [activeDay, setActiveDay] = useState<number>(1);
   const [isSaved, setIsSaved] = useState<boolean>(false);
-  const [savedCount, setSavedCount] = useState<number>(3);
+  const [savedCount, setSavedCount] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('vista_saved_itineraries');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) return parsed.length + 3;
+        }
+      } catch {
+        // ignore
+      }
+    }
+    return 3;
+  });
   const [openTipId, setOpenTipId] = useState<string | null>('act-1-1');
   const [activeOverflowId, setActiveOverflowId] = useState<string | null>(null);
 
@@ -899,36 +821,92 @@ export default function PlannerPage() {
   const [newActTime, setNewActTime] = useState<string>('14:00–15:30');
   const [newActCost, setNewActCost] = useState<string>('0');
 
-  // Load saved itineraries count and handle URL params on mount
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem('vista_saved_itineraries');
-      if (stored) {
-        const parsed: SavedItineraryRecord[] = JSON.parse(stored);
-        if (Array.isArray(parsed)) {
-          setSavedCount(parsed.length + 3);
-        }
-      }
-    } catch {
-      // ignore
-    }
+  // Linked Trip State (Bidirectional Connection with /trips)
+  const [linkedTripId, setLinkedTripId] = useState<string | null>(null);
+  const [linkedTripTitle, setLinkedTripTitle] = useState<string | null>(null);
 
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const destParam = params.get('dest') || params.get('destination');
-      if (destParam) {
-        const norm = destParam.toLowerCase();
-        if (norm === 'phuquoc' || norm.includes('phú quốc')) {
-          setDestination('Phú Quốc');
-          setItineraryDays(INITIAL_PHUQUOC_DAYS);
-          setActiveDay(1);
-          setNewTripTitle('Chuyến đi Phú Quốc 3N2Đ');
-        } else if (norm === 'hanoi' || norm.includes('hà nội')) {
-          setDestination('Hà Nội');
-          setNewTripTitle('Chuyến đi Hà Nội 3N2Đ');
+  // Handle URL params on mount
+  useEffect(() => {
+    const initParams = async () => {
+      await Promise.resolve();
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        const tripIdParam = params.get('tripId');
+        const destParam = params.get('dest') || params.get('destination');
+
+        // Check if loading an existing trip
+        if (tripIdParam) {
+          try {
+            const storedTrips = localStorage.getItem('vista_custom_trips');
+            const customList: Array<{ id: string; title: string; destination: string; itineraryDays?: DayPlan[] }> =
+              storedTrips ? JSON.parse(storedTrips) : [];
+            const foundCustom = customList.find((t) => t.id === tripIdParam);
+            if (foundCustom) {
+              setLinkedTripId(foundCustom.id);
+              setLinkedTripTitle(foundCustom.title);
+              if (foundCustom.destination) {
+                setDestination(foundCustom.destination);
+                setNewTripTitle(foundCustom.title);
+              }
+              if (foundCustom.itineraryDays && foundCustom.itineraryDays.length > 0) {
+                setItineraryDays(foundCustom.itineraryDays);
+                const len = foundCustom.itineraryDays.length;
+                if (len <= 2) setDuration('2n1d');
+                else if (len === 3) setDuration('3n2d');
+                else if (len === 4) setDuration('4n3d');
+                else setDuration('5n4d');
+              }
+            } else if (tripIdParam === 'demo-danang-2026') {
+              setLinkedTripId('demo-danang-2026');
+              setLinkedTripTitle('Hành trình Đà Nẵng – Hội An 2026');
+              setDestination('Đà Nẵng');
+              setItineraryDays(INITIAL_DANANG_DAYS);
+            } else if (tripIdParam === 'trip-phuquoc-2026') {
+              setLinkedTripId('trip-phuquoc-2026');
+              setLinkedTripTitle('Nghỉ dưỡng hoàng hôn Phú Quốc');
+              setDestination('Phú Quốc');
+              setItineraryDays(INITIAL_PHUQUOC_DAYS);
+            } else if (tripIdParam === 'trip-hagiang-2026') {
+              setLinkedTripId('trip-hagiang-2026');
+              setLinkedTripTitle('Chinh phục Hà Giang – Mèo Vạc');
+              setDestination('Hà Giang');
+            }
+          } catch {
+            // ignore
+          }
+        }
+
+        if (destParam && !tripIdParam) {
+          const norm = destParam.toLowerCase();
+          const matched = DESTINATION_LIST.find(
+            (d) => d.id === norm || d.nameVi.toLowerCase().includes(norm) || norm.includes(d.id)
+          );
+          if (matched) {
+            setDestination(matched.nameVi);
+            setNewTripTitle(`Chuyến đi ${matched.nameVi} 3N2Đ`);
+            if (matched.id === 'phuquoc') {
+              setItineraryDays(INITIAL_PHUQUOC_DAYS);
+            } else if (matched.id === 'danang') {
+              setItineraryDays(INITIAL_DANANG_DAYS);
+            } else {
+              const plan = generateDistinctDayPlan(
+                matched.nameVi,
+                3,
+                new Date().getHours() >= 20,
+                'standard',
+                ['beach', 'cuisine'],
+                matched.lat,
+                matched.lng,
+                matched.photo
+              );
+              setItineraryDays(plan);
+            }
+            setActiveDay(1);
+          }
         }
       }
-    }
+    };
+    void initParams();
   }, []);
 
   const triggerToast = (msg: string) => {
@@ -1020,6 +998,204 @@ export default function PlannerPage() {
     }));
   }, [currentDayPlan, destination, activeDestObj, activeDay]);
 
+  // Dynamic Replacement Spots tailored to active destination
+  const replacementPlaces: ReplacementPlace[] = useMemo(() => {
+    const destNorm = destination.toLowerCase();
+    if (destNorm.includes('huế') || destNorm.includes('hue')) {
+      return [
+        {
+          id: 'rep-hue-1',
+          category: 'Di tích & Cảnh quan',
+          title: 'Lăng Tự Đức & Hồ Lưu Khiêm',
+          description: 'Khu lăng tẩm thơ mộng mang phong cách hoa viên truyền thống Cố Đô.',
+          costLabel: '150.000đ / người',
+          costVnd: 150000,
+          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_panoramic_day.jpg',
+        },
+        {
+          id: 'rep-hue-2',
+          category: 'Văn hóa & Check-in',
+          title: 'Làng Hương Thủy Xuân',
+          description: 'Làng nghề làm hương thủ công truyền thống rực rỡ sắc màu bên chân đồi Vọng Cảnh.',
+          costLabel: 'Miễn phí',
+          costVnd: 0,
+          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/tay_nguyen_highlands.jpg',
+        },
+        {
+          id: 'rep-hue-3',
+          category: 'Ẩm thực Cố Đô',
+          title: 'Chợ Đông Ba & Bún bò mụ Rơi',
+          description: 'Thưởng thức bún bò Huế chuẩn vị cay nồng đậm đà và các loại bánh bèo nậm lọc.',
+          costLabel: '80.000đ / người',
+          costVnd: 80000,
+          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/saigon_south_day.jpg',
+        },
+        {
+          id: 'rep-hue-4',
+          category: 'Cảnh quan & Lịch sử',
+          title: 'Cầu Trường Tiền & Đi thuyền rồng Sông Hương',
+          description: 'Ngắm nhìn dòng sông Hương êm đềm và nghe ca Huế trên sông khi hoàng hôn buông xuống.',
+          costLabel: '120.000đ / nhóm',
+          costVnd: 120000,
+          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_bana_night.jpg',
+        },
+      ];
+    }
+    if (destNorm.includes('hội an') || destNorm.includes('quảng nam')) {
+      return [
+        {
+          id: 'rep-ha-1',
+          category: 'Sinh thái & Trải nghiệm',
+          title: 'Rừng dừa Bảy Mẫu Cẩm Thanh',
+          description: 'Trải nghiệm chèo thuyền thúng xoay vòng và câu cua giữa rừng dừa bạt ngàn.',
+          costLabel: '150.000đ / nhóm',
+          costVnd: 150000,
+          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_panoramic_day.jpg',
+        },
+        {
+          id: 'rep-ha-2',
+          category: 'Làng nghề & Văn hóa',
+          title: 'Làng gốm Thanh Hà & Công viên Đất Nung',
+          description: 'Tự tay nhào nặn chiếc bình gốm xinh xắn cùng nghệ nhân làng nghề 500 năm tuổi.',
+          costLabel: '40.000đ / người',
+          costVnd: 40000,
+          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/tay_nguyen_highlands.jpg',
+        },
+        {
+          id: 'rep-ha-3',
+          category: 'Ẩm thực Phố Hội',
+          title: 'Cơm gà Bà Buội & Bánh mì Phượng',
+          description: 'Hai món ăn trứ danh đã trở thành huyền thoại ẩm thực được quốc tế ca ngợi.',
+          costLabel: '90.000đ / người',
+          costVnd: 90000,
+          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/saigon_south_day.jpg',
+        },
+      ];
+    }
+    if (destNorm.includes('phú quốc')) {
+      return [
+        {
+          id: 'rep-pq-1',
+          category: 'Sinh thái & Biển đảo',
+          title: 'Làng chài Rạch Vẹm & Vương quốc Sao Biển',
+          description: 'Chụp ảnh cùng hàng trăm chú sao biển đỏ rực rỡ dưới làn nước trong vắt.',
+          costLabel: 'Miễn phí',
+          costVnd: 0,
+          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_panoramic_day.jpg',
+        },
+        {
+          id: 'rep-pq-2',
+          category: 'Ẩm thực hải sản',
+          title: 'Bún Quậy Kiến Xây & Chợ đêm Dinh Cậu',
+          description: 'Tô bún chả tôm mực tươi quậy tại chỗ ăn kèm nước chấm chua ngọt độc đáo.',
+          costLabel: '85.000đ / người',
+          costVnd: 85000,
+          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_bana_day.jpg',
+        },
+        {
+          id: 'rep-pq-3',
+          category: 'Thư giãn & Chill',
+          title: 'OCSEN Beach Bar ngắm hoàng hôn Bãi Trường',
+          description: 'Thưởng thức cocktail trên ghế lười bãi biển nghe nhạc acoustic lãng mạn.',
+          costLabel: '120.000đ / nhóm',
+          costVnd: 120000,
+          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_bana_night.jpg',
+        },
+      ];
+    }
+    if (destNorm.includes('hà nội')) {
+      return [
+        {
+          id: 'rep-hn-1',
+          category: 'Di tích & Lịch sử',
+          title: 'Văn Miếu - Quốc Tử Giám',
+          description: 'Trường đại học đầu tiên của Việt Nam với 82 bia tiến sĩ và kiến trúc cổ kính.',
+          costLabel: '70.000đ / người',
+          costVnd: 70000,
+          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/halong_hanoi_day.jpg',
+        },
+        {
+          id: 'rep-hn-2',
+          category: 'Ẩm thực phố cổ',
+          title: 'Bún chả Hương Liên & Cà phê Trứng Giảng',
+          description: 'Thưởng thức đặc sản bún chả than hoa và ly cà phê trứng béo ngậy trứ danh.',
+          costLabel: '90.000đ / người',
+          costVnd: 90000,
+          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/saigon_south_day.jpg',
+        },
+        {
+          id: 'rep-hn-3',
+          category: 'Bảo tàng & Lịch sử',
+          title: 'Tour đêm Di tích Nhà tù Hỏa Lò',
+          description: 'Không gian thiêng liêng và xúc động với những câu chuyện lịch sử bất khuất.',
+          costLabel: '150.000đ / người',
+          costVnd: 150000,
+          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_panoramic_night.jpg',
+        },
+      ];
+    }
+    if (destNorm.includes('đà nẵng') || destNorm.includes('da nang')) {
+      return [
+        {
+          id: 'rep-dn-1',
+          category: 'Tham quan & Thiên nhiên',
+          title: 'Danh thắng Ngũ Hành Sơn & Động Huyền Không',
+          description: 'Khám phá động Huyền Không kỳ ảo và viếng chùa Tam Thai cổ kính.',
+          costLabel: '40.000đ / nhóm',
+          costVnd: 40000,
+          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/tay_nguyen_highlands.jpg',
+        },
+        {
+          id: 'rep-dn-2',
+          category: 'Ẩm thực truyền thống',
+          title: 'Bánh xèo nem lụi Bà Dưỡng',
+          description: 'Bánh xèo giòn rụm cuốn rau sống với nước chấm gan thịt trứ danh.',
+          costLabel: '180.000đ / nhóm',
+          costVnd: 180000,
+          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/saigon_south_day.jpg',
+        },
+        {
+          id: 'rep-dn-3',
+          category: 'Check-in & Đi dạo',
+          title: 'Cầu Rồng & Cầu Tình Yêu Đà Nẵng',
+          description: 'Biểu tượng kiến trúc hiện đại rực rỡ sắc màu cạnh tượng cá chép hóa rồng.',
+          costLabel: 'Miễn phí',
+          costVnd: 0,
+          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_bana_night.jpg',
+        },
+      ];
+    }
+    return [
+      {
+        id: `rep-${destination}-1`,
+        category: 'Thắng cảnh & Thiên nhiên',
+        title: `Danh thắng tiêu biểu ${destination}`,
+        description: `Điểm tham quan nổi bật và được yêu thích hàng đầu tại ${destination}.`,
+        costLabel: '50.000đ / người',
+        costVnd: 50000,
+        photoUrl: activeDestObj.photo,
+      },
+      {
+        id: `rep-${destination}-2`,
+        category: 'Ẩm thực bản địa',
+        title: `Quán ăn đặc sản truyền thống ${destination}`,
+        description: `Thưởng thức hương vị ẩm thực gia truyền nức tiếng của người dân bản xứ.`,
+        costLabel: '120.000đ / nhóm',
+        costVnd: 120000,
+        photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/saigon_south_day.jpg',
+      },
+      {
+        id: `rep-${destination}-3`,
+        category: 'Văn hóa & Làng nghề',
+        title: `Làng nghề thủ công & Điểm check-in ${destination}`,
+        description: `Khám phá nét đẹp văn hóa lâu đời và chụp ảnh kỷ niệm tuyệt đẹp.`,
+        costLabel: 'Miễn phí',
+        costVnd: 0,
+        photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_panoramic_day.jpg',
+      },
+    ];
+  }, [destination, activeDestObj]);
+
   // ─── REAL AI ITINERARY GENERATION (T1, T3, T6) ───────────────────────────
   const handleGenerateClick = async () => {
     setIsGenerating(true);
@@ -1055,12 +1231,12 @@ export default function PlannerPage() {
       const data = await response.json();
 
       if (data && data.days && Array.isArray(data.days) && data.days.length > 0) {
-        const transformedDays: DayPlan[] = data.days.map((dayItem: any, idx: number) => {
-          const dayNum = dayItem.dayNumber || idx + 1;
+        const transformedDays: DayPlan[] = data.days.map((dayItem: Record<string, unknown>, idx: number) => {
+          const dayNum = (dayItem.dayNumber as number) || idx + 1;
           const latOffset = (aIdx: number) => activeDestObj.lat + Math.sin(dayNum * 1.8 + aIdx * 1.2) * 0.02;
           const lngOffset = (aIdx: number) => activeDestObj.lng + Math.cos(dayNum * 1.8 + aIdx * 1.2) * 0.02;
 
-          let rawActivities = dayItem.activities || [];
+          let rawActivities = (dayItem.activities as Record<string, unknown>[]) || [];
 
           // T1: If day 1 and late evening departure, ensure evening start
           if (dayNum === 1 && isLateEveningDeparture) {
@@ -1080,35 +1256,35 @@ export default function PlannerPage() {
             ];
           }
 
-          const activities: Activity[] = rawActivities.map((act: any, actIdx: number) => {
+          const activities: Activity[] = rawActivities.map((act: Record<string, unknown>, actIdx: number) => {
             const costVal = Number(act.estimatedCost || act.estimatedCostVnd) || 0;
             const timeSlot = act.timeSlot || (actIdx === 0 ? 'MORNING' : actIdx === 1 ? 'NOON' : actIdx === 2 ? 'AFTERNOON' : 'EVENING');
             const timeRange =
               dayNum === 1 && isLateEveningDeparture
                 ? (actIdx === 0 ? '20:30–21:30' : '21:45–23:15')
                 : actIdx === 0
-                ? '08:00–10:30'
-                : actIdx === 1
-                ? '11:30–13:00'
-                : actIdx === 2
-                ? '14:30–17:00'
-                : '18:30–21:00';
+                  ? '08:00–10:30'
+                  : actIdx === 1
+                    ? '11:30–13:00'
+                    : actIdx === 2
+                      ? '14:30–17:00'
+                      : '18:30–21:00';
 
             return {
-              id: act.destinationId || `act-${dayNum}-${actIdx + 1}`,
-              timeSlot,
+              id: String(act.destinationId || `act-${dayNum}-${actIdx + 1}`),
+              timeSlot: String(timeSlot),
               timeRange,
-              category: act.category || (actIdx === 1 ? 'Ẩm thực' : 'Tham quan & Trải nghiệm'),
-              title: act.destinationName || act.placeName || `Trải nghiệm điểm đến ${dayNum}.${actIdx + 1}`,
-              description: act.note || act.activityDescription || `Khám phá vẻ đẹp và không khí đặc trưng tại ${destination}.`,
+              category: String(act.category || (actIdx === 1 ? 'Ẩm thực' : 'Tham quan & Trải nghiệm')),
+              title: String(act.destinationName || act.placeName || `Trải nghiệm điểm đến ${dayNum}.${actIdx + 1}`),
+              description: String(act.note || act.activityDescription || `Khám phá vẻ đẹp và không khí đặc trưng tại ${destination}.`),
               location: `${destination}, Việt Nam`,
               costVnd: costVal,
               costLabel: costVal === 0 ? 'Miễn phí' : `${new Intl.NumberFormat('vi-VN').format(costVal)}đ / nhóm`,
               tip: actIdx === 0 ? 'Khởi hành đúng giờ để có trải nghiệm trọn vẹn.' : undefined,
               photoUrl: activeDestObj.photo,
               transferTimeAfter: actIdx < rawActivities.length - 1 ? 'Di chuyển khoảng 15–20 phút' : undefined,
-              latitude: act.latitude || latOffset(actIdx),
-              longitude: act.longitude || lngOffset(actIdx),
+              latitude: typeof act.latitude === 'number' ? act.latitude : latOffset(actIdx),
+              longitude: typeof act.longitude === 'number' ? act.longitude : lngOffset(actIdx),
             };
           });
 
@@ -1173,7 +1349,29 @@ export default function PlannerPage() {
       localStorage.setItem('vista_saved_itineraries', JSON.stringify(list));
       setSavedCount(list.length + 3);
       setIsSaved(true);
-      triggerToast(`Đã lưu lịch trình "${destination}" vào bộ sưu tập cá nhân.`);
+
+      // If linked to an existing trip, update that trip's itinerary and cost in vista_custom_trips
+      if (linkedTripId) {
+        try {
+          const storedTrips = localStorage.getItem('vista_custom_trips');
+          if (storedTrips) {
+            const tripList: Array<{ id: string; itineraryDays?: DayPlan[]; budgetTotal?: number; alertText?: string }> =
+              JSON.parse(storedTrips);
+            const idx = tripList.findIndex((t) => t.id === linkedTripId);
+            if (idx !== -1) {
+              tripList[idx].itineraryDays = itineraryDays;
+              tripList[idx].budgetTotal = totalEstimatedCost;
+              tripList[idx].alertText = `Lịch trình đã được cập nhật (${itineraryDays.reduce((acc, d) => acc + d.activities.length, 0)} hoạt động)`;
+              localStorage.setItem('vista_custom_trips', JSON.stringify(tripList));
+            }
+          }
+        } catch {
+          // ignore
+        }
+        triggerToast(`Đã lưu và đồng bộ lịch trình vào chuyến đi "${linkedTripTitle}"!`);
+      } else {
+        triggerToast(`Đã lưu lịch trình "${destination}" vào bộ sưu tập cá nhân.`);
+      }
     } catch {
       setIsSaved(true);
       triggerToast('Đã lưu lịch trình thành công.');
@@ -1182,21 +1380,35 @@ export default function PlannerPage() {
 
   // ─── CREATE REAL GROUP TRIP ───────────────────────────────────────────────
   const handleCreateTripSubmit = () => {
+    const tripId = `trip-${Date.now()}`;
+    const activityCount = itineraryDays.reduce((acc, d) => acc + d.activities.length, 0);
     const newTrip = {
-      id: `trip-${Date.now()}`,
+      id: tripId,
       title: newTripTitle || `Chuyến đi ${destination} ${daysCount} ngày`,
-      destination,
-      startDate,
-      endDate: `16/11/2026`,
+      destination: destination.includes('Việt Nam') ? destination : `${destination}, Việt Nam`,
+      durationBadge: `${daysCount} ngày`,
+      startDate: startDate || '20/11',
+      endDate: '24/11/2026',
       status: 'PLANNING',
-      budgetTotal: totalEstimatedCost,
+      role: 'OWNER',
+      budgetTotal: totalEstimatedCost || 20000000,
       budgetSpent: 0,
-      visibility: newTripVisibility,
+      progressPercent: 25,
       members: [
-        { name: 'Hoàng An (Bạn)', avatar: 'HA', role: 'Trưởng nhóm' },
+        { name: 'Lê Vân Anh (Bạn)', avatar: 'VA', color: '#0284c7' },
       ],
-      image: activeDestObj.photo,
+      image: activeDestObj.photo || 'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80',
+      treasuryPath: '/trips/demo-danang-2026/treasury',
+      alertType: 'BLUE',
+      alertText: `Lịch trình AI ${daysCount} ngày (${activityCount} hoạt động) đã sẵn sàng`,
+      alertLinkText: 'Xem',
+      quickActions: [
+        { label: 'Lịch trình', href: `/planner?tripId=${tripId}&dest=${encodeURIComponent(destination)}` },
+        { label: 'Phân công', actionType: 'ASSIGN' },
+        { label: 'Ghi chú', actionType: 'NOTE' },
+      ],
       itineraryDays,
+      createdAt: Date.now(),
     };
 
     try {
@@ -1209,14 +1421,14 @@ export default function PlannerPage() {
     }
 
     setShowCreateTripModal(false);
-    triggerToast('Tạo chuyến đi nhóm thành công! Đang chuyển đến không gian quản lý…');
+    triggerToast('Tạo chuyến đi nhóm thành công! Đang chuyển đến không gian Chuyến đi…');
     setTimeout(() => {
-      router.push('/trips');
-    }, 1200);
+      router.push(`/trips?created=${tripId}`);
+    }, 1000);
   };
 
   // ─── REPLACE ACTIVITY HANDLER ─────────────────────────────────────────────
-  const handleSelectReplacement = (place: (typeof REPLACEMENT_PLACES)[0]) => {
+  const handleSelectReplacement = (place: ReplacementPlace) => {
     if (!replaceTargetActivityId) return;
     setItineraryDays((prev) =>
       prev.map((day) => ({
@@ -1294,6 +1506,77 @@ export default function PlannerPage() {
     <div className={styles.plannerPage}>
       {/* ─── 1. GLOBAL HEADER (100% UNIFIED WITH HOMEPAGE) ─── */}
       <Navbar activeModule="planner" />
+
+      {/* ─── LINKED TRIP BANNER (BIDIRECTIONAL CONNECTION) ─── */}
+      {linkedTripTitle && (
+        <div style={{
+          background: '#EFF6FF',
+          borderBottom: '1px solid #BFDBFE',
+          padding: '12px 24px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          fontSize: '13.5px',
+          color: '#1E40AF',
+          fontWeight: 600,
+          flexWrap: 'wrap',
+          gap: 12,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{
+              display: 'inline-flex',
+              padding: '4px 10px',
+              borderRadius: '999px',
+              background: '#0284c7',
+              color: '#ffffff',
+              fontSize: '11px',
+              fontWeight: 800,
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+            }}>
+              Đang liên kết chuyến đi
+            </span>
+            <span>Lịch trình cho: <strong>{linkedTripTitle}</strong> ({destination})</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <button
+              type="button"
+              onClick={handleSaveToggle}
+              style={{
+                padding: '6px 14px',
+                background: '#0070BA',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '13px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+              }}
+            >
+              <span>Lưu cập nhật vào Chuyến đi</span>
+            </button>
+            <Link
+              href="/trips"
+              style={{
+                padding: '6px 14px',
+                background: '#ffffff',
+                color: '#1E40AF',
+                border: '1px solid #BFDBFE',
+                borderRadius: '8px',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                textDecoration: 'none',
+              }}
+            >
+              ← Về danh sách Chuyến đi
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* ─── 2. COMPACT PAGE INTRODUCTION ─── */}
       <section className={styles.introContainer} aria-label="Giới thiệu VISTA AI Planner">
@@ -1541,6 +1824,7 @@ export default function PlannerPage() {
             <div className={styles.stylesPillsGrid}>
               {displayedStyles.map((st) => {
                 const isSelected = selectedStyles.includes(st.id);
+                const IconCmp = st.icon;
                 return (
                   <button
                     key={st.id}
@@ -1550,10 +1834,22 @@ export default function PlannerPage() {
                     title={st.label}
                   >
                     <div className={styles.stylePillLeft}>
-                      <span className={styles.stylePillEmoji}>{st.emoji}</span>
-                      <span>{st.label}</span>
+                      <div
+                        className={styles.stylePillIconBox}
+                        style={{
+                          backgroundColor: isSelected ? st.activeBg : st.bg,
+                          color: st.color,
+                        }}
+                      >
+                        <IconCmp size={14} strokeWidth={2.2} />
+                      </div>
+                      <span className={styles.stylePillLabel}>{st.label}</span>
                     </div>
-                    {isSelected && <span className={styles.stylePillCheck}>✓</span>}
+                    {isSelected && (
+                      <div className={styles.stylePillCheckCircle}>
+                        <Check size={10} strokeWidth={3} />
+                      </div>
+                    )}
                   </button>
                 );
               })}
@@ -1567,12 +1863,12 @@ export default function PlannerPage() {
               {showAllStyles ? (
                 <>
                   <span>Thu gọn bớt</span>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="18 15 12 9 6 15" /></svg>
                 </>
               ) : (
                 <>
                   <span>Xem thêm +{TRAVEL_STYLES.length - 6} phong cách khác</span>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9" /></svg>
                 </>
               )}
             </button>
@@ -1665,7 +1961,7 @@ export default function PlannerPage() {
           {/* Form Action */}
           {hasUnsavedChanges && (
             <div className={styles.dirtyIndicator}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
               <span>Có thiết lập mới chưa áp dụng</span>
             </div>
           )}
@@ -1781,14 +2077,20 @@ export default function PlannerPage() {
                     <div className={styles.summaryDetails}>
                       <h2 className={styles.summaryTitle}>{destination}, đi là mê</h2>
                       <p className={styles.summaryMeta}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
                         <span>{startDate} · {daysCount} ngày {Math.max(1, daysCount - 1)} đêm · {peopleCount} người</span>
                       </p>
                       <div className={styles.summaryTags}>
                         {selectedStyles.map((sId) => {
                           const found = TRAVEL_STYLES.find((t) => t.id === sId);
+                          const IconCmp = found?.icon;
                           return (
                             <span key={sId} className={styles.tagPill}>
+                              {IconCmp && (
+                                <span style={{ color: found?.color, display: 'inline-flex', marginRight: 4 }}>
+                                  <IconCmp size={12} strokeWidth={2.4} />
+                                </span>
+                              )}
                               {found ? found.label : sId}
                             </span>
                           );
@@ -1910,7 +2212,7 @@ export default function PlannerPage() {
                     className={`${styles.segmentBtn} ${activeView === 'timeline' ? styles.segmentBtnActive : ''}`}
                     onClick={() => setActiveView('timeline')}
                   >
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
                     <span>Lịch trình</span>
                   </button>
 
@@ -1919,7 +2221,7 @@ export default function PlannerPage() {
                     className={`${styles.segmentBtn} ${activeView === 'map' ? styles.segmentBtnActive : ''}`}
                     onClick={() => setActiveView('map')}
                   >
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" /><line x1="8" y1="2" x2="8" y2="18" /><line x1="16" y1="6" x2="16" y2="22" /></svg>
                     <span>Bản đồ</span>
                   </button>
                 </div>
@@ -1930,7 +2232,7 @@ export default function PlannerPage() {
                   onClick={handleGenerateClick}
                   title="Tạo lại gợi ý mới"
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 4v6h-6" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" /></svg>
                   <span>Tạo lại gợi ý</span>
                 </button>
               </div>
@@ -2002,9 +2304,24 @@ export default function PlannerPage() {
 
                               <div className={styles.activityMetaRow}>
                                 <span className={styles.locationLink}>
-                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
                                   {act.location}
                                 </span>
+
+                                <a
+                                  href={
+                                    act.latitude && act.longitude
+                                      ? `https://www.google.com/maps/search/?api=1&query=${act.latitude},${act.longitude}`
+                                      : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(act.title + ' ' + (act.location || destination))}`
+                                  }
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className={styles.googleMapsLink}
+                                  title="Mở chỉ đường trên Google Maps"
+                                >
+                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><polygon points="3 11 22 2 13 21 11 13 3 11" /></svg>
+                                  <span>Google Maps</span>
+                                </a>
 
                                 {act.tip && (
                                   <button
@@ -2012,7 +2329,7 @@ export default function PlannerPage() {
                                     className={styles.tipToggleBtn}
                                     onClick={() => setOpenTipId(isTipOpen ? null : act.id)}
                                   >
-                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
                                     <span>Lưu ý ({isTipOpen ? 'thu gọn' : 'xem'})</span>
                                   </button>
                                 )}
@@ -2038,7 +2355,7 @@ export default function PlannerPage() {
                                   className={styles.btnReplacePlace}
                                   onClick={() => setReplaceTargetActivityId(act.id)}
                                 >
-                                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 4v6h-6" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" /></svg>
                                   <span>Thay địa điểm</span>
                                 </button>
 
@@ -2049,7 +2366,7 @@ export default function PlannerPage() {
                                     onClick={() => setActiveOverflowId(isOverflowOpen ? null : act.id)}
                                     aria-label="Thao tác khác"
                                   >
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" /></svg>
                                   </button>
 
                                   {isOverflowOpen && (
@@ -2062,7 +2379,7 @@ export default function PlannerPage() {
                                           setActiveOverflowId(null);
                                         }}
                                       >
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
                                         Chỉnh giờ
                                       </button>
                                       <button
@@ -2070,7 +2387,7 @@ export default function PlannerPage() {
                                         className={`${styles.overflowItem} ${styles.overflowItemDanger}`}
                                         onClick={() => handleDeleteActivity(act.id)}
                                       >
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
                                         Xóa hoạt động
                                       </button>
                                     </div>
@@ -2089,7 +2406,7 @@ export default function PlannerPage() {
                               <div className={styles.transferLineDashed} />
                             </div>
                             <div className={styles.transferInfo}>
-                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
                               <span>{act.transferTimeAfter}</span>
                               <span className={styles.estimateTag}>Ước tính</span>
                             </div>
@@ -2106,7 +2423,7 @@ export default function PlannerPage() {
                       className={styles.btnAddActivityDashed}
                       onClick={() => setShowAddActivityModal(true)}
                     >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
                       <span>Thêm hoạt động vào Ngày {activeDay}</span>
                     </button>
 
@@ -2160,8 +2477,8 @@ export default function PlannerPage() {
                         if (fIdx >= 0) setSelectedMapPin(fIdx + 1);
                       }}
                       initialCenter={{
-                        latitude: activeDestObj.lat,
-                        longitude: activeDestObj.lng,
+                        latitude: currentDayPlan.activities[0]?.latitude || activeDestObj.lat,
+                        longitude: currentDayPlan.activities[0]?.longitude || activeDestObj.lng,
                         zoom: 12.5,
                       }}
                       mode="2d"
@@ -2191,6 +2508,19 @@ export default function PlannerPage() {
                         <span style={{ fontSize: '11px', color: '#64748B' }}>
                           {currentDayPlan.activities[selectedMapPin - 1].timeRange} · {currentDayPlan.activities[selectedMapPin - 1].location}
                         </span>
+                        <a
+                          href={
+                            currentDayPlan.activities[selectedMapPin - 1].latitude && currentDayPlan.activities[selectedMapPin - 1].longitude
+                              ? `https://www.google.com/maps/dir/?api=1&destination=${currentDayPlan.activities[selectedMapPin - 1].latitude},${currentDayPlan.activities[selectedMapPin - 1].longitude}`
+                              : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(currentDayPlan.activities[selectedMapPin - 1].title + ' ' + destination)}`
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={styles.mapPreviewNavBtn}
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polygon points="3 11 22 2 13 21 11 13 3 11" /></svg>
+                          <span>Chỉ đường Google Maps</span>
+                        </a>
                       </div>
                     </div>
                   )}
@@ -2419,7 +2749,7 @@ export default function PlannerPage() {
                   triggerToast('Đã tải lịch trình Đà Nẵng 3N2Đ!');
                 }}
               >
-                <img src="/images/danang_bana_day.jpg" alt="Đà Nẵng" className={styles.alternativePhoto} />
+                <img src='https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_bana_day.jpg' alt="Đà Nẵng" className={styles.alternativePhoto} />
                 <div className={styles.alternativeInfo}>
                   <span className={styles.alternativeCategory}>3 ngày 2 đêm · 2 người</span>
                   <h4 className={styles.alternativeTitle}>Đà Nẵng, đi là mê</h4>
@@ -2437,7 +2767,7 @@ export default function PlannerPage() {
                   handleGenerateClick();
                 }}
               >
-                <img src="/images/vietnam_panoramic_day.jpg" alt="Hội An" className={styles.alternativePhoto} />
+                <img src='https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_panoramic_day.jpg' alt="Hội An" className={styles.alternativePhoto} />
                 <div className={styles.alternativeInfo}>
                   <span className={styles.alternativeCategory}>2 ngày 1 đêm · 2 người</span>
                   <h4 className={styles.alternativeTitle}>Phố cổ Hội An & Thả hoa đăng</h4>
@@ -2455,7 +2785,7 @@ export default function PlannerPage() {
                   handleGenerateClick();
                 }}
               >
-                <img src="/images/halong_hanoi_day.jpg" alt="Hà Nội" className={styles.alternativePhoto} />
+                <img src='https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/halong_hanoi_day.jpg' alt="Hà Nội" className={styles.alternativePhoto} />
                 <div className={styles.alternativeInfo}>
                   <span className={styles.alternativeCategory}>2 ngày 1 đêm · 2 người</span>
                   <h4 className={styles.alternativeTitle}>Khám phá 36 phố phường Hà Nội</h4>
@@ -2487,7 +2817,7 @@ export default function PlannerPage() {
             </div>
 
             <div className={styles.drawerBody}>
-              {REPLACEMENT_PLACES.map((place) => (
+              {replacementPlaces.map((place) => (
                 <div
                   key={place.id}
                   className={styles.alternativeCard}

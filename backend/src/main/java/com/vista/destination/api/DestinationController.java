@@ -29,6 +29,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import com.vista.destination.api.dto.CreateDestinationRequest;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -43,6 +46,25 @@ public class DestinationController {
       DestinationService destinationService, CurrentUserProvider currentUserProvider) {
     this.destinationService = destinationService;
     this.currentUserProvider = currentUserProvider;
+  }
+
+  @PostMapping
+  @Operation(
+      summary = "Tạo mới điểm đến du lịch (Admin/Member)",
+      description = "Tạo điểm đến mới với thông tin chi tiết và ảnh lưu trên Cloud Storage")
+  public ResponseEntity<DestinationDetailDto> createDestination(
+      @Valid @RequestBody CreateDestinationRequest request) {
+    DestinationDetailDto created = destinationService.createDestination(request);
+    return ResponseEntity.status(HttpStatus.CREATED).body(created);
+  }
+
+  @DeleteMapping("/{id}")
+  @Operation(
+      summary = "Xóa điểm đến du lịch (Admin)",
+      description = "Xóa điểm đến khỏi hệ thống")
+  public ResponseEntity<Void> deleteDestination(@PathVariable UUID id) {
+    destinationService.deleteDestination(id);
+    return ResponseEntity.noContent().build();
   }
 
   @GetMapping

@@ -107,7 +107,7 @@
   margin: 0 auto;
   padding: 8px 32px 64px;
   display: grid;
-  grid-template-columns: 350px 1fr;
+  grid-template-columns: 360px 1fr;
   gap: 24px;
   align-items: start;
 }
@@ -119,13 +119,14 @@
   background: #FFFFFF;
   border: 1px solid #E3EAF2;
   border-radius: 18px;
-  padding: 22px 20px;
+  padding: 20px 16px;
   box-shadow: 0 4px 20px rgba(20, 40, 63, 0.04);
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
   position: sticky;
   top: 88px;
+  box-sizing: border-box;
 }
 
 .cardHeader {
@@ -1082,6 +1083,51 @@
   text-decoration: underline;
 }
 
+.googleMapsLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #0284C7;
+  background: #F0F9FF;
+  border: 1px solid #BAE6FD;
+  padding: 3px 8px;
+  border-radius: 6px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.googleMapsLink:hover {
+  background: #E0F2FE;
+  border-color: #7DD3FC;
+  color: #0369A1;
+}
+
+.mapPreviewNavBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #0088CC;
+  color: #FFFFFF;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  margin-top: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  width: fit-content;
+}
+
+.mapPreviewNavBtn:hover {
+  background: #0077B5;
+}
+
 /* Collapsible Tip */
 .tipToggleBtn {
   display: inline-flex;
@@ -1961,58 +2007,119 @@
   margin-top: 1px;
 }
 
-/* T2: Compact Elegant Style Pills Grid */
+/* T2: Compact & Professional Travel Style Pills */
 .stylesPillsGrid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 6px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
 }
 
 .stylePillBtn {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 6px;
-  padding: 7px 10px;
+  padding: 6px 10px;
   background: #FFFFFF;
   border: 1px solid #E2E8F0;
   border-radius: 10px;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 600;
   color: #334155;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
   text-align: left;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
 .stylePillBtn:hover {
   background: #F8FAFC;
   border-color: #CBD5E1;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(15, 23, 42, 0.06);
 }
 
 .stylePillBtnActive {
-  background: #EAF6FF;
+  background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
   border-color: #0088CC;
-  color: #0088CC;
+  color: #026597;
+  box-shadow: 0 0 0 1px #0088CC, 0 3px 10px rgba(0, 136, 204, 0.15);
+}
+
+.stylePillBtnActive:hover {
+  background: linear-gradient(135deg, #EBF5FF 0%, #BAE6FD 100%);
+  border-color: #0077B6;
+  box-shadow: 0 0 0 1px #0077B6, 0 4px 12px rgba(0, 136, 204, 0.2);
 }
 
 .stylePillLeft {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+.stylePillIconBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  flex-shrink: 0;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.stylePillBtn:hover .stylePillIconBox {
+  transform: scale(1.08);
+}
+
+.stylePillLabel {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #334155;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: color 0.15s ease;
 }
 
-.stylePillEmoji {
-  font-size: 14px;
+.stylePillBtnActive .stylePillLabel {
+  color: #026597;
+  font-weight: 650;
 }
 
-.stylePillCheck {
-  color: #0088CC;
-  font-weight: 700;
-  font-size: 12px;
+.stylePillCheckCircle {
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: #0088CC;
+  color: #FFFFFF;
+  box-shadow: 0 1px 3px rgba(0, 136, 204, 0.35);
+  animation: styleCheckPop 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes styleCheckPop {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* T6: AI Insights Card */
@@ -2103,13 +2210,122 @@
 }
 
 /* T5: Real Map Container */
+.mapViewContainer {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 .realMapAdapterWrapper {
   width: 100%;
-  height: 540px;
-  border-radius: 16px;
+  height: 560px;
+  border-radius: 18px;
   overflow: hidden;
   border: 1px solid #E2E8F0;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 18px rgba(20, 40, 63, 0.06);
   position: relative;
+}
+
+/* Floating Place Card on Map (Like Google Maps Info Card) */
+.mapPreviewCard {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 20;
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 12px 14px;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.16);
+  border: 1px solid #E2E8F0;
+  display: flex;
+  gap: 12px;
+  max-width: 380px;
+  width: calc(100% - 32px);
+  backdrop-filter: blur(8px);
+  animation: slideInDown 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mapPreviewPhoto {
+  width: 88px;
+  height: 88px;
+  border-radius: 12px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid #E2E8F0;
+  background: #F1F5F9;
+}
+
+.mapPreviewDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  flex: 1;
+}
+
+.mapPreviewCategory {
+  font-size: 11px;
+  font-weight: 700;
+  color: #0088CC;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mapPreviewTitle {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #14283F;
+  margin: 0;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mapPreviewCost {
+  font-size: 12px;
+  font-weight: 700;
+  color: #149D83;
+}
+
+/* Map Legend */
+.mapLegend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 16px;
+  background: #FFFFFF;
+  border: 1px solid #E3EAF2;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  flex-wrap: wrap;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legendDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 

@@ -16,6 +16,7 @@ spring:
   flyway:
     enabled: true
     validate-migration-naming: true
+    out-of-order: true
   mvc:
     problemdetails:
       enabled: true

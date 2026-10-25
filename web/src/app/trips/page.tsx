@@ -1,7 +1,30 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import {
+  Sparkles,
+  Ticket,
+  Plus,
+  Briefcase,
+  Calendar,
+  Compass,
+  CheckCircle2,
+  Search,
+  ChevronDown,
+  LayoutGrid,
+  List,
+  MapPin,
+  MoreHorizontal,
+  Bell,
+  Shuffle,
+  Camera,
+  Check,
+  Star,
+  X,
+  ThumbsUp,
+} from 'lucide-react';
 import { Navbar } from '@/components/common/Navbar';
 import styles from './trips.module.css';
 
@@ -9,19 +32,31 @@ interface TripItem {
   id: string;
   title: string;
   destination: string;
+  durationBadge: string;
   startDate: string;
   endDate: string;
-  status: 'PLANNING' | 'ACTIVE' | 'COMPLETED';
+  status: 'ACTIVE' | 'PLANNING' | 'COMPLETED';
+  role: 'OWNER' | 'MEMBER';
   budgetTotal: number;
   budgetSpent: number;
-  members: Array<{ name: string; avatar: string; role: string }>;
+  progressPercent: number;
+  members: Array<{ name: string; avatar: string; color: string }>;
   image: string;
   treasuryPath: string;
-  votingCount: number;
+  rating?: number;
+  alertType?: 'AMBER' | 'BLUE' | 'COMPLETED';
+  alertText?: string;
+  alertLinkText?: string;
+  quickActions: Array<{ label: string; href?: string; actionType?: string }>;
+  itineraryDays?: unknown[];
 }
 
+const DEFAULT_DEMO_TRIPS: TripItem[] = [];
+
 export default function TripsPage() {
-  const [activeTab, setActiveTab] = useState<'all' | 'active' | 'completed'>('all');
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState<'all' | 'planning' | 'active' | 'completed'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showVoteModal, setShowVoteModal] = useState(false);
@@ -47,107 +82,235 @@ export default function TripsPage() {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  const [tripsList, setTripsList] = useState<TripItem[]>([
-    {
-      id: 'demo-danang-2026',
-      title: 'Hành Trình Khám Phá Đà Nẵng - Hội An 2026',
-      destination: 'Đà Nẵng & Hội An, Quảng Nam',
-      startDate: '15/11/2026',
-      endDate: '18/11/2026',
-      status: 'ACTIVE',
-      budgetTotal: 25000000,
-      budgetSpent: 14850000,
-      members: [
-        { name: 'Lê Vân Anh', avatar: 'VA', role: 'OWNER' },
-        { name: 'Trần Nam', avatar: 'TN', role: 'MEMBER' },
-        { name: 'Minh Thư', avatar: 'MT', role: 'MEMBER' },
-        { name: 'Quốc Bảo', avatar: 'QB', role: 'MEMBER' },
-      ],
-      image: 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=800&q=80',
-      treasuryPath: '/trips/demo-danang-2026/treasury',
-      votingCount: 3,
-    },
-    {
-      id: 'trip-hagiang-2026',
-      title: 'Chinh Phục Cung Đường Vàng Hà Giang - Mèo Vạc',
-      destination: 'Hà Giang & Đèo Mã Pí Lèng',
-      startDate: '05/12/2026',
-      endDate: '08/12/2026',
-      status: 'PLANNING',
-      budgetTotal: 18000000,
-      budgetSpent: 4200000,
-      members: [
-        { name: 'Lê Vân Anh', avatar: 'VA', role: 'MEMBER' },
-        { name: 'Hoàng Long', avatar: 'HL', role: 'OWNER' },
-        { name: 'Thu Thảo', avatar: 'TT', role: 'MEMBER' },
-      ],
-      image: 'https://images.unsplash.com/photo-1570789210967-2cac24afeb00?auto=format&fit=crop&w=800&q=80',
-      treasuryPath: '/trips/demo-danang-2026/treasury',
-      votingCount: 2,
-    },
-    {
-      id: 'trip-phuquoc-2026',
-      title: 'Nghỉ Dưỡng Biển Đảo Hoàng Hôn Phú Quốc',
-      destination: 'Phú Quốc, Kiên Giang',
-      startDate: '10/09/2026',
-      endDate: '14/09/2026',
-      status: 'COMPLETED',
-      budgetTotal: 30000000,
-      budgetSpent: 28900000,
-      members: [
-        { name: 'Lê Vân Anh', avatar: 'VA', role: 'OWNER' },
-        { name: 'Tuấn Khải', avatar: 'TK', role: 'MEMBER' },
-      ],
-      image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80',
-      treasuryPath: '/trips/demo-danang-2026/treasury',
-      votingCount: 0,
-    },
-  ]);
+  const [tripsList, setTripsList] = useState<TripItem[]>([]);
+
+  // Synchronize with localStorage (custom trips created from Planner or Trips)
+  useEffect(() => {
+    const syncTrips = async () => {
+      await Promise.resolve();
+      if (typeof window !== 'undefined') {
+        try {
+          const stored = localStorage.getItem('vista_custom_trips');
+          const customTrips: TripItem[] = stored ? JSON.parse(stored) : [];
+          if (customTrips && customTrips.length > 0) {
+            const normalized = customTrips.map((t) => ({
+              ...t,
+              members: Array.isArray(t.members) && t.members.length > 0
+                ? t.members
+                : [{ name: 'Lê Vân Anh (Bạn)', avatar: 'VA', color: '#0284c7' }],
+              quickActions: Array.isArray(t.quickActions) && t.quickActions.length > 0
+                ? t.quickActions
+                : [
+                    { label: 'Lịch trình', href: `/planner?tripId=${t.id}&dest=${encodeURIComponent(t.destination || '')}` },
+                    { label: 'Phân công', actionType: 'ASSIGN' },
+                    { label: 'Ghi chú', actionType: 'NOTE' },
+                  ],
+              budgetTotal: t.budgetTotal || 20000000,
+              budgetSpent: t.budgetSpent || 0,
+              progressPercent: typeof t.progressPercent === 'number' ? t.progressPercent : 20,
+              durationBadge: t.durationBadge || '4 ngày',
+              startDate: t.startDate || '15/11',
+              endDate: t.endDate || '18/11/2026',
+              role: t.role || 'OWNER',
+              status: t.status || 'PLANNING',
+              image: t.image || 'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80',
+              treasuryPath: t.treasuryPath || `/trips/${t.id}/treasury`,
+            }));
+
+            setTripsList(normalized);
+          } else {
+            setTripsList([]);
+          }
+
+          // Check if user just created a trip from Planner
+          const params = new URLSearchParams(window.location.search);
+          const createdId = params.get('created');
+          if (createdId) {
+            const createdTrip = customTrips.find((t) => t.id === createdId);
+            const title = createdTrip ? createdTrip.title : 'Chuyến đi mới';
+            showToast(`🎉 Đã đồng bộ thành công chuyến đi "${title}" từ AI Planner!`);
+            setActiveTab('planning');
+          }
+        } catch {
+          // SSR safe
+        }
+      }
+    };
+    void syncTrips();
+  }, []);
+
+  const totalCount = tripsList.length;
+  const planningCount = tripsList.filter((t) => t.status === 'PLANNING').length;
+  const activeCount = tripsList.filter((t) => t.status === 'ACTIVE').length;
+  const completedCount = tripsList.filter((t) => t.status === 'COMPLETED').length;
 
   const filteredTrips = tripsList.filter((trip) => {
-    if (activeTab === 'active') return trip.status === 'ACTIVE' || trip.status === 'PLANNING';
-    if (activeTab === 'completed') return trip.status === 'COMPLETED';
+    if (activeTab === 'planning' && trip.status !== 'PLANNING') return false;
+    if (activeTab === 'active' && trip.status !== 'ACTIVE') return false;
+    if (activeTab === 'completed' && trip.status !== 'COMPLETED') return false;
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      return (
+        trip.title.toLowerCase().includes(q) ||
+        trip.destination.toLowerCase().includes(q)
+      );
+    }
     return true;
   });
 
   const handleCreateTrip = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim() || !newDestination.trim()) {
-      showToast('⚠️ Vui lòng nhập đầy đủ tiêu đề và điểm đến!');
+      showToast('Vui lòng nhập đầy đủ tiêu đề và điểm đến!');
       return;
     }
 
+    const tripId = `trip-${Date.now()}`;
     const newTrip: TripItem = {
-      id: `trip-${Date.now()}`,
+      id: tripId,
       title: newTitle,
       destination: newDestination,
-      startDate: newStartDate,
-      endDate: newEndDate,
+      durationBadge: '4 ngày',
+      startDate: newStartDate.slice(5).replace('-', '/'),
+      endDate: newEndDate.slice(5).replace('-', '/') + '/2026',
       status: 'PLANNING',
+      role: 'OWNER',
       budgetTotal: Number(newBudget) || 20000000,
       budgetSpent: 0,
-      members: [{ name: 'Lê Vân Anh (Bạn)', avatar: 'VA', role: 'OWNER' }],
+      progressPercent: 15,
+      members: [{ name: 'Lê Vân Anh (Bạn)', avatar: 'VA', color: '#0284c7' }],
       image: 'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80',
-      treasuryPath: '/trips/demo-danang-2026/treasury',
-      votingCount: 0,
+      treasuryPath: `/trips/${tripId}/treasury`,
+      alertText: 'Chuyến đi vừa tạo. Bấm "Lịch trình" để AI lên kế hoạch chi tiết!',
+      alertLinkText: 'Xem',
+      quickActions: [
+        { label: 'Lịch trình', href: `/planner?tripId=${tripId}&dest=${encodeURIComponent(newDestination)}` },
+        { label: 'Phân công', actionType: 'ASSIGN' },
+        { label: 'Ghi chú', actionType: 'NOTE' },
+      ],
     };
 
-    setTripsList([newTrip, ...tripsList]);
+    setTripsList((prev) => [newTrip, ...prev]);
+
+    // Persist to localStorage
+    try {
+      const stored = localStorage.getItem('vista_custom_trips');
+      const list = stored ? JSON.parse(stored) : [];
+      list.unshift(newTrip);
+      localStorage.setItem('vista_custom_trips', JSON.stringify(list));
+    } catch {
+      // ignore
+    }
+
     setShowCreateModal(false);
     setNewTitle('');
     setNewDestination('');
-    showToast(`🎉 Đã tạo thành công chuyến đi "${newTrip.title}"!`);
+    showToast(`Đã tạo thành công chuyến đi "${newTrip.title}"!`);
   };
 
   const handleJoinTrip = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!joinCode.trim()) {
-      showToast('⚠️ Vui lòng nhập mã mời từ trưởng nhóm!');
+    const cleanCode = joinCode.trim().toUpperCase();
+    if (!cleanCode) {
+      showToast('Vui lòng nhập mã mời từ trưởng nhóm!');
       return;
     }
+
+    // Try finding in existing trips (custom or demo)
+    const allTrips = [...tripsList];
+    const matched = allTrips.find((t) => {
+      const tripCode = `VISTA-${t.id.replace(/[^a-zA-Z0-9]/g, '').slice(-6)}`.toUpperCase();
+      return (
+        cleanCode === tripCode ||
+        cleanCode === t.id.toUpperCase() ||
+        t.id.toUpperCase().includes(cleanCode.replace('VISTA-', '')) ||
+        (cleanCode.includes('DN') && t.id.includes('danang')) ||
+        (cleanCode.includes('HG') && t.id.includes('hagiang')) ||
+        (cleanCode.includes('PQ') && t.id.includes('phuquoc'))
+      );
+    });
+
+    if (matched) {
+      // Add current user as member if not yet added
+      const hasMe = (matched.members || []).some((m) => m.name.includes('Bạn'));
+      if (!hasMe) {
+        matched.members = [
+          ...(matched.members || []),
+          {
+            name: 'Bạn (Thành viên)',
+            avatar: 'ME',
+            color: '#10b981',
+          },
+        ];
+        // Save to localStorage
+        try {
+          const stored = localStorage.getItem('vista_custom_trips');
+          const list: TripItem[] = stored ? JSON.parse(stored) : [];
+          const idx = list.findIndex((x) => x.id === matched.id);
+          if (idx >= 0) {
+            list[idx] = matched;
+          } else {
+            list.unshift(matched);
+          }
+          localStorage.setItem('vista_custom_trips', JSON.stringify(list));
+        } catch {
+          // ignore
+        }
+      }
+
+      setShowJoinModal(false);
+      setJoinCode('');
+      showToast(`Gia nhập thành công "${matched.title}"! Đang chuyển hướng...`);
+      setTimeout(() => {
+        router.push(`/trips/${matched.id}`);
+      }, 500);
+      return;
+    }
+
+    // If new custom code not matching existing, create a joined trip stub
+    const newJoinedTrip: TripItem = {
+      id: `trip-joined-${Date.now()}`,
+      title: `Chuyến đi theo mã ${cleanCode}`,
+      destination: 'Việt Nam',
+      durationBadge: '3 ngày',
+      startDate: 'Sắp tới',
+      endDate: '2026',
+      status: 'PLANNING',
+      role: 'MEMBER',
+      budgetTotal: 15000000,
+      budgetSpent: 0,
+      progressPercent: 20,
+      members: [
+        { name: 'Trưởng nhóm', avatar: 'TN', color: '#0070BA' },
+        { name: 'Bạn (Thành viên)', avatar: 'ME', color: '#10b981' },
+      ],
+      image: 'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80',
+      treasuryPath: '/trips/demo-danang-2026/treasury',
+      alertType: 'BLUE',
+      alertText: `Bạn đã tham gia qua mã mời ${cleanCode}`,
+      quickActions: [
+        { label: 'Lịch trình', actionType: 'PLAN' },
+        { label: 'Thành viên', actionType: 'MEMBERS' },
+      ],
+    };
+
+    setTripsList((prev) => [newJoinedTrip, ...prev]);
+    try {
+      const stored = localStorage.getItem('vista_custom_trips');
+      const list = stored ? JSON.parse(stored) : [];
+      list.unshift(newJoinedTrip);
+      localStorage.setItem('vista_custom_trips', JSON.stringify(list));
+    } catch {
+      // ignore
+    }
+
     setShowJoinModal(false);
     setJoinCode('');
-    showToast('✨ Gia nhập nhóm thành công! Bạn đã được thêm vào chuyến đi.');
+    showToast(`Gia nhập thành công chuyến đi theo mã ${cleanCode}! Đang chuyển hướng...`);
+    setTimeout(() => {
+      router.push(`/trips/${newJoinedTrip.id}`);
+    }, 500);
   };
 
   const toggleVote = (id: number) => {
@@ -168,262 +331,544 @@ export default function TripsPage() {
 
   return (
     <div className={styles.tripsPage}>
-      {/* ─── 1. GLOBAL NAVBAR WITH 5 FUNCTIONAL PILLARS ─────────────────── */}
+      {/* ─── GLOBAL NAVBAR ─────────────────────────────────────────────── */}
       <Navbar activeModule="trips" />
 
-      {/* ─── 2. HERO BANNER ────────────────────────────────────────────── */}
-      <section className={styles.heroSection}>
-        <div className={styles.heroContent}>
-          <div className={styles.heroText}>
-            <div className={styles.heroBadge}>
-              <span>👥</span>
-              <span>Tổ Chức Chuyến Đi Nhóm Thông Minh</span>
+      {/* ─── 1. TOP HEADER & ACTION ROW ───────────────────────────────── */}
+      <section className={styles.headerSection}>
+        <div className={styles.container}>
+          <div className={styles.headerRow}>
+            <div className={styles.headerText}>
+              <div className={styles.headerBadge}>
+                <span className={styles.badgeDot} />
+                <span>Quản lý hành trình</span>
+              </div>
+              <h1 className={styles.pageTitle}>Chuyến đi của bạn</h1>
+              <p className={styles.pageSubtitle}>
+                Lên kế hoạch, đồng hành và quản lý mọi hoạt động của nhóm trong cùng một nơi.
+              </p>
             </div>
-            <h1 className={styles.heroTitle}>
-              Lên Kế Hoạch, Biểu Quyết & Đồng Hành Cùng Bạn Bè
-            </h1>
-            <p className={styles.heroSubtitle}>
-              Quản lý chuyến đi nhóm tập trung: mời thành viên bằng mã bảo mật, phân quyền
-              chủ nhóm, biểu quyết điểm đến yêu thích và liên kết trực tiếp với Thủ quỹ chia tiền tự động.
-            </p>
-          </div>
 
-          <div className={styles.heroButtons}>
-            <button
-              type="button"
-              className={styles.btnPrimary}
-              onClick={() => setShowCreateModal(true)}
-              id="btn-create-trip-modal"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-              <span>+ Tạo Chuyến Đi Mới</span>
-            </button>
-            <button
-              type="button"
-              className={styles.btnSecondary}
-              onClick={() => setShowJoinModal(true)}
-              id="btn-join-trip-modal"
-            >
-              <span>🔑 Nhập Mã Lời Mời</span>
-            </button>
+            <div className={styles.headerActions}>
+              <div className={styles.headerActionsRow}>
+                <Link href="/planner" className={styles.btnAiPlan}>
+                  <Sparkles size={16} />
+                  <span>Tạo lịch trình bằng AI</span>
+                </Link>
+                <button
+                  type="button"
+                  className={styles.btnJoinCode}
+                  onClick={() => setShowJoinModal(true)}
+                  id="btn-join-trip-modal"
+                >
+                  <Ticket size={16} />
+                  <span>Tham gia bằng mã mới</span>
+                </button>
+              </div>
+
+              <button
+                type="button"
+                className={styles.btnCreateTripPrimary}
+                onClick={() => setShowCreateModal(true)}
+                id="btn-create-trip-modal"
+              >
+                <Plus size={16} strokeWidth={2.5} />
+                <span>Tạo chuyến đi mới</span>
+              </button>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ─── 3. MAIN DASHBOARD CONTENT ─────────────────────────────────── */}
-      <main className={styles.mainContainer}>
-        {/* Filter Tabs */}
-        <div className={styles.tabsBar}>
-          <div className={styles.tabsList}>
+      {/* ─── 2. KPI METRICS CARDS ROW (4 CARDS) ───────────────────────── */}
+      <div className={styles.container}>
+        <div className={styles.kpiGrid}>
+          {/* Card 1: Tổng chuyến đi */}
+          <div className={styles.kpiCard}>
+            <div className={styles.kpiInfo}>
+              <span className={styles.kpiLabel}>Tổng chuyến đi</span>
+              <div className={styles.kpiValueRow}>
+                <span className={styles.kpiValue}>{totalCount}</span>
+              </div>
+              <span className={styles.kpiSubtext}>Đã đồng bộ hồ sơ</span>
+            </div>
+            <div className={styles.kpiIconBox}>
+              <Briefcase size={20} />
+            </div>
+          </div>
+
+          {/* Card 2: Đang lên kế hoạch */}
+          <div className={styles.kpiCard}>
+            <div className={styles.kpiInfo}>
+              <span className={styles.kpiLabel}>Đang lên kế hoạch</span>
+              <div className={styles.kpiValueRow}>
+                <span className={styles.kpiValue}>{planningCount}</span>
+              </div>
+              <span className={`${styles.kpiSubtext} ${styles.kpiSubtextAccent}`}>
+                Chờ biểu quyết chặng
+              </span>
+            </div>
+            <div className={styles.kpiIconBox}>
+              <Calendar size={20} />
+            </div>
+          </div>
+
+          {/* Card 3: Đang diễn ra */}
+          <div className={styles.kpiCard}>
+            <div className={styles.kpiInfo}>
+              <span className={styles.kpiLabel}>Đang diễn ra</span>
+              <div className={styles.kpiValueRow}>
+                <span className={styles.kpiValue}>{activeCount}</span>
+                {activeCount > 0 && <span className={styles.liveGreenDot} />}
+              </div>
+              <span className={`${styles.kpiSubtext} ${styles.kpiSubtextLive}`}>
+                {activeCount > 0 ? 'Đang ở Quảng Nam' : 'Chưa có chuyến đi'}
+              </span>
+            </div>
+            <div className={styles.kpiIconBox}>
+              <Compass size={20} />
+            </div>
+          </div>
+
+          {/* Card 4: Đã hoàn thành */}
+          <div className={styles.kpiCard}>
+            <div className={styles.kpiInfo}>
+              <span className={styles.kpiLabel}>Đã hoàn thành</span>
+              <div className={styles.kpiValueRow}>
+                <span className={styles.kpiValue}>{completedCount}</span>
+              </div>
+              <span className={styles.kpiSubtext}>Lưu trữ ảnh & chi phí</span>
+            </div>
+            <div className={styles.kpiIconBox}>
+              <CheckCircle2 size={20} />
+            </div>
+          </div>
+        </div>
+
+        {/* ─── 3. FILTER TABS & SEARCH CONTROLS TOOLBAR ───────────────── */}
+        <div className={styles.toolbarRow}>
+          <div className={styles.filterTabs}>
             <button
               type="button"
-              className={`${styles.tabBtn} ${activeTab === 'all' ? styles.tabBtnActive : ''}`}
+              className={`${styles.filterTabBtn} ${activeTab === 'all' ? styles.filterTabBtnActive : ''}`}
               onClick={() => setActiveTab('all')}
             >
-              <span>Tất cả chuyến đi</span>
-              <span className={styles.tabCount}>{tripsList.length}</span>
+              Tất cả ({totalCount})
             </button>
             <button
               type="button"
-              className={`${styles.tabBtn} ${activeTab === 'active' ? styles.tabBtnActive : ''}`}
+              className={`${styles.filterTabBtn} ${activeTab === 'planning' ? styles.filterTabBtnActive : ''}`}
+              onClick={() => setActiveTab('planning')}
+            >
+              Đang lên kế hoạch ({planningCount})
+            </button>
+            <button
+              type="button"
+              className={`${styles.filterTabBtn} ${activeTab === 'active' ? styles.filterTabBtnActive : ''}`}
               onClick={() => setActiveTab('active')}
             >
-              <span>Đang lên kế hoạch</span>
-              <span className={styles.tabCount}>2</span>
+              Đang diễn ra ({activeCount})
             </button>
             <button
               type="button"
-              className={`${styles.tabBtn} ${activeTab === 'completed' ? styles.tabBtnActive : ''}`}
+              className={`${styles.filterTabBtn} ${activeTab === 'completed' ? styles.filterTabBtnActive : ''}`}
               onClick={() => setActiveTab('completed')}
             >
-              <span>Đã hoàn thành</span>
-              <span className={styles.tabCount}>1</span>
+              Đã hoàn thành ({completedCount})
             </button>
           </div>
 
-          <Link href="/planner" className={styles.btnActionPlan} style={{ textDecoration: 'none' }}>
-            <span>✨ Thử AI Lập Lịch Trình</span>
-          </Link>
+          <div className={styles.toolbarRight}>
+            <div className={styles.searchBoxWrapper}>
+              <Search size={15} className={styles.searchIcon} />
+              <input
+                type="text"
+                className={styles.searchInput}
+                placeholder="Tìm theo tên chuyến đi hoặc điểm đến"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+
+            <button type="button" className={styles.dateFilterBtn}>
+              <Calendar size={15} />
+              <span>Thời gian</span>
+              <ChevronDown size={14} />
+            </button>
+
+            <div className={styles.viewToggleGroup}>
+              <button
+                type="button"
+                className={`${styles.viewToggleBtn} ${styles.viewToggleBtnActive}`}
+                title="Xem dạng lưới"
+              >
+                <LayoutGrid size={15} />
+              </button>
+              <button
+                type="button"
+                className={styles.viewToggleBtn}
+                title="Xem dạng danh sách"
+              >
+                <List size={15} />
+              </button>
+            </div>
+          </div>
         </div>
 
-        {/* Trips Grid */}
+        {/* ─── 4. TRIP CARDS GRID (3 COLUMNS) ─────────────────────────── */}
         <div className={styles.tripsGrid}>
           {filteredTrips.map((trip) => {
-            const progressPercent = Math.min(
-              100,
-              Math.round((trip.budgetSpent / trip.budgetTotal) * 100)
-            );
+            const membersList = Array.isArray(trip.members) && trip.members.length > 0
+              ? trip.members
+              : [{ name: 'Lê Vân Anh (Bạn)', avatar: 'VA', color: '#0284c7' }];
+
+            const actions = Array.isArray(trip.quickActions) && trip.quickActions.length > 0
+              ? trip.quickActions
+              : [
+                  { label: 'Lịch trình', href: `/planner?tripId=${trip.id}&dest=${encodeURIComponent(trip.destination || '')}` },
+                  { label: 'Phân công', actionType: 'ASSIGN' },
+                  { label: 'Ghi chú', actionType: 'NOTE' },
+                ];
 
             return (
               <div key={trip.id} className={styles.tripCard} id={`trip-card-${trip.id}`}>
+                {/* Media Image Banner */}
                 <div
-                  className={styles.tripCardHero}
+                  className={styles.tripMediaWrapper}
                   style={{ backgroundImage: `url(${trip.image})` }}
                 >
-                  <span
-                    className={`${styles.tripStatusBadge} ${
-                      trip.status === 'ACTIVE'
-                        ? styles.statusActive
-                        : trip.status === 'PLANNING'
-                        ? styles.statusPlanning
-                        : styles.statusCompleted
-                    }`}
-                  >
-                    {trip.status === 'ACTIVE'
-                      ? '🟢 Đang diễn ra'
-                      : trip.status === 'PLANNING'
-                      ? '🔵 Đang lên lịch'
-                      : '⚪ Đã hoàn thành'}
-                  </span>
+                  <div className={styles.tripMediaOverlay}>
+                    {/* Top Row: Status badge + 3-dots menu */}
+                    <div className={styles.mediaTopRow}>
+                      {trip.status === 'ACTIVE' && (
+                        <span className={styles.statusPillActive}>
+                          <span className={styles.liveGreenDot} />
+                          <span>Đang diễn ra</span>
+                        </span>
+                      )}
+                      {trip.status === 'PLANNING' && (
+                        <span className={styles.statusPillPlanning}>
+                          <span
+                            style={{
+                              width: 6,
+                              height: 6,
+                              borderRadius: '50%',
+                              background: '#FFFFFF',
+                            }}
+                          />
+                          <span>Đang lên kế hoạch</span>
+                        </span>
+                      )}
+                      {trip.status === 'COMPLETED' && (
+                        <span className={styles.statusPillCompleted}>
+                          <Check size={12} strokeWidth={3} />
+                          <span>Đã hoàn thành</span>
+                        </span>
+                      )}
 
-                  <div className={styles.tripHeroOverlay}>
-                    <div className={styles.tripDestination}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                        <circle cx="12" cy="10" r="3" />
-                      </svg>
-                      <span>{trip.destination}</span>
+                      <button
+                        type="button"
+                        className={styles.btnMoreMenu}
+                        title="Tùy chọn khác"
+                        onClick={() => showToast(`Tùy chọn: ${trip.title}`)}
+                      >
+                        <MoreHorizontal size={16} />
+                      </button>
                     </div>
-                    <h3 className={styles.tripCardTitle}>{trip.title}</h3>
+
+                    {/* Bottom Row: Location + Duration badge */}
+                    <div className={styles.mediaBottomRow}>
+                      <div className={styles.mediaLocation}>
+                        <MapPin size={14} />
+                        <span>{trip.destination}</span>
+                      </div>
+                      <div className={styles.mediaDurationBadge}>
+                        {trip.durationBadge}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
+                {/* Card Body */}
                 <div className={styles.tripCardBody}>
-                  <div className={styles.tripMetaRow}>
-                    <div className={styles.metaItem}>
-                      <span>📅</span>
-                      <span>{trip.startDate} – {trip.endDate}</span>
-                    </div>
-                    {trip.votingCount > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => setShowVoteModal(true)}
-                        style={{
-                          background: '#eff6ff',
-                          color: '#0284c7',
-                          border: 'none',
-                          borderRadius: '6px',
-                          padding: '3px 8px',
-                          fontSize: '12px',
-                          fontWeight: 700,
-                          cursor: 'pointer',
-                        }}
-                      >
-                        🗳️ {trip.votingCount} biểu quyết
-                      </button>
+                  {/* Row 1: Role / Rating + Date */}
+                  <div className={styles.cardHeaderRow}>
+                    {trip.rating ? (
+                      <div className={styles.ratingRow}>
+                        <Star size={13} fill="#D97706" color="#D97706" />
+                        <Star size={13} fill="#D97706" color="#D97706" />
+                        <Star size={13} fill="#D97706" color="#D97706" />
+                        <Star size={13} fill="#D97706" color="#D97706" />
+                        <Star size={13} fill="#D97706" color="#D97706" />
+                        <span>5.0</span>
+                      </div>
+                    ) : trip.role === 'OWNER' ? (
+                      <span className={styles.roleBadgeOwner}>Bạn là trưởng nhóm</span>
+                    ) : (
+                      <span className={styles.roleBadgeMember}>Thành viên nhóm</span>
                     )}
-                  </div>
 
-                  {/* Budget Spent Progress */}
-                  <div className={styles.budgetProgressBar}>
-                    <div className={styles.budgetHeader}>
-                      <span className={styles.budgetSpent}>
-                        {trip.budgetSpent.toLocaleString('vi-VN')} đ
-                      </span>
-                      <span className={styles.budgetTotal}>
-                        Ngân sách: {trip.budgetTotal.toLocaleString('vi-VN')} đ ({progressPercent}%)
-                      </span>
-                    </div>
-                    <div className={styles.progressTrack}>
-                      <div
-                        className={styles.progressFill}
-                        style={{ width: `${progressPercent}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Members Avatar Group */}
-                  <div className={styles.membersRow}>
-                    <div className={styles.avatarGroup}>
-                      {trip.members.map((m, idx) => (
-                        <div key={idx} className={styles.avatar} title={`${m.name} (${m.role})`}>
-                          {m.avatar}
-                        </div>
-                      ))}
-                    </div>
-                    <span className={styles.memberCount}>
-                      {trip.members.length} thành viên tham gia
+                    <span className={styles.cardDateText}>
+                      <Calendar size={13} />
+                      <span>{trip.startDate} – {trip.endDate}</span>
                     </span>
                   </div>
 
-                  {/* Direct Functional Actions */}
-                  <div className={styles.tripCardActions}>
-                    <Link
-                      href={trip.treasuryPath}
-                      className={styles.btnActionTreasury}
-                      id={`btn-treasury-${trip.id}`}
-                    >
-                      <span>💰 Thủ Quỹ & Chia Tiền</span>
+                  {/* Row 2: Trip Title */}
+                  <h3 className={styles.tripTitle}>
+                    <Link href={`/trips/${trip.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                      {trip.title}
                     </Link>
-                    <Link
-                      href="/planner"
-                      className={styles.btnActionPlan}
-                      id={`btn-plan-${trip.id}`}
-                    >
-                      <span>📅 Lịch Trình Chi Tiết</span>
-                    </Link>
+                  </h3>
+
+                  {/* Row 3: Members Avatar Stack */}
+                  <div className={styles.membersRow}>
+                    <div className={styles.avatarStack}>
+                      {membersList.map((m, idx) => (
+                        <div
+                          key={idx}
+                          className={styles.avatarCircle}
+                          style={{ backgroundColor: m.color }}
+                          title={m.name}
+                        >
+                          {m.avatar}
+                        </div>
+                      ))}
+                      {trip.id === 'demo-danang-2026' && (
+                        <div className={styles.avatarCountBadge}>+1</div>
+                      )}
+                    </div>
+                    <span className={styles.memberCountText}>
+                      {trip.id === 'demo-danang-2026' ? '4' : membersList.length} thành viên
+                    </span>
+                  </div>
+
+                  {/* Row 4: Alert Box */}
+                  {trip.alertType === 'AMBER' && (
+                    <div className={styles.alertBoxAmber}>
+                      <Bell size={14} style={{ flexShrink: 0 }} />
+                      <span>{trip.alertText}</span>
+                    </div>
+                  )}
+                  {trip.alertType === 'BLUE' && (
+                    <div className={styles.alertBoxBlue}>
+                      <Shuffle size={14} style={{ flexShrink: 0 }} />
+                      <span>{trip.alertText}</span>
+                    </div>
+                  )}
+                  {trip.alertType === 'COMPLETED' && (
+                    <div className={styles.alertBoxCompleted}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <Camera size={14} style={{ flexShrink: 0 }} />
+                        <span>{trip.alertText}</span>
+                      </div>
+                      <span
+                        className={styles.alertLinkBtn}
+                        onClick={() => showToast('Mở bộ sưu tập 148 ảnh & hóa đơn')}
+                      >
+                        {trip.alertLinkText || 'Xem'}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Row 5: Progress Bar / Budget */}
+                  <div className={styles.cardProgressGroup}>
+                    {trip.status === 'COMPLETED' ? (
+                      <div className={styles.progressLabelRow}>
+                        <span>Tổng chi tiêu hoàn tất</span>
+                        <span className={styles.progressValueBold}>
+                          {trip.budgetSpent.toLocaleString('vi-VN')}đ / {trip.budgetTotal.toLocaleString('vi-VN')}đ
+                        </span>
+                      </div>
+                    ) : (
+                      <>
+                        <div className={styles.progressLabelRow}>
+                          <span>Tiến độ chuẩn bị</span>
+                          <span className={styles.progressValueBold}>{trip.progressPercent}%</span>
+                        </div>
+                        <div className={styles.progressBarTrack}>
+                          <div
+                            className={styles.progressBarFillCyan}
+                            style={{ width: `${trip.progressPercent}%` }}
+                          />
+                        </div>
+                        <div className={styles.progressLabelRow}>
+                          <span>Ngân sách đã chi</span>
+                          <span className={styles.progressValueBold}>
+                            {trip.budgetSpent.toLocaleString('vi-VN')}đ / {trip.budgetTotal.toLocaleString('vi-VN')}đ
+                            {trip.id === 'trip-hagiang-2026' ? ' (23%)' : ''}
+                          </span>
+                        </div>
+                      </>
+                    )}
+
+                    {trip.status === 'COMPLETED' && (
+                      <div className={styles.progressBarTrack}>
+                        <div
+                          className={styles.progressBarFillNavy}
+                          style={{ width: `${trip.progressPercent}%` }}
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Row 6: Primary CTA Button */}
+                  <Link
+                    href={`/trips/${trip.id}`}
+                    className={
+                      trip.status === 'ACTIVE'
+                        ? styles.btnCardMainPrimary
+                        : styles.btnCardMainSoft
+                    }
+                    id={`btn-cta-${trip.id}`}
+                  >
+                    {trip.status === 'COMPLETED' ? 'Xem lại hành trình' : 'Xem chi tiết'}
+                  </Link>
+
+                  {/* Row 7: Secondary Action Pills */}
+                  <div
+                    className={
+                      actions.length === 2
+                        ? styles.secondaryActionsRow2
+                        : styles.secondaryActionsRow
+                    }
+                  >
+                    {actions.map((act, aIdx) => {
+                      if (act.actionType === 'VOTE') {
+                        return (
+                          <button
+                            key={aIdx}
+                            type="button"
+                            className={styles.btnSecondaryPill}
+                            onClick={() => setShowVoteModal(true)}
+                          >
+                            {act.label}
+                          </button>
+                        );
+                      }
+                      if (act.href) {
+                        return (
+                          <Link
+                            key={aIdx}
+                            href={act.href}
+                            className={styles.btnSecondaryPill}
+                          >
+                            {act.label}
+                          </Link>
+                        );
+                      }
+                      return (
+                        <button
+                          key={aIdx}
+                          type="button"
+                          className={styles.btnSecondaryPill}
+                          onClick={() => showToast(`Mở tính năng: ${act.label}`)}
+                        >
+                          {act.label}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
             );
           })}
+          {filteredTrips.length === 0 && (
+            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '4rem 1.5rem', background: '#ffffff', borderRadius: 16, border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
+              <Compass size={48} color="#0284c7" style={{ margin: '0 auto 1rem' }} />
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0f172a', marginBottom: '0.5rem' }}>
+                Chưa có chuyến đi nào
+              </h3>
+              <p style={{ color: '#64748b', fontSize: '0.95rem', maxWidth: 440, margin: '0 auto 1.5rem' }}>
+                Bạn chưa tham gia chuyến đi nào. Hãy bắt đầu bằng cách tạo chuyến đi mới hoặc dùng AI Planner để thiết kế lịch trình tự động!
+              </p>
+              <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  className={styles.btnPrimaryAction}
+                  onClick={() => setShowCreateModal(true)}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+                >
+                  <Plus size={16} /> Tạo chuyến đi mới
+                </button>
+                <Link
+                  href="/planner"
+                  className={styles.btnSecondaryPill}
+                  style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.65rem 1.25rem' }}
+                >
+                  <Sparkles size={16} color="#0284c7" /> Lên lịch với AI Planner
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* ─── 4. CORE FUNCTIONAL PILLARS SHOWCASE ─────────────────────── */}
-        <section className={styles.showcaseSection}>
-          <div className={styles.showcaseHeader}>
-            <div className={styles.showcaseBadge}>KIẾN TRÚC TÍNH NĂNG VISTA</div>
-            <h2 className={styles.showcaseTitle}>
-              Các Tính Năng Cốt Lõi Phục Vụ Chuyến Đi Của Bạn
-            </h2>
-            <p className={styles.showcaseDesc}>
-              Được xây dựng đồng bộ theo kiến trúc nghiệp vụ chuẩn của dự án VISTA: từ khâu gợi ý
-              điểm đến, AI tạo lịch trình, biểu quyết nhóm cho tới quản lý tài chính quỹ chung.
-            </p>
+        {/* ─── 5. BOTTOM INSPIRATION & CTA BANNER ───────────────────────── */}
+        <section className={styles.bottomCtaSection}>
+          <div className={styles.bottomSuitcaseCircle}>
+            <Briefcase size={26} />
           </div>
-
-          <div className={styles.pillarsGrid}>
-            <div className={styles.pillarCard}>
-              <div className={styles.pillarIconWrapper}>✨</div>
-              <h4 className={styles.pillarTitle}>1. AI Lập Lịch Trình (Gemini LLM)</h4>
-              <p className={styles.pillarText}>
-                Trợ lý AI phân tích sở thích, quỹ thời gian và điều kiện thời tiết thực tế để thiết kế
-                lịch trình tối ưu từng ngày kèm chi phí dự trù.
-              </p>
-            </div>
-
-            <div className={styles.pillarCard}>
-              <div className={styles.pillarIconWrapper}>🗳️</div>
-              <h4 className={styles.pillarTitle}>2. Biểu Quyết Địa Điểm (Vote Up/Down)</h4>
-              <p className={styles.pillarText}>
-                Mọi thành viên đều có quyền đề xuất điểm dừng. Tính năng bỏ phiếu dân chủ giúp chốt
-                lịch trình nhanh chóng mà không gây tranh cãi.
-              </p>
-            </div>
-
-            <div className={styles.pillarCard}>
-              <div className={styles.pillarIconWrapper}>💰</div>
-              <h4 className={styles.pillarTitle}>3. Thủ Quỹ & Chia Tiền Minh Bạch</h4>
-              <p className={styles.pillarText}>
-                Ghi nhận các hóa đơn ăn uống, khách sạn, vé tham quan; tự động tính toán ma trận
-                đối soát công nợ &quot;ai nợ ai&quot; với độ chính xác tuyệt đối.
-              </p>
-            </div>
-
-            <div className={styles.pillarCard}>
-              <div className={styles.pillarIconWrapper}>📍</div>
-              <h4 className={styles.pillarTitle}>4. Điểm Hẹn Meetup & An Toàn</h4>
-              <p className={styles.pillarText}>
-                Cố định điểm tập trung khẩn cấp (sân bay, khách sạn, ga tàu) và chia sẻ vị trí chủ động
-                khi nhóm di chuyển giữa các địa danh.
-              </p>
-            </div>
+          <div className={styles.bottomEyebrow}>CẢM HỨNG ĐIỂM ĐẾN</div>
+          <h2 className={styles.bottomTitle}>Hành trình mới đang chờ bạn</h2>
+          <p className={styles.bottomSubtitle}>
+            Tạo chuyến đi đầu tiên hoặc nhập mã mới để đồng hành cùng bạn bè và tối ưu từng trải nghiệm khắp Việt Nam.
+          </p>
+          <div className={styles.bottomBtnGroup}>
+            <button
+              type="button"
+              className={styles.btnBottomPrimary}
+              onClick={() => setShowCreateModal(true)}
+            >
+              Tạo chuyến đi đầu tiên
+            </button>
+            <button
+              type="button"
+              className={styles.btnBottomSoft}
+              onClick={() => setShowJoinModal(true)}
+            >
+              Tôi có mã lời mời
+            </button>
           </div>
         </section>
-      </main>
+      </div>
+
+      {/* ─── 6. FOOTER ─────────────────────────────────────────────────── */}
+      <footer className={styles.tripsFooter}>
+        <div className={styles.footerContainer}>
+          <div className={styles.footerLogoBrand}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M12 2L2 7L12 12L22 7L12 2Z"
+                stroke="#0070BA"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M2 17L12 22L22 17"
+                stroke="#0070BA"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M2 12L12 17L22 12"
+                stroke="#0070BA"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <span>© 2025 VISTA - Vietnam Smart Travel Platform. Bảo lưu mọi quyền.</span>
+          </div>
+
+          <div className={styles.footerLinks}>
+            <Link href="#">Điều khoản</Link>
+            <Link href="#">Chính sách bảo mật</Link>
+            <Link href="#">Trung tâm trợ giúp</Link>
+          </div>
+        </div>
+      </footer>
 
       {/* ─── MODAL: CREATE TRIP ────────────────────────────────────────── */}
       {showCreateModal && (
@@ -436,7 +881,7 @@ export default function TripsPage() {
                 className={styles.btnCloseModal}
                 onClick={() => setShowCreateModal(false)}
               >
-                ✕
+                <X size={18} />
               </button>
             </div>
 
@@ -465,7 +910,7 @@ export default function TripsPage() {
                 />
               </div>
 
-              <div className={styles.formRow}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div className={styles.formGroup}>
                   <label className={styles.formLabel}>Ngày bắt đầu</label>
                   <input
@@ -516,7 +961,7 @@ export default function TripsPage() {
                 className={styles.btnCloseModal}
                 onClick={() => setShowJoinModal(false)}
               >
-                ✕
+                <X size={18} />
               </button>
             </div>
 
@@ -529,7 +974,7 @@ export default function TripsPage() {
                 <input
                   type="text"
                   className={styles.formInput}
-                  placeholder="Ví dụ: VISTA-DN2026 hoặc mã token hash"
+                  placeholder="Ví dụ: VISTA-DN2026 hoặc mã token"
                   value={joinCode}
                   onChange={(e) => setJoinCode(e.target.value)}
                   style={{ textTransform: 'uppercase', letterSpacing: '2px', fontWeight: 700 }}
@@ -550,13 +995,13 @@ export default function TripsPage() {
         <div className={styles.modalBackdrop} onClick={() => setShowVoteModal(false)}>
           <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
-              <h3 className={styles.modalTitle}>🗳️ Biểu Quyết Địa Điểm Nhóm</h3>
+              <h3 className={styles.modalTitle}>Biểu Quyết Địa Điểm Nhóm</h3>
               <button
                 type="button"
                 className={styles.btnCloseModal}
                 onClick={() => setShowVoteModal(false)}
               >
-                ✕
+                <X size={18} />
               </button>
             </div>
 
@@ -614,7 +1059,7 @@ export default function TripsPage() {
                       transition: 'all 0.2s',
                     }}
                   >
-                    <span>👍</span>
+                    <ThumbsUp size={14} />
                     <span>{item.votes}</span>
                   </button>
                 </div>
@@ -626,7 +1071,7 @@ export default function TripsPage() {
               className={styles.btnSubmitForm}
               onClick={() => {
                 setShowVoteModal(false);
-                showToast('✅ Đã lưu kết quả biểu quyết của bạn!');
+                showToast('Đã lưu kết quả biểu quyết của bạn!');
               }}
             >
               Đóng & Lưu kết quả
@@ -637,7 +1082,7 @@ export default function TripsPage() {
 
       {/* Toast Notification */}
       {toastMessage && (
-        <div className={styles.toast}>
+        <div className={styles.toastNotification}>
           <span>{toastMessage}</span>
         </div>
       )}

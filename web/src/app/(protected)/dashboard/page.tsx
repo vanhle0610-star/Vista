@@ -34,9 +34,19 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
-    checkHealth();
+    let isMounted = true;
+    const runCheck = async () => {
+      await Promise.resolve();
+      if (isMounted) {
+        await checkHealth();
+      }
+    };
+    runCheck();
     const interval = setInterval(checkHealth, 15000);
-    return () => clearInterval(interval);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, []);
 
   return (

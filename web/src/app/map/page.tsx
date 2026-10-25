@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useMemo } from 'react';
-import { MapLocationHeader } from '@/features/map-location/components/MapLocationHeader';
+import { Navbar } from '@/components/common/Navbar';
 import { MapViewAdapter } from '@/features/map-location/adapter/MapViewAdapter';
 import {
   DestinationList,
@@ -37,7 +37,7 @@ export default function VistaMapWeek2Page() {
   );
   return (
     <div className={styles.page}>
-      <MapLocationHeader />
+      <Navbar activeModule="map" />
       <main className={styles.content}>
         <div className={styles.intro}>
           <h1>

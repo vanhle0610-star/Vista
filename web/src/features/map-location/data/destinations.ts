@@ -14,7 +14,8 @@ export const SAMPLE_DESTINATIONS: DestinationMarker[] = [
     longitude: 108.2278968,
     description:
       'Biểu tượng hiện đại của Đà Nẵng với kiến trúc rồng độc đáo, nổi bật bắc qua sông Hàn.',
-    thumbnailUrl: '/images/map/dragon-bridge.jpg',
+    thumbnailUrl:
+      'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/map/dragon-bridge.jpg',
     priceMin: 0,
     priceMax: 0,
     openingHours: '00:00 - 23:59',
@@ -29,6 +30,8 @@ export const SAMPLE_DESTINATIONS: DestinationMarker[] = [
     longitude: 107.9965,
     description:
       'Quần thể du lịch trên đỉnh núi Chúa nổi tiếng với Cầu Vàng và làng Pháp cổ kính.',
+    thumbnailUrl:
+      'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_golden_bridge.jpg',
     priceMin: 900000,
     priceMax: 1250000,
     openingHours: '07:00 - 22:00',
@@ -43,6 +46,8 @@ export const SAMPLE_DESTINATIONS: DestinationMarker[] = [
     longitude: 108.2778,
     description:
       'Ngôi chùa linh thiêng với tượng Phật Bà Quan Âm cao 67m hướng ra biển Đông.',
+    thumbnailUrl:
+      'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_real.jpg',
     priceMin: 0,
     priceMax: 0,
     openingHours: '06:00 - 18:00',
@@ -51,7 +56,8 @@ export const SAMPLE_DESTINATIONS: DestinationMarker[] = [
   {
     id: 'dest-04',
     name: 'Bãi biển Mỹ Khê',
-    thumbnailUrl: '/images/map/my-khe.jpg',
+    thumbnailUrl:
+      'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/map/my-khe.jpg',
     province: 'Đà Nẵng',
     category: 'Biển & Thiên nhiên',
     latitude: 16.0645,
@@ -72,6 +78,8 @@ export const SAMPLE_DESTINATIONS: DestinationMarker[] = [
     longitude: 108.2618,
     description:
       'Quần thể 5 ngọn núi đá vôi kỳ vĩ cùng nhiều hang động huyền bí và chùa chiền cổ.',
+    thumbnailUrl:
+      'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_real.jpg',
     priceMin: 40000,
     priceMax: 100000,
     openingHours: '07:00 - 17:30',
@@ -80,7 +88,8 @@ export const SAMPLE_DESTINATIONS: DestinationMarker[] = [
   {
     id: 'dest-06',
     name: 'Chợ Hàn Đà Nẵng',
-    thumbnailUrl: '/images/map/han-market.jpg',
+    thumbnailUrl:
+      'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/map/han-market.jpg',
     province: 'Đà Nẵng',
     category: 'Ẩm thực & Mua sắm',
     latitude: 16.0684,

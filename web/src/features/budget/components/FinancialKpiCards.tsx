@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { Wallet, Receipt, Target, Scale } from 'lucide-react';
 import type { TripExpenseSummary } from '../types';
 import styles from '../treasury.module.css';
 
@@ -37,10 +38,14 @@ export function FinancialKpiCards({
       {/* 1. Ngân Quỹ Còn Lại */}
       <div className={styles.kpiCard}>
         <div className={styles.kpiHeader}>
-          <div className={`${styles.kpiIconCircle} ${styles.kpiIconBlue}`}>👛</div>
+          <div className={`${styles.kpiIconCircle} ${styles.kpiIconBlue}`}>
+            <Wallet size={19} />
+          </div>
           <span className={styles.kpiLabel}>Ngân Quỹ Còn Lại</span>
         </div>
-        <div className={styles.kpiMetric}>{formatVnd(remaining)}</div>
+        <div className={styles.kpiMetric} style={{ color: remaining >= 0 ? '#0284c7' : '#ef4444' }}>
+          {formatVnd(remaining)}
+        </div>
         <div className={styles.kpiProgressBarTrack}>
           <div
             className={styles.kpiProgressBarFill}
@@ -53,23 +58,27 @@ export function FinancialKpiCards({
       {/* 2. Tổng Tiền Đã Chi */}
       <div className={styles.kpiCard}>
         <div className={styles.kpiHeader}>
-          <div className={`${styles.kpiIconCircle} ${styles.kpiIconCoral}`}>💲</div>
+          <div className={`${styles.kpiIconCircle} ${styles.kpiIconCoral}`}>
+            <Receipt size={19} />
+          </div>
           <span className={styles.kpiLabel}>Tổng Tiền Đã Chi</span>
         </div>
         <div className={styles.kpiMetric}>{formatVnd(spent)}</div>
         <div className={styles.kpiProgressBarTrack}>
           <div
             className={styles.kpiProgressBarFill}
-            style={{ width: `${spentPct}%`, background: '#ea580c' }}
+            style={{ width: `${spentPct}%`, background: spentPct > 90 ? '#ef4444' : '#ea580c' }}
           />
         </div>
-        <div className={styles.kpiSubtext}>Đã chi {spentPct}% so với dự toán</div>
+        <div className={styles.kpiSubtext}>Đã chi {spentPct}% ngân sách</div>
       </div>
 
       {/* 3. Dự Toán Ban Đầu */}
       <div className={styles.kpiCard}>
         <div className={styles.kpiHeader}>
-          <div className={`${styles.kpiIconCircle} ${styles.kpiIconBlue}`}>⏱️</div>
+          <div className={`${styles.kpiIconCircle} ${styles.kpiIconPurple}`}>
+            <Target size={19} />
+          </div>
           <span className={styles.kpiLabel}>Dự Toán Ban Đầu</span>
         </div>
         <div className={styles.kpiMetric}>{formatVnd(budget)}</div>
@@ -79,13 +88,17 @@ export function FinancialKpiCards({
             style={{ width: '100%', background: '#94a3b8' }}
           />
         </div>
-        <div className={styles.kpiSubtext}>Cho {memberCount} thành viên</div>
+        <div className={styles.kpiSubtext}>
+          Dành cho {memberCount} thành viên ({formatVnd(Math.round(budget / Math.max(1, memberCount)))}/người)
+        </div>
       </div>
 
       {/* 4. Vị Thế Ròng Của Bạn */}
       <div className={styles.kpiCard}>
         <div className={styles.kpiHeader}>
-          <div className={`${styles.kpiIconCircle} ${styles.kpiIconGreen}`}>📊</div>
+          <div className={`${styles.kpiIconCircle} ${styles.kpiIconGreen}`}>
+            <Scale size={19} />
+          </div>
           <span className={styles.kpiLabel}>Vị Thế Ròng Của Bạn</span>
         </div>
         <div
@@ -107,7 +120,7 @@ export function FinancialKpiCards({
           {myDelta > 0
             ? 'Bạn được nhóm hoàn lại'
             : myDelta < 0
-            ? 'Bạn cần hoàn trả nhóm'
+            ? 'Bạn cần đóng thêm vào quỹ'
             : 'Đã cân bằng chi phí'}
         </div>
       </div>
