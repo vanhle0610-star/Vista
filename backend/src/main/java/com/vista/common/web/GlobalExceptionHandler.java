@@ -6,6 +6,8 @@ import com.vista.auth.exception.RateLimitExceededException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -21,13 +23,23 @@ import org.springframework.security.authentication.AuthenticationCredentialsNotF
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class GlobalExceptionHandler {
+  @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
+  ProblemDetail uploadTooLarge(HttpServletRequest request) {
+    var problem =
+        ProblemDetail.forStatusAndDetail(
+            HttpStatus.PAYLOAD_TOO_LARGE,
+            "File vượt giới hạn tải lên. Ảnh cộng đồng tối đa 5 MiB mỗi ảnh.");
+    problem.setProperty("code", "IMAGE_TOO_LARGE");
+    problem.setProperty("requestId", MDC.get("requestId"));
+    problem.setInstance(URI.create(request.getRequestURI()));
+    return problem;
+  }
+
   private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -55,8 +67,13 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
-  ProblemDetail malformedJson(org.springframework.http.converter.HttpMessageNotReadableException exception, HttpServletRequest request) {
-    var problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Định dạng dữ liệu yêu cầu không hợp lệ (JSON không đúng chuẩn)");
+  ProblemDetail malformedJson(
+      org.springframework.http.converter.HttpMessageNotReadableException exception,
+      HttpServletRequest request) {
+    var problem =
+        ProblemDetail.forStatusAndDetail(
+            HttpStatus.BAD_REQUEST,
+            "Định dạng dữ liệu yêu cầu không hợp lệ (JSON không đúng chuẩn)");
     problem.setType(URI.create("https://vista.example/errors/validation"));
     problem.setTitle("Malformed JSON Request");
     problem.setInstance(URI.create(request.getRequestURI()));

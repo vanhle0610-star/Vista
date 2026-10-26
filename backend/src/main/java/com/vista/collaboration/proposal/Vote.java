@@ -7,15 +7,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.time.Instant;
 import java.util.UUID;
 
 /**
- * Phiếu bầu cho một destination proposal.
- * Bảng: {@code destination_votes} (theo baseline schema).
+ * Phiếu bầu cho một destination proposal. Bảng: {@code destination_votes} (theo baseline schema).
  * unique(proposal_id, user_id) — mỗi thành viên chỉ bầu 1 lần / proposal.
  */
 @Entity
@@ -64,18 +62,43 @@ public class Vote {
 
   // ── Getters / Setters ──────────────────────────────────────────────────────
 
-  public UUID getId() { return id; }
+  public UUID getId() {
+    return id;
+  }
 
-  public Proposal getProposal() { return proposal; }
-  public void setProposal(Proposal proposal) { this.proposal = proposal; }
+  public Proposal getProposal() {
+    return proposal;
+  }
 
-  public UUID getUserId() { return userId; }
-  public void setUserId(UUID userId) { this.userId = userId; }
+  public void setProposal(Proposal proposal) {
+    this.proposal = proposal;
+  }
 
-  public String getVote() { return vote; }
-  public void setVote(String vote) { this.vote = vote; }
+  public UUID getUserId() {
+    return userId;
+  }
 
-  public Instant getCreatedAt() { return createdAt; }
-  public Instant getUpdatedAt() { return updatedAt; }
-  public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
+  public void setUserId(UUID userId) {
+    this.userId = userId;
+  }
+
+  public String getVote() {
+    return vote;
+  }
+
+  public void setVote(String vote) {
+    this.vote = vote;
+  }
+
+  public Instant getCreatedAt() {
+    return createdAt;
+  }
+
+  public Instant getUpdatedAt() {
+    return updatedAt;
+  }
+
+  public void setUpdatedAt(Instant updatedAt) {
+    this.updatedAt = updatedAt;
+  }
 }

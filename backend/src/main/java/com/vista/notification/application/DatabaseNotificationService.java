@@ -45,17 +45,17 @@ public class DatabaseNotificationService implements NotificationService {
       return;
     }
 
-    String payloadJson = toJson(Map.of(
-        "title", title != null ? title : "",
-        "body", body != null ? body : "",
-        "data", data != null ? data : Map.of()));
+    String payloadJson =
+        toJson(
+            Map.of(
+                "title", title != null ? title : "",
+                "body", body != null ? body : "",
+                "data", data != null ? data : Map.of()));
 
-    NotificationEntity notification =
-        new NotificationEntity(recipientUserId, type, payloadJson);
+    NotificationEntity notification = new NotificationEntity(recipientUserId, type, payloadJson);
     notificationRepository.save(notification);
 
-    log.debug(
-        "Đã lưu thông báo: type={}, recipientUserId={}", type, recipientUserId);
+    log.debug("Đã lưu thông báo: type={}, recipientUserId={}", type, recipientUserId);
   }
 
   @Override
@@ -91,20 +91,20 @@ public class DatabaseNotificationService implements NotificationService {
             .filter(uid -> !uid.equals(excludeUserId))
             .toList();
 
-    String payloadJson = toJson(Map.of(
-        "title", title != null ? title : "",
-        "body", body != null ? body : "",
-        "tripId", tripId.toString()));
+    String payloadJson =
+        toJson(
+            Map.of(
+                "title", title != null ? title : "",
+                "body", body != null ? body : "",
+                "tripId", tripId.toString()));
 
     for (UUID recipientId : recipients) {
-      NotificationEntity notification =
-          new NotificationEntity(recipientId, type, payloadJson);
+      NotificationEntity notification = new NotificationEntity(recipientId, type, payloadJson);
       notificationRepository.save(notification);
     }
 
     log.info(
-        "Đã gửi thông báo '{}' tới {} thành viên của trip {}",
-        type, recipients.size(), tripId);
+        "Đã gửi thông báo '{}' tới {} thành viên của trip {}", type, recipients.size(), tripId);
   }
 
   // ── Private helpers ────────────────────────────────────────────────────────

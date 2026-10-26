@@ -29,8 +29,7 @@ public class ItineraryController {
   private final CurrentUserProvider currentUserProvider;
 
   public ItineraryController(
-      ItineraryService itineraryService,
-      CurrentUserProvider currentUserProvider) {
+      ItineraryService itineraryService, CurrentUserProvider currentUserProvider) {
     this.itineraryService = itineraryService;
     this.currentUserProvider = currentUserProvider;
   }
@@ -40,8 +39,7 @@ public class ItineraryController {
   @PostMapping("/trips/{tripId}/itinerary/days")
   @Operation(summary = "Thêm ngày vào lịch trình — chỉ member của trip (403 nếu không phải)")
   public ResponseEntity<ItineraryDayResponse> createDay(
-      @PathVariable UUID tripId,
-      @Valid @RequestBody CreateItineraryDayRequest request) {
+      @PathVariable UUID tripId, @Valid @RequestBody CreateItineraryDayRequest request) {
     UUID userId = currentUserProvider.getCurrentUserId();
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(itineraryService.createDay(tripId, userId, request));
@@ -59,18 +57,17 @@ public class ItineraryController {
   @PostMapping("/itinerary/days/{dayId}/items")
   @Operation(summary = "Thêm mục vào ngày lịch trình")
   public ResponseEntity<ItineraryItemResponse> createItem(
-      @PathVariable UUID dayId,
-      @Valid @RequestBody CreateItineraryItemRequest request) {
+      @PathVariable UUID dayId, @Valid @RequestBody CreateItineraryItemRequest request) {
     UUID userId = currentUserProvider.getCurrentUserId();
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(itineraryService.createItem(dayId, userId, request));
   }
 
   @PatchMapping("/itinerary/items/{itemId}")
-  @Operation(summary = "Cập nhật mục lịch trình — hỗ trợ optimistic concurrency qua expected_updated_at")
+  @Operation(
+      summary = "Cập nhật mục lịch trình — hỗ trợ optimistic concurrency qua expected_updated_at")
   public ResponseEntity<ItineraryItemResponse> updateItem(
-      @PathVariable UUID itemId,
-      @RequestBody UpdateItineraryItemRequest request) {
+      @PathVariable UUID itemId, @RequestBody UpdateItineraryItemRequest request) {
     UUID userId = currentUserProvider.getCurrentUserId();
     return ResponseEntity.ok(itineraryService.updateItem(itemId, userId, request));
   }
@@ -85,7 +82,8 @@ public class ItineraryController {
 
   @PutMapping("/itinerary/days/{dayId}/items/reorder")
   @Operation(
-      summary = "Sắp xếp lại thứ tự điểm dừng trong 1 ngày — gửi toàn bộ danh sách ID theo thứ tự mới")
+      summary =
+          "Sắp xếp lại thứ tự điểm dừng trong 1 ngày — gửi toàn bộ danh sách ID theo thứ tự mới")
   public ResponseEntity<List<ItineraryItemResponse>> reorderItems(
       @PathVariable UUID dayId, @Valid @RequestBody ReorderItemsRequest request) {
     UUID userId = currentUserProvider.getCurrentUserId();

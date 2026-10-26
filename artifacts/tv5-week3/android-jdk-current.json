@@ -1,0 +1,7 @@
+﻿{
+    "Version":  "17.0.20+101",
+    "Source":  "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.20.1%2B1/OpenJDK17U-jdk_x64_windows_hotspot_17.0.20.1_1.zip",
+    "Sha256":  "E53A79C3C3D86865BD7E787903884331068E71321714FFD44F145785AFFC7CB0",
+    "JavaHome":  "D:\\Du_An_OJT\\Vista\\mobile\\node_modules\\.cache\\tv5-jdk17\\jdk-17.0.20.1+1",
+    "JavaVersion":  "17.0.20.1"
+}

@@ -6,12 +6,9 @@ import java.time.LocalDate;
 
 public class CreateItineraryDayRequest {
 
-  @NotNull(message = "Số thứ tự ngày không được để trống")
-  @Min(value = 1, message = "Số thứ tự ngày phải >= 1")
-  private Integer dayNumber;
+  @NotNull(message = "Số thứ tự ngày không được để trống") @Min(value = 1, message = "Số thứ tự ngày phải >= 1") private Integer dayNumber;
 
-  @NotNull(message = "Ngày lịch trình không được để trống")
-  private LocalDate tripDate;
+  @NotNull(message = "Ngày lịch trình không được để trống") private LocalDate tripDate;
 
   public CreateItineraryDayRequest() {}
 
@@ -20,9 +17,19 @@ public class CreateItineraryDayRequest {
     this.tripDate = tripDate;
   }
 
-  public Integer getDayNumber() { return dayNumber; }
-  public void setDayNumber(Integer dayNumber) { this.dayNumber = dayNumber; }
+  public Integer getDayNumber() {
+    return dayNumber;
+  }
 
-  public LocalDate getTripDate() { return tripDate; }
-  public void setTripDate(LocalDate tripDate) { this.tripDate = tripDate; }
+  public void setDayNumber(Integer dayNumber) {
+    this.dayNumber = dayNumber;
+  }
+
+  public LocalDate getTripDate() {
+    return tripDate;
+  }
+
+  public void setTripDate(LocalDate tripDate) {
+    this.tripDate = tripDate;
+  }
 }

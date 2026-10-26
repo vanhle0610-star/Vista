@@ -1,0 +1,164 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "VISTA map routing",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/map/routes": {
+      "post": {
+        "tags": [
+          "Map"
+        ],
+        "operationId": "computeMapRoute",
+        "summary": "Compute a driving or walking route through openrouteservice/HeiGIT",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RouteInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Route, or null if no route exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/RouteResult"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid coordinates or mode"
+          },
+          "429": {
+            "description": "Rate limited; retry later"
+          },
+          "503": {
+            "description": "Routing unavailable, unconfigured or key rejected"
+          },
+          "504": {
+            "description": "Routing timeout"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "RoutePoint": {
+        "type": "object",
+        "required": [
+          "latitude",
+          "longitude",
+          "label"
+        ],
+        "properties": {
+          "latitude": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "longitude": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 200
+          }
+        }
+      },
+      "RouteInput": {
+        "type": "object",
+        "required": [
+          "origin",
+          "destination",
+          "mode",
+          "fromGps"
+        ],
+        "properties": {
+          "origin": {
+            "$ref": "#/components/schemas/RoutePoint"
+          },
+          "destination": {
+            "$ref": "#/components/schemas/RoutePoint"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "DRIVING",
+              "WALKING"
+            ]
+          },
+          "fromGps": {
+            "type": "boolean"
+          }
+        }
+      },
+      "RouteResult": {
+        "type": "object",
+        "required": [
+          "input",
+          "path",
+          "distanceMeters",
+          "durationMillis",
+          "warnings",
+          "attribution"
+        ],
+        "properties": {
+          "input": {
+            "$ref": "#/components/schemas/RouteInput"
+          },
+          "path": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "lat",
+                "lng"
+              ],
+              "properties": {
+                "lat": {
+                  "type": "number"
+                },
+                "lng": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "distanceMeters": {
+            "type": "number"
+          },
+          "durationMillis": {
+            "type": "number"
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "attribution": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

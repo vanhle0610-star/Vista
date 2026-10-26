@@ -1,0 +1,20 @@
+{
+  "mode": "mock",
+  "googleLiveVerified": false,
+  "checks": [
+    "Valid markers only; one SDK load (mock)",
+    "Marker selection synchronizes list",
+    "Directions opens inside VISTA",
+    "No unsolicited GPS prompt; denial still permits manual origin",
+    "Latest request wins; route metrics match response; polyline exists (mock)",
+    "Clearing route keeps destination markers",
+    "No route state",
+    "Google API permission failure handled",
+    "Route retry",
+    "Permission revocation removes GPS marker and GPS-derived route",
+    "390/768/1440 no horizontal overflow",
+    "Route return reuses loaded SDK",
+    "Invalid key/auth callback displays map error"
+  ],
+  "errors": []
+}

@@ -333,12 +333,14 @@ class ExpenseCalculationServiceTest {
   }
 
   @Test
-  @DisplayName("11. Tuần 7 Edge Case: Thành viên chuyến đi không tham gia chia tiền (Excluded Members)")
+  @DisplayName(
+      "11. Tuần 7 Edge Case: Thành viên chuyến đi không tham gia chia tiền (Excluded Members)")
   void calculateSettlementDeltas_withExcludedMembers_shouldHaveZeroBalanceForNonParticipants() {
     UUID memberD = UUID.randomUUID();
     UUID memberE = UUID.randomUUID();
 
-    // Hóa đơn 900.000đ do Vân Ánh trả, chỉ chia cho Vân Ánh, Tuấn, Nam (mỗi người 300k). D và E không tham gia.
+    // Hóa đơn 900.000đ do Vân Ánh trả, chỉ chia cho Vân Ánh, Tuấn, Nam (mỗi người 300k). D và E
+    // không tham gia.
     ExpenseEntity expense =
         new ExpenseEntity(
             tripId,
@@ -415,7 +417,8 @@ class ExpenseCalculationServiceTest {
   }
 
   @Test
-  @DisplayName("13. Tuần 7 Edge Case: Cấn trừ công nợ đa phương (A nợ B 100k, B nợ C 100k -> A trả C 100k)")
+  @DisplayName(
+      "13. Tuần 7 Edge Case: Cấn trừ công nợ đa phương (A nợ B 100k, B nợ C 100k -> A trả C 100k)")
   void simplifyDebts_transitiveDebt_shouldOptimizeToSingleTransfer() {
     // Vân Ánh nợ Tuấn 100k (-100k), Tuấn số dư ròng 0k, Nam được nhận 100k (+100k)
     Map<UUID, BigDecimal> balances =

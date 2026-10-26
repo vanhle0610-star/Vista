@@ -68,8 +68,7 @@ public class TripEntity {
   @Column(name = "version", nullable = false)
   private Long version;
 
-  protected TripEntity() {
-  }
+  protected TripEntity() {}
 
   public TripEntity(UUID ownerId, String title, LocalDate startDate, LocalDate endDate) {
     this.id = UUID.randomUUID();

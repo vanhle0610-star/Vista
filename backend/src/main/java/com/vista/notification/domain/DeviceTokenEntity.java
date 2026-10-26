@@ -9,10 +9,7 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
 
-/**
- * Thực thể lưu push-notification device tokens (FCM / APNs).
- * Ánh xạ bảng {@code device_tokens}.
- */
+/** Thực thể lưu push-notification device tokens (FCM / APNs). Ánh xạ bảng {@code device_tokens}. */
 @Entity
 @Table(name = "device_tokens")
 public class DeviceTokenEntity {
@@ -69,21 +66,51 @@ public class DeviceTokenEntity {
 
   // ── Getters / Setters ──────────────────────────────────────────────────────
 
-  public UUID getId() { return id; }
-  public UUID getUserId() { return userId; }
+  public UUID getId() {
+    return id;
+  }
 
-  public String getToken() { return token; }
-  public void setToken(String token) { this.token = token; }
+  public UUID getUserId() {
+    return userId;
+  }
 
-  public String getPlatform() { return platform; }
-  public void setPlatform(String platform) { this.platform = platform; }
+  public String getToken() {
+    return token;
+  }
 
-  public String getDeviceName() { return deviceName; }
-  public void setDeviceName(String deviceName) { this.deviceName = deviceName; }
+  public void setToken(String token) {
+    this.token = token;
+  }
 
-  public boolean isActive() { return active; }
-  public void setActive(boolean active) { this.active = active; }
+  public String getPlatform() {
+    return platform;
+  }
 
-  public Instant getCreatedAt() { return createdAt; }
-  public Instant getUpdatedAt() { return updatedAt; }
+  public void setPlatform(String platform) {
+    this.platform = platform;
+  }
+
+  public String getDeviceName() {
+    return deviceName;
+  }
+
+  public void setDeviceName(String deviceName) {
+    this.deviceName = deviceName;
+  }
+
+  public boolean isActive() {
+    return active;
+  }
+
+  public void setActive(boolean active) {
+    this.active = active;
+  }
+
+  public Instant getCreatedAt() {
+    return createdAt;
+  }
+
+  public Instant getUpdatedAt() {
+    return updatedAt;
+  }
 }

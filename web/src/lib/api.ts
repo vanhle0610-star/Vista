@@ -30,7 +30,7 @@ export async function apiRequest<T>(path: string, init?: RequestInit): Promise<T
     const problem = (await response
       .json()
       .catch(() => ({ detail: `Lỗi kết nối máy chủ (${response.status})` }))) as Partial<Problem>;
-    throw new Error(problem.detail ?? `API error ${response.status}`);
+    throw Object.assign(new Error(problem.detail ?? `API error ${response.status}`), { status: response.status, code: problem.code });
   }
 
   if (response.status === 204) {

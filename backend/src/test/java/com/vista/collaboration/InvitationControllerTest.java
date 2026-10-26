@@ -61,16 +61,28 @@ class InvitationControllerTest {
 
   private InvitationResponse pendingResponse() {
     return new InvitationResponse(
-        INVITATION_ID, TRIP_ID, MEMBER_ID, "user@vista.vn",
-        InvitationStatus.PENDING, Instant.now().plusSeconds(86400),
-        Instant.now(), null, null);
+        INVITATION_ID,
+        TRIP_ID,
+        MEMBER_ID,
+        "user@vista.vn",
+        InvitationStatus.PENDING,
+        Instant.now().plusSeconds(86400),
+        Instant.now(),
+        null,
+        null);
   }
 
   private InvitationResponse pendingWithToken() {
     return new InvitationResponse(
-        INVITATION_ID, TRIP_ID, MEMBER_ID, "user@vista.vn",
-        InvitationStatus.PENDING, Instant.now().plusSeconds(86400),
-        Instant.now(), RAW_TOKEN, "http://localhost:3000/invite/" + RAW_TOKEN);
+        INVITATION_ID,
+        TRIP_ID,
+        MEMBER_ID,
+        "user@vista.vn",
+        InvitationStatus.PENDING,
+        Instant.now().plusSeconds(86400),
+        Instant.now(),
+        RAW_TOKEN,
+        "http://localhost:3000/invite/" + RAW_TOKEN);
   }
 
   // ── W3-TV3-01: Tạo lời mời ────────────────────────────────────────────────
@@ -115,7 +127,8 @@ class InvitationControllerTest {
         .perform(
             post("/api/v1/trips/{tripId}/invitations", TRIP_ID)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(new CreateInvitationRequest("user@vista.vn"))))
+                .content(
+                    objectMapper.writeValueAsString(new CreateInvitationRequest("user@vista.vn"))))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.id").value(INVITATION_ID.toString()))
         .andExpect(jsonPath("$.status").value("PENDING"))
@@ -164,8 +177,7 @@ class InvitationControllerTest {
   @DisplayName("W3-02 POST /invitations/{token}/accept - Lời mời đã REVOKED → 409")
   void acceptInvitation_revokedToken_returns409() throws Exception {
     when(invitationService.acceptInvitation(eq(RAW_TOKEN), any()))
-        .thenThrow(
-            new ConflictException("Lời mời không ở trạng thái PENDING (hiện tại: REVOKED)"));
+        .thenThrow(new ConflictException("Lời mời không ở trạng thái PENDING (hiện tại: REVOKED)"));
 
     mockMvc
         .perform(post("/api/v1/invitations/{token}/accept", RAW_TOKEN))
@@ -202,9 +214,15 @@ class InvitationControllerTest {
   void acceptInvitation_valid_returns200() throws Exception {
     InvitationResponse accepted =
         new InvitationResponse(
-            INVITATION_ID, TRIP_ID, MEMBER_ID, "user@vista.vn",
-            InvitationStatus.ACCEPTED, Instant.now().plusSeconds(86400),
-            Instant.now(), null, null);
+            INVITATION_ID,
+            TRIP_ID,
+            MEMBER_ID,
+            "user@vista.vn",
+            InvitationStatus.ACCEPTED,
+            Instant.now().plusSeconds(86400),
+            Instant.now(),
+            null,
+            null);
 
     when(invitationService.acceptInvitation(eq(RAW_TOKEN), eq(MEMBER_ID))).thenReturn(accepted);
 
@@ -231,9 +249,15 @@ class InvitationControllerTest {
   void declineInvitation_valid_returns200() throws Exception {
     InvitationResponse declined =
         new InvitationResponse(
-            INVITATION_ID, TRIP_ID, MEMBER_ID, "user@vista.vn",
-            InvitationStatus.DECLINED, Instant.now().plusSeconds(86400),
-            Instant.now(), null, null);
+            INVITATION_ID,
+            TRIP_ID,
+            MEMBER_ID,
+            "user@vista.vn",
+            InvitationStatus.DECLINED,
+            Instant.now().plusSeconds(86400),
+            Instant.now(),
+            null,
+            null);
 
     when(invitationService.declineInvitation(eq(RAW_TOKEN), eq(MEMBER_ID))).thenReturn(declined);
 

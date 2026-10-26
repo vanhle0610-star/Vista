@@ -10,12 +10,14 @@ export function GPSPermissionBar({
   onRequestPermission,
   onDismiss,
   errorMessage,
+  automaticEnabled,
 }: {
   status: GeolocationStatus;
   hasPosition?: boolean;
   onRequestPermission: () => void;
   onDismiss?: () => void;
   errorMessage?: string | null;
+  automaticEnabled?: boolean;
 }) {
   const failed = ['denied', 'unavailable', 'timeout', 'unsupported'].includes(
     status,
@@ -26,7 +28,7 @@ export function GPSPermissionBar({
       : 'Chưa thể xác định vị trí'
     : hasPosition
       ? 'Đã hiển thị vị trí của bạn trên bản đồ'
-      : 'Bật định vị để xem vị trí của bạn';
+      : 'Cho phép VISTA dùng vị trí khi bạn mở bản đồ';
   return (
     <aside
       className={`${styles.bar} ${failed ? styles.warning : ''}`}
@@ -42,7 +44,7 @@ export function GPSPermissionBar({
         <p>
           {failed
             ? errorMessage || 'Bạn vẫn có thể xem danh sách và bản đồ.'
-            : 'Không tự chia sẻ vị trí cho nhóm.'}
+            : 'Hiển thị vị trí hiện tại và tính đường đi. Khi bạn tính tuyến, tọa độ được gửi đến dịch vụ chỉ đường; không tự chia sẻ cho nhóm.'}
         </p>
       </div>
       <div className={styles.actions}>
@@ -64,7 +66,7 @@ export function GPSPermissionBar({
         </button>
         {onDismiss && (
           <button className={styles.secondary} onClick={onDismiss}>
-            {hasPosition || failed ? 'Đóng' : 'Để sau'}
+            {automaticEnabled ? 'Tắt tự định vị' : failed ? 'Đóng' : 'Để sau'}
           </button>
         )}
       </div>

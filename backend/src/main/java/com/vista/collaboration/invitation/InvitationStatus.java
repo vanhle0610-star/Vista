@@ -7,4 +7,3 @@ public enum InvitationStatus {
   EXPIRED,
   REVOKED
 }
-

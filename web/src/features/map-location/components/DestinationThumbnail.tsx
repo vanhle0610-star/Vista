@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import type { DestinationMarker } from '../types';
 import { MapIcon } from './MapIcon';
+import { getCloudImageUrl } from '@/utils/cloudImage';
 import styles from './DestinationThumbnail.module.css';
 
 export function DestinationThumbnail({
@@ -14,15 +14,28 @@ export function DestinationThumbnail({
   className?: string;
 }) {
   const [failed, setFailed] = useState(false);
+
+  const rawUrl = destination.thumbnailUrl;
+  let finalUrl = '';
+  if (rawUrl) {
+    if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
+      finalUrl = rawUrl;
+    } else if (rawUrl.startsWith('/')) {
+      finalUrl = rawUrl;
+    } else {
+      finalUrl = getCloudImageUrl(rawUrl);
+    }
+  }
+
   return (
     <span className={`${styles.frame} ${className}`}>
-      {destination.thumbnailUrl && !failed ? (
-        <Image
-          src={destination.thumbnailUrl}
+      {finalUrl && !failed ? (
+        <img
+          src={finalUrl}
           alt={destination.name}
-          fill
-          sizes="(max-width: 900px) 112px, 100px"
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
           onError={() => setFailed(true)}
+          loading="lazy"
         />
       ) : (
         <span

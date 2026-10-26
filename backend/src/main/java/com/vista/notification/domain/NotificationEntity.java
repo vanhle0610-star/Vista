@@ -11,8 +11,8 @@ import java.util.UUID;
 /**
  * Thực thể lưu in-app notifications — ánh xạ bảng {@code notifications} trong DB.
  *
- * <p>Cột {@code payload_json} được lưu dạng TEXT (JSON serialized) để tránh phụ thuộc vào
- * dialect cụ thể trong test/dev profile.
+ * <p>Cột {@code payload_json} được lưu dạng TEXT (JSON serialized) để tránh phụ thuộc vào dialect
+ * cụ thể trong test/dev profile.
  */
 @Entity
 @Table(name = "notifications")
@@ -65,12 +65,31 @@ public class NotificationEntity {
 
   // ── Getters ────────────────────────────────────────────────────────────────
 
-  public UUID getId() { return id; }
-  public UUID getUserId() { return userId; }
-  public String getType() { return type; }
-  public String getPayloadJson() { return payloadJson; }
-  public Instant getReadAt() { return readAt; }
-  public Instant getCreatedAt() { return createdAt; }
+  public UUID getId() {
+    return id;
+  }
 
-  public boolean isRead() { return readAt != null; }
+  public UUID getUserId() {
+    return userId;
+  }
+
+  public String getType() {
+    return type;
+  }
+
+  public String getPayloadJson() {
+    return payloadJson;
+  }
+
+  public Instant getReadAt() {
+    return readAt;
+  }
+
+  public Instant getCreatedAt() {
+    return createdAt;
+  }
+
+  public boolean isRead() {
+    return readAt != null;
+  }
 }

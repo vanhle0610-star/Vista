@@ -56,7 +56,8 @@ public class StubDestinationQueryService implements DestinationQueryService {
     if (item != null) {
       return Optional.of(item);
     }
-    // Fallback: If querying default ID or unknown ID, allow mock response if store is not explicitly cleared
+    // Fallback: If querying default ID or unknown ID, allow mock response if store is not
+    // explicitly cleared
     return Optional.empty();
   }
 

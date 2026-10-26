@@ -1,6 +1,7 @@
 'use client';
 
 import { AdminShell } from '@/components/AdminShell';
+import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useSyncExternalStore } from 'react';
 
@@ -84,7 +85,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
           />
           <span style={{ fontSize: '0.95rem' }}>Đang kiểm tra quyền truy cập...</span>
         </div>
-        <a
+        <Link
           href="/"
           style={{
             fontSize: '0.85rem',
@@ -94,7 +95,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
           }}
         >
           ← Trở về Cổng du lịch VISTA
-        </a>
+        </Link>
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );

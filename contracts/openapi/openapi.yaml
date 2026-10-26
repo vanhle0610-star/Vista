@@ -25,6 +25,8 @@ tags:
   - name: AI Planner
     description: Trợ lý AI gợi ý lịch trình chuyến đi (BF-02, TV4)
 paths:
+  /map/routes:
+    $ref: './tv5-routing.json#/paths/~1map~1routes'
   /health:
     get:
       security: []
@@ -594,13 +596,19 @@ paths:
   /map/destinations:
     $ref: "./tv5-week1.yaml#/paths/~1map~1destinations"
   /posts:
-    $ref: "./tv5-week1.yaml#/paths/~1posts"
+    $ref: "./tv5-week3.json#/paths/~1posts"
   /posts/{postId}:
-    $ref: "./tv5-week1.yaml#/paths/~1posts~1{postId}"
+    $ref: "./tv5-week3.json#/paths/~1posts~1{postId}"
   /posts/{postId}/comments:
-    $ref: "./tv5-week1.yaml#/paths/~1posts~1{postId}~1comments"
+    $ref: "./tv5-week3.json#/paths/~1posts~1{postId}~1comments"
   /posts/{postId}/comments/{commentId}:
-    $ref: "./tv5-week1.yaml#/paths/~1posts~1{postId}~1comments~1{commentId}"
+    $ref: "./tv5-week3.json#/paths/~1posts~1{postId}~1comments~1{commentId}"
+  /post-uploads:
+    $ref: "./tv5-week3.json#/paths/~1post-uploads"
+  /post-uploads/{uploadId}:
+    $ref: "./tv5-week3.json#/paths/~1post-uploads~1{uploadId}"
+  /post-media/{mediaId}:
+    $ref: "./tv5-week3.json#/paths/~1post-media~1{mediaId}"
   /trips/{tripId}/check-ins:
     $ref: "./tv5-week1.yaml#/paths/~1trips~1{tripId}~1check-ins"
   /trips/{tripId}/meetup-points:
