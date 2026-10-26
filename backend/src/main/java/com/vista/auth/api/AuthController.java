@@ -68,7 +68,7 @@ public class AuthController {
     return ResponseEntity.ok(response);
   }
 
-  @PostMapping("/refresh")
+  @PostMapping({"/refresh", "/refresh-token"})
   @Operation(summary = "Lấy cặp Access Token & Refresh Token mới thông qua Token Rotation")
   public ResponseEntity<AuthResponse> refresh(
       @CookieValue(name = REFRESH_TOKEN_COOKIE, required = false) String cookieRefreshToken,

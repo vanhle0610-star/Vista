@@ -149,6 +149,12 @@ public class AuthService {
     var userOpt = userRepository.findByEmailIgnoreCase(email);
     if (userOpt.isEmpty()) {
       loginRateLimiter.recordFailedAttempt(clientIp, email);
+      auditLogService.logAction(
+          null,
+          "LOGIN_FAILURE",
+          "USER",
+          null,
+          "Đăng nhập thất bại: thông tin xác thực không chính xác");
       throw new BadCredentialsException("Email hoặc mật khẩu không chính xác");
     }
 
@@ -156,11 +162,23 @@ public class AuthService {
 
     if (!"ACTIVE".equalsIgnoreCase(user.getStatus())) {
       loginRateLimiter.recordFailedAttempt(clientIp, email);
+      auditLogService.logAction(
+          user.getId(),
+          "LOGIN_FAILURE",
+          "USER",
+          user.getId().toString(),
+          "Đăng nhập thất bại: tài khoản không hoạt động");
       throw new BadCredentialsException("Tài khoản đã bị tạm khóa hoặc ngừng hoạt động");
     }
 
     if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
       loginRateLimiter.recordFailedAttempt(clientIp, email);
+      auditLogService.logAction(
+          user.getId(),
+          "LOGIN_FAILURE",
+          "USER",
+          user.getId().toString(),
+          "Đăng nhập thất bại: thông tin xác thực không chính xác");
       throw new BadCredentialsException("Email hoặc mật khẩu không chính xác");
     }
 
@@ -181,7 +199,7 @@ public class AuthService {
             .toList();
 
     auditLogService.logAction(
-        user.getId(), "USER_LOGGED_IN", "USER", user.getId().toString(), "Đăng nhập thành công");
+        user.getId(), "LOGIN_SUCCESS", "USER", user.getId().toString(), "Đăng nhập thành công");
 
     return new AuthResponse(
         user.getId(), user.getEmail(), user.getDisplayName(), accessToken, refreshToken, roles);
@@ -200,10 +218,11 @@ public class AuthService {
         refreshTokenService.revokeAllUserTokens(compromisedUserId);
         auditLogService.logAction(
             compromisedUserId,
-            "REFRESH_TOKEN_REUSE_DETECTED",
+            "TOKEN_REVOKED",
             "USER",
             compromisedUserId.toString(),
-            "Phát hiện sử dụng lại Refresh Token đã thu hồi - Tất cả phiên đăng nhập đã bị vô hiệu hóa");
+            "Phát hiện sử dụng lại Refresh Token đã thu hồi - Tất cả phiên đăng nhập đã bị vô hiệu"
+                + " hóa");
       } catch (Exception ignored) {
       }
       throw new BadCredentialsException("Refresh token đã bị thu hồi hoặc không hợp lệ");
@@ -252,10 +271,10 @@ public class AuthService {
 
     auditLogService.logAction(
         user.getId(),
-        "TOKEN_ROTATED",
+        "TOKEN_REFRESH",
         "USER",
         user.getId().toString(),
-        "Xoay vòng refresh token thành công");
+        "Làm mới access token thành công");
 
     return new AuthResponse(
         user.getId(),
@@ -272,7 +291,7 @@ public class AuthService {
       try {
         UUID userId = jwtTokenService.extractUserId(refreshToken);
         auditLogService.logAction(
-            userId, "USER_LOGGED_OUT", "USER", userId.toString(), "Đăng xuất thành công");
+            userId, "LOGOUT", "USER", userId.toString(), "Đăng xuất thành công");
       } catch (Exception ignored) {
       }
     }

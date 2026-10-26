@@ -86,8 +86,7 @@ class UserServiceTest {
     assertThat(response.avatarUrl()).isEqualTo("https://avatar.example.com/b.png");
 
     verify(auditLogService)
-        .logAction(
-            eq(userId), eq("USER_PROFILE_UPDATED"), eq("USER"), eq(userId.toString()), any());
+        .logAction(eq(userId), eq("PROFILE_UPDATED"), eq("USER"), eq(userId.toString()), any());
   }
 
   @Test

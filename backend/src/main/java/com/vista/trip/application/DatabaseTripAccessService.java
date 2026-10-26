@@ -62,7 +62,8 @@ public class DatabaseTripAccessService implements TripAccessService {
       Integer count =
           jdbcClient
               .sql(
-                  "SELECT count(*) FROM trip_members WHERE trip_id = :tripId AND user_id = :userId AND status != 'REMOVED'")
+                  "SELECT count(*) FROM trip_members WHERE trip_id = :tripId AND user_id = :userId"
+                      + " AND status = 'ACTIVE'")
               .param("tripId", tripId)
               .param("userId", userId)
               .query(Integer.class)
@@ -71,6 +72,37 @@ public class DatabaseTripAccessService implements TripAccessService {
     } catch (Exception e) {
       log.warn(
           "Error querying trip membership for tripId={} and userId={}: {}",
+          tripId,
+          userId,
+          e.getMessage());
+      return false;
+    }
+  }
+
+  @Override
+  public boolean hasWriteAccess(UUID tripId, UUID userId) {
+    if (tripId == null || userId == null) {
+      return false;
+    }
+    // 1. Owner always has write access
+    if (isOwner(tripId, userId)) {
+      return true;
+    }
+    // 2. Active EDITOR has write access
+    try {
+      Integer count =
+          jdbcClient
+              .sql(
+                  "SELECT count(*) FROM trip_members WHERE trip_id = :tripId AND user_id = :userId"
+                      + " AND role = 'EDITOR' AND status = 'ACTIVE'")
+              .param("tripId", tripId)
+              .param("userId", userId)
+              .query(Integer.class)
+              .single();
+      return count != null && count > 0;
+    } catch (Exception e) {
+      log.warn(
+          "Error querying trip write access for tripId={} and userId={}: {}",
           tripId,
           userId,
           e.getMessage());
@@ -98,6 +130,21 @@ public class DatabaseTripAccessService implements TripAccessService {
     if (!isOwner(tripId, userId)) {
       log.warn("Access denied: user {} is not the designated owner of trip {}", userId, tripId);
       throw new AccessDeniedException("Bạn không phải chủ sở hữu của chuyến đi này");
+    }
+  }
+
+  @Override
+  public void requireWriteAccess(UUID tripId, UUID userId) {
+    if (tripId == null || userId == null) {
+      throw new IllegalArgumentException("Trip ID và User ID không được để trống");
+    }
+    if (!hasWriteAccess(tripId, userId)) {
+      log.warn(
+          "Write access denied: user {} does not have editor or owner permissions on trip {}",
+          userId,
+          tripId);
+      throw new AccessDeniedException(
+          "Bạn không có quyền chỉnh sửa hoặc thêm mới dữ liệu trong chuyến đi này");
     }
   }
 }

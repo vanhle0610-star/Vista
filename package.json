@@ -4,10 +4,10 @@
   "private": true,
   "description": "VISTA - Travel Expense & Itinerary Platform",
   "scripts": {
-    "dev": "concurrently -k --names \"BACKEND,WEB,MOBILE\" -c \"blue.bold,green.bold,magenta.bold\" \"npm run dev:backend\" \"npm run dev:web\" \"npm run dev:mobile\"",
+    "dev": "concurrently --kill-others-on-fail --names \"BACKEND,WEB,MOBILE\" -c \"blue.bold,green.bold,magenta.bold\" \"npm run dev:backend\" \"npm run dev:web\" \"npm run dev:mobile\"",
     "dev:backend": "node scripts/run-backend.mjs",
     "dev:web": "npm run dev --prefix web",
-    "dev:mobile": "npm start --prefix mobile",
+    "dev:mobile": "npm start --prefix mobile -- --port 8082",
     "db:up": "docker compose --env-file .env up -d postgres",
     "db:down": "docker compose down",
     "test": "npm run test --prefix web && npm run test --prefix mobile",

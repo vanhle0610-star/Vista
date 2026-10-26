@@ -11,6 +11,7 @@ import com.vista.budget.domain.ExpenseEntity;
 import com.vista.budget.domain.ExpenseSplitEntity;
 import com.vista.budget.infrastructure.ExpenseRepository;
 import com.vista.budget.infrastructure.ExpenseSplitRepository;
+import com.vista.common.audit.AuditLogService;
 import com.vista.trip.application.TripAccessService;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -35,16 +36,19 @@ public class ExpenseService {
   private final ExpenseRepository expenseRepository;
   private final ExpenseSplitRepository expenseSplitRepository;
   private final ExpenseCalculationService calculationService;
+  private final AuditLogService auditLogService;
 
   public ExpenseService(
       TripAccessService tripAccessService,
       ExpenseRepository expenseRepository,
       ExpenseSplitRepository expenseSplitRepository,
-      ExpenseCalculationService calculationService) {
+      ExpenseCalculationService calculationService,
+      AuditLogService auditLogService) {
     this.tripAccessService = tripAccessService;
     this.expenseRepository = expenseRepository;
     this.expenseSplitRepository = expenseSplitRepository;
     this.calculationService = calculationService;
+    this.auditLogService = auditLogService;
   }
 
   public ExpenseResponse createExpense(
@@ -53,8 +57,8 @@ public class ExpenseService {
     Objects.requireNonNull(currentUserId, "currentUserId must not be null");
     Objects.requireNonNull(request, "request must not be null");
 
-    // 1. Kiểm tra quyền thành viên chuyến đi (403 Forbidden nếu không thuộc nhóm)
-    tripAccessService.requireMember(tripId, currentUserId);
+    // 1. Kiểm tra quyền ghi (Chỉ OWNER hoặc EDITOR đang ACTIVE, chặn VIEWER và outsider)
+    tripAccessService.requireWriteAccess(tripId, currentUserId);
 
     UUID payerId = request.paidBy() != null ? request.paidBy() : currentUserId;
     requireExpenseMembers(
@@ -97,6 +101,16 @@ public class ExpenseService {
     }
 
     ExpenseEntity saved = expenseRepository.save(expense);
+
+    auditLogService.logAction(
+        currentUserId,
+        "EXPENSE_CREATED",
+        "EXPENSE",
+        saved.getId().toString(),
+        String.format(
+            "{\"tripId\":\"%s\",\"amount\":%s,\"currency\":\"%s\",\"category\":\"%s\"}",
+            tripId, saved.getAmount(), saved.getCurrency(), saved.getCategory()));
+
     return mapToResponse(saved);
   }
 
@@ -107,8 +121,6 @@ public class ExpenseService {
       throw new ResponseStatusException(
           HttpStatus.BAD_REQUEST, "At least one expense field must be provided");
     }
-    tripAccessService.requireMember(tripId, currentUserId);
-
     ExpenseEntity expense = findActiveExpense(tripId, expenseId);
     requireExpenseManager(tripId, currentUserId, expense);
 
@@ -119,7 +131,8 @@ public class ExpenseService {
     if (request.title() != null) {
       String title = request.title().trim();
       if (title.isEmpty()) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Expense title must not be blank");
+        throw new ResponseStatusException(
+            HttpStatus.BAD_REQUEST, "Expense title must not be blank");
       }
       expense.setTitle(title);
     }
@@ -144,7 +157,18 @@ public class ExpenseService {
           HttpStatus.BAD_REQUEST, "Changing amount requires split details");
     }
 
-    return mapToResponse(expenseRepository.save(expense));
+    ExpenseEntity updated = expenseRepository.save(expense);
+
+    auditLogService.logAction(
+        currentUserId,
+        "EXPENSE_UPDATED",
+        "EXPENSE",
+        expenseId.toString(),
+        String.format(
+            "{\"tripId\":\"%s\",\"amount\":%s,\"currency\":\"%s\",\"category\":\"%s\"}",
+            tripId, updated.getAmount(), updated.getCurrency(), updated.getCategory()));
+
+    return mapToResponse(updated);
   }
 
   @Transactional(readOnly = true)
@@ -213,13 +237,18 @@ public class ExpenseService {
   }
 
   public void deleteExpense(UUID tripId, UUID expenseId, UUID currentUserId) {
-    tripAccessService.requireMember(tripId, currentUserId);
-
     ExpenseEntity expense = findActiveExpense(tripId, expenseId);
     requireExpenseManager(tripId, currentUserId, expense);
 
     expense.setStatus("CANCELLED");
     expenseRepository.save(expense);
+
+    auditLogService.logAction(
+        currentUserId,
+        "EXPENSE_DELETED",
+        "EXPENSE",
+        expenseId.toString(),
+        String.format("{\"tripId\":\"%s\",\"status\":\"CANCELLED\"}", tripId));
   }
 
   private ExpenseEntity findActiveExpense(UUID tripId, UUID expenseId) {
@@ -238,8 +267,11 @@ public class ExpenseService {
     return expense;
   }
 
-  private void requireExpenseManager(
-      UUID tripId, UUID currentUserId, ExpenseEntity expense) {
+  private void requireExpenseManager(UUID tripId, UUID currentUserId, ExpenseEntity expense) {
+    // 1. Actor bắt buộc phải còn là ACTIVE member của trip
+    tripAccessService.requireMember(tripId, currentUserId);
+
+    // 2. Sau đó mới xét quyền Owner hoặc Paid-By
     if (!currentUserId.equals(expense.getPaidBy())
         && !tripAccessService.isOwner(tripId, currentUserId)) {
       throw new ResponseStatusException(

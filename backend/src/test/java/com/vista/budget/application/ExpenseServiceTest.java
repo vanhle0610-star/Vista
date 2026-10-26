@@ -20,6 +20,7 @@ import com.vista.budget.domain.ExpenseEntity;
 import com.vista.budget.domain.ExpenseSplitEntity;
 import com.vista.budget.infrastructure.ExpenseRepository;
 import com.vista.budget.infrastructure.ExpenseSplitRepository;
+import com.vista.common.audit.AuditLogService;
 import com.vista.trip.application.TripAccessService;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -45,6 +46,7 @@ class ExpenseServiceTest {
   @Mock private ExpenseRepository expenseRepository;
   @Mock private ExpenseSplitRepository expenseSplitRepository;
   @Mock private ExpenseCalculationService calculationService;
+  @Mock private AuditLogService auditLogService;
 
   @InjectMocks private ExpenseService expenseService;
 
@@ -74,14 +76,15 @@ class ExpenseServiceTest {
             List.of(currentUserId, partnerId),
             null);
 
-    doNothing().when(tripAccessService).requireMember(tripId, currentUserId);
+    doNothing().when(tripAccessService).requireWriteAccess(tripId, currentUserId);
 
     List<ExpenseSplitEntity> splits =
         List.of(
             new ExpenseSplitEntity(null, currentUserId, BigDecimal.valueOf(30000)),
             new ExpenseSplitEntity(null, partnerId, BigDecimal.valueOf(30000)));
 
-    when(calculationService.createEqualSplits(any(ExpenseEntity.class), eq(List.of(currentUserId, partnerId))))
+    when(calculationService.createEqualSplits(
+            any(ExpenseEntity.class), eq(List.of(currentUserId, partnerId))))
         .thenReturn(splits);
 
     when(expenseRepository.save(any(ExpenseEntity.class)))
@@ -94,7 +97,7 @@ class ExpenseServiceTest {
     assertThat(response.amount()).isEqualByComparingTo(BigDecimal.valueOf(60000));
     assertThat(response.splits()).hasSize(2);
 
-    verify(tripAccessService).requireMember(tripId, currentUserId);
+    verify(tripAccessService).requireWriteAccess(tripId, currentUserId);
     verify(expenseRepository).save(any(ExpenseEntity.class));
   }
 
@@ -118,7 +121,7 @@ class ExpenseServiceTest {
             null,
             exactShares);
 
-    doNothing().when(tripAccessService).requireMember(tripId, currentUserId);
+    doNothing().when(tripAccessService).requireWriteAccess(tripId, currentUserId);
 
     List<ExpenseSplitEntity> splits =
         List.of(
@@ -156,13 +159,12 @@ class ExpenseServiceTest {
             null,
             null);
 
-    doThrow(new AccessDeniedException("User is not a member of trip " + tripId))
+    doThrow(new AccessDeniedException("User is not authorized for write access on trip " + tripId))
         .when(tripAccessService)
-        .requireMember(tripId, currentUserId);
+        .requireWriteAccess(tripId, currentUserId);
 
     assertThatThrownBy(() -> expenseService.createExpense(tripId, currentUserId, request))
-        .isInstanceOf(AccessDeniedException.class)
-        .hasMessageContaining("not a member");
+        .isInstanceOf(AccessDeniedException.class);
 
     verify(expenseRepository, never()).save(any());
   }
@@ -203,15 +205,15 @@ class ExpenseServiceTest {
             ExpenseCategory.FOOD,
             Instant.now());
 
-    ExpenseSplitEntity split1 = new ExpenseSplitEntity(exp, currentUserId, BigDecimal.valueOf(500000));
+    ExpenseSplitEntity split1 =
+        new ExpenseSplitEntity(exp, currentUserId, BigDecimal.valueOf(500000));
     ExpenseSplitEntity split2 = new ExpenseSplitEntity(exp, partnerId, BigDecimal.valueOf(500000));
     exp.addSplit(split1);
     exp.addSplit(split2);
 
     when(expenseRepository.findByTripIdAndStatusOrderByOccurredAtDesc(tripId, "ACTIVE"))
         .thenReturn(List.of(exp));
-    when(expenseRepository.sumAmountByTripId(tripId))
-        .thenReturn(BigDecimal.valueOf(1000000));
+    when(expenseRepository.sumAmountByTripId(tripId)).thenReturn(BigDecimal.valueOf(1000000));
 
     Map<UUID, BigDecimal> balances =
         Map.of(
@@ -305,8 +307,7 @@ class ExpenseServiceTest {
             currentUserId,
             ExpenseCategory.FOOD,
             Instant.now());
-    expense.addSplit(
-        new ExpenseSplitEntity(expense, currentUserId, BigDecimal.valueOf(100000)));
+    expense.addSplit(new ExpenseSplitEntity(expense, currentUserId, BigDecimal.valueOf(100000)));
 
     UpdateExpenseRequest request =
         new UpdateExpenseRequest(
@@ -325,8 +326,7 @@ class ExpenseServiceTest {
             new ExpenseSplitEntity(expense, partnerId, BigDecimal.valueOf(60000)));
 
     when(expenseRepository.findById(expenseId)).thenReturn(Optional.of(expense));
-    when(calculationService.createEqualSplits(
-            expense, List.of(currentUserId, partnerId)))
+    when(calculationService.createEqualSplits(expense, List.of(currentUserId, partnerId)))
         .thenReturn(recalculated);
     when(expenseRepository.save(expense)).thenReturn(expense);
 
@@ -353,8 +353,7 @@ class ExpenseServiceTest {
             ExpenseCategory.ACCOMMODATION,
             Instant.now());
     UpdateExpenseRequest request =
-        new UpdateExpenseRequest(
-            "Khách sạn mới", null, null, null, null, null, null, null, null);
+        new UpdateExpenseRequest("Khách sạn mới", null, null, null, null, null, null, null, null);
 
     when(expenseRepository.findById(expenseId)).thenReturn(Optional.of(expense));
     when(tripAccessService.isOwner(tripId, currentUserId)).thenReturn(false);
@@ -381,8 +380,7 @@ class ExpenseServiceTest {
             ExpenseCategory.TRANSPORT,
             Instant.now());
     UpdateExpenseRequest request =
-        new UpdateExpenseRequest(
-            "Vé xe khứ hồi", null, null, null, null, null, null, null, null);
+        new UpdateExpenseRequest("Vé xe khứ hồi", null, null, null, null, null, null, null, null);
 
     when(expenseRepository.findById(expenseId)).thenReturn(Optional.of(expense));
     when(tripAccessService.isOwner(tripId, currentUserId)).thenReturn(true);

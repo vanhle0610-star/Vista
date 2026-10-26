@@ -12,6 +12,7 @@ import com.vista.ai.config.AiRateLimiter;
 import com.vista.ai.util.AiResponseValidator;
 import com.vista.ai.util.PromptBuilder;
 import com.vista.budget.util.RouteOptimizer;
+import com.vista.common.audit.AuditLogService;
 import com.vista.common.security.CurrentUserProvider;
 import com.vista.trip.application.TripAccessService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -45,21 +46,27 @@ public class AiPlannerController {
   private final CurrentUserProvider currentUserProvider;
   private final AiRateLimiter aiRateLimiter;
   private final AiClientWrapper aiClientWrapper;
+  private final AuditLogService auditLogService;
 
   @Autowired
   public AiPlannerController(
       TripAccessService tripAccessService,
       CurrentUserProvider currentUserProvider,
       AiRateLimiter aiRateLimiter,
-      AiClientWrapper aiClientWrapper) {
+      AiClientWrapper aiClientWrapper,
+      AuditLogService auditLogService) {
     this.tripAccessService = tripAccessService;
     this.currentUserProvider = currentUserProvider;
     this.aiRateLimiter = aiRateLimiter;
     this.aiClientWrapper = aiClientWrapper;
+    this.auditLogService = auditLogService;
   }
 
   @PostMapping("/itinerary-suggestions")
-  @Operation(summary = "Yêu cầu AI gợi ý lịch trình và ước tính chi phí chuyến đi (Google Gemini LLM / Fallback)")
+  @Operation(
+      summary =
+          "Yêu cầu AI gợi ý lịch trình và ước tính chi phí chuyến đi (Google Gemini LLM /"
+              + " Fallback)")
   public ResponseEntity<AiItinerarySuggestionResponse> getItinerarySuggestions(
       @PathVariable UUID tripId, @Valid @RequestBody AiItinerarySuggestionRequest request) {
     UUID currentUserId = currentUserProvider.getCurrentUserId();
@@ -73,7 +80,19 @@ public class AiPlannerController {
     // 2. Tính ngân sách dự kiến ước lượng (VND) theo budgetLevel
     BigDecimal budgetVnd = calculateBudgetVnd(request.budgetLevel(), daysCount);
 
-    // 3. Thử gọi mô hình Live Google Gemini LLM nếu khả dụng
+    // 3. Ghi nhận audit metadata an toàn (không log raw prompt/response/API key)
+    auditLogService.logAction(
+        currentUserId,
+        "AI_PLAN_GENERATE",
+        "TRIP",
+        tripId.toString(),
+        String.format(
+            "{\"destinationProvince\":\"%s\",\"daysCount\":%d,\"budgetLevel\":\"%s\"}",
+            request.destinationProvince() != null ? request.destinationProvince() : "",
+            daysCount,
+            request.budgetLevel() != null ? request.budgetLevel() : "MEDIUM"));
+
+    // 4. Thử gọi mô hình Live Google Gemini LLM nếu khả dụng
     if (aiClientWrapper != null && aiClientWrapper.isAvailable()) {
       try {
         PromptBuilder.PlanRequest planRequest =
@@ -82,7 +101,9 @@ public class AiPlannerController {
                 daysCount,
                 budgetVnd,
                 4, // Số thành viên mặc định
-                request.interests() != null ? request.interests() : List.of("Khám phá", "Ẩm thực", "Văn hóa"),
+                request.interests() != null
+                    ? request.interests()
+                    : List.of("Khám phá", "Ẩm thực", "Văn hóa"),
                 List.of());
 
         String prompt = PromptBuilder.buildUserPrompt(planRequest);
@@ -108,17 +129,22 @@ public class AiPlannerController {
                   days));
         }
       } catch (Exception ex) {
-        log.warn("Gemini AI invocation failed or returned invalid JSON. Falling back to deterministic plan: {}", ex.getMessage());
+        log.warn(
+            "Gemini AI invocation failed or returned invalid JSON. Falling back to deterministic"
+                + " plan: {}",
+            ex.getMessage());
       }
     }
 
-    // 4. Fallback an toàn (Graceful Degradation): sinh kế hoạch mẫu chất lượng cao, không bao giờ để lỗi 500
+    // 5. Fallback an toàn (Graceful Degradation): sinh kế hoạch mẫu chất lượng cao, không bao giờ
+    // để lỗi 500
     log.info("Generating deterministic fallback itinerary for tripId: {}", tripId);
     return ResponseEntity.ok(generateFallbackResponse(request, daysCount, budgetVnd));
   }
 
   @PostMapping("/optimize-route")
-  @Operation(summary = "Tối ưu hóa thứ tự các điểm đến bằng thuật toán Nearest Neighbor TSP (BF-02)")
+  @Operation(
+      summary = "Tối ưu hóa thứ tự các điểm đến bằng thuật toán Nearest Neighbor TSP (BF-02)")
   public ResponseEntity<RouteOptimizationResponse> optimizeRoute(
       @PathVariable UUID tripId, @Valid @RequestBody RouteOptimizationRequest request) {
     UUID currentUserId = currentUserProvider.getCurrentUserId();
@@ -150,16 +176,22 @@ public class AiPlannerController {
     JsonNode daysNode = root.get("days");
     if (daysNode != null && daysNode.isArray()) {
       for (JsonNode dayNode : daysNode) {
-        int dayNum = dayNode.has("dayNumber") ? dayNode.get("dayNumber").asInt() : (days.size() + 1);
+        int dayNum =
+            dayNode.has("dayNumber") ? dayNode.get("dayNumber").asInt() : (days.size() + 1);
         String title = dayNode.has("title") ? dayNode.get("title").asText() : ("Ngày " + dayNum);
         List<SuggestedActivityResponse> activities = new ArrayList<>();
 
         JsonNode activitiesNode = dayNode.get("activities");
         if (activitiesNode != null && activitiesNode.isArray()) {
           for (JsonNode actNode : activitiesNode) {
-            String timeSlot = actNode.has("timeSlot") ? actNode.get("timeSlot").asText() : "MORNING";
-            String placeName = actNode.has("placeName") ? actNode.get("placeName").asText() : "Địa điểm du lịch";
-            String note = actNode.has("activityDescription") ? actNode.get("activityDescription").asText() : "";
+            String timeSlot =
+                actNode.has("timeSlot") ? actNode.get("timeSlot").asText() : "MORNING";
+            String placeName =
+                actNode.has("placeName") ? actNode.get("placeName").asText() : "Địa điểm du lịch";
+            String note =
+                actNode.has("activityDescription")
+                    ? actNode.get("activityDescription").asText()
+                    : "";
             BigDecimal cost =
                 actNode.has("estimatedCostVnd") && actNode.get("estimatedCostVnd").isNumber()
                     ? BigDecimal.valueOf(actNode.get("estimatedCostVnd").asLong())
@@ -167,12 +199,7 @@ public class AiPlannerController {
 
             activities.add(
                 new SuggestedActivityResponse(
-                    UUID.randomUUID(),
-                    timeSlot,
-                    placeName,
-                    cost,
-                    "Tham quan & Trải nghiệm",
-                    note));
+                    UUID.randomUUID(), timeSlot, placeName, cost, "Tham quan & Trải nghiệm", note));
           }
         }
         days.add(new SuggestedDayResponse(dayNum, title, activities));
@@ -210,7 +237,8 @@ public class AiPlannerController {
                   "Ẩm thực & Check-in",
                   "Xem Cầu Rồng phun lửa nước và khám phá ẩm thực đường phố"));
 
-      suggestedDays.add(new SuggestedDayResponse(day, "Ngày " + day + " — Khám phá & Trải nghiệm", activities));
+      suggestedDays.add(
+          new SuggestedDayResponse(day, "Ngày " + day + " — Khám phá & Trải nghiệm", activities));
     }
 
     return new AiItinerarySuggestionResponse(

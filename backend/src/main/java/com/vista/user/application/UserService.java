@@ -45,7 +45,7 @@ public class UserService {
 
     auditLogService.logAction(
         userId,
-        "USER_PROFILE_UPDATED",
+        "PROFILE_UPDATED",
         "USER",
         userId.toString(),
         "Cập nhật thông tin hồ sơ cá nhân thành công");
