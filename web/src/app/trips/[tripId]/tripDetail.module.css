@@ -50,6 +50,430 @@
   color: #CBD5E1;
 }
 
+/* ─── CREATIVE WANDERLUST PASSPORT & BOARDING PASS HEADER ─────────────── */
+.compactTripHeader {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 18px 24px;
+  background: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 55%, #F5F3FF 100%);
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  border-radius: 20px;
+  margin: 14px 0 22px 0;
+  box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.08), 0 2px 8px rgba(15, 23, 42, 0.03);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.compactTripHeader:hover {
+  box-shadow: 0 14px 34px -10px rgba(99, 102, 241, 0.12), 0 4px 12px rgba(15, 23, 42, 0.05);
+  border-color: rgba(199, 210, 254, 0.8);
+}
+
+.headerTopGlowLine {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3.5px;
+  background: linear-gradient(90deg, #6366F1 0%, #EC4899 50%, #38BDF8 100%);
+}
+
+.headerIdentityBlock {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+  min-width: 320px;
+}
+
+.headerBackBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid #E2E8F0;
+  background: #FFFFFF;
+  color: #475569;
+  font-size: 12.5px;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+}
+
+.headerBackBtn:hover {
+  background: #0F172A;
+  color: #FFFFFF;
+  border-color: #0F172A;
+  transform: translateX(-2px);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+}
+
+.headerBackText {
+  display: inline;
+}
+
+@media (max-width: 768px) {
+  .headerBackText {
+    display: none;
+  }
+}
+
+/* Polaroid Photo Frame */
+.headerPolaroidCard {
+  position: relative;
+  width: 68px;
+  height: 68px;
+  background: #FFFFFF;
+  padding: 4px;
+  border-radius: 14px;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+  transform: rotate(-2deg);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.headerPolaroidCard:hover {
+  transform: rotate(0deg) scale(1.06);
+  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.2);
+}
+
+.headerPolaroidImg {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  object-fit: cover;
+  display: block;
+}
+
+.headerPolaroidPin {
+  position: absolute;
+  top: -6px;
+  right: -4px;
+  font-size: 13px;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.2));
+  transform: rotate(15deg);
+}
+
+.headerPolaroidTag {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(4px);
+  color: #FFFFFF;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+/* Title and Travel Chips */
+.headerTitleInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.headerTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.headerTitleText {
+  font-size: 19px;
+  font-weight: 850;
+  color: #0F172A;
+  margin: 0;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+}
+
+.statusPillPlanning {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%);
+  border: 1px solid #C7D2FE;
+  color: #4338CA;
+  font-size: 11.5px;
+  font-weight: 750;
+}
+
+.statusPillActive {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);
+  border: 1px solid #A7F3D0;
+  color: #065F46;
+  font-size: 11.5px;
+  font-weight: 750;
+}
+
+.statusPillCompleted {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%);
+  border: 1px solid #CBD5E1;
+  color: #475569;
+  font-size: 11.5px;
+  font-weight: 750;
+}
+
+.pulseDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10B981;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: pulseDotAnim 2s infinite;
+}
+
+@keyframes pulseDotAnim {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+/* Cute Travel Chips */
+.headerChipsRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.headerChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.chipLocation {
+  background: #F0F9FF;
+  border: 1px solid #BAE6FD;
+  color: #0369A1;
+}
+
+.chipCalendar {
+  background: #FAF5FF;
+  border: 1px solid #E9D5FF;
+  color: #6B21A8;
+}
+
+.chipDuration {
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  color: #B45309;
+}
+
+.chipMembers {
+  background: #ECFDF5;
+  border: 1px solid #A7F3D0;
+  color: #047857;
+}
+
+/* Right Actions Hub */
+.headerActionsHub {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Boarding Pass Ticket Stub */
+.boardingPassTicket {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  background: #FFFFFF;
+  border: 1.5px dashed #818CF8;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+.boardingPassTicket:hover {
+  background: #EEF2FF;
+  border-color: #6366F1;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+}
+
+.boardingPassCopied {
+  background: #ECFDF5 !important;
+  border-color: #10B981 !important;
+  border-style: solid !important;
+}
+
+.ticketNotchLeft,
+.ticketNotchRight {
+  position: absolute;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #F8FAFC;
+  transform: translateY(-50%);
+}
+
+.ticketNotchLeft {
+  left: -4px;
+  border-right: 1.5px dashed #818CF8;
+}
+
+.ticketNotchRight {
+  right: -4px;
+  border-left: 1.5px dashed #818CF8;
+}
+
+.ticketContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+}
+
+.ticketHeader {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 800;
+  color: #6366F1;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.ticketCode {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-family: monospace, ui-monospace, sans-serif;
+  color: #1E1B4B;
+  font-weight: 800;
+}
+
+.ticketCopyIcon {
+  color: #818CF8;
+  transition: transform 0.2s;
+}
+
+.boardingPassTicket:hover .ticketCopyIcon {
+  transform: scale(1.15);
+  color: #4F46E5;
+}
+
+.ticketCopiedText {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #065F46;
+  font-weight: 800;
+  font-size: 12px;
+}
+
+/* Treasury Button */
+.btnTreasuryPearlescent {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 16px;
+  border-radius: 12px;
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btnTreasuryPearlescent:hover {
+  background: #F8FAFC;
+  border-color: #94A3B8;
+  color: #0F172A;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+
+/* Magic AI Planner Hero Button */
+.btnAiPlannerGlow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #EC4899 100%);
+  color: #FFFFFF;
+  font-size: 13.5px;
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.btnAiPlannerGlow:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
+}
+
+.sparkleSpin {
+  animation: sparkleTwinkle 3s infinite ease-in-out;
+}
+
+@keyframes sparkleTwinkle {
+  0%, 100% {
+    transform: rotate(0deg) scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: rotate(180deg) scale(1.15);
+    opacity: 1;
+  }
+}
+
+
 .topBackBtn {
   display: inline-flex;
   align-items: center;
@@ -662,3 +1086,827 @@
     transform: translateY(0);
   }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SPLIT SCREEN ITINERARY: STATS PANEL + INTERACTIVE FLOWCHART DIAGRAM
+   ══════════════════════════════════════════════════════════════════════════ */
+.itinerarySplitLayout {
+  display: grid;
+  grid-template-columns: 370px 1fr;
+  gap: 28px;
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .itinerarySplitLayout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ─── LEFT COLUMN: STATS & ANALYTICS (STICKY) ────────────────────────── */
+.statsStickyCol {
+  position: sticky;
+  top: 88px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+@media (max-width: 1024px) {
+  .statsStickyCol {
+    position: static;
+  }
+}
+
+.analyticsCard {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 18px;
+  padding: 20px 22px;
+  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.035);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.analyticsCard:hover {
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+.analyticsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.analyticsTitle {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #0F172A;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.dayIndicatorPill {
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #EEF2FF;
+  color: #4F46E5;
+  border: 1px solid #E0E7FF;
+}
+
+.analyticsBigCost {
+  font-size: 26px;
+  font-weight: 900;
+  color: #0F172A;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.analyticsCostSub {
+  font-size: 12px;
+  color: #64748B;
+  margin: 4px 0 12px 0;
+}
+
+.categoryProgressBar {
+  height: 8px;
+  border-radius: 999px;
+  background: #F1F5F9;
+  overflow: hidden;
+  display: flex;
+  margin: 12px 0 10px 0;
+  gap: 2px;
+}
+
+.catProgressSeg {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+.categoryLegendGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 12px;
+  margin-top: 10px;
+}
+
+.catLegendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: #475569;
+  font-weight: 500;
+}
+
+.catLegendDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.pacePillsRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.pacePill {
+  padding: 10px 6px;
+  border-radius: 12px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border: 1px solid transparent;
+}
+
+.pacePillVal {
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.pacePillLabel {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #64748B;
+}
+
+.paceVerdict {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: #ECFDF5;
+  color: #047857;
+  font-size: 12px;
+  font-weight: 700;
+  margin-top: 14px;
+  border: 1px solid #A7F3D0;
+}
+
+.goldenHourBox {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.goldenHourItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #FFFBEB;
+  border: 1px solid #FEF3C7;
+}
+
+.goldenHourIcon {
+  color: #D97706;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.goldenHourTitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: #92400E;
+  margin: 0 0 2px 0;
+}
+
+.goldenHourDesc {
+  font-size: 11.5px;
+  color: #B45309;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.quickChecklist {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.quickCheckItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #334155;
+  text-align: left;
+  width: 100%;
+}
+
+.quickCheckItem:hover {
+  background: #F1F5F9;
+  border-color: #CBD5E1;
+}
+
+.quickCheckItemDone {
+  background: #F0FDF4;
+  border-color: #BBF7D0;
+  color: #166534;
+}
+
+.checkBadgeTag {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #E2E8F0;
+  color: #475569;
+}
+
+.checkBadgeTagDone {
+  background: #DCFCE7;
+  color: #15803D;
+}
+
+/* ─── RIGHT COLUMN: INTERACTIVE FLOWCHART DIAGRAM ────────────────────── */
+.flowchartCol {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.daySwitcherBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-bottom: 2px;
+}
+
+.dayTabBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-size: 13.5px;
+  font-weight: 700;
+  border: 1.5px solid #E2E8F0;
+  background: #FFFFFF;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dayTabBtn:hover {
+  border-color: #CBD5E1;
+  background: #F8FAFC;
+  color: #0F172A;
+}
+
+.dayTabBtnActive {
+  background: linear-gradient(135deg, #4F46E5, #3730A3) !important;
+  color: #FFFFFF !important;
+  border-color: transparent !important;
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+}
+
+.dayTabBtnActiveDay2 {
+  background: linear-gradient(135deg, #0D9488, #0F766E) !important;
+  color: #FFFFFF !important;
+  border-color: transparent !important;
+  box-shadow: 0 4px 14px rgba(13, 148, 136, 0.35);
+}
+
+.dayTabBtnActiveDay3 {
+  background: linear-gradient(135deg, #E11D48, #BE123C) !important;
+  color: #FFFFFF !important;
+  border-color: transparent !important;
+  box-shadow: 0 4px 14px rgba(225, 29, 72, 0.35);
+}
+
+.flowchartBanner {
+  background: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%);
+  border: 1.5px solid #E2E8F0;
+  border-radius: 18px;
+  padding: 18px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.02);
+}
+
+.flowchartBannerLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.flowchartBannerTag {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #4F46E5;
+}
+
+.flowchartBannerTitle {
+  font-size: 18px;
+  font-weight: 900;
+  color: #0F172A;
+  margin: 0;
+}
+
+.flowchartBannerMeta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12.5px;
+  color: #64748B;
+  font-weight: 600;
+}
+
+/* ─── DIAGRAM TRACK & NODES ─────────────────────────────────────────── */
+.flowchartTrack {
+  position: relative;
+  padding-left: 54px;
+  margin-top: 8px;
+}
+
+.flowchartSpine {
+  position: absolute;
+  left: 21px;
+  top: 20px;
+  bottom: 30px;
+  width: 4px;
+  background: linear-gradient(180deg, #4F46E5 0%, #06B6D4 35%, #10B981 70%, #F59E0B 100%);
+  border-radius: 4px;
+  opacity: 0.85;
+}
+
+.stationBlock {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.stationNodeCircle {
+  position: absolute;
+  left: -54px;
+  top: 18px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 13.5px;
+  color: #FFFFFF;
+  z-index: 3;
+  box-shadow: 0 0 0 4px #FFFFFF, 0 4px 14px rgba(15, 23, 42, 0.15);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stationNodeCircle:hover {
+  transform: scale(1.1);
+}
+
+.stationCard {
+  background: #FFFFFF;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 18px;
+  padding: 20px 22px;
+  box-shadow: 0 3px 14px rgba(15, 23, 42, 0.035);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+.stationCard:hover {
+  transform: translateY(-2px);
+  border-color: #CBD5E1;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.07);
+}
+
+.stationCardHighlighted {
+  border-color: #4F46E5 !important;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.25), 0 10px 28px rgba(79, 70, 229, 0.1) !important;
+}
+
+.stationCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.stationHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stationSlotBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 999px;
+  letter-spacing: 0.5px;
+}
+
+.stationTimeBadge {
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748B;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.stationCostBadge {
+  font-size: 12.5px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: #ECFDF5;
+  color: #047857;
+  border: 1px solid #A7F3D0;
+}
+
+.stationTitle {
+  font-size: 17.5px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0 0 6px 0;
+  line-height: 1.35;
+}
+
+.stationDescription {
+  font-size: 13.5px;
+  color: #475569;
+  line-height: 1.55;
+  margin: 0 0 14px 0;
+}
+
+.stationFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid #F1F5F9;
+}
+
+.stationLocation {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+  color: #64748B;
+  font-weight: 500;
+}
+
+.stationActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btnMapLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  background: #EEF2FF;
+  color: #4F46E5;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  border: 1px solid #E0E7FF;
+  transition: all 0.2s;
+}
+
+.btnMapLink:hover {
+  background: #4F46E5;
+  color: #FFFFFF;
+  border-color: #4F46E5;
+}
+
+.btnCheckIn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid #CBD5E1;
+  background: #FFFFFF;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btnCheckIn:hover {
+  background: #F8FAFC;
+  border-color: #94A3B8;
+}
+
+.btnCheckInDone {
+  background: #10B981 !important;
+  color: #FFFFFF !important;
+  border-color: #10B981 !important;
+}
+
+/* ─── TRANSIT CONNECTOR / SEGMENT BETWEEN NODES ──────────────────────── */
+.transitConnector {
+  position: relative;
+  margin: 10px 0 10px -10px;
+  padding: 6px 0 6px 20px;
+  display: flex;
+  align-items: center;
+}
+
+.transitPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: #F8FAFC;
+  border: 1.5px dashed #CBD5E1;
+  color: #64748B;
+  font-size: 11.5px;
+  font-weight: 700;
+  backdrop-filter: blur(4px);
+  transition: all 0.2s;
+}
+
+.transitPill:hover {
+  border-color: #4F46E5;
+  color: #4F46E5;
+  background: #EEF2FF;
+}
+
+.transitMapBtn {
+  font-size: 11px;
+  font-weight: 700;
+  color: #4F46E5;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 4px;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.daySeparator {
+  margin: 32px 0 24px 0;
+  padding: 12px 18px;
+  border-radius: 12px;
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ─── CUTE MINI CALENDAR TICKETS & STATION IMAGES ───────────────────────── */
+.cuteCalendarRow {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  margin-bottom: 8px;
+  overflow-x: auto;
+  padding: 4px 2px 12px 2px;
+}
+
+.cuteCalendarCard {
+  display: flex;
+  flex-direction: column;
+  width: 126px;
+  min-width: 126px;
+  border-radius: 18px;
+  border: 2px solid #E2E8F0;
+  background: #FFFFFF;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  overflow: hidden;
+  padding: 0;
+  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.04);
+  text-align: center;
+}
+
+.cuteCalendarCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+  border-color: #CBD5E1;
+}
+
+.cuteCalendarCardActive {
+  border-color: #4F46E5 !important;
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: 0 12px 28px rgba(79, 70, 229, 0.25) !important;
+}
+
+.cuteCalendarCardActiveDay2 {
+  border-color: #0D9488 !important;
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: 0 12px 28px rgba(13, 148, 136, 0.25) !important;
+}
+
+.cuteCalendarCardActiveDay3 {
+  border-color: #E11D48 !important;
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: 0 12px 28px rgba(225, 29, 72, 0.25) !important;
+}
+
+.calendarHeader {
+  padding: 6px 10px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px dashed rgba(0, 0, 0, 0.06);
+}
+
+.calendarBody {
+  padding: 10px 8px 12px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.calendarDayNum {
+  font-size: 26px;
+  font-weight: 900;
+  line-height: 1;
+  color: #0F172A;
+}
+
+.calendarMonth {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748B;
+}
+
+.calendarDayTitle {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #4F46E5;
+  margin-top: 5px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #EEF2FF;
+}
+
+.cuteCalendarCardAll {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 104px;
+  min-width: 104px;
+  border-radius: 18px;
+  border: 2px dashed #CBD5E1;
+  background: #F8FAFC;
+  cursor: pointer;
+  padding: 12px 8px;
+  gap: 4px;
+  color: #475569;
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.cuteCalendarCardAll:hover {
+  transform: translateY(-4px);
+  background: #FFFFFF;
+  border-color: #4F46E5;
+  color: #4F46E5;
+}
+
+.cuteCalendarCardActiveAll {
+  border: 2px solid #4F46E5 !important;
+  background: #EEF2FF !important;
+  color: #4F46E5 !important;
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: 0 10px 24px rgba(79, 70, 229, 0.2) !important;
+}
+
+.calendarAllIcon {
+  font-size: 22px;
+  line-height: 1;
+}
+
+/* ─── STATION IMAGE & CUTE TIP BUBBLE ───────────────────────────────────── */
+.stationImageWrapper {
+  position: relative;
+  width: 100%;
+  height: 190px;
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 14px;
+  background: #E2E8F0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+
+.stationImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.stationCard:hover .stationImage {
+  transform: scale(1.04);
+}
+
+.stationImageOverlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px 14px;
+  background: linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.8) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stationImageCategory {
+  font-size: 11px;
+  font-weight: 800;
+  color: #FFFFFF;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 3px 10px;
+  border-radius: 999px;
+  backdrop-filter: blur(4px);
+}
+
+.stationImageTimeBadge {
+  font-size: 11px;
+  font-weight: 700;
+  color: #FFFFFF;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.25);
+  padding: 3px 10px;
+  border-radius: 999px;
+  backdrop-filter: blur(4px);
+}
+
+.cuteTipBubble {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: #FFFBEB;
+  border: 1.5px dashed #FCD34D;
+  margin: 10px 0 14px 0;
+}
+
+.cuteTipMascot {
+  font-size: 12px;
+  font-weight: 800;
+  color: #D97706;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.cuteTipText {
+  font-size: 12px;
+  color: #92400E;
+  line-height: 1.45;
+}
+
+

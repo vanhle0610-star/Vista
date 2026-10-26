@@ -42,16 +42,29 @@ export interface DestinationMarker {
   thumbnailUrl?: string;
 }
 
+export type Destination = DestinationMarker;
+
+export interface RouteStop {
+  latitude: number;
+  longitude: number;
+  label: string;
+  tag: string; // 'A', 'B', 'C', 'D'...
+  type?: 'origin' | 'waypoint' | 'destination';
+}
+
 export interface MapViewAdapterProps {
   destinations: DestinationMarker[];
   selectedDestinationId?: string | null;
   onSelectDestination?: (destination: DestinationMarker | null) => void;
   userLocation?: Coordinates | null;
   routeGeometry?: { lat: number; lng: number }[];
+  routeStops?: RouteStop[];
   onDirections?: (destination: DestinationMarker) => void;
   onRequestUserLocation?: () => void;
   initialCenter?: { latitude: number; longitude: number; zoom?: number };
   onStatusChange?: (status: 'loading' | 'ready' | 'error') => void;
   className?: string;
   showSelectedCard?: boolean;
+  cameraTarget?: { latitude: number; longitude: number; zoom?: number } | null;
+  onAddToTrip?: (destination: DestinationMarker) => void;
 }
