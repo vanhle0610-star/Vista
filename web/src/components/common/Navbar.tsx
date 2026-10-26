@@ -104,19 +104,21 @@ export function Navbar({
     return name.slice(0, 2).toUpperCase();
   };
 
-  const [internalLang, setInternalLang] = useState<'vi' | 'en'>(() => {
-    if (propLang) return propLang;
-    if (typeof window !== 'undefined') {
+  const [internalLang, setInternalLang] = useState<'vi' | 'en'>(propLang || 'vi');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (!propLang) {
       try {
         const saved = localStorage.getItem('vista_lang');
-        if (saved === 'vi' || saved === 'en') return saved;
+        if (saved === 'vi' || saved === 'en') {
+          setInternalLang(saved);
+        }
       } catch {
         // SSR safe
       }
     }
-    return 'vi';
-  });
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  }, [propLang]);
 
   const currentLang = propLang || internalLang;
 
@@ -207,7 +209,7 @@ export function Navbar({
           </div>
           <div className={styles.brandText}>
             <span className={styles.brandName}>VISTA</span>
-            <span className={styles.brandSub}>
+            <span className={styles.brandSub} suppressHydrationWarning>
               {internalLang === 'vi' ? 'Du lịch Thông minh' : 'Vietnam Smart Travel'}
             </span>
           </div>
@@ -224,7 +226,7 @@ export function Navbar({
                 className={`${styles.navLink} ${isActive ? styles.navLinkActive : ''}`}
                 id={`nav-${item.id}`}
               >
-                <span>{currentLang === 'vi' ? item.labelVi : item.labelEn}</span>
+                <span suppressHydrationWarning>{currentLang === 'vi' ? item.labelVi : item.labelEn}</span>
                 {item.badge && item.badgeType === 'ai' && (
                   <span className={styles.navBadgeAI}>{item.badge}</span>
                 )}
@@ -245,11 +247,12 @@ export function Navbar({
             onClick={toggleLanguage}
             title={currentLang === 'vi' ? 'Switch to English' : 'Chuyển sang Tiếng Việt'}
             aria-label="Thay đổi ngôn ngữ"
+            suppressHydrationWarning
           >
-            <span className={styles.flagEmoji}>
+            <span className={styles.flagEmoji} suppressHydrationWarning>
               {currentLang === 'vi' ? '🇻🇳' : '🇬🇧'}
             </span>
-            <span>{currentLang === 'vi' ? 'VI' : 'EN'}</span>
+            <span suppressHydrationWarning>{currentLang === 'vi' ? 'VI' : 'EN'}</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <polyline points="6 9 12 15 18 9" />
             </svg>
