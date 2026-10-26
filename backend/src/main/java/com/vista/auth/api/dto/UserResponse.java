@@ -26,7 +26,20 @@ public record UserResponse(
       String status,
       List<String> roles,
       String phoneNumber) {
-    this(id, email, displayName, avatarUrl, status, roles, phoneNumber, null, null, null, null, null, List.of());
+    this(
+        id,
+        email,
+        displayName,
+        avatarUrl,
+        status,
+        roles,
+        phoneNumber,
+        null,
+        null,
+        null,
+        null,
+        null,
+        List.of());
   }
 
   public UserResponse(
@@ -36,6 +49,19 @@ public record UserResponse(
       String avatarUrl,
       String status,
       List<String> roles) {
-    this(id, email, displayName, avatarUrl, status, roles, null, null, null, null, null, null, List.of());
+    this(
+        id,
+        email,
+        displayName,
+        avatarUrl,
+        status,
+        roles,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        List.of());
   }
 }

@@ -2,26 +2,35 @@ package com.vista.destination.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vista.destination.api.dto.CreateDestinationRequest;
 import com.vista.destination.api.dto.DestinationDetailDto;
 import com.vista.destination.api.dto.DestinationPageDto;
 import com.vista.destination.api.dto.DestinationSummaryDto;
 import com.vista.destination.application.DestinationQueryService;
 import com.vista.destination.application.DestinationSummary;
 import com.vista.destination.domain.Destination;
+import com.vista.destination.domain.DestinationCategory;
 import com.vista.destination.domain.DestinationHistory;
 import com.vista.destination.domain.Favorite;
+import com.vista.destination.domain.Province;
+import com.vista.destination.repository.DestinationCategoryRepository;
 import com.vista.destination.repository.DestinationHistoryRepository;
 import com.vista.destination.repository.DestinationRepository;
 import com.vista.destination.repository.FavoriteRepository;
+import com.vista.destination.repository.ProvinceRepository;
 import jakarta.persistence.criteria.Predicate;
 import java.math.BigDecimal;
+import java.text.Normalizer;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.regex.Pattern;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -30,16 +39,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.vista.destination.api.dto.CreateDestinationRequest;
-import com.vista.destination.domain.DestinationCategory;
-import com.vista.destination.domain.Province;
-import com.vista.destination.repository.DestinationCategoryRepository;
-import com.vista.destination.repository.ProvinceRepository;
-import java.text.Normalizer;
-import java.util.Locale;
-import java.util.regex.Pattern;
-import org.springframework.beans.factory.annotation.Autowired;
 
 @Service
 @Primary

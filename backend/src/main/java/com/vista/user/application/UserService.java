@@ -88,13 +88,15 @@ public class UserService {
       user.setBio(request.bio().isBlank() ? null : request.bio().trim());
     }
     if (request.bankCode() != null) {
-      user.setBankCode(request.bankCode().isBlank() ? null : request.bankCode().trim().toUpperCase());
+      user.setBankCode(
+          request.bankCode().isBlank() ? null : request.bankCode().trim().toUpperCase());
     }
     if (request.bankBin() != null) {
       user.setBankBin(request.bankBin().isBlank() ? null : request.bankBin().trim());
     }
     if (request.bankAccountNumber() != null) {
-      user.setBankAccountNumber(request.bankAccountNumber().isBlank() ? null : request.bankAccountNumber().trim());
+      user.setBankAccountNumber(
+          request.bankAccountNumber().isBlank() ? null : request.bankAccountNumber().trim());
     }
     if (request.bankAccountName() != null) {
       user.setBankAccountName(
@@ -182,7 +184,9 @@ public class UserService {
     List<String> prefs = Collections.emptyList();
     if (user.getTravelPreferences() != null && !user.getTravelPreferences().isBlank()) {
       try {
-        prefs = objectMapper.readValue(user.getTravelPreferences(), new TypeReference<List<String>>() {});
+        prefs =
+            objectMapper.readValue(
+                user.getTravelPreferences(), new TypeReference<List<String>>() {});
       } catch (Exception ignored) {
         prefs = Collections.emptyList();
       }

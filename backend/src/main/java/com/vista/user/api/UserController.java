@@ -32,9 +32,7 @@ public class UserController {
   private final CurrentUserProvider currentUserProvider;
   private final TripService tripService;
 
-  public UserController(
-      UserService userService,
-      CurrentUserProvider currentUserProvider) {
+  public UserController(UserService userService, CurrentUserProvider currentUserProvider) {
     this(userService, currentUserProvider, null);
   }
 
@@ -86,6 +84,7 @@ public class UserController {
       security = @SecurityRequirement(name = "bearerAuth"))
   public ResponseEntity<List<TripResponse>> getMyTrips() {
     UUID currentUserId = currentUserProvider.getCurrentUserId();
-    return ResponseEntity.ok(tripService != null ? tripService.getMyTrips(currentUserId) : List.of());
+    return ResponseEntity.ok(
+        tripService != null ? tripService.getMyTrips(currentUserId) : List.of());
   }
 }
