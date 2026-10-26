@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -38,8 +37,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
- * W4-TV3-02: Unit tests cho ProposalService.
- * Kiểm tra: vote trùng (upsert), đổi phiếu, đóng biểu quyết, vote sau khi đóng bị từ chối.
+ * W4-TV3-02: Unit tests cho ProposalService. Kiểm tra: vote trùng (upsert), đổi phiếu, đóng biểu
+ * quyết, vote sau khi đóng bị từ chối.
  */
 @ExtendWith(MockitoExtension.class)
 class ProposalServiceTest {
@@ -73,12 +72,14 @@ class ProposalServiceTest {
     CreateProposalRequest req = new CreateProposalRequest();
     req.setTitle("Đà Nẵng");
 
-    when(proposalRepository.save(any())).thenAnswer(inv -> {
-      Proposal p = inv.getArgument(0);
-      ReflectionTestUtils.setField(p, "id", UUID.randomUUID());
-      ReflectionTestUtils.setField(p, "createdAt", Instant.now());
-      return p;
-    });
+    when(proposalRepository.save(any()))
+        .thenAnswer(
+            inv -> {
+              Proposal p = inv.getArgument(0);
+              ReflectionTestUtils.setField(p, "id", UUID.randomUUID());
+              ReflectionTestUtils.setField(p, "createdAt", Instant.now());
+              return p;
+            });
 
     ProposalResponse response = proposalService.createProposal(TRIP_ID, MEMBER_ID, req);
 
@@ -95,13 +96,15 @@ class ProposalServiceTest {
     when(proposalRepository.findById(PROPOSAL_ID)).thenReturn(Optional.of(openProposal));
     when(voteRepository.findByProposalIdAndUserId(PROPOSAL_ID, MEMBER_ID))
         .thenReturn(Optional.empty());
-    when(voteRepository.save(any())).thenAnswer(inv -> {
-      Vote v = inv.getArgument(0);
-      ReflectionTestUtils.setField(v, "id", UUID.randomUUID());
-      ReflectionTestUtils.setField(v, "createdAt", Instant.now());
-      ReflectionTestUtils.setField(v, "updatedAt", Instant.now());
-      return v;
-    });
+    when(voteRepository.save(any()))
+        .thenAnswer(
+            inv -> {
+              Vote v = inv.getArgument(0);
+              ReflectionTestUtils.setField(v, "id", UUID.randomUUID());
+              ReflectionTestUtils.setField(v, "createdAt", Instant.now());
+              ReflectionTestUtils.setField(v, "updatedAt", Instant.now());
+              return v;
+            });
 
     CastVoteRequest req = new CastVoteRequest();
     req.setVote("UP");
@@ -167,8 +170,8 @@ class ProposalServiceTest {
     ProposalResponse response = proposalService.closeVoting(PROPOSAL_ID, OWNER_ID);
 
     assertThat(response.status()).isEqualTo(ProposalStatus.CLOSED);
-    verify(notificationService).notifyTripMembers(
-        eq(TRIP_ID), anyString(), anyString(), eq("VOTE_CLOSED"), eq(OWNER_ID));
+    verify(notificationService)
+        .notifyTripMembers(eq(TRIP_ID), anyString(), anyString(), eq("VOTE_CLOSED"), eq(OWNER_ID));
   }
 
   @Test
@@ -213,8 +216,9 @@ class ProposalServiceTest {
     ProposalResponse response = proposalService.approveProposal(PROPOSAL_ID, OWNER_ID);
 
     assertThat(response.status()).isEqualTo(ProposalStatus.APPROVED);
-    verify(notificationService).notifyTripMembers(
-        eq(TRIP_ID), anyString(), anyString(), eq("PROPOSAL_APPROVED"), eq(OWNER_ID));
+    verify(notificationService)
+        .notifyTripMembers(
+            eq(TRIP_ID), anyString(), anyString(), eq("PROPOSAL_APPROVED"), eq(OWNER_ID));
   }
 
   @Test
@@ -239,8 +243,9 @@ class ProposalServiceTest {
     ProposalResponse response = proposalService.rejectProposal(PROPOSAL_ID, OWNER_ID);
 
     assertThat(response.status()).isEqualTo(ProposalStatus.REJECTED);
-    verify(notificationService).notifyTripMembers(
-        eq(TRIP_ID), anyString(), anyString(), eq("PROPOSAL_REJECTED"), eq(OWNER_ID));
+    verify(notificationService)
+        .notifyTripMembers(
+            eq(TRIP_ID), anyString(), anyString(), eq("PROPOSAL_REJECTED"), eq(OWNER_ID));
   }
 
   // ── removeVote ─────────────────────────────────────────────────────────────

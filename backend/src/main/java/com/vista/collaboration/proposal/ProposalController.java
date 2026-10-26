@@ -40,8 +40,7 @@ public class ProposalController {
   @PostMapping("/trips/{tripId}/proposals")
   @Operation(summary = "Tạo đề xuất địa điểm — thành viên trong trip")
   public ResponseEntity<ProposalResponse> createProposal(
-      @PathVariable UUID tripId,
-      @Valid @RequestBody CreateProposalRequest request) {
+      @PathVariable UUID tripId, @Valid @RequestBody CreateProposalRequest request) {
     UUID userId = currentUserProvider.getCurrentUserId();
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(proposalService.createProposal(tripId, userId, request));
@@ -89,8 +88,7 @@ public class ProposalController {
       summary = "Bỏ phiếu hoặc đổi phiếu (UP/DOWN) — biểu quyết phải đang OPEN",
       description = "Nếu đã bỏ phiếu, vote mới ghi đè vote cũ. Tổng phiếu không tăng.")
   public ResponseEntity<VoteResponse> castVote(
-      @PathVariable UUID proposalId,
-      @Valid @RequestBody CastVoteRequest request) {
+      @PathVariable UUID proposalId, @Valid @RequestBody CastVoteRequest request) {
     UUID userId = currentUserProvider.getCurrentUserId();
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(proposalService.castVote(proposalId, userId, request));

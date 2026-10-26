@@ -32,7 +32,8 @@ class AiQuickPlanControllerTest {
   @MockitoBean private AiClientWrapper aiClientWrapper;
 
   @Test
-  @DisplayName("POST /api/v1/ai/quick-plan public access returns fallback plan when LLM is unavailable")
+  @DisplayName(
+      "POST /api/v1/ai/quick-plan public access returns fallback plan when LLM is unavailable")
   void quickPlan_returnsFallback_withoutAuthentication() throws Exception {
     when(aiClientWrapper.isAvailable()).thenReturn(false);
 
@@ -83,7 +84,8 @@ class AiQuickPlanControllerTest {
         """;
     when(aiClientWrapper.generateContent(anyString())).thenReturn(Optional.of(geminiValidJson));
 
-    var request = new AiItinerarySuggestionRequest("Đà Nẵng", 2, "MEDIUM", List.of("Biển", "Văn hóa"));
+    var request =
+        new AiItinerarySuggestionRequest("Đà Nẵng", 2, "MEDIUM", List.of("Biển", "Văn hóa"));
 
     mockMvc
         .perform(
@@ -94,6 +96,7 @@ class AiQuickPlanControllerTest {
         .andExpect(jsonPath("$.destinationProvince").value("Đà Nẵng"))
         .andExpect(jsonPath("$.totalDays").value(2))
         .andExpect(jsonPath("$.isMockData").value(false))
-        .andExpect(jsonPath("$.days[0].activities[0].destinationName").value("Chùa Linh Ứng - Bãi Bụt"));
+        .andExpect(
+            jsonPath("$.days[0].activities[0].destinationName").value("Chùa Linh Ứng - Bãi Bụt"));
   }
 }

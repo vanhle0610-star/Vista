@@ -32,9 +32,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
- * W4-TV3-03: Test luồng deep link / nhập mã mời.
- * - previewInvitation: xem trước thông tin chuyến đi theo raw token (không cần login).
- * - acceptInvitation theo raw token: luồng accept đã có từ tuần 3, test lại ngữ cảnh 2 tài khoản.
+ * W4-TV3-03: Test luồng deep link / nhập mã mời. - previewInvitation: xem trước thông tin chuyến đi
+ * theo raw token (không cần login). - acceptInvitation theo raw token: luồng accept đã có từ tuần
+ * 3, test lại ngữ cảnh 2 tài khoản.
  */
 @ExtendWith(MockitoExtension.class)
 class InvitationPreviewTest {
@@ -53,8 +53,7 @@ class InvitationPreviewTest {
 
   // rawToken sinh ngẫu nhiên 64 ký tự hex (2 UUID ghép)
   private static final String RAW_TOKEN =
-      UUID.randomUUID().toString().replace("-", "")
-          + UUID.randomUUID().toString().replace("-", "");
+      UUID.randomUUID().toString().replace("-", "") + UUID.randomUUID().toString().replace("-", "");
   private static final String TOKEN_HASH = InvitationService.sha256Hex(RAW_TOKEN);
 
   private Invitation pendingInvitation;
@@ -62,14 +61,17 @@ class InvitationPreviewTest {
 
   @BeforeEach
   void setUp() {
-    trip = new TripEntity(OWNER_ID, "Đà Nẵng 2026", LocalDate.of(2026, 11, 10), LocalDate.of(2026, 11, 15));
+    trip =
+        new TripEntity(
+            OWNER_ID, "Đà Nẵng 2026", LocalDate.of(2026, 11, 10), LocalDate.of(2026, 11, 15));
     ReflectionTestUtils.setField(trip, "id", TRIP_ID);
     ReflectionTestUtils.setField(trip, "createdAt", Instant.now());
     ReflectionTestUtils.setField(trip, "updatedAt", Instant.now());
     ReflectionTestUtils.setField(trip, "version", 0L);
 
-    pendingInvitation = new Invitation(
-        TRIP_ID, OWNER_ID, EMAIL, TOKEN_HASH, Instant.now().plus(7, ChronoUnit.DAYS));
+    pendingInvitation =
+        new Invitation(
+            TRIP_ID, OWNER_ID, EMAIL, TOKEN_HASH, Instant.now().plus(7, ChronoUnit.DAYS));
     ReflectionTestUtils.setField(pendingInvitation, "id", UUID.randomUUID());
     ReflectionTestUtils.setField(pendingInvitation, "createdAt", Instant.now());
   }
@@ -106,8 +108,8 @@ class InvitationPreviewTest {
   @DisplayName("W4-03 Preview lời mời đã hết hạn → status hiển thị là EXPIRED")
   void previewInvitation_expired_showsExpiredStatus() {
     // Đặt expiresAt = quá khứ
-    ReflectionTestUtils.setField(pendingInvitation, "expiresAt",
-        Instant.now().minus(1, ChronoUnit.DAYS));
+    ReflectionTestUtils.setField(
+        pendingInvitation, "expiresAt", Instant.now().minus(1, ChronoUnit.DAYS));
 
     when(invitationRepository.findByTokenHash(TOKEN_HASH))
         .thenReturn(Optional.of(pendingInvitation));
@@ -156,8 +158,8 @@ class InvitationPreviewTest {
   @Test
   @DisplayName("W4-03 Accept token đã hết hạn → 409 + status EXPIRED")
   void acceptInvitation_expiredToken_throws409() {
-    ReflectionTestUtils.setField(pendingInvitation, "expiresAt",
-        Instant.now().minus(1, ChronoUnit.DAYS));
+    ReflectionTestUtils.setField(
+        pendingInvitation, "expiresAt", Instant.now().minus(1, ChronoUnit.DAYS));
 
     when(invitationRepository.findByTokenHash(TOKEN_HASH))
         .thenReturn(Optional.of(pendingInvitation));

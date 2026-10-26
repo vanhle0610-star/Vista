@@ -1,0 +1,55 @@
+{
+  "status": "passed",
+  "date": "2026-10-25T06:11:15.596Z",
+  "checks": [
+    {
+      "name": "MapLibre canvas exists",
+      "status": "passed"
+    },
+    {
+      "name": "actual street map loaded",
+      "status": "passed"
+    },
+    {
+      "name": "map attribution",
+      "status": "passed"
+    },
+    {
+      "name": "detail opens correct route destination",
+      "status": "passed"
+    },
+    {
+      "name": "missing ORS key handled without fake route",
+      "status": "passed"
+    },
+    {
+      "name": "guest reads feed and sees existing login link",
+      "status": "passed"
+    },
+    {
+      "name": "unconfigured real Storage returns error and retains draft",
+      "status": "passed"
+    },
+    {
+      "name": "web creates real persisted post",
+      "status": "passed"
+    },
+    {
+      "name": "post survives browser reload",
+      "status": "passed"
+    },
+    {
+      "name": "web edits persisted post",
+      "status": "passed"
+    },
+    {
+      "name": "web creates real comment",
+      "status": "passed"
+    },
+    {
+      "name": "no uncaught browser errors",
+      "status": "passed"
+    }
+  ],
+  "errors": []
+}

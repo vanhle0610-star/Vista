@@ -11,8 +11,8 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * Lời mời tham gia chuyến đi qua link/token.
- * Bảng: {@code trip_invitations} (tên chính thức trong baseline schema).
+ * Lời mời tham gia chuyến đi qua link/token. Bảng: {@code trip_invitations} (tên chính thức trong
+ * baseline schema).
  */
 @Entity
 @Table(name = "trip_invitations")
@@ -32,8 +32,8 @@ public class Invitation {
   private String inviteeEmail;
 
   /**
-   * Hash của token — tránh lộ raw token trong DB.
-   * Collaboration service lưu SHA-256 hex của raw token vào đây.
+   * Hash của token — tránh lộ raw token trong DB. Collaboration service lưu SHA-256 hex của raw
+   * token vào đây.
    */
   @Column(name = "token_hash", nullable = false, unique = true, length = 255)
   private String tokenHash;
@@ -50,7 +50,8 @@ public class Invitation {
 
   protected Invitation() {}
 
-  public Invitation(UUID tripId, UUID invitedBy, String inviteeEmail, String tokenHash, Instant expiresAt) {
+  public Invitation(
+      UUID tripId, UUID invitedBy, String inviteeEmail, String tokenHash, Instant expiresAt) {
     this.id = UUID.randomUUID();
     this.tripId = tripId;
     this.invitedBy = invitedBy;
@@ -69,23 +70,51 @@ public class Invitation {
 
   // ── Getters / Setters ──────────────────────────────────────────────────────
 
-  public UUID getId() { return id; }
+  public UUID getId() {
+    return id;
+  }
 
-  public UUID getTripId() { return tripId; }
-  public void setTripId(UUID tripId) { this.tripId = tripId; }
+  public UUID getTripId() {
+    return tripId;
+  }
 
-  public UUID getInvitedBy() { return invitedBy; }
+  public void setTripId(UUID tripId) {
+    this.tripId = tripId;
+  }
 
-  public String getInviteeEmail() { return inviteeEmail; }
-  public void setInviteeEmail(String inviteeEmail) { this.inviteeEmail = inviteeEmail; }
+  public UUID getInvitedBy() {
+    return invitedBy;
+  }
 
-  public String getTokenHash() { return tokenHash; }
+  public String getInviteeEmail() {
+    return inviteeEmail;
+  }
 
-  public InvitationStatus getStatus() { return status; }
-  public void setStatus(InvitationStatus status) { this.status = status; }
+  public void setInviteeEmail(String inviteeEmail) {
+    this.inviteeEmail = inviteeEmail;
+  }
 
-  public Instant getExpiresAt() { return expiresAt; }
-  public void setExpiresAt(Instant expiresAt) { this.expiresAt = expiresAt; }
+  public String getTokenHash() {
+    return tokenHash;
+  }
 
-  public Instant getCreatedAt() { return createdAt; }
+  public InvitationStatus getStatus() {
+    return status;
+  }
+
+  public void setStatus(InvitationStatus status) {
+    this.status = status;
+  }
+
+  public Instant getExpiresAt() {
+    return expiresAt;
+  }
+
+  public void setExpiresAt(Instant expiresAt) {
+    this.expiresAt = expiresAt;
+  }
+
+  public Instant getCreatedAt() {
+    return createdAt;
+  }
 }

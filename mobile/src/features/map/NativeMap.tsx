@@ -1,13 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import {
   Camera,
+  type CameraRef,
   Map,
   ViewAnnotation,
   GeoJSONSource,
   Layer,
-  TransformRequestManager,
-  type StyleSpecification,
 } from '@maplibre/maplibre-react-native';
 import { AppText } from '@/components/ui/AppText';
 import { AppButton } from '@/components/ui/AppButton';
@@ -18,56 +17,76 @@ import {
   type MapViewAdapterProps,
 } from './types';
 
-// SDK-wide app identity, registered once when the native module is loaded.
-// The rule is limited to OSM tiles and shared by all adapter instances.
-TransformRequestManager.addHeader({
-  id: 'vista-osm-app-identity',
-  match: '^https://tile\\.openstreetmap\\.org/',
-  name: 'User-Agent',
-  value: 'VISTA-Mobile/1.0 (MapLibre; OJT development)',
-});
-
-// Development spike only. Production must choose a tile provider with an agreed quota.
-const mapStyle: StyleSpecification = {
-  version: 8,
-  sources: {
-    osm: {
-      type: 'raster',
-      tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-      tileSize: 256,
-      maxzoom: 19,
-      attribution: '© OpenStreetMap contributors',
-    },
-  },
-  layers: [{ id: 'osm', type: 'raster', source: 'osm' }],
-};
+const mapStyle = 'https://tiles.openfreemap.org/styles/liberty';
+const emptyRoute: NonNullable<MapViewAdapterProps['routeGeometry']> = [];
 export default function NativeMap({
   center,
   zoom = 12,
   markers = [],
-  routePoints = [],
+  routePoints = emptyRoute,
+  destinations,
+  routeGeometry,
+  onSelectDestination,
+  onStatusChange,
   userLocation,
   selectedDestinationId,
   onMarkerPress,
   style,
   testID = 'map-view-adapter',
 }: MapViewAdapterProps) {
+  const camera = useRef<CameraRef>(null);
   const [attempt, setAttempt] = useState(0);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>(
     'loading',
   );
+  const report = useEffectEvent(() => onStatusChange?.(status));
+  useEffect(() => {
+    report();
+  }, [status]);
   useEffect(() => {
     if (status !== 'loading') return;
     const timer = setTimeout(() => setStatus('error'), 20000);
     return () => clearTimeout(timer);
   }, [status, attempt]);
-  const validMarkers = markers.filter(validCoordinate);
-  const route = routePoints.filter(validCoordinate);
+  const validMarkers = (
+    destinations?.map((destination) => ({
+      ...destination,
+      title: destination.name,
+    })) ?? markers
+  ).filter(validCoordinate);
+  const geometry = routeGeometry ?? routePoints;
+  const route = geometry.filter(validCoordinate);
+  useEffect(() => {
+    if (geometry.length < 2 || status !== 'ready') return;
+    const points = geometry.filter(validCoordinate);
+    if (points.length < 2) return;
+    let west = 180,
+      south = 90,
+      east = -180,
+      north = -90;
+    for (const point of points) {
+      west = Math.min(west, point.longitude);
+      east = Math.max(east, point.longitude);
+      south = Math.min(south, point.latitude);
+      north = Math.max(north, point.latitude);
+    }
+    camera.current?.fitBounds([west, south, east, north], {
+      padding: { top: 40, right: 40, bottom: 40, left: 40 },
+      duration: 700,
+    });
+  }, [geometry, status]);
   const validUser = validCoordinate(userLocation) ? userLocation : null;
   const selected = selectMarker(validMarkers, selectedDestinationId ?? '');
   const target = validCoordinate(center)
     ? center
-    : { latitude: 16.061168, longitude: 108.227897 };
+    : (selected ?? { latitude: 16.061168, longitude: 108.227897 });
+  const longitude = Number(target.longitude);
+  const latitude = Number(target.latitude);
+  // A GPS marker update must not reapply the controlled camera stop after a pan.
+  const cameraCenter = useMemo<[number, number]>(
+    () => [longitude, latitude],
+    [longitude, latitude],
+  );
   return (
     <View style={[styles.container, style]} testID={testID}>
       <Map
@@ -78,17 +97,28 @@ export default function NativeMap({
         logo
         logoPosition={{ top: 12, left: 12 }}
         compass
+        touchRotate={false}
+        touchPitch={false}
         onDidFinishLoadingMap={() => setStatus('ready')}
         onDidFailLoadingMap={() => setStatus('error')}
       >
-        <Camera center={[target.longitude, target.latitude]} zoom={zoom} />
+        <Camera
+          ref={camera}
+          center={cameraCenter}
+          zoom={zoom}
+          pitch={0}
+          bearing={0}
+        />
         {validMarkers.map((marker) => (
           <ViewAnnotation
             key={marker.id}
             id={marker.id}
             lngLat={[marker.longitude, marker.latitude]}
             selected={selected?.id === marker.id}
-            onPress={() => onMarkerPress?.(marker)}
+            onPress={() => {
+              onMarkerPress?.(marker);
+              onSelectDestination?.(marker);
+            }}
           >
             <View
               accessible
@@ -136,7 +166,7 @@ export default function NativeMap({
       </Map>
       <View pointerEvents="none" style={styles.attribution}>
         <AppText style={styles.attributionText}>
-          © OpenStreetMap contributors
+          OpenFreeMap · © OpenMapTiles · © OpenStreetMap
         </AppText>
       </View>
       {status === 'loading' && (

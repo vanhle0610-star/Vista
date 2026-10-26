@@ -15,8 +15,8 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Đề xuất điểm đến trong chuyến đi để thành viên bỏ phiếu.
- * Bảng: {@code destination_proposals} (theo baseline schema).
+ * Đề xuất điểm đến trong chuyến đi để thành viên bỏ phiếu. Bảng: {@code destination_proposals}
+ * (theo baseline schema).
  */
 @Entity
 @Table(name = "destination_proposals")
@@ -84,17 +84,55 @@ public class Proposal {
 
   // ── Getters / Setters ──────────────────────────────────────────────────────
 
-  public UUID getId() { return id; }
-  public UUID getTripId() { return tripId; }
-  public UUID getDestinationId() { return destinationId; }
-  public void setDestinationId(UUID destinationId) { this.destinationId = destinationId; }
-  public UUID getProposedBy() { return proposedBy; }
-  public String getTitle() { return title; }
-  public void setTitle(String title) { this.title = title; }
-  public ProposalStatus getStatus() { return status; }
-  public void setStatus(ProposalStatus status) { this.status = status; }
-  public Instant getClosesAt() { return closesAt; }
-  public void setClosesAt(Instant closesAt) { this.closesAt = closesAt; }
-  public List<Vote> getVotes() { return votes; }
-  public Instant getCreatedAt() { return createdAt; }
+  public UUID getId() {
+    return id;
+  }
+
+  public UUID getTripId() {
+    return tripId;
+  }
+
+  public UUID getDestinationId() {
+    return destinationId;
+  }
+
+  public void setDestinationId(UUID destinationId) {
+    this.destinationId = destinationId;
+  }
+
+  public UUID getProposedBy() {
+    return proposedBy;
+  }
+
+  public String getTitle() {
+    return title;
+  }
+
+  public void setTitle(String title) {
+    this.title = title;
+  }
+
+  public ProposalStatus getStatus() {
+    return status;
+  }
+
+  public void setStatus(ProposalStatus status) {
+    this.status = status;
+  }
+
+  public Instant getClosesAt() {
+    return closesAt;
+  }
+
+  public void setClosesAt(Instant closesAt) {
+    this.closesAt = closesAt;
+  }
+
+  public List<Vote> getVotes() {
+    return votes;
+  }
+
+  public Instant getCreatedAt() {
+    return createdAt;
+  }
 }

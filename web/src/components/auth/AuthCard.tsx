@@ -91,6 +91,26 @@ export function AuthCard({ isNight }: AuthCardProps) {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [statusMsg, setStatusMsg] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
+  const [alreadyLoggedInUser, setAlreadyLoggedInUser] = useState<{
+    id?: string;
+    email?: string;
+    displayName?: string;
+    roles?: string[];
+  } | null>(null);
+
+  useEffect(() => {
+    try {
+      const token = localStorage.getItem('vista_token');
+      const userStr = localStorage.getItem('vista_user');
+      if (token && userStr) {
+        setAlreadyLoggedInUser(JSON.parse(userStr));
+      } else {
+        setAlreadyLoggedInUser(null);
+      }
+    } catch {
+      setAlreadyLoggedInUser(null);
+    }
+  }, []);
 
   // International Country Dial Code State
   const [selectedDialCode, setSelectedDialCode] = useState<CountryDialCode>(() => {
@@ -161,8 +181,8 @@ export function AuthCard({ isNight }: AuthCardProps) {
 
   const navigateToDestination = useCallback(() => {
     const destination = getSafeReturnUrl(returnUrlParam);
-    router.push(destination);
-  }, [returnUrlParam, router]);
+    window.location.href = destination;
+  }, [returnUrlParam]);
 
   const handleGoogleCredentialResponse = useCallback(
     async (response: {
@@ -494,6 +514,115 @@ export function AuthCard({ isNight }: AuthCardProps) {
       text: t.errGoogleFailed,
     });
   };
+
+  if (alreadyLoggedInUser) {
+    return (
+      <div className={`auth-card-wrapper ${isNight ? 'auth-card-night' : 'auth-card-day'}`}>
+        <div className="auth-glass-panel" style={{ textAlign: 'center', padding: '36px 24px' }}>
+          <div
+            style={{
+              width: '64px',
+              height: '64px',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)',
+              color: '#FFFFFF',
+              fontSize: '22px',
+              fontWeight: 800,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 16px',
+              boxShadow: '0 8px 20px rgba(2, 132, 199, 0.3)',
+            }}
+          >
+            {(alreadyLoggedInUser.displayName || alreadyLoggedInUser.email || 'U').slice(0, 2).toUpperCase()}
+          </div>
+          <h2 style={{ fontSize: '20px', fontWeight: 800, color: isNight ? '#F8FAFC' : '#0F172A', marginBottom: '6px' }}>
+            Xin chào, {alreadyLoggedInUser.displayName || 'VISTA Traveler'}!
+          </h2>
+          <p style={{ fontSize: '13px', color: isNight ? '#94A3B8' : '#64748B', marginBottom: '20px' }}>
+            {alreadyLoggedInUser.email}
+          </p>
+          <div style={{ background: isNight ? 'rgba(255,255,255,0.06)' : '#F0F9FF', border: '1px solid #BAE6FD', borderRadius: '12px', padding: '10px 14px', marginBottom: '22px', fontSize: '12.5px', color: '#0369A1', fontWeight: 600 }}>
+            ✓ Bạn đã đăng nhập vào hệ sinh thái VISTA
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <button
+              type="button"
+              onClick={() => {
+                const dest = getSafeReturnUrl(returnUrlParam);
+                window.location.href = dest;
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                padding: '12px 20px',
+                background: 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)',
+                color: '#FFFFFF',
+                borderRadius: '12px',
+                fontWeight: 700,
+                fontSize: '14px',
+                border: 'none',
+                cursor: 'pointer',
+                boxShadow: '0 4px 14px rgba(2, 132, 199, 0.35)',
+              }}
+            >
+              Vào trang chủ VISTA →
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                window.location.href = '/trips';
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                padding: '12px 20px',
+                background: isNight ? 'rgba(255,255,255,0.08)' : '#FFFFFF',
+                color: isNight ? '#F8FAFC' : '#334155',
+                borderRadius: '12px',
+                fontWeight: 650,
+                fontSize: '14px',
+                border: '1px solid #CBD5E1',
+                cursor: 'pointer',
+              }}
+            >
+              Xem chuyến đi của tôi
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                localStorage.removeItem('vista_token');
+                localStorage.removeItem('vista_user');
+                document.cookie = 'vista_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
+                window.dispatchEvent(new Event('vista-auth-change'));
+                setAlreadyLoggedInUser(null);
+              }}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#EF4444',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                marginTop: '6px',
+                padding: '6px',
+              }}
+            >
+              Đăng xuất / Dùng tài khoản khác
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`auth-card-wrapper ${isNight ? 'auth-card-night' : 'auth-card-day'}`}>

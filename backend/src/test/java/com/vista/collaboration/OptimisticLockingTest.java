@@ -28,9 +28,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
- * W4-TV3-01: Mô phỏng 2 người sửa cùng 1 điểm dừng.
- * Người lưu sau (dùng expected_updated_at cũ) → nhận ConflictException 409.
- * Dữ liệu của người lưu trước không bị mất.
+ * W4-TV3-01: Mô phỏng 2 người sửa cùng 1 điểm dừng. Người lưu sau (dùng expected_updated_at cũ) →
+ * nhận ConflictException 409. Dữ liệu của người lưu trước không bị mất.
  */
 @ExtendWith(MockitoExtension.class)
 class OptimisticLockingTest {

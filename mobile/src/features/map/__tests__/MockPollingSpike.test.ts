@@ -1,4 +1,4 @@
-import { MockPollingSpike } from '../MockPollingSpike';
+import { MockPollingSpike } from '../test-support/MockPollingSpike';
 it('polls only after start, prevents duplicate timers, and stops on cleanup', () => {
   jest.useFakeTimers();
   const receive = jest.fn();

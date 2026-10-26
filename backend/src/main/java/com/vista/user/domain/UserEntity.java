@@ -40,6 +40,25 @@ public class UserEntity {
   @Column(name = "avatar_url")
   private String avatarUrl;
 
+  @Column(name = "bio", columnDefinition = "text")
+  private String bio;
+
+  @Column(name = "bank_code", length = 30)
+  private String bankCode;
+
+  @Column(name = "bank_bin", length = 10)
+  private String bankBin;
+
+  @Column(name = "bank_account_number", length = 50)
+  private String bankAccountNumber;
+
+  @Column(name = "bank_account_name", length = 120)
+  private String bankAccountName;
+
+  @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
+  @Column(name = "travel_preferences", columnDefinition = "jsonb")
+  private String travelPreferences = "[]";
+
   @Column(name = "status", nullable = false, length = 30)
   private String status = "ACTIVE";
 
@@ -129,6 +148,54 @@ public class UserEntity {
 
   public void setAvatarUrl(String avatarUrl) {
     this.avatarUrl = avatarUrl;
+  }
+
+  public String getBio() {
+    return bio;
+  }
+
+  public void setBio(String bio) {
+    this.bio = bio;
+  }
+
+  public String getBankCode() {
+    return bankCode;
+  }
+
+  public void setBankCode(String bankCode) {
+    this.bankCode = bankCode;
+  }
+
+  public String getBankBin() {
+    return bankBin;
+  }
+
+  public void setBankBin(String bankBin) {
+    this.bankBin = bankBin;
+  }
+
+  public String getBankAccountNumber() {
+    return bankAccountNumber;
+  }
+
+  public void setBankAccountNumber(String bankAccountNumber) {
+    this.bankAccountNumber = bankAccountNumber;
+  }
+
+  public String getBankAccountName() {
+    return bankAccountName;
+  }
+
+  public void setBankAccountName(String bankAccountName) {
+    this.bankAccountName = bankAccountName;
+  }
+
+  public String getTravelPreferences() {
+    return travelPreferences;
+  }
+
+  public void setTravelPreferences(String travelPreferences) {
+    this.travelPreferences = travelPreferences != null ? travelPreferences : "[]";
   }
 
   public String getStatus() {

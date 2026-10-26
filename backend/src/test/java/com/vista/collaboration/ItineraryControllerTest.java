@@ -106,8 +106,9 @@ class ItineraryControllerTest {
     request.setExpectedUpdatedAt(outdatedTime);
 
     when(itineraryService.updateItem(eq(ITEM_ID), eq(MEMBER_ID), any()))
-        .thenThrow(new ConflictException(
-            "Dữ liệu lịch trình đã bị cập nhật bởi người khác (xung đột phiên bản)"));
+        .thenThrow(
+            new ConflictException(
+                "Dữ liệu lịch trình đã bị cập nhật bởi người khác (xung đột phiên bản)"));
 
     mockMvc
         .perform(

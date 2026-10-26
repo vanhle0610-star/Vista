@@ -30,10 +30,10 @@ class OpeningHoursValidationTest {
       Pattern.compile("^(\\d{2}:\\d{2})\\s*-\\s*(\\d{2}:\\d{2})$");
 
   @Test
-  @DisplayName("W4-AI-CONSUMPTION: All 90 seed destinations must have valid 7-day opening hours JSON")
+  @DisplayName(
+      "W4-AI-CONSUMPTION: All 90 seed destinations must have valid 7-day opening hours JSON")
   void verifyAllSeedDestinationsHaveValidStructuredOpeningHours() throws Exception {
-    ClassPathResource resource =
-        new ClassPathResource("db/seed/demo_destinations_seed.csv");
+    ClassPathResource resource = new ClassPathResource("db/seed/demo_destinations_seed.csv");
     assertThat(resource.exists()).isTrue();
 
     int validatedCount = 0;

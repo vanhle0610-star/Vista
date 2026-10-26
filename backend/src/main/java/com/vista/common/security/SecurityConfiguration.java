@@ -93,6 +93,8 @@ public class SecurityConfiguration {
                         "/api/v1/auth/google",
                         "/api/v1/ai/quick-plan")
                     .permitAll()
+                    .requestMatchers(HttpMethod.POST, "/api/v1/map/routes")
+                    .permitAll()
                     .requestMatchers(
                         HttpMethod.GET,
                         "/api/v1/health",
@@ -101,6 +103,8 @@ public class SecurityConfiguration {
                         "/swagger-ui/**",
                         "/swagger-ui.html",
                         "/api/v1/destinations/**",
+                        "/api/v1/posts/**",
+                        "/api/v1/post-media/*",
                         // W4-TV3-03: preview lời mời — public (deep link / nhập mã)
                         "/api/v1/invitations/*/preview")
                     .permitAll()

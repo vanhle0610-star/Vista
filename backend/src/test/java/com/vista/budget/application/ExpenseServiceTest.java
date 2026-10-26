@@ -81,7 +81,8 @@ class ExpenseServiceTest {
             new ExpenseSplitEntity(null, currentUserId, BigDecimal.valueOf(30000)),
             new ExpenseSplitEntity(null, partnerId, BigDecimal.valueOf(30000)));
 
-    when(calculationService.createEqualSplits(any(ExpenseEntity.class), eq(List.of(currentUserId, partnerId))))
+    when(calculationService.createEqualSplits(
+            any(ExpenseEntity.class), eq(List.of(currentUserId, partnerId))))
         .thenReturn(splits);
 
     when(expenseRepository.save(any(ExpenseEntity.class)))
@@ -203,15 +204,15 @@ class ExpenseServiceTest {
             ExpenseCategory.FOOD,
             Instant.now());
 
-    ExpenseSplitEntity split1 = new ExpenseSplitEntity(exp, currentUserId, BigDecimal.valueOf(500000));
+    ExpenseSplitEntity split1 =
+        new ExpenseSplitEntity(exp, currentUserId, BigDecimal.valueOf(500000));
     ExpenseSplitEntity split2 = new ExpenseSplitEntity(exp, partnerId, BigDecimal.valueOf(500000));
     exp.addSplit(split1);
     exp.addSplit(split2);
 
     when(expenseRepository.findByTripIdAndStatusOrderByOccurredAtDesc(tripId, "ACTIVE"))
         .thenReturn(List.of(exp));
-    when(expenseRepository.sumAmountByTripId(tripId))
-        .thenReturn(BigDecimal.valueOf(1000000));
+    when(expenseRepository.sumAmountByTripId(tripId)).thenReturn(BigDecimal.valueOf(1000000));
 
     Map<UUID, BigDecimal> balances =
         Map.of(
@@ -305,8 +306,7 @@ class ExpenseServiceTest {
             currentUserId,
             ExpenseCategory.FOOD,
             Instant.now());
-    expense.addSplit(
-        new ExpenseSplitEntity(expense, currentUserId, BigDecimal.valueOf(100000)));
+    expense.addSplit(new ExpenseSplitEntity(expense, currentUserId, BigDecimal.valueOf(100000)));
 
     UpdateExpenseRequest request =
         new UpdateExpenseRequest(
@@ -325,8 +325,7 @@ class ExpenseServiceTest {
             new ExpenseSplitEntity(expense, partnerId, BigDecimal.valueOf(60000)));
 
     when(expenseRepository.findById(expenseId)).thenReturn(Optional.of(expense));
-    when(calculationService.createEqualSplits(
-            expense, List.of(currentUserId, partnerId)))
+    when(calculationService.createEqualSplits(expense, List.of(currentUserId, partnerId)))
         .thenReturn(recalculated);
     when(expenseRepository.save(expense)).thenReturn(expense);
 
@@ -353,8 +352,7 @@ class ExpenseServiceTest {
             ExpenseCategory.ACCOMMODATION,
             Instant.now());
     UpdateExpenseRequest request =
-        new UpdateExpenseRequest(
-            "Khách sạn mới", null, null, null, null, null, null, null, null);
+        new UpdateExpenseRequest("Khách sạn mới", null, null, null, null, null, null, null, null);
 
     when(expenseRepository.findById(expenseId)).thenReturn(Optional.of(expense));
     when(tripAccessService.isOwner(tripId, currentUserId)).thenReturn(false);
@@ -381,8 +379,7 @@ class ExpenseServiceTest {
             ExpenseCategory.TRANSPORT,
             Instant.now());
     UpdateExpenseRequest request =
-        new UpdateExpenseRequest(
-            "Vé xe khứ hồi", null, null, null, null, null, null, null, null);
+        new UpdateExpenseRequest("Vé xe khứ hồi", null, null, null, null, null, null, null, null);
 
     when(expenseRepository.findById(expenseId)).thenReturn(Optional.of(expense));
     when(tripAccessService.isOwner(tripId, currentUserId)).thenReturn(true);

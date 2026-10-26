@@ -1,0 +1,29 @@
+.page { min-height: 100vh; background: #eef8ff; color: #17324d; }
+.main { max-width: 800px; margin: auto; padding: 36px 20px 64px; }
+.hero { margin-bottom: 30px; }
+.hero>p { font-size: 11px; letter-spacing: .14em; color: #0788bd; font-weight: 700; }
+.hero h1 { font-size: clamp(30px, 5vw, 42px); line-height: 1.15; margin: 12px 0; letter-spacing: -.04em; }
+.hero span { color: #62718a; }
+.card { padding: 24px; border: 1px solid #dcecf6; border-radius: 22px; background: white; margin-bottom: 20px; box-shadow: 0 5px 24px #10376c06; }
+.card h2 { margin: 0 0 18px; font-size: 21px; }
+.page :is(button,textarea,input) { font: inherit; }
+.page button { cursor: pointer; padding: 10px 14px; min-height: 42px; border: 1px solid #d6e6f0; border-radius: 10px; background: #f4faff; color: #066b9c; }
+.page button:disabled { cursor: wait; opacity: .55; }
+.page .primary { background: #087fb9; color: white; margin-top: 14px; }
+.page label { display: block; font-size: 13px; font-weight: 600; }
+.page textarea { width: 100%; min-height: 100px; padding: 14px; margin: 8px 0 14px; border: 1px solid #c8dfea; border-radius: 12px; color: #17324d; background: #fbfdff; resize: vertical; box-sizing: border-box; }
+.page :is(button,a,input,textarea):focus-visible { outline: 3px solid #00adce; outline-offset: 3px; }
+.photos { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; margin: 12px 0; }
+.photos img { width: 100%; height: 210px; object-fit: cover; border-radius: 12px; }
+.file input { display: block; margin-top: 10px; max-width: 100%; }
+.postHeading,.feedHeading { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.feedHeading { margin: 28px 0 14px; }
+.feedHeading h2 { font-size: 22px; }
+.postHeading time,.comments time { display: block; font-size: 12px; color: #6c7c92; margin-top: 4px; }
+.avatar { background: #e2f6ff; color: #087fb9; border-radius: 50%; width: 44px; height: 44px; display: grid; place-items: center; font-weight: 700; }
+.body { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.7; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.comments { border-top: 1px solid #deebf4; margin-top: 20px; padding-top: 16px; }
+.comment { padding: 14px; border-radius: 12px; background: #f3f9fd; margin-bottom: 12px; }
+.page a { color: #067db5; }
+@media(max-width:540px) { .main { padding: 24px 12px; } .card { padding: 18px; } .photos img { height: 150px; } }

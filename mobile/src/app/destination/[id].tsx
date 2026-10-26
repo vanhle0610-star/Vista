@@ -15,6 +15,8 @@ import Svg, { Path } from 'react-native-svg';
 import { api, apiErrorMessage } from '../../services/api/client';
 import { LoadingState, ErrorState } from '../../components/feedback/States';
 import { useFavorites, useDestinationHistory } from '../../features/favorites';
+import { AppButton } from '@/components/ui/AppButton';
+import { validCoordinate } from '@/features/map/types';
 
 export interface DestinationDetail {
   id: string;
@@ -157,7 +159,7 @@ export default function DestinationDetailRoute() {
         <View style={styles.centerContainer}>
           <LoadingState label="Đang tải thông tin điểm đến..." />
         </View>
-      ) : isError ? (
+      ) : isError && !data ? (
         <View style={styles.centerContainer}>
           <ErrorState
             message={apiErrorMessage(error)}
@@ -170,6 +172,10 @@ export default function DestinationDetailRoute() {
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          {validCoordinate(data) ? <View style={{ padding: 16, gap: 10 }}>
+            <AppButton label="Xem trên bản đồ" onPress={() => router.push({ pathname: '/(tabs)/map', params: { destinationId: data.id } })} />
+            <AppButton label="Chỉ đường" variant="secondary" onPress={() => router.push({ pathname: '/(tabs)/map', params: { destinationId: data.id, directions: '1' } })} />
+          </View> : <Text style={{ padding: 16, color: '#64748b' }}>Địa điểm chưa có tọa độ hợp lệ để mở bản đồ hoặc tính tuyến.</Text>}
           {/* Ảnh lớn */}
           <View style={styles.heroImageBox}>
             {data.imageUrl ? (

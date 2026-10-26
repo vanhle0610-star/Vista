@@ -184,7 +184,7 @@ export function ExpenseLedgerTable({
                       Chưa có khoản chi tiêu nào
                     </span>
                     <span style={{ fontSize: '13px' }}>
-                      Hãy nhấn nút <b>"+ Ghi Khoản Chi Mới"</b> để thêm khoản chi đầu tiên cho chuyến đi!
+                      Hãy nhấn nút <b>&quot;+ Ghi Khoản Chi Mới&quot;</b> để thêm khoản chi đầu tiên cho chuyến đi!
                     </span>
                   </div>
                 </td>

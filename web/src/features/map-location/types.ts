@@ -1,10 +1,3 @@
-export type MapProviderType = 'maplibre-vector' | 'leaflet-osm';
-
-export type MapViewMode = '2d' | '3d';
-
-export type MapEngineStatus =
-  'loading' | 'ready' | 'error' | 'webgl-unsupported' | 'style-error';
-
 export type GeolocationStatus =
   | 'idle'
   | 'prompt'
@@ -42,75 +35,36 @@ export interface DestinationMarker {
   latitude: number;
   longitude: number;
   description: string;
-  priceMin: number;
-  priceMax: number;
-  openingHours: string;
-  sourceUrl: string;
+  priceMin?: number | null;
+  priceMax?: number | null;
+  openingHours?: string;
+  sourceUrl?: string;
   thumbnailUrl?: string;
 }
 
-export interface Bridge3DConfig {
-  id: string;
-  name: string;
-  anchor: {
-    latitude: number;
-    longitude: number;
-    altitude?: number;
-  };
-  westAbutment: {
-    latitude: number;
-    longitude: number;
-  };
-  eastAbutment: {
-    latitude: number;
-    longitude: number;
-  };
-  bearing: number; // degrees clockwise from true north
-  deckElevationMeters: number;
-  totalLengthMeters: number;
-  deckWidthMeters: number;
-  dragonMaxHeightMeters: number;
-  scale: number;
-  coordinateSource: string;
-  notes: string;
-  enableNightLighting?: boolean;
-}
+export type Destination = DestinationMarker;
 
-export interface SyncDevice {
-  deviceId: string;
-  deviceName: string;
-  role: 'me' | 'partner';
+export interface RouteStop {
   latitude: number;
   longitude: number;
-  lastUpdatedAt: number;
-  isSharing: boolean;
-}
-
-export type EventType = 'gps' | 'permission' | 'lifecycle' | 'map' | 'sync';
-
-export interface EventLogItem {
-  id: string;
-  timestamp: string;
-  type: EventType;
-  isSimulation: boolean;
-  title: string;
-  details?: string;
+  label: string;
+  tag: string; // 'A', 'B', 'C', 'D'...
+  type?: 'origin' | 'waypoint' | 'destination';
 }
 
 export interface MapViewAdapterProps {
   destinations: DestinationMarker[];
   selectedDestinationId?: string | null;
   onSelectDestination?: (destination: DestinationMarker | null) => void;
-  userCoords?: Coordinates | null;
+  userLocation?: Coordinates | null;
+  routeGeometry?: { lat: number; lng: number }[];
+  routeStops?: RouteStop[];
+  onDirections?: (destination: DestinationMarker) => void;
   onRequestUserLocation?: () => void;
-  mode?: MapViewMode;
-  onModeChange?: (mode: MapViewMode) => void;
-  bridgeConfig?: Bridge3DConfig;
-  showBridge3D?: boolean;
   initialCenter?: { latitude: number; longitude: number; zoom?: number };
-  styleUrl?: string;
-  onStatusChange?: (status: MapEngineStatus, details?: string) => void;
-  onError?: (error: Error) => void;
+  onStatusChange?: (status: 'loading' | 'ready' | 'error') => void;
   className?: string;
   showSelectedCard?: boolean;
+  cameraTarget?: { latitude: number; longitude: number; zoom?: number } | null;
+  onAddToTrip?: (destination: DestinationMarker) => void;
 }

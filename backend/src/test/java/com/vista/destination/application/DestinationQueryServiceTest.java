@@ -158,7 +158,8 @@ class DestinationQueryServiceTest {
     assertThat(stub.findPublishedById(testId).get().name()).isEqualTo("Thánh địa Mỹ Sơn");
 
     // 3. Batch query for TV3 itinerary
-    List<DestinationSummary> batch = stub.findPublishedByIds(List.of(defaultId, testId, UUID.randomUUID()));
+    List<DestinationSummary> batch =
+        stub.findPublishedByIds(List.of(defaultId, testId, UUID.randomUUID()));
     assertThat(batch).hasSize(2);
 
     // 4. Search query for TV4 AI context
@@ -172,4 +173,3 @@ class DestinationQueryServiceTest {
     assertThat(stub.findPublishedById(testId)).isEmpty();
   }
 }
-

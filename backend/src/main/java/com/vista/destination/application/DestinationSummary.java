@@ -25,7 +25,17 @@ public record DestinationSummary(
       Double latitude,
       Double longitude,
       String imageUrl) {
-    this(id, name, provinceName, categoryName, priceMin, priceMax, latitude, longitude, imageUrl, null);
+    this(
+        id,
+        name,
+        provinceName,
+        categoryName,
+        priceMin,
+        priceMax,
+        latitude,
+        longitude,
+        imageUrl,
+        null);
   }
 
   public DestinationSummary(

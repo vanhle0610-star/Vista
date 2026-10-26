@@ -5,17 +5,18 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "test": "node scripts/test-map-gps.mjs",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@types/three": "^0.186.0",
+    "lucide-react": "^1.61.0",
     "maplibre-gl": "^6.15.0",
     "next": "16.4.2",
     "react": "19.3.0",
-    "react-dom": "19.3.0",
-    "three": "^0.186.1"
+    "react-dom": "19.3.0"
   },
   "devDependencies": {
     "@types/node": "^20",

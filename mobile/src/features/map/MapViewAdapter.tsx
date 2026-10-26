@@ -8,6 +8,8 @@ export type { MapViewAdapterProps, MapMarker } from './types';
 /** Explicit unsupported-platform fallback, not a native map implementation. */
 export function MapViewAdapter({
   markers = [],
+  destinations,
+  onSelectDestination,
   onMarkerPress,
   style,
   testID,
@@ -15,15 +17,14 @@ export function MapViewAdapter({
   return (
     <View style={[styles.container, style]} testID={testID}>
       <AppText>
-        Bản đồ native cần bản development build Android/iOS. Bản Expo web và
-        Expo Go chỉ hiển thị danh sách dự phòng.
+        Phiên bản này chưa hỗ trợ hiển thị bản đồ. Bạn vẫn có thể chọn địa điểm bên dưới.
       </AppText>
-      {markers.filter(validCoordinate).map((marker) => (
+      {(destinations ?? markers).filter(validCoordinate).map((marker) => (
         <AppButton
           key={marker.id}
-          label={marker.title ?? 'Điểm đến'}
+          label={'name' in marker && typeof marker.name === 'string' ? marker.name : marker.title ?? 'Điểm đến'}
           variant="secondary"
-          onPress={() => onMarkerPress?.(marker)}
+          onPress={() => { onMarkerPress?.(marker); onSelectDestination?.(marker); }}
         />
       ))}
     </View>

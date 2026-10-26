@@ -30,7 +30,8 @@ class DatabaseAuditLogServiceSanitiseTest {
   @Test
   @DisplayName("sanitize flat JSON with various casing")
   void sanitize_flatJson() {
-    String json = "{\"password\":\"secret123\",\"accessToken\":\"tok-abc\",\"REFRESH_TOKEN\":\"ref-xyz\"}";
+    String json =
+        "{\"password\":\"secret123\",\"accessToken\":\"tok-abc\",\"REFRESH_TOKEN\":\"ref-xyz\"}";
     String sanitized = service.sanitize(json);
 
     assertThat(sanitized).doesNotContain("secret123");
@@ -44,7 +45,8 @@ class DatabaseAuditLogServiceSanitiseTest {
   @Test
   @DisplayName("sanitize nested JSON object and arrays")
   void sanitize_nestedJsonAndArrays() {
-    String json = """
+    String json =
+        """
         {
           "user": {
             "email": "test@example.com",
@@ -79,7 +81,8 @@ class DatabaseAuditLogServiceSanitiseTest {
   @Test
   @DisplayName("sanitize plain text and URL encoded key=value")
   void sanitize_plainTextAndUrlEncoded() {
-    String input = "user=john&password=secret123&access_token=tok123&authorization=Bearer my-fake-jwt-token";
+    String input =
+        "user=john&password=secret123&access_token=tok123&authorization=Bearer my-fake-jwt-token";
     String sanitized = service.sanitize(input);
 
     assertThat(sanitized).doesNotContain("secret123");
@@ -115,7 +118,8 @@ class DatabaseAuditLogServiceSanitiseTest {
   @Test
   @DisplayName("sanitize JSON with string, number, boolean, and null sensitive fields")
   void sanitize_jsonTypes() {
-    String json = """
+    String json =
+        """
         {
           "password": "plain-password",
           "creditCard": 1234567890123456,
@@ -135,4 +139,3 @@ class DatabaseAuditLogServiceSanitiseTest {
     assertThat(sanitized).contains("\"normalField\":42");
   }
 }
-

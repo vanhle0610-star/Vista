@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+    "/map/routes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Compute a driving or walking route through openrouteservice/HeiGIT */
+        post: operations["computeMapRoute"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -191,6 +208,24 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
+        /** Cập nhật thông tin chuyến đi (Chỉ dành cho Owner) (FR-PLAN-01) */
+        patch: operations["updateTrip"];
+        trace?: never;
+    };
+    "/trips/{id}/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lấy danh sách thành viên trong chuyến đi (FR-GRP-01) */
+        get: operations["listTripMembers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
         patch?: never;
         trace?: never;
     };
@@ -308,17 +343,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * Public visible, non-deleted posts
-         * @description DRAFT W1: proposed contract for subsequent weeks; endpoint is not implemented.
-         */
-        get: operations["tv5ListPosts"];
+        /** tv5ListCommunityPosts */
+        get: operations["tv5ListCommunityPosts"];
         put?: never;
-        /**
-         * Create own post; initial PENDING
-         * @description DRAFT W1: proposed contract for subsequent weeks; endpoint is not implemented.
-         */
-        post: operations["tv5CreatePost"];
+        /** tv5CreateCommunityPost */
+        post: operations["tv5CreateCommunityPost"];
         delete?: never;
         options?: never;
         head?: never;
@@ -329,48 +358,37 @@ export interface paths {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                postId: string;
+            };
             cookie?: never;
         };
-        /**
-         * Public visible, non-deleted post
-         * @description DRAFT W1: proposed contract for subsequent weeks; endpoint is not implemented.
-         */
-        get: operations["tv5GetPost"];
+        /** tv5GetCommunityPost */
+        get: operations["tv5GetCommunityPost"];
         put?: never;
         post?: never;
-        /**
-         * Author soft delete; moderation state retained
-         * @description DRAFT W1: proposed contract for subsequent weeks; endpoint is not implemented.
-         */
-        delete: operations["tv5DeletePost"];
+        /** tv5DeleteCommunityPost */
+        delete: operations["tv5DeleteCommunityPost"];
         options?: never;
         head?: never;
-        /**
-         * Author only; version required
-         * @description DRAFT W1: proposed contract for subsequent weeks; endpoint is not implemented.
-         */
-        patch: operations["tv5UpdatePost"];
+        /** tv5UpdateCommunityPost */
+        patch: operations["tv5UpdateCommunityPost"];
         trace?: never;
     };
     "/posts/{postId}/comments": {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                postId: string;
+            };
             cookie?: never;
         };
-        /**
-         * Visible comments on visible non-deleted post
-         * @description DRAFT W1: proposed contract for subsequent weeks; endpoint is not implemented.
-         */
-        get: operations["tv5ListComments"];
+        /** tv5ListPostComments */
+        get: operations["tv5ListPostComments"];
         put?: never;
-        /**
-         * Authenticated comment on visible non-deleted post
-         * @description DRAFT W1: proposed contract for subsequent weeks; endpoint is not implemented.
-         */
-        post: operations["tv5CreateComment"];
+        /** tv5CreatePostComment */
+        post: operations["tv5CreatePostComment"];
         delete?: never;
         options?: never;
         head?: never;
@@ -381,24 +399,76 @@ export interface paths {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                postId: string;
+                commentId: string;
+            };
             cookie?: never;
         };
         get?: never;
         put?: never;
         post?: never;
-        /**
-         * Author only; soft delete
-         * @description DRAFT W1: proposed contract for subsequent weeks; endpoint is not implemented.
-         */
-        delete: operations["tv5DeleteComment"];
+        /** tv5DeletePostComment */
+        delete: operations["tv5DeletePostComment"];
         options?: never;
         head?: never;
-        /**
-         * Author only; comment must belong to path post
-         * @description DRAFT W1: proposed contract for subsequent weeks; endpoint is not implemented.
-         */
-        patch: operations["tv5UpdateComment"];
+        /** tv5UpdatePostComment */
+        patch: operations["tv5UpdatePostComment"];
+        trace?: never;
+    };
+    "/post-uploads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Upload an owned JPEG or PNG up to 5 MiB */
+        post: operations["tv5UploadPostPhoto"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/post-uploads/{uploadId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                uploadId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** tv5DiscardOwnedUpload */
+        delete: operations["tv5DiscardOwnedUpload"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/post-media/{mediaId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                mediaId: string;
+            };
+            cookie?: never;
+        };
+        /** Read photo only while its parent post is visible */
+        get: operations["tv5ReadPublicPostPhoto"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/trips/{tripId}/check-ins": {
@@ -627,6 +697,20 @@ export interface components {
             destinationSummary?: string;
             budgetTotal?: number;
         };
+        UpdateTripRequest: {
+            title?: string;
+            /** Format: date */
+            startDate?: string;
+            /** Format: date */
+            endDate?: string;
+            destinationSummary?: string;
+            budgetTotal?: number;
+            currency?: string;
+            /** @enum {string} */
+            status?: "PLANNING" | "ACTIVE" | "ENDED" | "CANCELLED";
+            /** @enum {string} */
+            visibility?: "PUBLIC" | "PRIVATE";
+        };
         TripSummary: {
             /** Format: uuid */
             id: string;
@@ -676,7 +760,11 @@ export interface components {
             /** @enum {string} */
             role: "OWNER" | "MEMBER";
             /** @enum {string} */
-            status: "PENDING" | "ACCEPTED" | "DECLINED";
+            status: "ACTIVE" | "INVITED" | "LEFT" | "REMOVED" | "PENDING" | "ACCEPTED" | "DECLINED";
+            /** Format: email */
+            email?: string;
+            /** Format: date-time */
+            joinedAt?: string;
         };
         CreateInvitationRequest: {
             /** Format: email */
@@ -802,6 +890,29 @@ export interface components {
                 }[];
             }[];
         };
+        RoutePoint: {
+            latitude: number;
+            longitude: number;
+            label: string;
+        };
+        RouteInput: {
+            origin: components["schemas"]["RoutePoint"];
+            destination: components["schemas"]["RoutePoint"];
+            /** @enum {string} */
+            mode: "DRIVING" | "WALKING";
+            fromGps: boolean;
+        };
+        RouteResult: {
+            input: components["schemas"]["RouteInput"];
+            path: {
+                lat: number;
+                lng: number;
+            }[];
+            distanceMeters: number;
+            durationMillis: number;
+            warnings: string[];
+            attribution: string;
+        };
         Coordinates: {
             latitude: number;
             longitude: number;
@@ -821,51 +932,79 @@ export interface components {
             code: string;
             requestId: string;
         };
-        Image: {
-            /** @description Relative Storage object path; server must validate ownership. No binary/base64, secret or signed URL. */
-            storagePath: string;
-            /** @enum {string} */
-            mediaType: "image/jpeg" | "image/png" | "image/webp";
+        Author: {
+            /** Format: uuid */
+            id: string;
+            displayName: string;
+        };
+        Media: {
+            /** Format: uuid */
+            id: string;
+            path: string;
         };
         Post: {
             /** Format: uuid */
             id: string;
-            /** Format: uuid */
-            userId: string;
             body: string;
-            /** Format: uuid */
-            destinationId?: string | null;
-            /** @enum {string} */
-            status: "PENDING" | "VISIBLE" | "HIDDEN";
-            /** Format: int64 */
             version: number;
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
             updatedAt: string;
-            media: components["schemas"]["Image"][];
-        };
-        PostWrite: {
-            body: string;
+            author: components["schemas"]["Author"];
             /** Format: uuid */
             destinationId?: string | null;
-            media?: components["schemas"]["Image"][];
+            media: components["schemas"]["Media"][];
+        };
+        PostPage: {
+            items: components["schemas"]["Post"][];
+            total: number;
+            page: number;
+            size: number;
+        };
+        PostCreate: {
+            body: string;
+            /** Format: uuid */
+            clientRequestId: string;
+            /** Format: uuid */
+            destinationId?: string | null;
+            uploadIds?: string[];
+        };
+        PostUpdate: {
+            body: string;
+            version: number;
         };
         Comment: {
             /** Format: uuid */
             id: string;
-            /** Format: uuid */
-            postId: string;
-            /** Format: uuid */
-            userId: string;
             body: string;
+            version: number;
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
             updatedAt: string;
+            /** Format: uuid */
+            postId: string;
+            author: components["schemas"]["Author"];
+        };
+        CommentPage: {
+            items: components["schemas"]["Comment"][];
+            total: number;
+            page: number;
+            size: number;
         };
         CommentWrite: {
             body: string;
+        };
+        CommentUpdate: {
+            body: string;
+            version: number;
+        };
+        Upload: {
+            /** Format: uuid */
+            id: string;
+            /** Format: date-time */
+            expiresAt: string;
         };
         CheckInWrite: components["schemas"]["Coordinates"] & {
             /**
@@ -951,6 +1090,58 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    computeMapRoute: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RouteInput"];
+            };
+        };
+        responses: {
+            /** @description Route, or null if no route exists */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RouteResult"] | null;
+                };
+            };
+            /** @description Invalid coordinates or mode */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Rate limited; retry later */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Routing unavailable, unconfigured or key rejected */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Routing timeout */
+            504: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     getHealth: {
         parameters: {
             query?: never;
@@ -1293,6 +1484,61 @@ export interface operations {
             404: components["responses"]["Problem"];
         };
     };
+    updateTrip: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateTripRequest"];
+            };
+        };
+        responses: {
+            /** @description Cập nhật chuyến đi thành công */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TripDetail"];
+                };
+            };
+            400: components["responses"]["Problem"];
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
+            404: components["responses"]["Problem"];
+        };
+    };
+    listTripMembers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Danh sách thành viên trong chuyến đi */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TripMemberInfo"][];
+                };
+            };
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
+            404: components["responses"]["Problem"];
+        };
+    };
     createInvitation: {
         parameters: {
             query?: never;
@@ -1535,7 +1781,7 @@ export interface operations {
             };
         };
     };
-    tv5ListPosts: {
+    tv5ListCommunityPosts: {
         parameters: {
             query?: {
                 page?: number;
@@ -1547,42 +1793,74 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Proposed response */
+            /** @description Successful response */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        items: components["schemas"]["Post"][];
-                        page: number;
-                        size: number;
-                        /** Format: int64 */
-                        total: number;
-                    };
+                    "application/json": components["schemas"]["PostPage"];
                 };
             };
-            /** @description RFC 9457 problem; code identifies validation, access, not found or conflict */
+            /** @description RFC 9457 ProblemDetail */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/problem+json": components["schemas"]["schemas-Problem"];
-                };
+                content?: never;
             };
-            /** @description RFC 9457 problem; code identifies validation, access, not found or conflict */
+            /** @description RFC 9457 ProblemDetail */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/problem+json": components["schemas"]["schemas-Problem"];
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            409: {
+                headers: {
+                    [name: string]: unknown;
                 };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
-    tv5CreatePost: {
+    tv5CreateCommunityPost: {
         parameters: {
             query?: never;
             header?: never;
@@ -1591,11 +1869,11 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["PostWrite"];
+                "application/json": components["schemas"]["PostCreate"];
             };
         };
         responses: {
-            /** @description Proposed response */
+            /** @description Successful response */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -1604,54 +1882,65 @@ export interface operations {
                     "application/json": components["schemas"]["Post"];
                 };
             };
-            /** @description RFC 9457 problem; code identifies validation, access, not found or conflict */
+            /** @description RFC 9457 ProblemDetail */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/problem+json": components["schemas"]["schemas-Problem"];
-                };
+                content?: never;
             };
-            /** @description RFC 9457 problem; code identifies validation, access, not found or conflict */
+            /** @description RFC 9457 ProblemDetail */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/problem+json": components["schemas"]["schemas-Problem"];
-                };
+                content?: never;
             };
-            /** @description RFC 9457 problem; code identifies validation, access, not found or conflict */
+            /** @description RFC 9457 ProblemDetail */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/problem+json": components["schemas"]["schemas-Problem"];
-                };
+                content?: never;
             };
-            /** @description RFC 9457 problem; code identifies validation, access, not found or conflict */
+            /** @description RFC 9457 ProblemDetail */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/problem+json": components["schemas"]["schemas-Problem"];
-                };
+                content?: never;
             };
-            /** @description RFC 9457 problem; code identifies validation, access, not found or conflict */
+            /** @description RFC 9457 ProblemDetail */
             409: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/problem+json": components["schemas"]["schemas-Problem"];
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            413: {
+                headers: {
+                    [name: string]: unknown;
                 };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
-    tv5GetPost: {
+    tv5GetCommunityPost: {
         parameters: {
             query?: never;
             header?: never;
@@ -1662,7 +1951,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Proposed response */
+            /** @description Successful response */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1671,33 +1960,68 @@ export interface operations {
                     "application/json": components["schemas"]["Post"];
                 };
             };
-            /** @description RFC 9457 problem; code identifies validation, access, not found or conflict */
+            /** @description RFC 9457 ProblemDetail */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/problem+json": components["schemas"]["schemas-Problem"];
-                };
+                content?: never;
             };
-            /** @description RFC 9457 problem; code identifies validation, access, not found or conflict */
+            /** @description RFC 9457 ProblemDetail */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/problem+json": components["schemas"]["schemas-Problem"];
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            409: {
+                headers: {
+                    [name: string]: unknown;
                 };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
-    tv5DeletePost: {
+    tv5DeleteCommunityPost: {
         parameters: {
             query?: never;
-            header: {
-                /** @description Quoted post version, e.g. "0". Atomic comparison; 409 on stale version. */
-                "If-Match": string;
-            };
+            header?: never;
             path: {
                 postId: string;
             };
@@ -1705,67 +2029,75 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Completed; no body */
+            /** @description Deleted */
             204: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description RFC 9457 problem; code identifies validation, access, not found or conflict */
+            /** @description RFC 9457 ProblemDetail */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/problem+json": components["schemas"]["schemas-Problem"];
-                };
+                content?: never;
             };
-            /** @description RFC 9457 problem; code identifies validation, access, not found or conflict */
+            /** @description RFC 9457 ProblemDetail */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/problem+json": components["schemas"]["schemas-Problem"];
-                };
+                content?: never;
             };
-            /** @description RFC 9457 problem; code identifies validation, access, not found or conflict */
+            /** @description RFC 9457 ProblemDetail */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/problem+json": components["schemas"]["schemas-Problem"];
-                };
+                content?: never;
             };
-            /** @description RFC 9457 problem; code identifies validation, access, not found or conflict */
+            /** @description RFC 9457 ProblemDetail */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/problem+json": components["schemas"]["schemas-Problem"];
-                };
+                content?: never;
             };
-            /** @description RFC 9457 problem; code identifies validation, access, not found or conflict */
+            /** @description RFC 9457 ProblemDetail */
             409: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/problem+json": components["schemas"]["schemas-Problem"];
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            413: {
+                headers: {
+                    [name: string]: unknown;
                 };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
-    tv5UpdatePost: {
+    tv5UpdateCommunityPost: {
         parameters: {
             query?: never;
-            header: {
-                /** @description Quoted post version, e.g. "0". Atomic comparison; 409 on stale version. */
-                "If-Match": string;
-            };
+            header?: never;
             path: {
                 postId: string;
             };
@@ -1773,11 +2105,11 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["PostWrite"];
+                "application/json": components["schemas"]["PostUpdate"];
             };
         };
         responses: {
-            /** @description Proposed response */
+            /** @description Successful response */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1786,54 +2118,65 @@ export interface operations {
                     "application/json": components["schemas"]["Post"];
                 };
             };
-            /** @description RFC 9457 problem; code identifies validation, access, not found or conflict */
+            /** @description RFC 9457 ProblemDetail */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/problem+json": components["schemas"]["schemas-Problem"];
-                };
+                content?: never;
             };
-            /** @description RFC 9457 problem; code identifies validation, access, not found or conflict */
+            /** @description RFC 9457 ProblemDetail */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/problem+json": components["schemas"]["schemas-Problem"];
-                };
+                content?: never;
             };
-            /** @description RFC 9457 problem; code identifies validation, access, not found or conflict */
+            /** @description RFC 9457 ProblemDetail */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/problem+json": components["schemas"]["schemas-Problem"];
-                };
+                content?: never;
             };
-            /** @description RFC 9457 problem; code identifies validation, access, not found or conflict */
+            /** @description RFC 9457 ProblemDetail */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/problem+json": components["schemas"]["schemas-Problem"];
-                };
+                content?: never;
             };
-            /** @description RFC 9457 problem; code identifies validation, access, not found or conflict */
+            /** @description RFC 9457 ProblemDetail */
             409: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/problem+json": components["schemas"]["schemas-Problem"];
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            413: {
+                headers: {
+                    [name: string]: unknown;
                 };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
-    tv5ListComments: {
+    tv5ListPostComments: {
         parameters: {
             query?: {
                 page?: number;
@@ -1847,42 +2190,74 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Proposed response */
+            /** @description Successful response */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        items: components["schemas"]["Comment"][];
-                        page: number;
-                        size: number;
-                        /** Format: int64 */
-                        total: number;
-                    };
+                    "application/json": components["schemas"]["CommentPage"];
                 };
             };
-            /** @description RFC 9457 problem; code identifies validation, access, not found or conflict */
+            /** @description RFC 9457 ProblemDetail */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/problem+json": components["schemas"]["schemas-Problem"];
-                };
+                content?: never;
             };
-            /** @description RFC 9457 problem; code identifies validation, access, not found or conflict */
+            /** @description RFC 9457 ProblemDetail */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/problem+json": components["schemas"]["schemas-Problem"];
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            409: {
+                headers: {
+                    [name: string]: unknown;
                 };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
-    tv5CreateComment: {
+    tv5CreatePostComment: {
         parameters: {
             query?: never;
             header?: never;
@@ -1897,8 +2272,8 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Proposed response */
-            201: {
+            /** @description Successful response */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1906,54 +2281,65 @@ export interface operations {
                     "application/json": components["schemas"]["Comment"];
                 };
             };
-            /** @description RFC 9457 problem; code identifies validation, access, not found or conflict */
+            /** @description RFC 9457 ProblemDetail */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/problem+json": components["schemas"]["schemas-Problem"];
-                };
+                content?: never;
             };
-            /** @description RFC 9457 problem; code identifies validation, access, not found or conflict */
+            /** @description RFC 9457 ProblemDetail */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/problem+json": components["schemas"]["schemas-Problem"];
-                };
+                content?: never;
             };
-            /** @description RFC 9457 problem; code identifies validation, access, not found or conflict */
+            /** @description RFC 9457 ProblemDetail */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/problem+json": components["schemas"]["schemas-Problem"];
-                };
+                content?: never;
             };
-            /** @description RFC 9457 problem; code identifies validation, access, not found or conflict */
+            /** @description RFC 9457 ProblemDetail */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/problem+json": components["schemas"]["schemas-Problem"];
-                };
+                content?: never;
             };
-            /** @description RFC 9457 problem; code identifies validation, access, not found or conflict */
+            /** @description RFC 9457 ProblemDetail */
             409: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/problem+json": components["schemas"]["schemas-Problem"];
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            413: {
+                headers: {
+                    [name: string]: unknown;
                 };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
-    tv5DeleteComment: {
+    tv5DeletePostComment: {
         parameters: {
             query?: never;
             header?: never;
@@ -1965,61 +2351,72 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Completed; no body */
+            /** @description Deleted */
             204: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description RFC 9457 problem; code identifies validation, access, not found or conflict */
+            /** @description RFC 9457 ProblemDetail */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/problem+json": components["schemas"]["schemas-Problem"];
-                };
+                content?: never;
             };
-            /** @description RFC 9457 problem; code identifies validation, access, not found or conflict */
+            /** @description RFC 9457 ProblemDetail */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/problem+json": components["schemas"]["schemas-Problem"];
-                };
+                content?: never;
             };
-            /** @description RFC 9457 problem; code identifies validation, access, not found or conflict */
+            /** @description RFC 9457 ProblemDetail */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/problem+json": components["schemas"]["schemas-Problem"];
-                };
+                content?: never;
             };
-            /** @description RFC 9457 problem; code identifies validation, access, not found or conflict */
+            /** @description RFC 9457 ProblemDetail */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/problem+json": components["schemas"]["schemas-Problem"];
-                };
+                content?: never;
             };
-            /** @description RFC 9457 problem; code identifies validation, access, not found or conflict */
+            /** @description RFC 9457 ProblemDetail */
             409: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/problem+json": components["schemas"]["schemas-Problem"];
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            413: {
+                headers: {
+                    [name: string]: unknown;
                 };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
-    tv5UpdateComment: {
+    tv5UpdatePostComment: {
         parameters: {
             query?: never;
             header?: never;
@@ -2031,11 +2428,11 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CommentWrite"];
+                "application/json": components["schemas"]["CommentUpdate"];
             };
         };
         responses: {
-            /** @description Proposed response */
+            /** @description Successful response */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -2044,50 +2441,249 @@ export interface operations {
                     "application/json": components["schemas"]["Comment"];
                 };
             };
-            /** @description RFC 9457 problem; code identifies validation, access, not found or conflict */
+            /** @description RFC 9457 ProblemDetail */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/problem+json": components["schemas"]["schemas-Problem"];
-                };
+                content?: never;
             };
-            /** @description RFC 9457 problem; code identifies validation, access, not found or conflict */
+            /** @description RFC 9457 ProblemDetail */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/problem+json": components["schemas"]["schemas-Problem"];
-                };
+                content?: never;
             };
-            /** @description RFC 9457 problem; code identifies validation, access, not found or conflict */
+            /** @description RFC 9457 ProblemDetail */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/problem+json": components["schemas"]["schemas-Problem"];
-                };
+                content?: never;
             };
-            /** @description RFC 9457 problem; code identifies validation, access, not found or conflict */
+            /** @description RFC 9457 ProblemDetail */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/problem+json": components["schemas"]["schemas-Problem"];
-                };
+                content?: never;
             };
-            /** @description RFC 9457 problem; code identifies validation, access, not found or conflict */
+            /** @description RFC 9457 ProblemDetail */
             409: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/problem+json": components["schemas"]["schemas-Problem"];
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            413: {
+                headers: {
+                    [name: string]: unknown;
                 };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    tv5UploadPostPhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Successful response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Upload"];
+                };
+            };
+            /** @description RFC 9457 ProblemDetail */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    tv5DiscardOwnedUpload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                uploadId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    tv5ReadPublicPostPhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                mediaId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Image bytes */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/jpeg": string;
+                };
+            };
+            /** @description Missing or inaccessible parent post */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

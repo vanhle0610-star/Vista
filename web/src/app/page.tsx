@@ -1,1814 +1,1581 @@
 'use client';
 
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { useState, useMemo, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Navbar } from '@/components/common/Navbar';
-import styles from './home.module.css';
 import {
-  fetchAllRegionsWeather,
+  CompassIcon,
+  MapPinIcon,
+  CalendarIcon,
+  SparklesIcon,
+  WalletIcon,
+  UsersIcon,
+  ShieldCheckIcon,
+  SearchIcon,
+  HeartIcon,
+  StarIcon,
+  ArrowRightIcon,
+  CheckCircleIcon,
+  MountainIcon,
+  WavesIcon,
+  CoffeeIcon,
+  LandmarkIcon,
+  NavigationIcon,
+  SunIcon,
+  CloudSunIcon,
+  CloudRainIcon,
+  WindIcon,
+  DropletsIcon,
+  ThermometerIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ChevronDownIcon,
+  CheckIcon,
+} from '@/components/common/Icons';
+import {
   fetchAllDestinationsWeather,
   RealtimeWeather,
-} from '../services/weatherService';
+  VISTA_DESTINATIONS_COORD,
+  FALLBACK_DESTINATIONS_WEATHER,
+} from '@/services/weatherService';
+import { VIETNAM_REAL_MAP_PATH, VIETNAM_MAP_PINS, MapPin } from './vietnamMapData';
+import styles from './home.module.css';
 
-// ─── TYPES & DATA DEFINITIONS ────────────────────────────────────────────────
-type LangType = 'vi' | 'en';
+// ─── DATA DEFINITIONS ────────────────────────────────────────────────────────
 type RegionKey = 'all' | 'north' | 'central' | 'south' | 'highlands';
-type CategoryKey = 'all' | 'beach' | 'culture' | 'nature' | 'resort' | 'food';
 
-interface DestinationItem {
-  id: string;
-  nameVi: string;
-  nameEn: string;
-  provinceVi: string;
-  provinceEn: string;
-  region: 'north' | 'central' | 'south' | 'highlands';
-  category: 'beach' | 'culture' | 'nature' | 'resort' | 'food';
-  rating: number;
-  reviewCount: string;
+interface CulturalRegion {
+  id: RegionKey;
+  name: string;
+  subtitle: string;
+  description: string;
+  highlights: string[];
   image: string;
-  seasonVi: string;
-  seasonEn: string;
-  pricePerDayVi: string;
-  pricePerDayEn: string;
-  tagsVi: string[];
-  tagsEn: string[];
-  highlightsVi: string[];
-  highlightsEn: string[];
-  descriptionVi: string;
-  descriptionEn: string;
-  temp: string;
-  weatherVi: string;
-  weatherEn: string;
+  count: number;
 }
 
-const DESTINATIONS: DestinationItem[] = [
-  {
-    id: 'halong',
-    nameVi: 'Vịnh Hạ Long',
-    nameEn: 'Ha Long Bay',
-    provinceVi: 'Quảng Ninh',
-    provinceEn: 'Quang Ninh',
-    region: 'north',
-    category: 'beach',
-    rating: 4.9,
-    reviewCount: '2.8k',
-    image: '/images/halong_hanoi_day.jpg',
-    seasonVi: 'Tháng 10 – Tháng 4',
-    seasonEn: 'Oct – Apr',
-    pricePerDayVi: '1.200.000đ/ngày',
-    pricePerDayEn: '~$50/day',
-    tagsVi: ['Di sản UNESCO', 'Du thuyền 5★', 'Kayaking'],
-    tagsEn: ['UNESCO Heritage', '5★ Cruise', 'Kayaking'],
-    highlightsVi: [
-      'Chèo thuyền kayak luồn qua hang Luồn và vịnh Lan Hạ',
-      'Nghỉ dưỡng đêm trên du thuyền sang trọng giữa biển ngọc',
-      'Ngắm hoàng hôn tráng lệ từ đỉnh núi Ti Tốp',
-    ],
-    highlightsEn: [
-      'Kayaking through Luon Cave and Lan Ha Bay',
-      'Overnight luxury cruise surrounded by limestone karsts',
-      'Catching panoramic sunset atop Ti Top Island',
-    ],
-    descriptionVi:
-      'Kỳ quan thiên nhiên thế giới với hàng nghìn hòn đảo đá vôi kỳ vĩ vươn lên giữa làn nước xanh ngọc lục bảo.',
-    descriptionEn:
-      'World Natural Heritage featuring thousands of towering limestone islands rising from emerald waters.',
-    temp: '25°C',
-    weatherVi: 'Trời thu trong lành, sóng êm',
-    weatherEn: 'Pleasant autumn, calm sea',
-  },
-  {
-    id: 'hoian',
-    nameVi: 'Phố Cổ Hội An',
-    nameEn: 'Hoi An Ancient Town',
-    provinceVi: 'Quảng Nam',
-    provinceEn: 'Quang Nam',
-    region: 'central',
-    category: 'culture',
-    rating: 4.9,
-    reviewCount: '3.4k',
-    image: 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=800&q=80',
-    seasonVi: 'Tháng 2 – Tháng 8',
-    seasonEn: 'Feb – Aug',
-    pricePerDayVi: '750.000đ/ngày',
-    pricePerDayEn: '~$30/day',
-    tagsVi: ['Di sản phố cổ', 'Đèn lồng', 'Ẩm thực'],
-    tagsEn: ['Ancient Town', 'Lanterns', 'Cuisine'],
-    highlightsVi: [
-      'Thả hoa đăng ước nguyện trên sông Hoài đêm rằm',
-      'Thưởng thức Cao Lầu, Mì Quảng và Bánh mì Phượng lừng danh',
-      'Đạp xe thong thả ngắm hoàng hôn đồng quê Cẩm Châu',
-    ],
-    highlightsEn: [
-      'Floating candlelit lanterns along the romantic Hoai River',
-      'Indulging in authentic Cao Lau, Quang Noodles & banh mi',
-      'Cycling through scenic rice paddies of Cam Chau',
-    ],
-    descriptionVi:
-      'Đô thị cổ trầm mặc nép mình bên dòng sông Hoài, lung linh sắc hoa đăng và những bức tường vàng rêu phong.',
-    descriptionEn:
-      'A charming historic port town decorated with glowing lanterns, yellow French-colonial walls, and timeless alleys.',
-    temp: '27°C',
-    weatherVi: 'Nắng ấm dịu dàng, gió nhẹ',
-    weatherEn: 'Gentle warm sunshine & light breeze',
-  },
-  {
-    id: 'danang',
-    nameVi: 'Đà Nẵng & Bà Nà',
-    nameEn: 'Da Nang & Ba Na Hills',
-    provinceVi: 'Đà Nẵng',
-    provinceEn: 'Da Nang',
-    region: 'central',
-    category: 'resort',
-    rating: 4.8,
-    reviewCount: '2.5k',
-    image: '/images/danang_bana_day.jpg',
-    seasonVi: 'Tháng 3 – Tháng 9',
-    seasonEn: 'Mar – Sep',
-    pricePerDayVi: '1.100.000đ/ngày',
-    pricePerDayEn: '~$45/day',
-    tagsVi: ['Cầu Vàng', 'Biển Mỹ Khê', 'Check-in'],
-    tagsEn: ['Golden Bridge', 'My Khe Beach', 'Check-in'],
-    highlightsVi: [
-      'Dạo bước giữa mây ngàn trên Cầu Vàng Bàn Tay Khổng Lồ',
-      'Tắm biển Mỹ Khê – một trong những bãi biển quyến rũ nhất hành tinh',
-      'Xem Cầu Rồng phun lửa và nước vào mỗi cuối tuần',
-    ],
-    highlightsEn: [
-      'Walking among mist on the world-famous Golden Bridge',
-      'Sunbathing on My Khe Beach sandy coast',
-      'Watching the Dragon Bridge breathe fire & water on weekends',
-    ],
-    descriptionVi:
-      'Thành phố đáng sống bậc nhất với sự hòa quyện giữa biển xanh mát lành, bán đảo Sơn Trà và núi non Bà Nà kỳ vĩ.',
-    descriptionEn:
-      'Vietnams most livable coastal metropolis blending modern bridges, beaches, and high-altitude mist.',
-    temp: '28°C',
-    weatherVi: 'Trời nắng đẹp, biển êm',
-    weatherEn: 'Sunny skies & turquoise waters',
-  },
-  {
-    id: 'ninhbinh',
-    nameVi: 'Tràng An – Tam Cốc',
-    nameEn: 'Trang An & Tam Coc',
-    provinceVi: 'Ninh Bình',
-    provinceEn: 'Ninh Binh',
-    region: 'north',
-    category: 'culture',
-    rating: 4.8,
-    reviewCount: '2.1k',
-    image: 'https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=800&q=80',
-    seasonVi: 'Tháng 1 – Tháng 5',
-    seasonEn: 'Jan – May',
-    pricePerDayVi: '800.000đ/ngày',
-    pricePerDayEn: '~$32/day',
-    tagsVi: ['Hạ Long cạn', 'Hang động', 'Tâm linh'],
-    tagsEn: ['Inland Ha Long', 'Caves', 'Spiritual'],
-    highlightsVi: [
-      'Ngồi thuyền nan len lỏi qua quần thể hang động xuyên thủy',
-      'Leo 500 bậc đá Hang Múa ngắm trọn thung lũng Tam Cốc',
-      'Chiêm bái Bái Đính – quần thể chùa lớn nhất Đông Nam Á',
-    ],
-    highlightsEn: [
-      'Tranquil sampan boat ride through limestone water caves',
-      'Hike 500 stone stairs up Hang Mua peak for 360° views',
-      'Visit Bai Dinh spiritual sanctuary complex',
-    ],
-    descriptionVi:
-      'Di sản hỗn hợp thế giới kết hợp giữa danh thắng thiên nhiên kỳ thú và di tích cố đô Hoa Lư lịch sử.',
-    descriptionEn:
-      'UNESCO dual heritage renowned for dramatic karst peaks rising above serene river valleys.',
-    temp: '24°C',
-    weatherVi: 'Mát mẻ dễ chịu, sương nhẹ',
-    weatherEn: 'Cool crisp air, gentle morning mist',
-  },
-  {
-    id: 'phuquoc',
-    nameVi: 'Đảo Ngọc Phú Quốc',
-    nameEn: 'Phu Quoc Pearl Island',
-    provinceVi: 'Kiên Giang',
-    provinceEn: 'Kien Giang',
-    region: 'south',
-    category: 'beach',
-    rating: 4.7,
-    reviewCount: '2.9k',
-    image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80',
-    seasonVi: 'Tháng 11 – Tháng 4',
-    seasonEn: 'Nov – Apr',
-    pricePerDayVi: '1.600.000đ/ngày',
-    pricePerDayEn: '~$65/day',
-    tagsVi: ['Thiên đường biển', 'San hô', 'Resort 5★'],
-    tagsEn: ['Island Paradise', 'Coral Reef', '5★ Resort'],
-    highlightsVi: [
-      'Đi cáp treo Hòn Thơm vượt biển dài nhất thế giới',
-      'Lặn ngắm san hô tại quần đảo An Thới hoang sơ',
-      'Chiêm ngưỡng hoàng hôn rực lửa tại Bãi Sao & Sunset Town',
-    ],
-    highlightsEn: [
-      'Ride the worlds longest sea-crossing cable car to Hon Thom',
-      'Snorkeling untouched colorful coral reefs in An Thoi',
-      'Marvel at fiery tropical sunsets at Sunset Town',
-    ],
-    descriptionVi:
-      'Hòn đảo lớn nhất Việt Nam sở hữu bãi cát trắng mịn, nước trong vắt như pha lê và các khu nghỉ dưỡng sang trọng.',
-    descriptionEn:
-      'Vietnam’s premier island escape with powdery white sands, crystal-clear sea, and luxury beach clubs.',
-    temp: '29°C',
-    weatherVi: 'Nắng vàng ấm áp, gió biển',
-    weatherEn: 'Sunny tropical warmth & sea breeze',
-  },
-  {
-    id: 'hagiang',
-    nameVi: 'Cao Nguyên Đá Hà Giang',
-    nameEn: 'Ha Giang Geo-Park Loop',
-    provinceVi: 'Hà Giang',
-    provinceEn: 'Ha Giang',
-    region: 'north',
-    category: 'nature',
-    rating: 4.9,
-    reviewCount: '1.9k',
-    image: 'https://images.unsplash.com/photo-1570789210967-2cac24afeb00?auto=format&fit=crop&w=800&q=80',
-    seasonVi: 'Tháng 9 – Tháng 12',
-    seasonEn: 'Sep – Dec',
-    pricePerDayVi: '850.000đ/ngày',
-    pricePerDayEn: '~$35/day',
-    tagsVi: ['Mã Pí Lèng', 'Sông Nho Quế', 'Phượt xe máy'],
-    tagsEn: ['Ma Pi Leng', 'Nho Que River', 'Motorbike Loop'],
-    highlightsVi: [
-      'Chinh phục đệ nhất hùng quan đèo Mã Pí Lèng cheo leo',
-      'Đi thuyền ngắm hẻm vực Tu Sản sâu nhất Đông Nam Á',
-      'Chiêm ngưỡng cánh đồng hoa tam giác mạch hồng phớt rực rỡ',
-    ],
-    highlightsEn: [
-      'Conquering the legendary Ma Pi Leng mountain pass',
-      'Boat cruise down emerald Nho Que river canyon',
-      'Admiring pink buckwheat flowers blooming on karst slopes',
-    ],
-    descriptionVi:
-      'Hành trình phượt ngoạn mục nhất Đông Nam Á với cung đường đèo hiểm trở và sắc màu văn hóa vùng cao.',
-    descriptionEn:
-      'The ultimate motorcycle expedition traversing dramatic limestone canyons and ethnic mountain villages.',
-    temp: '18°C',
-    weatherVi: 'Trời se lạnh, lãng đãng mây bay',
-    weatherEn: 'Crisp mountain air, sea of clouds',
-  },
-  {
-    id: 'saigon',
-    nameVi: 'TP. Hồ Chí Minh & Miền Tây',
-    nameEn: 'Ho Chi Minh City & Delta',
-    provinceVi: 'TP. Hồ Chí Minh',
-    provinceEn: 'Ho Chi Minh City',
-    region: 'south',
-    category: 'food',
-    rating: 4.7,
-    reviewCount: '3.1k',
-    image: '/images/saigon_south_day.jpg',
-    seasonVi: 'Tháng 12 – Tháng 4',
-    seasonEn: 'Dec – Apr',
-    pricePerDayVi: '900.000đ/ngày',
-    pricePerDayEn: '~$38/day',
-    tagsVi: ['Đô thị năng động', 'Cà phê vợt', 'Chợ nổi'],
-    tagsEn: ['Dynamic Metro', 'Street Cafe', 'Floating Market'],
-    highlightsVi: [
-      'Du thuyền trên sông Sài Gòn ngắm tháp Landmark 81 rực rỡ',
-      'Khám phá thiên đường ẩm thực đường phố tại chợ Bến Thành và Quận 4',
-      'Thăm chợ nổi Cái Răng & vườn trái cây trĩu quả đồng bằng',
-    ],
-    highlightsEn: [
-      'Saigon river evening cruise gazing at sparkling skyscrapers',
-      'Street food safari across bustling markets and alleyways',
-      'Exploring Cai Rang floating market in Mekong Delta',
-    ],
-    descriptionVi:
-      'Trái tim kinh tế sôi động không ngủ của Việt Nam, nơi giao thoa giữa nhịp sống hiện đại và văn hóa sông nước Nam Bộ.',
-    descriptionEn:
-      'Vietnam’s electric urban heart teeming with rich food scenes, French landmarks, and river delta charm.',
-    temp: '31°C',
-    weatherVi: 'Nắng ấm quanh năm, gió mát chiều tối',
-    weatherEn: 'Warm sunshine with breezy tropical evenings',
-  },
-  {
-    id: 'dalat',
-    nameVi: 'Đà Lạt Mộng Mơ',
-    nameEn: 'Da Lat Pine City',
-    provinceVi: 'Lâm Đồng',
-    provinceEn: 'Lam Dong',
-    region: 'highlands',
-    category: 'nature',
-    rating: 4.8,
-    reviewCount: '2.7k',
-    image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
-    seasonVi: 'Tháng 11 – Tháng 3',
-    seasonEn: 'Nov – Mar',
-    pricePerDayVi: '800.000đ/ngày',
-    pricePerDayEn: '~$34/day',
-    tagsVi: ['Săn mây', 'Đồi thông', 'Hoa dã quỳ'],
-    tagsEn: ['Cloud Hunting', 'Pine Forests', 'Wild Sunflowers'],
-    highlightsVi: [
-      'Săn biển mây bồng bềnh tại đồi chè Cầu Đất lúc bình minh',
-      'Thưởng thức cà phê ngắm thung lũng đèn lồng rực sáng trong sương',
-      'Chèo thuyền SUP thư giãn trên mặt hồ Tuyền Lâm tĩnh lặng',
-    ],
-    highlightsEn: [
-      'Sunrise cloud-hunting at high-altitude Cau Dat tea hills',
-      'Cozy mountain cafe sessions looking over glowing night greenhouses',
-      'Morning SUP paddling on serene Tuyen Lam Lake',
-    ],
-    descriptionVi:
-      'Thành phố ngàn hoa với khí hậu ôn đới quanh năm, những đồi thông thơ mộng và những quán cà phê ẩn mình trong sương.',
-    descriptionEn:
-      'Mist-shrouded mountain retreat filled with pine forests, vintage villas, blooming flowers, and cozy cafes.',
-    temp: '19°C',
-    weatherVi: 'Se lạnh dễ chịu, sương mù lãng đãng',
-    weatherEn: 'Chilly autumn climate, poetic mist',
-  },
-];
-
-// ─── 4 CULTURAL REGIONS DATA ────────────────────────────────────────────────
-interface CulturalRegionItem {
-  id: 'north' | 'central' | 'south' | 'highlands';
-  nameVi: string;
-  nameEn: string;
-  badgeVi: string;
-  badgeEn: string;
-  taglineVi: string;
-  taglineEn: string;
-  descVi: string;
-  descEn: string;
-  landmarksVi: string[];
-  landmarksEn: string[];
-  icon: string;
-  image: string;
-  themeColor: string;
-  themeBg: string;
-  themeGlow: string;
-}
-
-const CULTURAL_REGIONS: CulturalRegionItem[] = [
+const CULTURAL_REGIONS: CulturalRegion[] = [
   {
     id: 'north',
-    nameVi: 'Miền Bắc',
-    nameEn: 'North Vietnam',
-    badgeVi: 'Đông & Tây Bắc',
-    badgeEn: 'North & Highlands',
-    taglineVi: 'Núi non hùng vĩ & Ngàn năm văn hiến',
-    taglineEn: 'High peaks & Millennium heritage',
-    descVi: 'Cội nguồn văn hóa nghìn năm với di sản vịnh đá vôi kỳ vĩ và những dãy núi trùng điệp ngút ngàn.',
-    descEn: 'Cradle of ancient dynasties, emerald bays, and breathtaking jagged limestone mountain passes.',
-    landmarksVi: ['Vịnh Hạ Long', 'Tràng An', 'Hà Giang'],
-    landmarksEn: ['Ha Long Bay', 'Trang An', 'Ha Giang'],
-    icon: '🏯',
-    image: '/images/halong_hanoi_day.jpg',
-    themeColor: '#0284c7',
-    themeBg: '#e0f2fe',
-    themeGlow: 'rgba(2, 132, 199, 0.22)',
+    name: 'Miền Bắc',
+    subtitle: 'Ngàn năm văn hiến & Non nước trùng điệp',
+    description: 'Nôi văn hóa dân tộc với Thủ đô cổ kính, vịnh đảo đá vôi kỳ vĩ và những dãy núi hùng vĩ mây ngút ngàn.',
+    highlights: ['Vịnh Hạ Long', 'Tràng An Ninh Bình', 'Phố cổ Hà Nội', 'Kỳ vĩ Hà Giang'],
+    image: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/halong_bay.jpg',
+    count: 142,
   },
   {
     id: 'central',
-    nameVi: 'Miền Trung',
-    nameEn: 'Central Vietnam',
-    badgeVi: 'Duyên Hải & Cố Đô',
-    badgeEn: 'Coast & Heritage',
-    taglineVi: 'Miền di sản thế giới & Bờ biển ngọc',
-    taglineEn: 'UNESCO heritage & Coastal sapphire',
-    descVi: 'Trái tim di sản với cố đô trầm mặc, phố cổ đèn lồng hoa đăng và những cung đường biển ngọc.',
-    descEn: 'The cultural soul of Vietnam featuring imperial citadels, romantic lantern towns, and sapphire bays.',
-    landmarksVi: ['Bà Nà Hills', 'Hội An', 'Cố Đô Huế'],
-    landmarksEn: ['Ba Na Hills', 'Hoi An Town', 'Hue Citadel'],
-    icon: '🏮',
-    image: '/images/danang_bana_day.jpg',
-    themeColor: '#d97706',
-    themeBg: '#fef3c7',
-    themeGlow: 'rgba(217, 119, 6, 0.22)',
+    name: 'Miền Trung',
+    subtitle: 'Vệt nắng bờ biển ngọc & Trầm tích Cố Đô',
+    description: 'Trái tim di sản văn hóa thế giới với kinh thành thâm nghiêm, phố cổ rực rỡ và những bãi biển cát trắng mịn màng.',
+    highlights: ['Cố đô Huế', 'Phố cổ Hội An', 'Cầu Rồng Đà Nẵng', 'Vịnh Nha Trang'],
+    image: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_golden_bridge.jpg',
+    count: 98,
   },
   {
     id: 'south',
-    nameVi: 'Miền Nam',
-    nameEn: 'South Vietnam',
-    badgeVi: 'Nam Bộ & Đảo Ngọc',
-    badgeEn: 'Delta & Tropical Islands',
-    taglineVi: 'Sông nước miệt vườn & Đô thị phồn hoa',
-    taglineEn: 'Tropical delta & Vibrant cities',
-    descVi: 'Vùng đất phóng khoáng nồng hậu với nhịp sống đô thị không ngủ, sông nước trù phú và đảo ngọc thiên đường.',
-    descEn: 'Generous waterways, vibrant cosmopolitan nightlife, floating fruit markets, and tropical paradise islands.',
-    landmarksVi: ['TP. Hồ Chí Minh', 'Phú Quốc', 'Chợ Nổi'],
-    landmarksEn: ['Ho Chi Minh City', 'Phu Quoc', 'Floating Market'],
-    icon: '🛶',
-    image: '/images/saigon_south_day.jpg',
-    themeColor: '#0284c7',
-    themeBg: '#e0f2fe',
-    themeGlow: 'rgba(2, 132, 199, 0.22)',
+    name: 'Miền Nam',
+    subtitle: 'Phù sa sông nước & Đô hội phồn hoa',
+    description: 'Vùng đất phóng khoáng hào sảng, nhịp sống đô thị năng động bậc nhất hòa quyện cùng miệt vườn trù phú và biển đảo ngọc.',
+    highlights: ['TP. Hồ Chí Minh', 'Đảo ngọc Phú Quốc', 'Chợ nổi Cần Thơ', 'Côn Đảo'],
+    image: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/saigon_skyline.jpg',
+    count: 64,
   },
   {
     id: 'highlands',
-    nameVi: 'Tây Nguyên',
-    nameEn: 'Central Highlands',
-    badgeVi: 'Đại Ngàn & Cà Phê',
-    badgeEn: 'Highlands & Coffee',
-    taglineVi: 'Đại ngàn hùng vĩ & Hương sắc cà phê',
-    taglineEn: 'Pine ridges & Coffee culture',
-    descVi: 'Không gian văn hóa cồng chiêng huyền thoại, rừng thông ngút ngàn, thác nước trắng xóa và thủ phủ cà phê.',
-    descEn: 'Legendary gong culture, mist-covered pine valleys, roaring waterfalls, and rolling fragrant coffee plantations.',
-    landmarksVi: ['Đà Lạt', 'Buôn Ma Thuột', 'Thác Dray Nur'],
-    landmarksEn: ['Da Lat', 'Buon Ma Thuot', 'Dray Nur Falls'],
-    icon: '☕',
-    image: '/images/tay_nguyen_highlands.jpg',
-    themeColor: '#b45309',
-    themeBg: '#fef3c7',
-    themeGlow: 'rgba(180, 83, 9, 0.22)',
+    name: 'Tây Nguyên',
+    subtitle: 'Đại ngàn huyền thoại & Hương sắc hoa rừng',
+    description: 'Không gian văn hóa cồng chiêng bất hủ, rừng thông bạt ngàn, thác nước trắng xóa và những đồi cà phê bạt ngàn đất đỏ.',
+    highlights: ['Đà Lạt sương mờ', 'Buôn Ma Thuột', 'Hồ T’Nưng Pleiku', 'Thác Dray Nur'],
+    image: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/dalat_pongour.jpg',
+    count: 46,
   },
 ];
 
-// Weather guide data by region
-const REGION_WEATHER_GUIDE = {
-  north: {
-    titleVi: 'Miền Bắc (Hà Nội, Hạ Long, Ninh Bình, Sapa)',
-    titleEn: 'Northern Vietnam (Hanoi, Ha Long, Ninh Binh, Sapa)',
-    temp: '22°C - 26°C',
-    icon: '🌤️',
-    statusVi: 'Mùa thu vàng - Tiết trời đẹp nhất năm',
-    statusEn: 'Golden Autumn - Best weather of the year',
-    humidity: '68%',
-    wind: '12 km/h',
-    rainChance: '10%',
-    adviceVi:
-      'Thời điểm lý tưởng nhất để du lịch miền Bắc! Trời se lạnh buổi sớm, nắng vàng như rót mật vào ban ngày. Vịnh Hạ Long biển êm, ruộng bậc thang Tây Bắc ngát hương lúa chín.',
-    adviceEn:
-      'The absolute prime time to visit Northern Vietnam! Crisp cool mornings, dry sunny days, calm seas in Ha Long Bay, and golden harvest in the highlands.',
-    packingVi: ['Áo khoác gió nhẹ', 'Kem chống nắng', 'Giày đi bộ êm chân', 'Máy ảnh góc rộng'],
-    packingEn: ['Light windbreaker jacket', 'Sunscreen', 'Walking sneakers', 'Wide-angle camera'],
+interface DestinationShowcase {
+  id: string;
+  name: string;
+  province: string;
+  category: string;
+  rating: number;
+  reviews: string;
+  priceEstimate: string;
+  season: string;
+  image: string;
+  description: string;
+}
+
+const SHOWCASE_DESTINATIONS: DestinationShowcase[] = [
+  {
+    id: 'halong',
+    name: 'Vịnh Hạ Long',
+    province: 'Quảng Ninh',
+    category: 'Kỳ quan thiên nhiên',
+    rating: 4.9,
+    reviews: '3.2k',
+    priceEstimate: '1.200.000đ / người',
+    season: 'Tháng 10 – Tháng 4',
+    image: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/halong_bay.jpg',
+    description: 'Di sản thiên nhiên thế giới UNESCO với hàng nghìn đảo đá vôi kỳ vĩ vươn lên giữa làn nước xanh ngọc lục bảo.',
   },
-  central: {
-    titleVi: 'Miền Trung (Đà Nẵng, Hội An, Huế, Nha Trang)',
-    titleEn: 'Central Vietnam (Da Nang, Hoi An, Hue, Nha Trang)',
-    temp: '26°C - 29°C',
-    icon: '☀️',
-    statusVi: 'Nắng ấm chan hòa, biển trong xanh',
-    statusEn: 'Warm sunny weather, clear ocean',
-    humidity: '74%',
-    wind: '14 km/h',
-    rainChance: '25%',
-    adviceVi:
-      'Biển Mỹ Khê và An Bàng có sóng vừa phải, thích hợp tắm biển và chơi thể thao nước. Đêm phố cổ Hội An mát rượi, lý tưởng để dạo bộ thưởng ngoạn hoa đăng.',
-    adviceEn:
-      'Beaches in Da Nang and Hoi An are gorgeous for swimming and surfing. Pleasant evening temperatures make strolling Hoi An lantern streets unforgettable.',
-    packingVi: ['Đồ bơi & kính lặn', 'Mũ cói / nón lá', 'Sandals chống nước', 'Quạt mini cầm tay'],
-    packingEn: ['Swimwear & goggles', 'Straw hat / conical hat', 'Water-resistant sandals', 'Portable fan'],
+  {
+    id: 'hue',
+    name: 'Đại Nội & Cố Đô Huế',
+    province: 'Thừa Thiên Huế',
+    category: 'Di tích & Di sản',
+    rating: 4.9,
+    reviews: '2.8k',
+    priceEstimate: '650.000đ / người',
+    season: 'Tháng 1 – Tháng 8',
+    image: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/hue_citadel.jpg',
+    description: 'Trung tâm quyền lực triều Nguyễn với quần thể lăng tẩm hoàng gia và dòng sông Hương thơ mộng êm đềm.',
   },
-  south: {
-    titleVi: 'Miền Nam (TP. Hồ Chí Minh, Phú Quốc, Cần Thơ)',
-    titleEn: 'Southern Vietnam (Saigon, Phu Quoc, Can Tho)',
-    temp: '30°C - 32°C',
-    icon: '🌊',
-    statusVi: 'Bắt đầu mùa khô, biển Phú Quốc đẹp như ngọc',
-    statusEn: 'Dry season begins, Phu Quoc waters are crystal clear',
-    humidity: '72%',
-    wind: '10 km/h',
-    rainChance: '15%',
-    adviceVi:
-      'Phú Quốc bước vào mùa đẹp nhất với biển lặng sóng, cát trắng không rác và nắng chan hòa. Miền Tây trĩu quả, chợ nổi nhộn nhịp tấp nập buổi sớm.',
-    adviceEn:
-      'Phu Quoc enters its dry paradise season with mirror-calm turquoise waters. Mekong fruit orchards and floating markets are bustling at sunrise.',
-    packingVi: ['Trang phục mỏng nhẹ thoáng khí', 'Kính râm chống tia UV', 'Bình nước du lịch', 'Xịt chống muỗi'],
-    packingEn: ['Breathable cotton clothes', 'UV sunglasses', 'Water bottle', 'Insect repellent spray'],
+  {
+    id: 'danang',
+    name: 'Bà Nà Hills & Cầu Vàng',
+    province: 'Đà Nẵng',
+    category: 'Nghỉ dưỡng & Giải trí',
+    rating: 4.8,
+    reviews: '4.1k',
+    priceEstimate: '950.000đ / người',
+    season: 'Quanh năm',
+    image: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_golden_bridge.jpg',
+    description: 'Biểu tượng du lịch hiện đại trên đỉnh núi Chúa với Cầu Vàng trứ danh vươn ra giữa biển mây bồng bềnh.',
   },
-  highlands: {
-    titleVi: 'Tây Nguyên (Đà Lạt, Buôn Ma Thuột, Pleiku)',
-    titleEn: 'Central Highlands (Da Lat, Buon Ma Thuot, Pleiku)',
-    temp: '18°C - 23°C',
-    icon: '☕',
-    statusVi: 'Mùa hoa dã quỳ & Mùa hái cà phê chín',
-    statusEn: 'Wild sunflower season & Coffee harvest time',
-    humidity: '80%',
-    wind: '8 km/h',
-    rainChance: '20%',
-    adviceVi:
-      'Đà Lạt và các đồi cao nguyên rực rỡ sắc vàng của hoa dã quỳ ven đường. Buổi sớm sương bảng lảng thích hợp săn mây Cầu Đất, tối se lạnh quây quần bên bếp nướng.',
-    adviceEn:
-      'Highland trails burst with yellow wild sunflowers. Early morning mists are ideal for cloud-hunting, followed by hot drip coffee and BBQ by firelight.',
-    packingVi: ['Áo ấm / khăn len', 'Áo giữ nhiệt', 'Giày bám đường tốt', 'Bình giữ nhiệt nhỏ'],
-    packingEn: ['Warm sweater / scarf', 'Thermal layer', 'Trekking shoes', 'Thermal tumbler'],
+  {
+    id: 'hoian',
+    name: 'Phố Cổ Hội An',
+    province: 'Quảng Nam',
+    category: 'Di sản văn hóa',
+    rating: 4.9,
+    reviews: '3.8k',
+    priceEstimate: '500.000đ / người',
+    season: 'Tháng 2 – Tháng 8',
+    image: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/hoian_ancient_town.jpg',
+    description: 'Thương cảng cổ phồn hoa từ thế kỷ 16 với những mái ngói rêu phong, đèn lồng lung linh và ẩm thực đặc sắc.',
   },
-};
+  {
+    id: 'phuquoc',
+    name: 'Quần Đảo Phú Quốc',
+    province: 'Kiên Giang',
+    category: 'Biển đảo & Nghỉ dưỡng',
+    rating: 4.8,
+    reviews: '3.5k',
+    priceEstimate: '1.400.000đ / người',
+    season: 'Tháng 11 – Tháng 4',
+    image: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/phuquoc_beach.jpg',
+    description: 'Thiên đường biển nhiệt đới với Bãi Sao cát trắng mịn, hoàng hôn rực rỡ và hệ sinh thái san hô trù phú.',
+  },
+  {
+    id: 'dalat',
+    name: 'Cao Nguyên Đà Lạt',
+    province: 'Lâm Đồng',
+    category: 'Sinh thái & Nghỉ dưỡng',
+    rating: 4.8,
+    reviews: '2.9k',
+    priceEstimate: '600.000đ / người',
+    season: 'Quanh năm',
+    image: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/dalat_pongour.jpg',
+    description: 'Thành phố sương mù ngát hương thông reo, ngàn hoa khoe sắc và những đồi chè, đồi cà phê ngút ngàn.',
+  },
+];
+
+interface DestinationOption {
+  id: string;
+  nameVi: string;
+  region: 'Miền Trung' | 'Miền Bắc' | 'Tây Nguyên' | 'Miền Nam';
+  tagline: string;
+  badge: string;
+  popular?: boolean;
+}
+
+const FEATURED_DESTINATIONS: DestinationOption[] = [
+  { id: 'danang', nameVi: 'Đà Nẵng', region: 'Miền Trung', tagline: 'Cầu Rồng, Bà Nà Hills, Biển Mỹ Khê', badge: 'Thịnh hành', popular: true },
+  { id: 'hue', nameVi: 'Thừa Thiên Huế', region: 'Miền Trung', tagline: 'Cố đô di sản, Đại Nội, Sông Hương', badge: 'Di sản UNESCO', popular: true },
+  { id: 'hoian', nameVi: 'Phố Cổ Hội An', region: 'Miền Trung', tagline: 'Đèn lồng lung linh, Chùa Cầu, Rừng dừa', badge: 'Top yêu thích', popular: true },
+  { id: 'dalat', nameVi: 'Đà Lạt', region: 'Tây Nguyên', tagline: 'Thành phố ngàn hoa, sương mờ, đồi thông', badge: 'Nghỉ dưỡng', popular: true },
+  { id: 'phuquoc', nameVi: 'Đảo Ngọc Phú Quốc', region: 'Miền Nam', tagline: 'Hoàng hôn bãi Sao, Sunset Town', badge: 'Biển đảo', popular: true },
+  { id: 'hanoi', nameVi: 'Hà Nội', region: 'Miền Bắc', tagline: 'Thủ đô ngàn năm, 36 phố phường, Hồ Gươm', badge: 'Văn hóa cổ kính', popular: true },
+  { id: 'halong', nameVi: 'Vịnh Hạ Long', region: 'Miền Bắc', tagline: 'Kỳ quan thế giới, du thuyền trên vịnh', badge: 'Kỳ quan TG', popular: true },
+  { id: 'sapa', nameVi: 'Sa Pa', region: 'Miền Bắc', tagline: 'Đỉnh Fansipan, săn mây, ruộng bậc thang', badge: 'Săn mây', popular: true },
+  { id: 'ninhbinh', nameVi: 'Ninh Bình', region: 'Miền Bắc', tagline: 'Tràng An, Hang Múa, Tam Cốc Bích Động', badge: 'Non nước kỳ vĩ', popular: false },
+  { id: 'nhatrang', nameVi: 'Nha Trang', region: 'Miền Trung', tagline: 'Vịnh biển sôi động, VinWonders, lặn biển', badge: 'Vịnh biển đẹp', popular: false },
+  { id: 'saigon', nameVi: 'TP. Hồ Chí Minh', region: 'Miền Nam', tagline: 'Đô thị phồn hoa, ẩm thực đường phố sôi động', badge: 'Sôi động', popular: false },
+];
+
+const DURATION_OPTIONS = [
+  { value: '1day', label: '1 Ngày', desc: 'Đi về trong ngày' },
+  { value: '2n1d', label: '2 Ngày 1 Đêm', desc: 'Cuối tuần thư giãn' },
+  { value: '3n2d', label: '3 Ngày 2 Đêm', desc: 'Tiêu chuẩn vàng AI khuyên dùng', recommended: true },
+  { value: '4n3d', label: '4 Ngày 3 Đêm', desc: 'Khám phá sâu & trải nghiệm' },
+  { value: '5n4d', label: '5 Ngày 4 Đêm', desc: 'Trọn vẹn từng khoảnh khắc' },
+];
+
+const BUDGET_OPTIONS = [
+  { value: 'economy', label: 'Tiết kiệm & Phượt', desc: '~500k – 1.000k / ngày', badge: 'Bình dân' },
+  { value: 'standard', label: 'Tiêu chuẩn & Tiện nghi', desc: '~1.500k – 2.500k / ngày', badge: 'Phổ biến', recommended: true },
+  { value: 'luxury', label: 'Cao cấp & Nghỉ dưỡng', desc: '~3.500k+ / ngày resort', badge: 'Cao cấp' },
+];
+
+export interface SampleItinerary {
+  id: string;
+  dest: string;
+  duration: string;
+  title: string;
+  cost: string;
+  badge: string;
+  image: string;
+  highlights: string[];
+  days: {
+    dayNum: string;
+    desc: string;
+  }[];
+}
+
+export const SAMPLE_ITINERARIES: SampleItinerary[] = [
+  {
+    id: 'it-hue',
+    dest: 'Thừa Thiên Huế',
+    duration: '3n2d',
+    title: 'Dấu ấn Cố Đô & Trầm tích Sông Hương',
+    cost: '~1.850.000đ / người',
+    badge: 'Di sản & Thơ mộng',
+    image: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/hue_real.jpg',
+    highlights: ['Đại Nội Hoàng Thành', 'Lăng Khải Định', 'Đồi Vọng Cảnh', 'Ca Huế Sông Hương'],
+    days: [
+      { dayNum: 'Ngày 1', desc: 'Đón sân bay Phú Bài -> Check-in khách sạn -> Đại Nội triều Nguyễn -> Bún bò Huế Mụ Rơi' },
+      { dayNum: 'Ngày 2', desc: 'Lăng Tự Đức & Khải Định -> Làng hương Thủy Xuân check-in -> Đi thuyền rồng Sông Hương ngắm hoàng hôn' },
+      { dayNum: 'Ngày 3', desc: 'Chợ Đông Ba mua đặc sản mè xửng, tôm chua -> Thưởng trà Cung đình -> Tạm biệt Huế' },
+    ],
+  },
+  {
+    id: 'it-danang',
+    dest: 'Đà Nẵng',
+    duration: '4n3d',
+    title: 'Vệt nắng Biển ngọc & Đèn lồng Phố Cổ',
+    cost: '~2.650.000đ / người',
+    badge: 'Bán chạy nhất',
+    image: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_real.jpg',
+    highlights: ['Bà Nà Hills & Cầu Vàng', 'Biển Mỹ Khê', 'Chùa Linh Ứng', 'Phố cổ Hội An'],
+    days: [
+      { dayNum: 'Ngày 1', desc: 'Đón ga/sân bay -> Tắm biển Mỹ Khê -> Ăn hải sản tươi sống -> Cầu Rồng phun lửa nước tối cuối tuần' },
+      { dayNum: 'Ngày 2', desc: 'Quần thể Bà Nà Hills & Cầu Vàng -> Làng Pháp cổ kính -> Ăn tối chợ đêm Helio' },
+      { dayNum: 'Ngày 3', desc: 'Bán đảo Sơn Trà & Linh Ứng -> Chèo thuyền thúng Rừng dừa Bảy Mẫu -> Đêm hoa đăng Hội An' },
+      { dayNum: 'Ngày 4', desc: 'Cà phê ngắm sông Hàn -> Chợ Hàn mua quà đặc sản miền Trung -> Kết thúc hành trình' },
+    ],
+  },
+  {
+    id: 'it-hagiang',
+    dest: 'Hà Giang',
+    duration: '3n2d',
+    title: 'Chinh phục Đèo Mã Pí Lèng & Cột cờ Lũng Cú',
+    cost: '~2.200.000đ / người',
+    badge: 'Kỳ vĩ địa đầu',
+    image: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_lungcu_hero.jpg',
+    highlights: ['Cột cờ Lũng Cú', 'Đèo Mã Pí Lèng', 'Sông Nho Quế', 'Phố cổ Đồng Văn'],
+    days: [
+      { dayNum: 'Ngày 1', desc: 'TP. Hà Giang -> Cổng trời Quản Bạ -> Rừng thông Yên Minh -> Dốc Thẩm Mã -> Thị trấn Đồng Văn' },
+      { dayNum: 'Ngày 2', desc: 'Cột cờ Quốc gia Lũng Cú -> Đèo Mã Pí Lèng hùng vĩ -> Đi thuyền Hẻm Tu Sản sông Nho Quế' },
+      { dayNum: 'Ngày 3', desc: 'Chợ phiên Đồng Văn -> Dinh thự Vua Mèo (Vương Chính Đức) -> Trở về TP. Hà Giang' },
+    ],
+  },
+];
+
+export type MapHotspot = MapPin;
+export const MAP_HOTSPOTS: MapPin[] = VIETNAM_MAP_PINS;
 
 export default function HomePage() {
-  // ─── STATE MANAGEMENT ──────────────────────────────────────────────────────
-  const [lang, setLang] = useState<LangType>('vi');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedRegion, setSelectedRegion] = useState<RegionKey>('all');
-  const [selectedCategory, setSelectedCategory] = useState<CategoryKey>('all');
-  const [activeWeatherTab, setActiveWeatherTab] = useState<'north' | 'central' | 'south' | 'highlands'>('north');
+  const router = useRouter();
 
-  // Realtime Weather State (Open-Meteo)
-  const [regionsWeather, setRegionsWeather] = useState<Record<string, RealtimeWeather>>({});
-  const [destinationsWeather, setDestinationsWeather] = useState<Record<string, RealtimeWeather>>({});
-  const [weatherLive, setWeatherLive] = useState(false);
+  // Search state
+  const [destinationInput, setDestinationInput] = useState<string>('Thừa Thiên Huế');
+  const [durationInput, setDurationInput] = useState<string>('3n2d');
+  const [budgetTierInput, setBudgetTierInput] = useState<string>('standard');
+  const [activePopover, setActivePopover] = useState<'destination' | 'duration' | 'budget' | null>(null);
+  const [destFilterRegion, setDestFilterRegion] = useState<string>('all');
+  const searchConsoleRef = React.useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    let isMounted = true;
-    async function loadRealtimeWeather() {
-      try {
-        const [regData, destData] = await Promise.all([
-          fetchAllRegionsWeather(),
-          fetchAllDestinationsWeather(),
-        ]);
-        if (isMounted) {
-          setRegionsWeather(regData);
-          setDestinationsWeather(destData);
-          setWeatherLive(true);
-        }
-      } catch (err) {
-        console.warn('Realtime weather fetch failed:', err);
-      }
-    }
-    loadRealtimeWeather();
-    return () => {
-      isMounted = false;
-    };
+  const [activeHotspotId, setActiveHotspotId] = useState<string>('hoangsa');
+
+  const currentHotspot = useMemo(() => {
+    return MAP_HOTSPOTS.find((h) => h.id === activeHotspotId) || MAP_HOTSPOTS[0];
+  }, [activeHotspotId]);
+
+  // 5s Auto-play cycle through hotspots silently without progress bar
+  React.useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveHotspotId((cur) => {
+        const idx = MAP_HOTSPOTS.findIndex((h) => h.id === cur);
+        const nextIdx = (idx + 1) % MAP_HOTSPOTS.length;
+        return MAP_HOTSPOTS[nextIdx].id;
+      });
+    }, 5000);
+
+    return () => clearInterval(timer);
   }, []);
 
-  // Preview Modal State
-  const [modalItem, setModalItem] = useState<DestinationItem | null>(null);
+  // Scroll Progress & Right-side HUD Active Waypoint Tracking
+  const [scrollProgress, setScrollProgress] = useState<number>(0);
+  const [activeWaypoint, setActiveWaypoint] = useState<string>('hero');
 
-  // Favorites state (persisted in memory)
+  const WAYPOINTS = useMemo(() => [
+    { id: 'hero', label: '01 · Khởi hành & Tìm kiếm' },
+    { id: 'sample-itineraries', label: '02 · Lịch trình AI mẫu' },
+    { id: 'regions', label: '03 · 4 Vùng di sản' },
+    { id: 'weather', label: '04 · Khí hậu thực địa' },
+    { id: 'interactive-map', label: '05 · Tọa độ GPS & Biển đảo' },
+    { id: 'landmarks', label: '06 · Danh lam thắng cảnh' },
+  ], []);
+
+  React.useEffect(() => {
+    let ticking = false;
+
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+          const currentScroll = window.scrollY;
+          const progress = totalHeight > 0 ? (currentScroll / totalHeight) * 100 : 0;
+          setScrollProgress(Math.min(100, Math.max(0, progress)));
+
+          const waypointIds = ['hero', 'sample-itineraries', 'regions', 'weather', 'interactive-map', 'landmarks'];
+          for (let i = waypointIds.length - 1; i >= 0; i--) {
+            const el = document.getElementById(waypointIds[i]);
+            if (el) {
+              const rect = el.getBoundingClientRect();
+              if (rect.top <= window.innerHeight * 0.45) {
+                setActiveWaypoint(waypointIds[i]);
+                break;
+              }
+            }
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToWaypoint = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  // Scroll Reveal Intersection Observer
+  React.useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add(styles.revealVisible);
+          }
+        });
+      },
+      {
+        threshold: 0.08,
+        rootMargin: '0px 0px -40px 0px',
+      }
+    );
+
+    const revealElements = document.querySelectorAll(`.${styles.revealOnScroll}`);
+    revealElements.forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, []);
+
+  const currentDest = useMemo(() => {
+    return (
+      FEATURED_DESTINATIONS.find(
+        (d) => d.nameVi === destinationInput || d.nameVi.toLowerCase().includes(destinationInput.toLowerCase())
+      ) || {
+        id: 'custom',
+        nameVi: destinationInput,
+        region: 'Miền Trung' as const,
+        tagline: 'Khám phá văn hóa & di sản bản địa',
+        badge: 'Điểm đến',
+      }
+    );
+  }, [destinationInput]);
+
+  const currentDuration = useMemo(() => {
+    return DURATION_OPTIONS.find((d) => d.value === durationInput) || DURATION_OPTIONS[2];
+  }, [durationInput]);
+
+  const currentBudget = useMemo(() => {
+    return BUDGET_OPTIONS.find((b) => b.value === budgetTierInput) || BUDGET_OPTIONS[1];
+  }, [budgetTierInput]);
+
+  const filteredDestinations = useMemo(() => {
+    if (destFilterRegion === 'all') return FEATURED_DESTINATIONS;
+    if (destFilterRegion === 'central') return FEATURED_DESTINATIONS.filter((d) => d.region === 'Miền Trung');
+    if (destFilterRegion === 'north') return FEATURED_DESTINATIONS.filter((d) => d.region === 'Miền Bắc');
+    if (destFilterRegion === 'highlands') return FEATURED_DESTINATIONS.filter((d) => d.region === 'Tây Nguyên');
+    if (destFilterRegion === 'south') return FEATURED_DESTINATIONS.filter((d) => d.region === 'Miền Nam');
+    return FEATURED_DESTINATIONS;
+  }, [destFilterRegion]);
+
+  // Filter state for regions
+  const [activeRegionTab, setActiveRegionTab] = useState<RegionKey>('all');
+
+  // Favorites state
   const [favorites, setFavorites] = useState<Record<string, boolean>>({
     halong: true,
-    hoian: true,
+    hue: true,
     danang: false,
-    ninhbinh: false,
-    phuquoc: true,
-    hagiang: true,
-    saigon: false,
+    hoian: true,
+    phuquoc: false,
     dalat: false,
   });
 
-  // Story Likes & Bookmarks State
-  const [storyLikes, setStoryLikes] = useState<Record<string, { count: number; userLiked: boolean }>>({
-    taxua: { count: 1240, userLiked: false },
-    hoianNight: { count: 856, userLiked: true },
-    phuquoc4d: { count: 1520, userLiked: false },
-    bmtCoffee: { count: 924, userLiked: false },
-  });
+  // Weather State
+  const [weatherData, setWeatherData] = useState<Record<string, RealtimeWeather>>(FALLBACK_DESTINATIONS_WEATHER);
+  const [weatherFilter, setWeatherFilter] = useState<'all' | 'north' | 'central' | 'south_highlands'>('all');
 
-  const [storyBookmarks, setStoryBookmarks] = useState<Record<string, boolean>>({
-    taxua: false,
-    hoianNight: true,
-    phuquoc4d: false,
-    bmtCoffee: false,
-  });
+  // Swipe & Drag State for Weather Carousel Track
+  const weatherTrackRef = React.useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStartX, setDragStartX] = useState(0);
+  const [dragScrollLeft, setDragScrollLeft] = useState(0);
 
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-
-  // AI Trip Planner Interactive State
-  const [aiDestination, setAiDestination] = useState('Đà Nẵng & Hội An');
-  const [aiDuration, setAiDuration] = useState('3N2Đ');
-  const [aiBudgetMillion, setAiBudgetMillion] = useState(6.5);
-  const [aiGroupType, setAiGroupType] = useState('Nhóm bạn (3-4 người)');
-
-  // ─── HANDLERS ─────────────────────────────────────────────────────────────
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3000);
-  };
-
-  const toggleFavorite = (id: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setFavorites((prev) => {
-      const nextState = !prev[id];
-      showToast(nextState ? (lang === 'vi' ? 'Đã thêm vào danh sách yêu thích!' : 'Added to favorites!') : (lang === 'vi' ? 'Đã xóa khỏi yêu thích' : 'Removed from favorites'));
-      return { ...prev, [id]: nextState };
-    });
-  };
-
-  const toggleStoryLike = (storyId: string) => {
-    setStoryLikes((prev) => {
-      const current = prev[storyId] || { count: 100, userLiked: false };
-      const nextLiked = !current.userLiked;
-      return {
-        ...prev,
-        [storyId]: {
-          count: nextLiked ? current.count + 1 : current.count - 1,
-          userLiked: nextLiked,
-        },
-      };
-    });
-  };
-
-  const toggleStoryBookmark = (storyId: string) => {
-    setStoryBookmarks((prev) => {
-      const next = !prev[storyId];
-      showToast(next ? (lang === 'vi' ? 'Đã lưu bài viết vào danh sách của bạn' : 'Article bookmarked!') : (lang === 'vi' ? 'Đã bỏ lưu bài viết' : 'Bookmark removed'));
-      return { ...prev, [storyId]: next };
-    });
-  };
-
-  const handleLanguageToggle = () => {
-    setLang((prev) => (prev === 'vi' ? 'en' : 'vi'));
-  };
-
-  // ─── FILTERED DESTINATIONS COMPUTATION ─────────────────────────────────────
-  const filteredDestinations = useMemo(() => {
-    return DESTINATIONS.filter((item) => {
-      // 1. Region filter
-      if (selectedRegion !== 'all' && item.region !== selectedRegion) {
-        return false;
+  React.useEffect(() => {
+    let mounted = true;
+    fetchAllDestinationsWeather().then((data) => {
+      if (mounted && Object.keys(data).length > 0) {
+        setWeatherData(data);
       }
-      // 2. Category filter
-      if (selectedCategory !== 'all' && item.category !== selectedCategory) {
-        return false;
-      }
-      // 3. Search query
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase().trim();
-        const matchNameVi = item.nameVi.toLowerCase().includes(q);
-        const matchNameEn = item.nameEn.toLowerCase().includes(q);
-        const matchProvVi = item.provinceVi.toLowerCase().includes(q);
-        const matchProvEn = item.provinceEn.toLowerCase().includes(q);
-        const matchTag = item.tagsVi.some((t) => t.toLowerCase().includes(q)) || item.tagsEn.some((t) => t.toLowerCase().includes(q));
-        if (!matchNameVi && !matchNameEn && !matchProvVi && !matchProvEn && !matchTag) {
-          return false;
-        }
-      }
-      return true;
     });
-  }, [selectedRegion, selectedCategory, searchQuery]);
-
-  // Compute category counts
-  const categoryCounts = useMemo(() => {
-    const counts: Record<CategoryKey, number> = {
-      all: DESTINATIONS.length,
-      beach: DESTINATIONS.filter((d) => d.category === 'beach').length,
-      culture: DESTINATIONS.filter((d) => d.category === 'culture').length,
-      nature: DESTINATIONS.filter((d) => d.category === 'nature').length,
-      resort: DESTINATIONS.filter((d) => d.category === 'resort').length,
-      food: DESTINATIONS.filter((d) => d.category === 'food').length,
+    return () => {
+      mounted = false;
     };
-    return counts;
   }, []);
 
-  // Budget label feedback
-  const budgetTier = useMemo(() => {
-    if (aiBudgetMillion < 4) return lang === 'vi' ? '🎒 Tiết kiệm & Phượt tự túc' : '🎒 Budget & Backpacker';
-    if (aiBudgetMillion < 10) return lang === 'vi' ? '⛵ Tiêu chuẩn thoải mái & Tiện nghi' : '⛵ Standard & Comfortable';
-    return lang === 'vi' ? '👑 Nghỉ dưỡng cao cấp & 5 sao' : '👑 Luxury Resort & 5-Star';
-  }, [aiBudgetMillion, lang]);
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!weatherTrackRef.current) return;
+    setIsDragging(true);
+    setDragStartX(e.pageX - weatherTrackRef.current.offsetLeft);
+    setDragScrollLeft(weatherTrackRef.current.scrollLeft);
+  };
+
+  const handleMouseLeave = () => setIsDragging(false);
+  const handleMouseUp = () => setIsDragging(false);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !weatherTrackRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - weatherTrackRef.current.offsetLeft;
+    const walk = (x - dragStartX) * 1.5;
+    weatherTrackRef.current.scrollLeft = dragScrollLeft - walk;
+  };
+
+  const handleScrollWeather = (direction: 'left' | 'right') => {
+    if (!weatherTrackRef.current) return;
+    const offset = direction === 'left' ? -340 : 340;
+    weatherTrackRef.current.scrollBy({ left: offset, behavior: 'smooth' });
+  };
+
+  const renderWeatherIcon = (code: number, isDay = true) => {
+    if (code === 0) return <SunIcon size={26} color="#F59E0B" />;
+    if ((code >= 51 && code <= 67) || (code >= 80 && code <= 99)) {
+      return <CloudRainIcon size={26} color="#0284C7" />;
+    }
+    return <CloudSunIcon size={26} color="#0088CC" />;
+  };
+
+  const filteredWeatherCities = useMemo(() => {
+    const list = Object.keys(VISTA_DESTINATIONS_COORD).map((key) => {
+      const meta = VISTA_DESTINATIONS_COORD[key];
+      const w = weatherData[key] || FALLBACK_DESTINATIONS_WEATHER[key];
+      return { key, meta, weather: w };
+    });
+
+    if (weatherFilter === 'north') return list.filter((i) => i.meta.region === 'Miền Bắc');
+    if (weatherFilter === 'central') return list.filter((i) => i.meta.region === 'Miền Trung');
+    if (weatherFilter === 'south_highlands') return list.filter((i) => i.meta.region === 'Miền Nam' || i.meta.region === 'Tây Nguyên');
+    return list;
+  }, [weatherData, weatherFilter]);
+
+  const toggleFavorite = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setFavorites((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const filteredRegions = useMemo(() => {
+    if (activeRegionTab === 'all') return CULTURAL_REGIONS;
+    return CULTURAL_REGIONS.filter((r) => r.id === activeRegionTab);
+  }, [activeRegionTab]);
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    router.push(`/planner?dest=${encodeURIComponent(destinationInput)}&duration=${durationInput}&budget=${budgetTierInput}`);
+  };
 
   return (
     <div className={styles.landingRoot}>
-      {/* ─── 0. LIVE WEATHER TICKER BANNER ──────────────────────────────── */}
-      <div className={styles.weatherTickerBanner}>
-        <div className={styles.weatherTickerContainer}>
-          <div className={styles.weatherTickerLabel}>
-            <span className={styles.weatherTickerLiveDot} />
-            <span>
-              {lang === 'vi'
-                ? (weatherLive ? 'THỜI TIẾT REALTIME TRỰC TIẾP' : 'THỜI TIẾT 4 MIỀN')
-                : (weatherLive ? 'LIVE REALTIME WEATHER' : 'VIETNAM WEATHER')}
-            </span>
-          </div>
-          <div className={styles.weatherTickerItems}>
-            <div className={styles.weatherTickerItem} onClick={() => setActiveWeatherTab('north')}>
-              <span className={styles.tickerCity}>Hà Nội</span>
-              <span className={styles.tickerTemp}>{regionsWeather.north?.tempFormatted ?? '26°C'}</span>
-              <span>{regionsWeather.north ? `${regionsWeather.north.icon} ${regionsWeather.north.statusVi}` : '🌤️ Thu mát'}</span>
-            </div>
-            <div className={styles.weatherTickerItem} onClick={() => setActiveWeatherTab('north')}>
-              <span className={styles.tickerCity}>Hạ Long</span>
-              <span className={styles.tickerTemp}>{destinationsWeather.halong?.tempFormatted ?? '25°C'}</span>
-              <span>{destinationsWeather.halong ? `${destinationsWeather.halong.icon} ${destinationsWeather.halong.statusVi}` : '🌊 Biển êm'}</span>
-            </div>
-            <div className={styles.weatherTickerItem} onClick={() => setActiveWeatherTab('central')}>
-              <span className={styles.tickerCity}>Đà Nẵng</span>
-              <span className={styles.tickerTemp}>{regionsWeather.central?.tempFormatted ?? '28°C'}</span>
-              <span>{regionsWeather.central ? `${regionsWeather.central.icon} ${regionsWeather.central.statusVi}` : '☀️ Nắng ấm'}</span>
-            </div>
-            <div className={styles.weatherTickerItem} onClick={() => setActiveWeatherTab('central')}>
-              <span className={styles.tickerCity}>Hội An</span>
-              <span className={styles.tickerTemp}>{destinationsWeather.hoian?.tempFormatted ?? '27°C'}</span>
-              <span>{destinationsWeather.hoian ? `${destinationsWeather.hoian.icon} ${destinationsWeather.hoian.statusVi}` : '🏮 Dịu mát'}</span>
-            </div>
-            <div className={styles.weatherTickerItem} onClick={() => setActiveWeatherTab('highlands')}>
-              <span className={styles.tickerCity}>Đà Lạt</span>
-              <span className={styles.tickerTemp}>{regionsWeather.highlands?.tempFormatted ?? '20°C'}</span>
-              <span>{regionsWeather.highlands ? `${regionsWeather.highlands.icon} ${regionsWeather.highlands.statusVi}` : '🌫️ Săn mây'}</span>
-            </div>
-            <div className={styles.weatherTickerItem} onClick={() => setActiveWeatherTab('south')}>
-              <span className={styles.tickerCity}>TP. Hồ Chí Minh</span>
-              <span className={styles.tickerTemp}>{regionsWeather.south?.tempFormatted ?? '31°C'}</span>
-              <span>{regionsWeather.south ? `${regionsWeather.south.icon} ${regionsWeather.south.statusVi}` : '⛅ Nắng ấm'}</span>
-            </div>
-            <div className={styles.weatherTickerItem} onClick={() => setActiveWeatherTab('south')}>
-              <span className={styles.tickerCity}>Phú Quốc</span>
-              <span className={styles.tickerTemp}>{destinationsWeather.phuquoc?.tempFormatted ?? '29°C'}</span>
-              <span>{destinationsWeather.phuquoc ? `${destinationsWeather.phuquoc.icon} ${destinationsWeather.phuquoc.statusVi}` : '🏝️ Biển ngọc'}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ─── 1. TOP GLOBAL NAVBAR (5 FUNCTIONAL PILLARS) ────────────────── */}
-      <Navbar
-        activeModule="explore"
-        lang={lang}
-        onLangChange={(nextLang) => setLang(nextLang)}
+      {/* ─── 0. TOP SCROLL PROGRESS BAR (LUMINOUS TELEMETRY) ─────────────── */}
+      <div
+        className={styles.topScrollProgressBar}
+        style={{ width: `${scrollProgress}%` }}
+        aria-hidden="true"
       />
 
-      {/* ─── 2. HERO SECTION WITH REALISTIC ATMOSPHERE ─────────────────── */}
-      <div className={styles.heroWrapper}>
-        <section className={styles.heroSection}>
-          <div className={styles.heroContent}>
-            <div className={styles.heroBadge}>
-              <span>✨</span>
-              <span>{lang === 'vi' ? 'NỀN TẢNG DU LỊCH THÔNG MINH VIỆT NAM' : 'SMART TRAVEL PLATFORM FOR VIETNAM'}</span>
-              <span>✨</span>
-            </div>
-
-            <h1 className={styles.heroTitle}>
-              {lang === 'vi' ? (
-                <>
-                  Việt Nam qua lăng kính mới,
-                  <span className={styles.heroHighlight}>kết nối trọn vẹn hành trình.</span>
-                </>
-              ) : (
-                <>
-                  Experience Vietnam authentically,
-                  <span className={styles.heroHighlight}>crafted with smart AI.</span>
-                </>
-              )}
-            </h1>
-
-            <p className={styles.heroSubtitle}>
-              {lang === 'vi'
-                ? 'Khám phá 250+ điểm đến di sản, thiết kế lịch trình cá nhân hóa trong 30 giây bằng AI, quản lý ngân sách nhóm minh bạch và lưu giữ từng khoảnh khắc đáng nhớ.'
-                : 'Discover 250+ certified destinations, generate personalized itineraries in 30 seconds with AI, split group expenses fairly in VND, and cherish every memory.'}
-            </p>
-
-            <div className={styles.heroButtons}>
-              <Link href="/planner" className={styles.btnHeroPrimary}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <circle cx="11" cy="11" r="8" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-                <span>{lang === 'vi' ? 'Lên lịch trình cùng AI' : 'Plan with AI'}</span>
-              </Link>
-
-              <a href="#destinations" className={styles.btnHeroSecondary}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10" />
-                  <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
-                </svg>
-                <span>{lang === 'vi' ? 'Khám phá điểm đến' : 'Explore Places'}</span>
-              </a>
-            </div>
-
-            {/* Interactive Real-Time Search Bar */}
-            <div className={styles.heroSearchBar}>
-              <span className={styles.heroSearchIcon}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                  <circle cx="12" cy="10" r="3" />
-                </svg>
-              </span>
-              <input
-                type="text"
-                placeholder={lang === 'vi' ? 'Bạn muốn đi đâu? (Hạ Long, Hội An, Phú Quốc, Hà Giang...)' : 'Where do you want to go? (Ha Long, Hoi An...)'}
-                className={styles.heroSearchInput}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery('')}
-                  style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '0 6px' }}
-                  title={lang === 'vi' ? 'Xóa tìm kiếm' : 'Clear'}
-                >
-                  ✕
-                </button>
-              )}
-              <a href="#destinations" className={styles.heroSearchBtn} aria-label="Tìm kiếm ngay">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                  <polyline points="12 5 19 12 12 19" />
-                </svg>
-              </a>
-            </div>
-
-            {/* Quick Filter Tags */}
-            <div className={styles.quickTagsRow}>
-              <span>{lang === 'vi' ? 'Gợi ý hot:' : 'Trending:'}</span>
-              {['Vịnh Hạ Long', 'Hội An', 'Phú Quốc', 'Hà Giang Loop', 'Bà Nà Hills'].map((chip) => (
-                <button
-                  key={chip}
-                  type="button"
-                  className={styles.quickTagChip}
-                  onClick={() => {
-                    setSearchQuery(chip);
-                    const el = document.getElementById('destinations');
-                    if (el) el.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                >
-                  {chip}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Hero Visual Column: Realistic Panoramic Landscape + Floating Live Badges */}
-          <div className={styles.heroVisualCol}>
-            <div className={styles.dioramaRealisticWrapper}>
-              <div className={styles.heroMainPhotoCard}>
-                <img
-                  src="/images/vietnam_panoramic_day.jpg"
-                  alt="Việt Nam hùng vĩ từ non cao đến biển ngọc"
-                  className={styles.heroPhotoImg}
-                />
-                <div className={styles.heroPhotoGradientOverlay}>
-                  <h3 className={styles.heroOverlayTitle}>
-                    {lang === 'vi' ? 'Việt Nam – Non Sông Gấm Vóc' : 'Vietnam – The Land of Wonders'}
-                  </h3>
-                  <p className={styles.heroOverlaySub}>
-                    {lang === 'vi' ? 'Hạ Long • Tràng An • Hội An • Đà Lạt • Phú Quốc' : 'Ha Long • Trang An • Hoi An • Da Lat • Phu Quoc'}
-                  </p>
-                </div>
-              </div>
-
-              {/* Floating Interactive Live Badges */}
-              <div className={styles.badgeWeatherLive}>
-                <span>🌤️</span>
-                <span>{lang === 'vi' ? 'Hạ Long • 25°C Biển êm' : 'Ha Long • 25°C Calm Sea'}</span>
-              </div>
-
-              <div className={styles.badgeSuitcase3D}>
-                <span>🧳</span>
-                <span>{lang === 'vi' ? '45.200+ Lịch trình đã tạo' : '45.200+ Trips Created'}</span>
-              </div>
-
-              <div className={styles.badgeCultureHat}>
-                <span>🏮</span>
-                <span>{lang === 'vi' ? 'Hội An • Đêm rằm hoa đăng' : 'Hoi An • Lantern Festival'}</span>
-              </div>
-
-              <div className={styles.floatingTagline}>
-                Vietnam is always<br />a good idea! ✨
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
-
-      {/* ─── 2.5 SOCIAL PROOF & CAPABILITIES STRIP ──────────────────────── */}
-      <div className={styles.socialProofStrip}>
-        <div className={styles.proofItem}>
-          <div className={styles.proofIcon}>🗺️</div>
-          <div>
-            <div className={styles.proofTitle}>250+ {lang === 'vi' ? 'Điểm Đến Di Sản' : 'Certified Destinations'}</div>
-            <div className={styles.proofDesc}>{lang === 'vi' ? 'Khảo sát thực tế & cập nhật 2025' : 'Verified & updated for 2025'}</div>
-          </div>
-        </div>
-
-        <div className={styles.proofItem}>
-          <div className={styles.proofIcon}>🤖</div>
-          <div>
-            <div className={styles.proofTitle}>AI Planner 30s</div>
-            <div className={styles.proofDesc}>{lang === 'vi' ? 'Tối ưu lộ trình theo ngân sách' : 'Optimized route & budget'}</div>
-          </div>
-        </div>
-
-        <div className={styles.proofItem}>
-          <div className={styles.proofIcon}>💰</div>
-          <div>
-            <div className={styles.proofTitle}>{lang === 'vi' ? 'Quản Lý Quỹ Nhóm' : 'Group Smart Split'}</div>
-            <div className={styles.proofDesc}>{lang === 'vi' ? 'Chia tiền VND chính xác, minh bạch' : 'Accurate VND split per member'}</div>
-          </div>
-        </div>
-
-        <div className={styles.proofItem}>
-          <div className={styles.proofIcon}>👥</div>
-          <div>
-            <div className={styles.proofTitle}>120k+ {lang === 'vi' ? 'Cộng Đồng Xê Dịch' : 'Travelers'}</div>
-            <div className={styles.proofDesc}>{lang === 'vi' ? 'Chia sẻ trải nghiệm & review thật' : 'Honest reviews & genuine stories'}</div>
-          </div>
-        </div>
-      </div>
-
-      {/* ─── 3. SECTION: 4 VÙNG VĂN HÓA ─────────────────────────────────── */}
-      <section className={styles.regionSectionWrapper} id="regions">
-        <div className={styles.regionSectionGlow} />
-
-        <div className={styles.sectionHeader}>
-          <div className={styles.sectionHeaderLeft}>
-            <div className={styles.regionEyebrow}>
-              <span>✨</span>
-              <span>{lang === 'vi' ? 'Bản sắc & Văn hóa 4 vùng miền' : 'Cultural Heritage & Regions'}</span>
-            </div>
-            <div className={styles.sectionTitleRow}>
-              <div className={styles.sectionIconBadge} style={{ background: 'linear-gradient(135deg, #0284c7 0%, #245477 100%)', color: '#ffffff', boxShadow: '0 4px 12px rgba(2, 132, 199, 0.25)' }}>
-                🗺️
-              </div>
-              <h2 className={styles.sectionTitle}>
-                {lang === 'vi' ? 'Khám phá Việt Nam qua 4 vùng văn hóa' : 'Explore Vietnam across 4 Cultural Regions'}
-              </h2>
-            </div>
-            <p className={styles.sectionSubtitle}>
-              {lang === 'vi'
-                ? 'Nhấp vào từng vùng miền để lọc nhanh các danh lam thắng cảnh tiêu biểu tương ứng.'
-                : 'Click any region to filter featured highlights instantly.'}
-            </p>
-          </div>
-          {selectedRegion !== 'all' && (
-            <button className={styles.btnClearFilter} onClick={() => setSelectedRegion('all')}>
-              {lang === 'vi' ? '✕ Xem tất cả các vùng' : '✕ Show all regions'}
+      {/* ─── 0.1. RIGHT-SIDE JOURNEY HUD COMPASS DOCK ────────────────────── */}
+      <aside className={styles.journeyHudDock} aria-label="Điều hướng nhanh hành trình">
+        {WAYPOINTS.map((wp) => {
+          const isActive = activeWaypoint === wp.id;
+          return (
+            <button
+              key={wp.id}
+              type="button"
+              className={`${styles.journeyHudItem} ${isActive ? styles.journeyHudItemActive : ''}`}
+              onClick={() => scrollToWaypoint(wp.id)}
+              aria-label={`Cuộn tới ${wp.label}`}
+            >
+              <div className={styles.journeyHudDot} />
+              <div className={styles.journeyHudTooltip}>{wp.label}</div>
             </button>
-          )}
-        </div>
+          );
+        })}
+      </aside>
 
-        {/* Quick Filter Tabs */}
-        <div className={styles.regionFilterTabsRow}>
-          <button
-            type="button"
-            className={`${styles.regionFilterTab} ${selectedRegion === 'all' ? styles.regionFilterTabActive : ''}`}
-            onClick={() => setSelectedRegion('all')}
-          >
-            <span>🌏</span>
-            <span>{lang === 'vi' ? 'Tất cả các vùng' : 'All Regions'}</span>
-            <span className={styles.regionTabCount}>{DESTINATIONS.length}</span>
-          </button>
-          {CULTURAL_REGIONS.map((r) => {
-            const count = DESTINATIONS.filter((d) => d.region === r.id).length;
-            const isActive = selectedRegion === r.id;
-            return (
-              <button
-                key={r.id}
-                type="button"
-                className={`${styles.regionFilterTab} ${isActive ? styles.regionFilterTabActive : ''}`}
-                onClick={() => {
-                  setSelectedRegion((prev) => (prev === r.id ? 'all' : r.id));
-                  const el = document.getElementById('destinations');
-                  if (el) el.scrollIntoView({ behavior: 'smooth' });
-                }}
-              >
-                <span>{r.icon}</span>
-                <span>{lang === 'vi' ? r.nameVi : r.nameEn}</span>
-                <span className={styles.regionTabCount}>{count}</span>
-              </button>
-            );
-          })}
-        </div>
+      {/* ─── 1. TOP GLOBAL NAVBAR ────────────────────────────────────────── */}
+      <Navbar activeModule="explore" />
 
-        {/* 4 Regions Grid */}
-        <div className={styles.regionGrid}>
-          {CULTURAL_REGIONS.map((r) => {
-            const count = DESTINATIONS.filter((d) => d.region === r.id).length;
-            const isActive = selectedRegion === r.id;
-            return (
+      {/* ─── 2. HERO SECTION CINEMATIC ───────────────────────────────────── */}
+      <section className={styles.heroWrapper} id="hero" aria-label="Giới thiệu VISTA">
+        <div className={styles.heroContent}>
+          <div className={styles.heroBadge}>
+            <CompassIcon size={14} color="#7DD3FC" />
+            <span>Nền tảng du lịch thông minh Việt Nam</span>
+          </div>
+
+          <h1 className={styles.heroTitle}>
+            Việt Nam qua lăng kính mới,
+            <span className={styles.heroHighlight}>kết nối trọn vẹn từng hành trình.</span>
+          </h1>
+
+          <p className={styles.heroSubtitle}>
+            Khám phá 350+ điểm đến di sản được xác thực, thiết lập lịch trình cá nhân hóa bằng AI trong 30 giây, và quản lý ngân sách nhóm minh bạch với VietQR.
+          </p>
+
+          {/* Integrated Travel Search Console (Refined & Interactive) */}
+          <div className={styles.searchConsoleWrapper} ref={searchConsoleRef}>
+            <div className={styles.searchConsoleCard}>
+              {/* Field 1: Destination (Interactive Popover - No Typing Required) */}
               <div
-                key={r.id}
-                className={`${styles.regionCard} ${isActive ? styles.regionCardActive : ''}`}
-                style={{
-                  borderColor: isActive ? r.themeColor : undefined,
-                }}
-                onClick={() => {
-                  setSelectedRegion((prev) => (prev === r.id ? 'all' : r.id));
-                  const el = document.getElementById('destinations');
-                  if (el) el.scrollIntoView({ behavior: 'smooth' });
-                }}
+                className={`${styles.searchField} ${styles.searchFieldPrimary} ${activePopover === 'destination' ? styles.searchFieldOpen : ''}`}
+                onClick={() => setActivePopover(activePopover === 'destination' ? null : 'destination')}
               >
-                <div className={styles.regionImageWrapper}>
-                  <img
-                    src={r.image}
-                    alt={lang === 'vi' ? r.nameVi : r.nameEn}
-                    className={styles.regionImage}
-                  />
-                  <div className={styles.regionImageOverlay} />
-
-                  {/* Top Left Cultural Badge */}
-                  <span className={styles.regionPillBadge}>
-                    <span>{r.icon}</span>
-                    <span>{lang === 'vi' ? r.nameVi : r.nameEn}</span>
+                <div className={styles.searchFieldIcon}>
+                  <MapPinIcon size={18} color="#0088CC" />
+                </div>
+                <div className={styles.searchFieldContent}>
+                  <span className={styles.searchFieldLabel}>Điểm đến</span>
+                  <div className={styles.searchFieldValue}>
+                    <span>{currentDest.nameVi}</span>
+                  </div>
+                  <span className={styles.searchFieldSub}>
+                    {currentDest.region} • {currentDest.tagline}
                   </span>
-
-                  {/* Top Right Destination Counter */}
-                  <span className={styles.regionCountBadge}>
-                    <span>📍</span>
-                    <span>{count} {lang === 'vi' ? 'điểm đến' : 'spots'}</span>
-                  </span>
-
-                  {/* Active Indicator on Image */}
-                  {isActive && (
-                    <div className={styles.regionActiveIndicator}>
-                      <span>✓</span>
-                      <span>{lang === 'vi' ? 'ĐANG CHỌN ĐỂ LỌC' : 'ACTIVE FILTER'}</span>
-                    </div>
-                  )}
+                </div>
+                <div className={styles.searchFieldChevron}>
+                  <ChevronDownIcon size={16} />
                 </div>
 
-                <div className={styles.regionCardBody}>
-                  <div className={styles.regionCardHeader}>
-                    <h3 className={styles.regionName}>{lang === 'vi' ? r.nameVi : r.nameEn}</h3>
-                    <div
-                      className={styles.regionIconBubble}
-                      style={{ background: r.themeBg, color: r.themeColor }}
-                    >
-                      {r.icon}
+                {/* Destination Dropdown Popover */}
+                {activePopover === 'destination' && (
+                  <div
+                    className={`${styles.popoverMenu} ${styles.destinationPopover}`}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className={styles.popoverHeader}>
+                      <span className={styles.popoverTitle}>
+                        <CompassIcon size={15} color="#0088CC" />
+                        Chọn điểm đến du lịch
+                      </span>
+                      <span style={{ fontSize: '11px', color: '#64748B' }}>1 chạm chọn ngay</span>
+                    </div>
+
+                    {/* Region Filter Tabs */}
+                    <div className={styles.popoverRegionFilter}>
+                      <button
+                        type="button"
+                        className={`${styles.regionFilterPill} ${destFilterRegion === 'all' ? styles.regionFilterPillActive : ''}`}
+                        onClick={() => setDestFilterRegion('all')}
+                      >
+                        Tất cả
+                      </button>
+                      <button
+                        type="button"
+                        className={`${styles.regionFilterPill} ${destFilterRegion === 'central' ? styles.regionFilterPillActive : ''}`}
+                        onClick={() => setDestFilterRegion('central')}
+                      >
+                        Miền Trung
+                      </button>
+                      <button
+                        type="button"
+                        className={`${styles.regionFilterPill} ${destFilterRegion === 'north' ? styles.regionFilterPillActive : ''}`}
+                        onClick={() => setDestFilterRegion('north')}
+                      >
+                        Miền Bắc
+                      </button>
+                      <button
+                        type="button"
+                        className={`${styles.regionFilterPill} ${destFilterRegion === 'highlands' ? styles.regionFilterPillActive : ''}`}
+                        onClick={() => setDestFilterRegion('highlands')}
+                      >
+                        Tây Nguyên
+                      </button>
+                      <button
+                        type="button"
+                        className={`${styles.regionFilterPill} ${destFilterRegion === 'south' ? styles.regionFilterPillActive : ''}`}
+                        onClick={() => setDestFilterRegion('south')}
+                      >
+                        Miền Nam
+                      </button>
+                    </div>
+
+                    {/* Destination Cards Grid */}
+                    <div className={styles.destinationGrid}>
+                      {filteredDestinations.map((dest) => {
+                        const isSelected = destinationInput.toLowerCase().includes(dest.nameVi.toLowerCase()) || dest.nameVi.toLowerCase().includes(destinationInput.toLowerCase());
+                        return (
+                          <div
+                            key={dest.id}
+                            className={`${styles.destinationItemCard} ${isSelected ? styles.destinationItemCardActive : ''}`}
+                            onClick={() => {
+                              setDestinationInput(dest.nameVi);
+                              setActivePopover(null);
+                            }}
+                          >
+                            <div className={styles.destItemInfo}>
+                              <div className={styles.destItemNameRow}>
+                                <span className={styles.destItemName}>{dest.nameVi}</span>
+                                {isSelected ? (
+                                  <CheckIcon size={13} color="#0088CC" />
+                                ) : (
+                                  <span className={styles.destItemBadge}>{dest.region}</span>
+                                )}
+                              </div>
+                              <div className={styles.destItemTagline}>{dest.tagline}</div>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
+                )}
+              </div>
 
-                  <div className={styles.regionTagline} style={{ color: r.themeColor }}>
-                    <span>✦</span>
-                    <span>{lang === 'vi' ? r.taglineVi : r.taglineEn}</span>
+              <div className={styles.searchDivider} />
+
+              {/* Field 2: Duration (Custom Dropdown) */}
+              <div
+                className={`${styles.searchField} ${activePopover === 'duration' ? styles.searchFieldOpen : ''}`}
+                onClick={() => setActivePopover(activePopover === 'duration' ? null : 'duration')}
+              >
+                <div className={styles.searchFieldIcon}>
+                  <CalendarIcon size={18} color="#0088CC" />
+                </div>
+                <div className={styles.searchFieldContent}>
+                  <span className={styles.searchFieldLabel}>Thời lượng</span>
+                  <div className={styles.searchFieldValue}>
+                    <span>{currentDuration.label}</span>
                   </div>
+                  <span className={styles.searchFieldSub}>{currentDuration.desc}</span>
+                </div>
+                <div className={styles.searchFieldChevron}>
+                  <ChevronDownIcon size={16} />
+                </div>
 
-                  <p className={styles.regionDesc}>
-                    {lang === 'vi' ? r.descVi : r.descEn}
-                  </p>
+                {/* Duration Popover */}
+                {activePopover === 'duration' && (
+                  <div
+                    className={`${styles.popoverMenu} ${styles.listPopover}`}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className={styles.popoverHeader}>
+                      <span className={styles.popoverTitle}>Thời lượng chuyến đi</span>
+                    </div>
+                    <div className={styles.simpleOptionList}>
+                      {DURATION_OPTIONS.map((opt) => {
+                        const isSelected = durationInput === opt.value;
+                        return (
+                          <div
+                            key={opt.value}
+                            className={`${styles.simpleOptionItem} ${isSelected ? styles.simpleOptionItemActive : ''}`}
+                            onClick={() => {
+                              setDurationInput(opt.value);
+                              setActivePopover(null);
+                            }}
+                          >
+                            <div className={styles.optionTextCol}>
+                              <div className={styles.optionLabelRow}>
+                                <span className={styles.optionLabel}>{opt.label}</span>
+                                {opt.recommended && <span className={styles.optionBadge}>Gợi ý</span>}
+                              </div>
+                              <div className={styles.optionDesc}>{opt.desc}</div>
+                            </div>
+                            {isSelected && <CheckIcon size={15} color="#0088CC" />}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
 
-                  {/* Signature Landmark Pills */}
-                  <div className={styles.regionLandmarkPills}>
-                    {(lang === 'vi' ? r.landmarksVi : r.landmarksEn).map((tag, idx) => (
-                      <span key={idx} className={styles.regionLandmarkTag}>
-                        #{tag}
+              <div className={styles.searchDivider} />
+
+              {/* Field 3: Budget Tier (Custom Dropdown) */}
+              <div
+                className={`${styles.searchField} ${activePopover === 'budget' ? styles.searchFieldOpen : ''}`}
+                onClick={() => setActivePopover(activePopover === 'budget' ? null : 'budget')}
+              >
+                <div className={styles.searchFieldIcon}>
+                  <WalletIcon size={18} color="#0088CC" />
+                </div>
+                <div className={styles.searchFieldContent}>
+                  <span className={styles.searchFieldLabel}>Mức chi tiêu</span>
+                  <div className={styles.searchFieldValue}>
+                    <span>{currentBudget.label}</span>
+                  </div>
+                  <span className={styles.searchFieldSub}>{currentBudget.desc}</span>
+                </div>
+                <div className={styles.searchFieldChevron}>
+                  <ChevronDownIcon size={16} />
+                </div>
+
+                {/* Budget Popover */}
+                {activePopover === 'budget' && (
+                  <div
+                    className={`${styles.popoverMenu} ${styles.listPopover}`}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className={styles.popoverHeader}>
+                      <span className={styles.popoverTitle}>Ngân sách cá nhân</span>
+                    </div>
+                    <div className={styles.simpleOptionList}>
+                      {BUDGET_OPTIONS.map((opt) => {
+                        const isSelected = budgetTierInput === opt.value;
+                        return (
+                          <div
+                            key={opt.value}
+                            className={`${styles.simpleOptionItem} ${isSelected ? styles.simpleOptionItemActive : ''}`}
+                            onClick={() => {
+                              setBudgetTierInput(opt.value);
+                              setActivePopover(null);
+                            }}
+                          >
+                            <div className={styles.optionTextCol}>
+                              <div className={styles.optionLabelRow}>
+                                <span className={styles.optionLabel}>{opt.label}</span>
+                                {opt.recommended && <span className={styles.optionBadge}>Khuyên dùng</span>}
+                              </div>
+                              <div className={styles.optionDesc}>{opt.desc}</div>
+                            </div>
+                            {isSelected && <CheckIcon size={15} color="#0088CC" />}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="button"
+                className={styles.btnSearchSubmit}
+                onClick={handleSearchSubmit}
+              >
+                <SparklesIcon size={17} color="#FFFFFF" />
+                <span>Lên lịch trình AI</span>
+              </button>
+            </div>
+
+            {/* Quick 1-Touch Suggestions Pills */}
+            <div className={styles.quickSuggestionsRow}>
+              <span className={styles.quickSugLabel}>
+                Gợi ý thịnh hành:
+              </span>
+              {FEATURED_DESTINATIONS.filter((d) => d.popular).slice(0, 6).map((dest) => {
+                const isActive = destinationInput.toLowerCase().includes(dest.nameVi.toLowerCase()) || dest.nameVi.toLowerCase().includes(destinationInput.toLowerCase());
+                return (
+                  <button
+                    key={dest.id}
+                    type="button"
+                    className={`${styles.quickSugChip} ${isActive ? styles.quickSugChipActive : ''}`}
+                    onClick={() => {
+                      setDestinationInput(dest.nameVi);
+                      setActivePopover(null);
+                    }}
+                  >
+                    {dest.nameVi}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── 3. TRUST & SYSTEM CAPABILITIES BAR ──────────────────────────── */}
+      <section className={styles.trustStripWrapper} aria-label="Năng lực hệ thống VISTA">
+        <div className={styles.container}>
+          <div className={`${styles.trustGrid} ${styles.revealOnScroll}`}>
+            <div className={styles.trustItem}>
+              <div className={styles.trustIconBox}>
+                <ShieldCheckIcon size={20} color="#0088CC" />
+              </div>
+              <div className={styles.trustText}>
+                <span className={styles.trustTitle}>350+ Điểm đến di sản</span>
+                <span className={styles.trustDesc}>Khảo sát thực tế & tọa độ GPS chuẩn</span>
+              </div>
+            </div>
+
+            <div className={styles.trustItem}>
+              <div className={styles.trustIconBox}>
+                <SparklesIcon size={20} color="#D97706" />
+              </div>
+              <div className={styles.trustText}>
+                <span className={styles.trustTitle}>AI Planner tức thì 30s</span>
+                <span className={styles.trustDesc}>Cá nhân hóa theo nhịp độ & sở thích</span>
+              </div>
+            </div>
+
+            <div className={styles.trustItem}>
+              <div className={styles.trustIconBox}>
+                <WalletIcon size={20} color="#0F766E" />
+              </div>
+              <div className={styles.trustText}>
+                <span className={styles.trustTitle}>Thủ quỹ & VietQR nhóm</span>
+                <span className={styles.trustDesc}>Quyết toán minh bạch, quét mã 1 chạm</span>
+              </div>
+            </div>
+
+            <div className={styles.trustItem}>
+              <div className={styles.trustIconBox}>
+                <UsersIcon size={20} color="#475569" />
+              </div>
+              <div className={styles.trustText}>
+                <span className={styles.trustTitle}>Cộng đồng xê dịch văn minh</span>
+                <span className={styles.trustDesc}>Đồng hành an toàn & chia sẻ chân thực</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── 3.5. CURATED AI SAMPLE ITINERARIES (IDEA 1) ──────────────────── */}
+      <section className={`${styles.itinerariesSection} ${styles.revealOnScroll}`} id="sample-itineraries">
+        <div className={styles.container}>
+          <div className={styles.sectionHeader}>
+            <div className={styles.sectionEyebrow}>
+              <SparklesIcon size={14} color="#0088CC" />
+              <span>Lịch trình mẫu tiêu biểu</span>
+            </div>
+            <h2 className={styles.sectionMainTitle}>Hành trình mẫu tối ưu bởi AI</h2>
+            <p className={styles.sectionDesc}>
+              Tuyển tập lộ trình kinh điển được tính toán tối ưu thời gian di chuyển, nhịp độ thư thái và dự toán chi phí minh bạch.
+            </p>
+          </div>
+
+          <div className={styles.itinerariesGrid}>
+            {SAMPLE_ITINERARIES.map((it, idx) => (
+              <div
+                key={it.id}
+                className={`${styles.itineraryCard} ${styles.revealOnScroll} ${
+                  idx === 0 ? styles.delay100 : idx === 1 ? styles.delay200 : styles.delay300
+                }`}
+              >
+                <div className={styles.itineraryMedia}>
+                  <img src={it.image} alt={it.title} />
+                  <span className={styles.itineraryBadgeTop}>{it.badge}</span>
+                  <span className={styles.itineraryCostBadge}>{it.cost}</span>
+                </div>
+
+                <div className={styles.itineraryBody}>
+                  <h3 className={styles.itineraryTitle}>{it.title}</h3>
+
+                  <div className={styles.itineraryHighlightsRow}>
+                    {it.highlights.map((h) => (
+                      <span key={h} className={styles.itineraryHighlightTag}>
+                        {h}
                       </span>
                     ))}
                   </div>
 
-                  <div className={styles.regionActionRow}>
-                    <span
-                      className={styles.regionActionText}
-                      style={{ color: isActive ? r.themeColor : '#0284c7' }}
-                    >
-                      {isActive
-                        ? (lang === 'vi' ? 'Đang lọc điểm đến ✓' : 'Filtering spots ✓')
-                        : (lang === 'vi' ? 'Xem các điểm đến' : 'Explore highlights')}
-                    </span>
-                    <div
-                      className={styles.regionArrowBtn}
-                      style={{
-                        background: isActive ? r.themeColor : undefined,
-                        color: isActive ? '#ffffff' : undefined,
-                        borderColor: isActive ? r.themeColor : undefined,
-                      }}
-                    >
-                      →
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* ─── 4. SECTION: NHỮNG ĐIỂM ĐẾN ĐƯỢC YÊU THÍCH (INTERACTIVE) ───── */}
-      <section className={styles.sectionBlock} id="destinations">
-        <div className={styles.sectionHeader}>
-          <div className={styles.sectionHeaderLeft}>
-            <div className={styles.sectionTitleRow}>
-              <div className={styles.sectionIconBadge} style={{ background: '#fef3c7', color: '#d97706' }}>
-                ⭐
-              </div>
-              <h2 className={styles.sectionTitle}>
-                {lang === 'vi' ? 'Những điểm đến được yêu thích nhất' : 'Most Beloved Destinations'}
-              </h2>
-            </div>
-            <p className={styles.sectionSubtitle}>
-              {lang === 'vi'
-                ? 'Lọc theo thể loại trải nghiệm, tìm kiếm địa danh và nhấp vào ảnh để xem chi tiết.'
-                : 'Filter by travel style, search places, and click to view full details.'}
-            </p>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ fontSize: 13, color: '#64748b' }}>
-              {lang === 'vi' ? 'Hiển thị' : 'Showing'} <strong>{filteredDestinations.length}</strong> {lang === 'vi' ? 'điểm đến' : 'destinations'}
-            </span>
-          </div>
-        </div>
-
-        {/* Category Pills & Filter Controls */}
-        <div className={styles.filterSectionWrapper}>
-          <div className={styles.categoryPillRow}>
-            <button
-              type="button"
-              className={`${styles.categoryPill} ${selectedCategory === 'all' ? styles.categoryPillActive : ''}`}
-              onClick={() => setSelectedCategory('all')}
-            >
-              <span>🌟</span>
-              <span>{lang === 'vi' ? 'Tất cả' : 'All'}</span>
-              <span className={styles.categoryCount}>{categoryCounts.all}</span>
-            </button>
-
-            <button
-              type="button"
-              className={`${styles.categoryPill} ${selectedCategory === 'beach' ? styles.categoryPillActive : ''}`}
-              onClick={() => setSelectedCategory('beach')}
-            >
-              <span>🏖️</span>
-              <span>{lang === 'vi' ? 'Biển đảo & Lặn ngắm san hô' : 'Islands & Beach'}</span>
-              <span className={styles.categoryCount}>{categoryCounts.beach}</span>
-            </button>
-
-            <button
-              type="button"
-              className={`${styles.categoryPill} ${selectedCategory === 'culture' ? styles.categoryPillActive : ''}`}
-              onClick={() => setSelectedCategory('culture')}
-            >
-              <span>🏮</span>
-              <span>{lang === 'vi' ? 'Di sản & Văn hóa' : 'Culture & Heritage'}</span>
-              <span className={styles.categoryCount}>{categoryCounts.culture}</span>
-            </button>
-
-            <button
-              type="button"
-              className={`${styles.categoryPill} ${selectedCategory === 'nature' ? styles.categoryPillActive : ''}`}
-              onClick={() => setSelectedCategory('nature')}
-            >
-              <span>⛰️</span>
-              <span>{lang === 'vi' ? 'Núi non & Trekking' : 'Mountains & Trekking'}</span>
-              <span className={styles.categoryCount}>{categoryCounts.nature}</span>
-            </button>
-
-            <button
-              type="button"
-              className={`${styles.categoryPill} ${selectedCategory === 'resort' ? styles.categoryPillActive : ''}`}
-              onClick={() => setSelectedCategory('resort')}
-            >
-              <span>🏨</span>
-              <span>{lang === 'vi' ? 'Nghỉ dưỡng & Check-in' : 'Resort & Check-in'}</span>
-              <span className={styles.categoryCount}>{categoryCounts.resort}</span>
-            </button>
-
-            <button
-              type="button"
-              className={`${styles.categoryPill} ${selectedCategory === 'food' ? styles.categoryPillActive : ''}`}
-              onClick={() => setSelectedCategory('food')}
-            >
-              <span>🍜</span>
-              <span>{lang === 'vi' ? 'Ẩm thực & Phố cổ' : 'Food & Night Market'}</span>
-              <span className={styles.categoryCount}>{categoryCounts.food}</span>
-            </button>
-          </div>
-
-          {/* Active Filter Indicators & Reset Action */}
-          {(selectedCategory !== 'all' || selectedRegion !== 'all' || searchQuery.trim()) && (
-            <div className={styles.filterStatusRow}>
-              <div className={styles.filterResultsCount}>
-                <span>{lang === 'vi' ? 'Đang lọc:' : 'Active filters:'}</span>
-                {selectedRegion !== 'all' && <strong>[{lang === 'vi' ? 'Vùng: ' : 'Region: '}{selectedRegion}]</strong>}
-                {selectedCategory !== 'all' && <strong>[{lang === 'vi' ? 'Thể loại: ' : 'Category: '}{selectedCategory}]</strong>}
-                {searchQuery.trim() && <strong>[{lang === 'vi' ? 'Tìm: ' : 'Query: '}&quot;{searchQuery}&quot;]</strong>}
-              </div>
-              <button
-                type="button"
-                className={styles.btnClearFilter}
-                onClick={() => {
-                  setSelectedRegion('all');
-                  setSelectedCategory('all');
-                  setSearchQuery('');
-                }}
-              >
-                {lang === 'vi' ? '✕ Xóa tất cả bộ lọc' : '✕ Reset all filters'}
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Destinations Grid */}
-        <div className={styles.destinationsGrid}>
-          {filteredDestinations.length > 0 ? (
-            filteredDestinations.map((item) => (
-              <div
-                key={item.id}
-                className={styles.destinationCard}
-                onClick={() => setModalItem(item)}
-                style={{ cursor: 'pointer' }}
-              >
-                <div className={styles.destinationMediaWrapper}>
-                  <img src={item.image} alt={lang === 'vi' ? item.nameVi : item.nameEn} className={styles.destinationMedia} />
-
-                  {/* Season Badge */}
-                  <span className={styles.destCardSeasonBadge}>
-                    📅 {lang === 'vi' ? item.seasonVi : item.seasonEn}
-                  </span>
-
-                  {/* Realtime Weather Badge */}
-                  <span className={styles.destCardWeatherBadge}>
-                    {destinationsWeather[item.id]?.icon ?? '🌤️'}{' '}
-                    {destinationsWeather[item.id]?.tempFormatted ?? item.temp}
-                  </span>
-
-                  {/* Interactive Heart Button */}
-                  <button
-                    className={styles.destHeartBtn}
-                    onClick={(e) => toggleFavorite(item.id, e)}
-                    aria-label="Yêu thích"
-                    title={favorites[item.id] ? (lang === 'vi' ? 'Bỏ yêu thích' : 'Unlike') : (lang === 'vi' ? 'Thêm vào yêu thích' : 'Like')}
-                  >
-                    {favorites[item.id] ? '❤️' : '🤍'}
-                  </button>
-
-                  {/* Overlay Info */}
-                  <div className={styles.destinationOverlay}>
-                    <h3 className={styles.destName}>{lang === 'vi' ? item.nameVi : item.nameEn}</h3>
-                    <div className={styles.destLocationRow}>
-                      <span className={styles.destLocation}>📍 {lang === 'vi' ? item.provinceVi : item.provinceEn}</span>
-                      <span className={styles.destRating}>⭐ {item.rating} ({item.reviewCount})</span>
-                    </div>
-
-                    <div className={styles.destTagsRow}>
-                      {(lang === 'vi' ? item.tagsVi : item.tagsEn).slice(0, 2).map((tag) => (
-                        <span key={tag} className={styles.destTag}>
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-
-                    {/* Bottom Meta & Quick View Trigger */}
-                    <div className={styles.destBottomMeta}>
-                      <div className={styles.destPriceEstimate}>
-                        <span>{lang === 'vi' ? 'Dự kiến: ' : 'From: '}</span>
-                        <strong>{lang === 'vi' ? item.pricePerDayVi : item.pricePerDayEn}</strong>
+                  <div className={styles.itineraryTimeline}>
+                    {it.days.map((d, dIdx) => (
+                      <div key={dIdx} className={styles.timelineItem}>
+                        <div className={styles.timelineDot} />
+                        <div className={styles.timelineDayTitle}>{d.dayNum}</div>
+                        <div className={styles.timelineDayDesc}>{d.desc}</div>
                       </div>
-                      <button
-                        type="button"
-                        className={styles.destQuickViewBtn}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setModalItem(item);
-                        }}
-                      >
-                        <span>{lang === 'vi' ? 'Xem nhanh' : 'Details'}</span>
-                        <span>🔍</span>
-                      </button>
-                    </div>
+                    ))}
                   </div>
+
+                  <Link
+                    href={`/planner?dest=${encodeURIComponent(it.dest)}&duration=${it.duration}`}
+                    className={styles.btnItineraryCustomize}
+                  >
+                    <span>Tùy biến lịch trình này</span>
+                    <ArrowRightIcon size={14} />
+                  </Link>
                 </div>
               </div>
-            ))
-          ) : (
-            <div className={styles.emptyDestState}>
-              <div className={styles.emptyStateIcon}>🔍</div>
-              <h4 className={styles.emptyStateTitle}>
-                {lang === 'vi' ? 'Không tìm thấy điểm đến phù hợp' : 'No matching destinations found'}
-              </h4>
-              <p className={styles.emptyStateDesc}>
-                {lang === 'vi'
-                  ? 'Hãy thử thay đổi từ khóa tìm kiếm hoặc bấm nút bên dưới để xem toàn bộ danh sách.'
-                  : 'Try adjusting your search query or reset filters to see all destinations.'}
-              </p>
-              <button
-                type="button"
-                className={styles.btnHeroPrimary}
-                onClick={() => {
-                  setSelectedRegion('all');
-                  setSelectedCategory('all');
-                  setSearchQuery('');
-                }}
-              >
-                {lang === 'vi' ? 'Xem toàn bộ 8 điểm đến' : 'View all 8 destinations'}
-              </button>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* ─── 5. SECTION: AI TRIP PLANNER (INTERACTIVE STUDIO) ──────────── */}
-      <section className={styles.sectionBlock} id="ai-planner">
-        <div className={styles.aiBanner}>
-          <div className={styles.aiBannerLeft}>
-            <div className={styles.aiBadge}>
-              <span>🤖</span> {lang === 'vi' ? 'VISTA SMART AI PLANNER' : 'VISTA SMART AI PLANNER'}
-            </div>
-
-            <h2 className={styles.aiTitle}>
-              {lang === 'vi'
-                ? 'Chuyến đi hoàn hảo bắt đầu từ vài lựa chọn thông minh.'
-                : 'Your ideal itinerary starts with simple smart choices.'}
-            </h2>
-
-            <p className={styles.aiSubtitle}>
-              {lang === 'vi'
-                ? 'Tự động tính toán điểm tham quan hợp lý, phân bổ thời gian di chuyển và dự trù chi tiêu VND minh bạch cho từng thành viên trong nhóm.'
-                : 'Automatically orchestrates sightseeing spots, optimizes transit routes, and calculates accurate VND expenses for everyone.'}
-            </p>
-
-            {/* Interactive Planner Grid */}
-            <div className={styles.aiFormGrid}>
-              {/* 1. Điểm đến */}
-              <div className={styles.aiSelectCard}>
-                <div className={styles.aiInputLabelRow}>
-                  <span>📍</span> {lang === 'vi' ? 'Điểm đến mục tiêu' : 'Destination'}
-                </div>
-                <div className={styles.aiChipOptionRow}>
-                  {['Đà Nẵng & Hội An', 'Hà Giang Loop', 'Hạ Long & Ninh Bình', 'Phú Quốc', 'Đà Lạt'].map((d) => (
-                    <button
-                      key={d}
-                      type="button"
-                      className={`${styles.aiOptionChip} ${aiDestination === d ? styles.aiOptionChipActive : ''}`}
-                      onClick={() => setAiDestination(d)}
-                    >
-                      {d}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* 2. Thời gian đi */}
-              <div className={styles.aiSelectCard}>
-                <div className={styles.aiInputLabelRow}>
-                  <span>📅</span> {lang === 'vi' ? 'Thời lượng chuyến đi' : 'Duration'}
-                </div>
-                <div className={styles.aiChipOptionRow}>
-                  {['2N1Đ', '3N2Đ', '4N3Đ', '5N4Đ'].map((dur) => (
-                    <button
-                      key={dur}
-                      type="button"
-                      className={`${styles.aiOptionChip} ${aiDuration === dur ? styles.aiOptionChipActive : ''}`}
-                      onClick={() => setAiDuration(dur)}
-                    >
-                      {dur}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* 3. Ngân sách dự kiến (Slider) */}
-              <div className={styles.aiSelectCard} style={{ gridColumn: '1 / -1' }}>
-                <div className={styles.sliderContainer}>
-                  <div className={styles.sliderHeaderRow}>
-                    <div className={styles.aiInputLabelRow}>
-                      <span>💳</span> {lang === 'vi' ? 'Ngân sách bình quân / người:' : 'Estimated budget / person:'}
-                      <strong style={{ color: '#0284c7', fontSize: 14, marginLeft: 4 }}>
-                        {aiBudgetMillion.toLocaleString('vi-VN')} {lang === 'vi' ? 'triệu VNĐ' : 'M VND'}
-                      </strong>
-                    </div>
-                    <span className={styles.budgetFeedbackBadge}>{budgetTier}</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="2"
-                    max="20"
-                    step="0.5"
-                    value={aiBudgetMillion}
-                    onChange={(e) => setAiBudgetMillion(parseFloat(e.target.value))}
-                    className={styles.styledRangeInput}
-                  />
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8' }}>
-                    <span>2.000.000đ (Phượt tiết kiệm)</span>
-                    <span>10.000.000đ (Tiêu chuẩn)</span>
-                    <span>20.000.000đ+ (Sang trọng)</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* 4. Bạn đồng hành */}
-              <div className={styles.aiSelectCard} style={{ gridColumn: '1 / -1' }}>
-                <div className={styles.aiInputLabelRow}>
-                  <span>👥</span> {lang === 'vi' ? 'Bạn đồng hành' : 'Companion type'}
-                </div>
-                <div className={styles.aiChipOptionRow}>
-                  {['1 mình (Solo)', 'Cặp đôi', 'Nhóm bạn (3-4 người)', 'Gia đình có trẻ em'].map((grp) => (
-                    <button
-                      key={grp}
-                      type="button"
-                      className={`${styles.aiOptionChip} ${aiGroupType === grp ? styles.aiOptionChipActive : ''}`}
-                      onClick={() => setAiGroupType(grp)}
-                    >
-                      {grp}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Submit Action */}
-            <div className={styles.btnAiSubmitRow}>
-              <Link
-                href={`/planner?dest=${encodeURIComponent(aiDestination)}&duration=${aiDuration}&budget=${aiBudgetMillion}`}
-                className={styles.btnAiSubmit}
-              >
-                <span>{lang === 'vi' ? 'Xem chi tiết lịch trình AI' : 'Open Full AI Plan'}</span>
-                <span>→</span>
-              </Link>
-              <span className={styles.aiHintText}>
-                ⚡ {lang === 'vi' ? 'Xử lý hoàn toàn tự động chỉ trong 30 giây' : 'Instant smart scheduling in 30s'}
-              </span>
-            </div>
-          </div>
-
-          {/* AI Live Preview Card (Right Column - Dynamic Response) */}
-          <div className={styles.aiBannerRight}>
-            <div className={styles.aiLivePreviewCard}>
-              <div className={styles.previewHeader}>
-                <div>
-                  <h4 className={styles.previewTitle}>
-                    📍 {aiDestination} • {aiDuration}
-                  </h4>
-                  <span style={{ fontSize: 11.5, opacity: 0.9 }}>
-                    👥 {aiGroupType}
-                  </span>
-                </div>
-                <span className={styles.previewTag}>✨ AI Suggested</span>
-              </div>
-
-              <div className={styles.previewBody}>
-                {/* Day 1 */}
-                <div className={styles.previewTimelineItem}>
-                  <div className={styles.timelineDayBadge}>NGÀY 1</div>
-                  <div className={styles.timelineDetails}>
-                    <div className={styles.timelinePlace}>
-                      {aiDestination.includes('Hội An')
-                        ? 'Check-in Đà Nẵng, tắm biển Mỹ Khê & Bánh tráng cuốn thịt heo'
-                        : aiDestination.includes('Hà Giang')
-                        ? 'Khởi hành từ TP. Hà Giang, check-in Km0 & Dốc Bắc Sum'
-                        : aiDestination.includes('Hạ Long')
-                        ? 'Đến cảng Tuần Châu, nhận phòng du thuyền 5 sao vịnh Bái Tử Long'
-                        : 'Đáp máy bay, nhận phòng resort & ngắm hoàng hôn bãi biển'}
-                    </div>
-                    <div className={styles.timelineDesc}>
-                      {lang === 'vi' ? 'Buổi tối: Thưởng thức ẩm thực địa phương & dạo phố' : 'Evening: Local culinary & promenade walk'}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Day 2 */}
-                <div className={styles.previewTimelineItem}>
-                  <div className={styles.timelineDayBadge}>NGÀY 2</div>
-                  <div className={styles.timelineDetails}>
-                    <div className={styles.timelinePlace}>
-                      {aiDestination.includes('Hội An')
-                        ? 'Check-in Cầu Vàng Bà Nà Hills, chiều về dạo phố cổ Hội An thả đèn hoa đăng'
-                        : aiDestination.includes('Hà Giang')
-                        ? 'Chinh phục đèo Mã Pí Lèng, chèo thuyền sông Nho Quế hẻm Tu Sản'
-                        : aiDestination.includes('Hạ Long')
-                        ? 'Khám phá Hang Sửng Sốt, chèo kayak hang Luồn & tiệc hoàng hôn trên boong'
-                        : 'Tour cano 4 đảo, lặn ngắm san hô & cáp treo vượt biển Hòn Thơm'}
-                    </div>
-                    <div className={styles.timelineDesc}>
-                      {lang === 'vi' ? 'Thời gian vàng: 15:30 – 18:00 ngắm cảnh tuyệt đẹp' : 'Golden hour: 15:30 – 18:00 prime photo time'}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Day 3 */}
-                <div className={styles.previewTimelineItem}>
-                  <div className={styles.timelineDayBadge}>NGÀY 3</div>
-                  <div className={styles.timelineDetails}>
-                    <div className={styles.timelinePlace}>
-                      {aiDestination.includes('Hội An')
-                        ? 'Đạp xe làng rau Trà Quế, mua đặc sản phố Hội & tiễn sân bay'
-                        : aiDestination.includes('Hà Giang')
-                        ? 'Thăm dinh thự họ Vương, chợ phiên Đồng Văn & cung đường chữ M'
-                        : aiDestination.includes('Hạ Long')
-                        ? 'Tập Taichi sáng sớm trên boong tàu, ngắm hang Đầu Gỗ & trở về bờ'
-                        : 'Check-in Sunset Sanato, mua ngọc trai & nước mắm truyền thống'}
-                    </div>
-                    <div className={styles.timelineDesc}>
-                      {lang === 'vi' ? 'Tổng kết quỹ nhóm & chia sẻ album ảnh du lịch' : 'Group expense settlement & photo album sync'}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className={styles.previewFooter}>
-                <span style={{ color: '#475569' }}>
-                  {lang === 'vi' ? 'Dự kiến chi tiêu / người:' : 'Est. total / person:'}
-                </span>
-                <span className={styles.previewBudget}>
-                  ~{(aiBudgetMillion * 1000000).toLocaleString('vi-VN')} VNĐ
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── 6. SECTION: CẨM NANG THỜI TIẾT 4 MÙA (INTERACTIVE) ─────────── */}
-      <section className={styles.sectionBlock} id="weather-guide">
-        <div className={styles.sectionHeader}>
-          <div className={styles.sectionHeaderLeft}>
-            <div className={styles.sectionTitleRow}>
-              <div className={styles.sectionIconBadge} style={{ background: '#EAF6FF', color: '#0284c7' }}>
-                🌤️
-              </div>
-              <h2 className={styles.sectionTitle}>
-                {lang === 'vi' ? 'Cẩm nang du lịch & Thời tiết 4 mùa' : 'Vietnam Seasonal Weather & Packing Guide'}
-              </h2>
-            </div>
-            <p className={styles.sectionSubtitle}>
-              {lang === 'vi'
-                ? 'Việt Nam mỗi vùng một vẻ. Xem ngay tình hình thời tiết và lời khuyên chuẩn bị hành lý chuẩn xác nhất.'
-                : 'Plan your trip perfectly with regional climates, optimal travel seasons, and smart packing tips.'}
-            </p>
-          </div>
-        </div>
-
-        <div className={styles.weatherGuideSection}>
-          {/* Region Tabs */}
-          <div className={styles.weatherTabsRow}>
-            {(['north', 'central', 'south', 'highlands'] as const).map((rKey) => (
-              <button
-                key={rKey}
-                type="button"
-                className={`${styles.weatherTabBtn} ${activeWeatherTab === rKey ? styles.weatherTabBtnActive : ''}`}
-                onClick={() => setActiveWeatherTab(rKey)}
-              >
-                <span>{REGION_WEATHER_GUIDE[rKey].icon}</span>
-                <span>{rKey === 'north' ? (lang === 'vi' ? 'Miền Bắc' : 'Northern') : rKey === 'central' ? (lang === 'vi' ? 'Miền Trung' : 'Central') : rKey === 'south' ? (lang === 'vi' ? 'Miền Nam' : 'Southern') : (lang === 'vi' ? 'Tây Nguyên' : 'Highlands')}</span>
-              </button>
             ))}
           </div>
-
-          {/* Tab Content Grid */}
-          <div className={styles.weatherContentGrid}>
-            {(() => {
-              const currentRw = regionsWeather[activeWeatherTab];
-              const displayIcon = currentRw?.icon ?? REGION_WEATHER_GUIDE[activeWeatherTab].icon;
-              const displayTemp = currentRw?.tempFormatted ?? REGION_WEATHER_GUIDE[activeWeatherTab].temp;
-              const displayStatus = currentRw
-                ? (lang === 'vi' ? currentRw.statusVi : currentRw.statusEn)
-                : (lang === 'vi' ? REGION_WEATHER_GUIDE[activeWeatherTab].statusVi : REGION_WEATHER_GUIDE[activeWeatherTab].statusEn);
-              const displayHumidity = currentRw ? `${currentRw.humidity}%` : REGION_WEATHER_GUIDE[activeWeatherTab].humidity;
-              const displayWind = currentRw ? `${currentRw.windSpeed} km/h` : REGION_WEATHER_GUIDE[activeWeatherTab].wind;
-              const displayRain = currentRw ? `${currentRw.precipitation} mm` : REGION_WEATHER_GUIDE[activeWeatherTab].rainChance;
-              const displayAdvice = currentRw
-                ? (lang === 'vi' ? currentRw.adviceVi : currentRw.adviceEn)
-                : (lang === 'vi' ? REGION_WEATHER_GUIDE[activeWeatherTab].adviceVi : REGION_WEATHER_GUIDE[activeWeatherTab].adviceEn);
-
-              return (
-                <>
-                  {/* Left Big Card */}
-                  <div className={styles.weatherSummaryCard}>
-                    <div className={styles.weatherSummaryHeader}>
-                      <h3 className={styles.weatherRegionTitle}>
-                        {lang === 'vi' ? REGION_WEATHER_GUIDE[activeWeatherTab].titleVi : REGION_WEATHER_GUIDE[activeWeatherTab].titleEn}
-                      </h3>
-                      <span className={styles.weatherLiveBadge}>
-                        {currentRw?.isLive ? '🔴 Live Open-Meteo' : '● Live Forecast'}
-                      </span>
-                    </div>
-
-                    <div className={styles.weatherBigStatRow}>
-                      <span className={styles.weatherIconBig}>{displayIcon}</span>
-                      <div>
-                        <div className={styles.weatherDegreeBig}>{displayTemp}</div>
-                        <div className={styles.weatherStatusText}>{displayStatus}</div>
-                        {currentRw?.apparentTemp !== undefined && (
-                          <div style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>
-                            {lang === 'vi'
-                              ? `Cảm nhận như ${currentRw.apparentTemp}°C • Cập nhật lúc ${currentRw.updatedTime}`
-                              : `Feels like ${currentRw.apparentTemp}°C • Updated ${currentRw.updatedTime}`}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className={styles.weatherMetricsRow}>
-                      <div className={styles.metricItem}>
-                        <span className={styles.metricLabel}>{lang === 'vi' ? 'Độ ẩm' : 'Humidity'}</span>
-                        <span className={styles.metricValue}>{displayHumidity}</span>
-                      </div>
-                      <div className={styles.metricItem}>
-                        <span className={styles.metricLabel}>{lang === 'vi' ? 'Sức gió' : 'Wind'}</span>
-                        <span className={styles.metricValue}>{displayWind}</span>
-                      </div>
-                      <div className={styles.metricItem}>
-                        <span className={styles.metricLabel}>
-                          {currentRw?.isLive ? (lang === 'vi' ? 'Lượng mưa' : 'Rain') : (lang === 'vi' ? 'Xác suất mưa' : 'Rain Chance')}
-                        </span>
-                        <span className={styles.metricValue}>{displayRain}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right Advice & Packing Checklist */}
-                  <div className={styles.weatherAdviceCard}>
-                    <h4 className={styles.adviceTitle}>
-                      {lang === 'vi' ? 'Lời khuyên từ chuyên gia du lịch VISTA' : 'VISTA Travel Specialist Advice'}
-                    </h4>
-                    <p className={styles.adviceDesc}>{displayAdvice}</p>
-
-                    <div>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: '#334155', display: 'block', marginBottom: 8 }}>
-                        🎒 {lang === 'vi' ? 'Hành trang khuyến nghị nên mang theo:' : 'Recommended packing essentials:'}
-                      </span>
-                      <div className={styles.packingChipsRow}>
-                        {(lang === 'vi' ? REGION_WEATHER_GUIDE[activeWeatherTab].packingVi : REGION_WEATHER_GUIDE[activeWeatherTab].packingEn).map((item) => (
-                          <span key={item} className={styles.packingChip}>
-                            ✓ {item}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </>
-              );
-            })()}
-          </div>
         </div>
       </section>
 
-      {/* ─── 7. SECTION: CÂU CHUYỆN TỪ NHỮNG CHUYẾN ĐI (COMMUNITY) ──────── */}
-      <section className={styles.sectionBlock} id="community">
-        <div className={styles.sectionHeader}>
-          <div className={styles.sectionHeaderLeft}>
-            <div className={styles.sectionTitleRow}>
-              <div className={styles.sectionIconBadge} style={{ background: '#EAF6FF', color: '#0284c7' }}>
-                👥
-              </div>
-              <h2 className={styles.sectionTitle}>
-                {lang === 'vi' ? 'Câu chuyện từ những chuyến đi thực tế' : 'Stories from Real Explorers'}
-              </h2>
+      {/* ─── 4. CULTURAL REGIONS (EDITORIAL PORTFOLIO) ────────────────────── */}
+      <section className={`${styles.sectionBlock} ${styles.revealOnScroll}`} id="regions">
+        <div className={styles.container}>
+          <div className={styles.sectionHeader}>
+            <div className={styles.sectionEyebrow}>
+              <LandmarkIcon size={14} color="#0088CC" />
+              <span>Bản sắc & Không gian văn hóa</span>
             </div>
-            <p className={styles.sectionSubtitle}>
-              {lang === 'vi'
-                ? 'Kinh nghiệm xương máu, lịch trình chi tiết và mẹo hay chia sẻ từ các thành viên cộng đồng VISTA.'
-                : 'Genuine travel itineraries, cost-saving hacks, and breathtaking photography from our community.'}
+            <h2 className={styles.sectionMainTitle}>Khám phá Việt Nam qua 4 vùng di sản</h2>
+            <p className={styles.sectionDesc}>
+              Mỗi vùng đất là một khúc ca kỳ vĩ của thiên nhiên và trầm tích lịch sử ngàn năm đắp bồi.
             </p>
           </div>
+
+          {/* Region Tabs */}
+          <div className={styles.regionsFilterRow}>
+            <button
+              type="button"
+              className={`${styles.regionTabBtn} ${activeRegionTab === 'all' ? styles.regionTabBtnActive : ''}`}
+              onClick={() => setActiveRegionTab('all')}
+            >
+              <CompassIcon size={14} />
+              <span>Tất cả các vùng</span>
+              <span className={styles.regionTabCount}>350</span>
+            </button>
+
+            <button
+              type="button"
+              className={`${styles.regionTabBtn} ${activeRegionTab === 'north' ? styles.regionTabBtnActive : ''}`}
+              onClick={() => setActiveRegionTab('north')}
+            >
+              <MountainIcon size={14} />
+              <span>Miền Bắc</span>
+              <span className={styles.regionTabCount}>142</span>
+            </button>
+
+            <button
+              type="button"
+              className={`${styles.regionTabBtn} ${activeRegionTab === 'central' ? styles.regionTabBtnActive : ''}`}
+              onClick={() => setActiveRegionTab('central')}
+            >
+              <LandmarkIcon size={14} />
+              <span>Miền Trung</span>
+              <span className={styles.regionTabCount}>98</span>
+            </button>
+
+            <button
+              type="button"
+              className={`${styles.regionTabBtn} ${activeRegionTab === 'south' ? styles.regionTabBtnActive : ''}`}
+              onClick={() => setActiveRegionTab('south')}
+            >
+              <WavesIcon size={14} />
+              <span>Miền Nam</span>
+              <span className={styles.regionTabCount}>64</span>
+            </button>
+
+            <button
+              type="button"
+              className={`${styles.regionTabBtn} ${activeRegionTab === 'highlands' ? styles.regionTabBtnActive : ''}`}
+              onClick={() => setActiveRegionTab('highlands')}
+            >
+              <CoffeeIcon size={14} />
+              <span>Tây Nguyên</span>
+              <span className={styles.regionTabCount}>46</span>
+            </button>
+          </div>
+
+          {/* Regions Cards Grid */}
+          <div className={styles.regionsGrid}>
+            {filteredRegions.map((region) => (
+              <div key={region.id} className={styles.regionCard}>
+                <div className={styles.regionMediaWrapper}>
+                  <img src={region.image} alt={region.name} className={styles.regionMedia} />
+                  <div className={styles.regionBadgeOverlay}>
+                    <MapPinIcon size={12} color="#FFFFFF" />
+                    <span>{region.count} điểm đến</span>
+                  </div>
+                </div>
+
+                <div className={styles.regionCardContent}>
+                  <h3 className={styles.regionName}>{region.name}</h3>
+                  <span className={styles.regionSubtitle}>{region.subtitle}</span>
+                  <p className={styles.regionDesc}>{region.description}</p>
+
+                  <div className={styles.regionTagsRow}>
+                    {region.highlights.map((h) => (
+                      <span key={h} className={styles.regionTagItem}>
+                        {h}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
+      </section>
 
-        <div className={styles.communityGrid}>
-          {/* Post 1: Tà Xùa */}
-          <div className={styles.communityCard}>
-            <div className={styles.communityMediaWrapper}>
-              <img
-                src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=700&q=80"
-                alt="Săn mây Tà Xùa"
-                className={styles.communityMedia}
-              />
-              <span className={styles.communityBadge}>🏔️ Tây Bắc</span>
-            </div>
-            <div className={styles.communityCardBody}>
-              <h4 className={styles.communityPostTitle}>
-                {lang === 'vi'
-                  ? 'Săn mây Tà Xùa đỉnh Gió – Lịch trình 2N1Đ cực chill chỉ 1.200k/người'
-                  : 'Hunting clouds atop Ta Xua – 2D1N weekend budget guide'}
-              </h4>
-              <div className={styles.communityCardFooter}>
-                <div className={styles.communityAuthor}>
-                  <img
-                    src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80"
-                    alt="Nguyễn Minh Anh"
-                    className={styles.communityAvatar}
-                  />
-                  <span className={styles.communityAuthorName}>Minh Anh</span>
-                </div>
-                <div className={styles.communityStats}>
-                  <button
-                    type="button"
-                    className={`${styles.btnStoryAction} ${storyLikes.taxua?.userLiked ? styles.btnStoryLiked : ''}`}
-                    onClick={() => toggleStoryLike('taxua')}
-                  >
-                    <span>{storyLikes.taxua?.userLiked ? '❤️' : '🤍'}</span>
-                    <span>{storyLikes.taxua?.count}</span>
-                  </button>
-                  <button
-                    type="button"
-                    className={`${styles.btnStoryAction} ${storyBookmarks.taxua ? styles.btnStoryBookmarked : ''}`}
-                    onClick={() => toggleStoryBookmark('taxua')}
-                    title={lang === 'vi' ? 'Lưu bài viết' : 'Bookmark'}
-                  >
-                    <span>{storyBookmarks.taxua ? '🔖' : '📑'}</span>
-                  </button>
-                </div>
+      {/* ─── 5. LIVE TRAVEL WEATHER DECK & SWIPE TRACK ───────────────────── */}
+      <section className={`${styles.weatherSection} ${styles.revealOnScroll}`} id="weather" aria-label="Thời tiết du lịch thời gian thực">
+        <div className={styles.container}>
+          <div className={styles.weatherHeaderRow}>
+            <div className={styles.weatherTitleGroup}>
+              <div className={styles.weatherLiveBadge}>
+                <span className={styles.livePulseDot} />
+                <span>Trực tiếp · Open-Meteo High Precision</span>
               </div>
+              <h2 className={styles.sectionMainTitle} style={{ textAlign: 'left', marginBottom: '8px' }}>
+                Khí hậu & Thời tiết hành trình các điểm đến
+              </h2>
+              <p className={styles.sectionDesc} style={{ textAlign: 'left', margin: 0 }}>
+                Dữ liệu khí tượng thời gian thực từ 11 thành phố du lịch trọng điểm, hỗ trợ bạn chọn trang phục và thời điểm dạo chơi hoàn hảo.
+              </p>
+            </div>
+
+            {/* Swipe & Navigation Controls */}
+            <div className={styles.weatherControlsRow}>
+              <button
+                type="button"
+                className={styles.weatherNavBtn}
+                onClick={() => handleScrollWeather('left')}
+                aria-label="Xem điểm đến trước"
+              >
+                <ChevronLeftIcon size={20} strokeWidth={2.4} color="#1E293B" />
+              </button>
+              <button
+                type="button"
+                className={styles.weatherNavBtn}
+                onClick={() => handleScrollWeather('right')}
+                aria-label="Xem điểm đến tiếp theo"
+              >
+                <ChevronRightIcon size={20} strokeWidth={2.4} color="#1E293B" />
+              </button>
             </div>
           </div>
 
-          {/* Post 2: Hội An */}
-          <div className={styles.communityCard}>
-            <div className={styles.communityMediaWrapper}>
-              <img
-                src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=700&q=80"
-                alt="Hội An về đêm"
-                className={styles.communityMedia}
-              />
-              <span className={styles.communityBadge}>🏮 Miền Trung</span>
-            </div>
-            <div className={styles.communityCardBody}>
-              <h4 className={styles.communityPostTitle}>
-                {lang === 'vi'
-                  ? 'Hội An về đêm – Bí quyết chụp ảnh hoa đăng lung linh không dính người'
-                  : 'Hoi An at night – Photography hacks for serene lantern photos'}
-              </h4>
-              <div className={styles.communityCardFooter}>
-                <div className={styles.communityAuthor}>
-                  <img
-                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80"
-                    alt="Trần Hoàng Nam"
-                    className={styles.communityAvatar}
-                  />
-                  <span className={styles.communityAuthorName}>Hoàng Nam</span>
+          {/* Quick Region Filter Tabs */}
+          <div className={styles.weatherFilterRow}>
+            <button
+              type="button"
+              className={`${styles.weatherFilterTab} ${weatherFilter === 'all' ? styles.weatherFilterTabActive : ''}`}
+              onClick={() => setWeatherFilter('all')}
+            >
+              Tất cả 11 thành phố
+            </button>
+            <button
+              type="button"
+              className={`${styles.weatherFilterTab} ${weatherFilter === 'north' ? styles.weatherFilterTabActive : ''}`}
+              onClick={() => setWeatherFilter('north')}
+            >
+              Miền Bắc (4)
+            </button>
+            <button
+              type="button"
+              className={`${styles.weatherFilterTab} ${weatherFilter === 'central' ? styles.weatherFilterTabActive : ''}`}
+              onClick={() => setWeatherFilter('central')}
+            >
+              Miền Trung (4)
+            </button>
+            <button
+              type="button"
+              className={`${styles.weatherFilterTab} ${weatherFilter === 'south_highlands' ? styles.weatherFilterTabActive : ''}`}
+              onClick={() => setWeatherFilter('south_highlands')}
+            >
+              Miền Nam & Tây Nguyên (3)
+            </button>
+          </div>
+
+          {/* Swipeable Draggable Weather Track */}
+          <div className={styles.weatherTrackWrapper}>
+            <div
+              ref={weatherTrackRef}
+              className={styles.weatherTrack}
+              onMouseDown={handleMouseDown}
+              onMouseLeave={handleMouseLeave}
+              onMouseUp={handleMouseUp}
+              onMouseMove={handleMouseMove}
+            >
+              {filteredWeatherCities.map(({ key, meta, weather }) => (
+                <div key={key} className={styles.weatherCard}>
+                  <div>
+                    {/* Card Top */}
+                    <div className={styles.weatherCardTop}>
+                      <div>
+                        <h3 className={styles.weatherCityName}>{meta.nameVi}</h3>
+                        <span className={styles.weatherRegionBadge}>{meta.region}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11px', color: '#10B981', fontWeight: 700 }}>
+                        <span className={styles.livePulseDot} />
+                        <span>LIVE</span>
+                      </div>
+                    </div>
+
+                    {/* Temp & Icon */}
+                    <div className={styles.weatherTempRow}>
+                      <div className={styles.weatherTempGroup}>
+                        <span className={styles.weatherDegrees}>{weather?.tempFormatted || `${weather?.temp || 26}°C`}</span>
+                        <span className={styles.weatherApparent}>Cảm nhận {weather?.apparentTemp || 28}°C</span>
+                      </div>
+                      <div className={styles.weatherIconWrapper}>
+                        {renderWeatherIcon(weather?.weatherCode ?? 1, weather?.isDay ?? true)}
+                      </div>
+                    </div>
+
+                    {/* Status */}
+                    <div className={styles.weatherStatusText}>
+                      {weather?.statusVi || 'Nắng ấm chan hòa, trời đẹp'}
+                    </div>
+
+                    {/* Metrics */}
+                    <div className={styles.weatherMetricsList}>
+                      <div className={styles.weatherMetric}>
+                        <DropletsIcon size={14} color="#0284C7" />
+                        <span>Độ ẩm: {weather?.humidity || 70}%</span>
+                      </div>
+                      <div className={styles.weatherMetric}>
+                        <WindIcon size={14} color="#0284C7" />
+                        <span>Gió: {weather?.windSpeed || 10} km/h</span>
+                      </div>
+                    </div>
+
+                    {/* Advisory */}
+                    <div className={styles.weatherTipBox}>
+                      {weather?.adviceVi || 'Thời tiết tuyệt vời cho các hoạt động tham quan ngoài trời.'}
+                    </div>
+                  </div>
+
+                  {/* Quick Action */}
+                  <Link
+                    href={`/planner?dest=${encodeURIComponent(meta.nameVi)}`}
+                    className={styles.weatherCardAction}
+                  >
+                    <span>Lên lịch đi {meta.nameVi}</span>
+                    <ArrowRightIcon size={13} />
+                  </Link>
                 </div>
-                <div className={styles.communityStats}>
-                  <button
-                    type="button"
-                    className={`${styles.btnStoryAction} ${storyLikes.hoianNight?.userLiked ? styles.btnStoryLiked : ''}`}
-                    onClick={() => toggleStoryLike('hoianNight')}
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── 5.5. INTERACTIVE MIDNIGHT GPS MAP & 360 EXPLORER (IDEA 5) ─────── */}
+      <section className={`${styles.midnightMapSection} ${styles.revealOnScroll}`} id="interactive-map">
+        <div className={styles.container}>
+          <div className={styles.mapHeader}>
+            <h2 className={styles.mapMainTitle}>Bản đồ Di sản & Tọa độ Du lịch Việt Nam</h2>
+          </div>
+
+          <div className={styles.mapInteractiveContainer}>
+            {/* Interactive Real S-Map Constellation Column */}
+            <div className={styles.sMapWrapper}>
+              {/* Real S-Map SVG Canvas */}
+              <div className={styles.sMapSvgContainer}>
+                <svg
+                  viewBox="0 0 600 660"
+                  className={styles.sMapSvg}
+                  aria-label="Bản đồ địa lý thực Việt Nam với Quần đảo Hoàng Sa và Trường Sa"
+                >
+                  <defs>
+                    {/* Neon Blur Filter */}
+                    <filter id="mapNeonGlow" x="-30%" y="-30%" width="160%" height="160%">
+                      <feGaussianBlur stdDeviation="3.5" result="coloredBlur" />
+                      <feMerge>
+                        <feMergeNode in="coloredBlur" />
+                        <feMergeNode in="SourceGraphic" />
+                      </feMerge>
+                    </filter>
+
+                    <filter id="goldStarGlow" x="-50%" y="-50%" width="200%" height="200%">
+                      <feGaussianBlur stdDeviation="3.5" result="blur" />
+                      <feMerge>
+                        <feMergeNode in="blur" />
+                        <feMergeNode in="SourceGraphic" />
+                      </feMerge>
+                    </filter>
+
+                    {/* Gradients */}
+                    <linearGradient id="neonGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#38BDF8" />
+                      <stop offset="50%" stopColor="#0088CC" />
+                      <stop offset="100%" stopColor="#0284C7" />
+                    </linearGradient>
+
+                    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#FDE047" />
+                      <stop offset="50%" stopColor="#F59E0B" />
+                      <stop offset="100%" stopColor="#D97706" />
+                    </linearGradient>
+
+                    {/* Coordinate Grid Pattern */}
+                    <pattern id="gridPattern" width="45" height="45" patternUnits="userSpaceOnUse">
+                      <path d="M 45 0 L 0 0 0 45" fill="none" stroke="rgba(56, 189, 248, 0.05)" strokeWidth="1" />
+                    </pattern>
+                  </defs>
+
+                  {/* Grid Background */}
+                  <rect width="600" height="660" fill="url(#gridPattern)" />
+
+                  {/* Latitude Reference Lines */}
+                  <line x1="20" y1="80" x2="580" y2="80" stroke="rgba(255, 255, 255, 0.06)" strokeDasharray="3 4" strokeWidth="1" />
+                  <text x="24" y="76" fill="rgba(148, 163, 184, 0.45)" fontSize="9" fontFamily="monospace">22° N</text>
+
+                  <line x1="20" y1="220" x2="580" y2="220" stroke="rgba(255, 255, 255, 0.06)" strokeDasharray="3 4" strokeWidth="1" />
+                  <text x="24" y="216" fill="rgba(148, 163, 184, 0.45)" fontSize="9" fontFamily="monospace">18° N</text>
+
+                  <line x1="20" y1="360" x2="580" y2="360" stroke="rgba(255, 255, 255, 0.06)" strokeDasharray="3 4" strokeWidth="1" />
+                  <text x="24" y="356" fill="rgba(148, 163, 184, 0.45)" fontSize="9" fontFamily="monospace">14° N</text>
+
+                  <line x1="20" y1="500" x2="580" y2="500" stroke="rgba(255, 255, 255, 0.06)" strokeDasharray="3 4" strokeWidth="1" />
+                  <text x="24" y="496" fill="rgba(148, 163, 184, 0.45)" fontSize="9" fontFamily="monospace">10° N</text>
+
+                  {/* Longitude Reference Lines */}
+                  <line x1="120" y1="20" x2="120" y2="640" stroke="rgba(255, 255, 255, 0.06)" strokeDasharray="3 4" strokeWidth="1" />
+                  <text x="124" y="648" fill="rgba(148, 163, 184, 0.45)" fontSize="9" fontFamily="monospace">104° E</text>
+
+                  <line x1="250" y1="20" x2="250" y2="640" stroke="rgba(255, 255, 255, 0.06)" strokeDasharray="3 4" strokeWidth="1" />
+                  <text x="254" y="648" fill="rgba(148, 163, 184, 0.45)" fontSize="9" fontFamily="monospace">108° E</text>
+
+                  <line x1="380" y1="20" x2="380" y2="640" stroke="rgba(255, 255, 255, 0.06)" strokeDasharray="3 4" strokeWidth="1" />
+                  <text x="384" y="648" fill="rgba(148, 163, 184, 0.45)" fontSize="9" fontFamily="monospace">112° E</text>
+
+                  <line x1="510" y1="20" x2="510" y2="640" stroke="rgba(255, 255, 255, 0.06)" strokeDasharray="3 4" strokeWidth="1" />
+                  <text x="514" y="648" fill="rgba(148, 163, 184, 0.45)" fontSize="9" fontFamily="monospace">116° E</text>
+
+                  {/* Ocean Watermark Text */}
+                  <text
+                    x="420"
+                    y="390"
+                    fill="rgba(56, 189, 248, 0.12)"
+                    fontSize="18"
+                    fontWeight="800"
+                    letterSpacing="6"
+                    textAnchor="middle"
                   >
-                    <span>{storyLikes.hoianNight?.userLiked ? '❤️' : '🤍'}</span>
-                    <span>{storyLikes.hoianNight?.count}</span>
-                  </button>
-                  <button
-                    type="button"
-                    className={`${styles.btnStoryAction} ${storyBookmarks.hoianNight ? styles.btnStoryBookmarked : ''}`}
-                    onClick={() => toggleStoryBookmark('hoianNight')}
+                    BIỂN ĐÔNG VIỆT NAM
+                  </text>
+
+                  {/* Compass Rose at top-right */}
+                  <g transform="translate(530, 60)" opacity="0.8">
+                    <circle cx="0" cy="0" r="22" fill="none" stroke="rgba(56, 189, 248, 0.25)" strokeWidth="1" />
+                    <circle cx="0" cy="0" r="15" fill="none" stroke="rgba(255, 255, 255, 0.15)" strokeWidth="0.8" />
+                    <polygon points="0,-18 3,-4 0,0 -3,-4" fill="#EF4444" />
+                    <polygon points="0,18 3,4 0,0 -3,4" fill="#94A3B8" />
+                    <polygon points="18,0 4,3 0,0 4,-3" fill="#94A3B8" />
+                    <polygon points="-18,0 -4,3 0,0 -4,-3" fill="#94A3B8" />
+                    <text x="0" y="-22" textAnchor="middle" fill="#EF4444" fontSize="9" fontWeight="800">N</text>
+                  </g>
+
+                  {/* ────────────────────────────────────────────────────────── */}
+                  {/* REAL GEOGRAPHIC VIETNAM MAP (63 PROVINCES DATA)            */}
+                  {/* ────────────────────────────────────────────────────────── */}
+                  {/* Outer Glow */}
+                  <path
+                    d={VIETNAM_REAL_MAP_PATH}
+                    fill="rgba(14, 165, 233, 0.16)"
+                    stroke="url(#neonGradient)"
+                    strokeWidth="2.2"
+                    strokeLinejoin="round"
+                    strokeLinecap="round"
+                    filter="url(#mapNeonGlow)"
+                  />
+                  {/* Crisp Inner Edge */}
+                  <path
+                    d={VIETNAM_REAL_MAP_PATH}
+                    fill="none"
+                    stroke="rgba(255, 255, 255, 0.45)"
+                    strokeWidth="0.7"
+                    strokeLinejoin="round"
+                    strokeLinecap="round"
+                  />
+
+
+
+
+                  {/* ────────────────────────────────────────────────────────── */}
+                  {/* QUẦN ĐẢO HOÀNG SA (TP. ĐÀ NẴNG) - SIGNATURE CENTERPIECE 1 */}
+                  {/* ────────────────────────────────────────────────────────── */}
+                  <g
+                    className={`${styles.islandArchipelagoGroup} ${activeHotspotId === 'hoangsa' ? styles.mapSvgNodeActive : ''}`}
+                    onClick={() => {
+                      setActiveHotspotId('hoangsa');
+                    }}
+                    aria-label="Quần đảo Hoàng Sa (TP. Đà Nẵng)"
                   >
-                    <span>{storyBookmarks.hoianNight ? '🔖' : '📑'}</span>
-                  </button>
+                    {/* Concentric Radar Rings */}
+                    <circle cx="381.2" cy="294.7" className={styles.radarRing1} />
+                    <circle cx="381.2" cy="294.7" className={styles.radarRing2} />
+                    <circle cx="381.2" cy="294.7" className={styles.radarRing3} />
+
+                    {/* Island Reef Dots */}
+                    <circle cx="381.2" cy="294.7" r="5" fill="#FDE047" stroke="#F59E0B" strokeWidth="1" />
+                    <circle cx="396" cy="286" r="3.8" fill="#FDE047" stroke="#F59E0B" strokeWidth="0.8" />
+                    <circle cx="370" cy="288" r="3" fill="#FCD34D" stroke="#F59E0B" strokeWidth="0.8" />
+                    <circle cx="402" cy="300" r="2.8" fill="#FCD34D" stroke="#F59E0B" strokeWidth="0.8" />
+                    <circle cx="376" cy="308" r="3.2" fill="#FCD34D" stroke="#F59E0B" strokeWidth="0.8" />
+                    <circle cx="392" cy="306" r="2.8" fill="#FCD34D" stroke="#F59E0B" strokeWidth="0.8" />
+
+                    {/* Golden Sovereign Star */}
+                    <polygon
+                      points="381.2,287.7 383.2,292.7 388.2,292.7 384.2,295.7 386.2,300.7 381.2,297.7 376.2,300.7 378.2,295.7 374.2,292.7 379.2,292.7"
+                      fill="#FDE047"
+                      stroke="#B45309"
+                      strokeWidth="0.5"
+                      className={styles.sovereignStar}
+                      filter="url(#goldStarGlow)"
+                    />
+
+                    {/* Luminous Island Typography directly on map */}
+                    <text
+                      x="381.2"
+                      y="268"
+                      textAnchor="middle"
+                      fill="#FDE047"
+                      fontSize="12"
+                      fontWeight="800"
+                      filter="url(#goldStarGlow)"
+                      letterSpacing="0.8"
+                    >
+                      QUẦN ĐẢO HOÀNG SA
+                    </text>
+                    <text
+                      x="381.2"
+                      y="281"
+                      textAnchor="middle"
+                      fill="#7DD3FC"
+                      fontSize="9.5"
+                      fontWeight="700"
+                    >
+                      (TP. ĐÀ NẴNG)
+                    </text>
+                  </g>
+
+                  {/* ────────────────────────────────────────────────────────── */}
+                  {/* QUẦN ĐẢO TRƯỜNG SA (KHÁNH HÒA) - SIGNATURE CENTERPIECE 2  */}
+                  {/* ────────────────────────────────────────────────────────── */}
+                  <g
+                    className={`${styles.islandArchipelagoGroup} ${activeHotspotId === 'truongsa' ? styles.mapSvgNodeActive : ''}`}
+                    onClick={() => {
+                      setActiveHotspotId('truongsa');
+                    }}
+                    aria-label="Quần đảo Trường Sa (Tỉnh Khánh Hòa)"
+                  >
+                    {/* Concentric Radar Rings */}
+                    <circle cx="452.1" cy="530.3" className={styles.radarRing1} />
+                    <circle cx="452.1" cy="530.3" className={styles.radarRing2} />
+                    <circle cx="452.1" cy="530.3" className={styles.radarRing3} />
+
+                    {/* Real Island Archipelago Cluster */}
+                    <circle cx="378.3" cy="574.0" r="5" fill="#FDE047" stroke="#F59E0B" strokeWidth="1" />
+                    <circle cx="456.3" cy="475.3" r="3.8" fill="#FDE047" stroke="#F59E0B" strokeWidth="0.8" />
+                    <circle cx="457.2" cy="519.6" r="3.5" fill="#FCD34D" stroke="#F59E0B" strokeWidth="0.8" />
+                    <circle cx="455.9" cy="530.3" r="4.2" fill="#FDE047" stroke="#F59E0B" strokeWidth="0.8" />
+                    <circle cx="430.0" cy="550.0" r="3" fill="#FCD34D" stroke="#F59E0B" strokeWidth="0.8" />
+                    <circle cx="472.0" cy="522.0" r="3" fill="#FCD34D" stroke="#F59E0B" strokeWidth="0.8" />
+                    <circle cx="420.0" cy="580.0" r="3.2" fill="#FCD34D" stroke="#F59E0B" strokeWidth="0.8" />
+
+                    {/* Golden Sovereign Star */}
+                    <polygon
+                      points="452.1,523.3 454.1,528.3 459.1,528.3 455.1,531.3 457.1,536.3 452.1,533.3 447.1,536.3 449.1,531.3 445.1,528.3 450.1,528.3"
+                      fill="#FDE047"
+                      stroke="#B45309"
+                      strokeWidth="0.5"
+                      className={styles.sovereignStar}
+                      filter="url(#goldStarGlow)"
+                    />
+
+                    {/* Luminous Island Typography directly on map */}
+                    <text
+                      x="452.1"
+                      y="503"
+                      textAnchor="middle"
+                      fill="#FDE047"
+                      fontSize="12"
+                      fontWeight="800"
+                      filter="url(#goldStarGlow)"
+                      letterSpacing="0.8"
+                    >
+                      QUẦN ĐẢO TRƯỜNG SA
+                    </text>
+                    <text
+                      x="452.1"
+                      y="516"
+                      textAnchor="middle"
+                      fill="#7DD3FC"
+                      fontSize="9.5"
+                      fontWeight="700"
+                    >
+                      (TỈNH KHÁNH HÒA)
+                    </text>
+                  </g>
+
+                  {/* ────────────────────────────────────────────────────────── */}
+                  {/* ALL MAINLAND & ISLAND CONSTELLATION NODES (41 PINNED NODES)*/}
+                  {/* ────────────────────────────────────────────────────────── */}
+                  {VIETNAM_MAP_PINS.filter((p) => p.id !== 'hoangsa' && p.id !== 'truongsa').map((pin) => {
+                    const isActive = activeHotspotId === pin.id;
+
+                    if (pin.isMajor) {
+                      return (
+                        <g
+                          key={pin.id}
+                          className={`${styles.mapSvgNode} ${isActive ? styles.mapSvgNodeActive : ''}`}
+                          onClick={() => {
+                            setActiveHotspotId(pin.id);
+                          }}
+                        >
+                          <circle
+                            cx={pin.x}
+                            cy={pin.y}
+                            r={isActive ? 9 : 6}
+                            fill={isActive ? 'rgba(56, 189, 248, 0.4)' : 'rgba(0, 136, 204, 0.25)'}
+                            stroke="#38BDF8"
+                            strokeWidth={isActive ? 2.5 : 1.8}
+                          />
+                          <circle
+                            cx={pin.x}
+                            cy={pin.y}
+                            r={isActive ? 4 : 2.8}
+                            fill={isActive ? '#FFFFFF' : '#38BDF8'}
+                          />
+                          <text
+                            x={pin.x + pin.labelDx}
+                            y={pin.y + pin.labelDy}
+                            textAnchor={pin.labelAnchor}
+                            fill={isActive ? '#38BDF8' : '#F8FAFC'}
+                            fontSize={isActive ? '11.5' : '10.5'}
+                            fontWeight={isActive ? '800' : '700'}
+                          >
+                            {pin.name}
+                          </text>
+                        </g>
+                      );
+                    }
+
+                    // Secondary Tourism Node
+                    return (
+                      <g
+                        key={pin.id}
+                        className={`${styles.mapSvgSecondaryNode} ${isActive ? styles.mapSvgSecondaryNodeActive : ''}`}
+                        aria-label={`${pin.name} (${pin.province})`}
+                        onClick={() => {
+                          setActiveHotspotId(pin.id);
+                        }}
+                      >
+                        {isActive && (
+                          <circle
+                            cx={pin.x}
+                            cy={pin.y}
+                            r={10}
+                            fill="none"
+                            stroke="#FDE047"
+                            strokeWidth={1.5}
+                            strokeDasharray="2 2"
+                          />
+                        )}
+                        <circle
+                          cx={pin.x}
+                          cy={pin.y}
+                          r={isActive ? 5.5 : 3.6}
+                          fill={isActive ? '#F59E0B' : 'rgba(14, 165, 233, 0.55)'}
+                          stroke={isActive ? '#FDE047' : '#7DD3FC'}
+                          strokeWidth={isActive ? 2 : 1.2}
+                        />
+                        {isActive && (
+                          <text
+                            x={pin.x + pin.labelDx}
+                            y={pin.y + pin.labelDy}
+                            textAnchor={pin.labelAnchor}
+                            fill="#FDE047"
+                            fontSize="10.5"
+                            fontWeight="800"
+                            filter="url(#goldStarGlow)"
+                          >
+                            {pin.name}
+                          </text>
+                        )}
+                      </g>
+                    );
+                  })}
+                </svg>
+              </div>
+
+              {/* National Sovereignty Notice Banner */}
+              <div className={styles.sovereignNoticeBanner}>
+                <div className={styles.sovereignNoticeText}>
+                  <ShieldCheckIcon size={16} color="#F59E0B" />
+                  <span>Hoàng Sa (TP. Đà Nẵng) & Trường Sa (Tỉnh Khánh Hòa) là phần máu thịt thiêng liêng của Tổ quốc Việt Nam.</span>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Post 3: Phú Quốc */}
-          <div className={styles.communityCard}>
-            <div className={styles.communityMediaWrapper}>
-              <img
-                src="https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&w=700&q=80"
-                alt="Phú Quốc 4N3Đ"
-                className={styles.communityMedia}
-              />
-              <span className={styles.communityBadge}>🏖️ Miền Nam</span>
-            </div>
-            <div className={styles.communityCardBody}>
-              <h4 className={styles.communityPostTitle}>
-                {lang === 'vi'
-                  ? 'Phú Quốc 4N3Đ tự túc: Tour cano 4 đảo & review các quán hải sản rẻ'
-                  : 'Phu Quoc 4D3N complete review: 4-island speedboat tour'}
-              </h4>
-              <div className={styles.communityCardFooter}>
-                <div className={styles.communityAuthor}>
-                  <img
-                    src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80"
-                    alt="Lê Thị Thu"
-                    className={styles.communityAvatar}
-                  />
-                  <span className={styles.communityAuthorName}>Lê Thu</span>
-                </div>
-                <div className={styles.communityStats}>
-                  <button
-                    type="button"
-                    className={`${styles.btnStoryAction} ${storyLikes.phuquoc4d?.userLiked ? styles.btnStoryLiked : ''}`}
-                    onClick={() => toggleStoryLike('phuquoc4d')}
-                  >
-                    <span>{storyLikes.phuquoc4d?.userLiked ? '❤️' : '🤍'}</span>
-                    <span>{storyLikes.phuquoc4d?.count}</span>
-                  </button>
-                  <button
-                    type="button"
-                    className={`${styles.btnStoryAction} ${storyBookmarks.phuquoc4d ? styles.btnStoryBookmarked : ''}`}
-                    onClick={() => toggleStoryBookmark('phuquoc4d')}
-                  >
-                    <span>{storyBookmarks.phuquoc4d ? '🔖' : '📑'}</span>
-                  </button>
+            {/* Display Stage */}
+            <div className={styles.mapDisplayStage}>
+              <div className={styles.mapStagePhotoWrapper}>
+                <img src={currentHotspot.image} alt={currentHotspot.name} />
+                <div className={styles.mapStageGpsOverlay}>
+                  <div className={styles.mapStagePulse} />
+                  <span>GPS: {currentHotspot.coords}</span>
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Post 4: Buôn Ma Thuột */}
-          <div className={styles.communityCard}>
-            <div className={styles.communityMediaWrapper}>
-              <img
-                src="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=700&q=80"
-                alt="Buôn Ma Thuột"
-                className={styles.communityMedia}
-              />
-              <span className={styles.communityBadge}>☕ Tây Nguyên</span>
-            </div>
-            <div className={styles.communityCardBody}>
-              <h4 className={styles.communityPostTitle}>
-                {lang === 'vi'
-                  ? 'Buôn Ma Thuột – Trải nghiệm hái cà phê chín & cưỡi voi thân thiện Bản Đôn'
-                  : 'Buon Ma Thuot – Coffee harvest and humane elephant experience'}
-              </h4>
-              <div className={styles.communityCardFooter}>
-                <div className={styles.communityAuthor}>
-                  <img
-                    src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&q=80"
-                    alt="Đỗ Quốc Huy"
-                    className={styles.communityAvatar}
-                  />
-                  <span className={styles.communityAuthorName}>Quốc Huy</span>
+              <div className={styles.mapStageDetails}>
+                <div className={styles.mapStageTitleRow}>
+                  <h3 className={styles.mapStageTitle}>{currentHotspot.name}</h3>
+                  <span className={styles.mapStageProvinceBadge}>{currentHotspot.province}</span>
                 </div>
-                <div className={styles.communityStats}>
-                  <button
-                    type="button"
-                    className={`${styles.btnStoryAction} ${storyLikes.bmtCoffee?.userLiked ? styles.btnStoryLiked : ''}`}
-                    onClick={() => toggleStoryLike('bmtCoffee')}
+
+                <p className={styles.mapStageDesc}>{currentHotspot.description}</p>
+
+                <div className={styles.mapStageStatsGrid}>
+                  <div className={styles.mapStageStatItem}>
+                    <span className={styles.mapStageStatLabel}>Vé tham quan</span>
+                    <span className={styles.mapStageStatValue}>{currentHotspot.ticketPrice}</span>
+                  </div>
+                  <div className={styles.mapStageStatItem}>
+                    <span className={styles.mapStageStatLabel}>Giờ mở cửa</span>
+                    <span className={styles.mapStageStatValue}>{currentHotspot.openHours}</span>
+                  </div>
+                  <div className={styles.mapStageStatItem}>
+                    <span className={styles.mapStageStatLabel}>Thời điểm đẹp nhất</span>
+                    <span className={styles.mapStageStatValue}>{currentHotspot.recommendedTime}</span>
+                  </div>
+                </div>
+
+                <div className={styles.mapStageActions}>
+                  <Link href={`/map?dest=${encodeURIComponent(currentHotspot.mapDestQuery)}`} className={styles.btnMapPrimary}>
+                    <CompassIcon size={16} />
+                    <span>Mở bản đồ số VISTA</span>
+                  </Link>
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(currentHotspot.name + ' ' + currentHotspot.province)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.btnMapSecondary}
                   >
-                    <span>{storyLikes.bmtCoffee?.userLiked ? '❤️' : '🤍'}</span>
-                    <span>{storyLikes.bmtCoffee?.count}</span>
-                  </button>
-                  <button
-                    type="button"
-                    className={`${styles.btnStoryAction} ${storyBookmarks.bmtCoffee ? styles.btnStoryBookmarked : ''}`}
-                    onClick={() => toggleStoryBookmark('bmtCoffee')}
-                  >
-                    <span>{storyBookmarks.bmtCoffee ? '🔖' : '📑'}</span>
-                  </button>
+                    <span>Chỉ đường Google</span>
+                    <ArrowRightIcon size={14} />
+                  </a>
                 </div>
               </div>
             </div>
@@ -1816,212 +1583,235 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ─── 8. FINAL CTA BANNER ───────────────────────────────────────── */}
-      <section className={styles.sectionBlock}>
-        <div className={styles.footerCtaCard}>
-          <div className={styles.footerCtaLeft}>
-            <img
-              src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=300&q=80"
-              alt="Traveler"
-              className={styles.footerTravelerImg}
-            />
-            <div className={styles.footerCtaText}>
-              <h3 className={styles.footerCtaTitle}>
-                {lang === 'vi'
-                  ? 'Hành trình đáng nhớ tiếp theo bắt đầu từ hôm nay.'
-                  : 'Your next unforgettable journey begins today.'}
-              </h3>
-              <p className={styles.footerCtaSubtitle}>
-                {lang === 'vi'
-                  ? 'Cùng VISTA khám phá Việt Nam trọn vẹn, tiết kiệm và ngập tràn niềm vui!'
-                  : 'Join VISTA to discover Vietnam seamlessly, sustainably, and joyfully!'}
-              </p>
-              <Link href="/trips/new" className={styles.btnCtaDiscover}>
-                <span>{lang === 'vi' ? 'Bắt đầu lên hành trình' : 'Start Planning Free'}</span>
-                <span>→</span>
+      {/* ─── 6. THREE CORE PILLARS BENTO GRID ────────────────────────────── */}
+      <section className={`${styles.sectionBlock} ${styles.revealOnScroll}`} style={{ background: '#FFFFFF', borderTop: '1px solid #E2E8F0', borderBottom: '1px solid #E2E8F0' }}>
+        <div className={styles.container}>
+          <div className={styles.sectionHeader}>
+            <div className={styles.sectionEyebrow}>
+              <SparklesIcon size={14} color="#0088CC" />
+              <span>Công nghệ phục vụ du lịch</span>
+            </div>
+            <h2 className={styles.sectionMainTitle}>Hệ sinh thái du lịch thông minh VISTA</h2>
+            <p className={styles.sectionDesc}>
+              Tích hợp liền mạch từ khâu lên ý tưởng, điều phối hành trình thực tế đến quản lý tài chính nhóm.
+            </p>
+          </div>
+
+          <div className={styles.bentoGrid}>
+            {/* Bento Card 1 (Large): AI Planner */}
+            <div className={`${styles.bentoCard} ${styles.bentoLarge}`}>
+              <div>
+                <div className={styles.bentoHeader}>
+                  <div className={styles.bentoIconWrapper}>
+                    <SparklesIcon size={24} color="#0088CC" />
+                  </div>
+                  <div>
+                    <span className={styles.bentoBadge}>Trí tuệ nhân tạo</span>
+                    <h3 className={styles.bentoTitle}>VISTA AI Planner Pro</h3>
+                  </div>
+                </div>
+
+                <p className={styles.bentoDesc}>
+                  Hệ thống AI tự động phân tích khung giờ khởi hành thực tế, gợi ý lịch trình theo 12 phong cách du lịch chuyên biệt, và tối ưu hóa thời gian di chuyển giữa các điểm đến.
+                </p>
+
+                <div className={styles.bentoFeaturesList}>
+                  <div className={styles.bentoFeatureItem}>
+                    <CheckCircleIcon size={16} />
+                    <span>Tự động tối ưu lịch trình khi khởi hành muộn sau 20:00</span>
+                  </div>
+                  <div className={styles.bentoFeatureItem}>
+                    <CheckCircleIcon size={16} />
+                    <span>Dữ liệu 350+ danh thắng thực tế với giá vé và giờ mở cửa</span>
+                  </div>
+                  <div className={styles.bentoFeatureItem}>
+                    <CheckCircleIcon size={16} />
+                    <span>Tùy biến đổi điểm đến linh hoạt theo sở thích cá nhân</span>
+                  </div>
+                  <div className={styles.bentoFeatureItem}>
+                    <CheckCircleIcon size={16} />
+                    <span>Xuất chuyến đi nhóm và lưu trữ bộ sưu tập cá nhân</span>
+                  </div>
+                </div>
+              </div>
+
+              <Link href="/planner" className={styles.btnBentoAction}>
+                <span>Trải nghiệm AI Planner ngay</span>
+                <ArrowRightIcon size={16} color="#FFFFFF" />
+              </Link>
+            </div>
+
+            {/* Bento Card 2: Interactive GPS Map */}
+            <div className={styles.bentoCard}>
+              <div>
+                <div className={styles.bentoHeader}>
+                  <div className={styles.bentoIconWrapper}>
+                    <NavigationIcon size={22} color="#0088CC" />
+                  </div>
+                  <div>
+                    <span className={styles.bentoBadge}>Bản đồ số MapLibre</span>
+                    <h3 className={styles.bentoTitle}>Bản đồ GPS & Google Maps</h3>
+                  </div>
+                </div>
+
+                <p className={styles.bentoDesc}>
+                  Trải nghiệm tương tác trực quan với ghim vị trí chuẩn xác 100%, thẻ thông tin nổi phong cách Google Maps và nút kích hoạt dẫn đường GPS ngay lập tức.
+                </p>
+              </div>
+
+              <Link href="/map" className={styles.btnBentoSecondary}>
+                <span>Mở bản đồ du lịch</span>
+                <ArrowRightIcon size={14} />
+              </Link>
+            </div>
+
+            {/* Bento Card 3: Treasury & VietQR */}
+            <div className={styles.bentoCard}>
+              <div>
+                <div className={styles.bentoHeader}>
+                  <div className={styles.bentoIconWrapper}>
+                    <WalletIcon size={22} color="#0088CC" />
+                  </div>
+                  <div>
+                    <span className={styles.bentoBadge}>Thủ quỹ minh bạch</span>
+                    <h3 className={styles.bentoTitle}>Quản lý quỹ nhóm & VietQR</h3>
+                  </div>
+                </div>
+
+                <p className={styles.bentoDesc}>
+                  Xóa bỏ áp lực tính toán tiền nong khi đi đông người. Tự động chia tiền chính xác theo từng khoản chi và thanh toán nhanh chóng qua mã QR ngân hàng.
+                </p>
+              </div>
+
+              <Link href="/trips" className={styles.btnBentoSecondary}>
+                <span>Quản lý chuyến đi nhóm</span>
+                <ArrowRightIcon size={14} />
               </Link>
             </div>
           </div>
+        </div>
+      </section>
 
-          <div className={styles.footerCtaRight}>
-            <div className={styles.goodVibesText}>
-              Good<br />Vibes<br />Only ♡
+      {/* ─── 7. FEATURED DESTINATIONS SHOWCASE ───────────────────────────── */}
+      <section className={`${styles.sectionBlock} ${styles.revealOnScroll}`} id="landmarks">
+        <div className={styles.container}>
+          <div className={styles.sectionHeader}>
+            <div className={styles.sectionEyebrow}>
+              <CompassIcon size={14} color="#0088CC" />
+              <span>Điểm đến chọn lọc</span>
             </div>
-            <img
-              src="/images/halong_hanoi_day.jpg"
-              alt="Vietnam scenic"
-              className={styles.footerIslandThumbnail}
-            />
+            <h2 className={styles.sectionMainTitle}>Danh lam thắng cảnh tiêu biểu Việt Nam</h2>
+            <p className={styles.sectionDesc}>
+              Những di sản thiên nhiên và văn hóa đặc sắc được đông đảo lữ khách trong nước và quốc tế yêu thích.
+            </p>
+          </div>
+
+          <div className={styles.destinationsGrid}>
+            {SHOWCASE_DESTINATIONS.map((dest) => (
+              <div key={dest.id} className={styles.destCard}>
+                <div className={styles.destMediaWrapper}>
+                  <img src={dest.image} alt={dest.name} className={styles.destMedia} />
+                  <div className={styles.destSeasonBadge}>
+                    <CalendarIcon size={12} color="#475569" />
+                    <span>{dest.season}</span>
+                  </div>
+                  <button
+                    type="button"
+                    className={styles.destFavoriteBtn}
+                    onClick={(e) => toggleFavorite(dest.id, e)}
+                    aria-label="Lưu yêu thích"
+                  >
+                    <HeartIcon size={16} color={favorites[dest.id] ? '#EF4444' : '#64748B'} filled={favorites[dest.id]} />
+                  </button>
+                </div>
+
+                <div className={styles.destContent}>
+                  <div className={styles.destHeaderRow}>
+                    <h3 className={styles.destTitle}>{dest.name}</h3>
+                    <div className={styles.destRating}>
+                      <StarIcon size={13} />
+                      <span>{dest.rating}</span>
+                    </div>
+                  </div>
+
+                  <div className={styles.destLocationRow}>
+                    <MapPinIcon size={12} color="#64748B" />
+                    <span>{dest.province} · {dest.category}</span>
+                  </div>
+
+                  <p className={styles.destDescription}>{dest.description}</p>
+
+                  <div className={styles.destFooterRow}>
+                    <div>
+                      <span className={styles.destPriceLabel}>Chi phí dự kiến</span>
+                      <div className={styles.destPriceValue}>{dest.priceEstimate}</div>
+                    </div>
+
+                    <Link href={`/planner?dest=${encodeURIComponent(dest.province)}`} className={styles.btnDestDetail}>
+                      <span>Lên lịch trình</span>
+                      <ArrowRightIcon size={13} />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ─── 9. MAIN FOOTER ────────────────────────────────────────────── */}
-      <footer className={styles.mainFooter}>
-        <div className={styles.footerTopRow}>
-          <div className={styles.footerBrandCol}>
-            <Link href="/" className={styles.brandLogo}>
-              <div className={styles.brandIconWrapper} style={{ width: 34, height: 34 }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                  <circle cx="12" cy="12" r="10" />
-                  <polygon points="12 3 15 12 21 12 16 16 18 21 12 17 6 21 8 16 3 12 9 12" fill="white" />
-                </svg>
+      {/* ─── 7. EDITORIAL FOOTER ─────────────────────────────────────────── */}
+      <footer className={styles.footerRoot}>
+        <div className={styles.container}>
+          <div className={styles.footerGrid}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+                <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#0088CC', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF' }}>
+                  <CompassIcon size={18} color="#FFFFFF" />
+                </div>
+                <span style={{ fontSize: '18px', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.3px' }}>VISTA</span>
               </div>
-              <div className={styles.brandText}>
-                <span className={styles.brandName} style={{ fontSize: 17 }}>VISTA</span>
-                <span className={styles.brandSub} style={{ fontSize: 8 }}>Vietnam Smart Travel</span>
+              <p style={{ fontSize: '13.5px', color: '#94A3B8', lineHeight: 1.6, maxWidth: '320px' }}>
+                Nền tảng du lịch thông minh Việt Nam, tiên phong kết nối di sản văn hóa, trí tuệ nhân tạo và trải nghiệm cộng tác nhóm trọn vẹn.
+              </p>
+            </div>
+
+            <div>
+              <h4 className={styles.footerColTitle}>Sản phẩm</h4>
+              <div className={styles.footerLinksList}>
+                <Link href="/planner" className={styles.footerLink}>AI Planner Pro</Link>
+                <Link href="/map" className={styles.footerLink}>Bản đồ số GPS</Link>
+                <Link href="/trips" className={styles.footerLink}>Quản lý chuyến đi</Link>
+                <Link href="/trips" className={styles.footerLink}>Thủ quỹ & VietQR</Link>
               </div>
-            </Link>
-            <div className={styles.footerSlogan}>
-              {lang === 'vi'
-                ? 'Khám phá Việt Nam • Gắn kết bạn bè • Lưu giữ từng khoảnh khắc diệu kỳ'
-                : 'Explore Vietnam • Connect with Friends • Cherish Every Magic Moment'}
+            </div>
+
+            <div>
+              <h4 className={styles.footerColTitle}>Di sản 4 miền</h4>
+              <div className={styles.footerLinksList}>
+                <Link href="/planner?dest=Hà Nội" className={styles.footerLink}>Hà Nội & Miền Bắc</Link>
+                <Link href="/planner?dest=Thừa Thiên Huế" className={styles.footerLink}>Cố đô Huế & Miền Trung</Link>
+                <Link href="/planner?dest=Hồ Chí Minh" className={styles.footerLink}>Sài Gòn & Nam Bộ</Link>
+                <Link href="/planner?dest=Lâm Đồng" className={styles.footerLink}>Đà Lạt & Tây Nguyên</Link>
+              </div>
+            </div>
+
+            <div>
+              <h4 className={styles.footerColTitle}>Dự án VISTA</h4>
+              <div className={styles.footerLinksList}>
+                <span className={styles.footerLink}>Đồ án tốt nghiệp 2026</span>
+                <span className={styles.footerLink}>Kiến trúc Monolith & Next.js</span>
+                <span className={styles.footerLink}>Bảo mật RBAC & Supabase</span>
+                <span className={styles.footerLink}>Tích hợp AI Gemini</span>
+              </div>
             </div>
           </div>
 
-          <div className={styles.footerNavLinks}>
-            <Link href="/" className={styles.footerNavLink}>{lang === 'vi' ? 'Khám phá điểm đến' : 'Explore'}</Link>
-            <Link href="/planner" className={styles.footerNavLink}>{lang === 'vi' ? 'AI Lập lịch trình' : 'AI Planner'}</Link>
-            <Link href="/trips" className={styles.footerNavLink}>{lang === 'vi' ? 'Tổ chức chuyến đi' : 'Group Trips'}</Link>
-            <Link href="/trips/demo-danang-2026/treasury" className={styles.footerNavLink}>{lang === 'vi' ? 'Thủ quỹ & Chia tiền' : 'Treasury & Split'}</Link>
-            <Link href="#community" className={styles.footerNavLink}>{lang === 'vi' ? 'Cộng đồng & An toàn' : 'Community & Safety'}</Link>
+          <div className={styles.footerBottom}>
+            <span>© 2026 VISTA Travel Platform. Bản quyền thuộc về Đội ngũ phát triển VISTA.</span>
+            <span>Tự hào lan tỏa vẻ đẹp non nước Việt Nam 🇻🇳</span>
           </div>
-
-          <div className={styles.footerSocials}>
-            <a href="https://facebook.com" target="_blank" rel="noreferrer" className={styles.socialIconBtn} aria-label="Facebook">
-              f
-            </a>
-            <a href="https://instagram.com" target="_blank" rel="noreferrer" className={styles.socialIconBtn} aria-label="Instagram">
-              📷
-            </a>
-            <a href="https://youtube.com" target="_blank" rel="noreferrer" className={styles.socialIconBtn} aria-label="YouTube">
-              ▶
-            </a>
-            <a href="https://tiktok.com" target="_blank" rel="noreferrer" className={styles.socialIconBtn} aria-label="TikTok">
-              ♪
-            </a>
-          </div>
-        </div>
-
-        <div className={styles.footerBottomRow}>
-          <div>© 2025 VISTA Travel Technology. All rights reserved.</div>
-          <div>Việt Nam – Đi để cảm nhận & yêu thương ❤️</div>
         </div>
       </footer>
-
-      {/* ─── 10. QUICK PREVIEW MODAL ────────────────────────────────────── */}
-      {modalItem && (
-        <div className={styles.modalBackdrop} onClick={() => setModalItem(null)}>
-          <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
-            {/* Modal Image Header */}
-            <div className={styles.modalMediaHeader}>
-              <img src={modalItem.image} alt={lang === 'vi' ? modalItem.nameVi : modalItem.nameEn} className={styles.modalMediaImg} />
-              <button
-                type="button"
-                className={styles.modalCloseBtn}
-                onClick={() => setModalItem(null)}
-                aria-label="Đóng"
-              >
-                ✕
-              </button>
-              <div className={styles.modalMediaOverlay}>
-                <h3 className={styles.modalDestTitle}>{lang === 'vi' ? modalItem.nameVi : modalItem.nameEn}</h3>
-                <div className={styles.modalDestLocationRow}>
-                  <span>📍 {lang === 'vi' ? modalItem.provinceVi : modalItem.provinceEn}</span>
-                  <span>⭐ {modalItem.rating} ({modalItem.reviewCount} {lang === 'vi' ? 'đánh giá' : 'reviews'})</span>
-                  <span>
-                    {destinationsWeather[modalItem.id]?.icon ?? '🌤️'}{' '}
-                    {destinationsWeather[modalItem.id]?.tempFormatted ?? modalItem.temp} -{' '}
-                    {destinationsWeather[modalItem.id]
-                      ? (lang === 'vi' ? destinationsWeather[modalItem.id].statusVi : destinationsWeather[modalItem.id].statusEn)
-                      : (lang === 'vi' ? modalItem.weatherVi : modalItem.weatherEn)}
-                    {destinationsWeather[modalItem.id]?.isLive && (
-                      <span style={{ marginLeft: 6, fontSize: 10, background: '#ef4444', color: '#fff', padding: '1px 5px', borderRadius: 4, fontWeight: 800 }}>
-                        LIVE
-                      </span>
-                    )}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Modal Body */}
-            <div className={styles.modalBody}>
-              {/* Highlight Grid */}
-              <div className={styles.modalHighlightGrid}>
-                <div className={styles.modalHighlightItem}>
-                  <span className={styles.modalHighlightLabel}>{lang === 'vi' ? 'Mùa đẹp nhất' : 'Best Season'}</span>
-                  <span className={styles.modalHighlightValue}>{lang === 'vi' ? modalItem.seasonVi : modalItem.seasonEn}</span>
-                </div>
-                <div className={styles.modalHighlightItem}>
-                  <span className={styles.modalHighlightLabel}>{lang === 'vi' ? 'Chi phí dự kiến' : 'Estimated Cost'}</span>
-                  <span className={styles.modalHighlightValue}>{lang === 'vi' ? modalItem.pricePerDayVi : modalItem.pricePerDayEn}</span>
-                </div>
-                <div className={styles.modalHighlightItem}>
-                  <span className={styles.modalHighlightLabel}>{lang === 'vi' ? 'Đặc trưng' : 'Vibe'}</span>
-                  <span className={styles.modalHighlightValue}>{(lang === 'vi' ? modalItem.tagsVi : modalItem.tagsEn)[0]}</span>
-                </div>
-              </div>
-
-              {/* Description */}
-              <div>
-                <h4 className={styles.modalSectionTitle}>{lang === 'vi' ? 'Giới thiệu tổng quan' : 'Overview'}</h4>
-                <p className={styles.modalDescText}>{lang === 'vi' ? modalItem.descriptionVi : modalItem.descriptionEn}</p>
-              </div>
-
-              {/* Top 3 Highlights */}
-              <div>
-                <h4 className={styles.modalSectionTitle}>
-                  {lang === 'vi' ? '3 Trải nghiệm không thể bỏ lỡ' : 'Top 3 Signature Experiences'}
-                </h4>
-                <div className={styles.modalHighlightsList}>
-                  {(lang === 'vi' ? modalItem.highlightsVi : modalItem.highlightsEn).map((hl, idx) => (
-                    <div key={idx} className={styles.modalHighlightPoint}>
-                      <span>#{idx + 1}</span>
-                      <div>{hl}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className={styles.modalFooter}>
-              <div className={styles.modalPricePreview}>
-                <span className={styles.modalPricePreviewLabel}>{lang === 'vi' ? 'Chi phí tham khảo' : 'Starting from'}</span>
-                <span className={styles.modalPricePreviewVal}>{lang === 'vi' ? modalItem.pricePerDayVi : modalItem.pricePerDayEn}</span>
-              </div>
-              <div className={styles.modalActionButtons}>
-                <button
-                  type="button"
-                  className={styles.btnStoryAction}
-                  onClick={(e) => toggleFavorite(modalItem.id, e)}
-                  style={{ border: '1px solid #e2e8f0', padding: '9px 14px', borderRadius: 999 }}
-                >
-                  <span>{favorites[modalItem.id] ? '❤️' : '🤍'}</span>
-                  <span>{favorites[modalItem.id] ? (lang === 'vi' ? 'Đã yêu thích' : 'Liked') : (lang === 'vi' ? 'Lưu lại' : 'Save')}</span>
-                </button>
-                <Link
-                  href={`/trips/new?dest=${encodeURIComponent(lang === 'vi' ? modalItem.nameVi : modalItem.nameEn)}`}
-                  className={styles.btnModalPlan}
-                  onClick={() => setModalItem(null)}
-                >
-                  <span>{lang === 'vi' ? 'Lên lịch trình tới đây' : 'Plan Trip Here'}</span>
-                  <span>→</span>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ─── 11. TOAST NOTIFICATION ────────────────────────────────────── */}
-      {toastMessage && (
-        <div className={styles.toastNotification}>
-          <span>✨</span>
-          <span>{toastMessage}</span>
-        </div>
-      )}
     </div>
   );
 }
