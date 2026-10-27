@@ -2,6 +2,7 @@ package com.vista.destination.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vista.common.audit.AuditLogService;
 import com.vista.destination.api.dto.CreateDestinationRequest;
 import com.vista.destination.api.dto.DestinationDetailDto;
 import com.vista.destination.api.dto.DestinationPageDto;
@@ -24,6 +25,7 @@ import java.text.Normalizer;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -45,7 +47,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class DestinationService implements DestinationQueryService {
 
-  private static final String STATUS_PUBLISHED = "PUBLISHED";
+  public static final String STATUS_DRAFT = "DRAFT";
+  public static final String STATUS_PUBLISHED = "PUBLISHED";
+  public static final String STATUS_REJECTED = "REJECTED";
 
   private final DestinationRepository destinationRepository;
   private final FavoriteRepository favoriteRepository;
@@ -53,6 +57,9 @@ public class DestinationService implements DestinationQueryService {
   private final ProvinceRepository provinceRepository;
   private final DestinationCategoryRepository categoryRepository;
   private final ObjectMapper objectMapper;
+
+  @Autowired(required = false)
+  private AuditLogService auditLogService;
 
   public DestinationService(
       DestinationRepository destinationRepository,
@@ -182,39 +189,7 @@ public class DestinationService implements DestinationQueryService {
     int validPage = Math.max(0, page);
     int validSize = Math.min(100, Math.max(1, size));
 
-    Specification<Destination> spec =
-        (root, query, cb) -> {
-          List<Predicate> predicates = new ArrayList<>();
-          predicates.add(cb.equal(root.get("status"), STATUS_PUBLISHED));
-
-          if (keyword != null && !keyword.isBlank()) {
-            String pattern = "%" + keyword.trim().toLowerCase() + "%";
-            predicates.add(
-                cb.or(
-                    cb.like(cb.lower(root.get("name")), pattern),
-                    cb.like(cb.lower(root.get("description")), pattern)));
-          }
-
-          if (province != null && !province.isBlank()) {
-            String provPattern = "%" + province.trim().toLowerCase() + "%";
-            predicates.add(cb.like(cb.lower(root.get("province").get("name")), provPattern));
-          }
-
-          if (category != null && !category.isBlank()) {
-            String catPattern = "%" + category.trim().toLowerCase() + "%";
-            predicates.add(cb.like(cb.lower(root.get("category").get("name")), catPattern));
-          }
-
-          if (priceMax != null) {
-            predicates.add(
-                cb.or(
-                    cb.isNull(root.get("priceMin")),
-                    cb.lessThanOrEqualTo(root.get("priceMin"), priceMax)));
-          }
-
-          return cb.and(predicates.toArray(new Predicate[0]));
-        };
-
+    Specification<Destination> spec = createSearchSpec(keyword, province, category, priceMax);
     PageRequest pageRequest =
         PageRequest.of(validPage, validSize, Sort.by(Sort.Direction.DESC, "createdAt"));
     Page<Destination> pageResult = destinationRepository.findAll(spec, pageRequest);
@@ -224,6 +199,46 @@ public class DestinationService implements DestinationQueryService {
 
     return new DestinationPageDto(
         items, pageResult.getNumber(), pageResult.getSize(), pageResult.getTotalElements());
+  }
+
+  public DestinationPageDto searchPublished(
+      String keyword, String province, String category, int page, int size) {
+    return searchPublished(keyword, province, category, null, page, size);
+  }
+
+  private Specification<Destination> createSearchSpec(
+      String keyword, String province, String category, BigDecimal priceMax) {
+    return (root, query, cb) -> {
+      List<Predicate> predicates = new ArrayList<>();
+      predicates.add(cb.equal(root.get("status"), STATUS_PUBLISHED));
+
+      if (keyword != null && !keyword.isBlank()) {
+        String pattern = "%" + keyword.trim().toLowerCase() + "%";
+        predicates.add(
+            cb.or(
+                cb.like(cb.lower(root.get("name")), pattern),
+                cb.like(cb.lower(root.get("description")), pattern)));
+      }
+
+      if (province != null && !province.isBlank()) {
+        String provPattern = "%" + province.trim().toLowerCase() + "%";
+        predicates.add(cb.like(cb.lower(root.get("province").get("name")), provPattern));
+      }
+
+      if (category != null && !category.isBlank()) {
+        String catPattern = "%" + category.trim().toLowerCase() + "%";
+        predicates.add(cb.like(cb.lower(root.get("category").get("name")), catPattern));
+      }
+
+      if (priceMax != null) {
+        predicates.add(
+            cb.or(
+                cb.isNull(root.get("priceMin")),
+                cb.lessThanOrEqualTo(root.get("priceMin"), priceMax)));
+      }
+
+      return cb.and(predicates.toArray(new Predicate[0]));
+    };
   }
 
   public DestinationDetailDto getPublishedDetail(UUID id, UUID currentUserId) {
@@ -342,29 +357,153 @@ public class DestinationService implements DestinationQueryService {
 
   @Override
   public List<DestinationSummary> searchPublished(
-      String keyword, String province, String category, int limit) {
+      String keyword, String province, String category, BigDecimal priceMax, int limit) {
     int validLimit = Math.min(50, Math.max(1, limit));
-    DestinationPageDto page = searchPublished(keyword, province, category, null, 0, validLimit);
+    Specification<Destination> spec = createSearchSpec(keyword, province, category, priceMax);
+    PageRequest pageRequest =
+        PageRequest.of(0, validLimit, Sort.by(Sort.Direction.DESC, "createdAt"));
+    Page<Destination> pageResult = destinationRepository.findAll(spec, pageRequest);
 
-    return page.items().stream()
-        .map(
-            item ->
-                new DestinationSummary(
-                    item.id(),
-                    item.name(),
-                    item.province(),
-                    item.category(),
-                    item.priceMin() != null ? item.priceMin() : BigDecimal.ZERO,
-                    item.priceMax() != null ? item.priceMax() : BigDecimal.ZERO,
-                    item.latitude(),
-                    item.longitude(),
-                    item.imageUrl()))
-        .toList();
+    return pageResult.getContent().stream().map(this::toDestinationSummary).toList();
+  }
+
+  @Override
+  public List<DestinationSummary> searchPublished(
+      String keyword, String province, String category, int limit) {
+    return searchPublished(keyword, province, category, null, limit);
   }
 
   @Override
   public boolean isPublished(UUID id) {
     return id != null && destinationRepository.existsByIdAndStatus(id, STATUS_PUBLISHED);
+  }
+
+  public void setAuditLogService(AuditLogService auditLogService) {
+    this.auditLogService = auditLogService;
+  }
+
+  // --- ADMIN MODERATION & APPROVAL QUEUE (TV1 W6) ---
+
+  public DestinationPageDto searchModerationQueue(
+      String keyword, String province, String category, String status, int page, int size) {
+    int validPage = Math.max(0, page);
+    int validSize = Math.min(100, Math.max(1, size));
+
+    Specification<Destination> spec =
+        (root, query, cb) -> {
+          List<Predicate> predicates = new ArrayList<>();
+
+          if (status != null && !status.isBlank() && !"ALL".equalsIgnoreCase(status.trim())) {
+            predicates.add(
+                cb.equal(cb.upper(root.get("status")), status.trim().toUpperCase(Locale.ROOT)));
+          } else if (status == null || status.isBlank()) {
+            predicates.add(cb.equal(root.get("status"), STATUS_DRAFT));
+          }
+
+          if (keyword != null && !keyword.isBlank()) {
+            String pattern = "%" + keyword.trim().toLowerCase(Locale.ROOT) + "%";
+            predicates.add(
+                cb.or(
+                    cb.like(cb.lower(root.get("name")), pattern),
+                    cb.like(cb.lower(root.get("description")), pattern)));
+          }
+
+          if (province != null && !province.isBlank()) {
+            String provPattern = "%" + province.trim().toLowerCase(Locale.ROOT) + "%";
+            predicates.add(cb.like(cb.lower(root.get("province").get("name")), provPattern));
+          }
+
+          if (category != null && !category.isBlank()) {
+            String catPattern = "%" + category.trim().toLowerCase(Locale.ROOT) + "%";
+            predicates.add(cb.like(cb.lower(root.get("category").get("name")), catPattern));
+          }
+
+          return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+    PageRequest pageRequest =
+        PageRequest.of(validPage, validSize, Sort.by(Sort.Direction.DESC, "createdAt"));
+    Page<Destination> pageResult = destinationRepository.findAll(spec, pageRequest);
+
+    List<DestinationSummaryDto> items =
+        pageResult.getContent().stream().map(this::toSummaryDto).toList();
+
+    return new DestinationPageDto(
+        items, pageResult.getNumber(), pageResult.getSize(), pageResult.getTotalElements());
+  }
+
+  public DestinationDetailDto getDestinationAdminDetail(UUID id) {
+    Destination dest =
+        destinationRepository
+            .findById(id)
+            .orElseThrow(
+                () ->
+                    new DestinationNotFoundException(
+                        "Không tìm thấy địa điểm du lịch với mã: " + id));
+    return toDetailDto(dest, false);
+  }
+
+  @Transactional
+  public DestinationDetailDto updateDestinationStatus(
+      UUID id, String targetStatus, UUID moderatorId, String note) {
+    if (targetStatus == null || targetStatus.isBlank()) {
+      throw new IllegalArgumentException("Trạng thái mục tiêu không được để trống");
+    }
+    String normalizedStatus = targetStatus.trim().toUpperCase(Locale.ROOT);
+    if (!STATUS_PUBLISHED.equals(normalizedStatus)
+        && !STATUS_REJECTED.equals(normalizedStatus)
+        && !STATUS_DRAFT.equals(normalizedStatus)) {
+      throw new IllegalArgumentException(
+          "Trạng thái không hợp lệ: "
+              + targetStatus
+              + ". Chỉ chấp nhận: PUBLISHED, REJECTED, DRAFT");
+    }
+
+    Destination dest =
+        destinationRepository
+            .findById(id)
+            .orElseThrow(
+                () ->
+                    new DestinationNotFoundException(
+                        "Không tìm thấy địa điểm du lịch cần kiểm duyệt: " + id));
+
+    dest.setStatus(normalizedStatus);
+    dest.setUpdatedAt(Instant.now());
+    if (STATUS_PUBLISHED.equals(normalizedStatus)) {
+      dest.setVerifiedAt(Instant.now());
+    }
+
+    Destination saved = destinationRepository.save(dest);
+
+    if (auditLogService != null) {
+      String details =
+          (note != null && !note.isBlank())
+              ? note
+              : "Kiểm duyệt điểm đến " + dest.getName() + " -> " + normalizedStatus;
+      auditLogService.logAction(
+          moderatorId, "DESTINATION_" + normalizedStatus, "DESTINATION", id.toString(), details);
+    }
+
+    return toDetailDto(saved, false);
+  }
+
+  @Transactional
+  public DestinationDetailDto approveDestination(UUID id, UUID moderatorId, String note) {
+    return updateDestinationStatus(id, STATUS_PUBLISHED, moderatorId, note);
+  }
+
+  @Transactional
+  public DestinationDetailDto rejectDestination(UUID id, UUID moderatorId, String note) {
+    return updateDestinationStatus(id, STATUS_REJECTED, moderatorId, note);
+  }
+
+  public Map<String, Long> getModerationStats() {
+    Map<String, Long> stats = new LinkedHashMap<>();
+    stats.put("total", destinationRepository.count());
+    stats.put("draft", destinationRepository.countByStatus(STATUS_DRAFT));
+    stats.put("published", destinationRepository.countByStatus(STATUS_PUBLISHED));
+    stats.put("rejected", destinationRepository.countByStatus(STATUS_REJECTED));
+    return stats;
   }
 
   // --- HELPER MAPPERS ---

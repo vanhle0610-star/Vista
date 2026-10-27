@@ -53,6 +53,14 @@ public class UserPrincipal implements UserDetails, Principal {
     return hasRole("ADMIN");
   }
 
+  public boolean isModerator() {
+    return hasRole("MODERATOR");
+  }
+
+  public boolean isModeratorOrAdmin() {
+    return isAdmin() || isModerator();
+  }
+
   @Override
   public String getName() {
     return id != null ? id.toString() : null;
