@@ -18,7 +18,7 @@ export default function DashboardPage() {
     try {
       setLoading(true);
       setError(null);
-      const apiBase = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1').replace(/\/+$/, '');
+      const apiBase = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081/api/v1').replace(/\/+$/, '');
       const res = await fetch(`${apiBase}/health`, { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
@@ -27,7 +27,7 @@ export default function DashboardPage() {
         setError(`Backend phản hồi lỗi HTTP ${res.status}`);
       }
     } catch {
-      setError('Không thể kết nối tới Backend trên cổng 8080');
+      setError('Không thể kết nối tới Backend trên cổng 8081');
     } finally {
       setLoading(false);
     }
@@ -146,7 +146,7 @@ export default function DashboardPage() {
           </div>
           <div style={{ fontSize: '0.8rem', marginTop: '8px' }}>
             <a
-              href="http://localhost:8080/swagger-ui.html"
+              href="http://localhost:8081/swagger-ui.html"
               target="_blank"
               rel="noreferrer"
               style={{ color: '#0284c7', textDecoration: 'underline', fontWeight: 700 }}

@@ -130,7 +130,7 @@ public class TripService {
     boolean isOwner = tripAccessService.isOwner(tripId, userId);
     if (isOwner) {
       throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST,
+          HttpStatus.CONFLICT,
           "Chủ sở hữu không thể tự rời chuyến đi. Vui lòng chuyển quyền trước.");
     }
     tripAccessService.requireMember(tripId, userId);
