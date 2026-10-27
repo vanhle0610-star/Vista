@@ -165,19 +165,28 @@ public class DestinationService implements DestinationQueryService {
     }
   }
 
-  private String toSlug(String input) {
+  public static String stripAccents(String input) {
     if (input == null || input.isBlank()) {
-      return "diem-den-" + UUID.randomUUID().toString().substring(0, 8);
+      return "";
     }
     String normalized = Normalizer.normalize(input, Normalizer.Form.NFD);
     Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
+    return pattern
+        .matcher(normalized)
+        .replaceAll("")
+        .toLowerCase(Locale.ROOT)
+        .replace('đ', 'd')
+        .replace('Đ', 'd')
+        .trim();
+  }
+
+  public static String toSlug(String input) {
+    if (input == null || input.isBlank()) {
+      return "diem-den-" + UUID.randomUUID().toString().substring(0, 8);
+    }
+    String stripped = stripAccents(input);
     String slug =
-        pattern
-            .matcher(normalized)
-            .replaceAll("")
-            .toLowerCase(Locale.ROOT)
-            .replace('đ', 'd')
-            .replace('Đ', 'd')
+        stripped
             .replaceAll("[^a-z0-9\\s-]", "")
             .replaceAll("[\\s-]+", "-")
             .replaceAll("^-+|-+$", "");
@@ -213,21 +222,57 @@ public class DestinationService implements DestinationQueryService {
       predicates.add(cb.equal(root.get("status"), STATUS_PUBLISHED));
 
       if (keyword != null && !keyword.isBlank()) {
-        String pattern = "%" + keyword.trim().toLowerCase() + "%";
-        predicates.add(
-            cb.or(
-                cb.like(cb.lower(root.get("name")), pattern),
-                cb.like(cb.lower(root.get("description")), pattern)));
+        String trimmed = keyword.trim();
+        String lowerKeyword = trimmed.toLowerCase(Locale.ROOT);
+        String rawPattern = "%" + lowerKeyword + "%";
+
+        String slugKeyword = toSlug(trimmed);
+        String[] slugTokens = slugKeyword.split("-+");
+        String tokenPattern = "%" + String.join("%", slugTokens) + "%";
+
+        List<Predicate> keywordPredicates = new ArrayList<>();
+        // 1. Accented / exact match on name
+        keywordPredicates.add(cb.like(cb.lower(root.get("name")), rawPattern));
+        // 2. Accented / exact match on description
+        keywordPredicates.add(cb.like(cb.lower(root.get("description")), rawPattern));
+        // 3. Unaccented matching on slug (e.g. "da nang" -> "da-nang", "chua cau" -> "chua-cau")
+        keywordPredicates.add(cb.like(root.get("slug"), tokenPattern));
+        keywordPredicates.add(cb.like(root.get("slug"), "%" + slugKeyword + "%"));
+        // 4. Also match province or category slug if keyword names a location or category
+        if (root.get("province") != null) {
+          keywordPredicates.add(cb.like(root.get("province").get("slug"), tokenPattern));
+        }
+        if (root.get("category") != null) {
+          keywordPredicates.add(cb.like(root.get("category").get("slug"), tokenPattern));
+        }
+
+        predicates.add(cb.or(keywordPredicates.toArray(new Predicate[0])));
       }
 
       if (province != null && !province.isBlank()) {
-        String provPattern = "%" + province.trim().toLowerCase() + "%";
-        predicates.add(cb.like(cb.lower(root.get("province").get("name")), provPattern));
+        String trimmedProv = province.trim();
+        String provPattern = "%" + trimmedProv.toLowerCase(Locale.ROOT) + "%";
+        String provSlug = toSlug(trimmedProv);
+        String[] provTokens = provSlug.split("-+");
+        String provTokenPattern = "%" + String.join("%", provTokens) + "%";
+
+        predicates.add(
+            cb.or(
+                cb.like(cb.lower(root.get("province").get("name")), provPattern),
+                cb.like(root.get("province").get("slug"), provTokenPattern)));
       }
 
       if (category != null && !category.isBlank()) {
-        String catPattern = "%" + category.trim().toLowerCase() + "%";
-        predicates.add(cb.like(cb.lower(root.get("category").get("name")), catPattern));
+        String trimmedCat = category.trim();
+        String catPattern = "%" + trimmedCat.toLowerCase(Locale.ROOT) + "%";
+        String catSlug = toSlug(trimmedCat);
+        String[] catTokens = catSlug.split("-+");
+        String catTokenPattern = "%" + String.join("%", catTokens) + "%";
+
+        predicates.add(
+            cb.or(
+                cb.like(cb.lower(root.get("category").get("name")), catPattern),
+                cb.like(root.get("category").get("slug"), catTokenPattern)));
       }
 
       if (priceMax != null) {
@@ -401,21 +446,47 @@ public class DestinationService implements DestinationQueryService {
           }
 
           if (keyword != null && !keyword.isBlank()) {
-            String pattern = "%" + keyword.trim().toLowerCase(Locale.ROOT) + "%";
+            String trimmed = keyword.trim();
+            String lowerKeyword = trimmed.toLowerCase(Locale.ROOT);
+            String rawPattern = "%" + lowerKeyword + "%";
+
+            String slugKeyword = toSlug(trimmed);
+            String[] slugTokens = slugKeyword.split("-+");
+            String tokenPattern = "%" + String.join("%", slugTokens) + "%";
+
             predicates.add(
                 cb.or(
-                    cb.like(cb.lower(root.get("name")), pattern),
-                    cb.like(cb.lower(root.get("description")), pattern)));
+                    cb.like(cb.lower(root.get("name")), rawPattern),
+                    cb.like(cb.lower(root.get("description")), rawPattern),
+                    cb.like(root.get("slug"), tokenPattern),
+                    cb.like(root.get("province").get("slug"), tokenPattern),
+                    cb.like(root.get("category").get("slug"), tokenPattern)));
           }
 
           if (province != null && !province.isBlank()) {
-            String provPattern = "%" + province.trim().toLowerCase(Locale.ROOT) + "%";
-            predicates.add(cb.like(cb.lower(root.get("province").get("name")), provPattern));
+            String trimmedProv = province.trim();
+            String provPattern = "%" + trimmedProv.toLowerCase(Locale.ROOT) + "%";
+            String provSlug = toSlug(trimmedProv);
+            String[] provTokens = provSlug.split("-+");
+            String provTokenPattern = "%" + String.join("%", provTokens) + "%";
+
+            predicates.add(
+                cb.or(
+                    cb.like(cb.lower(root.get("province").get("name")), provPattern),
+                    cb.like(root.get("province").get("slug"), provTokenPattern)));
           }
 
           if (category != null && !category.isBlank()) {
-            String catPattern = "%" + category.trim().toLowerCase(Locale.ROOT) + "%";
-            predicates.add(cb.like(cb.lower(root.get("category").get("name")), catPattern));
+            String trimmedCat = category.trim();
+            String catPattern = "%" + trimmedCat.toLowerCase(Locale.ROOT) + "%";
+            String catSlug = toSlug(trimmedCat);
+            String[] catTokens = catSlug.split("-+");
+            String catTokenPattern = "%" + String.join("%", catTokens) + "%";
+
+            predicates.add(
+                cb.or(
+                    cb.like(cb.lower(root.get("category").get("name")), catPattern),
+                    cb.like(root.get("category").get("slug"), catTokenPattern)));
           }
 
           return cb.and(predicates.toArray(new Predicate[0]));
