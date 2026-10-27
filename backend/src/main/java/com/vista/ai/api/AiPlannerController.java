@@ -12,6 +12,7 @@ import com.vista.ai.config.AiRateLimiter;
 import com.vista.ai.util.AiResponseValidator;
 import com.vista.ai.util.PromptBuilder;
 import com.vista.budget.util.RouteOptimizer;
+import com.vista.common.audit.AuditLogService;
 import com.vista.common.security.CurrentUserProvider;
 import com.vista.trip.application.TripAccessService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -45,23 +46,27 @@ public class AiPlannerController {
   private final CurrentUserProvider currentUserProvider;
   private final AiRateLimiter aiRateLimiter;
   private final AiClientWrapper aiClientWrapper;
+  private final AuditLogService auditLogService;
 
   @Autowired
   public AiPlannerController(
       TripAccessService tripAccessService,
       CurrentUserProvider currentUserProvider,
       AiRateLimiter aiRateLimiter,
-      AiClientWrapper aiClientWrapper) {
+      AiClientWrapper aiClientWrapper,
+      AuditLogService auditLogService) {
     this.tripAccessService = tripAccessService;
     this.currentUserProvider = currentUserProvider;
     this.aiRateLimiter = aiRateLimiter;
     this.aiClientWrapper = aiClientWrapper;
+    this.auditLogService = auditLogService;
   }
 
   @PostMapping("/itinerary-suggestions")
   @Operation(
       summary =
-          "Yêu cầu AI gợi ý lịch trình và ước tính chi phí chuyến đi (Google Gemini LLM / Fallback)")
+          "Yêu cầu AI gợi ý lịch trình và ước tính chi phí chuyến đi (Google Gemini LLM /"
+              + " Fallback)")
   public ResponseEntity<AiItinerarySuggestionResponse> getItinerarySuggestions(
       @PathVariable UUID tripId, @Valid @RequestBody AiItinerarySuggestionRequest request) {
     UUID currentUserId = currentUserProvider.getCurrentUserId();
@@ -75,7 +80,19 @@ public class AiPlannerController {
     // 2. Tính ngân sách dự kiến ước lượng (VND) theo budgetLevel
     BigDecimal budgetVnd = calculateBudgetVnd(request.budgetLevel(), daysCount);
 
-    // 3. Thử gọi mô hình Live Google Gemini LLM nếu khả dụng
+    // 3. Ghi nhận audit metadata an toàn (không log raw prompt/response/API key)
+    auditLogService.logAction(
+        currentUserId,
+        "AI_PLAN_GENERATE",
+        "TRIP",
+        tripId.toString(),
+        String.format(
+            "{\"destinationProvince\":\"%s\",\"daysCount\":%d,\"budgetLevel\":\"%s\"}",
+            request.destinationProvince() != null ? request.destinationProvince() : "",
+            daysCount,
+            request.budgetLevel() != null ? request.budgetLevel() : "MEDIUM"));
+
+    // 4. Thử gọi mô hình Live Google Gemini LLM nếu khả dụng
     if (aiClientWrapper != null && aiClientWrapper.isAvailable()) {
       try {
         PromptBuilder.PlanRequest planRequest =
@@ -113,12 +130,13 @@ public class AiPlannerController {
         }
       } catch (Exception ex) {
         log.warn(
-            "Gemini AI invocation failed or returned invalid JSON. Falling back to deterministic plan: {}",
+            "Gemini AI invocation failed or returned invalid JSON. Falling back to deterministic"
+                + " plan: {}",
             ex.getMessage());
       }
     }
 
-    // 4. Fallback an toàn (Graceful Degradation): sinh kế hoạch mẫu chất lượng cao, không bao giờ
+    // 5. Fallback an toàn (Graceful Degradation): sinh kế hoạch mẫu chất lượng cao, không bao giờ
     // để lỗi 500
     log.info("Generating deterministic fallback itinerary for tripId: {}", tripId);
     return ResponseEntity.ok(generateFallbackResponse(request, daysCount, budgetVnd));

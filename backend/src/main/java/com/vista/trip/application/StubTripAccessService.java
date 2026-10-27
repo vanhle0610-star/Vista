@@ -30,6 +30,13 @@ public class StubTripAccessService implements TripAccessService {
   }
 
   @Override
+  public boolean hasWriteAccess(UUID tripId, UUID userId) {
+    log.debug(
+        "Stub TripAccessService: checking hasWriteAccess for tripId={}, userId={}", tripId, userId);
+    return tripId != null && userId != null;
+  }
+
+  @Override
   public void requireMember(UUID tripId, UUID userId) {
     if (tripId == null || userId == null) {
       throw new IllegalArgumentException("Trip ID and User ID must not be null");
@@ -45,5 +52,16 @@ public class StubTripAccessService implements TripAccessService {
     }
     log.debug(
         "Stub TripAccessService: requireOwner asserted for tripId={}, userId={}", tripId, userId);
+  }
+
+  @Override
+  public void requireWriteAccess(UUID tripId, UUID userId) {
+    if (tripId == null || userId == null) {
+      throw new IllegalArgumentException("Trip ID and User ID must not be null");
+    }
+    log.debug(
+        "Stub TripAccessService: requireWriteAccess asserted for tripId={}, userId={}",
+        tripId,
+        userId);
   }
 }

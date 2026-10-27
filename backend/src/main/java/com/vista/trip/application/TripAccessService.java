@@ -17,6 +17,9 @@ public interface TripAccessService {
   /** Checks whether the specified user is the designated owner of the trip. */
   boolean isOwner(UUID tripId, UUID userId);
 
+  /** Checks whether the specified user has write access (OWNER or active EDITOR) to the trip. */
+  boolean hasWriteAccess(UUID tripId, UUID userId);
+
   /**
    * Asserts that the specified user is an active member of the trip, throwing an authorization
    * exception if false.
@@ -28,4 +31,10 @@ public interface TripAccessService {
    * if false.
    */
   void requireOwner(UUID tripId, UUID userId);
+
+  /**
+   * Asserts that the specified user has write access (OWNER or active EDITOR) to the trip, throwing
+   * an authorization exception if false.
+   */
+  void requireWriteAccess(UUID tripId, UUID userId);
 }

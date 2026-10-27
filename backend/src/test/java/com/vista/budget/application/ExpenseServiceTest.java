@@ -20,6 +20,7 @@ import com.vista.budget.domain.ExpenseEntity;
 import com.vista.budget.domain.ExpenseSplitEntity;
 import com.vista.budget.infrastructure.ExpenseRepository;
 import com.vista.budget.infrastructure.ExpenseSplitRepository;
+import com.vista.common.audit.AuditLogService;
 import com.vista.trip.application.TripAccessService;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -45,6 +46,7 @@ class ExpenseServiceTest {
   @Mock private ExpenseRepository expenseRepository;
   @Mock private ExpenseSplitRepository expenseSplitRepository;
   @Mock private ExpenseCalculationService calculationService;
+  @Mock private AuditLogService auditLogService;
 
   @InjectMocks private ExpenseService expenseService;
 
@@ -74,7 +76,7 @@ class ExpenseServiceTest {
             List.of(currentUserId, partnerId),
             null);
 
-    doNothing().when(tripAccessService).requireMember(tripId, currentUserId);
+    doNothing().when(tripAccessService).requireWriteAccess(tripId, currentUserId);
 
     List<ExpenseSplitEntity> splits =
         List.of(
@@ -95,7 +97,7 @@ class ExpenseServiceTest {
     assertThat(response.amount()).isEqualByComparingTo(BigDecimal.valueOf(60000));
     assertThat(response.splits()).hasSize(2);
 
-    verify(tripAccessService).requireMember(tripId, currentUserId);
+    verify(tripAccessService).requireWriteAccess(tripId, currentUserId);
     verify(expenseRepository).save(any(ExpenseEntity.class));
   }
 
@@ -119,7 +121,7 @@ class ExpenseServiceTest {
             null,
             exactShares);
 
-    doNothing().when(tripAccessService).requireMember(tripId, currentUserId);
+    doNothing().when(tripAccessService).requireWriteAccess(tripId, currentUserId);
 
     List<ExpenseSplitEntity> splits =
         List.of(
@@ -157,13 +159,12 @@ class ExpenseServiceTest {
             null,
             null);
 
-    doThrow(new AccessDeniedException("User is not a member of trip " + tripId))
+    doThrow(new AccessDeniedException("User is not authorized for write access on trip " + tripId))
         .when(tripAccessService)
-        .requireMember(tripId, currentUserId);
+        .requireWriteAccess(tripId, currentUserId);
 
     assertThatThrownBy(() -> expenseService.createExpense(tripId, currentUserId, request))
-        .isInstanceOf(AccessDeniedException.class)
-        .hasMessageContaining("not a member");
+        .isInstanceOf(AccessDeniedException.class);
 
     verify(expenseRepository, never()).save(any());
   }

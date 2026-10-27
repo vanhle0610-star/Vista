@@ -26,8 +26,9 @@ if (fs.existsSync(envFile)) {
 
 const isWindows = process.platform === 'win32';
 const gradlewCmd = isWindows ? (process.env.ComSpec || 'cmd.exe') : './gradlew';
+const gradlewBatPath = path.join(backendDir, 'gradlew.bat');
 const taskArgs = ['bootRun', ...process.argv.slice(2)];
-const gradlewArgs = isWindows ? ['/c', 'gradlew.bat', ...taskArgs] : taskArgs;
+const gradlewArgs = isWindows ? ['/c', gradlewBatPath, ...taskArgs] : taskArgs;
 
 const proc = spawn(gradlewCmd, gradlewArgs, {
   cwd: backendDir,

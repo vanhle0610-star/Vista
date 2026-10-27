@@ -17,6 +17,7 @@ spring:
   flyway:
     enabled: true
     baseline-on-migrate: true
+    validate-migration-naming: true
     validate-on-migrate: false
     out-of-order: true
 springdoc:
