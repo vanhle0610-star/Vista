@@ -276,6 +276,205 @@ paths:
         '404':
           description: Không tìm thấy mục lịch trình
 
+  /trips/{tripId}/itinerary/validate:
+    get:
+      summary: Kiểm tra lịch trình và cảnh báo ngân sách
+      description: |
+        W4-TV3-04 & W5-TV3-01: Kiểm tra tính hợp lệ của lịch trình chuyến đi:
+        - Ngày ngoài khoảng chuyến đi (OUT_OF_TRIP_DATE)
+        - Trùng giờ giữa 2 điểm dừng trong cùng 1 ngày (TIME_OVERLAP)
+        - Giờ kết thúc trước giờ bắt đầu (INVALID_TIME_RANGE)
+        - Chi phí dự kiến vượt ngân sách chuyến đi (BUDGET_EXCEEDED) kèm lý do và số tiền vượt.
+      operationId: validateItinerary
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Danh sách cảnh báo hợp lệ (rỗng nếu không có vấn đề)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ItineraryValidationWarning'
+        '403':
+          description: Người dùng không phải thành viên của chuyến đi
+        '404':
+          description: Không tìm thấy chuyến đi
+
+  /trips/{tripId}/itinerary/ai-suggestions:
+    post:
+      summary: Lưu gợi ý AI vào lịch trình (Điểm tích hợp cho TV4)
+      description: |
+        W5-TV3-04: Lưu điểm dừng từ gợi ý AI của TV4 vào lịch trình.
+        Chỉ thực thi khi cờ confirmed=true. Nếu confirmed=false, trả về 400 Bad Request và không lưu DB.
+      operationId: saveAiSuggestion
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: confirmed
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAiItineraryItemRequest'
+      responses:
+        '201':
+          description: Lưu gợi ý AI thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItineraryItemResponse'
+        '400':
+          description: Chưa xác nhận gợi ý AI hoặc khoảng giờ không hợp lệ
+        '403':
+          description: Không phải thành viên chuyến đi
+        '409':
+          description: Ngày lịch trình không thuộc chuyến đi
+
+  /trips/{tripId}/leave:
+    post:
+      summary: Thành viên tự rời khỏi chuyến đi
+      description: |
+        W6-TV3-02: Thành viên tự rời khỏi trip_members (chuyển status=REMOVED).
+        Nếu Owner bấm rời khi chưa chuyển quyền chủ, trả về 409 Conflict.
+      operationId: leaveTrip
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Rời nhóm thành công
+        '403':
+          description: Không phải thành viên của chuyến đi
+        '409':
+          description: Chủ sở hữu không thể tự rời trước khi chuyển quyền
+
+  /notifications:
+    get:
+      summary: Lấy danh sách thông báo in-app của người dùng hiện tại
+      description: W5-TV3-02: Lấy thông báo theo thứ tự mới nhất trước, hỗ trợ lọc chưa đọc.
+      operationId: getNotifications
+      parameters:
+        - name: unreadOnly
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Danh sách thông báo
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NotificationResponse'
+
+  /notifications/unread-count:
+    get:
+      summary: Đếm số lượng thông báo chưa đọc
+      description: W5-TV3-02: Phục vụ hiển thị badge số lượng thông báo chưa đọc.
+      operationId: getUnreadCount
+      responses:
+        '200':
+          description: Số lượng thông báo chưa đọc
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnreadCountResponse'
+
+  /notifications/{id}/read:
+    patch:
+      summary: Đánh dấu một thông báo đã đọc
+      description: W5-TV3-02: Chuyển read_at sang thời điểm hiện tại.
+      operationId: markNotificationRead
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Đánh dấu đã đọc thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationResponse'
+        '404':
+          description: Không tìm thấy thông báo hoặc không thuộc người dùng
+
+  /notifications/read-all:
+    patch:
+      summary: Đánh dấu tất cả thông báo đã đọc
+      description: W5-TV3-02: Cập nhật read_at cho toàn bộ thông báo chưa đọc của người dùng.
+      operationId: markAllNotificationsRead
+      responses:
+        '204':
+          description: Đã đánh dấu tất cả thành công
+
+  /devices/tokens:
+    post:
+      summary: Đăng ký token thiết bị cho push notification (FCM / APNs)
+      description: W6-TV3-04: Lưu token và kích hoạt nhận push khi đăng nhập.
+      operationId: registerDeviceToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterDeviceTokenRequest'
+      responses:
+        '201':
+          description: Đăng ký token thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceTokenResponse'
+
+  /devices/tokens/{token}:
+    delete:
+      summary: Hủy / vô hiệu hóa token thiết bị khi đăng xuất
+      description: W6-TV3-04: Đánh dấu token active=false để ngừng gửi push.
+      operationId: unregisterDeviceToken
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Hủy token thành công
+
   /trips/{tripId}/proposals:
     get:
       summary: Lấy danh sách địa điểm đề xuất của chuyến đi
@@ -615,4 +814,119 @@ components:
           type: string
         instance:
           type: string
+
+    ItineraryValidationWarning:
+      type: object
+      properties:
+        code:
+          type: string
+          enum: [OUT_OF_TRIP_DATE, TIME_OVERLAP, INVALID_TIME_RANGE, BUDGET_EXCEEDED]
+        dayId:
+          type: string
+          format: uuid
+          nullable: true
+        itemId:
+          type: string
+          format: uuid
+          nullable: true
+        message:
+          type: string
+
+    CreateAiItineraryItemRequest:
+      type: object
+      required:
+        - dayId
+      properties:
+        dayId:
+          type: string
+          format: uuid
+        destinationId:
+          type: string
+          format: uuid
+          nullable: true
+        customStopName:
+          type: string
+          nullable: true
+        startTime:
+          type: string
+          format: time
+        endTime:
+          type: string
+          format: time
+        sortOrder:
+          type: integer
+          default: 0
+        note:
+          type: string
+        confirmed:
+          type: boolean
+          description: Bắt buộc true để lưu điểm dừng vào lịch trình
+
+    NotificationResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [INVITE_RECEIVED, INVITE_ACCEPTED, ITINERARY_CHANGED, PROPOSAL_REVIEWED, VOTE_CLOSED]
+        payloadJson:
+          type: string
+        read:
+          type: boolean
+        readAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    UnreadCountResponse:
+      type: object
+      properties:
+        count:
+          type: integer
+          format: int64
+
+    RegisterDeviceTokenRequest:
+      type: object
+      required:
+        - token
+        - platform
+      properties:
+        token:
+          type: string
+        platform:
+          type: string
+          enum: [FCM, APNS]
+        deviceName:
+          type: string
+          nullable: true
+
+    DeviceTokenResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        token:
+          type: string
+        platform:
+          type: string
+        deviceName:
+          type: string
+          nullable: true
+        active:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
 

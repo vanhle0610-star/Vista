@@ -118,7 +118,7 @@ export default function DestinationsAdminPage() {
   };
 
   const getApiBase = () => {
-    return (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1').replace(/\/+$/, '');
+    return (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081/api/v1').replace(/\/+$/, '');
   };
 
   // Fetch Destination Catalog

@@ -11,7 +11,7 @@ type Post = components['schemas']['Post'];
 type Comment = components['schemas']['Comment'];
 type PostCreate = components['schemas']['PostCreate'];
 type Photo = { file: File; preview: string; uploadId?: string };
-const base = (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080/api/v1').replace(/\/+$/, '');
+const base = (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8081/api/v1').replace(/\/+$/, '');
 const message = (error: unknown) => error instanceof Error ? error.message : 'Không kết nối được máy chủ. Vui lòng thử lại.';
 const json = (method: string, value?: unknown): RequestInit => ({ method, headers: { 'Content-Type': 'application/json' }, ...(value ? { body: JSON.stringify(value) } : {}) });
 const date = (value: string) => new Date(value).toLocaleString('vi-VN');

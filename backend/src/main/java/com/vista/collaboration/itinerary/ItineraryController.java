@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -88,6 +89,23 @@ public class ItineraryController {
       @PathVariable UUID dayId, @Valid @RequestBody ReorderItemsRequest request) {
     UUID userId = currentUserProvider.getCurrentUserId();
     return ResponseEntity.ok(itineraryService.reorderItems(dayId, userId, request));
+  }
+
+  // ── W5-TV3-04: Lưu gợi ý AI vào lịch trình (Điểm tích hợp TV4) ────────────
+
+  @PostMapping("/trips/{tripId}/itinerary/ai-suggestions")
+  @Operation(
+      summary = "Lưu gợi ý AI vào lịch trình (Điểm tích hợp TV4)",
+      description =
+          "Chỉ thực thi khi người dùng đã xác nhận (confirmed=true). "
+              + "Nếu chưa xác nhận (confirmed=false), hệ thống không lưu gì cả và trả về 400 Bad Request.")
+  public ResponseEntity<ItineraryItemResponse> saveAiSuggestion(
+      @PathVariable UUID tripId,
+      @RequestParam(defaultValue = "false") boolean confirmed,
+      @Valid @RequestBody CreateAiItineraryItemRequest request) {
+    UUID userId = currentUserProvider.getCurrentUserId();
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(itineraryService.createAiItem(tripId, userId, request, confirmed));
   }
 
   // ── W4-TV3-04: Validate lịch trình ────────────────────────────────────────

@@ -7,6 +7,7 @@ import { DestinationList, filterDestinations, REGIONS_PROVINCES } from '@/featur
 import { DirectionsPanel } from '@/features/map-location/components/DirectionsPanel';
 import { GPSPermissionBar } from '@/features/map-location/components/GPSPermissionBar';
 import { fetchMapDestinations, validPoint } from '@/features/map-location/data/publicDestinations';
+import { VIETNAM_300_DESTINATIONS } from '@/features/map-location/data/vietnam300Destinations';
 import { rememberDestination, viewedDestination } from '@/features/map-location/data/viewedDestinations';
 import { apiRequest } from '@/lib/api';
 import type { components } from '@/types/api.generated';
@@ -37,7 +38,7 @@ export default function VistaMapPage() {
     rejected: number;
     loading: boolean;
     error: string | null;
-  }>({ destinations: [], rejected: 0, loading: true, error: null });
+  }>({ destinations: VIETNAM_300_DESTINATIONS, rejected: 0, loading: false, error: null });
 
   const [attempt, setAttempt] = useState(0);
   const [selectedId, setSelectedId] = useState<string | null>(null);

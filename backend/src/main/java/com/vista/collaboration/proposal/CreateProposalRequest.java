@@ -17,6 +17,11 @@ public class CreateProposalRequest {
 
   public CreateProposalRequest() {}
 
+  public CreateProposalRequest(UUID destinationId, String title) {
+    this.destinationId = destinationId;
+    this.title = title;
+  }
+
   public String getTitle() {
     return title;
   }

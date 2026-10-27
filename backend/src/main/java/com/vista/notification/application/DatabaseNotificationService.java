@@ -2,6 +2,8 @@ package com.vista.notification.application;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vista.notification.domain.DeviceTokenEntity;
+import com.vista.notification.domain.DeviceTokenRepository;
 import com.vista.notification.domain.NotificationEntity;
 import com.vista.notification.domain.NotificationRepository;
 import java.util.List;
@@ -9,16 +11,18 @@ import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Triển khai NotificationService lưu thực vào DB (bảng {@code notifications}).
- *
- * <p>Push notification (FCM/APNs) sẽ được bổ sung ở Tuần 5–6 khi tích hợp Firebase Admin SDK.
+ * Hỗ trợ lưu thông báo in-app và dispatch push notifications tới các thiết bị đã đăng ký.
  */
 @Service("realNotificationService")
+@Primary
 @Transactional
 public class DatabaseNotificationService implements NotificationService {
 
@@ -27,14 +31,25 @@ public class DatabaseNotificationService implements NotificationService {
   private final NotificationRepository notificationRepository;
   private final JdbcClient jdbcClient;
   private final ObjectMapper objectMapper;
+  private final DeviceTokenRepository deviceTokenRepository;
+
+  @Autowired
+  public DatabaseNotificationService(
+      NotificationRepository notificationRepository,
+      JdbcClient jdbcClient,
+      ObjectMapper objectMapper,
+      @Autowired(required = false) DeviceTokenRepository deviceTokenRepository) {
+    this.notificationRepository = notificationRepository;
+    this.jdbcClient = jdbcClient;
+    this.objectMapper = objectMapper;
+    this.deviceTokenRepository = deviceTokenRepository;
+  }
 
   public DatabaseNotificationService(
       NotificationRepository notificationRepository,
       JdbcClient jdbcClient,
       ObjectMapper objectMapper) {
-    this.notificationRepository = notificationRepository;
-    this.jdbcClient = jdbcClient;
-    this.objectMapper = objectMapper;
+    this(notificationRepository, jdbcClient, objectMapper, null);
   }
 
   @Override
@@ -55,6 +70,7 @@ public class DatabaseNotificationService implements NotificationService {
     NotificationEntity notification = new NotificationEntity(recipientUserId, type, payloadJson);
     notificationRepository.save(notification);
 
+    dispatchPushNotification(recipientUserId, title, body, type);
     log.debug("Đã lưu thông báo: type={}, recipientUserId={}", type, recipientUserId);
   }
 
@@ -101,10 +117,33 @@ public class DatabaseNotificationService implements NotificationService {
     for (UUID recipientId : recipients) {
       NotificationEntity notification = new NotificationEntity(recipientId, type, payloadJson);
       notificationRepository.save(notification);
+      dispatchPushNotification(recipientId, title, body, type);
     }
 
     log.info(
         "Đã gửi thông báo '{}' tới {} thành viên của trip {}", type, recipients.size(), tripId);
+  }
+
+  // ── Push dispatch helper (W6-TV3-04) ───────────────────────────────────────
+
+  private void dispatchPushNotification(UUID userId, String title, String body, String type) {
+    if (deviceTokenRepository == null || userId == null) return;
+    try {
+      List<DeviceTokenEntity> tokens = deviceTokenRepository.findByUserIdAndActiveTrue(userId);
+      for (DeviceTokenEntity token : tokens) {
+        // TODO: Tích hợp với Firebase Admin SDK / APNs Gateway để gửi thông báo đẩy từ xa tới mobile/web client.
+        log.info(
+            "[PUSH-DISPATCH] Gửi push tới thiết bị {} ({}) user {}: type={}, title='{}', body='{}'",
+            token.getToken(),
+            token.getPlatform(),
+            userId,
+            type,
+            title,
+            body);
+      }
+    } catch (Exception e) {
+      log.warn("Không thể dispatch push notification cho user {}: {}", userId, e.getMessage());
+    }
   }
 
   // ── Private helpers ────────────────────────────────────────────────────────

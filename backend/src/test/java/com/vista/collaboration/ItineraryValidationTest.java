@@ -3,15 +3,20 @@ package com.vista.collaboration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
+import com.vista.budget.infrastructure.ExpenseRepository;
 import com.vista.collaboration.itinerary.ItineraryDay;
 import com.vista.collaboration.itinerary.ItineraryDayRepository;
 import com.vista.collaboration.itinerary.ItineraryItem;
 import com.vista.collaboration.itinerary.ItineraryItemRepository;
 import com.vista.collaboration.itinerary.ItineraryService;
 import com.vista.collaboration.itinerary.ItineraryValidationWarning;
+import com.vista.destination.domain.Destination;
+import com.vista.destination.repository.DestinationRepository;
+import com.vista.notification.application.NotificationService;
 import com.vista.trip.application.TripAccessService;
 import com.vista.trip.domain.TripEntity;
 import com.vista.trip.domain.TripRepository;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -28,8 +33,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
- * W4-TV3-04: Test validate lịch trình sơ bộ. Kiểm tra: ngày ngoài khoảng trip, trùng giờ trong 1
- * ngày, giờ không hợp lệ.
+ * W4-TV3-04 & W5-TV3-01: Test validate lịch trình nâng cao.
+ * Kiểm tra: ngày ngoài khoảng trip, trùng giờ trong 1 ngày, giờ không hợp lệ, và cảnh báo vượt ngân sách.
  */
 @ExtendWith(MockitoExtension.class)
 class ItineraryValidationTest {
@@ -38,6 +43,9 @@ class ItineraryValidationTest {
   @Mock private ItineraryItemRepository itemRepository;
   @Mock private TripAccessService tripAccessService;
   @Mock private TripRepository tripRepository;
+  @Mock private DestinationRepository destinationRepository;
+  @Mock private ExpenseRepository expenseRepository;
+  @Mock private NotificationService notificationService;
 
   @InjectMocks private ItineraryService itineraryService;
 
@@ -56,6 +64,8 @@ class ItineraryValidationTest {
     ReflectionTestUtils.setField(trip, "createdAt", Instant.now());
     ReflectionTestUtils.setField(trip, "updatedAt", Instant.now());
     ReflectionTestUtils.setField(trip, "version", 0L);
+    ReflectionTestUtils.setField(trip, "budgetTotal", new BigDecimal("10000000.00"));
+    ReflectionTestUtils.setField(trip, "currency", "VND");
   }
 
   /** Helper tạo ItineraryDay mock với tripDate. */
@@ -247,5 +257,107 @@ class ItineraryValidationTest {
     assertThat(warnings.stream().map(ItineraryValidationWarning::code).toList())
         .containsExactlyInAnyOrder("OUT_OF_TRIP_DATE", "TIME_OVERLAP");
     assertThat(warnings).allSatisfy(w -> assertThat(w.message()).isNotBlank());
+  }
+
+  // ── W5-TV3-01: Cảnh báo ngân sách ──────────────────────────────────────────
+
+  @Test
+  @DisplayName("W5-01 Chi phí dự kiến vượt ngân sách chuyến → trả cảnh báo BUDGET_EXCEEDED kèm chi tiết")
+  void validate_budgetExceeded_returnsBudgetWarning() {
+    UUID dayId = UUID.randomUUID();
+    ItineraryDay day = makeDay(dayId, 1, LocalDate.of(2026, 11, 10));
+
+    UUID destId1 = UUID.randomUUID();
+    UUID destId2 = UUID.randomUUID();
+
+    Destination dest1 = new Destination();
+    ReflectionTestUtils.setField(dest1, "priceMax", new BigDecimal("6000000.00"));
+    Destination dest2 = new Destination();
+    ReflectionTestUtils.setField(dest2, "priceMax", new BigDecimal("7000000.00"));
+
+    ItineraryItem item1 = new ItineraryItem(day, destId1, null, LocalTime.of(8, 0), LocalTime.of(10, 0), 0, null, USER_ID);
+    ReflectionTestUtils.setField(item1, "id", UUID.randomUUID());
+    ReflectionTestUtils.setField(item1, "updatedAt", Instant.now());
+
+    UUID item2Id = UUID.randomUUID();
+    ItineraryItem item2 = new ItineraryItem(day, destId2, "Bà Nà Hills", LocalTime.of(11, 0), LocalTime.of(15, 0), 1, null, USER_ID);
+    ReflectionTestUtils.setField(item2, "id", item2Id);
+    ReflectionTestUtils.setField(item2, "updatedAt", Instant.now());
+
+    // Ngân sách trip: 10,000,000 VND. Stop 1: 6,000,000. Stop 2: 7,000,000 -> Tổng: 13,000,000 -> Vượt 3,000,000
+    when(tripRepository.findById(TRIP_ID)).thenReturn(Optional.of(trip));
+    when(dayRepository.findByTripIdOrderByDayNumberAsc(TRIP_ID)).thenReturn(List.of(day));
+    when(itemRepository.findByDayIdOrderBySortOrderAsc(dayId)).thenReturn(List.of(item1, item2));
+    when(destinationRepository.findById(destId1)).thenReturn(Optional.of(dest1));
+    when(destinationRepository.findById(destId2)).thenReturn(Optional.of(dest2));
+
+    List<ItineraryValidationWarning> warnings =
+        itineraryService.validateItinerary(TRIP_ID, USER_ID);
+
+    assertThat(warnings).hasSize(1);
+    ItineraryValidationWarning warning = warnings.get(0);
+    assertThat(warning.code()).isEqualTo("BUDGET_EXCEEDED");
+    assertThat(warning.dayId()).isEqualTo(dayId);
+    assertThat(warning.itemId()).isEqualTo(item2Id);
+    assertThat(warning.message()).contains("Bà Nà Hills");
+    assertThat(warning.message()).contains("vượt");
+    assertThat(warning.message()).contains("3000000");
+  }
+
+  @Test
+  @DisplayName("W5-01 Lịch trình sạch trong ngân sách → không có cảnh báo sai")
+  void validate_cleanItineraryWithBudget_noWarnings() {
+    UUID dayId = UUID.randomUUID();
+    ItineraryDay day = makeDay(dayId, 1, LocalDate.of(2026, 11, 10));
+
+    UUID destId = UUID.randomUUID();
+    Destination dest = new Destination();
+    ReflectionTestUtils.setField(dest, "priceMax", new BigDecimal("5000000.00"));
+
+    ItineraryItem item = new ItineraryItem(day, destId, "Bán đảo Sơn Trà", LocalTime.of(8, 0), LocalTime.of(11, 0), 0, null, USER_ID);
+    ReflectionTestUtils.setField(item, "id", UUID.randomUUID());
+    ReflectionTestUtils.setField(item, "updatedAt", Instant.now());
+
+    when(tripRepository.findById(TRIP_ID)).thenReturn(Optional.of(trip));
+    when(dayRepository.findByTripIdOrderByDayNumberAsc(TRIP_ID)).thenReturn(List.of(day));
+    when(itemRepository.findByDayIdOrderBySortOrderAsc(dayId)).thenReturn(List.of(item));
+    when(destinationRepository.findById(destId)).thenReturn(Optional.of(dest));
+
+    List<ItineraryValidationWarning> warnings =
+        itineraryService.validateItinerary(TRIP_ID, USER_ID);
+
+    assertThat(warnings).isEmpty();
+  }
+
+  @Test
+  @DisplayName("W5-01 Đủ 3 lỗi: sai ngày + trùng giờ + vượt ngân sách → trả đúng 3 loại cảnh báo")
+  void validate_threeErrors_returnsAllThreeWarnings() {
+    // 1. Ngày ngoài khoảng trip (15/11 sau 12/11)
+    UUID dayId = UUID.randomUUID();
+    ItineraryDay day = makeDay(dayId, 4, LocalDate.of(2026, 11, 15));
+
+    UUID destId1 = UUID.randomUUID();
+    Destination dest1 = new Destination();
+    ReflectionTestUtils.setField(dest1, "priceMax", new BigDecimal("15000000.00")); // Vượt ngân sách 10 triệu
+
+    // 2. Trùng giờ: 08:00–12:00 và 10:00–14:00
+    ItineraryItem item1 = new ItineraryItem(day, destId1, "Cù Lao Chàm", LocalTime.of(8, 0), LocalTime.of(12, 0), 0, null, USER_ID);
+    ReflectionTestUtils.setField(item1, "id", UUID.randomUUID());
+    ReflectionTestUtils.setField(item1, "updatedAt", Instant.now());
+
+    ItineraryItem item2 = new ItineraryItem(day, null, "Rừng dừa Bảy Mẫu", LocalTime.of(10, 0), LocalTime.of(14, 0), 1, null, USER_ID);
+    ReflectionTestUtils.setField(item2, "id", UUID.randomUUID());
+    ReflectionTestUtils.setField(item2, "updatedAt", Instant.now());
+
+    when(tripRepository.findById(TRIP_ID)).thenReturn(Optional.of(trip));
+    when(dayRepository.findByTripIdOrderByDayNumberAsc(TRIP_ID)).thenReturn(List.of(day));
+    when(itemRepository.findByDayIdOrderBySortOrderAsc(dayId)).thenReturn(List.of(item1, item2));
+    when(destinationRepository.findById(destId1)).thenReturn(Optional.of(dest1));
+
+    List<ItineraryValidationWarning> warnings =
+        itineraryService.validateItinerary(TRIP_ID, USER_ID);
+
+    assertThat(warnings.stream().map(ItineraryValidationWarning::code).toList())
+        .containsExactlyInAnyOrder("OUT_OF_TRIP_DATE", "TIME_OVERLAP", "BUDGET_EXCEEDED");
   }
 }

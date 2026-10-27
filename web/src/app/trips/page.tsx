@@ -51,7 +51,86 @@ interface TripItem {
   itineraryDays?: unknown[];
 }
 
-const DEFAULT_DEMO_TRIPS: TripItem[] = [];
+const DEFAULT_DEMO_TRIPS: TripItem[] = [
+  {
+    id: 'trip-danang-2026',
+    title: 'Khám phá Đà Nẵng - Hội An 4N3Đ',
+    destination: 'Đà Nẵng & Quảng Nam',
+    durationBadge: '4 ngày 3 đêm',
+    startDate: '15/11',
+    endDate: '18/11/2026',
+    status: 'PLANNING',
+    role: 'OWNER',
+    budgetTotal: 18500000,
+    budgetSpent: 5200000,
+    progressPercent: 35,
+    members: [
+      { name: 'Lê Vân Anh (Bạn)', avatar: 'VA', color: '#0284c7' },
+      { name: 'Trần Minh Tuấn', avatar: 'MT', color: '#10b981' },
+      { name: 'Nguyễn Hoàng Nam', avatar: 'HN', color: '#f59e0b' },
+    ],
+    image: 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=800&q=80',
+    treasuryPath: '/trips/trip-danang-2026/treasury',
+    alertType: 'BLUE',
+    alertText: 'Chờ biểu quyết chặng: Đang mở bình chọn địa điểm ăn tối Ngày 2.',
+    alertLinkText: 'Bình chọn',
+    quickActions: [
+      { label: 'Lịch trình', href: '/trips/trip-danang-2026' },
+      { label: 'Thủ quỹ', href: '/trips/trip-danang-2026/treasury' },
+      { label: 'Thành viên', href: '/trips/trip-danang-2026' },
+    ],
+  },
+  {
+    id: 'trip-hagiang-2026',
+    title: 'Chinh phục Cực Bắc Hà Giang',
+    destination: 'Hà Giang',
+    durationBadge: '3 ngày 2 đêm',
+    startDate: '28/11',
+    endDate: '30/11/2026',
+    status: 'ACTIVE',
+    role: 'MEMBER',
+    budgetTotal: 12000000,
+    budgetSpent: 8400000,
+    progressPercent: 70,
+    members: [
+      { name: 'Phạm Thanh Sơn', avatar: 'TS', color: '#6366f1' },
+      { name: 'Lê Vân Anh (Bạn)', avatar: 'VA', color: '#0284c7' },
+    ],
+    image: 'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80',
+    treasuryPath: '/trips/trip-hagiang-2026/treasury',
+    alertType: 'AMBER',
+    alertText: 'Đang diễn ra chặng đèo Mã Pí Lèng',
+    quickActions: [
+      { label: 'Xem chi tiết', href: '/trips/trip-hagiang-2026' },
+      { label: 'Sổ chi tiêu', href: '/trips/trip-hagiang-2026/treasury' },
+    ],
+  },
+  {
+    id: 'trip-phuquoc-2026',
+    title: 'Nghỉ dưỡng biển đảo ngọc Phú Quốc 3N2Đ',
+    destination: 'Phú Quốc, Kiên Giang',
+    durationBadge: '3 ngày 2 đêm',
+    startDate: '10/09',
+    endDate: '12/09/2026',
+    status: 'COMPLETED',
+    role: 'MEMBER',
+    budgetTotal: 15000000,
+    budgetSpent: 14200000,
+    progressPercent: 100,
+    members: [
+      { name: 'Nguyễn Văn Tuấn', avatar: 'VT', color: '#0284c7' },
+      { name: 'Lê Vân Anh (Bạn)', avatar: 'VA', color: '#10b981' },
+    ],
+    image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80',
+    treasuryPath: '/trips/trip-phuquoc-2026/treasury',
+    alertType: 'COMPLETED',
+    alertText: 'Chuyến đi đã hoàn tất xuất sắc',
+    quickActions: [
+      { label: 'Xem tổng kết', href: '/trips/trip-danang-2026' },
+      { label: 'Sổ quỹ', href: '/trips/trip-danang-2026/treasury' },
+    ],
+  },
+];
 
 export default function TripsPage() {
   const router = useRouter();
@@ -82,7 +161,7 @@ export default function TripsPage() {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  const [tripsList, setTripsList] = useState<TripItem[]>([]);
+  const [tripsList, setTripsList] = useState<TripItem[]>(DEFAULT_DEMO_TRIPS);
 
   // Synchronize with localStorage (custom trips created from Planner or Trips)
   useEffect(() => {
@@ -91,36 +170,52 @@ export default function TripsPage() {
       if (typeof window !== 'undefined') {
         try {
           const stored = localStorage.getItem('vista_custom_trips');
-          const customTrips: TripItem[] = stored ? JSON.parse(stored) : [];
-          if (customTrips && customTrips.length > 0) {
-            const normalized = customTrips.map((t) => ({
-              ...t,
-              members: Array.isArray(t.members) && t.members.length > 0
-                ? t.members
-                : [{ name: 'Lê Vân Anh (Bạn)', avatar: 'VA', color: '#0284c7' }],
-              quickActions: Array.isArray(t.quickActions) && t.quickActions.length > 0
-                ? t.quickActions
-                : [
-                    { label: 'Lịch trình', href: `/planner?tripId=${t.id}&dest=${encodeURIComponent(t.destination || '')}` },
-                    { label: 'Phân công', actionType: 'ASSIGN' },
-                    { label: 'Ghi chú', actionType: 'NOTE' },
-                  ],
-              budgetTotal: t.budgetTotal || 20000000,
-              budgetSpent: t.budgetSpent || 0,
-              progressPercent: typeof t.progressPercent === 'number' ? t.progressPercent : 20,
-              durationBadge: t.durationBadge || '4 ngày',
-              startDate: t.startDate || '15/11',
-              endDate: t.endDate || '18/11/2026',
-              role: t.role || 'OWNER',
-              status: t.status || 'PLANNING',
-              image: t.image || 'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80',
-              treasuryPath: t.treasuryPath || `/trips/${t.id}/treasury`,
-            }));
-
-            setTripsList(normalized);
-          } else {
-            setTripsList([]);
+          let customTrips: TripItem[] = [];
+          try {
+            const parsed = stored ? JSON.parse(stored) : [];
+            if (Array.isArray(parsed)) {
+              customTrips = parsed.filter(Boolean);
+            }
+          } catch {
+            customTrips = [];
           }
+
+          const tripMap = new Map<string, TripItem>();
+          DEFAULT_DEMO_TRIPS.forEach((item) => tripMap.set(item.id, item));
+
+          if (customTrips && customTrips.length > 0) {
+            customTrips.forEach((t) => {
+              if (!t || !t.id) return;
+              const existing = tripMap.get(t.id);
+              const normalized: TripItem = {
+                ...existing,
+                ...t,
+                members: Array.isArray(t.members) && t.members.length > 0
+                  ? t.members
+                  : existing?.members || [{ name: 'Lê Vân Anh (Bạn)', avatar: 'VA', color: '#0284c7' }],
+                quickActions: Array.isArray(t.quickActions) && t.quickActions.length > 0
+                  ? t.quickActions
+                  : existing?.quickActions || [
+                      { label: 'Lịch trình', href: `/planner?tripId=${t.id}&dest=${encodeURIComponent(t.destination || '')}` },
+                      { label: 'Phân công', actionType: 'ASSIGN' },
+                      { label: 'Ghi chú', actionType: 'NOTE' },
+                    ],
+                budgetTotal: t.budgetTotal || existing?.budgetTotal || 20000000,
+                budgetSpent: t.budgetSpent || existing?.budgetSpent || 0,
+                progressPercent: typeof t.progressPercent === 'number' ? t.progressPercent : (existing?.progressPercent || 20),
+                durationBadge: t.durationBadge || existing?.durationBadge || '4 ngày',
+                startDate: t.startDate || existing?.startDate || '15/11',
+                endDate: t.endDate || existing?.endDate || '18/11/2026',
+                role: t.role || existing?.role || 'OWNER',
+                status: t.status || existing?.status || 'PLANNING',
+                image: t.image || existing?.image || 'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80',
+                treasuryPath: t.treasuryPath || existing?.treasuryPath || `/trips/${t.id}/treasury`,
+              };
+              tripMap.set(t.id, normalized);
+            });
+          }
+
+          setTripsList(Array.from(tripMap.values()));
 
           // Check if user just created a trip from Planner
           const params = new URLSearchParams(window.location.search);
