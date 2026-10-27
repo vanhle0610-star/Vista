@@ -109,7 +109,7 @@ public class SecurityConfiguration {
                         "/api/v1/invitations/*/preview")
                     .permitAll()
                     .requestMatchers("/api/v1/admin/**")
-                    .hasRole("ADMIN")
+                    .hasAnyRole("ADMIN", "MODERATOR")
                     .anyRequest()
                     .authenticated());
 

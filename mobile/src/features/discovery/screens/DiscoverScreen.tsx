@@ -52,14 +52,49 @@ const PROVINCE_FILTERS = [
   'Lâm Đồng',
 ];
 
+const CATEGORY_FILTERS = [
+  'Tất cả',
+  'Văn hóa',
+  'Lịch sử',
+  'Thiên nhiên',
+  'Biển',
+  'Tâm linh',
+  'Nghỉ dưỡng',
+  'Ẩm thực',
+  'Sinh thái',
+];
+
+interface PriceFilterOption {
+  label: string;
+  value: number | null;
+}
+
+const PRICE_FILTERS: PriceFilterOption[] = [
+  { label: 'Tất cả giá', value: null },
+  { label: 'Miễn phí (0đ)', value: 0 },
+  { label: '≤ 100k', value: 100000 },
+  { label: '≤ 300k', value: 300000 },
+  { label: '≤ 500k', value: 500000 },
+  { label: '≤ 1 triệu', value: 1000000 },
+];
+
 export function DiscoverScreen() {
   const [searchInput, setSearchInput] = useState('');
   const [keyword, setKeyword] = useState('');
   const [selectedProvince, setSelectedProvince] = useState('Tất cả');
+  const [selectedCategory, setSelectedCategory] = useState('Tất cả');
+  const [selectedPriceMax, setSelectedPriceMax] = useState<number | null>(null);
   const { isFavorite, toggleFavorite } = useFavorites();
 
+  const hasActiveFilter = Boolean(
+    keyword ||
+      selectedProvince !== 'Tất cả' ||
+      selectedCategory !== 'Tất cả' ||
+      selectedPriceMax !== null
+  );
+
   const { data, isPending, isError, error, refetch } = useQuery<DestinationPage>({
-    queryKey: ['destinations', keyword, selectedProvince],
+    queryKey: ['destinations', keyword, selectedProvince, selectedCategory, selectedPriceMax],
     queryFn: async () => {
       const params: Record<string, string | number> = { size: 50 };
       if (keyword.trim()) {
@@ -67,6 +102,12 @@ export function DiscoverScreen() {
       }
       if (selectedProvince !== 'Tất cả') {
         params.province = selectedProvince;
+      }
+      if (selectedCategory !== 'Tất cả') {
+        params.category = selectedCategory;
+      }
+      if (selectedPriceMax !== null) {
+        params.priceMax = selectedPriceMax;
       }
 
       const res = await api.get<DestinationPage>('/destinations', { params });
@@ -81,6 +122,14 @@ export function DiscoverScreen() {
   const handleClearSearch = () => {
     setSearchInput('');
     setKeyword('');
+  };
+
+  const handleResetFilters = () => {
+    setSearchInput('');
+    setKeyword('');
+    setSelectedProvince('Tất cả');
+    setSelectedCategory('Tất cả');
+    setSelectedPriceMax(null);
   };
 
   const formatPrice = (min?: number | null, max?: number | null) => {
@@ -139,29 +188,107 @@ export function DiscoverScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* 3. Bộ lọc Tỉnh/Thành */}
+      {/* 3. Bộ lọc Đa Tiêu Chí (Tỉnh/Thành, Thể loại, Mức giá) */}
       <View style={styles.filterSection}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.filterChipsRow}
-        >
-          {PROVINCE_FILTERS.map((prov) => {
-            const isSelected = selectedProvince === prov;
-            return (
-              <TouchableOpacity
-                key={prov}
-                style={[styles.filterChip, isSelected && styles.filterChipActive]}
-                onPress={() => setSelectedProvince(prov)}
-                activeOpacity={0.75}
-              >
-                <Text style={[styles.filterChipText, isSelected && styles.filterChipTextActive]}>
-                  {prov}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
+        {/* Lọc theo Tỉnh/Thành */}
+        <View style={styles.filterGroup}>
+          <Text style={styles.filterGroupLabel}>Tỉnh / Thành phố:</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filterChipsRow}
+          >
+            {PROVINCE_FILTERS.map((prov) => {
+              const isSelected = selectedProvince === prov;
+              return (
+                <TouchableOpacity
+                  key={prov}
+                  style={[styles.filterChip, isSelected && styles.filterChipActive]}
+                  onPress={() => setSelectedProvince(prov)}
+                  activeOpacity={0.75}
+                >
+                  <Text style={[styles.filterChipText, isSelected && styles.filterChipTextActive]}>
+                    {prov}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </View>
+
+        {/* Lọc theo Thể loại */}
+        <View style={styles.filterGroup}>
+          <Text style={styles.filterGroupLabel}>Chủ đề / Danh mục:</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filterChipsRow}
+          >
+            {CATEGORY_FILTERS.map((cat) => {
+              const isSelected = selectedCategory === cat;
+              return (
+                <TouchableOpacity
+                  key={cat}
+                  style={[styles.filterChip, isSelected && styles.filterChipCategoryActive]}
+                  onPress={() => setSelectedCategory(cat)}
+                  activeOpacity={0.75}
+                >
+                  <Text
+                    style={[
+                      styles.filterChipText,
+                      isSelected && styles.filterChipTextActive,
+                    ]}
+                  >
+                    {cat}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </View>
+
+        {/* Lọc theo Mức giá tối đa */}
+        <View style={styles.filterGroup}>
+          <Text style={styles.filterGroupLabel}>Ngân sách vé tối đa:</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filterChipsRow}
+          >
+            {PRICE_FILTERS.map((p) => {
+              const isSelected = selectedPriceMax === p.value;
+              return (
+                <TouchableOpacity
+                  key={p.label}
+                  style={[styles.filterChip, isSelected && styles.filterChipPriceActive]}
+                  onPress={() => setSelectedPriceMax(p.value)}
+                  activeOpacity={0.75}
+                >
+                  <Text
+                    style={[
+                      styles.filterChipText,
+                      isSelected && styles.filterChipTextActive,
+                    ]}
+                  >
+                    {p.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </View>
+
+        {/* Thanh trạng thái bộ lọc đang kích hoạt */}
+        {hasActiveFilter && (
+          <View style={styles.activeFilterBar}>
+            <Text style={styles.activeFilterBarText}>
+              Đang áp dụng bộ lọc tùy chỉnh
+            </Text>
+            <TouchableOpacity onPress={handleResetFilters} style={styles.resetFilterAction}>
+              <Text style={styles.resetFilterActionText}>✕ Đặt lại tất cả</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
 
       {/* 4. Nội dung danh sách */}
@@ -180,16 +307,12 @@ export function DiscoverScreen() {
         ) : !data || data.items.length === 0 ? (
           <View style={styles.feedbackContainer}>
             <EmptyState message="Không tìm thấy điểm đến nào phù hợp với bộ lọc hiện tại." />
-            {(keyword || selectedProvince !== 'Tất cả') && (
+            {hasActiveFilter && (
               <TouchableOpacity
                 style={styles.resetFilterBtn}
-                onPress={() => {
-                  setSearchInput('');
-                  setKeyword('');
-                  setSelectedProvince('Tất cả');
-                }}
+                onPress={handleResetFilters}
               >
-                <Text style={styles.resetFilterText}>Xóa bộ lọc</Text>
+                <Text style={styles.resetFilterText}>Xóa tất cả bộ lọc</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -355,6 +478,16 @@ const styles = StyleSheet.create({
   },
   filterSection: {
     marginBottom: tokens.spacing.md,
+    gap: 10,
+  },
+  filterGroup: {
+    gap: 5,
+  },
+  filterGroupLabel: {
+    fontSize: 11.5,
+    fontWeight: '700',
+    color: '#64748b',
+    letterSpacing: 0.3,
   },
   filterChipsRow: {
     gap: 8,
@@ -362,9 +495,9 @@ const styles = StyleSheet.create({
   },
   filterChip: {
     backgroundColor: '#ffffff',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: tokens.colors.border,
   },
@@ -372,13 +505,49 @@ const styles = StyleSheet.create({
     backgroundColor: tokens.colors.primary,
     borderColor: tokens.colors.primary,
   },
+  filterChipCategoryActive: {
+    backgroundColor: '#0284c7',
+    borderColor: '#0284c7',
+  },
+  filterChipPriceActive: {
+    backgroundColor: '#059669',
+    borderColor: '#059669',
+  },
   filterChipText: {
-    fontSize: 13,
+    fontSize: 12.5,
     color: tokens.colors.ink,
     fontWeight: '600',
   },
   filterChipTextActive: {
     color: '#ffffff',
+  },
+  activeFilterBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#f8fafc',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    marginTop: 2,
+  },
+  activeFilterBarText: {
+    fontSize: 12,
+    color: '#475569',
+    fontWeight: '500',
+  },
+  resetFilterAction: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    backgroundColor: '#fee2e2',
+    borderRadius: 6,
+  },
+  resetFilterActionText: {
+    fontSize: 11.5,
+    color: '#b91c1c',
+    fontWeight: '700',
   },
   listSection: {
     flex: 1,
