@@ -2,7 +2,12 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
+import {
+  getSampleItineraryForDestination,
+  getDestinationHeroImage,
+  getSampleProposals,
+} from '@/data/sampleItineraries';
 import {
   ArrowLeft,
   Calendar,
@@ -81,190 +86,39 @@ interface TripDetailData {
   itineraryDays?: DayPlanItem[];
 }
 
-const SAMPLE_HANOI_DAYS: DayPlanItem[] = [
-  {
-    dayNumber: 1,
-    title: 'Tinh hoa Cố Đô: Hồ Gươm, Phố Cổ & Văn Miếu',
-    dateStr: '24/11/2026',
-    activities: [
-      {
-        id: 'hn-1-1',
-        timeSlot: 'MORNING',
-        timeRange: '07:30 – 10:00',
-        title: 'Hồ Hoàn Kiếm, Tháp Rùa & Đền Ngọc Sơn',
-        description: 'Dạo quanh hồ Gươm buổi sớm mai thanh bình, ngắm cầu Thê Húc đỏ son và viếng đền Ngọc Sơn cổ kính.',
-        location: 'Hoàn Kiếm, Hà Nội',
-        costVnd: 30000,
-        costLabel: '30.000đ / người',
-        category: 'Di tích & Văn hóa',
-        image: 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=800&q=80',
-        tips: 'Sáng sớm bờ hồ rất vắng và mát mẻ, chụp cầu Thê Húc góc nghiêng đón nắng sớm sẽ cực kỳ rực rỡ! 📸',
-      },
-      {
-        id: 'hn-1-2',
-        timeSlot: 'MORNING',
-        timeRange: '10:30 – 12:00',
-        title: 'Thưởng thức Cà phê Trứng Giảng 39 Nguyễn Hữu Huân',
-        description: 'Thưởng thức hương vị cà phê trứng béo ngậy nức tiếng Hà Thành từ năm 1946 tại góc phố cổ.',
-        location: '39 Nguyễn Hữu Huân, Hoàn Kiếm',
-        costVnd: 45000,
-        costLabel: '45.000đ / ly',
-        category: 'Ẩm thực & Cà phê',
-        image: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80',
-        tips: 'Nên uống khi còn nóng hổi trong bát nước ấm để cảm nhận trọn vẹn lớp kem trứng mịn màng! ☕',
-      },
-      {
-        id: 'hn-1-3',
-        timeSlot: 'AFTERNOON',
-        timeRange: '13:30 – 16:30',
-        title: 'Văn Miếu – Quốc Tử Giám & Khuê Văn Các',
-        description: 'Khám phá trường đại học đầu tiên của Việt Nam, ngắm bia tiến sĩ nghìn năm văn hiến và kiến trúc thời Lê.',
-        location: '58 Quốc Tử Giám, Đống Đa',
-        costVnd: 70000,
-        costLabel: '70.000đ / vé',
-        category: 'Di tích lịch sử',
-        image: 'https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80',
-        tips: 'Mang theo thẻ sinh viên/học sinh nếu có để giảm 50% giá vé, nên mặc áo dài hoặc đồ lịch sự trang nhã. 🏛️',
-      },
-      {
-        id: 'hn-1-4',
-        timeSlot: 'EVENING',
-        timeRange: '18:30 – 21:30',
-        title: 'Ẩm thực Tạ Hiện & Chợ đêm Phố Cổ Hà Nội',
-        description: 'Khám phá ngõ bia sầm uất Tạ Hiện, thưởng thức nem chua rán, bún chả que tre và dạo chợ đêm Đồng Xuân.',
-        location: 'Phố Cổ, Hoàn Kiếm, Hà Nội',
-        costVnd: 200000,
-        costLabel: '200.000đ / người',
-        category: 'Ẩm thực đường phố',
-        image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
-        tips: 'Ngõ Tạ Hiện sôi động nhất từ 19h30, nhớ thử món nem chua rán giòn rụm và chim cút nướng mật ong nhé! 🍢',
-      },
-    ],
-  },
-  {
-    dayNumber: 2,
-    title: 'Dấu ấn Lịch sử & Hoàng hôn Hồ Tây lãng mạn',
-    dateStr: '25/11/2026',
-    activities: [
-      {
-        id: 'hn-2-1',
-        timeSlot: 'MORNING',
-        timeRange: '07:45 – 10:15',
-        title: 'Lăng Chủ tịch Hồ Chí Minh & Chùa Một Cột',
-        description: 'Viếng lăng Bác, tham quan khu nhà sàn ao cá và chiêm bái Chùa Một Cột với dáng hoa sen vươn mình độc đáo.',
-        location: 'Số 2 Hùng Vương, Ba Đình',
-        costVnd: 0,
-        costLabel: 'Miễn phí',
-        category: 'Di tích quốc gia',
-        image: 'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80',
-        tips: 'Lăng Bác đóng cửa vào thứ 2 và thứ 6, vào viếng cần xếp hàng trật tự, trang phục kín đáo lịch sự. 🌸',
-      },
-      {
-        id: 'hn-2-2',
-        timeSlot: 'AFTERNOON',
-        timeRange: '11:00 – 13:30',
-        title: 'Hoàng thành Thăng Long & Cột cờ Hà Nội',
-        description: 'Di sản Văn hóa Thế giới UNESCO với tầng tầng lớp lớp di tích qua các triều đại Lý, Trần, Lê.',
-        location: '19C Hoàng Diệu, Ba Đình',
-        costVnd: 70000,
-        costLabel: '70.000đ / vé',
-        category: 'Di sản thế giới',
-        image: 'https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80',
-        tips: 'Đoan Môn và Hậu Lâu là 2 góc sống ảo hoài niệm mang đậm nét rêu phong kinh thành Thăng Long xưa. 🏰',
-      },
-      {
-        id: 'hn-2-3',
-        timeSlot: 'AFTERNOON',
-        timeRange: '15:30 – 17:30',
-        title: 'Chùa Trấn Quốc & Ngắm hoàng hôn Hồ Tây',
-        description: 'Chiêm bái ngôi chùa cổ nhất Hà Nội hơn 1500 năm tuổi và ngắm cảnh hoàng hôn rực rỡ bên đường Thanh Niên.',
-        location: 'Đường Thanh Niên, Tây Hồ',
-        costVnd: 0,
-        costLabel: 'Miễn phí',
-        category: 'Tâm linh & Cảnh quan',
-        image: 'https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80',
-        tips: 'Từ 16h45 đến 17h30 mặt trời lặn dát vàng mặt nước Hồ Tây, ngồi cà phê ven đường Thanh Niên ngắm cảnh chill tuyệt đối. 🌇',
-      },
-      {
-        id: 'hn-2-4',
-        timeSlot: 'EVENING',
-        timeRange: '18:30 – 21:00',
-        title: 'Thưởng thức Phở cuốn & Bánh tôm Hồ Tây',
-        description: 'Trải nghiệm ẩm thực phở cuốn Hương Mai tại bán đảo Ngũ Xã và bánh tôm giòn rụm bên hồ.',
-        location: 'Ngũ Xã, Ba Đình, Hà Nội',
-        costVnd: 150000,
-        costLabel: '150.000đ / người',
-        category: 'Ẩm thực địa phương',
-        image: 'https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=800&q=80',
-        tips: 'Phở cuốn Ngũ Xã ăn kèm nước chấm chua ngọt tỏi ớt ấm nóng và đĩa phở chiên phồng giòn tan. 🍜',
-      },
-    ],
-  },
-  {
-    dayNumber: 3,
-    title: 'Bảo tàng Dân tộc học & Làng gốm Bát Tràng',
-    dateStr: '26/11/2026',
-    activities: [
-      {
-        id: 'hn-3-1',
-        timeSlot: 'MORNING',
-        timeRange: '08:30 – 11:30',
-        title: 'Bảo tàng Dân tộc học Việt Nam',
-        description: 'Tìm hiểu nét văn hóa đa dạng của 54 dân tộc anh em qua nhà rông Tây Nguyên, nhà sàn Mường và múa rối nước.',
-        location: 'Đường Nguyễn Văn Huyên, Cầu Giấy',
-        costVnd: 40000,
-        costLabel: '40.000đ / vé',
-        category: 'Bảo tàng & Văn hóa',
-        image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80',
-        tips: 'Khu vườn ngoài trời có nhà rông Ba Na cao vút và nhà mồ Gia Rai rất độc đáo, có biểu diễn múa rối nước lúc 10h. 🎪',
-      },
-      {
-        id: 'hn-3-2',
-        timeSlot: 'AFTERNOON',
-        timeRange: '13:00 – 16:30',
-        title: 'Làng gốm sứ Bát Tràng & Tự vuốt gốm thủ công',
-        description: 'Khám phá bảo tàng gốm Bát Tràng 7 tầng xoắn ốc độc đáo và trải nghiệm tự tay nặn gốm kỉ niệm.',
-        location: 'Gia Lâm, Hà Nội',
-        costVnd: 80000,
-        costLabel: '80.000đ / trải nghiệm',
-        category: 'Làng nghề truyền thống',
-        image: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=800&q=80',
-        tips: 'Chỉ từ 40k - 60k bạn được tự tay nặn ly/chén gốm và thợ sẽ sấy khô vẽ màu đóng gói mang về làm kỉ niệm xinh xắn! 🏺',
-      },
-      {
-        id: 'hn-3-3',
-        timeSlot: 'AFTERNOON',
-        timeRange: '17:00 – 18:30',
-        title: 'Thưởng thức Trà Sen Tây Hồ truyền thống',
-        description: 'Nghệ thuật ướp trà sen Bách Diệp cầu kỳ của người Hà Nội cổ, ngắm mặt nước Hồ Tây bảng lảng chiều tà.',
-        location: 'Quảng An, Tây Hồ, Hà Nội',
-        costVnd: 90000,
-        costLabel: '90.000đ / ấm trà',
-        category: 'Nghệ thuật Trà',
-        image: 'https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=800&q=80',
-        tips: 'Trà sen ướp trong hoa sen tươi Bách Diệp tỏa hương thơm thanh khiết, nhâm nhi cùng miếng kẹo lạc giòn tan. 🍵',
-      },
-      {
-        id: 'hn-3-4',
-        timeSlot: 'EVENING',
-        timeRange: '19:30 – 21:30',
-        title: 'Mua quà đặc sản: Ô mai Hồng Lam Hàng Đường & Cốm Làng Vòng',
-        description: 'Dạo phố Hàng Đường chọn mua ô mai sấu chua cay, bánh cốm dẻo thơm mang về làm quà cho người thân.',
-        location: 'Hàng Đường, Hoàn Kiếm, Hà Nội',
-        costVnd: 250000,
-        costLabel: '250.000đ / gói quà',
-        category: 'Quà tặng & Mua sắm',
-        image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
-        tips: 'Ô mai sấu chua ngọt, mơ gừng xào và cốm mộc xanh bọc lá sen tươi là combo quà tặng đậm chất thu Hà Nội. 🎁',
-      },
-    ],
-  },
-];
-
 const DEFAULT_DEMO_TRIPS: TripDetailData[] = [];
+
+function getCurrentUserMember(defaultRole = 'Trưởng nhóm') {
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = localStorage.getItem('vista_user');
+      if (stored) {
+        const u = JSON.parse(stored);
+        const name = u.displayName || u.email || 'Nguyễn Văn Sang';
+        const parts = name.trim().split(/\s+/);
+        const initials = (parts.length >= 2 ? parts[0][0] + parts[parts.length - 1][0] : name.slice(0, 2)).toUpperCase();
+        return {
+          name: `${name} (Bạn)`,
+          avatar: initials || 'NS',
+          color: '#0284c7',
+          role: defaultRole,
+        };
+      }
+    } catch {
+      // fallback
+    }
+  }
+  return {
+    name: 'Nguyễn Văn Sang (Bạn)',
+    avatar: 'NS',
+    color: '#0284c7',
+    role: defaultRole,
+  };
+}
 
 export default function TripDetailPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const tripId = typeof params?.tripId === 'string' ? params.tripId : '';
 
   const [trip, setTrip] = useState<TripDetailData | null>(null);
@@ -286,29 +140,7 @@ export default function TripDetailPage() {
   };
 
   // Voting state
-  const [proposals, setProposals] = useState([
-    {
-      id: 'prop-1',
-      title: 'Buffet hải sản Biển Rạng đêm thứ 2',
-      category: 'Ẩm thực',
-      votes: 3,
-      voted: false,
-    },
-    {
-      id: 'prop-2',
-      title: 'Trải nghiệm dù lượn ngắm toàn cảnh Bán đảo Sơn Trà',
-      category: 'Trải nghiệm mạo hiểm',
-      votes: 4,
-      voted: true,
-    },
-    {
-      id: 'prop-3',
-      title: 'Xem show Ký Ức Hội An lúc 20:00',
-      category: 'Nghệ thuật & Di sản',
-      votes: 2,
-      voted: false,
-    },
-  ]);
+  const [proposals, setProposals] = useState(() => getSampleProposals(''));
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -327,16 +159,43 @@ export default function TripDetailPage() {
           const match = parsed.find((item) => item.id === tripId);
           if (match) {
             // Normalize fields
-            setTrip({
+            const currentOwner = getCurrentUserMember('Trưởng nhóm');
+            const normalizedMembers = match.members && match.members.length > 0
+              ? match.members.map((m) => (m.name.includes('Lê Vân Anh') ? currentOwner : m))
+              : [currentOwner];
+
+            const isHanoiMismatch =
+              match.destination &&
+              !match.destination.toLowerCase().includes('hà nội') &&
+              JSON.stringify(match.itineraryDays || '').includes('Hoàn Kiếm');
+
+            const itinerary =
+              !match.itineraryDays || match.itineraryDays.length === 0 || isHanoiMismatch
+                ? getSampleItineraryForDestination(match.destination, match.startDate)
+                : match.itineraryDays;
+
+            const heroImg =
+              match.image && !match.image.includes('photo-1528127269322-539801943592')
+                ? match.image
+                : getDestinationHeroImage(match.destination);
+
+            const updatedTrip: TripDetailData = {
               ...match,
-              members: match.members && match.members.length > 0
-                ? match.members
-                : [{ name: 'Lê Vân Anh', avatar: 'VA', color: '#0284c7', role: 'Trưởng nhóm' }],
+              members: normalizedMembers,
+              image: heroImg,
               treasuryPath: match.treasuryPath || `/trips/${match.id}/treasury`,
-              itineraryDays: match.itineraryDays && match.itineraryDays.length > 0
-                ? match.itineraryDays
-                : SAMPLE_HANOI_DAYS,
-            });
+              itineraryDays: itinerary,
+            };
+
+            if (isHanoiMismatch) {
+              try {
+                const updatedList = parsed.map((item) => (item.id === tripId ? updatedTrip : item));
+                localStorage.setItem('vista_custom_trips', JSON.stringify(updatedList));
+              } catch {}
+            }
+
+            setTrip(updatedTrip);
+            setProposals(getSampleProposals(match.destination));
             return;
           }
         }
@@ -352,10 +211,16 @@ export default function TripDetailPage() {
       }
 
       // 3. Fallback: generate a clean stub trip for any custom ID with rich 3-day sample
+      const fallbackDest =
+        (searchParams && searchParams.get('dest')) ||
+        (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('dest') : null) ||
+        'Thừa Thiên Huế';
+      const fallbackItinerary = getSampleItineraryForDestination(fallbackDest, '24/11/2026');
+
       setTrip({
         id: tripId,
-        title: `Chuyến đi Hà Nội 3 ngày`,
-        destination: 'Hà Nội',
+        title: `Chuyến đi ${fallbackDest} 3 ngày`,
+        destination: fallbackDest,
         durationBadge: '3 ngày',
         startDate: '24/11/2026',
         endDate: '26/11/2026',
@@ -364,17 +229,18 @@ export default function TripDetailPage() {
         budgetTotal: 3350000,
         budgetSpent: 0,
         progressPercent: 20,
-        members: [{ name: 'Lê Vân Anh (Trưởng nhóm)', avatar: 'VA', color: '#0284c7', role: 'Trưởng nhóm' }],
-        image: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1200&q=80',
+        members: [getCurrentUserMember('Trưởng nhóm')],
+        image: getDestinationHeroImage(fallbackDest),
         treasuryPath: `/trips/${tripId}/treasury`,
         alertType: 'BLUE',
-        alertText: 'Hành trình 3 ngày khám phá Cố Đô và văn hóa Hà Nội',
-        itineraryDays: SAMPLE_HANOI_DAYS,
+        alertText: `Hành trình 3 ngày khám phá trải nghiệm đặc sắc tại ${fallbackDest}`,
+        itineraryDays: fallbackItinerary,
       });
+      setProposals(getSampleProposals(fallbackDest));
     }, 0);
 
     return () => clearTimeout(timer);
-  }, [tripId]);
+  }, [tripId, searchParams]);
 
   const handleVoteToggle = (propId: string) => {
     setProposals((prev) =>
@@ -412,15 +278,8 @@ export default function TripDetailPage() {
     if (trip?.image && trip.image.startsWith('http') && !trip.image.includes('undefined')) {
       return trip.image;
     }
-    const dest = (trip?.destination || '').toLowerCase();
-    if (dest.includes('hà nội') || dest.includes('hanoi')) {
-      return 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=600&q=80';
-    }
-    if (dest.includes('đà nẵng') || dest.includes('danang')) {
-      return 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=600&q=80';
-    }
-    return 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=600&q=80';
-  }, [trip?.image, trip?.destination]);
+    return getDestinationHeroImage(trip?.destination || '');
+  }, [trip]);
 
   const displayDateText = useMemo(() => {
     if (!trip) return '24/11 – 26/11/2026';
@@ -636,7 +495,7 @@ export default function TripDetailPage() {
               <div className={styles.headerChipsRow}>
                 <div className={`${styles.headerChip} ${styles.chipLocation}`}>
                   <MapPin size={12} />
-                  <span>{trip.destination || 'Hà Nội'}</span>
+                  <span>{trip.destination || 'Điểm đến'}</span>
                 </div>
                 <div className={`${styles.headerChip} ${styles.chipCalendar}`}>
                   <Calendar size={12} />

@@ -26,6 +26,11 @@ import {
   ThumbsUp,
 } from 'lucide-react';
 import { Navbar } from '@/components/common/Navbar';
+import {
+  POPULAR_DESTINATIONS,
+  getSampleItineraryForDestination,
+  getDestinationHeroImage,
+} from '@/data/sampleItineraries';
 import styles from './trips.module.css';
 
 interface TripItem {
@@ -51,7 +56,50 @@ interface TripItem {
   itineraryDays?: unknown[];
 }
 
-const DEFAULT_DEMO_TRIPS: TripItem[] = [];
+function getTodayString(): string {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function getDefaultEndString(): string {
+  const now = new Date();
+  now.setDate(now.getDate() + 4);
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function getCurrentUserMember(defaultRole = 'Trưởng nhóm') {
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = localStorage.getItem('vista_user');
+      if (stored) {
+        const u = JSON.parse(stored);
+        const name = u.displayName || u.email || 'Nguyễn Văn Sang';
+        const parts = name.trim().split(/\s+/);
+        const initials = (parts.length >= 2 ? parts[0][0] + parts[parts.length - 1][0] : name.slice(0, 2)).toUpperCase();
+        return {
+          name: `${name} (Bạn)`,
+          avatar: initials || 'NS',
+          color: '#0284c7',
+          role: defaultRole,
+        };
+      }
+    } catch {
+      // fallback
+    }
+  }
+  return {
+    name: 'Nguyễn Văn Sang (Bạn)',
+    avatar: 'NS',
+    color: '#0284c7',
+    role: defaultRole,
+  };
+}
 
 export default function TripsPage() {
   const router = useRouter();
@@ -61,13 +109,14 @@ export default function TripsPage() {
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showVoteModal, setShowVoteModal] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [todayStr] = useState<string>(() => getTodayString());
 
   // New trip form state
   const [newTitle, setNewTitle] = useState('');
   const [newDestination, setNewDestination] = useState('');
   const [newBudget, setNewBudget] = useState('20000000');
-  const [newStartDate, setNewStartDate] = useState('2026-11-20');
-  const [newEndDate, setNewEndDate] = useState('2026-11-24');
+  const [newStartDate, setNewStartDate] = useState<string>(() => getTodayString());
+  const [newEndDate, setNewEndDate] = useState<string>(() => getDefaultEndString());
   const [joinCode, setJoinCode] = useState('');
 
   // Proposals for voting demo
@@ -93,29 +142,39 @@ export default function TripsPage() {
           const stored = localStorage.getItem('vista_custom_trips');
           const customTrips: TripItem[] = stored ? JSON.parse(stored) : [];
           if (customTrips && customTrips.length > 0) {
-            const normalized = customTrips.map((t) => ({
-              ...t,
-              members: Array.isArray(t.members) && t.members.length > 0
-                ? t.members
-                : [{ name: 'Lê Vân Anh (Bạn)', avatar: 'VA', color: '#0284c7' }],
-              quickActions: Array.isArray(t.quickActions) && t.quickActions.length > 0
-                ? t.quickActions
-                : [
-                    { label: 'Lịch trình', href: `/planner?tripId=${t.id}&dest=${encodeURIComponent(t.destination || '')}` },
-                    { label: 'Phân công', actionType: 'ASSIGN' },
-                    { label: 'Ghi chú', actionType: 'NOTE' },
-                  ],
-              budgetTotal: t.budgetTotal || 20000000,
-              budgetSpent: t.budgetSpent || 0,
-              progressPercent: typeof t.progressPercent === 'number' ? t.progressPercent : 20,
-              durationBadge: t.durationBadge || '4 ngày',
-              startDate: t.startDate || '15/11',
-              endDate: t.endDate || '18/11/2026',
-              role: t.role || 'OWNER',
-              status: t.status || 'PLANNING',
-              image: t.image || 'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80',
-              treasuryPath: t.treasuryPath || `/trips/${t.id}/treasury`,
-            }));
+            const currentOwner = getCurrentUserMember('Trưởng nhóm');
+            const normalized = customTrips.map((t) => {
+              const dest = t.destination || 'Việt Nam';
+              const isHanoiMismatch = dest && !dest.toLowerCase().includes('hà nội') && JSON.stringify(t.itineraryDays || '').includes('Hoàn Kiếm');
+              const fixedItinerary = (!t.itineraryDays || (t.itineraryDays as unknown[]).length === 0 || isHanoiMismatch)
+                ? getSampleItineraryForDestination(dest, t.startDate)
+                : t.itineraryDays;
+
+              return {
+                ...t,
+                members: Array.isArray(t.members) && t.members.length > 0
+                  ? t.members.map((m) => (m.name.includes('Lê Vân Anh') ? currentOwner : m))
+                  : [currentOwner],
+                image: getDestinationHeroImage(dest),
+                itineraryDays: fixedItinerary,
+                quickActions: Array.isArray(t.quickActions) && t.quickActions.length > 0
+                  ? t.quickActions
+                  : [
+                      { label: 'Lịch trình', href: `/trips/${t.id}` },
+                      { label: 'Phân công', actionType: 'ASSIGN' },
+                      { label: 'Ghi chú', actionType: 'NOTE' },
+                    ],
+                budgetTotal: t.budgetTotal || 20000000,
+                budgetSpent: t.budgetSpent || 0,
+                progressPercent: typeof t.progressPercent === 'number' ? t.progressPercent : 20,
+                durationBadge: t.durationBadge || '4 ngày',
+                startDate: t.startDate || '15/11',
+                endDate: t.endDate || '18/11/2026',
+                role: t.role || 'OWNER',
+                status: t.status || 'PLANNING',
+                treasuryPath: t.treasuryPath || `/trips/${t.id}/treasury`,
+              };
+            });
 
             setTripsList(normalized);
           } else {
@@ -166,26 +225,49 @@ export default function TripsPage() {
       return;
     }
 
+    if (todayStr && newStartDate < todayStr) {
+      showToast('Ngày bắt đầu không được chọn trong quá khứ!');
+      return;
+    }
+    if (newEndDate < newStartDate) {
+      showToast('Ngày kết thúc phải diễn ra sau hoặc cùng ngày với ngày bắt đầu!');
+      return;
+    }
+
+    const start = new Date(newStartDate).getTime();
+    const end = new Date(newEndDate).getTime();
+    const diffDays = Math.max(1, Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1);
+    const durationBadge = `${diffDays} ngày`;
+
+    const startParts = newStartDate.split('-');
+    const endParts = newEndDate.split('-');
+    const formattedStartDate = startParts.length === 3 ? `${startParts[2]}/${startParts[1]}` : newStartDate;
+    const formattedEndDate = endParts.length === 3 ? `${endParts[2]}/${endParts[1]}/${endParts[0]}` : newEndDate;
+
     const tripId = `trip-${Date.now()}`;
+    const currentOwner = getCurrentUserMember('Trưởng nhóm');
+    const generatedItinerary = getSampleItineraryForDestination(newDestination, formattedStartDate);
+
     const newTrip: TripItem = {
       id: tripId,
       title: newTitle,
       destination: newDestination,
-      durationBadge: '4 ngày',
-      startDate: newStartDate.slice(5).replace('-', '/'),
-      endDate: newEndDate.slice(5).replace('-', '/') + '/2026',
+      durationBadge,
+      startDate: formattedStartDate,
+      endDate: formattedEndDate,
       status: 'PLANNING',
       role: 'OWNER',
       budgetTotal: Number(newBudget) || 20000000,
       budgetSpent: 0,
       progressPercent: 15,
-      members: [{ name: 'Lê Vân Anh (Bạn)', avatar: 'VA', color: '#0284c7' }],
-      image: 'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80',
+      members: [currentOwner],
+      image: getDestinationHeroImage(newDestination),
       treasuryPath: `/trips/${tripId}/treasury`,
-      alertText: 'Chuyến đi vừa tạo. Bấm "Lịch trình" để AI lên kế hoạch chi tiết!',
+      alertText: `Hành trình ${durationBadge} khám phá ${newDestination}`,
       alertLinkText: 'Xem',
+      itineraryDays: generatedItinerary,
       quickActions: [
-        { label: 'Lịch trình', href: `/planner?tripId=${tripId}&dest=${encodeURIComponent(newDestination)}` },
+        { label: 'Lịch trình', href: `/trips/${tripId}` },
         { label: 'Phân công', actionType: 'ASSIGN' },
         { label: 'Ghi chú', actionType: 'NOTE' },
       ],
@@ -900,14 +982,19 @@ export default function TripsPage() {
 
               <div className={styles.formGroup}>
                 <label className={styles.formLabel}>Điểm đến chính</label>
-                <input
-                  type="text"
+                <select
                   className={styles.formInput}
-                  placeholder="Ví dụ: Quy Nhơn, Bình Định"
                   value={newDestination}
                   onChange={(e) => setNewDestination(e.target.value)}
                   required
-                />
+                >
+                  <option value="">-- Chọn khu vực / điểm đến cụ thể --</option>
+                  {POPULAR_DESTINATIONS.map((dest) => (
+                    <option key={dest} value={dest}>
+                      {dest}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
@@ -916,8 +1003,16 @@ export default function TripsPage() {
                   <input
                     type="date"
                     className={styles.formInput}
+                    min={todayStr || undefined}
                     value={newStartDate}
-                    onChange={(e) => setNewStartDate(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setNewStartDate(val);
+                      if (newEndDate && newEndDate < val) {
+                        setNewEndDate(val);
+                      }
+                    }}
+                    required
                   />
                 </div>
                 <div className={styles.formGroup}>
@@ -925,8 +1020,10 @@ export default function TripsPage() {
                   <input
                     type="date"
                     className={styles.formInput}
+                    min={newStartDate || todayStr || undefined}
                     value={newEndDate}
                     onChange={(e) => setNewEndDate(e.target.value)}
+                    required
                   />
                 </div>
               </div>
