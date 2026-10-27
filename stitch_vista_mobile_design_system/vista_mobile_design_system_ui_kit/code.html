@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>VISTA — Mobile Design System &amp; UI Kit</title>
+<!-- Tailwind CSS v3 CDN with forms and container queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            vista: {
+              primary: '#0284C7',
+              primaryDark: '#0369A1',
+              primaryLight: '#38BDF8',
+              primarySoft: '#EFF6FF',
+              ai: '#006C75',
+              aiDark: '#00565D',
+              surface: '#FFFFFF',
+              bg: '#F8FAFC',
+              border: '#E2E8F0',
+              textMain: '#0F172A',
+              textSub: '#334155',
+              muted: '#64748B',
+              disabled: '#94A3B8'
+            }
+          },
+          borderRadius: {
+            'sm': '8px',
+            'md': '12px',
+            'lg': '16px',
+            'xl': '22px'
+          },
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"Segoe UI"', 'Roboto', 'sans-serif']
+          },
+          boxShadow: {
+            'vista-subtle': '0 2px 8px -2px rgba(15, 23, 42, 0.05), 0 1px 3px -1px rgba(15, 23, 42, 0.03)',
+            'vista-card': '0 4px 16px -4px rgba(2, 132, 199, 0.08), 0 2px 6px -2px rgba(15, 23, 42, 0.04)',
+            'vista-elevated': '0 10px 25px -5px rgba(2, 132, 199, 0.15), 0 8px 10px -6px rgba(15, 23, 42, 0.05)'
+          }
+        }
+      }
+    }
+  </script>
+<!-- BEGIN: Custom Micro-Styles -->
+<style data-purpose="custom-scrollbars">
+    /* Ẩn scrollbar để tạo cảm giác native mobile screen mượt mà */
+    ::-webkit-scrollbar {
+      display: none;
+    }
+    * {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+  </style>
+<style data-purpose="mobile-mockup-frame">
+    body {
+      background-color: #E2E8F0;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .mobile-screen-wrapper {
+      width: 100%;
+      max-width: 393px;
+      min-height: 100vh;
+      background-color: #F8FAFC;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      position: relative;
+    }
+  </style>
+<!-- END: Custom Micro-Styles -->
+</head>
+<body class="antialiased text-vista-textMain select-none pb-12">
+<!-- BEGIN: MobileContainer -->
+<div class="mobile-screen-wrapper flex flex-col pb-28">
+<!-- BEGIN: SystemStatusBar (iOS standard) -->
+<div class="w-full h-11 pt-3 px-7 flex justify-between items-center text-xs font-semibold text-vista-textMain bg-vista-bg sticky top-0 z-50" data-purpose="ios-status-bar">
+<span>9:41</span>
+<!-- Dynamic Island / Sensor Gap Mock -->
+<div class="w-24 h-4 bg-slate-900 rounded-full mx-auto opacity-10"></div>
+<div class="flex items-center space-x-1.5 text-vista-textMain">
+<!-- Cellular Signal -->
+<svg class="w-4 h-4" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19H19.65l-.62-1.39C20.26 16.07 21 14.12 21 12c0-4.97-4.03-9-9-9zm0 2c3.87 0 7 3.13 7 7 0 1.54-.5 2.97-1.35 4.14L15.6 12.2A4.978 4.978 0 0012 11c-1.3 0-2.48.5-3.38 1.33l-2.05 4.53C5.64 15.69 5 13.93 5 12c0-3.87 3.13-7 7-7z"></path>
+</svg>
+<!-- Wifi -->
+<svg class="w-3.5 h-3.5" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98A17.93 17.93 0 0012 4zm0 3c3.78 0 7.22 1.47 9.8 3.9L12 18.72 2.2 10.9A14.93 14.93 0 0112 7z"></path>
+</svg>
+<!-- Battery -->
+<div class="w-5 h-2.5 border border-current rounded-sm p-0.5 flex items-center">
+<div class="w-3 h-1.5 bg-current rounded-2xs"></div>
+</div>
+</div>
+</div>
+<!-- END: SystemStatusBar -->
+<!-- BEGIN: HeaderSection -->
+<header class="px-5 pt-3 pb-5 border-b border-vista-border bg-white" data-purpose="design-system-header">
+<div class="flex items-center justify-between mb-3">
+<!-- Logo VISTA Brand -->
+<div class="flex items-center space-x-2">
+<div class="w-9 h-9 rounded-md bg-gradient-to-tr from-vista-primary to-vista-primaryLight flex items-center justify-center text-white shadow-sm shadow-sky-500/20">
+<!-- Mountain Logo Symbol -->
+<svg class="w-6 h-6 stroke-white stroke-[2.2] fill-none" viewbox="0 0 24 24">
+<path d="M3 19L9.5 7L13 13.5L16 9L21 19H3Z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<div>
+<div class="flex items-center space-x-1.5">
+<span class="text-xl font-black tracking-tight text-vista-primary">VISTA</span>
+<span class="text-xs font-bold text-vista-muted uppercase tracking-wider">UI KIT</span>
+</div>
+<p class="text-[10px] text-vista-muted tracking-wide font-medium">Plan Better • Travel Further</p>
+</div>
+</div>
+<!-- Badges spec -->
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-sky-50 text-vista-primary border border-sky-200">
+          Mobile v1.0
+        </span>
+</div>
+<!-- Specs details chips -->
+<div class="flex flex-wrap items-center gap-1.5 pt-1">
+<span class="px-2 py-1 bg-slate-100 text-slate-700 rounded-md text-[11px] font-mono font-medium">Viewport: 393 × 852px</span>
+<span class="px-2 py-1 bg-emerald-50 text-emerald-700 rounded-md text-[11px] font-medium border border-emerald-100 flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Native iOS Guideline
+        </span>
+</div>
+</header>
+<!-- END: HeaderSection -->
+<!-- Main Content Container -->
+<main class="p-4 space-y-6">
+<!-- BEGIN: SectionColorPalette -->
+<section class="bg-white rounded-lg p-4 border border-vista-border shadow-vista-subtle" data-purpose="color-system">
+<div class="flex items-center justify-between pb-3 border-b border-vista-border mb-3.5">
+<div class="flex items-center space-x-2">
+<span class="w-2 h-4 rounded-full bg-vista-primary"></span>
+<h2 class="text-sm font-bold tracking-tight text-vista-textMain uppercase">1. Bảng màu chuẩn (Palette)</h2>
+</div>
+<span class="text-[10px] text-vista-muted font-mono">HEX Tokens</span>
+</div>
+<!-- Primary Shades -->
+<div class="space-y-2 mb-4">
+<span class="text-[11px] font-bold text-vista-muted uppercase tracking-wide">Primary (Brand Blue)</span>
+<div class="grid grid-cols-4 gap-2">
+<div class="flex flex-col">
+<div class="h-10 rounded-md bg-[#0284C7] shadow-inner mb-1 flex items-end p-1 text-[9px] text-white font-mono">Main</div>
+<span class="text-[10px] font-bold">#0284C7</span>
+<span class="text-[9px] text-vista-muted">Active</span>
+</div>
+<div class="flex flex-col">
+<div class="h-10 rounded-md bg-[#0369A1] shadow-inner mb-1 flex items-end p-1 text-[9px] text-white font-mono">Dark</div>
+<span class="text-[10px] font-bold">#0369A1</span>
+<span class="text-[9px] text-vista-muted">Pressed</span>
+</div>
+<div class="flex flex-col">
+<div class="h-10 rounded-md bg-[#38BDF8] shadow-inner mb-1 flex items-end p-1 text-[9px] text-white font-mono">Light</div>
+<span class="text-[10px] font-bold">#38BDF8</span>
+<span class="text-[9px] text-vista-muted">Accent</span>
+</div>
+<div class="flex flex-col">
+<div class="h-10 rounded-md bg-[#EFF6FF] border border-sky-200 mb-1 flex items-end p-1 text-[9px] text-sky-800 font-mono">Soft</div>
+<span class="text-[10px] font-bold">#EFF6FF</span>
+<span class="text-[9px] text-vista-muted">Surface</span>
+</div>
+</div>
+</div>
+<!-- AI Accent & Status -->
+<div class="space-y-2 mb-4">
+<span class="text-[11px] font-bold text-vista-muted uppercase tracking-wide">AI Accent &amp; Trạng thái</span>
+<div class="grid grid-cols-4 gap-2">
+<div class="flex flex-col">
+<div class="h-10 rounded-md bg-[#006C75] mb-1 flex items-end p-1 text-[9px] text-white font-mono">AI Base</div>
+<span class="text-[10px] font-bold">#006C75</span>
+<span class="text-[9px] text-vista-muted">Teal AI</span>
+</div>
+<div class="flex flex-col">
+<div class="h-10 rounded-md bg-[#10B981] mb-1 flex items-end p-1 text-[9px] text-white font-mono">Thành công</div>
+<span class="text-[10px] font-bold">#10B981</span>
+<span class="text-[9px] text-vista-muted">Success</span>
+</div>
+<div class="flex flex-col">
+<div class="h-10 rounded-md bg-[#F59E0B] mb-1 flex items-end p-1 text-[9px] text-white font-mono">Cảnh báo</div>
+<span class="text-[10px] font-bold">#F59E0B</span>
+<span class="text-[9px] text-vista-muted">Warning</span>
+</div>
+<div class="flex flex-col">
+<div class="h-10 rounded-md bg-[#EF4444] mb-1 flex items-end p-1 text-[9px] text-white font-mono">Lỗi/Xóa</div>
+<span class="text-[10px] font-bold">#EF4444</span>
+<span class="text-[9px] text-vista-muted">Danger</span>
+</div>
+</div>
+</div>
+<!-- Neutral & Surface -->
+<div>
+<span class="text-[11px] font-bold text-vista-muted uppercase tracking-wide">Neutrals &amp; Canvas</span>
+<div class="grid grid-cols-4 gap-2 mt-1 text-center">
+<div class="p-1 rounded bg-[#0F172A] text-white text-[9px] font-mono">#0F172A<br/><span class="text-[8px] text-slate-300 font-sans">Main Text</span></div>
+<div class="p-1 rounded bg-[#64748B] text-white text-[9px] font-mono">#64748B<br/><span class="text-[8px] text-slate-200 font-sans">Muted</span></div>
+<div class="p-1 rounded bg-[#E2E8F0] text-slate-800 text-[9px] font-mono">#E2E8F0<br/><span class="text-[8px] text-slate-500 font-sans">Border</span></div>
+<div class="p-1 rounded bg-[#F8FAFC] border border-slate-300 text-slate-800 text-[9px] font-mono">#F8FAFC<br/><span class="text-[8px] text-slate-500 font-sans">Screen BG</span></div>
+</div>
+</div>
+</section>
+<!-- END: SectionColorPalette -->
+<!-- BEGIN: SectionTypographyAndSpacing -->
+<section class="bg-white rounded-lg p-4 border border-vista-border shadow-vista-subtle" data-purpose="typography-spacing">
+<div class="flex items-center justify-between pb-3 border-b border-vista-border mb-3.5">
+<div class="flex items-center space-x-2">
+<span class="w-2 h-4 rounded-full bg-vista-primary"></span>
+<h2 class="text-sm font-bold tracking-tight text-vista-textMain uppercase">2. Typography &amp; Quy chuẩn</h2>
+</div>
+<span class="text-[10px] text-vista-muted">Scale tiếng Việt</span>
+</div>
+<!-- Typo Examples -->
+<div class="space-y-2.5 pb-4 border-b border-vista-border">
+<div class="flex items-baseline justify-between">
+<span class="text-xs font-mono text-vista-muted">Heading 1 (32px Bold)</span>
+<span class="text-xs text-slate-400 font-mono">32px / 900</span>
+</div>
+<div class="text-[32px] font-black leading-tight tracking-tight text-vista-textMain">Khám phá Đà Lạt</div>
+<div class="flex items-baseline justify-between pt-1">
+<span class="text-xs font-mono text-vista-muted">Heading 2 (24px Bold)</span>
+<span class="text-xs text-slate-400 font-mono">24px / 800</span>
+</div>
+<div class="text-2xl font-extrabold text-vista-textMain">Chuyến đi sắp tới</div>
+<div class="flex items-baseline justify-between pt-1">
+<span class="text-xs font-mono text-vista-muted">Card Title (18px Bold)</span>
+<span class="text-xs text-slate-400 font-mono">18px / 700</span>
+</div>
+<div class="text-[18px] font-bold text-vista-textMain">Phú Quốc: Nghỉ dưỡng biển xanh</div>
+<div class="flex items-baseline justify-between pt-1">
+<span class="text-xs font-mono text-vista-muted">Body Text (14px Regular)</span>
+<span class="text-xs text-slate-400 font-mono">14px / 400</span>
+</div>
+<p class="text-sm text-vista-textSub leading-relaxed">
+            Hành trình kết nối những tâm hồn mê xê dịch. Khám phá vẻ đẹp bất tận và lưu lại kỷ niệm đáng nhớ.
+          </p>
+<div class="flex items-center justify-between text-xs text-vista-muted pt-1">
+<span>Caption / Hint (12px / Medium)</span>
+<span class="font-mono text-vista-muted">12px / 500</span>
+</div>
+<p class="text-xs text-vista-muted">Cập nhật 5 phút trước • Bản quyền thuộc về VISTA Travel</p>
+</div>
+<!-- Spacing & Border Radii visual -->
+<div class="pt-3">
+<span class="text-[11px] font-bold text-vista-muted uppercase tracking-wide block mb-2">Thước đo khoảng cách (Spacing Scale)</span>
+<div class="flex items-end gap-2 text-center text-[10px] font-mono">
+<div class="flex-1"><div class="h-1 bg-sky-200 rounded mb-1"></div>4px</div>
+<div class="flex-1"><div class="h-2 bg-sky-300 rounded mb-1"></div>8px</div>
+<div class="flex-1"><div class="h-3 bg-sky-400 rounded mb-1"></div>12px</div>
+<div class="flex-1"><div class="h-4 bg-sky-500 rounded mb-1"></div>16px</div>
+<div class="flex-1"><div class="h-6 bg-sky-600 rounded mb-1"></div>24px</div>
+<div class="flex-1"><div class="h-8 bg-sky-800 rounded mb-1"></div>32px</div>
+</div>
+<span class="text-[11px] font-bold text-vista-muted uppercase tracking-wide block mt-3 mb-1.5">Bo góc chuẩn (Radius System)</span>
+<div class="grid grid-cols-4 gap-2 text-center text-[10px]">
+<div class="p-2 border border-slate-300 rounded-sm bg-slate-50 font-medium">sm: 8px</div>
+<div class="p-2 border border-slate-300 rounded-md bg-slate-50 font-medium">md: 12px</div>
+<div class="p-2 border border-slate-300 rounded-lg bg-slate-50 font-medium">lg: 16px</div>
+<div class="p-2 border border-slate-300 rounded-xl bg-slate-50 font-medium">xl: 22px</div>
+</div>
+</div>
+</section>
+<!-- END: SectionTypographyAndSpacing -->
+<!-- BEGIN: SectionButtonsInteractive -->
+<section class="bg-white rounded-lg p-4 border border-vista-border shadow-vista-subtle" data-purpose="button-components">
+<div class="flex items-center justify-between pb-3 border-b border-vista-border mb-3.5">
+<div class="flex items-center space-x-2">
+<span class="w-2 h-4 rounded-full bg-vista-primary"></span>
+<h2 class="text-sm font-bold tracking-tight text-vista-textMain uppercase">3. Nút &amp; Tương tác (Buttons)</h2>
+</div>
+<span class="text-[10px] text-vista-muted">Interactive States</span>
+</div>
+<div class="space-y-3">
+<!-- Primary Actions -->
+<div>
+<label class="text-[11px] font-semibold text-vista-muted block mb-1.5">Primary Button (#0284C7)</label>
+<div class="space-y-2">
+<button class="w-full h-11 bg-vista-primary hover:bg-vista-primaryDark text-white font-semibold rounded-lg flex items-center justify-center space-x-2 transition shadow-sm active:scale-[0.99]">
+<span>Tạo chuyến đi mới</span>
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<div class="grid grid-cols-2 gap-2">
+<button class="h-10 bg-vista-primaryDark text-white text-xs font-semibold rounded-md flex items-center justify-center">
+                  Trạng thái Pressed
+                </button>
+<button class="h-10 bg-slate-200 text-slate-400 cursor-not-allowed text-xs font-semibold rounded-md flex items-center justify-center" disabled="">
+                  Vô hiệu hóa (Disabled)
+                </button>
+</div>
+</div>
+</div>
+<!-- AI Action Button -->
+<div class="pt-2">
+<label class="text-[11px] font-semibold text-vista-muted block mb-1.5">AI Engine Action Button (#006C75)</label>
+<button class="w-full h-11 bg-gradient-to-r from-teal-800 to-vista-ai text-white font-medium rounded-lg flex items-center justify-center space-x-2 shadow-sm shadow-teal-900/10 active:opacity-90">
+<!-- AI Sparkle Icon -->
+<svg class="w-4 h-4 text-emerald-300" fill="currentColor" viewbox="0 0 24 24">
+<path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"></path>
+</svg>
+<span>Lên lịch tự động với VISTA AI</span>
+</button>
+</div>
+<!-- Secondary & Outline Buttons -->
+<div class="pt-2">
+<label class="text-[11px] font-semibold text-vista-muted block mb-1.5">Secondary &amp; Outline</label>
+<div class="grid grid-cols-2 gap-2">
+<button class="h-10 border border-vista-border bg-white text-vista-textSub hover:bg-slate-50 text-xs font-semibold rounded-md">
+                Chỉnh sửa
+              </button>
+<button class="h-10 border border-vista-primary text-vista-primary hover:bg-sky-50 text-xs font-semibold rounded-md">
+                Thêm địa điểm
+              </button>
+</div>
+</div>
+<!-- Quick Icon Buttons -->
+<div class="pt-2">
+<label class="text-[11px] font-semibold text-vista-muted block mb-1.5">Action Icon Buttons</label>
+<div class="flex items-center space-x-3">
+<!-- Back button -->
+<button class="w-10 h-10 rounded-full border border-vista-border bg-white flex items-center justify-center text-vista-textSub hover:text-vista-primary shadow-2xs">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<!-- Heart Bookmark -->
+<button class="w-10 h-10 rounded-full border border-vista-border bg-white flex items-center justify-center text-rose-500 shadow-2xs">
+<svg class="w-5 h-5 fill-current" viewbox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path></svg>
+</button>
+<!-- Share -->
+<button class="w-10 h-10 rounded-full border border-vista-border bg-white flex items-center justify-center text-vista-textSub shadow-2xs">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<!-- Notification Bell with dot -->
+<button class="w-10 h-10 rounded-full border border-vista-border bg-white flex items-center justify-center text-vista-textSub relative shadow-2xs">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="w-2 h-2 rounded-full bg-rose-500 absolute top-2 right-2 ring-2 ring-white"></span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- END: SectionButtonsInteractive -->
+<!-- BEGIN: SectionFormsAndInputs -->
+<section class="bg-white rounded-lg p-4 border border-vista-border shadow-vista-subtle" data-purpose="form-controls">
+<div class="flex items-center justify-between pb-3 border-b border-vista-border mb-3.5">
+<div class="flex items-center space-x-2">
+<span class="w-2 h-4 rounded-full bg-vista-primary"></span>
+<h2 class="text-sm font-bold tracking-tight text-vista-textMain uppercase">4. Biểu mẫu &amp; Nhập liệu (Inputs)</h2>
+</div>
+<span class="text-[10px] text-vista-muted">Form UI</span>
+</div>
+<div class="space-y-3.5">
+<!-- Text Input Default -->
+<div>
+<div class="flex justify-between items-center mb-1">
+<label class="text-xs font-semibold text-vista-textSub">Điểm đến <span class="text-rose-500">*</span></label>
+<span class="text-[10px] text-vista-muted font-mono">Default State</span>
+</div>
+<div class="relative">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</span>
+<input class="w-full h-11 pl-9 pr-3 rounded-md border border-vista-border text-sm text-vista-textMain placeholder:text-slate-400 focus:outline-none focus:border-vista-primary focus:ring-1 focus:ring-vista-primary transition bg-slate-50/50" placeholder="Ví dụ: Đà Nẵng, Phú Quốc..." type="text"/>
+</div>
+</div>
+<!-- Password Input -->
+<div>
+<div class="flex justify-between items-center mb-1">
+<label class="text-xs font-semibold text-vista-textSub">Mật khẩu</label>
+<span class="text-[10px] text-vista-muted font-mono">With Password Toggle</span>
+</div>
+<div class="relative">
+<input class="w-full h-11 px-3 pr-10 rounded-md border border-vista-border text-sm text-vista-textMain focus:outline-none focus:border-vista-primary focus:ring-1 focus:ring-vista-primary transition" type="password" value="matkhau123456"/>
+<button class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600" type="button">
+<!-- Eye Icon -->
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.257-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</div>
+<!-- Error State Input -->
+<div>
+<div class="flex justify-between items-center mb-1">
+<label class="text-xs font-semibold text-rose-600">Email người dùng</label>
+<span class="text-[10px] text-rose-500 font-mono">Error State</span>
+</div>
+<input class="w-full h-11 px-3 rounded-md border border-rose-400 text-sm text-rose-900 bg-rose-50/30 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500" type="text" value="nguyenvananh.vista@"/>
+<span class="text-[11px] text-rose-500 mt-1 flex items-center gap-1 font-medium">
+<svg class="w-3.5 h-3.5" fill="currentColor" viewbox="0 0 20 20"><path clip-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" fill-rule="evenodd"></path></svg>
+              Vui lòng nhập địa chỉ email hợp lệ
+            </span>
+</div>
+<!-- Unified Search Bar -->
+<div>
+<label class="text-xs font-semibold text-vista-textSub block mb-1">VISTA Global Search Bar</label>
+<div class="relative">
+<span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-vista-primary">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</span>
+<input class="w-full h-11 pl-10 pr-4 rounded-xl border border-vista-border bg-white text-xs text-vista-textMain shadow-inner focus:outline-none focus:border-vista-primary" placeholder="Tìm kiếm chuyến đi, địa điểm, ghi chú..." type="text"/>
+</div>
+</div>
+</div>
+</section>
+<!-- END: SectionFormsAndInputs -->
+<!-- BEGIN: SectionBadgesChips -->
+<section class="bg-white rounded-lg p-4 border border-vista-border shadow-vista-subtle" data-purpose="badges-chips">
+<div class="flex items-center justify-between pb-3 border-b border-vista-border mb-3.5">
+<div class="flex items-center space-x-2">
+<span class="w-2 h-4 rounded-full bg-vista-primary"></span>
+<h2 class="text-sm font-bold tracking-tight text-vista-textMain uppercase">5. Nhãn trạng thái &amp; Chips</h2>
+</div>
+<span class="text-[10px] text-vista-muted">Status Tags</span>
+</div>
+<!-- Status Badges -->
+<div class="mb-4">
+<span class="text-[11px] font-bold text-vista-muted uppercase tracking-wide block mb-2">Trạng thái Chuyến đi (Trip Status)</span>
+<div class="flex flex-wrap gap-2">
+<!-- Active / Ongoing -->
+<span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-sky-50 text-vista-primary border border-sky-200">
+<span class="w-1.5 h-1.5 rounded-full bg-vista-primary mr-1.5 animate-pulse"></span>
+              Đang diễn ra
+            </span>
+<!-- Upcoming -->
+<span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5"></span>
+              Sắp tới
+            </span>
+<!-- Planning -->
+<span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+              Lên kế hoạch
+            </span>
+<!-- Confirmed -->
+<span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+<svg class="w-3 h-3 mr-1 text-emerald-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+              Đã xác nhận
+            </span>
+</div>
+</div>
+<!-- Interactive Filter Chips -->
+<div>
+<span class="text-[11px] font-bold text-vista-muted uppercase tracking-wide block mb-2">Bộ lọc danh mục (Filter Chips)</span>
+<div class="flex items-center space-x-1.5 overflow-x-auto py-1">
+<button class="px-3.5 py-1.5 rounded-full bg-vista-primary text-white text-xs font-semibold shadow-xs">
+              Tất cả (5)
+            </button>
+<button class="px-3 py-1.5 rounded-full bg-white border border-vista-border text-vista-textSub text-xs font-medium hover:bg-slate-50">
+              Đang đi (1)
+            </button>
+<button class="px-3 py-1.5 rounded-full bg-white border border-vista-border text-vista-textSub text-xs font-medium hover:bg-slate-50">
+              Sắp tới (2)
+            </button>
+<button class="px-3 py-1.5 rounded-full bg-white border border-vista-border text-vista-textSub text-xs font-medium hover:bg-slate-50">
+              Đã kết thúc
+            </button>
+</div>
+</div>
+</section>
+<!-- END: SectionBadgesChips -->
+<!-- BEGIN: SectionShowcaseCards -->
+<section class="space-y-4" data-purpose="component-showcase">
+<div class="flex items-center justify-between pt-1">
+<div class="flex items-center space-x-2">
+<span class="w-2 h-4 rounded-full bg-vista-primary"></span>
+<h2 class="text-sm font-bold tracking-tight text-vista-textMain uppercase">6. Linh kiện thực tế (Live Components)</h2>
+</div>
+<span class="text-[10px] text-vista-muted">VISTA Standards</span>
+</div>
+<!-- Component 1: Trip Card VISTA (Signature Pattern) -->
+<article class="bg-white rounded-lg p-3.5 border border-vista-border shadow-vista-card relative overflow-hidden" data-purpose="trip-card-sample">
+<div class="flex items-start gap-3">
+<!-- Thumbnail Travel Place -->
+<div class="w-20 h-20 rounded-md bg-slate-200 overflow-hidden shrink-0 relative border border-slate-100">
+<img alt="Đà Nẵng Thumbnail" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDNel64RLedwg9PtWxe1RFcHRp6sQ89du3QIwo3AHBpFYLGs5uerpZiU3Qna558Kfm5Z2E_AQSSHzNeGV96F9pQHG1t1KgXbZcWTfka1plFf5Chz-9HdVh3eE1olc4sZMAn24_GLPij-qHsc431j4GbYuC519XaWZYrAmaEHyWWduMBltWAkJN5uHxrZOERRlXTWEP4fuA_cfu6zhaXmz0CgLuiIQojwsOMCeOyqrZX6hWzPIQCsbUEww"/>
+<div class="absolute top-1 left-1">
+<span class="px-1.5 py-0.5 rounded bg-black/60 backdrop-blur-xs text-[8px] font-bold text-white uppercase tracking-tight">4N3Đ</span>
+</div>
+</div>
+<!-- Trip Meta -->
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-0.5">
+<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-sky-50 text-vista-primary">
+                  Đang diễn ra
+                </span>
+<button class="text-slate-400 hover:text-slate-600">
+<svg class="w-4 h-4" fill="currentColor" viewbox="0 0 20 20"><path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"></path></svg>
+</button>
+</div>
+<h3 class="text-sm font-bold text-vista-textMain truncate">Đà Nẵng: Biển xanh &amp; Núi non</h3>
+<div class="flex items-center text-[11px] text-vista-muted mt-1 space-x-1">
+<svg class="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>12 - 15 Tháng 6, 2025</span>
+</div>
+<!-- Avatar Stack & Progress Meta -->
+<div class="mt-2.5 flex items-center justify-between">
+<!-- Avatar Stack -->
+<div class="flex -space-x-1.5 items-center">
+<div class="w-6 h-6 rounded-full ring-2 ring-white bg-amber-400 flex items-center justify-center text-[9px] font-bold text-slate-900 overflow-hidden">
+<img alt="Member Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDWtOEuNc0UJ22hFNUxSHa5kf13LJnsN9aO-LneeIqFg4VEmQunFaHm6N_Xwh3AhmGdO1PeFd-rkwDth9I3rJzesNK5MPue-JjEwjk3d82Jpb86syHkBIm-tK7WpONP9Lc-XFzCM986mOnqXsuNMhLoREjNgSIgxchP96wA53owU6UppuLlYs6bN1WnrZK894cOOi59RmA9xfq86TVwo_CFigZozxZVeG8wE-2h5cjmWmqGWBEYhVkmSw"/>
+</div>
+<div class="w-6 h-6 rounded-full ring-2 ring-white bg-sky-500 flex items-center justify-center text-[9px] font-bold text-white overflow-hidden">
+<img alt="Member Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7X7p2wMgNkuQGJSJqDCVMS4I2_b0Shee4Jc3gd8YXlykUN2n0NxqzxGcCRLQfLsoNo5-_eqSz6oWHR-hFas9tAP1yfVt-EjYjO8ZVcEEa4sQdVFUuqCGChUbCP0uKGAI7YIreieFrVxBqAJQmtrdsNZ--QcCyM30goTMEDX7EmnvNi1yftKlflm09A2UWxLY4AnxqRe8tkPEiZcg5_TQBkI7oFEQf6pKljzW1G_tTZOY6tFbODnGgeg"/>
+</div>
+<div class="w-6 h-6 rounded-full ring-2 ring-white bg-emerald-500 flex items-center justify-center text-[9px] font-bold text-white overflow-hidden">
+<img alt="Member Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDobSMuxa5k8IgwcjldwHdk563lFMkfRnkzEwdyHHknbdh9TKtNkGNL8yibKkP9vuenI-10-mtTC2b2CuLuWtgf54d9d3UGwrKbun1F8a2IjjqG3ecD3h1JTn5Ym2JvMN75lt95lchnlnZJ7B8JBmV9j0RQBGFWMzHjT0MMzp5ASjyYm4mxqiw0SMPPX7Qn7q5TEcm4Whk7592Lk0pN2njit-egsa99kMsx2jYL_AzuTjKkir8gtozf_A"/>
+</div>
+<div class="w-6 h-6 rounded-full ring-2 ring-white bg-slate-200 flex items-center justify-center text-[9px] font-semibold text-slate-600">
+                    +4
+                  </div>
+</div>
+<!-- Budget Indicator -->
+<div class="text-right">
+<span class="text-[10px] font-bold text-vista-primary">75%</span>
+<span class="text-[9px] text-vista-muted">ngân sách</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Budget Progress Bar -->
+<div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mt-3">
+<div class="bg-vista-primary h-full rounded-full" style="width: 75%"></div>
+</div>
+</article>
+<!-- Component 2: Timeline Itinerary Item -->
+<article class="bg-white rounded-lg p-3.5 border border-vista-border shadow-vista-subtle" data-purpose="timeline-item">
+<div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+<div class="flex items-center space-x-1.5">
+<span class="px-2 py-0.5 bg-vista-primary text-white text-[10px] font-bold rounded">Ngày 1</span>
+<span class="text-xs font-semibold text-vista-textMain">12 Tháng 6</span>
+</div>
+<span class="text-[11px] text-vista-muted font-medium">3 địa điểm</span>
+</div>
+<!-- Step 1 in Timeline -->
+<div class="relative pl-6 pb-4 border-l-2 border-dashed border-sky-300 ml-2">
+<!-- Timeline Dot -->
+<div class="w-5 h-5 rounded-full bg-vista-primary text-white text-[10px] font-bold flex items-center justify-center absolute -left-[11px] top-0 ring-4 ring-white">
+              1
+            </div>
+<div class="flex items-start justify-between">
+<div>
+<h4 class="text-xs font-bold text-vista-textMain">Sân bay Quốc tế Đà Nẵng</h4>
+<div class="flex items-center text-[10px] text-vista-muted mt-0.5 space-x-2">
+<span class="font-semibold text-sky-700">08:00 - 08:30</span>
+<span>•</span>
+<span>Đón xe về khách sạn</span>
+</div>
+</div>
+<span class="px-1.5 py-0.5 bg-emerald-50 text-emerald-600 rounded text-[9px] font-bold">Check-in</span>
+</div>
+<!-- Transit Card Badge -->
+<div class="mt-2 py-1 px-2.5 bg-slate-50 rounded-md border border-slate-200/60 inline-flex items-center text-[10px] text-vista-textSub">
+<svg class="w-3.5 h-3.5 text-slate-400 mr-1.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>15 phút di chuyển taxi • 6.2 km</span>
+</div>
+</div>
+<!-- Step 2 in Timeline -->
+<div class="relative pl-6 ml-2">
+<div class="w-5 h-5 rounded-full bg-slate-300 text-slate-700 text-[10px] font-bold flex items-center justify-center absolute -left-[11px] top-0 ring-4 ring-white">
+              2
+            </div>
+<div>
+<h4 class="text-xs font-bold text-vista-textMain">Khách sạn Mường Thanh Luxury</h4>
+<p class="text-[10px] text-vista-muted mt-0.5">08:30 - 10:00 • Nhận phòng và cất hành lý</p>
+</div>
+</div>
+</article>
+<!-- Component 3: Member List Row -->
+<article class="bg-white rounded-lg p-3.5 border border-vista-border shadow-vista-subtle" data-purpose="member-row-sample">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs font-bold text-vista-textMain">Thành viên chuyến đi (4)</span>
+<button class="text-xs font-bold text-vista-primary">+ Mời thêm</button>
+</div>
+<div class="flex items-center justify-between p-2 rounded-md bg-slate-50/70 border border-slate-100">
+<div class="flex items-center space-x-2.5">
+<div class="w-9 h-9 rounded-full bg-slate-300 overflow-hidden ring-1 ring-slate-200">
+<img alt="Nguyễn Văn Anh" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6Oefcjhd1PwBzpiBH2oQpqKG-CBKCpx31jrSaQxL3Ut0Zg5Q6HTPVvkRUD6IyTMDafdhWRzhzAP4UMYN4ksNZLCHBJIlSMhopdxJl-sb_lx2JXEuJxggLfBZuvUbMAMQieQCFSq5L8FWrTRgoQbuUH1PpySEuUo8qoPu9RxP4Aw9tsaLfVDIM9q7meDmYGFi_6lj-H-K9RfkI5dDD7FQ0rXKWTSOKhfkSpc-UojLEj64gmi02m6qT0A"/>
+</div>
+<div>
+<div class="flex items-center space-x-1.5">
+<span class="text-xs font-bold text-vista-textMain">Nguyễn Văn Anh</span>
+<span class="px-1.5 py-0.2 rounded text-[9px] font-semibold bg-sky-100 text-vista-primary">Owner</span>
+</div>
+<span class="text-[10px] text-vista-muted">anh.nguyen@example.com</span>
+</div>
+</div>
+<span class="text-[10px] font-bold text-emerald-600 flex items-center">
+<svg class="w-3 h-3 mr-0.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path></svg>
+              Đã xác nhận
+            </span>
+</div>
+</article>
+</section>
+<!-- END: SectionShowcaseCards -->
+<!-- BEGIN: SectionFooterSpecMeta -->
+<footer class="text-center pt-4 pb-2" data-purpose="spec-notes">
+<div class="inline-flex items-center justify-center space-x-2 text-[11px] text-vista-muted">
+<span>Hệ thống thiết kế chuẩn hóa VISTA</span>
+<span>•</span>
+<span class="font-mono text-vista-primary font-medium">Design Token CSS v3</span>
+</div>
+<p class="text-[10px] text-slate-400 mt-1">Được đồng bộ cho nền tảng iOS &amp; Android Native</p>
+</footer>
+<!-- END: SectionFooterSpecMeta -->
+</main>
+<!-- BEGIN: MobileBottomNavigation (Fixed 5-Tab iOS Travel Bar) -->
+<nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[393px] h-20 bg-white/95 backdrop-blur-md border-t border-vista-border px-3 pt-2 pb-5 flex justify-around items-center z-50" data-purpose="bottom-tab-navigation">
+<!-- Tab 1: Trang chủ -->
+<button class="flex flex-col items-center justify-center flex-1 py-1 text-slate-400 hover:text-vista-primary transition group">
+<svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="text-[10px] font-medium tracking-tight">Trang chủ</span>
+</button>
+<!-- Tab 2: My Trips (Active State) -->
+<button class="flex flex-col items-center justify-center flex-1 py-1 text-vista-primary transition">
+<div class="relative">
+<svg class="w-5 h-5 mb-0.5 fill-current" viewbox="0 0 24 24">
+<path d="M19 4h-3V2h-8v2H5c-1.11 0-2 .89-2 2v14c0 1.11.89 2 2 2h14c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm-9-1h4v1h-4V3zM5 19V7h14v12H5z"></path>
+</svg>
+<span class="w-1.5 h-1.5 rounded-full bg-vista-primary absolute -top-0.5 -right-1"></span>
+</div>
+<span class="text-[10px] font-bold tracking-tight">My Trips</span>
+</button>
+<!-- Center Action Button (Floating FAB) -->
+<div class="flex-1 flex justify-center -mt-5">
+<button aria-label="Tạo chuyến đi" class="w-12 h-12 rounded-full bg-vista-primary hover:bg-vista-primaryDark text-white flex items-center justify-center shadow-lg shadow-sky-500/40 border-[3px] border-white transition transform active:scale-95">
+<svg class="w-6 h-6 stroke-[2.5]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+</div>
+<!-- Tab 4: Thông báo -->
+<button class="flex flex-col items-center justify-center flex-1 py-1 text-slate-400 hover:text-vista-primary transition relative">
+<div class="relative">
+<svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="w-2 h-2 bg-rose-500 rounded-full absolute -top-0.5 right-0 border border-white"></span>
+</div>
+<span class="text-[10px] font-medium tracking-tight">Thông báo</span>
+</button>
+<!-- Tab 5: Cá nhân -->
+<button class="flex flex-col items-center justify-center flex-1 py-1 text-slate-400 hover:text-vista-primary transition">
+<svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="text-[10px] font-medium tracking-tight">Cá nhân</span>
+</button>
+</nav>
+<!-- END: MobileBottomNavigation -->
+</div>
+<!-- END: MobileContainer -->
+</body></html>

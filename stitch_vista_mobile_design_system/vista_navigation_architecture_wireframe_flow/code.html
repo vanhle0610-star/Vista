@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VISTA — Kiến trúc Điều hướng & Sơ đồ Khung Màn hình</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Inter', 'sans-serif'],
+        },
+        colors: {
+          primary: {
+            DEFAULT: '#0284C7',
+            pressed: '#0369A1',
+            light: '#38BDF8',
+            soft: '#EFF6FF',
+          },
+          ai: {
+            DEFAULT: '#006C75',
+            pressed: '#00565D',
+          },
+          vista: {
+            bg: '#F8FAFC',
+            surface: '#FFFFFF',
+            border: '#E2E8F0',
+            text: '#0F172A',
+            sub: '#334155',
+            muted: '#64748B',
+            disabled: '#94A3B8',
+          },
+          status: {
+            success: '#10B981',
+            warning: '#F59E0B',
+            danger: '#EF4444',
+          }
+        },
+        borderRadius: {
+          card: '18px',
+          button: '12px',
+          badge: '8px',
+          modal: '22px',
+        }
+      }
+    }
+  }
+</script>
+<style>
+  body {
+    background-color: #F8FAFC;
+    color: #0F172A;
+    font-family: 'Inter', -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wireframe-phone {
+    width: 250px;
+    height: 480px;
+    background: #FFFFFF;
+    border-radius: 28px;
+    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+    border: 1px solid #E2E8F0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .wireframe-phone:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px -4px rgba(2, 132, 199, 0.15), 0 4px 10px -2px rgba(15, 23, 42, 0.05);
+    border-color: #38BDF8;
+  }
+  .flow-badge {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    padding: 3px 8px;
+    border-radius: 9999px;
+  }
+  .screen-header-bar {
+    padding: 10px 14px 8px;
+    border-bottom: 1px solid #F1F5F9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 7px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 600;
+  }
+</style>
+</head>
+<body class="p-6 md:p-10 max-w-7xl mx-auto">
+
+  <!-- TOP HEADER & ARCHITECTURE SUMMARY -->
+  <div class="mb-10 bg-white rounded-3xl p-6 md:p-8 border border-vista-border shadow-sm">
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center font-bold text-xl shadow-sm">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-2xl font-extrabold text-vista-text tracking-tight">VISTA Mobile — Kiến Trúc Điều Hướng & Khung 9 Màn Hình</h1>
+            <span class="flow-badge bg-primary-soft text-primary border border-primary/20">Version 1.0 Architecture</span>
+          </div>
+          <p class="text-sm text-vista-muted mt-0.5">Sơ đồ luồng luân chuyển người dùng, quan hệ cha-con và hành vi back navigation dựa trên Design System chuẩn</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 text-xs bg-slate-100 py-1.5 px-3 rounded-full text-slate-700 font-medium">
+        <span class="w-2 h-2 rounded-full bg-status-success animate-pulse"></span>
+        Mobile-first Viewport (393 × 852 px)
+      </div>
+    </div>
+
+    <!-- CORE ARCHITECTURE RULES ACCORDION/GRID -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-vista-border text-xs">
+      <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80">
+        <div class="font-bold text-primary flex items-center gap-1.5 mb-1.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7"/></svg>
+          1. Thanh Bottom Tab Bar (Cấp 1)
+        </div>
+        <p class="text-vista-sub leading-relaxed">Xuất hiện ở 3 tab gốc: <strong>Khám phá</strong>, <strong>My Trips</strong>, <strong>Hồ sơ</strong>. Nút FAB (+) nổi bật mở màn hình <em>Tạo chuyến đi</em> dạng full-screen modal.</p>
+      </div>
+
+      <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80">
+        <div class="font-bold text-primary flex items-center gap-1.5 mb-1.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+          2. Luồng Đi Sâu (Hierarchical Stack)
+        </div>
+        <p class="text-vista-sub leading-relaxed">Từ thẻ chuyến đi tại My Trips &rarr; <em>Chi tiết chuyến đi</em> &rarr; <em>Lịch trình</em> &rarr; <em>Chi tiết điểm dừng</em>. Luôn có nút <strong>Back (Quay lại)</strong> góc trái trên cùng.</p>
+      </div>
+
+      <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80">
+        <div class="font-bold text-primary flex items-center gap-1.5 mb-1.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          3. Luồng Xác Thực (Auth Flow)
+        </div>
+        <p class="text-vista-sub leading-relaxed"><em>Đăng nhập / Đăng ký</em> là luồng độc lập, tách rời hoàn toàn khỏi bottom bar. Mở khi bấm từ Hồ sơ hoặc khi tài khoản chưa đăng nhập.</p>
+      </div>
+
+      <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80">
+        <div class="font-bold text-ai flex items-center gap-1.5 mb-1.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          4. Tính Năng Tùy Chọn (Backend Scoped)
+        </div>
+        <p class="text-vista-sub leading-relaxed">Các tính năng VISTA AI Planner, Map View và Mời thành viên được thiết kế dưới dạng <strong>Optional / Plug-in</strong> để bảo đảm khả năng mở rộng.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 1: CÁC MÀN HÌNH CẤP 1 (PRIMARY TAB SCREENS) -->
+  <div class="mb-12">
+    <div class="flex items-center justify-between mb-5">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="w-3 h-3 rounded-full bg-primary"></span>
+          <h2 class="text-lg font-bold text-vista-text uppercase tracking-wider">Cụm 1: Màn hình Cấp Gốc (Main Tab Shell)</h2>
+        </div>
+        <p class="text-xs text-vista-muted mt-0.5">3 Tab chính có thanh Tab Bar thường trực + Nút Tạo Chuyến Đi hành động nhanh</p>
+      </div>
+      <span class="text-xs bg-primary/10 text-primary px-2.5 py-1 rounded-full font-semibold">Bottom Bar: Active</span>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      
+      <!-- SCREEN 1: TRANG CHỦ / KHÁM PHÁ -->
+      <div class="flex flex-col items-center">
+        <div class="wireframe-phone">
+          <!-- iOS Notch -->
+          <div class="w-full h-6 bg-slate-100 flex items-center justify-center">
+            <div class="w-20 h-3 bg-slate-300 rounded-full"></div>
+          </div>
+          <!-- Header -->
+          <div class="screen-header-bar">
+            <div class="flex items-center gap-1.5">
+              <span class="text-primary font-black text-sm">VISTA</span>
+              <span class="text-[9px] bg-sky-100 text-primary px-1.5 py-0.5 rounded font-bold">TRAVEL</span>
+            </div>
+            <div class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+            </div>
+          </div>
+          <!-- Body Content -->
+          <div class="flex-1 p-3 overflow-hidden space-y-3 bg-slate-50/50">
+            <!-- Search field -->
+            <div class="h-8 bg-white border border-vista-border rounded-lg px-2 flex items-center gap-2 text-[10px] text-vista-muted shadow-2xs">
+              <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              <span>Tìm kiếm điểm đến, cẩm nang du lịch...</span>
+            </div>
+            <!-- Hero Promo Card -->
+            <div class="bg-gradient-to-br from-primary to-sky-600 rounded-xl p-3 text-white">
+              <p class="text-[9px] opacity-80 uppercase tracking-wider font-semibold">Khám phá thế giới</p>
+              <h4 class="text-xs font-bold mt-0.5">Lên kế hoạch dễ dàng cùng VISTA</h4>
+              <div class="mt-2 inline-flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded text-[9px] font-semibold">
+                Khám phá xu hướng &rarr;
+              </div>
+            </div>
+            <!-- Section Destinations -->
+            <div>
+              <div class="flex justify-between items-center text-[10px] font-bold text-vista-text mb-1.5">
+                <span>Điểm đến thịnh hành</span>
+                <span class="text-primary font-normal">Xem tất cả</span>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div class="h-16 bg-white border border-vista-border rounded-lg p-1.5 flex flex-col justify-end bg-gradient-to-t from-slate-800/80 to-transparent">
+                  <span class="text-[9px] font-bold text-white">Đà Nẵng</span>
+                  <span class="text-[8px] text-slate-200">24+ lịch trình gợi ý</span>
+                </div>
+                <div class="h-16 bg-white border border-vista-border rounded-lg p-1.5 flex flex-col justify-end bg-gradient-to-t from-slate-800/80 to-transparent">
+                  <span class="text-[9px] font-bold text-white">Phú Quốc</span>
+                  <span class="text-[8px] text-slate-200">18+ lịch trình gợi ý</span>
+                </div>
+              </div>
+            </div>
+            <!-- AI Suggestion Box (Optional module) -->
+            <div class="bg-teal-50 border border-teal-200 rounded-lg p-2 flex items-center justify-between text-[9px] text-ai">
+              <div class="flex items-center gap-1.5 font-semibold">
+                <span class="w-1.5 h-1.5 rounded-full bg-ai"></span>
+                <span>Gợi ý lịch trình tự động bằng AI</span>
+              </div>
+              <span class="text-[8px] bg-white px-1.5 py-0.5 rounded border border-teal-200 font-bold">Thử nghiệm</span>
+            </div>
+          </div>
+          <!-- Bottom Navigation Bar (Active: Home) -->
+          <div class="h-12 bg-white border-t border-vista-border px-4 flex items-center justify-between text-[8px] font-medium text-vista-muted">
+            <div class="flex flex-col items-center text-primary font-bold">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+              <span>Khám phá</span>
+            </div>
+            <div class="flex flex-col items-center">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+              <span>My Trips</span>
+            </div>
+            <!-- FAB (+) button -->
+            <div class="w-7 h-7 -mt-4 bg-primary text-white rounded-full flex items-center justify-center shadow-md border-2 border-white">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+            </div>
+            <div class="flex flex-col items-center">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+              <span>Thông báo</span>
+            </div>
+            <div class="flex flex-col items-center">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+              <span>Hồ sơ</span>
+            </div>
+          </div>
+        </div>
+        <div class="mt-3 text-center">
+          <span class="text-xs font-bold text-vista-text">1. Trang chủ / Khám phá</span>
+          <p class="text-[11px] text-vista-muted">Màn hình khởi động gốc, xem xu hướng & gợi ý</p>
+        </div>
+      </div>
+
+      <!-- SCREEN 2: MY TRIPS (TRUNG TÂM QUẢN LÝ) -->
+      <div class="flex flex-col items-center relative">
+        <div class="wireframe-phone border-2 border-primary/40">
+          <!-- iOS Notch -->
+          <div class="w-full h-6 bg-slate-100 flex items-center justify-center">
+            <div class="w-20 h-3 bg-slate-300 rounded-full"></div>
+          </div>
+          <!-- Header -->
+          <div class="screen-header-bar">
+            <div>
+              <h3 class="font-extrabold text-sm text-vista-text">Chuyến đi của tôi</h3>
+              <p class="text-[9px] text-vista-muted">Tất cả chuyến đi của bạn</p>
+            </div>
+            <div class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </div>
+          </div>
+          <!-- Body Content -->
+          <div class="flex-1 p-3 overflow-hidden space-y-2.5 bg-slate-50/50">
+            <!-- Filter chips -->
+            <div class="flex gap-1.5 overflow-x-auto pb-1 text-[9px] font-semibold">
+              <span class="bg-primary text-white px-2 py-0.5 rounded-full">Tất cả (5)</span>
+              <span class="bg-white border border-vista-border text-vista-sub px-2 py-0.5 rounded-full">Đang đi (1)</span>
+              <span class="bg-white border border-vista-border text-vista-sub px-2 py-0.5 rounded-full">Sắp tới (2)</span>
+            </div>
+            <!-- Trip Card 1 (Clickable to Screen 4) -->
+            <div class="bg-white border border-primary/40 rounded-xl p-2.5 shadow-sm space-y-1.5 relative group cursor-pointer">
+              <div class="flex justify-between items-start">
+                <span class="status-pill bg-sky-100 text-primary">Đang diễn ra</span>
+                <span class="text-[8px] text-vista-muted">4 ngày 3 đêm</span>
+              </div>
+              <h5 class="text-[11px] font-bold text-vista-text">Đà Nẵng: Biển xanh & Núi non</h5>
+              <div class="flex items-center justify-between text-[9px] text-vista-muted">
+                <span>12 - 15 Thg 6, 2025</span>
+                <div class="flex -space-x-1">
+                  <div class="w-4 h-4 rounded-full bg-slate-300 border border-white"></div>
+                  <div class="w-4 h-4 rounded-full bg-primary-light border border-white text-[7px] text-white flex items-center justify-center font-bold">+3</div>
+                </div>
+              </div>
+              <!-- Progress mini bar -->
+              <div class="w-full bg-slate-100 h-1 rounded-full overflow-hidden">
+                <div class="bg-primary h-full w-3/4"></div>
+              </div>
+              <!-- Direction note -->
+              <div class="text-[8px] text-primary font-bold flex items-center justify-end gap-0.5 pt-0.5">
+                Chạm mở Chi tiết &rarr;
+              </div>
+            </div>
+
+            <!-- Trip Card 2 -->
+            <div class="bg-white border border-vista-border rounded-xl p-2.5 opacity-90 space-y-1">
+              <div class="flex justify-between items-start">
+                <span class="status-pill bg-amber-100 text-amber-700">Sắp tới</span>
+                <span class="text-[8px] text-vista-muted">3 ngày 2 đêm</span>
+              </div>
+              <h5 class="text-[10px] font-bold text-vista-text">Phú Quốc: Nghỉ dưỡng biển xanh</h5>
+              <span class="text-[8px] text-vista-muted block">10 - 15 Thg 8, 2025</span>
+            </div>
+          </div>
+          <!-- Bottom Navigation Bar (Active: My Trips) -->
+          <div class="h-12 bg-white border-t border-vista-border px-4 flex items-center justify-between text-[8px] font-medium text-vista-muted">
+            <div class="flex flex-col items-center">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+              <span>Khám phá</span>
+            </div>
+            <div class="flex flex-col items-center text-primary font-bold">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 01-1.581.814L10 13.197l-4.419 2.617A1 1 0 014 16V4z"/></svg>
+              <span>My Trips</span>
+            </div>
+            <!-- FAB (+) button -->
+            <div class="w-7 h-7 -mt-4 bg-primary text-white rounded-full flex items-center justify-center shadow-md border-2 border-white">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+            </div>
+            <div class="flex flex-col items-center">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+              <span>Thông báo</span>
+            </div>
+            <div class="flex flex-col items-center">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+              <span>Hồ sơ</span>
+            </div>
+          </div>
+        </div>
+        <div class="mt-3 text-center">
+          <span class="text-xs font-bold text-vista-text">2. My Trips — Danh sách</span>
+          <p class="text-[11px] text-vista-muted">Cửa ngõ chính dẫn đến toàn bộ luồng sâu</p>
+        </div>
+      </div>
+
+      <!-- SCREEN 8: HỒ SƠ CÁ NHÂN / CÀI ĐẶT -->
+      <div class="flex flex-col items-center">
+        <div class="wireframe-phone">
+          <!-- iOS Notch -->
+          <div class="w-full h-6 bg-slate-100 flex items-center justify-center">
+            <div class="w-20 h-3 bg-slate-300 rounded-full"></div>
+          </div>
+          <!-- Header -->
+          <div class="screen-header-bar">
+            <h3 class="font-extrabold text-sm text-vista-text">Hồ sơ cá nhân</h3>
+            <div class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            </div>
+          </div>
+          <!-- Body Content -->
+          <div class="flex-1 p-3 overflow-hidden space-y-3 bg-slate-50/50">
+            <!-- Profile mini card -->
+            <div class="bg-white border border-vista-border rounded-xl p-2.5 flex items-center gap-2.5">
+              <div class="w-10 h-10 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-xs">NA</div>
+              <div>
+                <h5 class="text-[11px] font-bold text-vista-text">Nguyễn Văn Anh</h5>
+                <p class="text-[9px] text-vista-muted">anh.nguyen@example.com</p>
+              </div>
+            </div>
+            <!-- Settings Menu List -->
+            <div class="bg-white border border-vista-border rounded-xl overflow-hidden text-[9px] divide-y divide-slate-100">
+              <div class="p-2 flex items-center justify-between">
+                <span>Thông tin tài khoản</span>
+                <span class="text-slate-400">&rsaquo;</span>
+              </div>
+              <div class="p-2 flex items-center justify-between">
+                <span>Chuyến đi đã lưu</span>
+                <span class="text-slate-400">&rsaquo;</span>
+              </div>
+              <div class="p-2 flex items-center justify-between">
+                <span>Cài đặt thông báo</span>
+                <span class="text-slate-400">&rsaquo;</span>
+              </div>
+              <div class="p-2 flex items-center justify-between text-primary font-semibold">
+                <span>Đổi / Chuyển tài khoản</span>
+                <span class="text-primary">&rsaquo;</span>
+              </div>
+            </div>
+            <!-- Logout Button (Links to Auth flow) -->
+            <div class="p-2 bg-red-50 border border-red-200 text-status-danger rounded-xl text-center text-[9px] font-bold cursor-pointer">
+              Đăng xuất (Chuyển về Đăng nhập)
+            </div>
+          </div>
+          <!-- Bottom Navigation Bar (Active: Profile) -->
+          <div class="h-12 bg-white border-t border-vista-border px-4 flex items-center justify-between text-[8px] font-medium text-vista-muted">
+            <div class="flex flex-col items-center">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+              <span>Khám phá</span>
+            </div>
+            <div class="flex flex-col items-center">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+              <span>My Trips</span>
+            </div>
+            <!-- FAB (+) button -->
+            <div class="w-7 h-7 -mt-4 bg-primary text-white rounded-full flex items-center justify-center shadow-md border-2 border-white">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+            </div>
+            <div class="flex flex-col items-center">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+              <span>Thông báo</span>
+            </div>
+            <div class="flex flex-col items-center text-primary font-bold">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
+              <span>Hồ sơ</span>
+            </div>
+          </div>
+        </div>
+        <div class="mt-3 text-center">
+          <span class="text-xs font-bold text-vista-text">8. Hồ sơ cá nhân / Cài đặt</span>
+          <p class="text-[11px] text-vista-muted">Quản lý tài khoản cá nhân & chuyển đổi trạng thái Auth</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SECTION 2: LUỒNG TẠO & QUẢN LÝ CHUYẾN ĐI CHI TIẾT (DEEP WORKFLOW) -->
+  <div class="mb-12">
+    <div class="flex items-center justify-between mb-5">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="w-3 h-3 rounded-full bg-status-success"></span>
+          <h2 class="text-lg font-bold text-vista-text uppercase tracking-wider">Cụm 2: Luồng Chi Tiết Chuyến Đi (Trip Detail & Sub-screens)</h2>
+        </div>
+        <p class="text-xs text-vista-muted mt-0.5">Các màn hình cấp sâu có Navigation Bar chuẩn với nút Back, liên kết liền mạch từ thẻ chuyến đi</p>
+      </div>
+      <span class="text-xs bg-slate-100 text-slate-700 px-2.5 py-1 rounded-full font-semibold">Nav: Stack Back Button</span>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
+
+      <!-- SCREEN 3: TẠO CHUYẾN ĐI (MODAL / CREATE FLOW) -->
+      <div class="flex flex-col items-center">
+        <div class="wireframe-phone border border-sky-300">
+          <div class="w-full h-6 bg-slate-100 flex items-center justify-center">
+            <div class="w-20 h-3 bg-slate-300 rounded-full"></div>
+          </div>
+          <!-- Header with Close/Back -->
+          <div class="screen-header-bar">
+            <div class="flex items-center gap-1.5 text-xs font-bold text-vista-text">
+              <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              <span>Tạo chuyến đi</span>
+            </div>
+            <span class="text-[9px] text-primary font-bold">Lưu nháp</span>
+          </div>
+          <!-- Form Inputs -->
+          <div class="flex-1 p-3 overflow-hidden space-y-2 bg-slate-50/50">
+            <div>
+              <label class="text-[8px] font-bold text-vista-sub">Tên chuyến đi *</label>
+              <div class="h-7 bg-white border border-vista-border rounded-md px-2 flex items-center text-[9px] text-slate-400">
+                Đà Nẵng: Biển xanh & Núi non
+              </div>
+            </div>
+            <div>
+              <label class="text-[8px] font-bold text-vista-sub">Điểm đến *</label>
+              <div class="h-7 bg-white border border-vista-border rounded-md px-2 flex items-center justify-between text-[9px] text-slate-400">
+                <span>Chọn điểm đến</span>
+                <span class="text-[8px]">&rsaquo;</span>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-1.5">
+              <div>
+                <label class="text-[8px] font-bold text-vista-sub">Ngày đi *</label>
+                <div class="h-7 bg-white border border-vista-border rounded-md px-1.5 flex items-center text-[8px] text-slate-500">12/06/2025</div>
+              </div>
+              <div>
+                <label class="text-[8px] font-bold text-vista-sub">Ngày về *</label>
+                <div class="h-7 bg-white border border-vista-border rounded-md px-1.5 flex items-center text-[8px] text-slate-500">15/06/2025</div>
+              </div>
+            </div>
+            <div>
+              <label class="text-[8px] font-bold text-vista-sub">Ngân sách dự kiến</label>
+              <div class="h-7 bg-white border border-vista-border rounded-md px-2 flex items-center justify-between text-[9px] text-slate-500">
+                <span>10,000,000</span>
+                <span class="text-[8px] text-slate-400">VND</span>
+              </div>
+            </div>
+            <!-- Optional AI Planner Module -->
+            <div class="p-1.5 rounded-lg bg-teal-50 border border-teal-200 text-[8px] text-ai font-semibold flex items-center gap-1">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              <span>AI Tự động lên lịch trình (Tùy chọn)</span>
+            </div>
+          </div>
+          <!-- Bottom Action -->
+          <div class="p-2.5 bg-white border-t border-vista-border">
+            <button class="w-full h-8 bg-primary text-white rounded-lg text-[10px] font-bold shadow-xs">
+              Tạo chuyến đi &rarr;
+            </button>
+          </div>
+        </div>
+        <div class="mt-3 text-center">
+          <span class="text-xs font-bold text-vista-text">3. Tạo chuyến đi</span>
+          <p class="text-[11px] text-vista-muted">Modal toàn màn hình từ nút FAB (+)</p>
+        </div>
+      </div>
+
+      <!-- SCREEN 4: CHI TIẾT CHUYẾN ĐI (MAIN HUB) -->
+      <div class="flex flex-col items-center">
+        <div class="wireframe-phone border-2 border-primary">
+          <div class="w-full h-6 bg-slate-100 flex items-center justify-center">
+            <div class="w-20 h-3 bg-slate-300 rounded-full"></div>
+          </div>
+          <!-- Header with Back -->
+          <div class="screen-header-bar">
+            <div class="flex items-center gap-1 text-xs font-bold text-vista-text">
+              <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+              <span>Chi tiết chuyến đi</span>
+            </div>
+            <div class="flex gap-1.5">
+              <span class="text-slate-400 text-xs">&#8942;</span>
+            </div>
+          </div>
+          <!-- Banner & Info -->
+          <div class="flex-1 p-2.5 overflow-hidden space-y-2.5 bg-slate-50/50">
+            <!-- Cover Photo Placeholder -->
+            <div class="h-20 bg-gradient-to-r from-sky-500 to-primary rounded-xl p-2 flex flex-col justify-between text-white shadow-xs">
+              <span class="status-pill bg-white/20 text-white w-fit text-[8px]">Đang diễn ra</span>
+              <div>
+                <h4 class="text-[11px] font-bold leading-tight">Đà Nẵng: Biển xanh & Núi non</h4>
+                <p class="text-[8px] opacity-80">12 - 15 Thg 6, 2025</p>
+              </div>
+            </div>
+            <!-- Quick Hub Links (Lịch trình, Thành viên, Chi tiêu, Bản đồ) -->
+            <div class="grid grid-cols-3 gap-1.5 text-center">
+              <div class="bg-white border border-primary/30 p-1.5 rounded-lg shadow-2xs cursor-pointer">
+                <span class="text-primary text-xs font-bold block">&#128197;</span>
+                <span class="text-[8px] font-bold text-vista-text">Lịch trình</span>
+                <span class="text-[7px] text-primary block mt-0.5">&rarr; Mở</span>
+              </div>
+              <div class="bg-white border border-vista-border p-1.5 rounded-lg shadow-2xs cursor-pointer">
+                <span class="text-slate-700 text-xs font-bold block">&#128101;</span>
+                <span class="text-[8px] font-bold text-vista-text">Thành viên (4)</span>
+                <span class="text-[7px] text-primary block mt-0.5">&rarr; Xem</span>
+              </div>
+              <div class="bg-white border border-vista-border p-1.5 rounded-lg shadow-2xs opacity-80">
+                <span class="text-slate-700 text-xs font-bold block">&#128179;</span>
+                <span class="text-[8px] font-bold text-vista-text">Ngân sách</span>
+                <span class="text-[7px] text-slate-400 block mt-0.5">75%</span>
+              </div>
+            </div>
+            <!-- Overview note -->
+            <div class="bg-white border border-vista-border rounded-lg p-2 text-[8px] text-vista-sub space-y-1">
+              <div class="font-bold text-vista-text">Giới thiệu chuyến đi</div>
+              <p class="text-vista-muted leading-relaxed">Hành trình khám phá trọn vẹn cảnh đẹp Sơn Trà, Bà Nà Hills và ẩm thực miền Trung.</p>
+            </div>
+          </div>
+          <!-- Action Footer -->
+          <div class="p-2 bg-white border-t border-vista-border flex gap-1.5">
+            <button class="flex-1 h-7 bg-primary text-white rounded-md text-[9px] font-bold">Xem Lịch trình &rarr;</button>
+          </div>
+        </div>
+        <div class="mt-3 text-center">
+          <span class="text-xs font-bold text-vista-text">4. Chi tiết chuyến đi</span>
+          <p class="text-[11px] text-vista-muted">Trung tâm kết nối sang Lịch trình & Thành viên</p>
+        </div>
+      </div>
+
+      <!-- SCREEN 5: LỊCH TRÌNH THEO NGÀY (DAY TIMELINE) -->
+      <div class="flex flex-col items-center">
+        <div class="wireframe-phone border border-slate-300">
+          <div class="w-full h-6 bg-slate-100 flex items-center justify-center">
+            <div class="w-20 h-3 bg-slate-300 rounded-full"></div>
+          </div>
+          <!-- Header with Back -->
+          <div class="screen-header-bar">
+            <div class="flex items-center gap-1 text-xs font-bold text-vista-text">
+              <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+              <span>Lịch trình theo ngày</span>
+            </div>
+            <span class="text-[9px] text-vista-muted">Ngày 1 / 4</span>
+          </div>
+          <!-- Day Tabs -->
+          <div class="flex gap-1 px-2.5 py-1.5 bg-slate-50 border-b border-vista-border text-[8px] font-bold overflow-x-auto">
+            <span class="bg-primary text-white px-2 py-0.5 rounded">Ngày 1 (12/6)</span>
+            <span class="bg-white border border-vista-border text-slate-600 px-2 py-0.5 rounded">Ngày 2</span>
+            <span class="bg-white border border-vista-border text-slate-600 px-2 py-0.5 rounded">Ngày 3</span>
+          </div>
+          <!-- Timeline Items -->
+          <div class="flex-1 p-2.5 overflow-hidden space-y-2 bg-white text-[8px]">
+            <!-- Timeline Item 1 -->
+            <div class="flex gap-2">
+              <div class="flex flex-col items-center">
+                <span class="w-4 h-4 rounded-full bg-primary text-white flex items-center justify-center font-bold text-[7px]">1</span>
+                <span class="w-0.5 h-8 bg-sky-200 my-0.5"></span>
+              </div>
+              <div class="flex-1 bg-slate-50 p-1.5 rounded-lg border border-slate-200">
+                <div class="font-bold text-vista-text text-[9px]">Sân bay Quốc tế Đà Nẵng</div>
+                <div class="text-vista-muted text-[8px]">08:00 - 08:30 • Check-in</div>
+              </div>
+            </div>
+            <!-- Timeline Item 2 (Clickable to Stop Detail) -->
+            <div class="flex gap-2">
+              <div class="flex flex-col items-center">
+                <span class="w-4 h-4 rounded-full bg-primary text-white flex items-center justify-center font-bold text-[7px]">2</span>
+                <span class="w-0.5 h-8 bg-sky-200 my-0.5"></span>
+              </div>
+              <div class="flex-1 bg-sky-50/60 p-1.5 rounded-lg border border-primary/40 cursor-pointer">
+                <div class="flex justify-between items-center">
+                  <div class="font-bold text-vista-text text-[9px]">Bà Nà Hills</div>
+                  <span class="text-primary font-bold text-[7px]">&rarr; Chi tiết</span>
+                </div>
+                <div class="text-vista-muted text-[8px]">09:30 - 13:00 • Tham quan</div>
+              </div>
+            </div>
+            <!-- Timeline Item 3 -->
+            <div class="flex gap-2">
+              <div class="flex flex-col items-center">
+                <span class="w-4 h-4 rounded-full bg-slate-300 text-slate-700 flex items-center justify-center font-bold text-[7px]">3</span>
+              </div>
+              <div class="flex-1 bg-slate-50 p-1.5 rounded-lg border border-slate-200 opacity-80">
+                <div class="font-bold text-vista-text text-[9px]">Bãi biển Mỹ Khê</div>
+                <div class="text-vista-muted text-[8px]">15:00 - 17:30 • Tắm biển</div>
+              </div>
+            </div>
+          </div>
+          <!-- Bottom Add Stop button -->
+          <div class="p-2 bg-slate-50 border-t border-vista-border">
+            <div class="h-6 border border-dashed border-primary text-primary rounded flex items-center justify-center text-[8px] font-bold">
+              + Thêm điểm dừng
+            </div>
+          </div>
+        </div>
+        <div class="mt-3 text-center">
+          <span class="text-xs font-bold text-vista-text">5. Lịch trình theo ngày</span>
+          <p class="text-[11px] text-vista-muted">Chạm điểm dừng để mở Chi tiết điểm dừng</p>
+        </div>
+      </div>
+
+      <!-- SCREEN 6: CHI TIẾT ĐIỂM DỪNG (STOP DETAIL) -->
+      <div class="flex flex-col items-center">
+        <div class="wireframe-phone border border-slate-300">
+          <div class="w-full h-6 bg-slate-100 flex items-center justify-center">
+            <div class="w-20 h-3 bg-slate-300 rounded-full"></div>
+          </div>
+          <!-- Header with Back -->
+          <div class="screen-header-bar">
+            <div class="flex items-center gap-1 text-xs font-bold text-vista-text">
+              <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+              <span>Chi tiết điểm dừng</span>
+            </div>
+            <div class="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-[10px]">♥</div>
+          </div>
+          <!-- Stop Content -->
+          <div class="flex-1 p-2.5 overflow-hidden space-y-2 bg-slate-50/50">
+            <div class="h-20 bg-slate-300 rounded-xl relative overflow-hidden flex items-end p-2 text-white">
+              <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent"></div>
+              <div class="relative z-10">
+                <span class="text-[8px] bg-amber-400 text-slate-900 px-1 rounded font-bold">★ 4.8</span>
+                <h4 class="text-[11px] font-bold">Bà Nà Hills</h4>
+              </div>
+            </div>
+            <!-- Metadata chips -->
+            <div class="flex gap-1 text-[7px] text-vista-sub">
+              <span class="bg-white border border-vista-border px-1.5 py-0.5 rounded">2 giờ</span>
+              <span class="bg-white border border-vista-border px-1.5 py-0.5 rounded">15 km</span>
+              <span class="bg-white border border-vista-border px-1.5 py-0.5 rounded">Có phí</span>
+            </div>
+            <!-- Info Card -->
+            <div class="bg-white border border-vista-border rounded-lg p-2 text-[8px] space-y-1">
+              <div class="font-bold text-vista-text">Giới thiệu địa điểm</div>
+              <p class="text-vista-muted leading-relaxed">Khu du lịch nổi tiếng với khí hậu mát mẻ, cáp treo đạt kỷ lục và Cầu Vàng huyền thoại.</p>
+              <div class="pt-1 border-t border-slate-100 flex justify-between text-vista-sub">
+                <span>Giờ mở cửa:</span>
+                <span class="font-semibold text-vista-text">07:00 - 22:00</span>
+              </div>
+            </div>
+          </div>
+          <!-- Action Footer -->
+          <div class="p-2 bg-white border-t border-vista-border">
+            <button class="w-full h-7 bg-primary text-white rounded text-[8px] font-bold">
+              Thêm vào lịch trình &rarr;
+            </button>
+          </div>
+        </div>
+        <div class="mt-3 text-center">
+          <span class="text-xs font-bold text-vista-text">6. Chi tiết điểm dừng</span>
+          <p class="text-[11px] text-vista-muted">Màn hình cấp sâu nhất của luồng Lịch trình</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SECTION 3: THÀNH VIÊN VÀ XÁC THỰC (MEMBERS & AUTH FLOW) -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+    <!-- SCREEN 7: THÀNH VIÊN CHUYẾN ĐI -->
+    <div class="bg-white rounded-3xl p-5 border border-vista-border shadow-sm flex flex-col items-center">
+      <div class="w-full flex items-center justify-between mb-3">
+        <span class="text-xs font-bold uppercase tracking-wider text-vista-text flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-primary"></span> 7. Thành viên chuyến đi
+        </span>
+        <span class="text-[9px] bg-slate-100 px-2 py-0.5 rounded text-slate-600">Từ Chi tiết chuyến đi</span>
+      </div>
+      
+      <div class="wireframe-phone border border-slate-300">
+        <div class="w-full h-6 bg-slate-100 flex items-center justify-center">
+          <div class="w-20 h-3 bg-slate-300 rounded-full"></div>
+        </div>
+        <!-- Header with Back -->
+        <div class="screen-header-bar">
+          <div class="flex items-center gap-1 text-xs font-bold text-vista-text">
+            <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            <span>Thành viên (4)</span>
+          </div>
+          <span class="text-[9px] text-primary font-bold">+ Mời</span>
+        </div>
+        <!-- Members List -->
+        <div class="flex-1 p-2.5 overflow-hidden space-y-2 bg-slate-50/50 text-[9px]">
+          <!-- Owner -->
+          <div class="bg-white border border-vista-border rounded-lg p-2 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <div class="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-[8px]">NA</div>
+              <div>
+                <div class="font-bold text-vista-text text-[9px]">Nguyễn Văn Anh</div>
+                <div class="text-[7px] text-vista-muted">Chủ chuyến đi (Owner)</div>
+              </div>
+            </div>
+            <span class="status-pill bg-sky-100 text-primary text-[7px]">Owner</span>
+          </div>
+          <!-- Member 2 -->
+          <div class="bg-white border border-vista-border rounded-lg p-2 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <div class="w-6 h-6 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-[8px]">TM</div>
+              <div>
+                <div class="font-bold text-vista-text text-[9px]">Trần Thị Mai</div>
+                <div class="text-[7px] text-status-success font-semibold">Đã xác nhận</div>
+              </div>
+            </div>
+            <span class="status-pill bg-emerald-100 text-status-success text-[7px]">Tham gia</span>
+          </div>
+          <!-- Member 3 -->
+          <div class="bg-white border border-vista-border rounded-lg p-2 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <div class="w-6 h-6 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-[8px]">LM</div>
+              <div>
+                <div class="font-bold text-vista-text text-[9px]">Lê Minh Đức</div>
+                <div class="text-[7px] text-status-success font-semibold">Đã xác nhận</div>
+              </div>
+            </div>
+            <span class="status-pill bg-emerald-100 text-status-success text-[7px]">Tham gia</span>
+          </div>
+        </div>
+        <!-- Optional invite note -->
+        <div class="p-2 bg-slate-50 border-t border-vista-border text-center text-[7px] text-vista-muted">
+          Chức năng mời qua Link / QR Code (Tùy chọn backend)
+        </div>
+      </div>
+      <p class="text-[11px] text-vista-muted text-center mt-3">Quản lý nhóm đi chung, phân quyền Chủ phòng & Thành viên</p>
+    </div>
+
+    <!-- SCREEN 9: ĐĂNG NHẬP / ĐĂNG KÝ (AUTH FLOW) -->
+    <div class="bg-white rounded-3xl p-5 border border-vista-border shadow-sm flex flex-col items-center md:col-span-2">
+      <div class="w-full flex items-center justify-between mb-3">
+        <span class="text-xs font-bold uppercase tracking-wider text-vista-text flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-slate-800"></span> 9. Luồng Xác Thực (Đăng Nhập / Đăng Ký)
+        </span>
+        <span class="text-[9px] bg-red-100 text-status-danger px-2 py-0.5 rounded font-bold">Không Bottom Tab Bar</span>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-6 w-full justify-center">
+        <!-- ĐĂNG NHẬP -->
+        <div class="flex flex-col items-center">
+          <div class="wireframe-phone border border-slate-300">
+            <div class="w-full h-6 bg-slate-100 flex items-center justify-center">
+              <div class="w-20 h-3 bg-slate-300 rounded-full"></div>
+            </div>
+            <div class="screen-header-bar">
+              <span class="text-xs font-bold text-vista-text">VISTA Auth</span>
+              <span class="text-[9px] text-slate-400">Bỏ qua &rarr;</span>
+            </div>
+            <div class="flex-1 p-3 overflow-hidden space-y-2.5 bg-slate-50/50">
+              <div class="text-center py-2">
+                <span class="text-primary font-black text-base">VISTA</span>
+                <h4 class="text-[11px] font-bold text-vista-text mt-1">Chào mừng quay trở lại</h4>
+                <p class="text-[8px] text-vista-muted">Đăng nhập để xem lịch trình của bạn</p>
+              </div>
+              <div class="space-y-1.5 text-[8px]">
+                <div class="h-7 bg-white border border-vista-border rounded-md px-2 flex items-center text-slate-400">
+                  Email hoặc số điện thoại
+                </div>
+                <div class="h-7 bg-white border border-vista-border rounded-md px-2 flex items-center justify-between text-slate-400">
+                  <span>Mật khẩu</span>
+                  <span>👁</span>
+                </div>
+              </div>
+              <button class="w-full h-7 bg-primary text-white rounded-md text-[9px] font-bold mt-1">
+                Đăng nhập &rarr;
+              </button>
+              <div class="text-center text-[8px] text-primary cursor-pointer">
+                Chưa có tài khoản? <strong class="underline">Đăng ký ngay</strong>
+              </div>
+            </div>
+          </div>
+          <span class="text-[11px] font-bold text-vista-text mt-2">Màn hình Đăng nhập</span>
+        </div>
+
+        <!-- ĐĂNG KÝ -->
+        <div class="flex flex-col items-center">
+          <div class="wireframe-phone border border-slate-300">
+            <div class="w-full h-6 bg-slate-100 flex items-center justify-center">
+              <div class="w-20 h-3 bg-slate-300 rounded-full"></div>
+            </div>
+            <div class="screen-header-bar">
+              <div class="flex items-center gap-1 text-xs font-bold text-vista-text">
+                <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                <span>Đăng ký tài khoản</span>
+              </div>
+            </div>
+            <div class="flex-1 p-3 overflow-hidden space-y-2 bg-slate-50/50">
+              <div class="space-y-1.5 text-[8px]">
+                <div>
+                  <label class="font-bold text-vista-sub">Họ và tên *</label>
+                  <div class="h-7 bg-white border border-vista-border rounded-md px-2 flex items-center text-slate-400">Nguyễn Văn Anh</div>
+                </div>
+                <div>
+                  <label class="font-bold text-vista-sub">Email *</label>
+                  <div class="h-7 bg-white border border-vista-border rounded-md px-2 flex items-center text-slate-400">anh.nguyen@email.com</div>
+                </div>
+                <div>
+                  <label class="font-bold text-vista-sub">Mật khẩu *</label>
+                  <div class="h-7 bg-white border border-vista-border rounded-md px-2 flex items-center text-slate-400">••••••••••••</div>
+                </div>
+              </div>
+              <button class="w-full h-7 bg-primary text-white rounded-md text-[9px] font-bold mt-2">
+                Đăng ký tài khoản &rarr;
+              </button>
+              <div class="text-center text-[8px] text-vista-muted">
+                Đã có tài khoản? <span class="text-primary font-bold cursor-pointer">Đăng nhập</span>
+              </div>
+            </div>
+          </div>
+          <span class="text-[11px] font-bold text-vista-text mt-2">Màn hình Đăng ký</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- COMPLETE NAVIGATION MATRIX & ROUTING TABLE -->
+  <div class="mt-12 bg-white rounded-3xl p-6 md:p-8 border border-vista-border shadow-sm">
+    <div class="flex items-center justify-between mb-4 pb-4 border-b border-vista-border">
+      <div>
+        <h3 class="text-base font-extrabold text-vista-text">Bảng Ma Trận Điều Hướng & Quy Tắc Chuyển Màn Hình (Navigation Contract)</h3>
+        <p class="text-xs text-vista-muted mt-0.5">Quy chuẩn lập trình Router & State Management cho toàn bộ 9 màn hình ứng dụng VISTA</p>
+      </div>
+      <span class="text-xs font-bold text-primary bg-primary-soft px-3 py-1 rounded-full">Unified Architecture</span>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs text-vista-text border-collapse">
+        <thead>
+          <tr class="bg-slate-50 text-[11px] font-bold text-vista-sub uppercase tracking-wider border-b border-vista-border">
+            <th class="py-3 px-3">Màn hình</th>
+            <th class="py-3 px-3">Cấp bậc (Level)</th>
+            <th class="py-3 px-3">Điểm mở từ (Source)</th>
+            <th class="py-3 px-3">Hành vi chuyển tiếp (Destination)</th>
+            <th class="py-3 px-3">Hành vi Quay lại (Back Behavior)</th>
+            <th class="py-3 px-3">Bottom Tab Bar</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 text-[11px]">
+          <tr>
+            <td class="py-2.5 px-3 font-bold text-primary">1. Trang chủ / Khám phá</td>
+            <td class="py-2.5 px-3"><span class="flow-badge bg-blue-50 text-blue-700">Root Tab (Cấp 1)</span></td>
+            <td class="py-2.5 px-3">Khởi động app / Tab item</td>
+            <td class="py-2.5 px-3">Điểm đến gợi ý &rarr; Xem trước chuyến đi</td>
+            <td class="py-2.5 px-3 text-vista-muted">Thoát app (Android) / Không</td>
+            <td class="py-2.5 px-3 font-semibold text-emerald-600">Hiển thị (Active 1)</td>
+          </tr>
+          <tr class="bg-sky-50/30">
+            <td class="py-2.5 px-3 font-bold text-primary">2. My Trips — Danh sách</td>
+            <td class="py-2.5 px-3"><span class="flow-badge bg-blue-50 text-blue-700">Root Tab (Cấp 1)</span></td>
+            <td class="py-2.5 px-3">Tab bar item</td>
+            <td class="py-2.5 px-3 font-semibold text-primary">Chạm thẻ chuyến đi &rarr; [4. Chi tiết chuyến đi]</td>
+            <td class="py-2.5 px-3 text-vista-muted">Quay về Tab Khám phá</td>
+            <td class="py-2.5 px-3 font-semibold text-emerald-600">Hiển thị (Active 2)</td>
+          </tr>
+          <tr>
+            <td class="py-2.5 px-3 font-bold text-vista-text">3. Tạo chuyến đi</td>
+            <td class="py-2.5 px-3"><span class="flow-badge bg-purple-50 text-purple-700">Modal Sheet</span></td>
+            <td class="py-2.5 px-3">Nút trung tâm FAB (+) ở Tab Bar</td>
+            <td class="py-2.5 px-3">Tạo thành công &rarr; [4. Chi tiết chuyến đi]</td>
+            <td class="py-2.5 px-3">Nút Đóng (X) &rarr; Trả về màn hình trước</td>
+            <td class="py-2.5 px-3 text-slate-400">Ẩn (Full Modal)</td>
+          </tr>
+          <tr class="bg-sky-50/40">
+            <td class="py-2.5 px-3 font-bold text-primary">4. Chi tiết chuyến đi</td>
+            <td class="py-2.5 px-3"><span class="flow-badge bg-amber-50 text-amber-700">Child (Cấp 2)</span></td>
+            <td class="py-2.5 px-3">Thẻ trong My Trips / Sau khi Tạo mới</td>
+            <td class="py-2.5 px-3 font-semibold">&rarr; [5. Lịch trình] / [7. Thành viên] / Chỉnh sửa</td>
+            <td class="py-2.5 px-3 font-semibold text-vista-sub">&larr; Back về [2. My Trips]</td>
+            <td class="py-2.5 px-3 text-slate-400">Ẩn (Tránh vướng thao tác)</td>
+          </tr>
+          <tr>
+            <td class="py-2.5 px-3 font-bold text-vista-text">5. Lịch trình theo ngày</td>
+            <td class="py-2.5 px-3"><span class="flow-badge bg-amber-50 text-amber-700">Child (Cấp 3)</span></td>
+            <td class="py-2.5 px-3">Mục "Lịch trình" trong Chi tiết chuyến đi</td>
+            <td class="py-2.5 px-3 font-semibold">&rarr; Chạm điểm dừng mở [6. Chi tiết điểm dừng]</td>
+            <td class="py-2.5 px-3 font-semibold text-vista-sub">&larr; Back về [4. Chi tiết chuyến đi]</td>
+            <td class="py-2.5 px-3 text-slate-400">Ẩn</td>
+          </tr>
+          <tr>
+            <td class="py-2.5 px-3 font-bold text-vista-text">6. Chi tiết điểm dừng</td>
+            <td class="py-2.5 px-3"><span class="flow-badge bg-amber-50 text-amber-700">Child (Cấp 4)</span></td>
+            <td class="py-2.5 px-3">Điểm dừng trong Lịch trình / Khám phá</td>
+            <td class="py-2.5 px-3">Thêm/bỏ điểm dừng khỏi lịch trình</td>
+            <td class="py-2.5 px-3 font-semibold text-vista-sub">&larr; Back về [5. Lịch trình theo ngày]</td>
+            <td class="py-2.5 px-3 text-slate-400">Ẩn</td>
+          </tr>
+          <tr>
+            <td class="py-2.5 px-3 font-bold text-vista-text">7. Thành viên chuyến đi</td>
+            <td class="py-2.5 px-3"><span class="flow-badge bg-amber-50 text-amber-700">Child (Cấp 3)</span></td>
+            <td class="py-2.5 px-3">Mục "Thành viên" trong Chi tiết chuyến đi</td>
+            <td class="py-2.5 px-3">Mời thêm thành viên (Optional link/QR)</td>
+            <td class="py-2.5 px-3 font-semibold text-vista-sub">&larr; Back về [4. Chi tiết chuyến đi]</td>
+            <td class="py-2.5 px-3 text-slate-400">Ẩn</td>
+          </tr>
+          <tr>
+            <td class="py-2.5 px-3 font-bold text-primary">8. Hồ sơ cá nhân / Cài đặt</td>
+            <td class="py-2.5 px-3"><span class="flow-badge bg-blue-50 text-blue-700">Root Tab (Cấp 1)</span></td>
+            <td class="py-2.5 px-3">Tab bar item "Hồ sơ"</td>
+            <td class="py-2.5 px-3">Bấm Đăng xuất/Chuyển tài khoản &rarr; [9. Auth]</td>
+            <td class="py-2.5 px-3 text-vista-muted">Quay về Tab Khám phá</td>
+            <td class="py-2.5 px-3 font-semibold text-emerald-600">Hiển thị (Active 5)</td>
+          </tr>
+          <tr>
+            <td class="py-2.5 px-3 font-bold text-slate-800">9. Đăng nhập / Đăng ký</td>
+            <td class="py-2.5 px-3"><span class="flow-badge bg-red-50 text-red-700">Standalone Auth Flow</span></td>
+            <td class="py-2.5 px-3">Từ Hồ sơ / Khi hết hạn session</td>
+            <td class="py-2.5 px-3 font-semibold text-status-success">Đăng nhập thành công &rarr; [1. Khám phá]</td>
+            <td class="py-2.5 px-3 text-vista-muted">Đóng modal hoặc trở về Khám phá (khách)</td>
+            <td class="py-2.5 px-3 text-status-danger font-bold">Ẩn hoàn toàn</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- NOTES ON BACKEND CONSTRAINTS -->
+    <div class="mt-6 pt-4 border-t border-vista-border flex items-start gap-3 bg-amber-50/70 p-3.5 rounded-xl border border-amber-200">
+      <div class="text-status-warning text-base mt-0.5">⚠️</div>
+      <div class="text-xs text-amber-900 leading-relaxed">
+        <strong>Nguyên tắc triển khai chức năng backend (Tuân thủ chỉ thị):</strong>
+        Các tính năng như <em>AI Trip Planner</em>, <em>Bản đồ tương tác đa điểm</em>, và <em>Mời thành viên qua liên kết sâu (Deep Link)</em> được cấu trúc như các module giao diện độc lập (modular/optional components). Khi bước vào khâu thiết kế chi tiết từng màn hình, các thành phần này sẽ sẵn sàng để hoạt động ở cả chế độ ngoại tuyến/cơ bản lẫn kết nối backend nâng cao mà không làm phá vỡ kiến trúc tổng thể.
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER BRANDING -->
+  <div class="mt-10 pb-8 text-center text-xs text-vista-muted">
+    Hệ thống Kiến trúc Điều hướng VISTA • Đồng bộ Design System Tokens v3 (#0284C7, #006C75, Inter, Radius 18px)
+  </div>
+
+</body>
+</html>
