@@ -474,6 +474,7 @@ export default function DestinationsAdminPage() {
                     <td>
                       <div className={styles.destCell}>
                         {cloudSrc ? (
+                          /* eslint-disable-next-line @next/next/no-img-element */
                           <img
                             src={cloudSrc}
                             alt={dest.name}
@@ -615,6 +616,7 @@ export default function DestinationsAdminPage() {
                     </div>
                   ) : (
                     <div className={styles.previewCard}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={imagePreview} alt="Preview" className={styles.previewThumb} />
                       <div className={styles.previewInfo}>
                         <div className={styles.previewName}>{imageFile?.name || 'Tệp ảnh đã chọn'}</div>

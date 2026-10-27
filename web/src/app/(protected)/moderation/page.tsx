@@ -538,6 +538,7 @@ export default function ModerationPage() {
                         <div className={styles.destinationCell}>
                           <div className={styles.thumbnailBox}>
                             {item.imageUrl ? (
+                              /* eslint-disable-next-line @next/next/no-img-element */
                               <img
                                 src={item.imageUrl}
                                 alt={item.name}
@@ -670,6 +671,7 @@ export default function ModerationPage() {
 
             <div className={styles.modalBody}>
               {selectedDest.imageUrl && (
+                /* eslint-disable-next-line @next/next/no-img-element */
                 <img
                   src={selectedDest.imageUrl}
                   alt={selectedDest.name}

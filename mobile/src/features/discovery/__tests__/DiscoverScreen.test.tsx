@@ -63,6 +63,7 @@ function createTestQueryClient() {
 describe('DiscoverScreen Discovery & Filters Tests (TV1 W5)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.mocked(api.get).mockReset();
     jest.mocked(api.get).mockResolvedValue({
       data: {
         items: mockItems,
@@ -246,7 +247,7 @@ describe('DiscoverScreen Discovery & Filters Tests (TV1 W5)', () => {
   });
 
   it('renders empty state when query returns no destinations', async () => {
-    jest.mocked(api.get).mockResolvedValue({
+    jest.mocked(api.get).mockResolvedValueOnce({
       data: {
         items: [],
         page: 0,
@@ -269,5 +270,106 @@ describe('DiscoverScreen Discovery & Filters Tests (TV1 W5)', () => {
         { timeout: 3000 }
       )
     ).toBeTruthy();
+  });
+
+  it('submits unaccented search keyword (e.g. "da nang") to API', async () => {
+    const queryClient = createTestQueryClient();
+    const { findByText, getByPlaceholderText, getByText } = await render(
+      <QueryClientProvider client={queryClient}>
+        <DiscoverScreen />
+      </QueryClientProvider>
+    );
+
+    await findByText('Cầu Rồng Đà Nẵng', {}, { timeout: 3000 });
+
+    const input = getByPlaceholderText('Tìm tên địa điểm, di tích, bãi biển...');
+    await act(async () => {
+      fireEvent.changeText(input, 'da nang');
+    });
+
+    const searchBtn = getByText('Tìm');
+    await act(async () => {
+      fireEvent.press(searchBtn);
+    });
+
+    await waitFor(() => {
+      expect(api.get).toHaveBeenCalledWith(
+        '/destinations',
+        expect.objectContaining({
+          params: expect.objectContaining({ keyword: 'da nang' }),
+        })
+      );
+    });
+  });
+
+  it('submits search input with special characters safely', async () => {
+    const queryClient = createTestQueryClient();
+    const { findByText, getByPlaceholderText, getByText } = await render(
+      <QueryClientProvider client={queryClient}>
+        <DiscoverScreen />
+      </QueryClientProvider>
+    );
+
+    await findByText('Cầu Rồng Đà Nẵng', {}, { timeout: 3000 });
+
+    const input = getByPlaceholderText('Tìm tên địa điểm, di tích, bãi biển...');
+    await act(async () => {
+      fireEvent.changeText(input, 'Chùa @#$ Cầu');
+    });
+
+    const searchBtn = getByText('Tìm');
+    await act(async () => {
+      fireEvent.press(searchBtn);
+    });
+
+    await waitFor(() => {
+      expect(api.get).toHaveBeenCalledWith(
+        '/destinations',
+        expect.objectContaining({
+          params: expect.objectContaining({ keyword: 'Chùa @#$ Cầu' }),
+        })
+      );
+    });
+  });
+
+  it('filters by free ticket price (0 VND)', async () => {
+    const queryClient = createTestQueryClient();
+    const { findByText, getByText } = await render(
+      <QueryClientProvider client={queryClient}>
+        <DiscoverScreen />
+      </QueryClientProvider>
+    );
+
+    await findByText('Cầu Rồng Đà Nẵng', {}, { timeout: 3000 });
+
+    const freeChip = getByText('Miễn phí (0đ)');
+    await act(async () => {
+      fireEvent.press(freeChip);
+    });
+
+    await waitFor(() => {
+      expect(api.get).toHaveBeenCalledWith(
+        '/destinations',
+        expect.objectContaining({
+          params: expect.objectContaining({ priceMax: 0 }),
+        })
+      );
+    });
+  });
+
+  it('renders error state and retry action when API request fails', async () => {
+    jest.mocked(api.get).mockRejectedValue(new Error('Network error'));
+
+    const queryClient = createTestQueryClient();
+    const { findByText } = await render(
+      <QueryClientProvider client={queryClient}>
+        <DiscoverScreen />
+      </QueryClientProvider>
+    );
+
+    expect(
+      await findByText('Không thể kết nối đến máy chủ', {}, { timeout: 3000 })
+    ).toBeTruthy();
+    expect(await findByText('Thử lại')).toBeTruthy();
   });
 });
