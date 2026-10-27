@@ -2,7 +2,12 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
+import {
+  getSampleItineraryForDestination,
+  getDestinationHeroImage,
+  getSampleProposals,
+} from '@/data/sampleItineraries';
 import {
   ArrowLeft,
   Calendar,
@@ -329,8 +334,37 @@ const DEFAULT_DEMO_TRIPS: TripDetailData[] = [
   },
 ];
 
+function getCurrentUserMember(defaultRole = 'Trưởng nhóm') {
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = localStorage.getItem('vista_user');
+      if (stored) {
+        const u = JSON.parse(stored);
+        const name = u.displayName || u.email || 'Nguyễn Văn Sang';
+        const parts = name.trim().split(/\s+/);
+        const initials = (parts.length >= 2 ? parts[0][0] + parts[parts.length - 1][0] : name.slice(0, 2)).toUpperCase();
+        return {
+          name: `${name} (Bạn)`,
+          avatar: initials || 'NS',
+          color: '#0284c7',
+          role: defaultRole,
+        };
+      }
+    } catch {
+      // fallback
+    }
+  }
+  return {
+    name: 'Nguyễn Văn Sang (Bạn)',
+    avatar: 'NS',
+    color: '#0284c7',
+    role: defaultRole,
+  };
+}
+
 export default function TripDetailPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const tripId = typeof params?.tripId === 'string' ? params.tripId : '';
 
   const [accessDenied, setAccessDenied] = useState(() => Boolean(tripId && tripId.includes('private')));
@@ -395,29 +429,7 @@ export default function TripDetailPage() {
   };
 
   // Voting state
-  const [proposals, setProposals] = useState([
-    {
-      id: 'prop-1',
-      title: 'Buffet hải sản Biển Rạng đêm thứ 2',
-      category: 'Ẩm thực',
-      votes: 3,
-      voted: false,
-    },
-    {
-      id: 'prop-2',
-      title: 'Trải nghiệm dù lượn ngắm toàn cảnh Bán đảo Sơn Trà',
-      category: 'Trải nghiệm mạo hiểm',
-      votes: 4,
-      voted: true,
-    },
-    {
-      id: 'prop-3',
-      title: 'Xem show Ký Ức Hội An lúc 20:00',
-      category: 'Nghệ thuật & Di sản',
-      votes: 2,
-      voted: false,
-    },
-  ]);
+  const [proposals, setProposals] = useState(() => getSampleProposals(''));
 
   // ─── TUẦN 3 & TUẦN 4 STATES ───────────────────────────────────────────────
   // Optimistic locking (W4-TV3-01)
@@ -496,7 +508,103 @@ export default function TripDetailPage() {
     }
   };
 
-  // Reorder activities (W3-TV3-03)
+  useEffect(() => {
+    if (!tripId) return;
+
+    const timer = setTimeout(() => {
+      // 1. Try finding in custom trips in localStorage
+      try {
+        const stored = localStorage.getItem('vista_custom_trips');
+        if (stored) {
+          const parsed: TripDetailData[] = JSON.parse(stored);
+          const match = parsed.find((item) => item.id === tripId);
+          if (match) {
+            // Normalize fields
+            const currentOwner = getCurrentUserMember('Trưởng nhóm');
+            const normalizedMembers = match.members && match.members.length > 0
+              ? match.members.map((m) => (m.name.includes('Lê Vân Anh') ? currentOwner : m))
+              : [currentOwner];
+
+            const isHanoiMismatch =
+              match.destination &&
+              !match.destination.toLowerCase().includes('hà nội') &&
+              JSON.stringify(match.itineraryDays || '').includes('Hoàn Kiếm');
+
+            const itinerary =
+              !match.itineraryDays || match.itineraryDays.length === 0 || isHanoiMismatch
+                ? getSampleItineraryForDestination(match.destination, match.startDate)
+                : match.itineraryDays;
+
+            const heroImg =
+              match.image && !match.image.includes('photo-1528127269322-539801943592')
+                ? match.image
+                : getDestinationHeroImage(match.destination);
+
+            const updatedTrip: TripDetailData = {
+              ...match,
+              members: normalizedMembers,
+              image: heroImg,
+              treasuryPath: match.treasuryPath || `/trips/${match.id}/treasury`,
+              itineraryDays: itinerary,
+            };
+
+            if (isHanoiMismatch) {
+              try {
+                const updatedList = parsed.map((item) => (item.id === tripId ? updatedTrip : item));
+                localStorage.setItem('vista_custom_trips', JSON.stringify(updatedList));
+              } catch {}
+            }
+
+            setTrip(updatedTrip);
+            setProposals(getSampleProposals(match.destination));
+            return;
+          }
+        }
+      } catch (e) {
+        console.error('Error reading vista_custom_trips from localStorage:', e);
+      }
+
+      // 2. Try demo trips
+      const demoMatch = DEFAULT_DEMO_TRIPS.find((item) => item.id === tripId);
+      if (demoMatch) {
+        setTrip(demoMatch);
+        setProposals(getSampleProposals(demoMatch.destination));
+        return;
+      }
+
+      // 3. Fallback: generate a clean stub trip for any custom ID with rich 3-day sample
+      const fallbackDest =
+        (searchParams && searchParams.get('dest')) ||
+        (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('dest') : null) ||
+        'Thừa Thiên Huế';
+      const fallbackItinerary = getSampleItineraryForDestination(fallbackDest, '24/11/2026');
+
+      setTrip({
+        id: tripId,
+        title: `Chuyến đi ${fallbackDest} 3 ngày`,
+        destination: fallbackDest,
+        durationBadge: '3 ngày',
+        startDate: '24/11/2026',
+        endDate: '26/11/2026',
+        status: 'PLANNING',
+        role: 'OWNER',
+        budgetTotal: 3350000,
+        budgetSpent: 0,
+        progressPercent: 20,
+        members: [getCurrentUserMember('Trưởng nhóm')],
+        image: getDestinationHeroImage(fallbackDest),
+        treasuryPath: `/trips/${tripId}/treasury`,
+        alertType: 'BLUE',
+        alertText: `Hành trình 3 ngày khám phá trải nghiệm đặc sắc tại ${fallbackDest}`,
+        itineraryDays: fallbackItinerary,
+      });
+      setProposals(getSampleProposals(fallbackDest));
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, [tripId, searchParams]);
+
+  // Reorder activities
   const handleReorderActivity = (dayNum: number, actIdx: number, direction: 'UP' | 'DOWN') => {
     if (!trip || !trip.itineraryDays) return;
     const days = [...trip.itineraryDays];
@@ -517,7 +625,7 @@ export default function TripDetailPage() {
     showToast(`✓ Đã đổi thứ tự điểm dừng! Tải lại trang (F5) thứ tự vẫn giữ nguyên.`);
   };
 
-  // Delete activity (W3-TV3-03)
+  // Delete activity
   const handleDeleteActivity = (dayNum: number, actId: string) => {
     if (!trip || !trip.itineraryDays) return;
     const days = trip.itineraryDays.map((d) => {
@@ -531,7 +639,7 @@ export default function TripDetailPage() {
     showToast(`✓ Đã xóa điểm dừng khỏi Ngày ${dayNum}.`);
   };
 
-  // Add activity (W3-TV3-03)
+  // Add activity
   const handleSaveNewActivity = () => {
     if (!newStopTitle.trim() || !trip) return;
     const newAct: ActivityItem = {
@@ -758,15 +866,8 @@ export default function TripDetailPage() {
     if (trip?.image && trip.image.startsWith('http') && !trip.image.includes('undefined')) {
       return trip.image;
     }
-    const dest = (trip?.destination || '').toLowerCase();
-    if (dest.includes('hà nội') || dest.includes('hanoi')) {
-      return 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=600&q=80';
-    }
-    if (dest.includes('đà nẵng') || dest.includes('danang')) {
-      return 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=600&q=80';
-    }
-    return 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=600&q=80';
-  }, [trip?.image, trip?.destination]);
+    return getDestinationHeroImage(trip?.destination || '');
+  }, [trip]);
 
   const displayDateText = useMemo(() => {
     if (!trip) return '24/11 – 26/11/2026';
@@ -1074,7 +1175,7 @@ export default function TripDetailPage() {
               <div className={styles.headerChipsRow}>
                 <div className={`${styles.headerChip} ${styles.chipLocation}`}>
                   <MapPin size={12} />
-                  <span>{trip.destination || 'Hà Nội'}</span>
+                  <span>{trip.destination || 'Điểm đến'}</span>
                 </div>
                 <div className={`${styles.headerChip} ${styles.chipCalendar}`}>
                   <Calendar size={12} />

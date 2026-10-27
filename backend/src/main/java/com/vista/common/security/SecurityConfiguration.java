@@ -89,6 +89,7 @@ public class SecurityConfiguration {
                         "/api/v1/auth/register",
                         "/api/v1/auth/login",
                         "/api/v1/auth/refresh",
+                        "/api/v1/auth/refresh-token",
                         "/api/v1/auth/logout",
                         "/api/v1/auth/google",
                         "/api/v1/ai/quick-plan")
@@ -109,7 +110,7 @@ public class SecurityConfiguration {
                         "/api/v1/invitations/*/preview")
                     .permitAll()
                     .requestMatchers("/api/v1/admin/**")
-                    .hasRole("ADMIN")
+                    .hasAnyRole("ADMIN", "MODERATOR")
                     .anyRequest()
                     .authenticated());
 

@@ -45,6 +45,7 @@ class AiPlannerControllerTest {
   @MockitoBean private CurrentUserProvider currentUserProvider;
   @MockitoBean private AiRateLimiter aiRateLimiter;
   @MockitoBean private AiClientWrapper aiClientWrapper;
+  @MockitoBean private com.vista.common.audit.AuditLogService auditLogService;
 
   private UUID tripId;
   private UUID currentUserId;
@@ -117,7 +118,8 @@ class AiPlannerControllerTest {
     doNothing().when(tripAccessService).requireMember(tripId, currentUserId);
     doThrow(
             new com.vista.auth.exception.RateLimitExceededException(
-                "Bạn đã sử dụng hết 5 lượt gợi ý AI trong ngày hôm nay. Vui lòng quay lại vào ngày mai.",
+                "Bạn đã sử dụng hết 5 lượt gợi ý AI trong ngày hôm nay. Vui lòng quay lại vào ngày"
+                    + " mai.",
                 3600))
         .when(aiRateLimiter)
         .checkAndConsume(currentUserId);

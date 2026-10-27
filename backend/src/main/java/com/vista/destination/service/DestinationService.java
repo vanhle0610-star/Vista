@@ -2,6 +2,7 @@ package com.vista.destination.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vista.common.audit.AuditLogService;
 import com.vista.destination.api.dto.CreateDestinationRequest;
 import com.vista.destination.api.dto.DestinationDetailDto;
 import com.vista.destination.api.dto.DestinationPageDto;
@@ -24,6 +25,7 @@ import java.text.Normalizer;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -45,7 +47,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class DestinationService implements DestinationQueryService {
 
-  private static final String STATUS_PUBLISHED = "PUBLISHED";
+  public static final String STATUS_DRAFT = "DRAFT";
+  public static final String STATUS_PUBLISHED = "PUBLISHED";
+  public static final String STATUS_REJECTED = "REJECTED";
 
   private final DestinationRepository destinationRepository;
   private final FavoriteRepository favoriteRepository;
@@ -53,6 +57,9 @@ public class DestinationService implements DestinationQueryService {
   private final ProvinceRepository provinceRepository;
   private final DestinationCategoryRepository categoryRepository;
   private final ObjectMapper objectMapper;
+
+  @Autowired(required = false)
+  private AuditLogService auditLogService;
 
   public DestinationService(
       DestinationRepository destinationRepository,
@@ -158,19 +165,28 @@ public class DestinationService implements DestinationQueryService {
     }
   }
 
-  private String toSlug(String input) {
+  public static String stripAccents(String input) {
     if (input == null || input.isBlank()) {
-      return "diem-den-" + UUID.randomUUID().toString().substring(0, 8);
+      return "";
     }
     String normalized = Normalizer.normalize(input, Normalizer.Form.NFD);
     Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
+    return pattern
+        .matcher(normalized)
+        .replaceAll("")
+        .toLowerCase(Locale.ROOT)
+        .replace('đ', 'd')
+        .replace('Đ', 'd')
+        .trim();
+  }
+
+  public static String toSlug(String input) {
+    if (input == null || input.isBlank()) {
+      return "diem-den-" + UUID.randomUUID().toString().substring(0, 8);
+    }
+    String stripped = stripAccents(input);
     String slug =
-        pattern
-            .matcher(normalized)
-            .replaceAll("")
-            .toLowerCase(Locale.ROOT)
-            .replace('đ', 'd')
-            .replace('Đ', 'd')
+        stripped
             .replaceAll("[^a-z0-9\\s-]", "")
             .replaceAll("[\\s-]+", "-")
             .replaceAll("^-+|-+$", "");
@@ -182,39 +198,7 @@ public class DestinationService implements DestinationQueryService {
     int validPage = Math.max(0, page);
     int validSize = Math.min(100, Math.max(1, size));
 
-    Specification<Destination> spec =
-        (root, query, cb) -> {
-          List<Predicate> predicates = new ArrayList<>();
-          predicates.add(cb.equal(root.get("status"), STATUS_PUBLISHED));
-
-          if (keyword != null && !keyword.isBlank()) {
-            String pattern = "%" + keyword.trim().toLowerCase() + "%";
-            predicates.add(
-                cb.or(
-                    cb.like(cb.lower(root.get("name")), pattern),
-                    cb.like(cb.lower(root.get("description")), pattern)));
-          }
-
-          if (province != null && !province.isBlank()) {
-            String provPattern = "%" + province.trim().toLowerCase() + "%";
-            predicates.add(cb.like(cb.lower(root.get("province").get("name")), provPattern));
-          }
-
-          if (category != null && !category.isBlank()) {
-            String catPattern = "%" + category.trim().toLowerCase() + "%";
-            predicates.add(cb.like(cb.lower(root.get("category").get("name")), catPattern));
-          }
-
-          if (priceMax != null) {
-            predicates.add(
-                cb.or(
-                    cb.isNull(root.get("priceMin")),
-                    cb.lessThanOrEqualTo(root.get("priceMin"), priceMax)));
-          }
-
-          return cb.and(predicates.toArray(new Predicate[0]));
-        };
-
+    Specification<Destination> spec = createSearchSpec(keyword, province, category, priceMax);
     PageRequest pageRequest =
         PageRequest.of(validPage, validSize, Sort.by(Sort.Direction.DESC, "createdAt"));
     Page<Destination> pageResult = destinationRepository.findAll(spec, pageRequest);
@@ -224,6 +208,82 @@ public class DestinationService implements DestinationQueryService {
 
     return new DestinationPageDto(
         items, pageResult.getNumber(), pageResult.getSize(), pageResult.getTotalElements());
+  }
+
+  public DestinationPageDto searchPublished(
+      String keyword, String province, String category, int page, int size) {
+    return searchPublished(keyword, province, category, null, page, size);
+  }
+
+  private Specification<Destination> createSearchSpec(
+      String keyword, String province, String category, BigDecimal priceMax) {
+    return (root, query, cb) -> {
+      List<Predicate> predicates = new ArrayList<>();
+      predicates.add(cb.equal(root.get("status"), STATUS_PUBLISHED));
+
+      if (keyword != null && !keyword.isBlank()) {
+        String trimmed = keyword.trim();
+        String lowerKeyword = trimmed.toLowerCase(Locale.ROOT);
+        String rawPattern = "%" + lowerKeyword + "%";
+
+        String slugKeyword = toSlug(trimmed);
+        String[] slugTokens = slugKeyword.split("-+");
+        String tokenPattern = "%" + String.join("%", slugTokens) + "%";
+
+        List<Predicate> keywordPredicates = new ArrayList<>();
+        // 1. Accented / exact match on name
+        keywordPredicates.add(cb.like(cb.lower(root.get("name")), rawPattern));
+        // 2. Accented / exact match on description
+        keywordPredicates.add(cb.like(cb.lower(root.get("description")), rawPattern));
+        // 3. Unaccented matching on slug (e.g. "da nang" -> "da-nang", "chua cau" -> "chua-cau")
+        keywordPredicates.add(cb.like(root.get("slug"), tokenPattern));
+        keywordPredicates.add(cb.like(root.get("slug"), "%" + slugKeyword + "%"));
+        // 4. Also match province or category slug if keyword names a location or category
+        if (root.get("province") != null) {
+          keywordPredicates.add(cb.like(root.get("province").get("slug"), tokenPattern));
+        }
+        if (root.get("category") != null) {
+          keywordPredicates.add(cb.like(root.get("category").get("slug"), tokenPattern));
+        }
+
+        predicates.add(cb.or(keywordPredicates.toArray(new Predicate[0])));
+      }
+
+      if (province != null && !province.isBlank()) {
+        String trimmedProv = province.trim();
+        String provPattern = "%" + trimmedProv.toLowerCase(Locale.ROOT) + "%";
+        String provSlug = toSlug(trimmedProv);
+        String[] provTokens = provSlug.split("-+");
+        String provTokenPattern = "%" + String.join("%", provTokens) + "%";
+
+        predicates.add(
+            cb.or(
+                cb.like(cb.lower(root.get("province").get("name")), provPattern),
+                cb.like(root.get("province").get("slug"), provTokenPattern)));
+      }
+
+      if (category != null && !category.isBlank()) {
+        String trimmedCat = category.trim();
+        String catPattern = "%" + trimmedCat.toLowerCase(Locale.ROOT) + "%";
+        String catSlug = toSlug(trimmedCat);
+        String[] catTokens = catSlug.split("-+");
+        String catTokenPattern = "%" + String.join("%", catTokens) + "%";
+
+        predicates.add(
+            cb.or(
+                cb.like(cb.lower(root.get("category").get("name")), catPattern),
+                cb.like(root.get("category").get("slug"), catTokenPattern)));
+      }
+
+      if (priceMax != null) {
+        predicates.add(
+            cb.or(
+                cb.isNull(root.get("priceMin")),
+                cb.lessThanOrEqualTo(root.get("priceMin"), priceMax)));
+      }
+
+      return cb.and(predicates.toArray(new Predicate[0]));
+    };
   }
 
   public DestinationDetailDto getPublishedDetail(UUID id, UUID currentUserId) {
@@ -342,29 +402,179 @@ public class DestinationService implements DestinationQueryService {
 
   @Override
   public List<DestinationSummary> searchPublished(
-      String keyword, String province, String category, int limit) {
+      String keyword, String province, String category, BigDecimal priceMax, int limit) {
     int validLimit = Math.min(50, Math.max(1, limit));
-    DestinationPageDto page = searchPublished(keyword, province, category, null, 0, validLimit);
+    Specification<Destination> spec = createSearchSpec(keyword, province, category, priceMax);
+    PageRequest pageRequest =
+        PageRequest.of(0, validLimit, Sort.by(Sort.Direction.DESC, "createdAt"));
+    Page<Destination> pageResult = destinationRepository.findAll(spec, pageRequest);
 
-    return page.items().stream()
-        .map(
-            item ->
-                new DestinationSummary(
-                    item.id(),
-                    item.name(),
-                    item.province(),
-                    item.category(),
-                    item.priceMin() != null ? item.priceMin() : BigDecimal.ZERO,
-                    item.priceMax() != null ? item.priceMax() : BigDecimal.ZERO,
-                    item.latitude(),
-                    item.longitude(),
-                    item.imageUrl()))
-        .toList();
+    return pageResult.getContent().stream().map(this::toDestinationSummary).toList();
+  }
+
+  @Override
+  public List<DestinationSummary> searchPublished(
+      String keyword, String province, String category, int limit) {
+    return searchPublished(keyword, province, category, null, limit);
   }
 
   @Override
   public boolean isPublished(UUID id) {
     return id != null && destinationRepository.existsByIdAndStatus(id, STATUS_PUBLISHED);
+  }
+
+  public void setAuditLogService(AuditLogService auditLogService) {
+    this.auditLogService = auditLogService;
+  }
+
+  // --- ADMIN MODERATION & APPROVAL QUEUE (TV1 W6) ---
+
+  public DestinationPageDto searchModerationQueue(
+      String keyword, String province, String category, String status, int page, int size) {
+    int validPage = Math.max(0, page);
+    int validSize = Math.min(100, Math.max(1, size));
+
+    Specification<Destination> spec =
+        (root, query, cb) -> {
+          List<Predicate> predicates = new ArrayList<>();
+
+          if (status != null && !status.isBlank() && !"ALL".equalsIgnoreCase(status.trim())) {
+            predicates.add(
+                cb.equal(cb.upper(root.get("status")), status.trim().toUpperCase(Locale.ROOT)));
+          } else if (status == null || status.isBlank()) {
+            predicates.add(cb.equal(root.get("status"), STATUS_DRAFT));
+          }
+
+          if (keyword != null && !keyword.isBlank()) {
+            String trimmed = keyword.trim();
+            String lowerKeyword = trimmed.toLowerCase(Locale.ROOT);
+            String rawPattern = "%" + lowerKeyword + "%";
+
+            String slugKeyword = toSlug(trimmed);
+            String[] slugTokens = slugKeyword.split("-+");
+            String tokenPattern = "%" + String.join("%", slugTokens) + "%";
+
+            predicates.add(
+                cb.or(
+                    cb.like(cb.lower(root.get("name")), rawPattern),
+                    cb.like(cb.lower(root.get("description")), rawPattern),
+                    cb.like(root.get("slug"), tokenPattern),
+                    cb.like(root.get("province").get("slug"), tokenPattern),
+                    cb.like(root.get("category").get("slug"), tokenPattern)));
+          }
+
+          if (province != null && !province.isBlank()) {
+            String trimmedProv = province.trim();
+            String provPattern = "%" + trimmedProv.toLowerCase(Locale.ROOT) + "%";
+            String provSlug = toSlug(trimmedProv);
+            String[] provTokens = provSlug.split("-+");
+            String provTokenPattern = "%" + String.join("%", provTokens) + "%";
+
+            predicates.add(
+                cb.or(
+                    cb.like(cb.lower(root.get("province").get("name")), provPattern),
+                    cb.like(root.get("province").get("slug"), provTokenPattern)));
+          }
+
+          if (category != null && !category.isBlank()) {
+            String trimmedCat = category.trim();
+            String catPattern = "%" + trimmedCat.toLowerCase(Locale.ROOT) + "%";
+            String catSlug = toSlug(trimmedCat);
+            String[] catTokens = catSlug.split("-+");
+            String catTokenPattern = "%" + String.join("%", catTokens) + "%";
+
+            predicates.add(
+                cb.or(
+                    cb.like(cb.lower(root.get("category").get("name")), catPattern),
+                    cb.like(root.get("category").get("slug"), catTokenPattern)));
+          }
+
+          return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+    PageRequest pageRequest =
+        PageRequest.of(validPage, validSize, Sort.by(Sort.Direction.DESC, "createdAt"));
+    Page<Destination> pageResult = destinationRepository.findAll(spec, pageRequest);
+
+    List<DestinationSummaryDto> items =
+        pageResult.getContent().stream().map(this::toSummaryDto).toList();
+
+    return new DestinationPageDto(
+        items, pageResult.getNumber(), pageResult.getSize(), pageResult.getTotalElements());
+  }
+
+  public DestinationDetailDto getDestinationAdminDetail(UUID id) {
+    Destination dest =
+        destinationRepository
+            .findById(id)
+            .orElseThrow(
+                () ->
+                    new DestinationNotFoundException(
+                        "Không tìm thấy địa điểm du lịch với mã: " + id));
+    return toDetailDto(dest, false);
+  }
+
+  @Transactional
+  public DestinationDetailDto updateDestinationStatus(
+      UUID id, String targetStatus, UUID moderatorId, String note) {
+    if (targetStatus == null || targetStatus.isBlank()) {
+      throw new IllegalArgumentException("Trạng thái mục tiêu không được để trống");
+    }
+    String normalizedStatus = targetStatus.trim().toUpperCase(Locale.ROOT);
+    if (!STATUS_PUBLISHED.equals(normalizedStatus)
+        && !STATUS_REJECTED.equals(normalizedStatus)
+        && !STATUS_DRAFT.equals(normalizedStatus)) {
+      throw new IllegalArgumentException(
+          "Trạng thái không hợp lệ: "
+              + targetStatus
+              + ". Chỉ chấp nhận: PUBLISHED, REJECTED, DRAFT");
+    }
+
+    Destination dest =
+        destinationRepository
+            .findById(id)
+            .orElseThrow(
+                () ->
+                    new DestinationNotFoundException(
+                        "Không tìm thấy địa điểm du lịch cần kiểm duyệt: " + id));
+
+    dest.setStatus(normalizedStatus);
+    dest.setUpdatedAt(Instant.now());
+    if (STATUS_PUBLISHED.equals(normalizedStatus)) {
+      dest.setVerifiedAt(Instant.now());
+    }
+
+    Destination saved = destinationRepository.save(dest);
+
+    if (auditLogService != null) {
+      String details =
+          (note != null && !note.isBlank())
+              ? note
+              : "Kiểm duyệt điểm đến " + dest.getName() + " -> " + normalizedStatus;
+      auditLogService.logAction(
+          moderatorId, "DESTINATION_" + normalizedStatus, "DESTINATION", id.toString(), details);
+    }
+
+    return toDetailDto(saved, false);
+  }
+
+  @Transactional
+  public DestinationDetailDto approveDestination(UUID id, UUID moderatorId, String note) {
+    return updateDestinationStatus(id, STATUS_PUBLISHED, moderatorId, note);
+  }
+
+  @Transactional
+  public DestinationDetailDto rejectDestination(UUID id, UUID moderatorId, String note) {
+    return updateDestinationStatus(id, STATUS_REJECTED, moderatorId, note);
+  }
+
+  public Map<String, Long> getModerationStats() {
+    Map<String, Long> stats = new LinkedHashMap<>();
+    stats.put("total", destinationRepository.count());
+    stats.put("draft", destinationRepository.countByStatus(STATUS_DRAFT));
+    stats.put("published", destinationRepository.countByStatus(STATUS_PUBLISHED));
+    stats.put("rejected", destinationRepository.countByStatus(STATUS_REJECTED));
+    return stats;
   }
 
   // --- HELPER MAPPERS ---

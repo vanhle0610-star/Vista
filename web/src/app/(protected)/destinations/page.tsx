@@ -1,23 +1,19 @@
 'use client';
 
-import React, { useEffect, useState, useRef, useTransition } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import {
   Plus,
   UploadCloud,
   Search,
   MapPin,
-  Tag,
-  DollarSign,
-  Clock,
   Sparkles,
   CheckCircle2,
   AlertCircle,
   X,
-  ExternalLink,
   RefreshCw,
   ImageIcon,
+  ShieldCheck,
 } from 'lucide-react';
 import { getCloudImageUrl, uploadFileToCloud } from '@/utils/cloudImage';
 import styles from './destinations.module.css';
@@ -151,8 +147,44 @@ export default function DestinationsAdminPage() {
   };
 
   useEffect(() => {
-    fetchDestinations();
-  }, [selectedProvince, selectedCategory]);
+    let ignore = false;
+    async function loadData() {
+      try {
+        const apiBase = getApiBase();
+        const queryParams = new URLSearchParams({
+          page: '0',
+          size: '100',
+        });
+        if (searchKeyword.trim()) queryParams.set('keyword', searchKeyword.trim());
+        if (selectedProvince) queryParams.set('province', selectedProvince);
+        if (selectedCategory) queryParams.set('category', selectedCategory);
+
+        const res = await fetch(`${apiBase}/destinations?${queryParams.toString()}`);
+        if (!ignore) {
+          if (!res.ok) {
+            setError(`Lỗi tải danh sách: HTTP ${res.status}`);
+          } else {
+            const data: DestinationPageResponse = await res.json();
+            setDestinations(data.items || []);
+            setTotalCount(data.total || (data.items ? data.items.length : 0));
+          }
+        }
+      } catch (err: unknown) {
+        if (!ignore) {
+          const msg = err instanceof Error ? err.message : 'Không thể kết nối đến máy chủ';
+          setError(msg);
+        }
+      } finally {
+        if (!ignore) {
+          setLoading(false);
+        }
+      }
+    }
+    loadData();
+    return () => {
+      ignore = true;
+    };
+  }, [selectedProvince, selectedCategory, searchKeyword]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -306,6 +338,14 @@ export default function DestinationsAdminPage() {
           </p>
         </div>
         <div className={styles.actionArea}>
+          <Link
+            href="/moderation"
+            className={styles.btnSecondary}
+            style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+          >
+            <ShieldCheck size={16} color="#0284c7" />
+            Kiểm duyệt điểm đến
+          </Link>
           <button
             type="button"
             className={styles.btnSecondary}
@@ -434,6 +474,7 @@ export default function DestinationsAdminPage() {
                     <td>
                       <div className={styles.destCell}>
                         {cloudSrc ? (
+                          /* eslint-disable-next-line @next/next/no-img-element */
                           <img
                             src={cloudSrc}
                             alt={dest.name}
@@ -488,7 +529,29 @@ export default function DestinationsAdminPage() {
                       )}
                     </td>
                     <td>
-                      <span className={styles.badgeStatus}>
+                      <span
+                        className={styles.badgeStatus}
+                        style={{
+                          backgroundColor:
+                            dest.status === 'PUBLISHED'
+                              ? '#ecfdf5'
+                              : dest.status === 'REJECTED'
+                              ? '#fef2f2'
+                              : '#fffbeb',
+                          color:
+                            dest.status === 'PUBLISHED'
+                              ? '#059669'
+                              : dest.status === 'REJECTED'
+                              ? '#dc2626'
+                              : '#d97706',
+                          borderColor:
+                            dest.status === 'PUBLISHED'
+                              ? '#a7f3d0'
+                              : dest.status === 'REJECTED'
+                              ? '#fecaca'
+                              : '#fde68a',
+                        }}
+                      >
                         <CheckCircle2 size={13} /> {dest.status || 'PUBLISHED'}
                       </span>
                     </td>
@@ -553,6 +616,7 @@ export default function DestinationsAdminPage() {
                     </div>
                   ) : (
                     <div className={styles.previewCard}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={imagePreview} alt="Preview" className={styles.previewThumb} />
                       <div className={styles.previewInfo}>
                         <div className={styles.previewName}>{imageFile?.name || 'Tệp ảnh đã chọn'}</div>
