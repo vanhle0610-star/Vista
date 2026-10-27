@@ -1,29 +1,1285 @@
-.page { min-height: 100vh; background: #eef8ff; color: #17324d; }
-.main { max-width: 800px; margin: auto; padding: 36px 20px 64px; }
-.hero { margin-bottom: 30px; }
-.hero>p { font-size: 11px; letter-spacing: .14em; color: #0788bd; font-weight: 700; }
-.hero h1 { font-size: clamp(30px, 5vw, 42px); line-height: 1.15; margin: 12px 0; letter-spacing: -.04em; }
-.hero span { color: #62718a; }
-.card { padding: 24px; border: 1px solid #dcecf6; border-radius: 22px; background: white; margin-bottom: 20px; box-shadow: 0 5px 24px #10376c06; }
-.card h2 { margin: 0 0 18px; font-size: 21px; }
-.page :is(button,textarea,input) { font: inherit; }
-.page button { cursor: pointer; padding: 10px 14px; min-height: 42px; border: 1px solid #d6e6f0; border-radius: 10px; background: #f4faff; color: #066b9c; }
-.page button:disabled { cursor: wait; opacity: .55; }
-.page .primary { background: #087fb9; color: white; margin-top: 14px; }
-.page label { display: block; font-size: 13px; font-weight: 600; }
-.page textarea { width: 100%; min-height: 100px; padding: 14px; margin: 8px 0 14px; border: 1px solid #c8dfea; border-radius: 12px; color: #17324d; background: #fbfdff; resize: vertical; box-sizing: border-box; }
-.page :is(button,a,input,textarea):focus-visible { outline: 3px solid #00adce; outline-offset: 3px; }
-.photos { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; margin: 12px 0; }
-.photos img { width: 100%; height: 210px; object-fit: cover; border-radius: 12px; }
-.file input { display: block; margin-top: 10px; max-width: 100%; }
-.postHeading,.feedHeading { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
-.feedHeading { margin: 28px 0 14px; }
-.feedHeading h2 { font-size: 22px; }
-.postHeading time,.comments time { display: block; font-size: 12px; color: #6c7c92; margin-top: 4px; }
-.avatar { background: #e2f6ff; color: #087fb9; border-radius: 50%; width: 44px; height: 44px; display: grid; place-items: center; font-weight: 700; }
-.body { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.7; }
-.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
-.comments { border-top: 1px solid #deebf4; margin-top: 20px; padding-top: 16px; }
-.comment { padding: 14px; border-radius: 12px; background: #f3f9fd; margin-bottom: 12px; }
-.page a { color: #067db5; }
-@media(max-width:540px) { .main { padding: 24px 12px; } .card { padding: 18px; } .photos img { height: 150px; } }
+/* ══════════════════════════════════════════════════════════════════════════
+   VISTA COMMUNITY (CỘNG ĐỒNG) — REFINED EDITORIAL DESIGN SYSTEM
+   • Brand Colors:
+     - Sky Blue: #0284C7
+     - Bright Accent: #38BDF8
+     - Canvas Background: #F5FAFE
+     - Selected / Active Pill: #E0F2FE
+     - Surfaces: #FFFFFF
+     - Subtle Borders: #E2E8F0
+     - Text Primary: #0F172A
+     - Text Body: #334155
+     - Text Secondary: #64748B
+     - Danger / Report: #E11D48
+   • 100% Lucide Icons, ZERO Emoji Icons, Zero Tacky Dark Mode
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.pageRoot {
+  min-height: 100vh;
+  background-color: #F5FAFE;
+  color: #0F172A;
+  font-family: 'Be Vietnam Pro', var(--font-inter), -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── 3-COLUMN LAYOUT CONTAINER ─────────────────────────────────────────── */
+.container3Col {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 24px 20px 80px;
+  display: grid;
+  grid-template-columns: 230px minmax(0, 720px) 300px;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 1200px) {
+  .container3Col {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+  .rightSidebar {
+    display: none !important;
+  }
+}
+
+@media (max-width: 820px) {
+  .container3Col {
+    grid-template-columns: 1fr;
+    padding: 16px 12px 60px;
+  }
+  .leftSidebar {
+    display: none !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   1. LEFT SIDEBAR — REFINED PLATFORM NAVIGATION
+   ══════════════════════════════════════════════════════════════════════════ */
+.leftSidebar {
+  position: sticky;
+  top: 84px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.navSection {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #475569;
+  text-decoration: none;
+  background: transparent !important;
+  border: none !important;
+  min-height: unset !important;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  width: 100%;
+  text-align: left;
+}
+
+.navItem:hover {
+  background: #FFFFFF !important;
+  color: #0284C7 !important;
+}
+
+.navItemActive {
+  background: #E0F2FE !important;
+  color: #0284C7 !important;
+  font-weight: 600 !important;
+}
+
+.navIcon {
+  color: #64748B;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navItemActive .navIcon {
+  color: #0284C7;
+}
+
+.sidebarDivider {
+  height: 1px;
+  background: #E2E8F0;
+  margin: 2px 10px;
+}
+
+.topicHeading {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748B;
+  padding: 0 14px;
+  margin: 0 0 6px;
+}
+
+.topicItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #475569;
+  text-decoration: none;
+  background: transparent !important;
+  border: none !important;
+  min-height: unset !important;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.topicItem:hover {
+  background: #FFFFFF !important;
+  color: #0284C7 !important;
+  transform: translateX(2px);
+}
+
+.topicItemActive {
+  background: #E0F2FE !important;
+  color: #0284C7 !important;
+  font-weight: 600 !important;
+}
+
+.topicIcon {
+  color: #64748B;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.topicItem:hover .topicIcon,
+.topicItemActive .topicIcon {
+  color: #0284C7;
+}
+
+.seeMoreTopicsBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: transparent !important;
+  border: none !important;
+  min-height: unset !important;
+  color: #0284C7;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+.seeMoreTopicsBtn:hover {
+  text-decoration: underline;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   2. MAIN CENTER FEED
+   ══════════════════════════════════════════════════════════════════════════ */
+.feedCenter {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+
+/* ── Compact Community Header ── */
+.communityHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 4px 0 2px;
+}
+
+@media (max-width: 540px) {
+  .communityHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .headerWidgets {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+.communityTitle {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #0F172A;
+  margin: 0 0 4px;
+  letter-spacing: -0.02em;
+}
+
+.communitySubtitle {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #64748B;
+  margin: 0;
+}
+
+.headerWidgets {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.memberAvatars {
+  display: flex;
+  align-items: center;
+}
+
+.memberAvatarImg {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #FFFFFF;
+  margin-left: -8px;
+  object-fit: cover;
+}
+
+.memberAvatarImg:first-child {
+  margin-left: 0;
+}
+
+.memberCountBadge {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #475569;
+  white-space: nowrap;
+}
+
+.btnWritePost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: 8px;
+  background: #0284C7;
+  color: #FFFFFF;
+  font-size: 13.5px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(2, 132, 199, 0.2);
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.btnWritePost:hover {
+  background: #0369A1;
+}
+
+/* ── Story Composer Card ── */
+.composerCard {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 18px 20px;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
+  transition: border-color 0.15s ease;
+}
+
+.composerTopRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.composerAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #E0F2FE;
+}
+
+.composerInputFake {
+  flex: 1;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 14px;
+  color: #94A3B8;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.composerInputFake:hover {
+  background: #FFFFFF;
+  border-color: #CBD5E1;
+}
+
+.composerTextarea {
+  width: 100%;
+  min-height: 96px;
+  padding: 14px 16px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: #0F172A;
+  outline: none;
+  resize: vertical;
+  box-sizing: border-box;
+  font-family: inherit;
+  margin-bottom: 12px;
+}
+
+.composerTextarea:focus {
+  border-color: #0284C7;
+  background: #FFFFFF;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
+}
+
+/* Category selector chips in composer */
+.categoryPillsRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.categoryPill {
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #475569;
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.categoryPillActive {
+  background: #E0F2FE !important;
+  color: #0284C7 !important;
+  border-color: #BAE6FD !important;
+  font-weight: 600;
+}
+
+/* Photo previews filmstrip */
+.photoFilmstrip {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.photoFrame {
+  position: relative;
+  flex: 0 0 110px;
+  height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #E2E8F0;
+}
+
+.photoFrame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photoRemoveBtn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.7);
+  border: none;
+  color: #FFFFFF;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.15s ease;
+}
+
+.photoRemoveBtn:hover {
+  background: #E11D48;
+}
+
+.composerBottomBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px solid #F1F5F9;
+}
+
+.composerToolsLeft {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.toolButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #475569;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.toolButton:hover {
+  background: #F1F5F9;
+  color: #0284C7;
+}
+
+.toolIcon {
+  color: #64748B;
+}
+
+.toolButton:hover .toolIcon {
+  color: #0284C7;
+}
+
+.btnShareSubmit {
+  padding: 8px 22px;
+  border-radius: 8px;
+  background: #0284C7;
+  color: #FFFFFF;
+  font-size: 13.5px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(2, 132, 199, 0.2);
+  transition: all 0.15s ease;
+}
+
+.btnShareSubmit:hover:not(:disabled) {
+  background: #0369A1;
+}
+
+.btnShareSubmit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Filter Chips Bar ── */
+.filterChipsWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filterChipsScroll {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 2px;
+  scrollbar-width: none;
+  flex: 1;
+}
+
+.filterChipsScroll::-webkit-scrollbar {
+  display: none;
+}
+
+.filterChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #334155;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.filterChip:hover {
+  background: #E0F2FE;
+  color: #0284C7;
+  border-color: #BAE6FD;
+}
+
+.filterChipActive {
+  background: #0284C7 !important;
+  color: #FFFFFF !important;
+  border-color: #0284C7 !important;
+  font-weight: 600;
+}
+
+.filterArrowBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  display: grid;
+  place-items: center;
+  color: #64748B;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.filterArrowBtn:hover {
+  background: #F1F5F9;
+  color: #0284C7;
+}
+
+/* ── Story Post Card ── */
+.storyPostCard {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 20px 22px;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
+}
+
+.postHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.authorContainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.authorAvatarImg {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #E0F2FE;
+}
+
+.authorMetaCol {
+  display: flex;
+  flex-direction: column;
+}
+
+.authorTopLine {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.authorDisplayName {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #0F172A;
+}
+
+.verifiedIcon {
+  color: #0284C7;
+  display: flex;
+  align-items: center;
+}
+
+.postSubMeta {
+  font-size: 12.5px;
+  font-weight: 400;
+  color: #64748B;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 2px;
+}
+
+.categoryTagText {
+  color: #0284C7;
+  font-weight: 500;
+}
+
+.moreMenuWrap {
+  position: relative;
+}
+
+.moreMenuBtn {
+  background: transparent;
+  border: none;
+  color: #94A3B8;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.moreMenuBtn:hover {
+  background: #F1F5F9;
+  color: #0F172A;
+}
+
+.dropdownBox {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 4px;
+  min-width: 170px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+}
+
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #334155;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.12s ease;
+}
+
+.dropdownItem:hover {
+  background: #F8FAFC;
+  color: #0F172A;
+}
+
+.dropdownItemDanger {
+  color: #E11D48;
+}
+
+.dropdownItemDanger:hover {
+  background: #FFF1F2;
+  color: #BE123C;
+}
+
+.postBodyContent {
+  font-size: 14.5px;
+  font-weight: 400;
+  line-height: 1.65;
+  color: #334155;
+  margin: 0 0 12px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Useful Travel Review Details Box (Hà Giang / Review post) */
+.travelReviewGuideBox {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 14px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.guideItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #334155;
+}
+
+.guideLabel {
+  color: #64748B;
+  font-weight: 500;
+}
+
+.guideValue {
+  font-weight: 600;
+  color: #0F172A;
+}
+
+/* Post Tag Badges */
+.postTagsRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.hashtagItem {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #0284C7;
+  background: #F0F9FF;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-decoration: none;
+}
+
+.hashtagItem:hover {
+  background: #E0F2FE;
+}
+
+/* Post Media: 1 Image */
+.mediaSingleWrapper {
+  width: 100%;
+  max-height: 440px;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  background: #F1F5F9;
+}
+
+.mediaSingleWrapper img {
+  width: 100%;
+  height: 100%;
+  max-height: 440px;
+  object-fit: cover;
+  display: block;
+}
+
+/* Post Media: 2 Images Balanced */
+.mediaDoubleWrapper {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.mediaDoubleWrapper img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  display: block;
+}
+
+.locationBadgePill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #F0F9FF;
+  border: 1px solid #BAE6FD;
+  color: #0284C7;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+
+.reactionsCountRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  font-size: 12.5px;
+  color: #64748B;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.likesCounter {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
+}
+
+.commentsSharesCounter {
+  display: flex;
+  gap: 12px;
+}
+
+.interactionDockRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  padding-top: 8px;
+}
+
+.dockActionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #475569;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.dockActionBtn:hover {
+  background: #F8FAFC;
+  color: #0284C7;
+}
+
+.dockBtnLiked {
+  color: #E11D48 !important;
+}
+
+.dockBtnLiked svg {
+  fill: #E11D48;
+}
+
+.dockBtnSaved {
+  color: #0284C7 !important;
+}
+
+.dockBtnSaved svg {
+  fill: #0284C7;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   3. RIGHT SIDEBAR — DISCOVERY & POPULAR TOPICS
+   ══════════════════════════════════════════════════════════════════════════ */
+.rightSidebar {
+  position: sticky;
+  top: 84px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sidebarCardBlock {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 18px 20px;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
+}
+
+.sidebarCardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.sidebarSectionTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0;
+}
+
+.seeAllLink {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #0284C7;
+  text-decoration: none;
+}
+
+.seeAllLink:hover {
+  text-decoration: underline;
+}
+
+.destinationList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.destinationRowItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.destinationThumbImg {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #F1F5F9;
+}
+
+.destinationDetails {
+  flex: 1;
+  min-width: 0;
+}
+
+.destinationNameTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0F172A;
+  margin: 0 0 2px;
+}
+
+.destinationShortDesc {
+  font-size: 12px;
+  font-weight: 400;
+  color: #64748B;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.destinationPostCountLabel {
+  font-size: 11px;
+  color: #94A3B8;
+  margin-top: 1px;
+}
+
+.destSaveBookmarkBtn {
+  background: transparent;
+  border: none;
+  color: #94A3B8;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s ease;
+}
+
+.destSaveBookmarkBtn:hover {
+  color: #0284C7;
+  background: #F1F5F9;
+}
+
+.destSaveBookmarkBtnActive {
+  color: #0284C7 !important;
+}
+
+.destSaveBookmarkBtnActive svg {
+  fill: #0284C7;
+}
+
+/* Ranked Topics List */
+.popularTopicsList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.popularTopicRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0;
+  text-decoration: none;
+  transition: all 0.12s ease;
+}
+
+.topicRankIndex {
+  font-size: 13px;
+  font-weight: 700;
+  color: #64748B;
+  width: 14px;
+  text-align: center;
+}
+
+.topicIconSquircle {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  display: grid;
+  place-items: center;
+  color: #0284C7;
+}
+
+.topicMetaText {
+  flex: 1;
+}
+
+.topicTextName {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #0F172A;
+  margin: 0;
+}
+
+.topicPostsCount {
+  font-size: 11.5px;
+  color: #94A3B8;
+}
+
+.topicChevronIcon {
+  color: #CBD5E1;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   4. REPORT VIOLATION MODAL DIALOG
+   ══════════════════════════════════════════════════════════════════════════ */
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
+  z-index: 2500;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.modalContentCard {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 460px;
+  width: 100%;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  box-sizing: border-box;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.15);
+}
+
+.modalTitleText {
+  font-size: 17px;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.reportOptionsStack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.radioRowLabel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  font-size: 13.5px;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.radioRowLabel:hover {
+  background: #F1F5F9;
+}
+
+.radioRowLabel input[type="radio"] {
+  accent-color: #E11D48;
+}
+
+.modalActionsRow {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.btnCancelModal {
+  padding: 8px 16px;
+  border-radius: 6px;
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  color: #475569;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btnSubmitReport {
+  padding: 8px 18px;
+  border-radius: 6px;
+  background: #E11D48;
+  color: #FFFFFF;
+  font-size: 13.5px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+}
+
+.reportNoteTextarea {
+  width: 100%;
+  min-height: 64px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #E2E8F0;
+  font-size: 13px;
+  outline: none;
+  font-family: inherit;
+  resize: vertical;
+  margin-top: 10px;
+  box-sizing: border-box;
+  color: #0F172A;
+  background: #FFFFFF;
+}
+
+.reportNoteTextarea:focus {
+  border-color: #0284C7;
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.1);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   5. COMMENTS SECTION & TOAST FEEDBACK
+   ══════════════════════════════════════════════════════════════════════════ */
+.commentsDrawer {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #F1F5F9;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.commentBubble {
+  background: #F8FAFC;
+  border: 1px solid #F1F5F9;
+  border-radius: 12px;
+  padding: 10px 14px;
+}
+
+.commentAuthorRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.commentAuthorName {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0F172A;
+}
+
+.commentTimeText {
+  font-size: 11.5px;
+  color: #94A3B8;
+}
+
+.commentBodyText {
+  font-size: 13.5px;
+  color: #334155;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.commentFormRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.commentInput {
+  flex: 1;
+  padding: 9px 14px;
+  border-radius: 10px;
+  border: 1px solid #E2E8F0;
+  font-size: 13px;
+  outline: none;
+  background: #FFFFFF;
+  color: #0F172A;
+}
+
+.commentInput:focus {
+  border-color: #0284C7;
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.1);
+}
+
+.btnSubmitComment {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: #0284C7;
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btnSubmitComment:hover:not(:disabled) {
+  background: #0369A1;
+}
+
+.btnSubmitComment:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.toastPill {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #0F172A;
+  color: #FFFFFF;
+  padding: 10px 20px;
+  border-radius: 999px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.2);
+  z-index: 2000;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.emptyFallbackImg {
+  width: 100%;
+  height: 200px;
+  background: #F1F5F9;
+  display: grid;
+  place-items: center;
+  color: #94A3B8;
+  font-size: 13px;
+  border-radius: 10px;
+}
+

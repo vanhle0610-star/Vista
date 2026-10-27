@@ -19,4 +19,19 @@ public record UpdateExpenseRequest(
     Instant occurredAt,
     String splitType,
     List<UUID> participantIds,
-    Map<UUID, BigDecimal> exactShares) {}
+    Map<UUID, BigDecimal> exactShares,
+    Long version) {
+
+  public UpdateExpenseRequest(
+      String title,
+      BigDecimal amount,
+      String currency,
+      UUID paidBy,
+      ExpenseCategory category,
+      Instant occurredAt,
+      String splitType,
+      List<UUID> participantIds,
+      Map<UUID, BigDecimal> exactShares) {
+    this(title, amount, currency, paidBy, category, occurredAt, splitType, participantIds, exactShares, null);
+  }
+}

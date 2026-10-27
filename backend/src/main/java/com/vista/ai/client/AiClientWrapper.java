@@ -56,8 +56,8 @@ public class AiClientWrapper {
     try {
       String endpoint =
           String.format(
-              "https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s",
-              properties.model(), properties.apiKey());
+              "https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent",
+              properties.model());
 
       String requestBody =
           objectMapper.writeValueAsString(
@@ -70,6 +70,7 @@ public class AiClientWrapper {
           HttpRequest.newBuilder()
               .uri(URI.create(endpoint))
               .header("Content-Type", "application/json")
+              .header("x-goog-api-key", properties.apiKey())
               .timeout(properties.timeout())
               .POST(HttpRequest.BodyPublishers.ofString(requestBody))
               .build();

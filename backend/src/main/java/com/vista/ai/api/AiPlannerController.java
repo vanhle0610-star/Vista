@@ -47,6 +47,7 @@ public class AiPlannerController {
   private final AiRateLimiter aiRateLimiter;
   private final AiClientWrapper aiClientWrapper;
   private final AuditLogService auditLogService;
+  private final com.vista.destination.application.DestinationQueryService destinationQueryService;
 
   @Autowired
   public AiPlannerController(
@@ -54,12 +55,15 @@ public class AiPlannerController {
       CurrentUserProvider currentUserProvider,
       AiRateLimiter aiRateLimiter,
       AiClientWrapper aiClientWrapper,
-      AuditLogService auditLogService) {
+      AuditLogService auditLogService,
+      @Autowired(required = false)
+          com.vista.destination.application.DestinationQueryService destinationQueryService) {
     this.tripAccessService = tripAccessService;
     this.currentUserProvider = currentUserProvider;
     this.aiRateLimiter = aiRateLimiter;
     this.aiClientWrapper = aiClientWrapper;
     this.auditLogService = auditLogService;
+    this.destinationQueryService = destinationQueryService;
   }
 
   @PostMapping("/itinerary-suggestions")
@@ -92,6 +96,22 @@ public class AiPlannerController {
             daysCount,
             request.budgetLevel() != null ? request.budgetLevel() : "MEDIUM"));
 
+    // 4. Lấy số thành viên thật của chuyến đi & các địa điểm PUBLISHED
+    int membersCount = tripAccessService.getActiveMemberCount(tripId);
+    List<String> publishedPlaces = List.of();
+    if (destinationQueryService != null && request.destinationProvince() != null) {
+      try {
+        publishedPlaces =
+            destinationQueryService
+                .searchPublished(null, request.destinationProvince(), null, 8)
+                .stream()
+                .map(com.vista.destination.application.DestinationSummary::name)
+                .toList();
+      } catch (Exception e) {
+        log.warn("Could not query published destinations: {}", e.getMessage());
+      }
+    }
+
     // 4. Thử gọi mô hình Live Google Gemini LLM nếu khả dụng
     if (aiClientWrapper != null && aiClientWrapper.isAvailable()) {
       try {
@@ -100,11 +120,11 @@ public class AiPlannerController {
                 request.destinationProvince(),
                 daysCount,
                 budgetVnd,
-                4, // Số thành viên mặc định
+                membersCount,
                 request.interests() != null
                     ? request.interests()
                     : List.of("Khám phá", "Ẩm thực", "Văn hóa"),
-                List.of());
+                publishedPlaces);
 
         String prompt = PromptBuilder.buildUserPrompt(planRequest);
         Optional<String> rawAiResponse = aiClientWrapper.generateContent(prompt);

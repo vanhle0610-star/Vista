@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -62,10 +63,22 @@ public class ExpenseController {
   public ResponseEntity<ExpenseResponse> updateTripExpense(
       @PathVariable UUID tripId,
       @PathVariable UUID expenseId,
+      @RequestHeader(value = "If-Match", required = false) String ifMatch,
       @Valid @RequestBody UpdateExpenseRequest request) {
     UUID currentUserId = currentUserProvider.getCurrentUserId();
+    Long expectedVersion = null;
+    if (ifMatch != null && !ifMatch.isBlank()) {
+      String clean = ifMatch.replace("\"", "").trim();
+      try {
+        expectedVersion = Long.parseLong(clean);
+      } catch (NumberFormatException ignored) {
+      }
+    }
+    if (expectedVersion == null && request.version() != null) {
+      expectedVersion = request.version();
+    }
     ExpenseResponse updated =
-        expenseService.updateExpense(tripId, expenseId, currentUserId, request);
+        expenseService.updateExpense(tripId, expenseId, currentUserId, request, expectedVersion);
     return ResponseEntity.ok(updated);
   }
 

@@ -34,6 +34,11 @@ import {
   CheckIcon,
 } from '@/components/common/Icons';
 import {
+  LuxeHeartIcon,
+  CompassPinIcon,
+  SparkleStarIcon,
+} from '@/components/common/LuxeIcons';
+import {
   fetchAllDestinationsWeather,
   RealtimeWeather,
   VISTA_DESTINATIONS_COORD,
@@ -1532,7 +1537,22 @@ export default function HomePage() {
             {/* Display Stage */}
             <div className={styles.mapDisplayStage}>
               <div className={styles.mapStagePhotoWrapper}>
-                <img src={currentHotspot.image} alt={currentHotspot.name} />
+                {currentHotspot.image ? (
+                  <img src={currentHotspot.image} alt={currentHotspot.name} />
+                ) : (
+                  <div
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      background: 'radial-gradient(circle at 50% 50%, #1E293B 0%, #0F172A 100%)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <MapPinIcon size={48} color="#38BDF8" />
+                  </div>
+                )}
                 <div className={styles.mapStageGpsOverlay}>
                   <div className={styles.mapStagePulse} />
                   <span>GPS: {currentHotspot.coords}</span>
@@ -1755,6 +1775,102 @@ export default function HomePage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── 6.5. LIVING STORIES & COMMUNITY SHOWCASE ───────────────────── */}
+      <section style={{ padding: '80px 0', background: 'radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.06), transparent 70%), #0B132B', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className={styles.container}>
+          <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 16px', borderRadius: '999px', background: 'rgba(6, 182, 212, 0.12)', border: '1px solid rgba(6, 182, 212, 0.3)', color: '#22D3EE', fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '14px' }}>
+              <SparkleStarIcon size={14} /> VISTA LIVING STORIES
+            </div>
+            <h2 style={{ fontSize: 'clamp(28px, 4vw, 42px)', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.03em', margin: '0 0 14px' }}>
+              Nhịp Sống Hành Trình & Cộng Đồng
+            </h2>
+            <p style={{ color: '#94A3B8', fontSize: '16px', maxWidth: '580px', margin: '0 auto', lineHeight: 1.6 }}>
+              Lắng nghe những trải nghiệm chân thực, khám phá ảnh chụp từ lữ khách và cùng nhau lan tỏa đam mê xê dịch khắp Việt Nam.
+            </p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px', marginBottom: '40px' }}>
+            {/* Card 1 */}
+            <div style={{ background: 'rgba(15, 23, 42, 0.7)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '22px', padding: '20px', backdropFilter: 'blur(16px)', boxShadow: '0 12px 32px rgba(0,0,0,0.3)', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ width: '100%', height: '200px', borderRadius: '16px', overflow: 'hidden', marginBottom: '16px' }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/halong_bay.jpg" alt="Vịnh Hạ Long" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '12px', fontWeight: 600, color: '#22D3EE', background: 'rgba(6,182,212,0.1)', padding: '3px 10px', borderRadius: '999px' }}>
+                  <CompassPinIcon size={12} /> Quảng Ninh
+                </span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: '#FF7A59', fontWeight: 600 }}>
+                  <LuxeHeartIcon size={14} active={true} /> 48
+                </span>
+              </div>
+              <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#F8FAFC', margin: '0 0 8px' }}>Chèo kayak qua hang Luồn lúc hoàng hôn buông</h3>
+              <p style={{ fontSize: '13px', color: '#94A3B8', lineHeight: 1.6, margin: 0 }}>Một trải nghiệm không thể nào quên khi mặt trời đỏ ối dần khuất sau những đảo đá vôi kỳ vĩ...</p>
+            </div>
+
+            {/* Card 2 */}
+            <div style={{ background: 'rgba(15, 23, 42, 0.7)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '22px', padding: '20px', backdropFilter: 'blur(16px)', boxShadow: '0 12px 32px rgba(0,0,0,0.3)', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ width: '100%', height: '200px', borderRadius: '16px', overflow: 'hidden', marginBottom: '16px' }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_golden_bridge.jpg" alt="Cầu Vàng Đà Nẵng" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '12px', fontWeight: 600, color: '#22D3EE', background: 'rgba(6,182,212,0.1)', padding: '3px 10px', borderRadius: '999px' }}>
+                  <CompassPinIcon size={12} /> Đà Nẵng
+                </span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: '#FF7A59', fontWeight: 600 }}>
+                  <LuxeHeartIcon size={14} active={true} /> 86
+                </span>
+              </div>
+              <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#F8FAFC', margin: '0 0 8px' }}>Săn biển mây Bà Nà Hills từ 6 giờ sáng</h3>
+              <p style={{ fontSize: '13px', color: '#94A3B8', lineHeight: 1.6, margin: 0 }}>Đi chuyến cáp treo đầu tiên trong ngày để đón trọn khoảnh khắc đôi bàn tay khổng lồ vươn giữa mây trời.</p>
+            </div>
+
+            {/* Card 3 */}
+            <div style={{ background: 'rgba(15, 23, 42, 0.7)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '22px', padding: '20px', backdropFilter: 'blur(16px)', boxShadow: '0 12px 32px rgba(0,0,0,0.3)', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ width: '100%', height: '200px', borderRadius: '16px', overflow: 'hidden', marginBottom: '16px' }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/phuquoc_sunset_sanato.jpg" alt="Phú Quốc" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '12px', fontWeight: 600, color: '#22D3EE', background: 'rgba(6,182,212,0.1)', padding: '3px 10px', borderRadius: '999px' }}>
+                  <CompassPinIcon size={12} /> Kiên Giang
+                </span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: '#FF7A59', fontWeight: 600 }}>
+                  <LuxeHeartIcon size={14} active={true} /> 62
+                </span>
+              </div>
+              <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#F8FAFC', margin: '0 0 8px' }}>Chờ hoàng hôn Bãi Trường cùng tách mocktail</h3>
+              <p style={{ fontSize: '13px', color: '#94A3B8', lineHeight: 1.6, margin: 0 }}>Bầu trời Phú Quốc chuyển sắc tím hồng huyền ảo, tiếng sóng rì rào êm đềm kết thúc một ngày du ngoạn...</p>
+            </div>
+          </div>
+
+          <div style={{ textAlign: 'center' }}>
+            <Link
+              href="/community"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: '14px 32px',
+                borderRadius: '999px',
+                background: 'linear-gradient(135deg, #22D3EE, #0284C7)',
+                color: '#FFFFFF',
+                fontSize: '15px',
+                fontWeight: 700,
+                textDecoration: 'none',
+                boxShadow: '0 6px 24px rgba(6, 182, 212, 0.4)',
+                transition: 'all 0.25s ease',
+              }}
+            >
+              <span>Khám Phá Toàn Bộ Câu Chuyện Trên Cộng Đồng</span>
+              <ArrowRightIcon size={16} />
+            </Link>
           </div>
         </div>
       </section>

@@ -37,7 +37,6 @@ const DEFAULT_TRANSFERS: SettlementTransferItem[] = [
     toName: 'Vân Ánh',
     toAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&q=80',
     amount: 450000,
-    bankAccount: '19034567890123 (Techcombank)',
   },
   {
     id: '2',
@@ -46,7 +45,6 @@ const DEFAULT_TRANSFERS: SettlementTransferItem[] = [
     toName: 'Vân Ánh',
     toAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&q=80',
     amount: 800000,
-    bankAccount: '19034567890123 (Techcombank)',
   },
 ];
 

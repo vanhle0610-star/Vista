@@ -40,6 +40,9 @@ describe('VietQRModal Component', () => {
         visible={true}
         onClose={handleClose}
         onConfirmPaid={handleConfirm}
+        receiverName="TRẦN VÂN ÁNH"
+        accountNumber="0984838888"
+        bankCode="MB"
         amount={500000}
       />
     );
@@ -49,5 +52,20 @@ describe('VietQRModal Component', () => {
 
     expect(handleConfirm).toHaveBeenCalledTimes(1);
     expect(handleClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('displays warning when receiver has not configured payout account', async () => {
+    const handleClose = jest.fn();
+
+    await render(
+      <VietQRModal
+        visible={true}
+        onClose={handleClose}
+        amount={500000}
+      />
+    );
+
+    expect(screen.getByText('Người nhận chưa thiết lập tài khoản nhận tiền')).toBeTruthy();
+    expect(screen.queryByText('✓ Đã chuyển khoản xong')).toBeNull();
   });
 });

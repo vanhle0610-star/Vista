@@ -290,12 +290,27 @@
 
 @media (max-width: 640px) {
   .navbarContainer {
-    padding: 10px 12px;
-    gap: 8px;
+    padding: 8px 12px;
+    gap: 6px;
   }
 
   .navActions {
-    gap: 8px;
+    gap: 6px;
+  }
+
+  .userName {
+    display: none;
+  }
+
+  .userProfileBtn {
+    padding: 4px;
+    gap: 0;
+  }
+
+  .langSelector {
+    width: auto;
+    padding: 6px 8px;
+    font-size: 11.5px;
   }
 
   /* These actions remain available in the existing mobile menu. */
@@ -311,7 +326,16 @@
   }
 
   .brandLogo {
-    gap: 8px;
+    gap: 6px;
+  }
+
+  .brandName {
+    font-size: 19px;
+  }
+
+  .brandIconWrapper {
+    width: 36px;
+    height: 36px;
   }
 }
 

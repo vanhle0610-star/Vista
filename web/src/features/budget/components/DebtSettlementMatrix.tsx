@@ -9,6 +9,10 @@ import {
   Users,
   UserPlus,
   ShieldCheck,
+  AlertTriangle,
+  Copy,
+  Check,
+  Loader2,
 } from 'lucide-react';
 import type { TripExpenseSummary, TripMember } from '../types';
 import styles from '../treasury.module.css';
@@ -21,6 +25,21 @@ interface DebtSettlementMatrixProps {
   onAddMember?: (name: string) => void;
 }
 
+interface PaymentRequestPayload {
+  id: string;
+  tripId: string;
+  payerName: string;
+  recipientName: string;
+  recipientAccountName: string;
+  bankCode: string;
+  maskedAccountNumber: string;
+  amount: number;
+  currency: string;
+  memo: string;
+  qrImageUrl: string;
+  status: string;
+}
+
 export function DebtSettlementMatrix({
   summary,
   members,
@@ -28,14 +47,18 @@ export function DebtSettlementMatrix({
   tripId = 'VISTA',
   onAddMember,
 }: DebtSettlementMatrixProps) {
-  const [selectedTransfer, setSelectedTransfer] = useState<{
-    fromName: string;
-    toName: string;
-    amount: number;
-  } | null>(null);
-
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
   const [newMemberName, setNewMemberName] = useState('');
+
+  // Payment Request Modal State
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isLoadingQr, setIsLoadingQr] = useState(false);
+  const [qrError, setQrError] = useState<string | null>(null);
+  const [paymentRequest, setPaymentRequest] = useState<PaymentRequestPayload | null>(null);
+  const [imageError, setImageError] = useState(false);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [isMarkingPaid, setIsMarkingPaid] = useState(false);
+  const [markPaidSuccess, setMarkPaidSuccess] = useState(false);
 
   const memberMap = new Map<string, TripMember>();
   members.forEach((m) => memberMap.set(m.userId, m));
@@ -61,41 +84,120 @@ export function DebtSettlementMatrix({
     setShowAddMemberModal(false);
   };
 
+  const handleOpenVietQR = async (fromUserId: string, toUserId: string) => {
+    setIsPaymentModalOpen(true);
+    setIsLoadingQr(true);
+    setQrError(null);
+    setPaymentRequest(null);
+    setImageError(false);
+    setMarkPaidSuccess(false);
+
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('vista_token') : '';
+      const res = await fetch(`/api/v1/trips/${tripId}/settlements/payment-requests`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          toUserId,
+          idempotencyKey: crypto.randomUUID(),
+          memo: 'THANHTOAN',
+        }),
+      });
+
+      if (!res.ok) {
+        let errMsg = 'Người nhận chưa thiết lập tài khoản nhận tiền đã xác minh.';
+        try {
+          const errBody = await res.json();
+          if (errBody && (errBody.message || errBody.title)) {
+            errMsg = errBody.message || errBody.title;
+          }
+        } catch {}
+        throw new Error(errMsg);
+      }
+
+      const data: PaymentRequestPayload = await res.json();
+      setPaymentRequest(data);
+    } catch (err: unknown) {
+      setQrError((err as Error).message || 'Không thể tạo yêu cầu thanh toán VietQR.');
+    } finally {
+      setIsLoadingQr(false);
+    }
+  };
+
+  const copyToClipboard = (label: string, text: string) => {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+      setCopiedField(label);
+      setTimeout(() => setCopiedField(null), 2000);
+    }
+  };
+
+  const handleMarkPaid = async () => {
+    if (!paymentRequest) return;
+    setIsMarkingPaid(true);
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('vista_token') : '';
+      const res = await fetch(
+        `/api/v1/trips/${tripId}/settlements/payment-requests/${paymentRequest.id}/status`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({
+            status: 'PAYER_MARKED_SENT',
+            note: 'Người trả đã bấm xác nhận chuyển khoản',
+          }),
+        }
+      );
+      if (res.ok) {
+        setMarkPaidSuccess(true);
+        setTimeout(() => {
+          setIsPaymentModalOpen(false);
+        }, 1500);
+      }
+    } catch {
+      // ignore
+    } finally {
+      setIsMarkingPaid(false);
+    }
+  };
+
   const deltas = summary.settlementDeltas || {};
-  const isSolo = members.length <= 1;
+  const hasMembers = members.length > 0;
 
   return (
     <div className={styles.sectionCard}>
-      <div className={styles.sectionCardHeader}>
+      {/* Card Header */}
+      <div className={styles.cardHeader}>
         <div>
-          <h2 className={styles.sectionTitle}>
-            {isSolo ? 'Quản Lý Thu Chi Nhóm' : 'Đối Soát Nợ Nhóm (Smart Split)'}
-          </h2>
-          <div className={styles.sectionSubtitle}>
-            {isSolo
-              ? 'Chuyến đi cá nhân · Bạn đang tự quản lý 100% ngân sách'
-              : `Cân đối chi phí tối ưu giữa ${members.length} thành viên tham gia`}
-          </div>
+          <h2 className={styles.sectionTitle}>Cán Cân Quyết Toán Chi Phí</h2>
+          <p className={styles.sectionSubtitle}>
+            Theo dõi ai đã trả trước và ai cần hoàn tiền dựa trên nguyên lý Zero-Sum (TV4)
+          </p>
         </div>
         <button
           type="button"
-          className={styles.btnAddMemberSmall}
+          className={styles.btnSecondary}
           onClick={() => setShowAddMemberModal(true)}
-          title="Thêm bạn bè vào chuyến đi để cùng chia chi phí"
         >
-          <UserPlus size={14} />
-          <span>Thêm bạn đồng hành</span>
+          <UserPlus size={16} />
+          <span>Thêm thành viên</span>
         </button>
       </div>
 
-      {isSolo ? (
-        <div className={styles.soloContainer}>
-          <div className={styles.soloIconBox}>
-            <Users size={32} color="#0284c7" />
-          </div>
-          <h3 className={styles.soloTitle}>Chưa có bạn đồng hành cùng chia tiền</h3>
-          <p className={styles.soloDesc}>
-            Chuyến đi này hiện chỉ có 1 người (Bạn). Khi bạn thêm bạn bè hoặc người thân vào nhóm, hệ thống VISTA sẽ tự động chia đều hóa đơn, đối soát công nợ và sinh mã VietQR chuyển khoản nhanh!
+      {!hasMembers ? (
+        <div className={styles.emptyStateContainer}>
+          <Users size={36} color="#94a3b8" style={{ marginBottom: '8px' }} />
+          <p style={{ margin: 0, fontWeight: 700, color: '#475569' }}>
+            Chưa có thành viên nào trong chuyến đi
+          </p>
+          <p style={{ margin: '4px 0 16px 0', fontSize: '13px', color: '#94a3b8' }}>
+            Hãy thêm người đồng hành để bắt đầu ghi nhận và chia sẻ chi phí tự động
           </p>
           <button
             type="button"
@@ -178,13 +280,7 @@ export function DebtSettlementMatrix({
                     <button
                       type="button"
                       className={styles.vietQrBtn}
-                      onClick={() =>
-                        setSelectedTransfer({
-                          fromName,
-                          toName,
-                          amount: t.amount,
-                        })
-                      }
+                      onClick={() => handleOpenVietQR(t.fromUserId, t.toUserId)}
                     >
                       <QrCode size={13} />
                       <span>VietQR</span>
@@ -258,21 +354,21 @@ export function DebtSettlementMatrix({
         </div>
       )}
 
-      {/* VietQR Quick Payment Modal */}
-      {selectedTransfer && (
+      {/* Production-Safe VietQR Quick Payment Modal */}
+      {isPaymentModalOpen && (
         <div
           className={styles.drawerOverlay}
-          onClick={() => setSelectedTransfer(null)}
+          onClick={() => setIsPaymentModalOpen(false)}
           style={{ alignItems: 'center', justifyContent: 'center' }}
         >
           <div
             className={styles.sectionCard}
-            style={{ width: '400px', maxWidth: '92%', textAlign: 'center', padding: '28px', position: 'relative' }}
+            style={{ width: '420px', maxWidth: '94%', textAlign: 'center', padding: '24px', position: 'relative' }}
             onClick={(e) => e.stopPropagation()}
           >
             <button
               type="button"
-              onClick={() => setSelectedTransfer(null)}
+              onClick={() => setIsPaymentModalOpen(false)}
               style={{
                 position: 'absolute',
                 top: '16px',
@@ -286,60 +382,144 @@ export function DebtSettlementMatrix({
               <X size={20} />
             </button>
 
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '6px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '4px' }}>
               <QrCode size={22} color="#16a34a" />
-              <h3 style={{ margin: 0, fontSize: '19px', fontWeight: 800, color: '#0f172a' }}>
-                Thanh Toán VietQR Nhanh
+              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0f172a' }}>
+                Thanh Toán VietQR Quyết Toán
               </h3>
             </div>
 
-            <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 16px 0' }}>
-              Quét mã ngân hàng để hoàn tiền từ <b>{selectedTransfer.fromName}</b> cho <b>{selectedTransfer.toName}</b>
-            </p>
+            {isLoadingQr ? (
+              <div style={{ padding: '40px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+                <Loader2 size={32} color="#0284c7" className="animate-spin" />
+                <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>
+                  Đang khởi tạo yêu cầu thanh toán bảo mật từ máy chủ...
+                </p>
+              </div>
+            ) : qrError ? (
+              <div style={{ padding: '24px 12px', textAlign: 'center' }}>
+                <AlertTriangle size={36} color="#eab308" style={{ margin: '0 auto 12px auto' }} />
+                <h4 style={{ margin: '0 0 8px 0', color: '#854d0e', fontSize: '15px', fontWeight: 700 }}>
+                  Người nhận chưa thiết lập tài khoản nhận tiền
+                </h4>
+                <p style={{ fontSize: '13px', color: '#64748b', lineHeight: 1.5, margin: '0 0 20px 0' }}>
+                  {qrError}
+                </p>
+                <button
+                  type="button"
+                  className={styles.btnSecondary}
+                  style={{ width: '100%', justifyContent: 'center' }}
+                  onClick={() => setIsPaymentModalOpen(false)}
+                >
+                  Đóng
+                </button>
+              </div>
+            ) : paymentRequest ? (
+              <div>
+                <p style={{ fontSize: '12.5px', color: '#64748b', margin: '0 0 12px 0' }}>
+                  Chuyển tiền từ <b>{paymentRequest.payerName}</b> tới <b>{paymentRequest.recipientName}</b>
+                </p>
 
-            <div
-              style={{
-                width: '210px',
-                height: '210px',
-                margin: '0 auto 16px auto',
-                background: '#ffffff',
-                border: '1px solid #cbd5e1',
-                borderRadius: '16px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '12px',
-                boxShadow: '0 8px 24px rgba(0,0,0,0.06)',
-              }}
-            >
-              <img
-                src={`https://img.vietqr.io/image/MB-0382404099-compact2.png?amount=${selectedTransfer.amount}&addInfo=${encodeURIComponent('VISTA ' + selectedTransfer.toName.slice(0, 10))}&accountName=${encodeURIComponent(selectedTransfer.toName)}`}
-                alt="VietQR code"
-                width={185}
-                height={185}
-                style={{ borderRadius: '8px', objectFit: 'contain' }}
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = `https://api.qrserver.com/v1/create-qr-code/?size=185x185&data=https://vietqr.me/transfer?amount=${selectedTransfer.amount}`;
-                }}
-              />
-            </div>
+                {/* Warning reminder */}
+                <div style={{ background: '#fef3c7', border: '1px solid #fcd34d', borderRadius: '8px', padding: '8px 12px', fontSize: '11.5px', color: '#92400e', textAlign: 'left', marginBottom: '14px' }}>
+                  ⚠️ Vui lòng đối chiếu kỹ tên chủ tài khoản và số tiền trên app ngân hàng trước khi xác nhận chuyển khoản.
+                </div>
 
-            <div style={{ fontSize: '22px', fontWeight: 800, color: '#16a34a', marginBottom: '8px' }}>
-              {formatVnd(selectedTransfer.amount)}
-            </div>
+                {/* QR Code Container */}
+                <div
+                  style={{
+                    width: '200px',
+                    height: '200px',
+                    margin: '0 auto 14px auto',
+                    background: '#ffffff',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '8px',
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.06)',
+                  }}
+                >
+                  {!imageError ? (
+                    <img
+                      src={paymentRequest.qrImageUrl}
+                      alt="VietQR code"
+                      width={184}
+                      height={184}
+                      style={{ borderRadius: '8px', objectFit: 'contain' }}
+                      onError={() => setImageError(true)}
+                    />
+                  ) : (
+                    <div style={{ padding: '12px', fontSize: '11.5px', color: '#dc2626', lineHeight: 1.4 }}>
+                      Không thể tải ảnh mã QR.<br />Vui lòng chuyển khoản thủ công bằng thông tin bên dưới:
+                    </div>
+                  )}
+                </div>
 
-            <p style={{ fontSize: '12px', color: '#64748b', margin: '0 0 20px 0' }}>
-              Hỗ trợ 40+ ứng dụng ngân hàng & ví điện tử tại Việt Nam
-            </p>
+                {/* Amount display */}
+                <div style={{ fontSize: '20px', fontWeight: 800, color: '#16a34a', marginBottom: '12px' }}>
+                  {formatVnd(paymentRequest.amount)}
+                </div>
 
-            <button
-              type="button"
-              className={styles.btnSecondary}
-              style={{ width: '100%', justifyContent: 'center' }}
-              onClick={() => setSelectedTransfer(null)}
-            >
-              Đã hoàn tất thanh toán
-            </button>
+                {/* Bank Details Table with Copy */}
+                <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '10px 14px', textAlign: 'left', fontSize: '12px', marginBottom: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid #f1f5f9' }}>
+                    <span style={{ color: '#64748b' }}>Ngân hàng:</span>
+                    <span style={{ fontWeight: 700, color: '#0f172a' }}>{paymentRequest.bankCode}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid #f1f5f9' }}>
+                    <span style={{ color: '#64748b' }}>Chủ tài khoản:</span>
+                    <span style={{ fontWeight: 700, color: '#0f172a' }}>{paymentRequest.recipientAccountName}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: '1px solid #f1f5f9' }}>
+                    <span style={{ color: '#64748b' }}>Số tài khoản:</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontWeight: 700, color: '#0f172a' }}>{paymentRequest.maskedAccountNumber}</span>
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard('Số tài khoản', paymentRequest.maskedAccountNumber)}
+                        style={{ background: '#e0f2fe', border: 'none', borderRadius: '4px', padding: '2px 6px', fontSize: '10.5px', color: '#0284c7', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}
+                      >
+                        {copiedField === 'Số tài khoản' ? <Check size={11} /> : <Copy size={11} />}
+                        <span>Sao chép</span>
+                      </button>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0' }}>
+                    <span style={{ color: '#64748b' }}>Nội dung:</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontWeight: 700, color: '#0f172a' }}>{paymentRequest.memo}</span>
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard('Nội dung', paymentRequest.memo)}
+                        style={{ background: '#e0f2fe', border: 'none', borderRadius: '4px', padding: '2px 6px', fontSize: '10.5px', color: '#0284c7', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}
+                      >
+                        {copiedField === 'Nội dung' ? <Check size={11} /> : <Copy size={11} />}
+                        <span>Sao chép</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {markPaidSuccess ? (
+                  <div style={{ background: '#f0fdf4', color: '#16a34a', padding: '10px', borderRadius: '8px', fontSize: '13px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                    <CheckCircle2 size={16} />
+                    <span>Đã ghi nhận chuyển khoản thành công!</span>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    className={styles.btnPrimaryHighlight}
+                    style={{ width: '100%', justifyContent: 'center', padding: '12px' }}
+                    onClick={handleMarkPaid}
+                    disabled={isMarkingPaid}
+                  >
+                    {isMarkingPaid ? 'Đang cập nhật...' : 'Tôi đã chuyển khoản xong'}
+                  </button>
+                )}
+              </div>
+            ) : null}
           </div>
         </div>
       )}

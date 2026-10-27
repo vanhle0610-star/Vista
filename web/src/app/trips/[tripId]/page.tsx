@@ -36,6 +36,7 @@ import {
   Ticket,
 } from 'lucide-react';
 import { Navbar } from '@/components/common/Navbar';
+import { GroupMapTab } from '@/features/trip-location/components/GroupMapTab';
 import styles from './tripDetail.module.css';
 
 interface ActivityItem {
@@ -79,7 +80,7 @@ interface TripDetailData {
   budgetSpent: number;
   progressPercent: number;
   members: MemberItem[];
-  image: string;
+  image?: string;
   treasuryPath: string;
   alertType?: 'AMBER' | 'BLUE' | 'COMPLETED';
   alertText?: string;
@@ -122,7 +123,7 @@ export default function TripDetailPage() {
   const tripId = typeof params?.tripId === 'string' ? params.tripId : '';
 
   const [trip, setTrip] = useState<TripDetailData | null>(null);
-  const [activeTab, setActiveTab] = useState<'itinerary' | 'members' | 'treasury' | 'voting'>('itinerary');
+  const [activeTab, setActiveTab] = useState<'itinerary' | 'members' | 'treasury' | 'voting' | 'group-map'>('itinerary');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [copiedInvite, setCopiedInvite] = useState(false);
 
@@ -458,19 +459,17 @@ export default function TripDetailPage() {
               <span className={styles.headerBackText}>Tất cả chuyến đi</span>
             </Link>
 
-            <div className={styles.headerPolaroidCard} title={`${trip.destination} 🏮`}>
-              <img
-                src={destinationPhoto}
-                alt={trip.title}
-                className={styles.headerPolaroidImg}
-                onError={(e) => {
-                  e.currentTarget.onerror = null;
-                  e.currentTarget.src = 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=600&q=80';
-                }}
-              />
-              <div className={styles.headerPolaroidPin}>📍</div>
-              <span className={styles.headerPolaroidTag}>{trip.destination || 'Việt Nam'}</span>
-            </div>
+            {destinationPhoto && (
+              <div className={styles.headerPolaroidCard} title={`${trip.destination} 🏮`}>
+                <img
+                  src={destinationPhoto}
+                  alt={trip.title}
+                  className={styles.headerPolaroidImg}
+                />
+                <div className={styles.headerPolaroidPin}>📍</div>
+                <span className={styles.headerPolaroidTag}>{trip.destination || 'Việt Nam'}</span>
+              </div>
+            )}
 
             <div className={styles.headerTitleInfo}>
               <div className={styles.headerTitleRow}>
@@ -594,6 +593,14 @@ export default function TripDetailPage() {
             id="tab-btn-voting"
           >
             Biểu quyết địa điểm ({proposals.length})
+          </button>
+          <button
+            type="button"
+            className={`${styles.tabBtn} ${activeTab === 'group-map' ? styles.tabBtnActive : ''}`}
+            onClick={() => setActiveTab('group-map')}
+            id="tab-btn-group-map"
+          >
+            🗺️ Bản đồ nhóm & Vị trí (Live)
           </button>
         </div>
 
@@ -1187,6 +1194,15 @@ export default function TripDetailPage() {
               </div>
             ))}
           </div>
+        )}
+
+        {/* TAB 5: GROUP MAP, LIVE MEMBER LOCATIONS & MEETUP POINTS (TV5) */}
+        {activeTab === 'group-map' && (
+          <GroupMapTab
+            tripId={trip.id}
+            tripTitle={trip.title}
+            defaultDestination={trip.destination}
+          />
         )}
       </main>
 

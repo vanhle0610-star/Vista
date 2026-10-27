@@ -6,6 +6,7 @@ import com.vista.ai.api.dto.AiItinerarySuggestionResponse;
 import com.vista.ai.api.dto.AiItinerarySuggestionResponse.SuggestedActivityResponse;
 import com.vista.ai.api.dto.AiItinerarySuggestionResponse.SuggestedDayResponse;
 import com.vista.ai.client.AiClientWrapper;
+import com.vista.ai.config.AiRateLimiter;
 import com.vista.ai.util.AiResponseValidator;
 import com.vista.ai.util.PromptBuilder;
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,24 +32,55 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(
     name = "AI Quick Plan",
     description = "Trợ lý AI tạo lịch trình nhanh cho khách vãng lai và người dùng (TV4)")
-@CrossOrigin(origins = "*")
 public class AiQuickPlanController {
 
   private static final Logger log = LoggerFactory.getLogger(AiQuickPlanController.class);
 
   private final AiClientWrapper aiClientWrapper;
+  private final AiRateLimiter aiRateLimiter;
 
   @Autowired
-  public AiQuickPlanController(AiClientWrapper aiClientWrapper) {
+  public AiQuickPlanController(
+      AiClientWrapper aiClientWrapper, @Autowired(required = false) AiRateLimiter aiRateLimiter) {
     this.aiClientWrapper = aiClientWrapper;
+    this.aiRateLimiter = aiRateLimiter;
   }
 
   @PostMapping("/quick-plan")
   @Operation(summary = "Yêu cầu AI lập lịch trình du lịch nhanh không cần tạo trước chuyến đi")
   public ResponseEntity<AiItinerarySuggestionResponse> generateQuickPlan(
-      @Valid @RequestBody AiItinerarySuggestionRequest request) {
+      @Valid @RequestBody AiItinerarySuggestionRequest request,
+      jakarta.servlet.http.HttpServletRequest servletRequest) {
+
+    // 1. Rate limit công khai theo IP & Device Identifier (chống spam Gemini không giới hạn)
+    if (aiRateLimiter != null) {
+      String clientIp = extractClientIp(servletRequest);
+      aiRateLimiter.checkPublicRateLimit(clientIp);
+    }
+
+    // 2. Validate ràng buộc kích thước đầu vào
+    if (request.destinationProvince() != null && request.destinationProvince().trim().length() > 100) {
+      throw new org.springframework.web.server.ResponseStatusException(
+          org.springframework.http.HttpStatus.BAD_REQUEST, "Tên điểm đến không được vượt quá 100 ký tự");
+    }
+    if (request.interests() != null) {
+      if (request.interests().size() > 10) {
+        throw new org.springframework.web.server.ResponseStatusException(
+            org.springframework.http.HttpStatus.BAD_REQUEST, "Số lượng sở thích tối đa là 10");
+      }
+      for (String interest : request.interests()) {
+        if (interest != null && interest.length() > 50) {
+          throw new org.springframework.web.server.ResponseStatusException(
+              org.springframework.http.HttpStatus.BAD_REQUEST, "Độ dài mỗi sở thích tối đa là 50 ký tự");
+        }
+      }
+    }
 
     int daysCount = request.totalDays() != null ? request.totalDays() : 3;
+    if (daysCount <= 0 || daysCount > 14) {
+      throw new org.springframework.web.server.ResponseStatusException(
+          org.springframework.http.HttpStatus.BAD_REQUEST, "Số ngày lịch trình phải từ 1 đến 14 ngày");
+    }
     BigDecimal budgetVnd = calculateBudgetVnd(request.budgetLevel(), daysCount);
 
     if (aiClientWrapper != null && aiClientWrapper.isAvailable()) {
@@ -545,5 +577,16 @@ public class AiQuickPlanController {
         budgetVnd,
         true,
         suggestedDays);
+  }
+
+  private String extractClientIp(jakarta.servlet.http.HttpServletRequest request) {
+    if (request == null) return "unknown";
+    String xForwarded = request.getHeader("X-Forwarded-For");
+    if (xForwarded != null && !xForwarded.isBlank()) {
+      return xForwarded.split(",")[0].trim();
+    }
+    String deviceId = request.getHeader("X-Device-Id");
+    String remoteAddr = request.getRemoteAddr() != null ? request.getRemoteAddr() : "unknown";
+    return deviceId != null ? (remoteAddr + ":" + deviceId) : remoteAddr;
   }
 }

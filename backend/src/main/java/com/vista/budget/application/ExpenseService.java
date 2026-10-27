@@ -13,10 +13,13 @@ import com.vista.budget.infrastructure.ExpenseRepository;
 import com.vista.budget.infrastructure.ExpenseSplitRepository;
 import com.vista.common.audit.AuditLogService;
 import com.vista.trip.application.TripAccessService;
+import com.vista.common.audit.AuditLogService;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -32,12 +35,14 @@ import org.springframework.web.server.ResponseStatusException;
 @Transactional
 public class ExpenseService {
 
+  private static final BigDecimal MAX_EXPENSE_AMOUNT = new BigDecimal("1000000000000"); // 1,000 tỷ VND
+  private static final BigDecimal MAX_BUDGET_TARGET = new BigDecimal("10000000000000"); // 10,000 tỷ VND
+
   private final TripAccessService tripAccessService;
   private final ExpenseRepository expenseRepository;
   private final ExpenseSplitRepository expenseSplitRepository;
   private final ExpenseCalculationService calculationService;
   private final AuditLogService auditLogService;
-
   public ExpenseService(
       TripAccessService tripAccessService,
       ExpenseRepository expenseRepository,
@@ -51,6 +56,14 @@ public class ExpenseService {
     this.auditLogService = auditLogService;
   }
 
+  public ExpenseService(
+      TripAccessService tripAccessService,
+      ExpenseRepository expenseRepository,
+      ExpenseSplitRepository expenseSplitRepository,
+      ExpenseCalculationService calculationService) {
+    this(tripAccessService, expenseRepository, expenseSplitRepository, calculationService, null);
+  }
+
   public ExpenseResponse createExpense(
       UUID tripId, UUID currentUserId, CreateExpenseRequest request) {
     Objects.requireNonNull(tripId, "tripId must not be null");
@@ -59,6 +72,11 @@ public class ExpenseService {
 
     // 1. Kiểm tra quyền ghi (Chỉ OWNER hoặc EDITOR đang ACTIVE, chặn VIEWER và outsider)
     tripAccessService.requireWriteAccess(tripId, currentUserId);
+
+    validateCurrency(request.currency());
+    validateAmount(request.amount());
+    validateOccurredAt(request.occurredAt());
+    validateParticipantIds(request.participantIds());
 
     UUID payerId = request.paidBy() != null ? request.paidBy() : currentUserId;
     requireExpenseMembers(
@@ -70,9 +88,9 @@ public class ExpenseService {
     ExpenseEntity expense =
         new ExpenseEntity(
             tripId,
-            request.title(),
-            request.amount(),
-            request.currency() != null ? request.currency() : "VND",
+            request.title().trim(),
+            request.amount().setScale(0, RoundingMode.UNNECESSARY),
+            "VND",
             payerId,
             category,
             occurredAt);
@@ -80,20 +98,24 @@ public class ExpenseService {
     // 2. Tính toán phân chia chi phí
     String splitType = request.splitType() != null ? request.splitType() : "EQUAL";
     List<ExpenseSplitEntity> splits;
-    if ("EXACT".equalsIgnoreCase(splitType)) {
-      if (request.exactShares() == null || request.exactShares().isEmpty()) {
-        throw new ResponseStatusException(
-            HttpStatus.BAD_REQUEST, "EXACT split requires exactShares");
+    try {
+      if ("EXACT".equalsIgnoreCase(splitType)) {
+        if (request.exactShares() == null || request.exactShares().isEmpty()) {
+          throw new ResponseStatusException(
+              HttpStatus.BAD_REQUEST, "EXACT split requires exactShares");
+        }
+        splits = calculationService.createExactSplits(expense, request.exactShares());
+      } else if ("EQUAL".equalsIgnoreCase(splitType)) {
+        List<UUID> participants =
+            (request.participantIds() != null && !request.participantIds().isEmpty())
+                ? request.participantIds()
+                : List.of(payerId);
+        splits = calculationService.createEqualSplits(expense, participants);
+      } else {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported splitType: " + splitType);
       }
-      splits = calculationService.createExactSplits(expense, request.exactShares());
-    } else if ("EQUAL".equalsIgnoreCase(splitType)) {
-      List<UUID> participants =
-          (request.participantIds() != null && !request.participantIds().isEmpty())
-              ? request.participantIds()
-              : List.of(payerId);
-      splits = calculationService.createEqualSplits(expense, participants);
-    } else {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported splitType");
+    } catch (IllegalArgumentException ex) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
     for (ExpenseSplitEntity split : splits) {
@@ -102,20 +124,31 @@ public class ExpenseService {
 
     ExpenseEntity saved = expenseRepository.save(expense);
 
-    auditLogService.logAction(
-        currentUserId,
-        "EXPENSE_CREATED",
-        "EXPENSE",
-        saved.getId().toString(),
-        String.format(
-            "{\"tripId\":\"%s\",\"amount\":%s,\"currency\":\"%s\",\"category\":\"%s\"}",
-            tripId, saved.getAmount(), saved.getCurrency(), saved.getCategory()));
+    if (auditLogService != null) {
+      auditLogService.logAction(
+          currentUserId,
+          "EXPENSE_CREATED",
+          "EXPENSE",
+          saved.getId().toString(),
+          String.format(
+              "{\"tripId\":\"%s\",\"amount\":%s,\"currency\":\"%s\",\"category\":\"%s\"}",
+              tripId, saved.getAmount(), saved.getCurrency(), saved.getCategory()));
+    }
 
     return mapToResponse(saved);
   }
 
   public ExpenseResponse updateExpense(
       UUID tripId, UUID expenseId, UUID currentUserId, UpdateExpenseRequest request) {
+    return updateExpense(tripId, expenseId, currentUserId, request, null);
+  }
+
+  public ExpenseResponse updateExpense(
+      UUID tripId,
+      UUID expenseId,
+      UUID currentUserId,
+      UpdateExpenseRequest request,
+      Long expectedVersion) {
     Objects.requireNonNull(request, "request must not be null");
     if (!hasAnyChange(request)) {
       throw new ResponseStatusException(
@@ -123,6 +156,31 @@ public class ExpenseService {
     }
     ExpenseEntity expense = findActiveExpense(tripId, expenseId);
     requireExpenseManager(tripId, currentUserId, expense);
+
+    // Optimistic locking check
+    Long targetVersion = expectedVersion != null ? expectedVersion : request.version();
+    if (targetVersion != null && !Objects.equals(targetVersion, expense.getVersion())) {
+      throw new ResponseStatusException(
+          HttpStatus.CONFLICT,
+          "Expense was modified by another user (expected version: "
+              + targetVersion
+              + ", current version: "
+              + expense.getVersion()
+              + ")");
+    }
+
+    if (request.currency() != null) {
+      validateCurrency(request.currency());
+    }
+    if (request.amount() != null) {
+      validateAmount(request.amount());
+    }
+    if (request.occurredAt() != null) {
+      validateOccurredAt(request.occurredAt());
+    }
+    if (request.participantIds() != null) {
+      validateParticipantIds(request.participantIds());
+    }
 
     UUID payerId = request.paidBy() != null ? request.paidBy() : expense.getPaidBy();
     requireExpenseMembers(
@@ -137,11 +195,9 @@ public class ExpenseService {
       expense.setTitle(title);
     }
     if (request.amount() != null) {
-      expense.setAmount(request.amount());
+      expense.setAmount(request.amount().setScale(0, RoundingMode.UNNECESSARY));
     }
-    if (request.currency() != null) {
-      expense.setCurrency(request.currency().toUpperCase());
-    }
+    expense.setCurrency("VND");
     expense.setPaidBy(payerId);
     if (request.category() != null) {
       expense.setCategory(request.category());
@@ -159,14 +215,16 @@ public class ExpenseService {
 
     ExpenseEntity updated = expenseRepository.save(expense);
 
-    auditLogService.logAction(
-        currentUserId,
-        "EXPENSE_UPDATED",
-        "EXPENSE",
-        expenseId.toString(),
-        String.format(
-            "{\"tripId\":\"%s\",\"amount\":%s,\"currency\":\"%s\",\"category\":\"%s\"}",
-            tripId, updated.getAmount(), updated.getCurrency(), updated.getCategory()));
+    if (auditLogService != null) {
+      auditLogService.logAction(
+          currentUserId,
+          "EXPENSE_UPDATED",
+          "EXPENSE",
+          expenseId.toString(),
+          String.format(
+              "{\"tripId\":\"%s\",\"amount\":%s,\"currency\":\"%s\",\"category\":\"%s\"}",
+              tripId, updated.getAmount(), updated.getCurrency(), updated.getCategory()));
+    }
 
     return mapToResponse(updated);
   }
@@ -185,6 +243,17 @@ public class ExpenseService {
   public TripExpenseSummaryResponse getTripExpenseSummary(
       UUID tripId, UUID currentUserId, BigDecimal budgetTarget) {
     tripAccessService.requireMember(tripId, currentUserId);
+
+    if (budgetTarget != null) {
+      if (budgetTarget.compareTo(BigDecimal.ZERO) < 0) {
+        throw new ResponseStatusException(
+            HttpStatus.BAD_REQUEST, "Budget target must not be negative");
+      }
+      if (budgetTarget.compareTo(MAX_BUDGET_TARGET) > 0) {
+        throw new ResponseStatusException(
+            HttpStatus.BAD_REQUEST, "Budget target exceeds maximum limit (10,000,000,000,000 VND)");
+      }
+    }
 
     List<ExpenseEntity> expenses =
         expenseRepository.findByTripIdAndStatusOrderByOccurredAtDesc(tripId, "ACTIVE");
@@ -241,14 +310,64 @@ public class ExpenseService {
     requireExpenseManager(tripId, currentUserId, expense);
 
     expense.setStatus("CANCELLED");
-    expenseRepository.save(expense);
+    ExpenseEntity saved = expenseRepository.save(expense);
 
-    auditLogService.logAction(
-        currentUserId,
-        "EXPENSE_DELETED",
-        "EXPENSE",
-        expenseId.toString(),
-        String.format("{\"tripId\":\"%s\",\"status\":\"CANCELLED\"}", tripId));
+    if (auditLogService != null) {
+      auditLogService.logAction(
+          currentUserId,
+          "EXPENSE_DELETED",
+          "EXPENSE",
+          expenseId.toString(),
+          String.format("{\"tripId\":\"%s\",\"status\":\"CANCELLED\"}", tripId));
+    }
+  }
+
+  private void validateAmount(BigDecimal amount) {
+    if (amount == null) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Amount is required");
+    }
+    if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Amount must be strictly positive");
+    }
+    if (amount.compareTo(MAX_EXPENSE_AMOUNT) > 0) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Amount exceeds maximum limit (1,000,000,000,000 VND)");
+    }
+    if (amount.stripTrailingZeros().scale() > 0) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Amount must be a whole VND amount without fractional cents");
+    }
+  }
+
+  private void validateCurrency(String currency) {
+    if (currency != null && !currency.trim().equalsIgnoreCase("VND")) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Only VND currency is supported. Provided: " + currency);
+    }
+  }
+
+  private void validateOccurredAt(Instant occurredAt) {
+    if (occurredAt != null && occurredAt.isAfter(Instant.now().plus(Duration.ofDays(30)))) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "occurredAt cannot be more than 30 days in the future");
+    }
+  }
+
+  private void validateParticipantIds(List<UUID> participantIds) {
+    if (participantIds != null) {
+      Set<UUID> unique = new HashSet<>();
+      for (UUID id : participantIds) {
+        if (id == null) {
+          throw new ResponseStatusException(
+              HttpStatus.BAD_REQUEST, "participantIds must not contain null");
+        }
+        if (!unique.add(id)) {
+          throw new ResponseStatusException(
+              HttpStatus.BAD_REQUEST, "participantIds must not contain duplicates");
+        }
+      }
+    }
   }
 
   private ExpenseEntity findActiveExpense(UUID tripId, UUID expenseId) {
@@ -319,21 +438,25 @@ public class ExpenseService {
 
   private List<ExpenseSplitEntity> createUpdatedSplits(
       ExpenseEntity expense, UpdateExpenseRequest request) {
-    if ("EXACT".equalsIgnoreCase(request.splitType())) {
-      if (request.exactShares() == null || request.exactShares().isEmpty()) {
-        throw new ResponseStatusException(
-            HttpStatus.BAD_REQUEST, "EXACT split requires exactShares");
+    try {
+      if ("EXACT".equalsIgnoreCase(request.splitType())) {
+        if (request.exactShares() == null || request.exactShares().isEmpty()) {
+          throw new ResponseStatusException(
+              HttpStatus.BAD_REQUEST, "EXACT split requires exactShares");
+        }
+        return calculationService.createExactSplits(expense, request.exactShares());
       }
-      return calculationService.createExactSplits(expense, request.exactShares());
+      if (request.splitType() != null && !"EQUAL".equalsIgnoreCase(request.splitType())) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported splitType");
+      }
+      if (request.participantIds() == null || request.participantIds().isEmpty()) {
+        throw new ResponseStatusException(
+            HttpStatus.BAD_REQUEST, "EQUAL split requires participantIds");
+      }
+      return calculationService.createEqualSplits(expense, request.participantIds());
+    } catch (IllegalArgumentException ex) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
-    if (request.splitType() != null && !"EQUAL".equalsIgnoreCase(request.splitType())) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported splitType");
-    }
-    if (request.participantIds() == null || request.participantIds().isEmpty()) {
-      throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST, "EQUAL split requires participantIds");
-    }
-    return calculationService.createEqualSplits(expense, request.participantIds());
   }
 
   private ExpenseResponse mapToResponse(ExpenseEntity entity) {
@@ -356,6 +479,7 @@ public class ExpenseService {
         entity.getOccurredAt(),
         entity.getStatus(),
         entity.getCreatedAt(),
-        splitResponses);
+        splitResponses,
+        entity.getVersion());
   }
 }
