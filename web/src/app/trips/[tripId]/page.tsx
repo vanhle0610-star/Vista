@@ -34,6 +34,8 @@ import {
   Camera,
   Layers,
   Ticket,
+  Lock,
+  ShieldAlert,
 } from 'lucide-react';
 import { Navbar } from '@/components/common/Navbar';
 import { GroupMapTab } from '@/features/trip-location/components/GroupMapTab';
@@ -618,10 +620,20 @@ export default function TripDetailPage() {
           if (match) {
             let needsUpdate = false;
             const currentOwner = getCurrentUserMember('Trưởng nhóm');
-            const rawMembers = match.members && match.members.length > 0 ? match.members : [currentOwner];
+            const filteredMembers = (match.members && match.members.length > 0 ? match.members : [currentOwner]).filter(
+              (m: any) => {
+                const n = (m?.name || '').toLowerCase();
+                if (n.includes('nguyễn văn b') && currentUser && !currentUser.displayName?.toLowerCase().includes('nguyễn văn b')) {
+                  needsUpdate = true;
+                  return false;
+                }
+                return true;
+              }
+            );
+            const rawMembers = filteredMembers.length > 0 ? filteredMembers : [currentOwner];
             const normalizedMembers: MemberItem[] = rawMembers.map((m: any, idx: number) => {
               const rawName = m.name || '';
-              let cleanName = rawName.replace(/\s*\(Bạn\)/g, '').trim();
+              let cleanName = rawName.replace(/\s*\(Bạn.*?\)/gi, '').trim();
               if (!cleanName || cleanName === 'Bạn') {
                 cleanName = idx === 0 ? 'Trưởng nhóm VISTA' : 'Thành viên VISTA';
               }
@@ -848,8 +860,12 @@ export default function TripDetailPage() {
     ]);
   };
 
-  // Create invite (W3-TV3-01)
+  // Create invite (W3-TV3-01) - RBAC Member Guard
   const handleCreateInviteSubmit = () => {
+    if (!isTripMember) {
+      showToast('⚠️ Quyền hạn không đủ! Bạn phải là thành viên chuyến đi mới có quyền tạo lời mời.');
+      return;
+    }
     setInviteError(null);
     const email = inviteInputEmail.trim().toLowerCase();
     if (!email) return;
@@ -891,8 +907,12 @@ export default function TripDetailPage() {
     showToast(`✓ Đã tạo lời mời cho ${email}! Bạn có thể mở Gmail để gửi thư ngay.`);
   };
 
-  // Revoke invite (W3-TV3-01)
+  // Revoke invite (W3-TV3-01) - RBAC Owner Guard
   const handleRevokeInvite = (id: string) => {
+    if (!isTripOwner) {
+      showToast('⚠️ Quyền hạn không đủ! Chỉ Trưởng nhóm (Owner) mới có quyền thu hồi lời mời.');
+      return;
+    }
     setInvitationsList((prev) =>
       prev.map((inv) => (inv.id === id ? { ...inv, status: 'REVOKED' } : inv))
     );
@@ -2066,26 +2086,35 @@ export default function TripDetailPage() {
                   Thành viên chuyến đi ({trip.members?.length || 1})
                 </h3>
                 <p style={{ margin: '2px 0 0', fontSize: '13px', color: '#64748B' }}>
-                  Các thành viên có quyền cùng xem lịch trình, tạo lời mời và tham gia biểu quyết.
+                  {isTripMember
+                    ? 'Các thành viên có quyền cùng xem lịch trình, tạo lời mời và tham gia biểu quyết.'
+                    : 'Bạn đang xem chuyến đi này ở chế độ Khách quan sát (chưa gia nhập nhóm).'}
                 </p>
               </div>
               <button
                 type="button"
-                onClick={() => setShowInviteModal(true)}
+                onClick={() => {
+                  if (!isTripMember) {
+                    showToast('⚠️ Bạn đang ở chế độ Khách quan sát. Vui lòng bấm "Tham gia chuyến đi" để có quyền tạo lời mời!');
+                    return;
+                  }
+                  setShowInviteModal(true);
+                }}
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '6px',
                   padding: '9px 16px',
-                  background: '#0284C7',
+                  background: isTripMember ? '#0284C7' : '#94A3B8',
                   color: '#FFFFFF',
                   border: 'none',
                   borderRadius: '10px',
                   fontSize: '13px',
                   fontWeight: 700,
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 12px rgba(2, 132, 199, 0.25)',
+                  cursor: isTripMember ? 'pointer' : 'not-allowed',
+                  boxShadow: isTripMember ? '0 4px 12px rgba(2, 132, 199, 0.25)' : 'none',
                 }}
+                title={!isTripMember ? 'Chỉ thành viên chuyến đi mới có quyền tạo lời mời' : undefined}
               >
                 <span>+ Tạo lời mời mới</span>
               </button>
@@ -2125,170 +2154,230 @@ export default function TripDetailPage() {
               })}
             </div>
 
-            {/* QUẢN LÝ LỜI MỜI */}
-            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '20px', padding: '24px', marginBottom: '24px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
-                <h4 style={{ fontSize: '16px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
-                  ✉️ Danh sách lời mời đã phát hành
-                </h4>
-                <span style={{ fontSize: '12px', color: '#64748B' }}>
-                  Chỉ Trưởng nhóm (Owner) mới có quyền thu hồi lời mời
-                </span>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
-                {invitationsList.map((inv) => (
+            {/* QUẢN LÝ LỜI MỜI - BẢO VỆ PHÂN QUYỀN RBAC */}
+            {!isTripMember ? (
+              <div
+                style={{
+                  background: '#F8FAFC',
+                  border: '1.5px dashed #CBD5E1',
+                  borderRadius: '20px',
+                  padding: '28px 24px',
+                  marginBottom: '24px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: '16px',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', maxWidth: '640px' }}>
                   <div
-                    key={inv.id}
                     style={{
+                      width: '46px',
+                      height: '46px',
+                      borderRadius: '12px',
+                      background: '#E2E8F0',
                       display: 'flex',
                       alignItems: 'center',
-                      justifyContent: 'space-between',
-                      flexWrap: 'wrap',
-                      gap: '10px',
-                      padding: '12px 16px',
-                      background: '#F8FAFC',
-                      border: '1px solid #E2E8F0',
-                      borderRadius: '12px',
+                      justifyContent: 'center',
+                      color: '#475569',
+                      flexShrink: 0,
                     }}
                   >
-                    <div>
-                      <span style={{ fontWeight: 700, fontSize: '13.5px', color: '#0F172A' }}>{inv.email}</span>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-                        <span style={{ fontFamily: 'monospace', fontSize: '12px', color: '#0284C7', background: '#E0F2FE', padding: '1px 6px', borderRadius: '4px', fontWeight: 800 }}>
-                          {inv.token}
-                        </span>
-                        <span style={{ fontSize: '12px', color: '#64748B' }}>Hạn: {inv.expiresAt}</span>
+                    <Lock size={22} />
+                  </div>
+                  <div>
+                    <h4 style={{ margin: 0, fontSize: '15.5px', fontWeight: 800, color: '#1E293B' }}>
+                      Danh sách lời mời & Quản lý nhóm được bảo mật
+                    </h4>
+                    <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#64748B', lineHeight: '1.4' }}>
+                      Bạn đang xem với tư cách Khách quan sát. Chỉ Trưởng nhóm và Thành viên chính thức mới có quyền phát hành lời mời và xem danh sách token của chuyến đi.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleJoinThisTrip}
+                  style={{
+                    padding: '10px 20px',
+                    background: '#0284C7',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    borderRadius: '10px',
+                    fontSize: '13.5px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 12px rgba(2, 132, 199, 0.25)',
+                  }}
+                >
+                  Tham gia chuyến đi ngay
+                </button>
+              </div>
+            ) : (
+              <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '20px', padding: '24px', marginBottom: '24px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+                  <h4 style={{ fontSize: '16px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
+                    ✉️ Danh sách lời mời đã phát hành
+                  </h4>
+                  <span style={{ fontSize: '12px', color: '#64748B' }}>
+                    {isTripOwner ? 'Trưởng nhóm (Owner): có quyền tạo & thu hồi lời mời' : 'Thành viên: có quyền tạo lời mời'}
+                  </span>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
+                  {invitationsList.map((inv) => (
+                    <div
+                      key={inv.id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        flexWrap: 'wrap',
+                        gap: '10px',
+                        padding: '12px 16px',
+                        background: '#F8FAFC',
+                        border: '1px solid #E2E8F0',
+                        borderRadius: '12px',
+                      }}
+                    >
+                      <div>
+                        <span style={{ fontWeight: 700, fontSize: '13.5px', color: '#0F172A' }}>{inv.email}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                          <span style={{ fontFamily: 'monospace', fontSize: '12px', color: '#0284C7', background: '#E0F2FE', padding: '1px 6px', borderRadius: '4px', fontWeight: 800 }}>
+                            {inv.token}
+                          </span>
+                          <span style={{ fontSize: '12px', color: '#64748B' }}>Hạn: {inv.expiresAt}</span>
+                        </div>
                       </div>
-                    </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{
-                        fontSize: '11.5px',
-                        fontWeight: 800,
-                        padding: '3px 8px',
-                        borderRadius: '999px',
-                        background: inv.status === 'PENDING' ? '#DCFCE7' : inv.status === 'REVOKED' ? '#FEE2E2' : '#F1F5F9',
-                        color: inv.status === 'PENDING' ? '#15803D' : inv.status === 'REVOKED' ? '#991B1B' : '#475569',
-                      }}>
-                        {inv.status}
-                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{
+                          fontSize: '11.5px',
+                          fontWeight: 800,
+                          padding: '3px 8px',
+                          borderRadius: '999px',
+                          background: inv.status === 'PENDING' ? '#DCFCE7' : inv.status === 'REVOKED' ? '#FEE2E2' : '#F1F5F9',
+                          color: inv.status === 'PENDING' ? '#15803D' : inv.status === 'REVOKED' ? '#991B1B' : '#475569',
+                        }}>
+                          {inv.status}
+                        </span>
 
-                      <Link
-                        href={`/invitations/${inv.token}`}
-                        target="_blank"
-                        style={{
-                          fontSize: '12px',
-                          color: '#0284C7',
-                          fontWeight: 700,
-                          textDecoration: 'none',
-                          padding: '6px 12px',
-                          background: '#FFFFFF',
-                          border: '1px solid #BAE6FD',
-                          borderRadius: '8px',
-                        }}
-                        title="Mở link mời như người nhận (B)"
-                      >
-                        Mở link mời ↗
-                      </Link>
-
-                      {inv.status === 'PENDING' && (
-                        <a
-                          href={getGmailComposeUrl(inv.email, inv.token)}
+                        <Link
+                          href={`/invitations/${inv.token}`}
                           target="_blank"
-                          rel="noopener noreferrer"
                           style={{
                             fontSize: '12px',
-                            color: '#EA4335',
+                            color: '#0284C7',
                             fontWeight: 700,
                             textDecoration: 'none',
                             padding: '6px 12px',
-                            background: '#FEF2F2',
-                            border: '1px solid #FECACA',
+                            background: '#FFFFFF',
+                            border: '1px solid #BAE6FD',
                             borderRadius: '8px',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px',
                           }}
-                          title={`Mở Gmail để gửi thư mời thật tới ${inv.email}`}
+                          title="Mở link mời như người nhận (B)"
                         >
-                          <span>✉️ Gửi Gmail</span>
-                        </a>
-                      )}
+                          Mở link mời ↗
+                        </Link>
 
-                      {inv.status === 'PENDING' && (
-                        <button
-                          type="button"
-                          onClick={() => handleRevokeInvite(inv.id)}
-                          style={{
-                            fontSize: '12px',
-                            color: '#DC2626',
-                            fontWeight: 700,
-                            padding: '6px 12px',
-                            background: '#FEF2F2',
-                            border: '1px solid #FECACA',
-                            borderRadius: '8px',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          Thu hồi (Revoke)
-                        </button>
-                      )}
+                        {inv.status === 'PENDING' && (
+                          <a
+                            href={getGmailComposeUrl(inv.email, inv.token)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              fontSize: '12px',
+                              color: '#EA4335',
+                              fontWeight: 700,
+                              textDecoration: 'none',
+                              padding: '6px 12px',
+                              background: '#FEF2F2',
+                              border: '1px solid #FECACA',
+                              borderRadius: '8px',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                            }}
+                            title={`Mở Gmail để gửi thư mời thật tới ${inv.email}`}
+                          >
+                            <span>✉️ Gửi Gmail</span>
+                          </a>
+                        )}
+
+                        {isTripOwner && inv.status === 'PENDING' && (
+                          <button
+                            type="button"
+                            onClick={() => handleRevokeInvite(inv.id)}
+                            style={{
+                              fontSize: '12px',
+                              color: '#DC2626',
+                              fontWeight: 700,
+                              padding: '6px 12px',
+                              background: '#FEF2F2',
+                              border: '1px solid #FECACA',
+                              borderRadius: '8px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            Thu hồi (Revoke)
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
 
-              {/* Ô NHẬP MÃ THỦ CÔNG (W4-TV3-03) */}
-              <div style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', borderRadius: '14px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
-                <div>
-                  <strong style={{ fontSize: '13.5px', color: '#0369A1' }}>
-                    📱 Nhập mã mời thủ công:
-                  </strong>
-                  <p style={{ margin: '2px 0 0', fontSize: '12.5px', color: '#0284C7' }}>
-                    Nếu link không mở được trên điện thoại, nhập trực tiếp mã mời vào đây:
-                  </p>
-                </div>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  <input
-                    type="text"
-                    value={manualCodeInput}
-                    onChange={(e) => setManualCodeInput(e.target.value)}
-                    placeholder="Ví dụ: VISTA-NG2026"
-                    style={{
-                      padding: '8px 12px',
-                      borderRadius: '8px',
-                      border: '1px solid #93C5FD',
-                      fontSize: '13px',
-                      fontWeight: 700,
-                      width: '180px',
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (!manualCodeInput.trim()) {
-                        showToast('Vui lòng nhập mã vé mời!');
-                        return;
-                      }
-                      window.location.href = `/invitations/${manualCodeInput.trim()}`;
-                    }}
-                    style={{
-                      padding: '8px 16px',
-                      background: '#0284C7',
-                      color: '#FFFFFF',
-                      border: 'none',
-                      borderRadius: '8px',
-                      fontSize: '13px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Gia nhập
-                  </button>
+                {/* Ô NHẬP MÃ THỦ CÔNG (W4-TV3-03) */}
+                <div style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', borderRadius: '14px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+                  <div>
+                    <strong style={{ fontSize: '13.5px', color: '#0369A1' }}>
+                      📱 Nhập mã mời thủ công:
+                    </strong>
+                    <p style={{ margin: '2px 0 0', fontSize: '12.5px', color: '#0284C7' }}>
+                      Nếu link không mở được trên điện thoại, nhập trực tiếp mã mời vào đây:
+                    </p>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <input
+                      type="text"
+                      value={manualCodeInput}
+                      onChange={(e) => setManualCodeInput(e.target.value)}
+                      placeholder="Ví dụ: VISTA-NG2026"
+                      style={{
+                        padding: '8px 12px',
+                        borderRadius: '8px',
+                        border: '1px solid #93C5FD',
+                        fontSize: '13px',
+                        fontWeight: 700,
+                        width: '180px',
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!manualCodeInput.trim()) {
+                          showToast('Vui lòng nhập mã vé mời!');
+                          return;
+                        }
+                        window.location.href = `/invitations/${manualCodeInput.trim()}`;
+                      }}
+                      style={{
+                        padding: '8px 16px',
+                        background: '#0284C7',
+                        color: '#FFFFFF',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontSize: '13px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Gia nhập
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             <div className={styles.inviteCardBanner}>
               <div>

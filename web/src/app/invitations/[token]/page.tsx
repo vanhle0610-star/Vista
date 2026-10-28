@@ -48,18 +48,41 @@ export default function InvitationAcceptPage() {
       return;
     }
 
-    // Success: Add new member to local storage trip data
+    // RBAC Auth Guard: Verify logged in user
+    let currentUser: any = null;
+    try {
+      const rawUser = localStorage.getItem('vista_user');
+      if (rawUser) currentUser = JSON.parse(rawUser);
+    } catch {}
+
+    const tokenAuth = typeof window !== 'undefined' ? localStorage.getItem('vista_token') : null;
+    if (!tokenAuth || !currentUser) {
+      setStatusMessage('⚠️ Vui lòng đăng nhập tài khoản trước khi chấp nhận lời mời gia nhập nhóm!');
+      setTimeout(() => {
+        router.push(`/login?returnUrl=${encodeURIComponent(`/invitations/${token}`)}`);
+      }, 1500);
+      return;
+    }
+
+    const rawName = currentUser.displayName || currentUser.email || 'Thành viên mới';
+    const cleanName = rawName.replace(/\s*\(Bạn.*?\)/gi, '').trim() || 'Thành viên mới';
+    const parts = cleanName.split(/\s+/);
+    const initials = (parts.length >= 2 ? parts[0][0] + parts[parts.length - 1][0] : cleanName.slice(0, 2)).toUpperCase();
+
+    const newMember = {
+      name: cleanName,
+      avatar: initials || 'TV',
+      color: '#0284c7',
+      role: 'Thành viên',
+      userId: currentUser.id || 'u-me',
+      email: currentUser.email || '',
+    };
+
+    // Success: Add real logged in user to local storage trip data
     try {
       const stored = localStorage.getItem('vista_custom_trips');
       let trips = stored ? JSON.parse(stored) : [];
       let trip = trips.find((t: any) => t.id === 'trip-danang-2026');
-
-      const newMember = {
-        name: 'Nguyễn Văn B (Bạn vừa tham gia)',
-        avatar: 'VB',
-        color: '#10B981',
-        role: 'Thành viên',
-      };
 
       if (!trip) {
         trip = {
@@ -78,7 +101,15 @@ export default function InvitationAcceptPage() {
         trips.push(trip);
       } else {
         if (!trip.members) trip.members = [];
-        if (!trip.members.some((m: any) => m.name.includes('Nguyễn Văn B'))) {
+        // Clean up any fake dummy member previously inserted
+        trip.members = trip.members.filter((m: any) => !m?.name?.includes('Nguyễn Văn B'));
+        const alreadyIn = trip.members.some(
+          (m: any) =>
+            (m.userId && m.userId === newMember.userId) ||
+            (m.email && newMember.email && m.email.toLowerCase() === newMember.email.toLowerCase()) ||
+            m.name.trim().toLowerCase() === newMember.name.trim().toLowerCase()
+        );
+        if (!alreadyIn) {
           trip.members.push(newMember);
         }
       }
@@ -89,7 +120,7 @@ export default function InvitationAcceptPage() {
 
     setIsSuccess(true);
     setTestState('ACCEPTED');
-    setStatusMessage('🎉 Chúc mừng! Bạn đã chấp nhận lời mời và trở thành thành viên chính thức của nhóm.');
+    setStatusMessage(`🎉 Chúc mừng ${cleanName}! Bạn đã chấp nhận lời mời và trở thành thành viên chính thức của chuyến đi.`);
 
     setTimeout(() => {
       router.push('/trips/trip-danang-2026?tab=members');
