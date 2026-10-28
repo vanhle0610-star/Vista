@@ -90,7 +90,7 @@ public final class AiResponseValidator {
     int dayIdx = 1;
     for (JsonNode day : daysNode) {
       int dayNumber = day.path("dayNumber").asInt(dayIdx);
-      if (dayNumber < 1 || dayNumber > expectedTotalDays) {
+      if (!day.has("dayNumber") || dayNumber < 1 || dayNumber > expectedTotalDays) {
         dayNumber = dayIdx;
         if (day instanceof ObjectNode dayObj) {
           dayObj.put("dayNumber", dayNumber);
