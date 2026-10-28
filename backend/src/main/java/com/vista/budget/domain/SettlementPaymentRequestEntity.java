@@ -107,15 +107,18 @@ public class SettlementPaymentRequestEntity {
     this.tripId = Objects.requireNonNull(tripId, "tripId must not be null");
     this.payerId = Objects.requireNonNull(payerId, "payerId must not be null");
     this.recipientId = Objects.requireNonNull(recipientId, "recipientId must not be null");
-    this.payoutAccountId = Objects.requireNonNull(payoutAccountId, "payoutAccountId must not be null");
+    this.payoutAccountId =
+        Objects.requireNonNull(payoutAccountId, "payoutAccountId must not be null");
     this.amount = Objects.requireNonNull(amount, "amount must not be null");
     this.currency = "VND";
     this.memo = Objects.requireNonNull(memo, "memo must not be null");
     this.qrContent = Objects.requireNonNull(qrContent, "qrContent must not be null");
     this.qrImageUrl = qrImageUrl;
     this.bankCode = Objects.requireNonNull(bankCode, "bankCode must not be null");
-    this.maskedAccountNumber = Objects.requireNonNull(maskedAccountNumber, "maskedAccountNumber must not be null");
-    this.recipientAccountName = Objects.requireNonNull(recipientAccountName, "recipientAccountName must not be null");
+    this.maskedAccountNumber =
+        Objects.requireNonNull(maskedAccountNumber, "maskedAccountNumber must not be null");
+    this.recipientAccountName =
+        Objects.requireNonNull(recipientAccountName, "recipientAccountName must not be null");
     this.idempotencyKey = Objects.requireNonNull(idempotencyKey, "idempotencyKey must not be null");
     this.expiresAt = Objects.requireNonNull(expiresAt, "expiresAt must not be null");
     this.status = PaymentRequestStatus.CREATED;

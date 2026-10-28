@@ -95,7 +95,8 @@ class PaymentRequestControllerTest {
   @DisplayName("2. Tạo payment request mới thành công - 201 Created")
   void createPaymentRequest_shouldReturn201() throws Exception {
     UUID recipientId = UUID.randomUUID();
-    CreatePaymentRequest req = new CreatePaymentRequest(recipientId, "idempotency-key-xyz", "Ăn tối");
+    CreatePaymentRequest req =
+        new CreatePaymentRequest(recipientId, "idempotency-key-xyz", "Ăn tối");
 
     PaymentRequestResponse response =
         new PaymentRequestResponse(
@@ -168,7 +169,10 @@ class PaymentRequestControllerTest {
 
     mockMvc
         .perform(
-            patch("/api/v1/trips/{tripId}/settlements/payment-requests/{requestId}/status", tripId, reqId)
+            patch(
+                    "/api/v1/trips/{tripId}/settlements/payment-requests/{requestId}/status",
+                    tripId,
+                    reqId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(statusReq)))
         .andExpect(status().isOk())

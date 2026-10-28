@@ -101,7 +101,8 @@ public class ReportService {
     return reportId;
   }
 
-  private static final java.util.Set<String> ALLOWED_STATUSES = java.util.Set.of("OPEN", "RESOLVED", "DISMISSED");
+  private static final java.util.Set<String> ALLOWED_STATUSES =
+      java.util.Set.of("OPEN", "RESOLVED", "DISMISSED");
 
   @Transactional(readOnly = true)
   public List<ReportResponse> listReports(String statusFilter, int page, int size) {

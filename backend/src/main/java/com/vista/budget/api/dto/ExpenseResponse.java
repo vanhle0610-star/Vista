@@ -32,6 +32,18 @@ public record ExpenseResponse(
       String status,
       Instant createdAt,
       List<ExpenseSplitResponse> splits) {
-    this(id, tripId, title, amount, currency, paidBy, category, occurredAt, status, createdAt, splits, 0L);
+    this(
+        id,
+        tripId,
+        title,
+        amount,
+        currency,
+        paidBy,
+        category,
+        occurredAt,
+        status,
+        createdAt,
+        splits,
+        0L);
   }
 }

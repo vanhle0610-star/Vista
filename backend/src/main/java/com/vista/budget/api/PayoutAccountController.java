@@ -24,7 +24,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/users/me/payout-accounts")
-@Tag(name = "Payout Accounts", description = "Quản lý tài khoản ngân hàng nhận tiền quyết toán VietQR (TV4)")
+@Tag(
+    name = "Payout Accounts",
+    description = "Quản lý tài khoản ngân hàng nhận tiền quyết toán VietQR (TV4)")
 @SecurityRequirement(name = "bearerAuth")
 public class PayoutAccountController {
 
@@ -38,18 +40,22 @@ public class PayoutAccountController {
   }
 
   @GetMapping
-  @Operation(summary = "Lấy danh sách tài khoản nhận tiền của người dùng hiện tại (số tài khoản được mask)")
+  @Operation(
+      summary =
+          "Lấy danh sách tài khoản nhận tiền của người dùng hiện tại (số tài khoản được mask)")
   public ResponseEntity<List<PayoutAccountResponse>> listAccounts() {
     UUID currentUserId = currentUserProvider.getCurrentUserId();
     return ResponseEntity.ok(payoutAccountService.listAccounts(currentUserId));
   }
 
   @PostMapping
-  @Operation(summary = "Liên kết tài khoản ngân hàng nhận tiền mới (yêu cầu xác thực tài khoản thật)")
+  @Operation(
+      summary = "Liên kết tài khoản ngân hàng nhận tiền mới (yêu cầu xác thực tài khoản thật)")
   public ResponseEntity<PayoutAccountResponse> createAccount(
       @Valid @RequestBody CreatePayoutAccountRequest request) {
     UUID currentUserId = currentUserProvider.getCurrentUserId();
-    PayoutAccountResponse created = payoutAccountService.createAccount(currentUserId, request, true);
+    PayoutAccountResponse created =
+        payoutAccountService.createAccount(currentUserId, request, true);
     return ResponseEntity.status(HttpStatus.CREATED).body(created);
   }
 

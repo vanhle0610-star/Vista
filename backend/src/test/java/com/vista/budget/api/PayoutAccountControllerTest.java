@@ -99,7 +99,8 @@ class PayoutAccountControllerTest {
             Instant.now(),
             Instant.now());
 
-    when(payoutAccountService.createAccount(eq(currentUserId), any(), anyBoolean())).thenReturn(resp);
+    when(payoutAccountService.createAccount(eq(currentUserId), any(), anyBoolean()))
+        .thenReturn(resp);
 
     mockMvc
         .perform(

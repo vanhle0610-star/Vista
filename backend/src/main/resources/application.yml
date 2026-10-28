@@ -15,6 +15,7 @@ spring:
       ddl-auto: validate
   flyway:
     enabled: true
+    locations: ${FLYWAY_LOCATIONS:classpath:db/migration}
     validate-migration-naming: true
     out-of-order: true
   mvc:
@@ -29,7 +30,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,metrics
   endpoint:
     health:
       probes:
@@ -38,6 +39,25 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 vista:
+  ai:
+    api-key: ${GEMINI_API_KEY:}
+    model: ${GEMINI_MODEL:gemini-2.5-flash}
+    timeout: ${AI_TIMEOUT:60s}
+    max-retries: ${AI_MAX_RETRIES:1}
+    local-base-url: ${AI_LOCAL_BASE_URL:http://localhost:11434/v1}
+    local-model: ${AI_LOCAL_MODEL:qwen3:4b}
+    local-api-key: ${AI_LOCAL_API_KEY:}
+    claude-api-key: ${CLAUDE_API_KEY:}
+    claude-model: ${CLAUDE_MODEL:claude-3-5-sonnet-20241022}
+    fallback-mode: ${AI_FALLBACK_MODE:LOCAL_ONLY}
+    temperature: ${AI_TEMPERATURE:0.2}
+    max-output-tokens: ${AI_MAX_OUTPUT_TOKENS:1200}
+    rag:
+      enabled: ${AI_RAG_ENABLED:false}
+      embedding-base-url: ${AI_EMBEDDING_BASE_URL:http://localhost:11434}
+      embedding-model: ${AI_EMBEDDING_MODEL:bge-m3}
+      embedding-version: ${AI_EMBEDDING_VERSION:bge-m3-v1}
+      embedding-timeout: ${AI_EMBEDDING_TIMEOUT:30s}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:8081}
   app:

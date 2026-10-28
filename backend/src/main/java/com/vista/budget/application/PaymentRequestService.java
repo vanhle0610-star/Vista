@@ -178,10 +178,7 @@ public class PaymentRequestService {
   }
 
   public PaymentRequestResponse updateStatus(
-      UUID tripId,
-      UUID requestId,
-      UUID currentUserId,
-      UpdatePaymentRequestStatusRequest request) {
+      UUID tripId, UUID requestId, UUID currentUserId, UpdatePaymentRequestStatusRequest request) {
     Objects.requireNonNull(tripId, "tripId must not be null");
     Objects.requireNonNull(requestId, "requestId must not be null");
     Objects.requireNonNull(currentUserId, "currentUserId must not be null");
@@ -248,7 +245,8 @@ public class PaymentRequestService {
       }
       entity.setStatus(PaymentRequestStatus.RECIPIENT_CONFIRMED);
     } else if (target == PaymentRequestStatus.CANCELLED) {
-      if (!currentUserId.equals(entity.getPayerId()) && !currentUserId.equals(entity.getRecipientId())) {
+      if (!currentUserId.equals(entity.getPayerId())
+          && !currentUserId.equals(entity.getRecipientId())) {
         throw new ResponseStatusException(
             HttpStatus.FORBIDDEN, "Bạn không có quyền hủy yêu cầu thanh toán này.");
       }
@@ -336,7 +334,8 @@ public class PaymentRequestService {
     // Direct net debt check if not explicitly in simplified greedy path
     BigDecimal payerBalance = balances.getOrDefault(payerId, BigDecimal.ZERO);
     BigDecimal recipientBalance = balances.getOrDefault(recipientId, BigDecimal.ZERO);
-    if (payerBalance.compareTo(BigDecimal.ZERO) < 0 && recipientBalance.compareTo(BigDecimal.ZERO) > 0) {
+    if (payerBalance.compareTo(BigDecimal.ZERO) < 0
+        && recipientBalance.compareTo(BigDecimal.ZERO) > 0) {
       BigDecimal maxDebtPayable = payerBalance.abs().min(recipientBalance);
       return maxDebtPayable.setScale(0, RoundingMode.HALF_UP);
     }

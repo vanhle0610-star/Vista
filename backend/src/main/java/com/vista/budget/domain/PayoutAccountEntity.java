@@ -127,7 +127,8 @@ public class PayoutAccountEntity {
     }
     String cleaned = acc.trim().replaceAll("[^0-9a-zA-Z]", "");
     if (cleaned.length() < 6 || cleaned.length() > 30) {
-      throw new IllegalArgumentException("accountNumber length must be between 6 and 30 characters");
+      throw new IllegalArgumentException(
+          "accountNumber length must be between 6 and 30 characters");
     }
     return cleaned;
   }

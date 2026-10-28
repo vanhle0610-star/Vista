@@ -13,7 +13,6 @@ import com.vista.budget.infrastructure.ExpenseRepository;
 import com.vista.budget.infrastructure.ExpenseSplitRepository;
 import com.vista.common.audit.AuditLogService;
 import com.vista.trip.application.TripAccessService;
-import com.vista.common.audit.AuditLogService;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
@@ -26,6 +25,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,14 +35,18 @@ import org.springframework.web.server.ResponseStatusException;
 @Transactional
 public class ExpenseService {
 
-  private static final BigDecimal MAX_EXPENSE_AMOUNT = new BigDecimal("1000000000000"); // 1,000 tỷ VND
-  private static final BigDecimal MAX_BUDGET_TARGET = new BigDecimal("10000000000000"); // 10,000 tỷ VND
+  private static final BigDecimal MAX_EXPENSE_AMOUNT =
+      new BigDecimal("1000000000000"); // 1,000 tỷ VND
+  private static final BigDecimal MAX_BUDGET_TARGET =
+      new BigDecimal("10000000000000"); // 10,000 tỷ VND
 
   private final TripAccessService tripAccessService;
   private final ExpenseRepository expenseRepository;
   private final ExpenseSplitRepository expenseSplitRepository;
   private final ExpenseCalculationService calculationService;
   private final AuditLogService auditLogService;
+
+  @Autowired
   public ExpenseService(
       TripAccessService tripAccessService,
       ExpenseRepository expenseRepository,
@@ -112,7 +116,8 @@ public class ExpenseService {
                 : List.of(payerId);
         splits = calculationService.createEqualSplits(expense, participants);
       } else {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported splitType: " + splitType);
+        throw new ResponseStatusException(
+            HttpStatus.BAD_REQUEST, "Unsupported splitType: " + splitType);
       }
     } catch (IllegalArgumentException ex) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage());
@@ -327,8 +332,7 @@ public class ExpenseService {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Amount is required");
     }
     if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-      throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST, "Amount must be strictly positive");
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Amount must be strictly positive");
     }
     if (amount.compareTo(MAX_EXPENSE_AMOUNT) > 0) {
       throw new ResponseStatusException(

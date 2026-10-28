@@ -13,9 +13,8 @@ import org.springframework.stereotype.Repository;
 public interface SettlementPaymentRequestRepository
     extends JpaRepository<SettlementPaymentRequestEntity, UUID> {
 
-  Optional<SettlementPaymentRequestEntity>
-      findByTripIdAndPayerIdAndRecipientIdAndIdempotencyKey(
-          UUID tripId, UUID payerId, UUID recipientId, String idempotencyKey);
+  Optional<SettlementPaymentRequestEntity> findByTripIdAndPayerIdAndRecipientIdAndIdempotencyKey(
+      UUID tripId, UUID payerId, UUID recipientId, String idempotencyKey);
 
   List<SettlementPaymentRequestEntity> findByTripIdOrderByCreatedAtDesc(UUID tripId);
 

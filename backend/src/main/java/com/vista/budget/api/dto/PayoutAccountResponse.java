@@ -14,5 +14,4 @@ public record PayoutAccountResponse(
     boolean isDefault,
     PayoutVerificationStatus verificationStatus,
     Instant createdAt,
-    Instant updatedAt
-) {}
+    Instant updatedAt) {}

@@ -11,13 +11,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vista.ai.api.dto.AiItinerarySuggestionRequest;
 import com.vista.ai.api.dto.RouteOptimizationRequest;
-import com.vista.ai.client.AiClientWrapper;
 import com.vista.ai.config.AiRateLimiter;
+import com.vista.ai.provider.AiProviderRouter;
+import com.vista.ai.provider.AiProviderRouter.AiProviderResponse;
 import com.vista.budget.util.RouteOptimizer.DestinationPoint;
 import com.vista.common.security.CurrentUserProvider;
 import com.vista.common.security.SecurityConfiguration;
 import com.vista.common.web.GlobalExceptionHandler;
+import com.vista.destination.application.DestinationQueryService;
+import com.vista.destination.application.DestinationSummary;
 import com.vista.trip.application.TripAccessService;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -44,7 +48,8 @@ class AiPlannerControllerTest {
   @MockitoBean private TripAccessService tripAccessService;
   @MockitoBean private CurrentUserProvider currentUserProvider;
   @MockitoBean private AiRateLimiter aiRateLimiter;
-  @MockitoBean private AiClientWrapper aiClientWrapper;
+  @MockitoBean private AiProviderRouter aiProviderRouter;
+  @MockitoBean private DestinationQueryService destinationQueryService;
   @MockitoBean private com.vista.common.audit.AuditLogService auditLogService;
 
   private UUID tripId;
@@ -55,7 +60,14 @@ class AiPlannerControllerTest {
     tripId = UUID.randomUUID();
     currentUserId = UUID.randomUUID();
     when(currentUserProvider.getCurrentUserId()).thenReturn(currentUserId);
-    when(aiClientWrapper.isAvailable()).thenReturn(false);
+    when(aiProviderRouter.isAvailable()).thenReturn(false);
+    when(destinationQueryService.searchPublished(
+            org.mockito.ArgumentMatchers.isNull(),
+            anyString(),
+            org.mockito.ArgumentMatchers.isNull(),
+            org.mockito.ArgumentMatchers.any(),
+            org.mockito.ArgumentMatchers.anyInt()))
+        .thenReturn(List.of(destination()));
   }
 
   @Test
@@ -167,14 +179,14 @@ class AiPlannerControllerTest {
       "6. Gợi ý lịch trình thành công với Live Gemini AI khi có API key (isMockData = false)")
   void getItinerarySuggestions_shouldReturnLiveAiData() throws Exception {
     doNothing().when(tripAccessService).requireMember(tripId, currentUserId);
-    when(aiClientWrapper.isAvailable()).thenReturn(true);
+    when(aiProviderRouter.isAvailable()).thenReturn(true);
 
     String mockGeminiJson =
         """
         {
           "tripTitle": "Hành trình khám phá Đà Nẵng",
           "destination": "Đà Nẵng",
-          "totalDays": 2,
+          "totalDays": 1,
           "estimatedTotalVnd": 2800000,
           "days": [
             {
@@ -183,6 +195,7 @@ class AiPlannerControllerTest {
               "estimatedDayCostVnd": 1400000,
               "activities": [
                 {
+                  "destinationId": "11111111-1111-1111-1111-111111111111",
                   "timeSlot": "MORNING",
                   "placeName": "Chùa Linh Ứng",
                   "activityDescription": "Chiêm bái tượng Phật Bà Quan Âm cao 67m",
@@ -195,10 +208,11 @@ class AiPlannerControllerTest {
           ]
         }
         """;
-    when(aiClientWrapper.generateContent(anyString())).thenReturn(Optional.of(mockGeminiJson));
+    when(aiProviderRouter.generate(anyString(), anyString()))
+        .thenReturn(Optional.of(new AiProviderResponse("local", false, mockGeminiJson)));
 
     AiItinerarySuggestionRequest request =
-        new AiItinerarySuggestionRequest("Đà Nẵng", 2, "MEDIUM", List.of("Biển", "Tâm linh"));
+        new AiItinerarySuggestionRequest("Đà Nẵng", 1, "MEDIUM", List.of("Biển", "Tâm linh"));
 
     mockMvc
         .perform(
@@ -208,6 +222,20 @@ class AiPlannerControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.destinationProvince").value("Đà Nẵng"))
         .andExpect(jsonPath("$.isMockData").value(false))
+        .andExpect(jsonPath("$.provider").value("local"))
+        .andExpect(jsonPath("$.fallbackUsed").value(false))
         .andExpect(jsonPath("$.days[0].activities[0].destinationName").value("Chùa Linh Ứng"));
+  }
+
+  private DestinationSummary destination() {
+    return new DestinationSummary(
+        UUID.fromString("11111111-1111-1111-1111-111111111111"),
+        "Chùa Linh Ứng",
+        "Đà Nẵng",
+        "Tâm linh",
+        BigDecimal.valueOf(100000),
+        BigDecimal.valueOf(100000),
+        16.1001,
+        108.2778);
   }
 }

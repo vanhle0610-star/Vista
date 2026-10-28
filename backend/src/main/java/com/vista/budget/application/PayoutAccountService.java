@@ -45,10 +45,12 @@ public class PayoutAccountService {
         .ifPresent(
             acc -> {
               throw new ResponseStatusException(
-                  HttpStatus.CONFLICT, "Tài khoản ngân hàng này đã được liên kết với hồ sơ của bạn.");
+                  HttpStatus.CONFLICT,
+                  "Tài khoản ngân hàng này đã được liên kết với hồ sơ của bạn.");
             });
 
-    boolean hasExisting = !payoutAccountRepository.findByUserIdOrderByCreatedAtDesc(userId).isEmpty();
+    boolean hasExisting =
+        !payoutAccountRepository.findByUserIdOrderByCreatedAtDesc(userId).isEmpty();
     boolean shouldBeDefault = request.isDefault() || !hasExisting;
 
     if (shouldBeDefault) {
@@ -56,7 +58,10 @@ public class PayoutAccountService {
     }
 
     PayoutVerificationStatus status =
-        autoVerify ? PayoutVerificationStatus.VERIFIED : PayoutVerificationStatus.VERIFIED; // Production auto-verifies valid format or external NAPAS
+        autoVerify
+            ? PayoutVerificationStatus.VERIFIED
+            : PayoutVerificationStatus
+                .VERIFIED; // Production auto-verifies valid format or external NAPAS
 
     PayoutAccountEntity entity =
         new PayoutAccountEntity(
@@ -156,7 +161,10 @@ public class PayoutAccountService {
         "PAYOUT_ACCOUNT_DELETED",
         "PAYOUT_ACCOUNT",
         accountId.toString(),
-        "Xóa tài khoản nhận tiền: " + account.getBankCode() + " " + account.getMaskedAccountNumber());
+        "Xóa tài khoản nhận tiền: "
+            + account.getBankCode()
+            + " "
+            + account.getMaskedAccountNumber());
   }
 
   private void unsetDefaultAccounts(UUID userId) {

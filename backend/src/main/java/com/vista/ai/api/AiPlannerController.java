@@ -7,13 +7,16 @@ import com.vista.ai.api.dto.AiItinerarySuggestionResponse.SuggestedActivityRespo
 import com.vista.ai.api.dto.AiItinerarySuggestionResponse.SuggestedDayResponse;
 import com.vista.ai.api.dto.RouteOptimizationRequest;
 import com.vista.ai.api.dto.RouteOptimizationResponse;
-import com.vista.ai.client.AiClientWrapper;
 import com.vista.ai.config.AiRateLimiter;
+import com.vista.ai.provider.AiProviderRouter;
+import com.vista.ai.rag.RagRetrievalService;
+import com.vista.ai.rag.RagRetrievalService.RagHit;
 import com.vista.ai.util.AiResponseValidator;
 import com.vista.ai.util.PromptBuilder;
 import com.vista.budget.util.RouteOptimizer;
 import com.vista.common.audit.AuditLogService;
 import com.vista.common.security.CurrentUserProvider;
+import com.vista.destination.application.DestinationSummary;
 import com.vista.trip.application.TripAccessService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -21,7 +24,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -45,25 +50,28 @@ public class AiPlannerController {
   private final TripAccessService tripAccessService;
   private final CurrentUserProvider currentUserProvider;
   private final AiRateLimiter aiRateLimiter;
-  private final AiClientWrapper aiClientWrapper;
+  private final AiProviderRouter aiProviderRouter;
   private final AuditLogService auditLogService;
   private final com.vista.destination.application.DestinationQueryService destinationQueryService;
+  private final RagRetrievalService ragRetrievalService;
 
   @Autowired
   public AiPlannerController(
       TripAccessService tripAccessService,
       CurrentUserProvider currentUserProvider,
       AiRateLimiter aiRateLimiter,
-      AiClientWrapper aiClientWrapper,
+      AiProviderRouter aiProviderRouter,
       AuditLogService auditLogService,
       @Autowired(required = false)
-          com.vista.destination.application.DestinationQueryService destinationQueryService) {
+          com.vista.destination.application.DestinationQueryService destinationQueryService,
+      Optional<RagRetrievalService> ragRetrievalService) {
     this.tripAccessService = tripAccessService;
     this.currentUserProvider = currentUserProvider;
     this.aiRateLimiter = aiRateLimiter;
-    this.aiClientWrapper = aiClientWrapper;
+    this.aiProviderRouter = aiProviderRouter;
     this.auditLogService = auditLogService;
     this.destinationQueryService = destinationQueryService;
+    this.ragRetrievalService = ragRetrievalService.orElse(null);
   }
 
   @PostMapping("/itinerary-suggestions")
@@ -97,23 +105,46 @@ public class AiPlannerController {
             request.budgetLevel() != null ? request.budgetLevel() : "MEDIUM"));
 
     // 4. Lấy số thành viên thật của chuyến đi & các địa điểm PUBLISHED
-    int membersCount = tripAccessService.getActiveMemberCount(tripId);
-    List<String> publishedPlaces = List.of();
+    int membersCount = Math.max(1, tripAccessService.getActiveMemberCount(tripId));
+    List<DestinationSummary> publishedDestinations = List.of();
     if (destinationQueryService != null && request.destinationProvince() != null) {
       try {
-        publishedPlaces =
-            destinationQueryService
-                .searchPublished(null, request.destinationProvince(), null, 8)
-                .stream()
-                .map(com.vista.destination.application.DestinationSummary::name)
-                .toList();
+        publishedDestinations =
+            destinationQueryService.searchPublished(
+                null, request.destinationProvince(), null, budgetVnd, 12);
       } catch (Exception e) {
-        log.warn("Could not query published destinations: {}", e.getMessage());
+        log.warn("Could not query published destinations: {}", e.getClass().getSimpleName());
       }
     }
+    if (publishedDestinations.isEmpty()) {
+      throw new IllegalArgumentException(
+          "Không có địa điểm PUBLISHED phù hợp; hệ thống từ chối tạo dữ liệu giả");
+    }
 
-    // 4. Thử gọi mô hình Live Google Gemini LLM nếu khả dụng
-    if (aiClientWrapper != null && aiClientWrapper.isAvailable()) {
+    List<RagHit> ragHits =
+        ragRetrievalService == null
+            ? List.of()
+            : ragRetrievalService.search(
+                String.join(" ", request.interests() == null ? List.of() : request.interests()),
+                request.destinationProvince(),
+                12);
+    if (!ragHits.isEmpty()) {
+      List<UUID> ragDestinationIds = ragHits.stream().map(RagHit::sourceId).distinct().toList();
+      Map<UUID, DestinationSummary> merged = new LinkedHashMap<>();
+      publishedDestinations.forEach(item -> merged.put(item.id(), item));
+      destinationQueryService
+          .findPublishedByIds(ragDestinationIds)
+          .forEach(item -> merged.put(item.id(), item));
+      publishedDestinations = new ArrayList<>(merged.values());
+    }
+
+    Map<UUID, DestinationSummary> allowedDestinations = new LinkedHashMap<>();
+    publishedDestinations.forEach(item -> allowedDestinations.put(item.id(), item));
+    List<String> groundedCatalogue =
+        publishedDestinations.stream().map(this::toPromptCatalogueLine).toList();
+
+    // 5. Gọi provider đã được chọn rõ ràng; không tự ý gửi dữ liệu sang Gemini.
+    if (aiProviderRouter != null && aiProviderRouter.isAvailable()) {
       try {
         PromptBuilder.PlanRequest planRequest =
             new PromptBuilder.PlanRequest(
@@ -124,21 +155,32 @@ public class AiPlannerController {
                 request.interests() != null
                     ? request.interests()
                     : List.of("Khám phá", "Ẩm thực", "Văn hóa"),
-                publishedPlaces);
+                groundedCatalogue);
 
         String prompt = PromptBuilder.buildUserPrompt(planRequest);
-        Optional<String> rawAiResponse = aiClientWrapper.generateContent(prompt);
+        Optional<AiProviderRouter.AiProviderResponse> providerResponse =
+            aiProviderRouter.generate(PromptBuilder.buildSystemPrompt(), prompt);
 
-        if (rawAiResponse.isPresent()) {
-          JsonNode parsed = AiResponseValidator.validateAndParseItinerary(rawAiResponse.get());
-          List<SuggestedDayResponse> days = parseSuggestedDays(parsed);
+        if (providerResponse.isPresent()) {
+          JsonNode parsed =
+              AiResponseValidator.validateAndParseItineraryWithLocalRepair(
+                  providerResponse.get().content());
+          List<SuggestedDayResponse> days = parseSuggestedDays(parsed, allowedDestinations);
+          if (days.size() != daysCount) {
+            throw new IllegalArgumentException(
+                "AI response does not contain a complete grounded itinerary");
+          }
 
           BigDecimal estimatedTotal =
               parsed.has("estimatedTotalVnd") && parsed.get("estimatedTotalVnd").isNumber()
                   ? BigDecimal.valueOf(parsed.get("estimatedTotalVnd").asLong())
                   : budgetVnd;
 
-          log.info("Successfully generated itinerary via Gemini LLM for tripId: {}", tripId);
+          log.info(
+              "Generated grounded itinerary provider={} fallbackUsed={} tripId={}",
+              providerResponse.get().provider(),
+              providerResponse.get().fallbackUsed(),
+              tripId);
           return ResponseEntity.ok(
               new AiItinerarySuggestionResponse(
                   request.destinationProvince(),
@@ -146,20 +188,30 @@ public class AiPlannerController {
                   request.budgetLevel(),
                   estimatedTotal,
                   false, // Dữ liệu thật từ Live AI
-                  days));
+                  days,
+                  providerResponse.get().provider(),
+                  providerResponse.get().fallbackUsed(),
+                  ragHits.stream()
+                      .map(
+                          hit ->
+                              new AiItinerarySuggestionResponse.CitationResponse(
+                                  "DESTINATION",
+                                  hit.sourceId(),
+                                  hit.title(),
+                                  hit.chunkId(),
+                                  "HYBRID",
+                                  hit.score()))
+                      .toList()));
         }
       } catch (Exception ex) {
-        log.warn(
-            "Gemini AI invocation failed or returned invalid JSON. Falling back to deterministic"
-                + " plan: {}",
-            ex.getMessage());
+        log.warn("AI response rejected by validation: {}", ex.getClass().getSimpleName());
       }
     }
 
-    // 5. Fallback an toàn (Graceful Degradation): sinh kế hoạch mẫu chất lượng cao, không bao giờ
-    // để lỗi 500
-    log.info("Generating deterministic fallback itinerary for tripId: {}", tripId);
-    return ResponseEntity.ok(generateFallbackResponse(request, daysCount, budgetVnd));
+    // 6. Degradation chỉ dùng các bản ghi PUBLISHED đã truy xuất, không sinh ID/tên giả.
+    log.info("Generating grounded deterministic plan for tripId: {}", tripId);
+    return ResponseEntity.ok(
+        generateGroundedFallbackResponse(request, daysCount, budgetVnd, publishedDestinations));
   }
 
   @PostMapping("/optimize-route")
@@ -191,7 +243,8 @@ public class AiPlannerController {
     };
   }
 
-  private List<SuggestedDayResponse> parseSuggestedDays(JsonNode root) {
+  private List<SuggestedDayResponse> parseSuggestedDays(
+      JsonNode root, Map<UUID, DestinationSummary> allowedDestinations) {
     List<SuggestedDayResponse> days = new ArrayList<>();
     JsonNode daysNode = root.get("days");
     if (daysNode != null && daysNode.isArray()) {
@@ -206,59 +259,74 @@ public class AiPlannerController {
           for (JsonNode actNode : activitiesNode) {
             String timeSlot =
                 actNode.has("timeSlot") ? actNode.get("timeSlot").asText() : "MORNING";
-            String placeName =
-                actNode.has("placeName") ? actNode.get("placeName").asText() : "Địa điểm du lịch";
+            UUID destinationId;
+            try {
+              destinationId = UUID.fromString(actNode.path("destinationId").asText());
+            } catch (IllegalArgumentException exception) {
+              continue;
+            }
+            DestinationSummary destination = allowedDestinations.get(destinationId);
+            if (destination == null) continue;
             String note =
                 actNode.has("activityDescription")
                     ? actNode.get("activityDescription").asText()
                     : "";
             BigDecimal cost =
-                actNode.has("estimatedCostVnd") && actNode.get("estimatedCostVnd").isNumber()
-                    ? BigDecimal.valueOf(actNode.get("estimatedCostVnd").asLong())
-                    : BigDecimal.valueOf(180000);
+                destination.priceMin() != null ? destination.priceMin() : BigDecimal.ZERO;
 
             activities.add(
                 new SuggestedActivityResponse(
-                    UUID.randomUUID(), timeSlot, placeName, cost, "Tham quan & Trải nghiệm", note));
+                    destination.id(),
+                    timeSlot,
+                    destination.name(),
+                    cost,
+                    destination.categoryName(),
+                    note));
           }
         }
-        days.add(new SuggestedDayResponse(dayNum, title, activities));
+        if (!activities.isEmpty()) {
+          days.add(new SuggestedDayResponse(dayNum, title, activities));
+        }
       }
     }
     return days;
   }
 
-  private AiItinerarySuggestionResponse generateFallbackResponse(
-      AiItinerarySuggestionRequest request, int daysCount, BigDecimal budgetVnd) {
+  private String toPromptCatalogueLine(DestinationSummary item) {
+    return String.format(
+        "%s | %s | %s | %s-%s VND",
+        item.id(),
+        item.name(),
+        item.categoryName(),
+        item.priceMin() != null ? item.priceMin().toPlainString() : "unknown",
+        item.priceMax() != null ? item.priceMax().toPlainString() : "unknown");
+  }
+
+  private AiItinerarySuggestionResponse generateGroundedFallbackResponse(
+      AiItinerarySuggestionRequest request,
+      int daysCount,
+      BigDecimal budgetVnd,
+      List<DestinationSummary> destinations) {
     List<SuggestedDayResponse> suggestedDays = new ArrayList<>();
 
     for (int day = 1; day <= daysCount; day++) {
-      List<SuggestedActivityResponse> activities =
-          List.of(
-              new SuggestedActivityResponse(
-                  UUID.randomUUID(),
-                  "MORNING",
-                  "Bán đảo Sơn Trà & Chùa Linh Ứng (" + request.destinationProvince() + ")",
-                  BigDecimal.valueOf(150000),
-                  "Tâm linh & Cảnh quan",
-                  "Ngắm bình minh biển và tượng Phật Bà Quan Âm"),
-              new SuggestedActivityResponse(
-                  UUID.randomUUID(),
-                  "AFTERNOON",
-                  "Bãi biển Mỹ Khê & Vui chơi lướt ván",
-                  BigDecimal.valueOf(250000),
-                  "Biển & Thư giãn",
-                  "Tắm biển, thưởng thức dừa tươi và hải sản tươi ngon"),
-              new SuggestedActivityResponse(
-                  UUID.randomUUID(),
-                  "EVENING",
-                  "Cầu Rồng, Cầu Tình Yêu & Phố ẩm thực đêm",
-                  BigDecimal.valueOf(400000),
-                  "Ẩm thực & Check-in",
-                  "Xem Cầu Rồng phun lửa nước và khám phá ẩm thực đường phố"));
+      List<SuggestedActivityResponse> activities = new ArrayList<>();
+      String[] slots = {"MORNING", "AFTERNOON", "EVENING"};
+      for (int slot = 0; slot < slots.length; slot++) {
+        DestinationSummary destination =
+            destinations.get(((day - 1) * slots.length + slot) % destinations.size());
+        activities.add(
+            new SuggestedActivityResponse(
+                destination.id(),
+                slots[slot],
+                destination.name(),
+                destination.priceMin() != null ? destination.priceMin() : BigDecimal.ZERO,
+                destination.categoryName(),
+                "Phương án an toàn từ dữ liệu PUBLISHED; cần xác nhận trước khi lưu."));
+      }
 
       suggestedDays.add(
-          new SuggestedDayResponse(day, "Ngày " + day + " — Khám phá & Trải nghiệm", activities));
+          new SuggestedDayResponse(day, "Ngày " + day + " — Phương án đã kiểm chứng", activities));
     }
 
     return new AiItinerarySuggestionResponse(
@@ -267,6 +335,8 @@ public class AiPlannerController {
         request.budgetLevel(),
         budgetVnd,
         true, // Đánh dấu là fallback template
-        suggestedDays);
+        suggestedDays,
+        "deterministic",
+        true);
   }
 }

@@ -23,7 +23,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/trips/{tripId}/settlements/payment-requests")
-@Tag(name = "Payment Requests", description = "Quản lý yêu cầu chuyển khoản quyết toán VietQR an toàn phía server (TV4)")
+@Tag(
+    name = "Payment Requests",
+    description = "Quản lý yêu cầu chuyển khoản quyết toán VietQR an toàn phía server (TV4)")
 @SecurityRequirement(name = "bearerAuth")
 public class PaymentRequestController {
 
@@ -38,13 +40,15 @@ public class PaymentRequestController {
 
   @GetMapping
   @Operation(summary = "Lấy danh sách các yêu cầu thanh toán quyết toán trong chuyến đi")
-  public ResponseEntity<List<PaymentRequestResponse>> listPaymentRequests(@PathVariable UUID tripId) {
+  public ResponseEntity<List<PaymentRequestResponse>> listPaymentRequests(
+      @PathVariable UUID tripId) {
     UUID currentUserId = currentUserProvider.getCurrentUserId();
     return ResponseEntity.ok(paymentRequestService.listTripPaymentRequests(tripId, currentUserId));
   }
 
   @PostMapping
-  @Operation(summary = "Tạo yêu cầu thanh toán VietQR an toàn được tính toán từ công nợ phía máy chủ")
+  @Operation(
+      summary = "Tạo yêu cầu thanh toán VietQR an toàn được tính toán từ công nợ phía máy chủ")
   public ResponseEntity<PaymentRequestResponse> createPaymentRequest(
       @PathVariable UUID tripId, @Valid @RequestBody CreatePaymentRequest request) {
     UUID currentUserId = currentUserProvider.getCurrentUserId();
@@ -63,7 +67,8 @@ public class PaymentRequestController {
   }
 
   @PatchMapping("/{requestId}/status")
-  @Operation(summary = "Cập nhật trạng thái vòng đời yêu cầu thanh toán (Đã chuyển / Đã nhận / Hủy)")
+  @Operation(
+      summary = "Cập nhật trạng thái vòng đời yêu cầu thanh toán (Đã chuyển / Đã nhận / Hủy)")
   public ResponseEntity<PaymentRequestResponse> updateStatus(
       @PathVariable UUID tripId,
       @PathVariable UUID requestId,

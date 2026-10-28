@@ -25,5 +25,4 @@ public record PaymentRequestResponse(
     Instant expiresAt,
     Instant createdAt,
     Instant updatedAt,
-    Long version
-) {}
+    Long version) {}

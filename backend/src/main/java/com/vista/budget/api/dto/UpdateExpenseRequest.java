@@ -32,6 +32,16 @@ public record UpdateExpenseRequest(
       String splitType,
       List<UUID> participantIds,
       Map<UUID, BigDecimal> exactShares) {
-    this(title, amount, currency, paidBy, category, occurredAt, splitType, participantIds, exactShares, null);
+    this(
+        title,
+        amount,
+        currency,
+        paidBy,
+        category,
+        occurredAt,
+        splitType,
+        participantIds,
+        exactShares,
+        null);
   }
 }

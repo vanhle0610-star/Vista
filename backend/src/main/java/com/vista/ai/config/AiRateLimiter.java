@@ -19,8 +19,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 /**
- * Bộ kiểm soát tần suất gọi AI (Rate Limiter) bảo vệ chi phí và chống spam.
- * Hỗ trợ lưu trữ bền vững trên PostgreSQL (ai_rate_limits) và phân tán qua nhiều instance.
+ * Bộ kiểm soát tần suất gọi AI (Rate Limiter) bảo vệ chi phí và chống spam. Hỗ trợ lưu trữ bền vững
+ * trên PostgreSQL (ai_rate_limits) và phân tán qua nhiều instance.
  */
 @Component
 public class AiRateLimiter {
@@ -58,9 +58,7 @@ public class AiRateLimiter {
     this.jdbcTemplate = jdbcTemplate;
   }
 
-  /**
-   * Kiểm tra và trừ 1 lượt sử dụng AI cho người dùng đã xác thực (5 lượt/ngày/user).
-   */
+  /** Kiểm tra và trừ 1 lượt sử dụng AI cho người dùng đã xác thực (5 lượt/ngày/user). */
   public void checkAndConsume(UUID userId) {
     Objects.requireNonNull(userId, "userId must not be null");
 
@@ -101,8 +99,8 @@ public class AiRateLimiter {
   }
 
   /**
-   * Rate limit cho public endpoint Quick Plan dựa trên IP + Device Identifier.
-   * Kiểm tra hạn mức phút (5/phút), giờ (20/giờ), ngày (50/ngày) và hạn ngạch toàn hệ thống.
+   * Rate limit cho public endpoint Quick Plan dựa trên IP + Device Identifier. Kiểm tra hạn mức
+   * phút (5/phút), giờ (20/giờ), ngày (50/ngày) và hạn ngạch toàn hệ thống.
    */
   public void checkPublicRateLimit(String clientIdentifier) {
     String cleanClient =
@@ -116,15 +114,35 @@ public class AiRateLimiter {
     Instant dayStart = now.truncatedTo(ChronoUnit.DAYS);
 
     // 1. Kiểm tra hạn ngạch chi phí toàn hệ thống (System-wide daily cost protection)
-    checkLimit("GLOBAL_QUOTA", dayStart, "DAY", SYSTEM_WIDE_DAILY_QUOTA, 3600,
+    checkLimit(
+        "GLOBAL_QUOTA",
+        dayStart,
+        "DAY",
+        SYSTEM_WIDE_DAILY_QUOTA,
+        3600,
         "Hệ thống trợ lý AI hiện đang đạt giới hạn công suất hôm nay. Vui lòng thử lại sau.");
 
     // 2. Kiểm tra hạn mức từng client theo phút, giờ, ngày
-    checkLimit("PUB_MIN:" + cleanClient, minuteStart, "MINUTE", PUBLIC_MINUTE_LIMIT, 60,
+    checkLimit(
+        "PUB_MIN:" + cleanClient,
+        minuteStart,
+        "MINUTE",
+        PUBLIC_MINUTE_LIMIT,
+        60,
         "Bạn đã gửi quá nhiều yêu cầu trong thời gian ngắn. Vui lòng chờ 1 phút.");
-    checkLimit("PUB_HOUR:" + cleanClient, hourStart, "HOUR", PUBLIC_HOUR_LIMIT, 3600,
+    checkLimit(
+        "PUB_HOUR:" + cleanClient,
+        hourStart,
+        "HOUR",
+        PUBLIC_HOUR_LIMIT,
+        3600,
         "Bạn đã vượt quá giới hạn 20 yêu cầu lập lịch trình mỗi giờ. Vui lòng quay lại sau.");
-    checkLimit("PUB_DAY:" + cleanClient, dayStart, "DAY", PUBLIC_DAILY_LIMIT, calculateSecondsUntilMidnight(),
+    checkLimit(
+        "PUB_DAY:" + cleanClient,
+        dayStart,
+        "DAY",
+        PUBLIC_DAILY_LIMIT,
+        calculateSecondsUntilMidnight(),
         "Bạn đã sử dụng hết 50 lượt tạo lịch trình công khai trong ngày.");
   }
 

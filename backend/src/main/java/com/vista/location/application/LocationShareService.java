@@ -173,7 +173,8 @@ public class LocationShareService {
             .map(share -> toResponse(share, userMap.get(share.getUserId())))
             .toList();
 
-    long accurateTotal = page.getTotalElements() - (page.getContent().size() - activeMemberShares.size());
+    long accurateTotal =
+        page.getTotalElements() - (page.getContent().size() - activeMemberShares.size());
     return new PageImpl<>(responses, pageable, Math.max(0, accurateTotal));
   }
 

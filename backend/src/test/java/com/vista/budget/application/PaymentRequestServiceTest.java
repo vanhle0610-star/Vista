@@ -153,11 +153,13 @@ class PaymentRequestServiceTest {
     assertThat(response.qrImageUrl()).contains("MB-0382404099-compact2.png");
     assertThat(response.status()).isEqualTo(PaymentRequestStatus.CREATED);
 
-    verify(auditLogService).logAction(eq(payerId), eq("SETTLEMENT_PAYMENT_REQUEST_CREATED"), any(), any(), any());
+    verify(auditLogService)
+        .logAction(eq(payerId), eq("SETTLEMENT_PAYMENT_REQUEST_CREATED"), any(), any(), any());
   }
 
   @Test
-  @DisplayName("3. Trạng thái thanh toán: Payer đánh dấu PAYER_MARKED_SENT, Recipient xác nhận RECIPIENT_CONFIRMED")
+  @DisplayName(
+      "3. Trạng thái thanh toán: Payer đánh dấu PAYER_MARKED_SENT, Recipient xác nhận RECIPIENT_CONFIRMED")
   void updateStatus_lifecycleTransitions() {
     UUID reqId = UUID.randomUUID();
     SettlementPaymentRequestEntity entity =
@@ -184,13 +186,15 @@ class PaymentRequestServiceTest {
 
     // Payer marks sent
     UpdatePaymentRequestStatusRequest payerReq =
-        new UpdatePaymentRequestStatusRequest(PaymentRequestStatus.PAYER_MARKED_SENT, 0L, "Đã ck qua app");
+        new UpdatePaymentRequestStatusRequest(
+            PaymentRequestStatus.PAYER_MARKED_SENT, 0L, "Đã ck qua app");
     PaymentRequestResponse sentRes = service.updateStatus(tripId, reqId, payerId, payerReq);
     assertThat(sentRes.status()).isEqualTo(PaymentRequestStatus.PAYER_MARKED_SENT);
 
     // Recipient confirms
     UpdatePaymentRequestStatusRequest recReq =
-        new UpdatePaymentRequestStatusRequest(PaymentRequestStatus.RECIPIENT_CONFIRMED, 0L, "Đã nhận đủ");
+        new UpdatePaymentRequestStatusRequest(
+            PaymentRequestStatus.RECIPIENT_CONFIRMED, 0L, "Đã nhận đủ");
     PaymentRequestResponse confRes = service.updateStatus(tripId, reqId, recipientId, recReq);
     assertThat(confRes.status()).isEqualTo(PaymentRequestStatus.RECIPIENT_CONFIRMED);
   }
