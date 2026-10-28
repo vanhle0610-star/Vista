@@ -67,8 +67,6 @@ export default function InvitationAcceptPage() {
     endDate: '18/11/2026',
     members: [
       { name: 'Quý Nguyễn Đào Văn', avatar: 'QV', color: '#0284c7', role: 'Trưởng nhóm' },
-      { name: 'Trần Minh Tuấn', avatar: 'MT', color: '#10b981', role: 'Thành viên' },
-      { name: 'Lê Vân Anh', avatar: 'VA', color: '#f59e0b', role: 'Thành viên' },
     ],
   });
 
@@ -104,6 +102,20 @@ export default function InvitationAcceptPage() {
               startDate: serverInv.startDate || prev.startDate,
               endDate: serverInv.endDate || prev.endDate,
             }));
+          }
+          if (serverInv.tripId) {
+            fetch(`/api/trips?id=${serverInv.tripId}`)
+              .then((r) => (r.ok ? r.json() : null))
+              .then((serverTrip) => {
+                if (serverTrip && Array.isArray(serverTrip.members) && serverTrip.members.length > 0) {
+                  setTripData((prev) => ({
+                    ...prev,
+                    ...serverTrip,
+                    members: serverTrip.members,
+                  }));
+                }
+              })
+              .catch(() => {});
           }
         }
       })
@@ -244,27 +256,46 @@ export default function InvitationAcceptPage() {
       const initials = actualName.slice(0, 2).toUpperCase();
 
       const newMember = {
-        name: `${actualName} (Bạn)`,
+        name: actualName,
         email: currentUser?.email,
         avatar: initials,
         color: '#10B981',
         role: 'Thành viên',
       };
 
+      let baseMembers = tripData.members && tripData.members.length > 0 ? [...tripData.members] : [];
+      if (tripData.id.startsWith('trip-') && !tripData.id.includes('danang') && !tripData.id.includes('hagiang')) {
+        baseMembers = baseMembers.filter(
+          (m) => !m.name.includes('Trần Minh Tuấn') && !m.name.includes('Lê Vân Anh')
+        );
+      }
+      if (!baseMembers.some((m) => (m.email && currentUser?.email && m.email === currentUser?.email) || m.name.includes(actualName))) {
+        baseMembers.push(newMember);
+      }
+
+      const updatedTrip = {
+        ...tripData,
+        role: 'MEMBER',
+        members: baseMembers,
+      };
+
       if (!trip) {
-        trip = {
-          ...tripData,
-          role: 'MEMBER',
-          members: [...(tripData.members || []), newMember],
-        };
-        trips.unshift(trip);
+        trips.unshift(updatedTrip);
       } else {
-        if (!trip.members) trip.members = [];
-        if (!trip.members.some((m: any) => m.email && currentUser?.email && m.email === currentUser?.email)) {
-          trip.members.push(newMember);
-        }
+        const idx = trips.findIndex((t: any) => t.id === tripData.id);
+        if (idx >= 0) trips[idx] = updatedTrip;
+        else trips.unshift(updatedTrip);
       }
       localStorage.setItem('vista_custom_trips', JSON.stringify(trips));
+
+      // Push to server API so the other user immediately receives the new member!
+      try {
+        await fetch('/api/trips', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedTrip),
+        });
+      } catch {}
 
       // Mark invitation as ACCEPTED in vista_invitations_*
       if (invitationMeta?.tripId) {

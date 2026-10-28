@@ -58,6 +58,8 @@ export async function POST(request: Request) {
     }
 
     const idx = list.findIndex((t) => t.id === body.id);
+    const isCustomTrip = body.id.startsWith('trip-') && !body.id.includes('danang') && !body.id.includes('hagiang');
+
     if (idx >= 0) {
       // Merge members if both have members
       let mergedMembers = body.members || list[idx].members || [];
@@ -65,7 +67,11 @@ export async function POST(request: Request) {
         const seen = new Set();
         mergedMembers = [];
         for (const m of [...list[idx].members, ...body.members]) {
-          const cleanName = (m.name || '').replace(/\s*\([^)]*\)/g, '').trim().toLowerCase();
+          const rawName = (m.name || '').replace(/\s*\([^)]*\)/g, '').trim();
+          if (isCustomTrip && (rawName.includes('Trần Minh Tuấn') || rawName.includes('Lê Vân Anh'))) {
+            continue;
+          }
+          const cleanName = rawName.toLowerCase();
           const cleanEmail = (m.email || '').toLowerCase().trim();
           const key = cleanEmail || cleanName;
           if (key && !seen.has(key)) {
@@ -84,11 +90,22 @@ export async function POST(request: Request) {
       writeStore(list);
       return NextResponse.json(updated);
     } else {
-      list.unshift(body);
+      let filteredMembers = body.members || [];
+      if (isCustomTrip && Array.isArray(filteredMembers)) {
+        filteredMembers = filteredMembers.filter(
+          (m: any) => !m.name?.includes('Trần Minh Tuấn') && !m.name?.includes('Lê Vân Anh')
+        );
+      }
+      const newItem = {
+        ...body,
+        members: filteredMembers,
+      };
+      list.unshift(newItem);
       writeStore(list);
-      return NextResponse.json(body, { status: 201 });
+      return NextResponse.json(newItem, { status: 201 });
     }
   } catch (err: any) {
     return NextResponse.json({ message: err.message || 'Lỗi lưu chuyến đi' }, { status: 500 });
   }
 }
+

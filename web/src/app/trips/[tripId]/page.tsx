@@ -581,25 +581,31 @@ export default function TripDetailPage() {
       .catch(() => {});
 
     // Sync trip data & members from server API
-    fetch(`/api/trips?id=${tripId}`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((serverTrip) => {
-        if (serverTrip) {
-          setTrip((prev) => {
-            if (!prev) return serverTrip;
-            const mergedMembers = formatMembersForCurrentUser([
-              ...(prev.members || []),
-              ...(serverTrip.members || []),
-            ]);
-            return {
-              ...prev,
-              ...serverTrip,
-              members: mergedMembers,
-            };
-          });
-        }
-      })
-      .catch(() => {});
+    const syncTripFromServer = () => {
+      fetch(`/api/trips?id=${tripId}`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((serverTrip) => {
+          if (serverTrip && Array.isArray(serverTrip.members) && serverTrip.members.length > 0) {
+            setTrip((prev) => {
+              if (!prev) return serverTrip;
+              const mergedMembers = formatMembersForCurrentUser([
+                ...(prev.members || []),
+                ...serverTrip.members,
+              ]);
+              return {
+                ...prev,
+                ...serverTrip,
+                members: mergedMembers,
+              };
+            });
+          }
+        })
+        .catch(() => {});
+    };
+
+    syncTripFromServer();
+    const pollTimer = setInterval(syncTripFromServer, 2500);
+    window.addEventListener('focus', syncTripFromServer);
 
     const timer = setTimeout(() => {
       // 1. Try finding in custom trips in localStorage
@@ -609,8 +615,12 @@ export default function TripDetailPage() {
           const parsed: TripDetailData[] = JSON.parse(stored);
           const match = parsed.find((item) => item.id === tripId);
           if (match) {
-            // Normalize fields
-            const normalizedMembers = formatMembersForCurrentUser(match.members || []);
+            // Normalize fields and clean mock members from custom trips
+            const isCustomTrip = match.id.startsWith('trip-') && !match.id.includes('danang') && !match.id.includes('hagiang');
+            const cleanMembers = isCustomTrip
+              ? (match.members || []).filter((m) => !m.name.includes('Trần Minh Tuấn') && !m.name.includes('Lê Vân Anh'))
+              : (match.members || []);
+            const normalizedMembers = formatMembersForCurrentUser(cleanMembers.length > 0 ? cleanMembers : match.members || []);
 
             const isHanoiMismatch =
               match.destination &&
@@ -634,6 +644,15 @@ export default function TripDetailPage() {
               treasuryPath: match.treasuryPath || `/trips/${match.id}/treasury`,
               itineraryDays: itinerary,
             };
+
+            // Push to server API so both windows share the real trip
+            try {
+              fetch('/api/trips', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedTrip),
+              }).catch(() => {});
+            } catch {}
 
             if (isHanoiMismatch) {
               try {
@@ -688,7 +707,11 @@ export default function TripDetailPage() {
       setProposals(getSampleProposals(fallbackDest));
     }, 0);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      clearInterval(pollTimer);
+      window.removeEventListener('focus', syncTripFromServer);
+    };
   }, [tripId, searchParams]);
 
   // Reorder activities
@@ -2095,25 +2118,27 @@ export default function TripDetailPage() {
                         )}
 
                         {inv.status === 'PENDING' && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              showToast(`✓ Đã gửi lại email lời mời tới ${inv.email}!`);
-                            }}
+                          <a
+                            href={getGmailComposeUrl(inv.email || (inv as any).inviteeEmail, inv.token)}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             style={{
                               fontSize: '12px',
-                              color: '#0284C7',
+                              color: '#DC2626',
                               fontWeight: 700,
+                              textDecoration: 'none',
                               padding: '5px 10px',
-                              background: '#F0F9FF',
-                              border: '1px solid #BAE6FD',
+                              background: '#FEF2F2',
+                              border: '1px solid #FECACA',
                               borderRadius: '8px',
-                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
                             }}
-                            title={`Gửi lại email lời mời tới ${inv.email}`}
+                            title={`Mở Gmail để gửi thư thật trực tiếp đến ${inv.email || (inv as any).inviteeEmail}`}
                           >
-                            Gửi lại
-                          </button>
+                            <span>✉️ Gửi Gmail</span>
+                          </a>
                         )}
 
                         {inv.status === 'PENDING' && (
@@ -3009,14 +3034,34 @@ export default function TripDetailPage() {
               <div>
                 <div style={{ background: '#F0FDF4', border: '1.5px solid #86EFAC', borderRadius: '16px', padding: '16px', marginBottom: '18px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                    <span style={{ fontSize: '20px' }}>📨</span>
+                    <span style={{ fontSize: '20px' }}>🎉</span>
                     <strong style={{ fontSize: '15px', color: '#15803D' }}>
-                      Đã gửi email lời mời tự động đến: {createdInvitationInfo.email}
+                      Đã phát hành vé mời cho: {createdInvitationInfo.email}
                     </strong>
                   </div>
-                  <p style={{ margin: 0, fontSize: '13px', color: '#166534', lineHeight: '1.5' }}>
-                    Hệ thống máy chủ đã tự động gửi email mời kèm mã vé và đường dẫn tham gia trực tiếp đến hòm thư <strong>{createdInvitationInfo.email}</strong>. Người nhận chỉ cần mở email và nhấn vào link để gia nhập chuyến đi ngay!
+                  <p style={{ margin: '0 0 14px', fontSize: '13px', color: '#166534', lineHeight: '1.5' }}>
+                    Mã vé và đường dẫn tham gia đã sẵn sàng. Bạn có thể sao chép liên kết gửi qua Zalo/Facebook, hoặc bấm nút đỏ bên dưới để gửi email thật 100% đến hộp thư Gmail của người nhận (đã soạn sẵn tiêu đề & nội dung):
                   </p>
+                  <a
+                    href={getGmailComposeUrl(createdInvitationInfo.email, createdInvitationInfo.token)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '11px 20px',
+                      background: '#DC2626',
+                      color: '#FFFFFF',
+                      borderRadius: '10px',
+                      fontSize: '13.5px',
+                      fontWeight: 800,
+                      textDecoration: 'none',
+                      boxShadow: '0 4px 14px rgba(220, 38, 38, 0.3)',
+                    }}
+                  >
+                    <span>✉️ Mở Gmail gửi thư thật ngay (Soạn sẵn 100%) ↗</span>
+                  </a>
                 </div>
 
                 <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '14px', padding: '16px', marginBottom: '16px' }}>
