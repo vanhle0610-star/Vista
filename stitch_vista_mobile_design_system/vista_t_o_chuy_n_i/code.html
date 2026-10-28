@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="vi"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "on-secondary-container": "#096f78", "on-primary-fixed": "#001d31", "surface-container": "#eaedff", "on-surface": "#131b2e", "on-background": "#131b2e", "inverse-on-surface": "#eef0ff", "inverse-surface": "#283044", "error-container": "#ffdad6", "secondary": "#006971", "primary": "#006194", "tertiary-fixed": "#6ffbbe", "secondary-fixed-dim": "#83d3dd", "on-secondary": "#ffffff", "background": "#faf8ff", "on-tertiary-container": "#f5fff6", "outline-variant": "#bfc7d2", "surface-container-low": "#f2f3ff", "surface-variant": "#dae2fd", "secondary-container": "#9ff0fa", "inverse-primary": "#93ccff", "on-error": "#ffffff", "secondary-fixed": "#9ff0fa", "surface-container-high": "#e2e7ff", "surface-bright": "#faf8ff", "surface-dim": "#d2d9f4", "on-primary-fixed-variant": "#004b73", "on-error-container": "#93000a", "on-primary": "#ffffff", "on-tertiary": "#ffffff", "on-tertiary-fixed": "#002113", "tertiary-fixed-dim": "#4edea3", "on-secondary-fixed-variant": "#004f56", "outline": "#707881", "primary-fixed": "#cce5ff", "surface": "#faf8ff", "on-primary-container": "#fdfcff", "on-tertiary-fixed-variant": "#005236", "tertiary-container": "#00855b", "on-surface-variant": "#3f4850", "tertiary": "#006947", "primary-container": "#007bb9", "surface-tint": "#006398", "primary-fixed-dim": "#93ccff", "surface-container-highest": "#dae2fd", "on-secondary-fixed": "#001f23", "error": "#ba1a1a", "surface-container-lowest": "#ffffff" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-md": "0.75rem", "gutter": "1rem", "space-xs": "0.25rem", "space-lg": "1rem", "space-xl": "1.5rem", "space-sm": "0.5rem", "margin": "1rem" }, "fontFamily": { "label-sm": ["Inter"], "body-sm": ["Inter"], "body-lg": ["Inter"], "headline-lg": ["Inter"], "badge": ["Inter"], "title-md": ["Inter"], "body-md": ["Inter"], "headline-md": ["Inter"], "headline-sm": ["Inter"], "label-md": ["Inter"] }, "fontSize": { "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }], "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }], "body-lg": ["15px", { "lineHeight": "22px", "fontWeight": "400" }], "headline-lg": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "800" }], "badge": ["11px", { "lineHeight": "14px", "letterSpacing": "0.02em", "fontWeight": "700" }], "title-md": ["16px", { "lineHeight": "22px", "fontWeight": "600" }], "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "headline-md": ["24px", { "lineHeight": "30px", "letterSpacing": "-0.015em", "fontWeight": "700" }], "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "700" }], "label-md": ["14px", { "lineHeight": "20px", "fontWeight": "600" }] } } } };</script><style>@layer base{html,body{width:100%;margin:0;padding:0;background-color:#faf8ff;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-14 px-margin flex items-center justify-between"><div class="flex items-center gap-space-xs"><button aria-label="Quay lại" class="w-11 h-11 -ml-space-xs flex items-center justify-center rounded-full text-on-surface hover:bg-surface-container-high transition-colors active:scale-95" onclick="window.history.back()" type="button"><span class="material-symbols-outlined text-[24px]">arrow_back</span></button><h1 class="font-headline-sm text-headline-sm text-on-surface truncate max-w-[190px]">Edit Itinerary Item</h1></div><div class="flex items-center gap-space-xs"><button aria-label="Chia sẻ chuyến đi" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high transition-colors active:scale-95" type="button"><span class="material-symbols-outlined text-[22px]">share</span></button><button aria-label="Tùy chọn khác" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high transition-colors active:scale-95" type="button"><span class="material-symbols-outlined text-[22px]">more_vert</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center ml-space-xs shadow-sm flex-shrink-0"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex-1 flex flex-col relative w-full pt-14 pb-safe bg-surface"><div class="flex flex-col w-full relative">
+<!-- Top Navigation Extension / Draft Bar -->
+<div class="px-margin pt-space-xs pb-space-sm flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary-fixed text-primary text-[12px] font-label-sm">
+<span class="material-symbols-outlined text-[14px]">flight_takeoff</span>
+</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Bước 1 trên 2: Thiết lập cơ bản</span>
+</div>
+<button class="px-space-sm py-1 rounded-full text-secondary hover:bg-secondary-container/30 active:scale-95 transition-all flex items-center gap-1 font-label-sm text-label-sm" id="btn-save-draft" type="button">
+<span class="material-symbols-outlined text-[16px]">bookmark_border</span>
+      Lưu nháp
+    </button>
+</div>
+<!-- Decorative Visual Banner (Editorial Destination Preview) -->
+<div class="px-margin mb-space-lg">
+<div class="relative w-full h-36 rounded-xl overflow-hidden shadow-sm bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Breathtaking panoramic view of Da Nang coastal highway alongside golden sandy beaches, marble mountains bathed in morning sun, high-end travel editorial style with rich azure sea and lush emerald tropical greenery" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDuPvApGFCllUDHe0DXnhuKJVRq8Yd3IfyDPsARCvmo4WSP_lofndVNP49AFbcZVupgZkQWZEB4b3GM2AB67lL2qfP9luZxo2lHmo_ke9TvU5f-okZbLNHrrWbFcpKyOB7J1zpdmkCDWkN9MtgRKi37AHT-o-6QBEHEcHf9clTuG8kMOVVEa9zrnkz9BHoh2w2arfqGoR9oYTdi3b28k_oe0JvVBzjw0-YUvZt_Vpyz8pcc6oQ99A6qiQ"/>
+<div class="absolute inset-0 bg-gradient-to-t from-on-surface/80 via-on-surface/30 to-transparent flex flex-col justify-end p-space-md text-surface">
+<div class="flex items-center gap-space-xs mb-1">
+<span class="material-symbols-outlined text-secondary-fixed text-[18px]">location_on</span>
+<span class="font-label-sm text-label-sm text-surface-container tracking-wider uppercase">Điểm đến đã chọn</span>
+</div>
+<div class="font-headline-sm text-headline-sm text-surface font-headline-sm leading-tight">Đà Nẵng: Biển xanh &amp; Núi non</div>
+</div>
+</div>
+</div>
+<!-- Main Scrollable Form Body -->
+<form class="px-margin flex flex-col gap-space-xl pb-32" id="create-trip-form" onsubmit="event.preventDefault();">
+<!-- SECTION 1: Thông tin cơ bản -->
+<section class="flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="w-2 h-4 rounded-full bg-primary"></span>
+<h2 class="font-title-md text-title-md text-on-surface font-title-md">Thông tin cơ bản</h2>
+</div>
+<span class="font-badge text-badge text-error bg-error-container/40 px-2 py-0.5 rounded-full">Bắt buộc</span>
+</div>
+<!-- Field: Tên chuyến đi -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-md text-label-md text-on-surface flex items-center gap-1" for="trip-title">
+          Tên chuyến đi <span class="text-error">*</span>
+</label>
+<div class="relative flex items-center bg-surface-container-low rounded-xl px-space-md py-3 focus-within:bg-surface-container-lowest focus-within:shadow-md transition-all">
+<span class="material-symbols-outlined text-outline text-[20px] mr-2">edit_note</span>
+<input class="bg-transparent border-0 outline-none w-full font-body-md text-body-md text-on-surface placeholder:text-outline" id="trip-title" name="trip-title" placeholder="Ví dụ: Đà Nẵng: Biển xanh &amp; Núi non" required="" type="text" value="Đà Nẵng: Biển xanh &amp; Núi non"/>
+<button class="text-outline hover:text-on-surface ml-1 p-1" onclick="document.getElementById('trip-title').value=''" type="button">
+<span class="material-symbols-outlined text-[16px]">cancel</span>
+</button>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Một cái tên truyền cảm hứng giúp chuyến đi thêm đáng nhớ.</span>
+</div>
+<!-- Field: Điểm đến hoặc khu vực -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-md text-label-md text-on-surface flex items-center gap-1" for="trip-destination">
+          Điểm đến hoặc khu vực <span class="text-error">*</span>
+</label>
+<div class="relative flex items-center bg-surface-container-low rounded-xl px-space-md py-3 focus-within:bg-surface-container-lowest focus-within:shadow-md transition-all">
+<span class="material-symbols-outlined text-primary text-[20px] mr-2">location_on</span>
+<input class="bg-transparent border-0 outline-none w-full font-body-md text-body-md text-on-surface placeholder:text-outline" id="trip-destination" name="trip-destination" placeholder="Tìm thành phố, bãi biển, địa danh..." required="" type="text" value="Đà Nẵng, Việt Nam"/>
+<span class="material-symbols-outlined text-outline text-[18px]">travel_explore</span>
+</div>
+<!-- Quick Select Destination Chips -->
+<div class="flex items-center gap-1.5 overflow-x-auto pt-1 no-scrollbar">
+<span class="font-badge text-badge text-outline uppercase tracking-wider shrink-0 mr-1">Gợi ý:</span>
+<button class="px-3 py-1 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm shrink-0 hover:bg-primary-fixed-dim transition-colors flex items-center gap-1" onclick="selectDest('Đà Nẵng, Việt Nam')" type="button">
+<span class="material-symbols-outlined text-[14px]">check</span>Đà Nẵng
+          </button>
+<button class="px-3 py-1 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm shrink-0 hover:bg-surface-container-highest transition-colors" onclick="selectDest('Phú Quốc, Kiên Giang')" type="button">
+            Phú Quốc
+          </button>
+<button class="px-3 py-1 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm shrink-0 hover:bg-surface-container-highest transition-colors" onclick="selectDest('Hà Nội, Việt Nam')" type="button">
+            Hà Nội
+          </button>
+<button class="px-3 py-1 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm shrink-0 hover:bg-surface-container-highest transition-colors" onclick="selectDest('Đà Lạt, Lâm Đồng')" type="button">
+            Đà Lạt
+          </button>
+</div>
+</div>
+<!-- Field: Ngày tháng (2 Columns Responsive Mobile Layout) -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-md text-label-md text-on-surface flex items-center gap-1">
+          Thời gian khởi hành <span class="text-error">*</span>
+</label>
+<div class="grid grid-cols-2 gap-space-sm">
+<!-- Ngày bắt đầu -->
+<div class="bg-surface-container-low rounded-xl p-3 flex flex-col gap-1 focus-within:bg-surface-container-lowest focus-within:shadow-md transition-all">
+<div class="flex items-center gap-1 font-label-sm text-label-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] text-primary">calendar_month</span>
+<span>Bắt đầu</span>
+</div>
+<input class="bg-transparent border-0 outline-none font-title-md text-title-md text-on-surface w-full p-0" id="start-date" type="text" value="12/06/2025"/>
+</div>
+<!-- Ngày kết thúc -->
+<div class="bg-surface-container-low rounded-xl p-3 flex flex-col gap-1 focus-within:bg-surface-container-lowest focus-within:shadow-md transition-all">
+<div class="flex items-center gap-1 font-label-sm text-label-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] text-secondary">event_available</span>
+<span>Kết thúc</span>
+</div>
+<input class="bg-transparent border-0 outline-none font-title-md text-title-md text-on-surface w-full p-0" id="end-date" type="text" value="15/06/2025"/>
+</div>
+</div>
+<!-- Inline Validation Banner -->
+<div class="mt-1 flex items-center justify-between px-space-md py-2 rounded-xl bg-tertiary-container/15 text-tertiary" id="validation-pill">
+<div class="flex items-center gap-1.5 font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-tertiary">verified</span>
+<span>Khoảng thời gian hợp lệ (4 ngày 3 đêm)</span>
+</div>
+<span class="font-badge text-badge bg-tertiary-container text-on-tertiary-container px-2 py-0.5 rounded-full">Tổng: 4N3Đ</span>
+</div>
+</div>
+</section>
+<!-- SECTION 2: Ngân sách & Mô tả -->
+<section class="flex flex-col gap-space-md bg-surface-container-lowest p-space-md rounded-xl shadow-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="w-2 h-4 rounded-full bg-secondary"></span>
+<h2 class="font-title-md text-title-md text-on-surface font-title-md">Ngân sách &amp; Mô tả</h2>
+</div>
+<span class="font-badge text-badge text-outline bg-surface-container px-2 py-0.5 rounded-full">Tùy chọn</span>
+</div>
+<!-- Ngân sách dự kiến -->
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<label class="font-label-md text-label-md text-on-surface flex items-center gap-1" for="budget-input">
+            Ngân sách ước tính
+          </label>
+<span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[14px]">info</span>
+            Dùng theo dõi chi tiêu nhóm
+          </span>
+</div>
+<div class="flex items-center bg-surface-container-low rounded-xl px-space-md py-2.5 focus-within:bg-surface-container-lowest focus-within:shadow-md transition-all">
+<span class="material-symbols-outlined text-secondary text-[20px] mr-2">payments</span>
+<input class="bg-transparent border-0 outline-none w-full font-title-md text-title-md text-on-surface" id="budget-input" type="text" value="10.000.000"/>
+<div class="bg-surface-container-high text-on-surface px-2.5 py-1 rounded-lg font-label-sm text-label-sm font-semibold shrink-0">
+            VND
+          </div>
+</div>
+<!-- Budget Quick Range Hint -->
+<div class="flex items-center justify-between px-1 text-on-surface-variant font-label-sm text-label-sm pt-0.5">
+<span>Mức gợi ý: ~2.500.000đ / người / ngày</span>
+<span class="text-secondary font-semibold">Vừa vặn</span>
+</div>
+</div>
+<!-- Mô tả ngắn -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-md text-label-md text-on-surface" for="trip-desc">
+          Mô tả ngắn chuyến đi
+        </label>
+<div class="bg-surface-container-low rounded-xl p-space-md focus-within:bg-surface-container-lowest focus-within:shadow-md transition-all">
+<textarea class="w-full bg-transparent border-0 outline-none font-body-md text-body-md text-on-surface placeholder:text-outline resize-none" id="trip-desc" placeholder="Thêm ghi chú, mục tiêu hoặc thông điệp cho chuyến đi..." rows="3">Khám phá trọn vẹn cảnh đẹp bán đảo Sơn Trà, Bà Nà Hills và ẩm thực miền Trung cùng bạn thân.</textarea>
+<div class="flex justify-end pt-1">
+<span class="font-badge text-badge text-outline">98 / 300 ký tự</span>
+</div>
+</div>
+</div>
+</section>
+<!-- SECTION 3: Quyền riêng tư & Cộng tác -->
+<section class="flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="w-2 h-4 rounded-full bg-tertiary"></span>
+<h2 class="font-title-md text-title-md text-on-surface font-title-md">Quyền riêng tư &amp; Tiện ích</h2>
+</div>
+<span class="font-badge text-badge text-outline bg-surface-container px-2 py-0.5 rounded-full">Bảo mật</span>
+</div>
+<!-- Privacy Radio Cards -->
+<div class="grid grid-cols-1 gap-2.5">
+<!-- Private option (Checked by default) -->
+<div class="p-space-md rounded-xl bg-surface-container-low cursor-pointer shadow-sm transition-all flex items-start gap-3 bg-primary-fixed/25" id="opt-private" onclick="togglePrivacy('private')">
+<div class="w-9 h-9 rounded-full bg-primary-fixed flex items-center justify-center text-primary shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[20px]">lock</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-2">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Chỉ thành viên được mời</span>
+<span class="bg-primary text-on-primary font-badge text-badge px-2 py-0.5 rounded-full">Khuyên dùng</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Chỉ những người nhận được link hoặc thư mời mới có quyền xem &amp; chỉnh sửa.</p>
+</div>
+<div class="shrink-0 pt-1">
+<span class="material-symbols-outlined text-primary text-[22px]" id="radio-private-icon">radio_button_checked</span>
+</div>
+</div>
+<!-- Public option -->
+<div class="p-space-md rounded-xl bg-surface-container-low cursor-pointer transition-all flex items-start gap-3 opacity-80 hover:opacity-100" id="opt-public" onclick="togglePrivacy('public')">
+<div class="w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[20px]">public</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-2">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Công khai trên VISTA Community</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Mọi người có thể tìm kiếm, nhân bản lịch trình này để làm mẫu tham khảo.</p>
+</div>
+<div class="shrink-0 pt-1">
+<span class="material-symbols-outlined text-outline text-[22px]" id="radio-public-icon">radio_button_unchecked</span>
+</div>
+</div>
+</div>
+<!-- AI Itinerary Switch Card -->
+<div class="p-space-md rounded-xl bg-secondary-container/25 flex items-center justify-between gap-space-md">
+<div class="flex items-start gap-3">
+<div class="w-9 h-9 rounded-xl bg-secondary text-on-secondary flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+<span class="material-symbols-outlined text-[20px]">auto_awesome</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="font-label-md text-label-md text-on-surface font-semibold">VISTA AI Lịch trình</span>
+<span class="bg-secondary text-on-secondary font-badge text-badge px-1.5 py-0.2 rounded">Thông minh</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Tự động đề xuất lịch trình 4N3Đ tối ưu điểm đến &amp; thời gian di chuyển.</span>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer shrink-0">
+<input checked="" class="sr-only peer" id="ai-toggle" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-surface after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+</label>
+</div>
+</section>
+<!-- Subtle Trust / Safety Badge -->
+<div class="flex items-center justify-center gap-1.5 py-2 text-outline font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px]">format_image_left</span>
+<span>Dữ liệu chuyến đi được mã hóa &amp; đồng bộ theo thời gian thực</span>
+</div>
+</form>
+<!-- Sticky Bottom Actions Cluster -->
+<div class="fixed bottom-0 left-0 right-0 z-40 bg-surface/90 backdrop-blur-xl shadow-[0_-4px_16px_rgba(0,0,0,0.06)] px-margin py-3 pb-safe">
+<div class="max-w-[428px] mx-auto flex items-center gap-3">
+<!-- Cancel / Dismiss Button -->
+<button class="h-12 px-4 rounded-xl bg-surface-container-high text-on-surface font-label-md text-label-md hover:bg-surface-container-highest transition-colors active:scale-95 shrink-0 flex items-center justify-center" onclick="window.history.back()" type="button">
+        Hủy
+      </button>
+<!-- Primary Action CTA Button -->
+<button class="flex-1 h-12 rounded-xl bg-primary text-on-primary font-label-md text-label-md shadow-md hover:bg-primary-container active:scale-98 transition-all flex items-center justify-center gap-2" id="btn-submit-trip" onclick="handleSubmitTrip()" type="button">
+<span id="btn-text">Tạo chuyến đi</span>
+<span class="material-symbols-outlined text-[20px]" id="btn-icon">arrow_forward</span>
+<span class="hidden animate-spin material-symbols-outlined text-[20px]" id="btn-spinner">progress_activity</span>
+</button>
+</div>
+</div>
+<!-- Micro Toast Notification Element -->
+<div class="fixed top-16 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 transform -translate-y-6 opacity-0 pointer-events-none px-4 py-2.5 rounded-full bg-inverse-surface text-inverse-on-surface shadow-xl flex items-center gap-2" id="feedback-toast">
+<span class="material-symbols-outlined text-secondary-fixed text-[18px]" id="toast-icon">check_circle</span>
+<span class="font-label-sm text-label-sm" id="toast-msg">Bản nháp đã được lưu tự động!</span>
+</div>
+</div>
+<script>
+  function selectDest(name) {
+    const input = document.getElementById('trip-destination');
+    if (input) {
+      input.value = name;
+      showToast('Đã chọn điểm đến: ' + name);
+    }
+  }
+
+  function togglePrivacy(mode) {
+    const optPrivate = document.getElementById('opt-private');
+    const optPublic = document.getElementById('opt-public');
+    const iconPrivate = document.getElementById('radio-private-icon');
+    const iconPublic = document.getElementById('radio-public-icon');
+
+    if (mode === 'private') {
+      optPrivate.classList.add('bg-primary-fixed/25');
+      optPrivate.classList.remove('opacity-80');
+      optPublic.classList.remove('bg-primary-fixed/25');
+      optPublic.classList.add('opacity-80');
+      iconPrivate.textContent = 'radio_button_checked';
+      iconPrivate.className = 'material-symbols-outlined text-primary text-[22px]';
+      iconPublic.textContent = 'radio_button_unchecked';
+      iconPublic.className = 'material-symbols-outlined text-outline text-[22px]';
+    } else {
+      optPublic.classList.add('bg-primary-fixed/25');
+      optPublic.classList.remove('opacity-80');
+      optPrivate.classList.remove('bg-primary-fixed/25');
+      optPrivate.classList.add('opacity-80');
+      iconPublic.textContent = 'radio_button_checked';
+      iconPublic.className = 'material-symbols-outlined text-primary text-[22px]';
+      iconPrivate.textContent = 'radio_button_unchecked';
+      iconPrivate.className = 'material-symbols-outlined text-outline text-[22px]';
+    }
+  }
+
+  function showToast(message, isSuccess = true) {
+    const toast = document.getElementById('feedback-toast');
+    const msg = document.getElementById('toast-msg');
+    const icon = document.getElementById('toast-icon');
+    if (!toast || !msg || !icon) return;
+
+    msg.textContent = message;
+    icon.textContent = isSuccess ? 'check_circle' : 'info';
+    toast.classList.remove('-translate-y-6', 'opacity-0', 'pointer-events-none');
+    toast.classList.add('translate-y-0', 'opacity-100');
+
+    setTimeout(() => {
+      toast.classList.add('-translate-y-6', 'opacity-0', 'pointer-events-none');
+      toast.classList.remove('translate-y-0', 'opacity-100');
+    }, 2800);
+  }
+
+  function handleSubmitTrip() {
+    const btn = document.getElementById('btn-submit-trip');
+    const btnText = document.getElementById('btn-text');
+    const btnIcon = document.getElementById('btn-icon');
+    const btnSpinner = document.getElementById('btn-spinner');
+
+    if (!btn || !btnText || !btnIcon || !btnSpinner) return;
+
+    btn.disabled = true;
+    btnText.textContent = 'Đang khởi tạo chuyến đi...';
+    btnIcon.classList.add('hidden');
+    btnSpinner.classList.remove('hidden');
+
+    showToast('VISTA AI đang tạo lịch trình chi tiết...', true);
+
+    setTimeout(() => {
+      btn.disabled = false;
+      btnText.textContent = 'Tạo chuyến đi';
+      btnIcon.classList.remove('hidden');
+      btnSpinner.classList.add('hidden');
+      showToast('Đã tạo chuyến đi thành công!', true);
+    }, 2000);
+  }
+
+  document.getElementById('btn-save-draft')?.addEventListener('click', () => {
+    showToast('Đã lưu bản nháp chuyến đi của bạn');
+  });
+</script></main></body></html>

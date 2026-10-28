@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="vi"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"on-primary":"#ffffff","on-error-container":"#93000a","surface-dim":"#d2d9f4","outline-variant":"#bfc7d2","tertiary":"#006947","surface":"#faf8ff","tertiary-container":"#00855b","tertiary-fixed":"#6ffbbe","surface-container-lowest":"#ffffff","secondary-fixed":"#9ff0fa","on-tertiary-fixed-variant":"#005236","inverse-on-surface":"#eef0ff","on-primary-fixed-variant":"#004b73","on-tertiary":"#ffffff","primary-fixed-dim":"#93ccff","on-secondary-container":"#096f78","surface-container-highest":"#dae2fd","primary-container":"#007bb9","on-background":"#131b2e","surface-tint":"#006398","tertiary-fixed-dim":"#4edea3","secondary":"#006971","on-primary-container":"#fdfcff","on-error":"#ffffff","on-tertiary-fixed":"#002113","on-secondary-fixed":"#001f23","surface-container-low":"#f2f3ff","secondary-fixed-dim":"#83d3dd","surface-container":"#eaedff","error":"#ba1a1a","secondary-container":"#9ff0fa","primary-fixed":"#cce5ff","inverse-surface":"#283044","surface-variant":"#dae2fd","on-secondary-fixed-variant":"#004f56","on-surface":"#131b2e","on-surface-variant":"#3f4850","surface-container-high":"#e2e7ff","primary":"#006194","inverse-primary":"#93ccff","on-primary-fixed":"#001d31","error-container":"#ffdad6","surface-bright":"#faf8ff","background":"#faf8ff","on-tertiary-container":"#f5fff6","outline":"#707881","on-secondary":"#ffffff"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"gutter":"1rem","margin":"1rem","space-xl":"1.5rem","space-sm":"0.5rem","space-md":"0.75rem","space-lg":"1rem","space-xs":"0.25rem"},"fontFamily":{"headline-lg":["Inter"],"label-md":["Inter"],"title-md":["Inter"],"body-md":["Inter"],"label-sm":["Inter"],"badge":["Inter"],"headline-md":["Inter"],"body-lg":["Inter"],"body-sm":["Inter"],"headline-sm":["Inter"]},"fontSize":{"headline-lg":["32px",{"lineHeight":"38px","letterSpacing":"-0.02em","fontWeight":"800"}],"label-md":["14px",{"lineHeight":"20px","fontWeight":"600"}],"title-md":["16px",{"lineHeight":"22px","fontWeight":"600"}],"body-md":["14px",{"lineHeight":"20px","fontWeight":"400"}],"label-sm":["12px",{"lineHeight":"16px","fontWeight":"500"}],"badge":["11px",{"lineHeight":"14px","letterSpacing":"0.02em","fontWeight":"700"}],"headline-md":["24px",{"lineHeight":"30px","letterSpacing":"-0.015em","fontWeight":"700"}],"body-lg":["15px",{"lineHeight":"22px","fontWeight":"400"}],"body-sm":["13px",{"lineHeight":"18px","fontWeight":"400"}],"headline-sm":["18px",{"lineHeight":"24px","letterSpacing":"-0.01em","fontWeight":"700"}]}}}};</script><style>@layer base{html,body{width:100%;min-height:100%;margin:0;padding:0;background-color:#faf8ff;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><style>body { min-height: max(884px, 100dvh); }</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface text-on-surface antialiased flex flex-col min-h-full"><header class="fixed top-0 w-full z-50 bg-surface/85 backdrop-blur-xl pt-safe shadow-[0_1px_8px_rgba(0,0,0,0.03)]"><div class="h-14 px-margin flex items-center justify-between"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-primary text-[26px]">travel_explore</span><h1 class="font-headline-sm text-headline-sm text-on-surface tracking-tight truncate max-w-[220px]">Hồ Sơ Cá Nhân</h1></div><div class="flex items-center gap-space-xs"><button aria-label="Cài đặt" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" type="button"><span class="material-symbols-outlined text-[22px]">settings</span></button><button aria-label="Thông báo" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors relative" type="button"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-error ring-2 ring-surface"></span></button></div></div></header><main class="flex-1 flex flex-col relative w-full pt-14 pb-24 bg-surface"><div class="flex flex-col w-full">
+<!-- Content Area (No borders, pure background color contrast & soft elevations) -->
+<div class="px-margin pt-space-md pb-space-xl flex flex-col gap-space-lg">
+<!-- Profile Hero Card -->
+<section class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md relative overflow-hidden">
+<!-- Ambient subtle background decorative glow -->
+<div class="absolute -right-10 -top-10 w-40 h-40 rounded-full bg-primary-fixed/40 blur-2xl pointer-events-none"></div>
+<div class="flex items-center gap-space-md relative z-10">
+<!-- Avatar with active indicator -->
+<div class="relative flex-shrink-0">
+<div class="w-16 h-16 rounded-full overflow-hidden shadow-sm bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Editorial portrait of a stylish young Vietnamese woman traveler named Nguyen Van Anh, warm soft natural daylight, minimalist aesthetic, gentle smile, modern wanderlust look, high detail photography" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0L7TGpjcjTlu255aXPWxbvT4oZsg7nl-PE279gqDYpXTUFfParSK7KGsByeGM3GrZkM4g7GZArYAfpymb3jrHDVPGMe6Fwa8v8GoQFRW4BuPydwHpBReKWLQxKIq19nHRdchmQZ0GjM4oula6yOLaK-IRTqZACN6DbBB6GHj_Xbw5sB0uM6_rNqjcYQLa3nqTf46yypUN0sEUZFA-B2FoSCZk3rDr_n5g6ceIEQxd6qQuWrmaSgkXwA"/>
+</div>
+<span class="absolute bottom-0 right-0 w-4 h-4 bg-tertiary rounded-full ring-2 ring-surface-container-lowest flex items-center justify-center text-on-tertiary">
+<span class="material-symbols-outlined text-[10px]">check</span>
+</span>
+</div>
+<!-- Identity meta -->
+<div class="flex flex-col min-w-0 flex-1">
+<div class="flex items-center gap-space-xs flex-wrap">
+<h2 class="font-headline-sm text-headline-sm text-on-surface truncate">Nguyễn Vân Anh</h2>
+<span class="bg-primary-fixed text-on-primary-fixed-variant font-badge text-badge px-2 py-0.5 rounded-full inline-flex items-center">
+              Tài khoản cá nhân
+            </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate mt-0.5">vananh@vista.travel</p>
+</div>
+</div>
+<!-- Quick stats snippet (Gentle travel summary) -->
+<div class="grid grid-cols-2 gap-space-sm py-space-xs">
+<div class="bg-surface-container-low rounded-lg p-space-sm flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-full bg-surface-container-lowest flex items-center justify-center text-primary shadow-xs">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">luggage</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-title-md text-on-surface leading-tight">5 chuyến đi</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Đã tham gia</span>
+</div>
+</div>
+<div class="bg-surface-container-low rounded-lg p-space-sm flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-full bg-surface-container-lowest flex items-center justify-center text-secondary shadow-xs">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">pin_drop</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-title-md text-on-surface leading-tight">3 địa phương</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Đã khám phá</span>
+</div>
+</div>
+</div>
+<!-- Secondary Action: Edit Profile -->
+<button class="w-full h-11 bg-surface-container-low hover:bg-surface-container active:scale-[0.99] text-on-surface font-label-md text-label-md rounded-lg flex items-center justify-center gap-space-xs transition-all shadow-xs" id="btn-edit-profile" type="button">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+<span>Chỉnh sửa hồ sơ</span>
+</button>
+</section>
+<!-- Group 1: Tài khoản & Cá nhân -->
+<section class="flex flex-col gap-space-xs">
+<h3 class="px-space-xs font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
+        Tài khoản &amp; Cá nhân
+      </h3>
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm flex flex-col">
+<!-- Item 1.1 -->
+<button class="w-full p-space-md flex items-center justify-between text-left hover:bg-surface-container-low transition-colors group active:bg-surface-container" type="button">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-10 h-10 rounded-full bg-primary-fixed/50 text-primary flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[22px]">person</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-title-md text-on-surface">Thông tin cá nhân &amp; Liên hệ</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Họ tên, số điện thoại, định danh VISTA ID</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-[20px] ml-space-xs group-hover:translate-x-0.5 transition-transform">chevron_right</span>
+</button>
+<div class="h-[1px] bg-surface-container mx-space-md"></div>
+<!-- Item 1.2 -->
+<button class="w-full p-space-md flex items-center justify-between text-left hover:bg-surface-container-low transition-colors group active:bg-surface-container" type="button">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-10 h-10 rounded-full bg-secondary-fixed/60 text-secondary flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[22px]">notifications_active</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-title-md text-on-surface">Tùy chọn thông báo</span>
+<div class="flex items-center gap-1.5 mt-0.5">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span class="font-body-sm text-body-sm text-tertiary font-medium">Bật • Thông báo chuyến đi</span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-[20px] ml-space-xs group-hover:translate-x-0.5 transition-transform">chevron_right</span>
+</button>
+<div class="h-[1px] bg-surface-container mx-space-md"></div>
+<!-- Item 1.3 -->
+<button class="w-full p-space-md flex items-center justify-between text-left hover:bg-surface-container-low transition-colors group active:bg-surface-container" type="button">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-10 h-10 rounded-full bg-primary-fixed/50 text-primary flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[22px]" style="font-variation-settings: 'FILL' 1;">bookmarks</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-title-md text-on-surface">Lịch trình &amp; Địa điểm yêu thích</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">12 địa điểm lưu trữ, 4 gợi ý AI</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-[20px] ml-space-xs group-hover:translate-x-0.5 transition-transform">chevron_right</span>
+</button>
+</div>
+</section>
+<!-- Group 2: Tùy chỉnh ứng dụng -->
+<section class="flex flex-col gap-space-xs">
+<h3 class="px-space-xs font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
+        Tùy chỉnh ứng dụng
+      </h3>
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm flex flex-col">
+<!-- Item 2.1: Ngôn ngữ -->
+<div class="w-full p-space-md flex items-center justify-between text-left hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-10 h-10 rounded-full bg-surface-container text-on-surface-variant flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[22px]">language</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-title-md text-on-surface">Ngôn ngữ</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Tiếng Việt (Mặc định)</span>
+</div>
+</div>
+<span class="bg-surface-container-high text-on-surface font-label-sm text-label-sm px-2.5 py-1 rounded-full">VI / VN</span>
+</div>
+<div class="h-[1px] bg-surface-container mx-space-md"></div>
+<!-- Item 2.2: Giao diện -->
+<div class="w-full p-space-md flex items-center justify-between text-left hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-10 h-10 rounded-full bg-surface-container text-on-surface-variant flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[22px]">light_mode</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-title-md text-on-surface">Giao diện</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Sáng (Light Mode)</span>
+</div>
+</div>
+<span class="bg-primary-fixed text-on-primary-fixed-variant font-label-sm text-label-sm px-2.5 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">wb_sunny</span> Sáng
+          </span>
+</div>
+<div class="h-[1px] bg-surface-container mx-space-md"></div>
+<!-- Item 2.3: Đơn vị tiền tệ -->
+<div class="w-full p-space-md flex items-center justify-between text-left hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-10 h-10 rounded-full bg-surface-container text-on-surface-variant flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[22px]">payments</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-title-md text-on-surface">Đơn vị tiền tệ</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Việt Nam Đồng (₫)</span>
+</div>
+</div>
+<span class="bg-surface-container-high text-on-surface font-label-sm text-label-sm px-2.5 py-1 rounded-full font-semibold">VND</span>
+</div>
+</div>
+</section>
+<!-- Group 3: Bảo mật & Hỗ trợ -->
+<section class="flex flex-col gap-space-xs">
+<h3 class="px-space-xs font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
+        Bảo mật &amp; Hỗ trợ
+      </h3>
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm flex flex-col">
+<!-- Item 3.1 -->
+<button class="w-full p-space-md flex items-center justify-between text-left hover:bg-surface-container-low transition-colors group active:bg-surface-container" type="button">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-10 h-10 rounded-full bg-tertiary-fixed/60 text-tertiary flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[22px]">shield_person</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-title-md text-on-surface">Bảo mật tài khoản &amp; Đổi mật khẩu</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Bảo vệ 2 lớp, đăng nhập sinh trắc học</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-[20px] ml-space-xs group-hover:translate-x-0.5 transition-transform">chevron_right</span>
+</button>
+<div class="h-[1px] bg-surface-container mx-space-md"></div>
+<!-- Item 3.2 -->
+<button class="w-full p-space-md flex items-center justify-between text-left hover:bg-surface-container-low transition-colors group active:bg-surface-container" type="button">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-10 h-10 rounded-full bg-surface-container text-on-surface-variant flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[22px]">help_center</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-title-md text-on-surface">Trung tâm trợ giúp &amp; Điều khoản dịch vụ</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Câu hỏi thường gặp, chính sách bảo mật VISTA</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-[20px] ml-space-xs group-hover:translate-x-0.5 transition-transform">chevron_right</span>
+</button>
+</div>
+</section>
+<!-- Logout Action Card -->
+<section class="mt-space-sm flex flex-col gap-space-sm">
+<button class="w-full h-12 rounded-xl bg-error-container/60 hover:bg-error-container text-on-error-container active:scale-[0.99] font-title-md text-title-md flex items-center justify-center gap-space-sm transition-all shadow-xs" id="btn-open-logout" type="button">
+<span class="material-symbols-outlined text-[22px]">logout</span>
+<span>Đăng xuất tài khoản</span>
+</button>
+<!-- App version & branding footer -->
+<div class="flex flex-col items-center justify-center text-center pt-space-xs pb-space-sm">
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+          VISTA Travel App • Phiên bản 1.0.4 (Build 202506)
+        </p>
+<p class="font-label-sm text-label-sm text-outline-variant mt-0.5">
+          Editorial Modern Travel Companion
+        </p>
+</div>
+</section>
+</div>
+<!-- Interactive Logout Confirmation Modal (Level 5 Modal Elevation) -->
+<div aria-labelledby="modal-headline" aria-modal="true" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-margin bg-inverse-surface/45 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-200" id="logout-modal" role="dialog">
+<div class="w-full max-w-sm bg-surface-container-lowest rounded-xl p-space-xl shadow-xl flex flex-col gap-space-md translate-y-6 transition-all duration-200" id="logout-modal-content">
+<div class="flex items-start gap-space-md">
+<div class="w-12 h-12 rounded-full bg-error-container/80 text-on-error-container flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[26px]">logout</span>
+</div>
+<div class="flex flex-col min-w-0">
+<h4 class="font-headline-sm text-headline-sm text-on-surface" id="modal-headline">Đăng xuất?</h4>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">
+            Bạn có chắc chắn muốn đăng xuất? Dữ liệu lịch trình ngoại tuyến vẫn được lưu an toàn.
+          </p>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-space-sm pt-space-xs">
+<button class="h-11 rounded-lg bg-surface-container-low hover:bg-surface-container active:scale-95 text-on-surface font-title-md text-title-md flex items-center justify-center transition-all" id="btn-cancel-logout" type="button">
+          Ở lại
+        </button>
+<button class="h-11 rounded-lg bg-error hover:opacity-90 active:scale-95 text-on-error font-title-md text-title-md flex items-center justify-center transition-all shadow-sm" id="btn-confirm-logout" type="button">
+          Đăng xuất
+        </button>
+</div>
+</div>
+</div>
+</div>
+<script>
+  (function() {
+    const openBtn = document.getElementById('btn-open-logout');
+    const cancelBtn = document.getElementById('btn-cancel-logout');
+    const confirmBtn = document.getElementById('btn-confirm-logout');
+    const modal = document.getElementById('logout-modal');
+    const modalContent = document.getElementById('logout-modal-content');
+    const editBtn = document.getElementById('btn-edit-profile');
+
+    function openModal() {
+      if (!modal || !modalContent) return;
+      modal.classList.remove('opacity-0', 'pointer-events-none');
+      modalContent.classList.remove('translate-y-6');
+    }
+
+    function closeModal() {
+      if (!modal || !modalContent) return;
+      modal.classList.add('opacity-0', 'pointer-events-none');
+      modalContent.classList.add('translate-y-6');
+    }
+
+    if (openBtn) openBtn.addEventListener('click', openModal);
+    if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+    
+    if (modal) {
+      modal.addEventListener('click', function(e) {
+        if (e.target === modal) closeModal();
+      });
+    }
+
+    if (confirmBtn) {
+      confirmBtn.addEventListener('click', function() {
+        confirmBtn.innerHTML = '<span class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>';
+        setTimeout(() => {
+          closeModal();
+          confirmBtn.innerHTML = 'Đăng xuất';
+        }, 600);
+      });
+    }
+
+    if (editBtn) {
+      editBtn.addEventListener('click', function() {
+        editBtn.classList.add('scale-95');
+        setTimeout(() => editBtn.classList.remove('scale-95'), 150);
+      });
+    }
+  })();
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-4px_16px_rgba(0,0,0,0.03)]" data-active-classes="text-primary font-label-md"><div class="relative h-16 px-gutter flex items-center justify-around"><a class="flex flex-col items-center justify-center min-w-[56px] h-11 text-on-surface-variant hover:text-on-surface transition-colors" data-path="kham-pha" href="#"><span class="material-symbols-outlined text-[22px]">explore</span><span class="font-label-sm text-label-sm mt-0.5">Khám phá</span></a><a class="flex flex-col items-center justify-center min-w-[56px] h-11 text-on-surface-variant hover:text-on-surface transition-colors" data-path="my-trips" href="#"><span class="material-symbols-outlined text-[22px]">luggage</span><span class="font-label-sm text-label-sm mt-0.5">My Trips</span></a><div class="relative -top-4 flex items-center justify-center"><a aria-label="Tạo chuyến đi" class="w-[52px] h-[52px] rounded-full bg-primary text-on-primary shadow-[0_8px_20px_-2px_rgba(0,97,148,0.35)] flex items-center justify-center hover:bg-primary-container active:scale-95 transition-all" data-path="tao-chuyen-di" href="#"><span class="material-symbols-outlined text-[26px]">add</span></a></div><a class="flex flex-col items-center justify-center min-w-[56px] h-11 text-on-surface-variant hover:text-on-surface transition-colors" data-path="thong-bao" href="#"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="font-label-sm text-label-sm mt-0.5">Thông báo</span></a><a class="flex flex-col items-center justify-center min-w-[56px] h-11 text-on-surface-variant hover:text-on-surface transition-colors" data-path="ho-so-ca-nhan" href="#"><span class="material-symbols-outlined text-[22px]">person</span><span class="font-label-sm text-label-sm mt-0.5">Hồ sơ</span></a></div></nav></body></html>

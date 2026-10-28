@@ -14,7 +14,7 @@ const GOOGLE_CLIENT_ID =
   process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
   '577926332144-23qceg2o944n9hg5iv7nai2vr0s9u2d1.apps.googleusercontent.com';
 
-const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1').replace(/\/+$/, '');
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081/api/v1').replace(/\/+$/, '');
 
 const WEAK_PASSWORDS = new Set([
   '1234567890',

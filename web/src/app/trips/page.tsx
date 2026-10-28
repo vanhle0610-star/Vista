@@ -60,6 +60,87 @@ interface TripItem {
   itineraryDays?: unknown[];
 }
 
+const DEFAULT_DEMO_TRIPS: TripItem[] = [
+  {
+    id: 'trip-danang-2026',
+    title: 'Khám phá Đà Nẵng - Hội An 4N3Đ',
+    destination: 'Đà Nẵng & Quảng Nam',
+    durationBadge: '4 ngày 3 đêm',
+    startDate: '15/11',
+    endDate: '18/11/2026',
+    status: 'PLANNING',
+    role: 'OWNER',
+    budgetTotal: 18500000,
+    budgetSpent: 5200000,
+    progressPercent: 35,
+    members: [
+      { name: 'Quý Nguyễn (Bạn)', avatar: 'QN', color: '#0284c7' },
+      { name: 'Trần Minh Tuấn', avatar: 'MT', color: '#10b981' },
+      { name: 'Lê Vân Anh', avatar: 'VA', color: '#f59e0b' },
+    ],
+    image: 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=800&q=80',
+    treasuryPath: '/trips/trip-danang-2026/treasury',
+    alertType: 'BLUE',
+    alertText: 'Chờ biểu quyết chặng: Đang mở bình chọn địa điểm ăn tối Ngày 2.',
+    alertLinkText: 'Bình chọn',
+    quickActions: [
+      { label: 'Lịch trình', href: '/trips/trip-danang-2026' },
+      { label: 'Thủ quỹ', href: '/trips/trip-danang-2026/treasury' },
+      { label: 'Thành viên', href: '/trips/trip-danang-2026' },
+    ],
+  },
+  {
+    id: 'trip-hagiang-2026',
+    title: 'Chinh phục Cực Bắc Hà Giang',
+    destination: 'Hà Giang',
+    durationBadge: '3 ngày 2 đêm',
+    startDate: '28/11',
+    endDate: '30/11/2026',
+    status: 'ACTIVE',
+    role: 'MEMBER',
+    budgetTotal: 12000000,
+    budgetSpent: 8400000,
+    progressPercent: 70,
+    members: [
+      { name: 'Phạm Thanh Sơn', avatar: 'TS', color: '#6366f1' },
+      { name: 'Quý Nguyễn (Bạn)', avatar: 'QN', color: '#0284c7' },
+    ],
+    image: 'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80',
+    treasuryPath: '/trips/trip-hagiang-2026/treasury',
+    alertType: 'AMBER',
+    alertText: 'Đang diễn ra chặng đèo Mã Pí Lèng',
+    quickActions: [
+      { label: 'Xem chi tiết', href: '/trips/trip-hagiang-2026' },
+      { label: 'Sổ chi tiêu', href: '/trips/trip-hagiang-2026/treasury' },
+    ],
+  },
+  {
+    id: 'trip-phuquoc-2026',
+    title: 'Nghỉ dưỡng biển đảo ngọc Phú Quốc 3N2Đ',
+    destination: 'Phú Quốc, Kiên Giang',
+    durationBadge: '3 ngày 2 đêm',
+    startDate: '10/09',
+    endDate: '12/09/2026',
+    status: 'COMPLETED',
+    role: 'MEMBER',
+    budgetTotal: 15000000,
+    budgetSpent: 14200000,
+    progressPercent: 100,
+    members: [
+      { name: 'Nguyễn Văn Tuấn', avatar: 'VT', color: '#0284c7' },
+      { name: 'Quý Nguyễn (Bạn)', avatar: 'QN', color: '#10b981' },
+    ],
+    image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80',
+    treasuryPath: '/trips/trip-phuquoc-2026/treasury',
+    alertType: 'COMPLETED',
+    alertText: 'Chuyến đi đã hoàn tất xuất sắc',
+    quickActions: [
+      { label: 'Xem tổng kết', href: '/trips/trip-danang-2026' },
+      { label: 'Sổ quỹ', href: '/trips/trip-danang-2026/treasury' },
+    ],
+  },
+];
+
 function getTodayString(): string {
   const now = new Date();
   const y = now.getFullYear();
@@ -250,7 +331,7 @@ export default function TripsPage() {
     }
   };
 
-  const [tripsList, setTripsList] = useState<TripItem[]>([]);
+  const [tripsList, setTripsList] = useState<TripItem[]>(DEFAULT_DEMO_TRIPS);
 
   // Synchronize with localStorage (custom trips created from Planner or Trips)
   useEffect(() => {
@@ -295,9 +376,15 @@ export default function TripsPage() {
               };
             });
 
-            setTripsList(normalized);
+            const merged: TripItem[] = [...normalized];
+            DEFAULT_DEMO_TRIPS.forEach((d) => {
+              if (!merged.some((m) => m.id === d.id)) {
+                merged.push(d);
+              }
+            });
+            setTripsList(merged);
           } else {
-            setTripsList([]);
+            setTripsList(DEFAULT_DEMO_TRIPS);
           }
 
           // Check if user just created a trip from Planner

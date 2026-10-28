@@ -18,7 +18,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
   const handleLogout = async () => {
     try {
-      const apiBase = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1').replace(/\/+$/, '');
+      const apiBase = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081/api/v1').replace(/\/+$/, '');
       await fetch(`${apiBase}/auth/logout`, {
         method: 'POST',
         credentials: 'include',
