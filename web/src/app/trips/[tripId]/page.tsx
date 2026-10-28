@@ -64,6 +64,7 @@ interface MemberItem {
   avatar: string;
   color: string;
   role?: string;
+  email?: string;
 }
 
 interface TripDetailData {
@@ -362,6 +363,54 @@ function getCurrentUserMember(defaultRole = 'Trưởng nhóm') {
   };
 }
 
+function formatMembersForCurrentUser(
+  members: Array<{ name: string; avatar?: string; color?: string; role?: string; email?: string }>,
+  defaultRole = 'Trưởng nhóm'
+): MemberItem[] {
+  let currentUser: any = null;
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = localStorage.getItem('vista_user');
+      if (stored) currentUser = JSON.parse(stored);
+    } catch {}
+  }
+
+  const currentEmail = (currentUser?.email || '').toLowerCase().trim();
+  const currentName = (currentUser?.displayName || currentUser?.name || '').toLowerCase().trim();
+
+  if (!Array.isArray(members) || members.length === 0) {
+    return [getCurrentUserMember(defaultRole)];
+  }
+
+  const seen = new Set<string>();
+  const result: MemberItem[] = [];
+
+  for (const m of members) {
+    if (!m) continue;
+    const rawName = (m.name || '').replace(/\s*\([^)]*\)/g, '').trim();
+    const rawEmail = (m.email || '').toLowerCase().trim();
+    const key = rawEmail || rawName.toLowerCase();
+
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+
+    const isMe =
+      (currentEmail && rawEmail && currentEmail === rawEmail) ||
+      (currentName && rawName.toLowerCase() === currentName) ||
+      (m.name || '').toLowerCase().includes('(bạn)');
+
+    result.push({
+      name: isMe ? `${rawName || 'Bạn'} (Bạn)` : rawName,
+      avatar: m.avatar || rawName.slice(0, 2).toUpperCase() || 'TV',
+      color: m.color || '#0284c7',
+      email: m.email || (isMe && currentEmail ? currentEmail : undefined),
+      role: m.role || 'Thành viên',
+    });
+  }
+
+  return result.length > 0 ? result : [getCurrentUserMember(defaultRole)];
+}
+
 export default function TripDetailPage() {
   const params = useParams();
   const searchParams = useSearchParams();
@@ -492,6 +541,13 @@ export default function TripDetailPage() {
     } catch {
       // ignore
     }
+    try {
+      fetch('/api/trips', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedTrip),
+      }).catch(() => {});
+    } catch {}
   };
 
   useEffect(() => {
@@ -524,6 +580,27 @@ export default function TripDetailPage() {
       })
       .catch(() => {});
 
+    // Sync trip data & members from server API
+    fetch(`/api/trips?id=${tripId}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((serverTrip) => {
+        if (serverTrip) {
+          setTrip((prev) => {
+            if (!prev) return serverTrip;
+            const mergedMembers = formatMembersForCurrentUser([
+              ...(prev.members || []),
+              ...(serverTrip.members || []),
+            ]);
+            return {
+              ...prev,
+              ...serverTrip,
+              members: mergedMembers,
+            };
+          });
+        }
+      })
+      .catch(() => {});
+
     const timer = setTimeout(() => {
       // 1. Try finding in custom trips in localStorage
       try {
@@ -533,10 +610,7 @@ export default function TripDetailPage() {
           const match = parsed.find((item) => item.id === tripId);
           if (match) {
             // Normalize fields
-            const currentOwner = getCurrentUserMember('Trưởng nhóm');
-            const normalizedMembers = match.members && match.members.length > 0
-              ? match.members.map((m) => (m.name.includes('Lê Vân Anh') ? currentOwner : m))
-              : [currentOwner];
+            const normalizedMembers = formatMembersForCurrentUser(match.members || []);
 
             const isHanoiMismatch =
               match.destination &&

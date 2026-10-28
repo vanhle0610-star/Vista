@@ -184,6 +184,54 @@ function getCurrentUserMember(defaultRole = 'Trưởng nhóm') {
   };
 }
 
+function formatMembersForCurrentUser(
+  members: Array<{ name: string; avatar?: string; color?: string; role?: string; email?: string }>,
+  defaultRole = 'Trưởng nhóm'
+) {
+  let currentUser: any = null;
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = localStorage.getItem('vista_user');
+      if (stored) currentUser = JSON.parse(stored);
+    } catch {}
+  }
+
+  const currentEmail = (currentUser?.email || '').toLowerCase().trim();
+  const currentName = (currentUser?.displayName || currentUser?.name || '').toLowerCase().trim();
+
+  if (!Array.isArray(members) || members.length === 0) {
+    return [getCurrentUserMember(defaultRole)];
+  }
+
+  const seen = new Set<string>();
+  const result: Array<{ name: string; avatar: string; color: string; role?: string; email?: string }> = [];
+
+  for (const m of members) {
+    if (!m) continue;
+    const rawName = (m.name || '').replace(/\s*\([^)]*\)/g, '').trim();
+    const rawEmail = (m.email || '').toLowerCase().trim();
+    const key = rawEmail || rawName.toLowerCase();
+
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+
+    const isMe =
+      (currentEmail && rawEmail && currentEmail === rawEmail) ||
+      (currentName && rawName.toLowerCase() === currentName) ||
+      (m.name || '').toLowerCase().includes('(bạn)');
+
+    result.push({
+      name: isMe ? `${rawName || 'Bạn'} (Bạn)` : rawName,
+      avatar: m.avatar || (rawName.slice(0, 2)).toUpperCase() || 'TV',
+      color: m.color || '#0284c7',
+      email: m.email || (isMe && currentEmail ? currentEmail : undefined),
+      role: m.role || 'Thành viên',
+    });
+  }
+
+  return result.length > 0 ? result : [getCurrentUserMember(defaultRole)];
+}
+
 export default function TripsPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'all' | 'planning' | 'active' | 'completed'>('all');
@@ -226,7 +274,6 @@ export default function TripsPage() {
           const stored = localStorage.getItem('vista_custom_trips');
           const customTrips: TripItem[] = stored ? JSON.parse(stored) : [];
           if (customTrips && customTrips.length > 0) {
-            const currentOwner = getCurrentUserMember('Trưởng nhóm');
             const normalized = customTrips.map((t) => {
               const dest = t.destination || 'Việt Nam';
               const isHanoiMismatch = dest && !dest.toLowerCase().includes('hà nội') && JSON.stringify(t.itineraryDays || '').includes('Hoàn Kiếm');
@@ -236,9 +283,7 @@ export default function TripsPage() {
 
               return {
                 ...t,
-                members: Array.isArray(t.members) && t.members.length > 0
-                  ? t.members.map((m) => (m.name.includes('Lê Vân Anh') ? currentOwner : m))
-                  : [currentOwner],
+                members: formatMembersForCurrentUser(t.members || []),
                 image: getDestinationHeroImage(dest),
                 itineraryDays: fixedItinerary,
                 quickActions: Array.isArray(t.quickActions) && t.quickActions.length > 0
@@ -270,6 +315,37 @@ export default function TripsPage() {
           } else {
             setTripsList(DEFAULT_DEMO_TRIPS);
           }
+
+          // Also sync with server API to fetch trips from other windows / accounts
+          try {
+            fetch('/api/trips')
+              .then((r) => (r.ok ? r.json() : []))
+              .then((serverTrips) => {
+                if (Array.isArray(serverTrips) && serverTrips.length > 0) {
+                  setTripsList((prev) => {
+                    const map = new Map();
+                    prev.forEach((t) => map.set(t.id, t));
+                    serverTrips.forEach((st: any) => {
+                      if (map.has(st.id)) {
+                        const existing = map.get(st.id);
+                        map.set(st.id, {
+                          ...existing,
+                          ...st,
+                          members: formatMembersForCurrentUser([...(existing.members || []), ...(st.members || [])]),
+                        });
+                      } else {
+                        map.set(st.id, {
+                          ...st,
+                          members: formatMembersForCurrentUser(st.members || []),
+                        });
+                      }
+                    });
+                    return Array.from(map.values());
+                  });
+                }
+              })
+              .catch(() => {});
+          } catch {}
 
           // Check if user just created a trip from Planner
           const params = new URLSearchParams(window.location.search);

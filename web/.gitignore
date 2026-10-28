@@ -41,3 +41,4 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .invitations_store.json
+.trips_store.json
