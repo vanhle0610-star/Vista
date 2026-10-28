@@ -509,6 +509,21 @@ export default function TripDetailPage() {
       setInvitationsList([]);
     }
 
+    // Sync invitations from server API (cross-browser / cross-session support)
+    fetch(`/api/invitations?tripId=${tripId}`)
+      .then((r) => r.json())
+      .then((serverInvs) => {
+        if (Array.isArray(serverInvs) && serverInvs.length > 0) {
+          setInvitationsList((prev) => {
+            const map = new Map();
+            prev.forEach((i: any) => map.set(i.token, i));
+            serverInvs.forEach((i: any) => map.set(i.token, i));
+            return Array.from(map.values());
+          });
+        }
+      })
+      .catch(() => {});
+
     const timer = setTimeout(() => {
       // 1. Try finding in custom trips in localStorage
       try {
@@ -698,11 +713,14 @@ export default function TripDetailPage() {
 
     // Check conflict: Cannot invite self (Owner / current user)
     let currentUserEmail = '';
+    let currentUserName = '';
     if (typeof window !== 'undefined') {
       try {
         const stored = localStorage.getItem('vista_user');
         if (stored) {
-          currentUserEmail = (JSON.parse(stored).email || '').toLowerCase().trim();
+          const u = JSON.parse(stored);
+          currentUserEmail = (u.email || '').toLowerCase().trim();
+          currentUserName = u.displayName || u.name || '';
         }
       } catch {}
     }
@@ -738,9 +756,17 @@ export default function TripDetailPage() {
     const newInv = {
       id: `inv-${Date.now()}`,
       email: email,
+      inviteeEmail: email,
       token: token,
       status: 'PENDING' as const,
       expiresAt: 'Trong 7 ngày tới',
+      inviterEmail: currentUserEmail,
+      inviterName: currentUserName || 'Trưởng nhóm',
+      tripId: tripId,
+      tripTitle: trip?.title || 'Khám phá chuyến đi Vista',
+      destination: trip?.destination || 'Việt Nam',
+      startDate: trip?.startDate || 'Sắp tới',
+      endDate: trip?.endDate || '2026',
     };
     const updated = [newInv, ...invitationsList];
     setInvitationsList(updated);
@@ -749,6 +775,16 @@ export default function TripDetailPage() {
         localStorage.setItem(`vista_invitations_${tripId}`, JSON.stringify(updated));
       } catch {}
     }
+
+    // Sync to shared server API so any other window / user receives it immediately
+    try {
+      fetch('/api/invitations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newInv),
+      }).catch(() => {});
+    } catch {}
+
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
     const inviteLink = `${baseUrl}/invitations/${token}`;
     setCreatedInvitationInfo({
@@ -761,6 +797,7 @@ export default function TripDetailPage() {
 
   // Revoke invite (W3-TV3-01)
   const handleRevokeInvite = (id: string) => {
+    const target = invitationsList.find((i) => i.id === id);
     const updated = invitationsList.map((inv) =>
       inv.id === id ? { ...inv, status: 'REVOKED' as const, expiresAt: 'Đã thu hồi bởi Owner' } : inv
     );
@@ -768,6 +805,15 @@ export default function TripDetailPage() {
     if (typeof window !== 'undefined' && tripId) {
       try {
         localStorage.setItem(`vista_invitations_${tripId}`, JSON.stringify(updated));
+      } catch {}
+    }
+    if (target?.token) {
+      try {
+        fetch('/api/invitations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: target.token, status: 'REVOKED' }),
+        }).catch(() => {});
       } catch {}
     }
     showToast('✓ Trưởng nhóm (Owner) đã thu hồi lời mời! Token này đã bị vô hiệu hóa.');

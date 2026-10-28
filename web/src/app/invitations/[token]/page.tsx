@@ -14,6 +14,8 @@ import {
   Ticket,
   Copy,
   Crown,
+  AlertCircle,
+  LogIn,
 } from 'lucide-react';
 import { Navbar } from '@/components/common/Navbar';
 
@@ -25,6 +27,22 @@ interface TripData {
   endDate?: string;
   role?: string;
   members?: Array<{ name: string; avatar?: string; color?: string; role?: string; email?: string }>;
+}
+
+interface StoredInvitation {
+  id?: string;
+  tripId?: string;
+  tripTitle?: string;
+  destination?: string;
+  startDate?: string;
+  endDate?: string;
+  inviterEmail?: string;
+  inviterName?: string;
+  inviteeEmail?: string;
+  email?: string;
+  token: string;
+  status: 'PENDING' | 'REVOKED' | 'EXPIRED' | 'ACCEPTED';
+  expiresAt?: string;
 }
 
 export default function InvitationAcceptPage() {
@@ -39,7 +57,7 @@ export default function InvitationAcceptPage() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
-  // User and membership state
+  // User and trip state
   const [currentUser, setCurrentUser] = useState<{ id?: string; email?: string; displayName?: string; name?: string } | null>(null);
   const [tripData, setTripData] = useState<TripData>({
     id: 'trip-danang-2026',
@@ -54,16 +72,9 @@ export default function InvitationAcceptPage() {
     ],
   });
 
-  const [invitationMeta, setInvitationMeta] = useState<{
-    id?: string;
-    email?: string;
-    token: string;
-    status: 'PENDING' | 'REVOKED' | 'EXPIRED' | 'ACCEPTED';
-    expiresAt?: string;
-    tripId?: string;
-  } | null>(null);
+  const [invitationMeta, setInvitationMeta] = useState<StoredInvitation | null>(null);
 
-  // Load user & trip data
+  // Load user & invitation data (from server API + localStorage)
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
@@ -77,7 +88,28 @@ export default function InvitationAcceptPage() {
       }
     } catch {}
 
-    // 2. Search for the invitation token in localStorage
+    // 2. Fetch invitation from server API (cross-browser / cross-session support)
+    fetch(`/api/invitations?token=${encodeURIComponent(token)}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((serverInv: StoredInvitation | null) => {
+        if (serverInv) {
+          setInvitationMeta(serverInv);
+          setTestState(serverInv.status || 'PENDING');
+          if (serverInv.tripTitle) {
+            setTripData((prev) => ({
+              ...prev,
+              id: serverInv.tripId || prev.id,
+              title: serverInv.tripTitle || prev.title,
+              destination: serverInv.destination || prev.destination,
+              startDate: serverInv.startDate || prev.startDate,
+              endDate: serverInv.endDate || prev.endDate,
+            }));
+          }
+        }
+      })
+      .catch(() => {});
+
+    // 3. Search local storage fallback
     let matchedTripId: string | null = null;
     let matchedInv: any = null;
 
@@ -88,7 +120,7 @@ export default function InvitationAcceptPage() {
           const raw = localStorage.getItem(key);
           if (raw) {
             const list = JSON.parse(raw);
-            const found = list.find((it: any) => it.token === token);
+            const found = list.find((it: any) => it.token.toUpperCase() === token.toUpperCase());
             if (found) {
               matchedTripId = key.replace('vista_invitations_', '');
               matchedInv = found;
@@ -99,24 +131,22 @@ export default function InvitationAcceptPage() {
       }
     } catch {}
 
-    // Parse status from token string as fallback for demo tokens
-    if (!matchedInv) {
-      if (token.toLowerCase().includes('revoked')) {
-        setTestState('REVOKED');
-      } else if (token.toLowerCase().includes('expired')) {
-        setTestState('EXPIRED');
-      }
-    } else {
+    if (matchedInv) {
       setTestState(matchedInv.status || 'PENDING');
-      setInvitationMeta({ ...matchedInv, tripId: matchedTripId });
+      setInvitationMeta((prev) => prev || { ...matchedInv, tripId: matchedTripId });
+    } else if (token.toLowerCase().includes('revoked')) {
+      setTestState('REVOKED');
+    } else if (token.toLowerCase().includes('expired')) {
+      setTestState('EXPIRED');
     }
 
-    // 3. Find the matched trip
+    // 4. Find matched trip in localStorage
     try {
       const storedTrips = localStorage.getItem('vista_custom_trips');
       if (storedTrips) {
         const trips: TripData[] = JSON.parse(storedTrips);
-        const found = trips.find((t) => t.id === (matchedTripId || 'trip-danang-2026'));
+        const targetTripId = matchedTripId || invitationMeta?.tripId;
+        const found = trips.find((t) => t.id === targetTripId || (targetTripId && t.id.includes(targetTripId)));
         if (found) {
           setTripData(found);
         }
@@ -124,50 +154,66 @@ export default function InvitationAcceptPage() {
     } catch {}
   }, [token]);
 
-  // Determine user role in this trip
-  const userRole = useMemo<'OWNER' | 'MEMBER' | 'GUEST'>(() => {
-    if (!currentUser) return 'GUEST';
+  // Determine user relation to this invitation
+  const viewRole = useMemo<'IS_SENDER' | 'ALREADY_MEMBER' | 'WRONG_ACCOUNT' | 'INVITEE_PENDING' | 'ANONYMOUS'>(() => {
+    if (!currentUser) return 'ANONYMOUS';
 
     const userEmail = (currentUser.email || '').toLowerCase().trim();
     const userName = (currentUser.displayName || currentUser.name || '').toLowerCase().trim();
 
-    // Check if user is trip creator/owner
-    const isOwner =
-      tripData.role === 'OWNER' ||
-      tripData.members?.some((m) => {
-        const mRole = m.role?.toLowerCase() || '';
-        const isOwnerRole = mRole.includes('trưởng') || mRole.includes('owner');
-        const mEmail = (m.email || '').toLowerCase().trim();
-        const mName = (m.name || '').toLowerCase().trim();
-        return isOwnerRole && ((userEmail && mEmail === userEmail) || (userName && mName.includes(userName)));
-      });
+    const inviterEmail = (invitationMeta?.inviterEmail || '').toLowerCase().trim();
+    const inviterName = (invitationMeta?.inviterName || '').toLowerCase().trim();
+    const targetEmail = (invitationMeta?.inviteeEmail || invitationMeta?.email || '').toLowerCase().trim();
 
-    if (isOwner) return 'OWNER';
+    // 1. IS_SENDER: The current user is the one who created/sent this invitation
+    const isSenderByEmail = inviterEmail && userEmail && inviterEmail === userEmail;
+    const isSenderByName = inviterName && userName && (inviterName === userName || inviterName.includes(userName) || userName.includes(inviterName));
+    const isOwnerByRole = tripData.role === 'OWNER';
 
-    // Check if user is already a member
-    const isMember = tripData.members?.some((m) => {
+    if (isSenderByEmail || isSenderByName || isOwnerByRole) {
+      return 'IS_SENDER';
+    }
+
+    // 2. ALREADY_MEMBER: Current user is already inside this trip
+    const isMemberByRole = tripData.role === 'MEMBER';
+    const isMemberInList = tripData.members?.some((m) => {
       const mEmail = (m.email || '').toLowerCase().trim();
       const mName = (m.name || '').toLowerCase().trim();
-      return (userEmail && mEmail === userEmail) || (userName && mName.includes(userName));
+      return (
+        (userEmail && mEmail === userEmail) ||
+        (userName && mName.includes(userName)) ||
+        mName.includes('bạn') // Joined trip placeholder "Bạn (Thành viên)"
+      );
     });
 
-    if (isMember) return 'MEMBER';
+    if (isMemberByRole || isMemberInList) {
+      return 'ALREADY_MEMBER';
+    }
 
-    return 'GUEST';
-  }, [currentUser, tripData]);
+    // 3. WRONG_ACCOUNT: The invitation is meant for someone else
+    if (targetEmail && userEmail && targetEmail !== userEmail) {
+      return 'WRONG_ACCOUNT';
+    }
 
-  // Trip owner name
-  const tripOwnerName = useMemo(() => {
+    // 4. INVITEE_PENDING: Matching recipient
+    return 'INVITEE_PENDING';
+  }, [currentUser, tripData, invitationMeta]);
+
+  // Display inviter name
+  const inviterDisplayName = useMemo(() => {
+    if (invitationMeta?.inviterName) return invitationMeta.inviterName;
     const owner = tripData.members?.find((m) => {
       const r = (m.role || '').toLowerCase();
       return r.includes('trưởng') || r.includes('owner');
     });
-    return owner?.name?.replace(/\s*\([^)]*\)/, '') || 'Trưởng nhóm';
-  }, [tripData]);
+    return owner?.name?.replace(/\s*\([^)]*\)/, '') || 'Người tổ chức';
+  }, [invitationMeta, tripData]);
 
-  const handleAccept = () => {
+  const targetEmailDisplay = invitationMeta?.inviteeEmail || invitationMeta?.email || '';
+
+  const handleAccept = async () => {
     if (testState === 'REVOKED') {
-      setStatusMessage('❌ Lời mời này đã bị Trưởng nhóm (Owner) thu hồi! Bạn không thể tham gia chuyến đi.');
+      setStatusMessage('❌ Lời mời này đã bị thu hồi bởi người gửi! Bạn không thể tham gia chuyến đi.');
       return;
     }
     if (testState === 'EXPIRED') {
@@ -179,7 +225,16 @@ export default function InvitationAcceptPage() {
       return;
     }
 
-    // Success: Add new member with real account info to trip
+    // 1. Sync accept to server API
+    try {
+      await fetch('/api/invitations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, status: 'ACCEPTED' }),
+      });
+    } catch {}
+
+    // 2. Save member to trip in localStorage
     try {
       const stored = localStorage.getItem('vista_custom_trips');
       let trips = stored ? JSON.parse(stored) : [];
@@ -189,7 +244,7 @@ export default function InvitationAcceptPage() {
       const initials = actualName.slice(0, 2).toUpperCase();
 
       const newMember = {
-        name: `${actualName} (Bạn vừa tham gia)`,
+        name: `${actualName} (Bạn)`,
         email: currentUser?.email,
         avatar: initials,
         color: '#10B981',
@@ -199,9 +254,10 @@ export default function InvitationAcceptPage() {
       if (!trip) {
         trip = {
           ...tripData,
+          role: 'MEMBER',
           members: [...(tripData.members || []), newMember],
         };
-        trips.push(trip);
+        trips.unshift(trip);
       } else {
         if (!trip.members) trip.members = [];
         if (!trip.members.some((m: any) => m.email && currentUser?.email && m.email === currentUser?.email)) {
@@ -220,25 +276,30 @@ export default function InvitationAcceptPage() {
           localStorage.setItem(invKey, JSON.stringify(updated));
         }
       }
-    } catch {
-      // ignore
-    }
+    } catch {}
 
     setIsSuccess(true);
     setTestState('ACCEPTED');
     setStatusMessage('🎉 Chúc mừng! Bạn đã chấp nhận lời mời và trở thành thành viên chính thức của nhóm.');
 
     setTimeout(() => {
-      router.push(`/trips/${tripData.id}?tab=members`);
-    }, 1800);
+      router.push(`/trips/${tripData.id}`);
+    }, 1500);
   };
 
-  const handleDecline = () => {
+  const handleDecline = async () => {
+    try {
+      await fetch('/api/invitations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, status: 'REVOKED' }),
+      });
+    } catch {}
     setStatusMessage('⚠️ Bạn đã chọn TỪ CHỐI lời mời. Bạn không được thêm vào danh sách thành viên của nhóm.');
   };
 
   const handleCopyLink = () => {
-    if (navigator?.clipboard) {
+    if (typeof window !== 'undefined' && navigator?.clipboard) {
       navigator.clipboard.writeText(window.location.href);
       setCopiedLink(true);
       setTimeout(() => setCopiedLink(false), 2500);
@@ -341,8 +402,8 @@ export default function InvitationAcceptPage() {
             <h2 style={{ fontSize: '22px', fontWeight: 800, margin: '0 0 6px' }}>
               Lời mời tham gia chuyến đi
             </h2>
-            <p style={{ margin: 0, opacity: 0.9, fontSize: '14.5px' }}>
-              Trưởng nhóm <strong>{tripOwnerName}</strong> đã mời bạn cùng đồng hành!
+            <p style={{ margin: 0, opacity: 0.95, fontSize: '14.5px' }}>
+              <strong>{inviterDisplayName}</strong> đã mời bạn cùng đồng hành!
             </p>
           </div>
 
@@ -375,7 +436,7 @@ export default function InvitationAcceptPage() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', fontSize: '13.5px', color: '#475569' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <MapPin size={15} style={{ color: '#0EA5E9' }} />
-                  <span>{tripData.destination}</span>
+                  <span>{tripData.destination || 'Việt Nam'}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <Calendar size={15} style={{ color: '#6366F1' }} />
@@ -383,7 +444,7 @@ export default function InvitationAcceptPage() {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <Users size={15} style={{ color: '#F59E0B' }} />
-                  <span>{tripData.members?.length || 1} thành viên</span>
+                  <span>{tripData.members?.length || 2} thành viên</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <ShieldCheck size={15} style={{ color: '#10B981' }} />
@@ -409,19 +470,20 @@ export default function InvitationAcceptPage() {
               </div>
             )}
 
-            {/* XỬ LÝ THEO VAI TRÒ CỦA NGƯỜI ĐANG ĐĂNG NHẬP */}
+            {/* ─── XỬ LÝ THEO TỪNG VAI TRÒ CHUẨN XÁC ─── */}
 
-            {/* CASE 1: BẠN LÀ TRƯỞNG NHÓM (CHỦ SỞ HỮU / NGƯỜI PHÁT HÀNH LỜI MỜI) */}
-            {userRole === 'OWNER' && (
+            {/* TRƯỜNG HỢP 1: BẠN LÀ NGƯỜI TẠO / PHÁT HÀNH LỜI MỜI NÀY */}
+            {viewRole === 'IS_SENDER' && (
               <div style={{ background: '#EFF6FF', border: '1.5px solid #93C5FD', borderRadius: '16px', padding: '22px 20px', textAlign: 'center' }}>
                 <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#DBEAFE', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px' }}>
                   <Crown size={24} style={{ color: '#0284C7' }} />
                 </div>
                 <h4 style={{ margin: '0 0 6px', fontSize: '17px', fontWeight: 800, color: '#1E40AF' }}>
-                  Bạn là Trưởng nhóm của chuyến đi này
+                  Bạn là người đã tạo và gửi lời mời này
                 </h4>
                 <p style={{ margin: '0 0 18px', fontSize: '13.5px', color: '#1E3A8A', lineHeight: '1.5' }}>
-                  Bạn chính là người đã tạo chuyến đi và phát hành lời mời này. Bạn đã có toàn quyền quản trị và <strong>không thể tự chấp nhận lời mời của chính mình</strong>.
+                  Lời mời này được gửi đến: <strong>{targetEmailDisplay || 'người nhận'}</strong>.<br />
+                  Bạn đã ở trong chuyến đi này rồi và <strong>không thể tự chấp nhận lời mời của chính mình</strong>.
                 </p>
                 <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
                   <Link
@@ -468,8 +530,8 @@ export default function InvitationAcceptPage() {
               </div>
             )}
 
-            {/* CASE 2: BẠN ĐÃ LÀ THÀNH VIÊN TRONG CHUYẾN ĐI NÀY RỒI */}
-            {userRole === 'MEMBER' && (
+            {/* TRƯỜNG HỢP 2: BẠN ĐÃ LÀ THÀNH VIÊN TRONG CHUYẾN ĐI NÀY RỒI */}
+            {viewRole === 'ALREADY_MEMBER' && (
               <div style={{ background: '#F0FDF4', border: '1.5px solid #86EFAC', borderRadius: '16px', padding: '22px 20px', textAlign: 'center' }}>
                 <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#DCFCE7', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px' }}>
                   <CheckCircle2 size={24} style={{ color: '#16A34A' }} />
@@ -504,8 +566,78 @@ export default function InvitationAcceptPage() {
               </div>
             )}
 
-            {/* CASE 3: KHÁCH MỚI / NGƯỜI ĐƯỢC MỜI (CHƯA PHẢI THÀNH VIÊN) */}
-            {userRole === 'GUEST' && (
+            {/* TRƯỜNG HỢP 3: ĐĂNG NHẬP SAI TÀI KHOẢN (Lời mời gửi cho người khác) */}
+            {viewRole === 'WRONG_ACCOUNT' && (
+              <div style={{ background: '#FFFBEB', border: '1.5px solid #FDE68A', borderRadius: '16px', padding: '22px 20px', textAlign: 'center' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#FEF3C7', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px' }}>
+                  <AlertCircle size={24} style={{ color: '#D97706' }} />
+                </div>
+                <h4 style={{ margin: '0 0 6px', fontSize: '17px', fontWeight: 800, color: '#92400E' }}>
+                  Lời mời này dành riêng cho {targetEmailDisplay}
+                </h4>
+                <p style={{ margin: '0 0 18px', fontSize: '13.5px', color: '#78350F', lineHeight: '1.5' }}>
+                  Bạn hiện đang đăng nhập với tài khoản <strong>{currentUser?.email || currentUser?.displayName}</strong>.<br />
+                  Vui lòng chuyển sang tài khoản <strong>{targetEmailDisplay}</strong> để chấp nhận lời mời, hoặc liên hệ Trưởng nhóm phát hành lời mời mới cho bạn.
+                </p>
+                <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <Link
+                    href="/trips"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '10px 20px',
+                      background: '#FFFFFF',
+                      border: '1.5px solid #CBD5E1',
+                      color: '#475569',
+                      borderRadius: '10px',
+                      fontSize: '13.5px',
+                      fontWeight: 700,
+                      textDecoration: 'none',
+                    }}
+                  >
+                    <span>Về trang Chuyến đi</span>
+                  </Link>
+                </div>
+              </div>
+            )}
+
+            {/* TRƯỜNG HỢP 4: CHƯA ĐĂNG NHẬP */}
+            {viewRole === 'ANONYMOUS' && (
+              <div style={{ background: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRadius: '16px', padding: '22px 20px', textAlign: 'center' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#E2E8F0', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px' }}>
+                  <LogIn size={24} style={{ color: '#475569' }} />
+                </div>
+                <h4 style={{ margin: '0 0 6px', fontSize: '17px', fontWeight: 800, color: '#1E293B' }}>
+                  Đăng nhập để chấp nhận lời mời
+                </h4>
+                <p style={{ margin: '0 0 18px', fontSize: '13.5px', color: '#64748B', lineHeight: '1.5' }}>
+                  Lời mời này được gửi đến: <strong>{targetEmailDisplay || 'bạn'}</strong>.<br />
+                  Vui lòng đăng nhập vào Vista để cùng tham gia chuyến đi này.
+                </p>
+                <Link
+                  href={`/login?redirect=/invitations/${token}`}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '11px 22px',
+                    background: '#0284C7',
+                    color: '#FFFFFF',
+                    borderRadius: '10px',
+                    fontSize: '14px',
+                    fontWeight: 700,
+                    textDecoration: 'none',
+                  }}
+                >
+                  <LogIn size={16} />
+                  <span>Đăng nhập ngay</span>
+                </Link>
+              </div>
+            )}
+
+            {/* TRƯỜNG HỢP 5: ĐÚNG TÀI KHOẢN ĐƯỢC MỜI (HOẶC GUEST HỢP LỆ) */}
+            {viewRole === 'INVITEE_PENDING' && (
               <>
                 {testState === 'REVOKED' && (
                   <div style={{ background: '#FEF2F2', border: '1.5px solid #FECACA', borderRadius: '16px', padding: '20px', textAlign: 'center' }}>
@@ -617,7 +749,7 @@ export default function InvitationAcceptPage() {
                 {isSuccess && (
                   <div style={{ textAlign: 'center' }}>
                     <Link
-                      href={`/trips/${tripData.id}?tab=members`}
+                      href={`/trips/${tripData.id}`}
                       style={{
                         display: 'inline-flex',
                         alignItems: 'center',
@@ -631,7 +763,7 @@ export default function InvitationAcceptPage() {
                         textDecoration: 'none',
                       }}
                     >
-                      <span>Xem danh sách thành viên chuyến đi</span>
+                      <span>Vào xem chuyến đi ngay</span>
                       <ArrowRight size={16} />
                     </Link>
                   </div>
