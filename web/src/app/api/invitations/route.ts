@@ -12,6 +12,7 @@ export interface StoredInvitation {
   inviterEmail?: string;
   inviterName?: string;
   inviteeEmail: string;
+  email?: string;
   token: string;
   status: 'PENDING' | 'ACCEPTED' | 'REVOKED' | 'EXPIRED';
   expiresAt?: string;
@@ -32,6 +33,7 @@ let memoryStore: StoredInvitation[] = [
     inviterEmail: 'nguyendaovanquy05@gmail.com',
     inviterName: 'Quý Nguyễn Đào Văn',
     inviteeEmail: 'quy192005@gmail.com',
+    email: 'quy192005@gmail.com',
     token: 'VISTA-W4HFPT',
     status: 'PENDING',
     expiresAt: 'Trong 7 ngày tới',
@@ -114,12 +116,15 @@ export async function POST(request: Request) {
     const cleanToken = body.token.trim().toUpperCase();
     const existingIndex = list.findIndex((it) => it.token.toUpperCase() === cleanToken);
 
+    const cleanEmail = (body.email || body.inviteeEmail || '').toLowerCase().trim();
     if (existingIndex >= 0) {
       // Update existing
       const updated = {
         ...list[existingIndex],
         ...body,
         token: cleanToken,
+        email: cleanEmail || list[existingIndex].email || list[existingIndex].inviteeEmail,
+        inviteeEmail: cleanEmail || list[existingIndex].inviteeEmail || list[existingIndex].email,
       };
       list[existingIndex] = updated;
       writeStore(list);
@@ -135,7 +140,8 @@ export async function POST(request: Request) {
         endDate: body.endDate || '2026',
         inviterEmail: body.inviterEmail || '',
         inviterName: body.inviterName || 'Trưởng nhóm',
-        inviteeEmail: (body.inviteeEmail || body.email || '').toLowerCase().trim(),
+        inviteeEmail: cleanEmail,
+        email: cleanEmail,
         token: cleanToken,
         status: body.status || 'PENDING',
         expiresAt: body.expiresAt || 'Trong 7 ngày tới',
@@ -149,3 +155,4 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: err.message || 'Lỗi xử lý lời mời' }, { status: 500 });
   }
 }
+

@@ -516,8 +516,8 @@ export default function TripDetailPage() {
         if (Array.isArray(serverInvs) && serverInvs.length > 0) {
           setInvitationsList((prev) => {
             const map = new Map();
-            prev.forEach((i: any) => map.set(i.token, i));
-            serverInvs.forEach((i: any) => map.set(i.token, i));
+            prev.forEach((i: any) => map.set(i.token, { ...i, email: i.email || i.inviteeEmail || '' }));
+            serverInvs.forEach((i: any) => map.set(i.token, { ...i, email: i.email || i.inviteeEmail || '' }));
             return Array.from(map.values());
           });
         }
@@ -744,9 +744,10 @@ export default function TripDetailPage() {
     }
 
     // Check conflict: already pending
-    const isAlreadyPending = invitationsList.some(
-      (inv) => inv.email.toLowerCase() === email && inv.status === 'PENDING'
-    );
+    const isAlreadyPending = invitationsList.some((inv) => {
+      const invEmail = (inv?.email || (inv as any)?.inviteeEmail || '').toLowerCase().trim();
+      return invEmail === email && inv.status === 'PENDING';
+    });
     if (isAlreadyPending) {
       setInviteError('❌ Lỗi HTTP 409 Conflict: Đã có lời mời PENDING gửi đến email này chưa được phản hồi!');
       return;
@@ -1956,7 +1957,7 @@ export default function TripDetailPage() {
                       <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <span style={{ fontWeight: 700, fontSize: '13.5px', color: inv.status === 'REVOKED' ? '#64748B' : '#0F172A', textDecoration: inv.status === 'REVOKED' ? 'line-through' : 'none' }}>
-                            {inv.email}
+                            {inv.email || (inv as any).inviteeEmail || 'Người nhận'}
                           </span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
