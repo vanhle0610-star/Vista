@@ -38,22 +38,39 @@ public class DatabaseAuditLogService implements AuditLogService {
           "refreshtoken",
           "refresh_token",
           "secret",
+          "clientsecret",
+          "client_secret",
+          "client-secret",
+          "privatekey",
+          "private_key",
+          "private-key",
+          "secretkey",
+          "secret_key",
+          "secret-key",
           "authorization",
+          "credential",
+          "credentials",
           "credit_card",
           "creditcard",
-          "key",
+          "apikey",
+          "api_key",
+          "xapikey",
+          "x_api_key",
+          "x-api-key",
+          "geminiapikey",
+          "gemini_api_key",
           "jwt",
           "bearer");
 
   // Regex fallback: key=value or key: value (Header style like Authorization: Bearer <token>)
   private static final Pattern URL_KEY_VALUE_PATTERN =
       Pattern.compile(
-          "(?i)(password|password_hash|passwordhash|access_token|accesstoken|refresh_token|refreshtoken|token|secret|authorization|credit_card|creditcard|key|jwt|bearer)(=|:\\s*)(?:Bearer\\s+)?([^&\\s,;]+)");
+          "(?i)(password|password_hash|passwordhash|access_token|accesstoken|refresh_token|refreshtoken|token|secret|client_secret|clientsecret|client-secret|private_key|privatekey|private-key|secret_key|secretkey|secret-key|authorization|credential|credentials|credit_card|creditcard|api_key|apikey|x_api_key|xapikey|x-api-key|gemini_api_key|geminiapikey|jwt|bearer)(=|:\\s*)(?:Bearer\\s+)?([^&\\s,;]+)");
 
   // JSON-like key: value
   private static final Pattern JSON_KEY_VALUE_PATTERN =
       Pattern.compile(
-          "(?i)\"(password|password_hash|passwordhash|access_token|accesstoken|refresh_token|refreshtoken|token|secret|authorization|credit_card|creditcard|key|jwt|bearer)\"\\s*:\\s*(?:\"[^\"]*\"|'[^']*'|[^&\\s,;}\\]]+)");
+          "(?i)\"(password|password_hash|passwordhash|access_token|accesstoken|refresh_token|refreshtoken|token|secret|client_secret|clientsecret|client-secret|private_key|privatekey|private-key|secret_key|secretkey|secret-key|authorization|credential|credentials|credit_card|creditcard|api_key|apikey|x_api_key|xapikey|x-api-key|gemini_api_key|geminiapikey|jwt|bearer)\"\\s*:\\s*(?:\"[^\"]*\"|'[^']*'|[^&\\s,;}\\]]+)");
 
   private static final Pattern BEARER_PATTERN =
       Pattern.compile("(?i)Bearer\\s+([A-Za-z0-9._~+/-]+=*)");
@@ -167,7 +184,7 @@ public class DatabaseAuditLogService implements AuditLogService {
     }
     String normalized = key.toLowerCase().replace("-", "").replace("_", "");
     for (String sensitive : SENSITIVE_KEYWORDS) {
-      String normSensitive = sensitive.replace("_", "");
+      String normSensitive = sensitive.replace("-", "").replace("_", "");
       if (normalized.equals(normSensitive)) {
         return true;
       }

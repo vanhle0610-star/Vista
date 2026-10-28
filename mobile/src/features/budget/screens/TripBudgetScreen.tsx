@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,8 +9,12 @@ import {
   StatusBar,
   RefreshControl,
   Image,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
+import { authStorage } from '@/services/auth/authStorage';
+import { AuthGatekeeperCard } from '../../../components/feedback/AuthGatekeeperCard';
 import Svg, { Circle } from 'react-native-svg';
 import { tokens } from '../../../theme/tokens';
 import { BudgetSummaryCard } from '../components/BudgetSummaryCard';
@@ -122,6 +126,22 @@ export function TripBudgetScreen({
   tripId = '00000000-0000-0000-0000-000000000001',
   budgetTotal = 25000000,
 }: TripBudgetScreenProps) {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+
+  const checkAuth = useCallback(async () => {
+    const token = await authStorage.getAccessToken();
+    setIsAuthenticated(!!token);
+  }, []);
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  useFocusEffect(
+    useCallback(() => {
+      checkAuth();
+    }, [checkAuth])
+  );
   const {
     expenses: apiExpenses,
     summary,
@@ -195,6 +215,16 @@ export function TripBudgetScreen({
   }, [filteredExpenses]);
 
   const handleAddExpenseSubmit = async (payload: AddExpensePayload) => {
+    const token = await authStorage.getAccessToken();
+    if (!token) {
+      setIsModalOpen(false);
+      Alert.alert('Yêu cầu đăng nhập', 'Bạn cần đăng nhập tài khoản thành viên để ghi nhận chi tiêu.', [
+        { text: 'Hủy', style: 'cancel' },
+        { text: 'Đăng nhập', onPress: () => router.push('/(auth)/login') },
+      ]);
+      return;
+    }
+
     const newExpense: LedgerExpense = {
       id: String(Date.now()),
       title: payload.title,
@@ -225,6 +255,51 @@ export function TripBudgetScreen({
       // Handled gracefully
     }
   };
+
+  if (isAuthenticated === null) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={tokens.colors.primary} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (isAuthenticated === false) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar barStyle="dark-content" backgroundColor="#faf8ff" />
+        <View style={styles.container}>
+          <View style={styles.topAppBar}>
+            <View style={styles.topAppBarLeft}>
+              <TouchableOpacity
+                style={styles.backButton}
+                onPress={() => router.replace('/(tabs)/discover')}
+                activeOpacity={0.7}
+                accessibilityLabel="Quay lại"
+              >
+                <Text style={styles.backArrowText}>‹</Text>
+              </TouchableOpacity>
+              <View style={styles.brandTitleGroup}>
+                <View style={styles.vistaBadge}>
+                  <Text style={styles.vistaBadgeText}>◆ VISTA</Text>
+                </View>
+                <Text style={styles.appBarTitle} numberOfLines={1}>Sổ quỹ & Chi tiêu</Text>
+              </View>
+            </View>
+          </View>
+          <ScrollView contentContainerStyle={{ paddingVertical: 24, paddingHorizontal: 16 }}>
+            <AuthGatekeeperCard
+              title="Sổ quỹ & Chi tiêu chuyến đi"
+              description="Tính năng Sổ quỹ và chia hóa đơn nhóm chỉ dành cho thành viên của chuyến đi. Vui lòng đăng nhập để tiếp tục."
+              iconType="treasury"
+            />
+          </ScrollView>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -298,8 +373,8 @@ export function TripBudgetScreen({
             <RefreshControl
               refreshing={isLoading}
               onRefresh={reload}
-              tintColor="#005ea5"
-              colors={['#005ea5']}
+              tintColor="#0284C7"
+              colors={['#0284C7']}
             />
           }
         >
@@ -411,7 +486,7 @@ export function TripBudgetScreen({
                   <View style={styles.donutWrapper}>
                     <Svg width={116} height={116} viewBox="0 0 100 100" style={styles.donutSvg}>
                       <Circle cx="50" cy="50" r="38" fill="none" stroke="#F1F5F9" strokeWidth="12" />
-                      <Circle cx="50" cy="50" r="38" fill="none" stroke="#005EA5" strokeDasharray="81.18 238.76" strokeDashoffset="0" strokeWidth="12" />
+                      <Circle cx="50" cy="50" r="38" fill="none" stroke="#0284C7" strokeDasharray="81.18 238.76" strokeDashoffset="0" strokeWidth="12" />
                       <Circle cx="50" cy="50" r="38" fill="none" stroke="#FF7675" strokeDasharray="66.85 238.76" strokeDashoffset="-81.18" strokeWidth="12" />
                       <Circle cx="50" cy="50" r="38" fill="none" stroke="#0284C7" strokeDasharray="57.30 238.76" strokeDashoffset="-148.03" strokeWidth="12" />
                       <Circle cx="50" cy="50" r="38" fill="none" stroke="#8B5CF6" strokeDasharray="23.88 238.76" strokeDashoffset="-205.33" strokeWidth="12" />
@@ -428,7 +503,7 @@ export function TripBudgetScreen({
                   <View style={styles.donutLegendList}>
                     <View style={styles.legendRow}>
                       <View style={styles.legendLeft}>
-                        <View style={[styles.legendDot, { backgroundColor: '#005EA5' }]} />
+                        <View style={[styles.legendDot, { backgroundColor: '#0284C7' }]} />
                         <Text style={styles.legendName}>Lưu trú</Text>
                       </View>
                       <Text style={styles.legendPercent}>34% <Text style={styles.legendSubVal}>(5M)</Text></Text>
@@ -484,15 +559,15 @@ export function TripBudgetScreen({
                     <View style={styles.expenseStitchLeft}>
                       <View style={styles.expenseIconBox}>
                         {item.category === 'FOOD' ? (
-                          <FoodIcon size={18} color="#005ea5" />
+                          <FoodIcon size={18} color="#0284C7" />
                         ) : item.category === 'ACCOMMODATION' ? (
-                          <HotelIcon size={18} color="#005ea5" />
+                          <HotelIcon size={18} color="#0284C7" />
                         ) : item.category === 'TRANSPORT' ? (
-                          <CarIcon size={18} color="#005ea5" />
+                          <CarIcon size={18} color="#0284C7" />
                         ) : item.category === 'ACTIVITIES' ? (
-                          <TicketIcon size={18} color="#005ea5" />
+                          <TicketIcon size={18} color="#0284C7" />
                         ) : (
-                          <CreditCardIcon size={18} color="#005ea5" />
+                          <CreditCardIcon size={18} color="#0284C7" />
                         )}
                       </View>
                       <View style={styles.expenseDetails}>
@@ -958,12 +1033,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 8,
-    backgroundColor: '#d3e4ff',
+    backgroundColor: '#EFF6FF',
   },
   vistaBadgeText: {
     fontSize: 11,
     fontWeight: '800',
-    color: '#005ea5',
+    color: '#0284C7',
     letterSpacing: 0.5,
   },
   appBarTitle: {
@@ -977,7 +1052,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     overflow: 'hidden',
     borderWidth: 1.5,
-    borderColor: '#005ea5',
+    borderColor: '#0284C7',
   },
   avatarTopImg: {
     width: '100%',
@@ -1018,7 +1093,7 @@ const styles = StyleSheet.create({
   liveBadgeText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#005ea5',
+    color: '#0284C7',
   },
   membersText: {
     fontSize: 12,
@@ -1152,7 +1227,7 @@ const styles = StyleSheet.create({
   underlineTabTextActive: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#005ea5',
+    color: '#0284C7',
   },
   activeUnderlineBar: {
     position: 'absolute',
@@ -1160,7 +1235,7 @@ const styles = StyleSheet.create({
     left: 12,
     right: 12,
     height: 2.5,
-    backgroundColor: '#005ea5',
+    backgroundColor: '#0284C7',
     borderRadius: 2,
   },
   tabBadgeRow: {
@@ -1177,7 +1252,7 @@ const styles = StyleSheet.create({
   countBadgeText: {
     fontSize: 10,
     fontWeight: '700',
-    color: '#005ea5',
+    color: '#0284C7',
   },
   redDotBadge: {
     width: 6,
@@ -1213,7 +1288,7 @@ const styles = StyleSheet.create({
   breakdownSubLink: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#005ea5',
+    color: '#0284C7',
   },
   donutLayout: {
     flexDirection: 'row',
@@ -1303,7 +1378,7 @@ const styles = StyleSheet.create({
   recentLink: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#005ea5',
+    color: '#0284C7',
   },
   expenseStitchCard: {
     backgroundColor: '#ffffff',
@@ -1366,7 +1441,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f2f3ff',
   },
   categoryPillActive: {
-    backgroundColor: '#005ea5',
+    backgroundColor: '#0284C7',
   },
   categoryPillText: {
     fontSize: 12,
@@ -1428,7 +1503,7 @@ const styles = StyleSheet.create({
   balanceSummaryAmount: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#005ea5',
+    color: '#0284C7',
     marginTop: 2,
   },
   memberPositionSection: {
@@ -1448,7 +1523,7 @@ const styles = StyleSheet.create({
   sectionHeadingSub: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#005ea5',
+    color: '#0284C7',
   },
   sectionDesc: {
     fontSize: 12,
@@ -1482,14 +1557,14 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#d3e4ff',
+    backgroundColor: '#EFF6FF',
     alignItems: 'center',
     justifyContent: 'center',
   },
   memberAvatarInitials: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#005ea5',
+    color: '#0284C7',
   },
   memberName: {
     fontSize: 13,
@@ -1576,7 +1651,7 @@ const styles = StyleSheet.create({
   personAvatarInitials: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#005ea5',
+    color: '#0284C7',
   },
   personName: {
     fontSize: 12,
@@ -1601,7 +1676,7 @@ const styles = StyleSheet.create({
   transferAmountBig: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#005ea5',
+    color: '#0284C7',
   },
   transferArrow: {
     fontSize: 11,
@@ -1623,7 +1698,7 @@ const styles = StyleSheet.create({
   vietQrBtn: {
     flex: 1,
     height: 42,
-    backgroundColor: '#005ea5',
+    backgroundColor: '#0284C7',
     borderRadius: 21,
     alignItems: 'center',
     justifyContent: 'center',
@@ -1644,7 +1719,7 @@ const styles = StyleSheet.create({
   markPaidBtnText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#005ea5',
+    color: '#0284C7',
   },
   stickyFabContainer: {
     position: 'absolute',
@@ -1655,10 +1730,10 @@ const styles = StyleSheet.create({
   fabButton: {
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#005ea5',
+    backgroundColor: '#0284C7',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#005ea5',
+    shadowColor: '#0284C7',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 10,
@@ -1674,7 +1749,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 60,
     alignSelf: 'center',
-    backgroundColor: '#005ea5',
+    backgroundColor: '#0284C7',
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 20,

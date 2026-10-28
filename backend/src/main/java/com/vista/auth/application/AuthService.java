@@ -1,7 +1,12 @@
 package com.vista.auth.application;
 
 import com.vista.auth.api.dto.AuthResponse;
+import com.vista.auth.api.dto.ForgotPasswordRequest;
 import com.vista.auth.api.dto.GoogleLoginRequest;
+import com.vista.auth.api.dto.PasswordResetResponse;
+import com.vista.auth.api.dto.ResetPasswordRequest;
+import java.time.Duration;
+import java.util.concurrent.ThreadLocalRandom;
 import com.vista.auth.api.dto.LoginRequest;
 import com.vista.auth.api.dto.RegisterRequest;
 import com.vista.auth.api.dto.UserResponse;
@@ -14,6 +19,7 @@ import com.vista.user.domain.UserEntity;
 import com.vista.user.infrastructure.UserRepository;
 import java.time.Instant;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -36,6 +42,10 @@ public class AuthService {
   private final LoginRateLimiter loginRateLimiter;
   private final PasswordPolicyValidator passwordPolicyValidator;
   private final RefreshTokenService refreshTokenService;
+  private final ConcurrentHashMap<String, Object> tokenLocks = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<String, OtpRecord> otpStorage = new ConcurrentHashMap<>();
+
+  public record OtpRecord(String otp, Instant expiresAt) {}
 
   public AuthService(
       UserRepository userRepository,
@@ -211,78 +221,127 @@ public class AuthService {
       throw new BadCredentialsException("Refresh token không được để trống");
     }
 
-    // 1. Check for token reuse / theft
-    if (refreshTokenService.isRevoked(oldRefreshToken)) {
+    Object lock = tokenLocks.computeIfAbsent(oldRefreshToken, k -> new Object());
+
+    synchronized (lock) {
       try {
-        UUID compromisedUserId = jwtTokenService.extractUserId(oldRefreshToken);
-        refreshTokenService.revokeAllUserTokens(compromisedUserId);
+        // 1. Check for recent rotation within grace period (concurrency & retry protection)
+        Object cachedResponse = refreshTokenService.getRecentRotationPayload(oldRefreshToken);
+        if (cachedResponse instanceof AuthResponse recent) {
+          log.info(
+              "Concurrent refresh token request served from rotation grace period for user: {}",
+              recent.id());
+          return recent;
+        }
+
+        // 2. Check for token reuse / theft (outside grace period)
+        if (refreshTokenService.isRevoked(oldRefreshToken)) {
+          try {
+            UUID compromisedUserId = jwtTokenService.extractUserId(oldRefreshToken);
+            refreshTokenService.revokeAllUserTokens(compromisedUserId);
+            auditLogService.logAction(
+                compromisedUserId,
+                "TOKEN_REVOKED",
+                "USER",
+                compromisedUserId.toString(),
+                "Phát hiện sử dụng lại Refresh Token đã thu hồi - Tất cả phiên đăng nhập đã bị vô"
+                    + " hiệu hóa");
+          } catch (Exception ignored) {
+          }
+          throw new BadCredentialsException("Refresh token đã bị thu hồi hoặc không hợp lệ");
+        }
+
+        // 3. Validate token signature, expiration, and type ('refresh')
+        if (!jwtTokenService.validateRefreshToken(oldRefreshToken)
+            || !refreshTokenService.isValid(oldRefreshToken)) {
+          throw new BadCredentialsException("Refresh token không hợp lệ hoặc đã hết hạn");
+        }
+
+        UUID userId;
+        try {
+          userId = jwtTokenService.extractUserId(oldRefreshToken);
+        } catch (Exception e) {
+          throw new BadCredentialsException("Không thể xác thực thông tin từ refresh token");
+        }
+
+        var user =
+            userRepository
+                .findById(userId)
+                .orElseThrow(
+                    () ->
+                        new BadCredentialsException(
+                            "Không tìm thấy tài khoản người dùng cho token này"));
+
+        if (!"ACTIVE".equalsIgnoreCase(user.getStatus())) {
+          throw new BadCredentialsException("Tài khoản đã bị tạm khóa hoặc ngừng hoạt động");
+        }
+
+        // 4. Atomic Rotation: Atomically revoke old refresh token (multi-instance concurrency
+        // protection)
+        boolean revoked = refreshTokenService.tryRevokeActiveToken(oldRefreshToken);
+        if (!revoked) {
+          // Check if concurrent rotation finished within grace period
+          Object recentResponse = refreshTokenService.getRecentRotationPayload(oldRefreshToken);
+          if (recentResponse instanceof AuthResponse recent) {
+            log.info(
+                "Concurrent multi-instance refresh request served from rotation grace period for"
+                    + " user: {}",
+                recent.id());
+            return recent;
+          }
+
+          // Outside grace window or concurrent duplicate -> revoke all tokens (theft detection)
+          try {
+            refreshTokenService.revokeAllUserTokens(userId);
+            auditLogService.logAction(
+                userId,
+                "TOKEN_REVOKED",
+                "USER",
+                userId.toString(),
+                "Phát hiện sử dụng lại Refresh Token đã thu hồi - Tất cả phiên đăng nhập đã bị vô"
+                    + " hiệu hóa");
+          } catch (Exception ignored) {
+          }
+          throw new BadCredentialsException("Refresh token đã bị thu hồi hoặc không hợp lệ");
+        }
+
+        var newAccessToken = jwtTokenService.generateAccessToken(user);
+        var newRefreshToken = jwtTokenService.generateRefreshToken(user);
+
+        refreshTokenService.registerToken(
+            user.getId(),
+            newRefreshToken,
+            Instant.now().plusMillis(jwtTokenService.getRefreshTokenExpirationMs()));
+
+        var roles =
+            user.getRoles().stream()
+                .map(r -> r.getCode().startsWith("ROLE_") ? r.getCode() : "ROLE_" + r.getCode())
+                .toList();
+
         auditLogService.logAction(
-            compromisedUserId,
-            "TOKEN_REVOKED",
+            user.getId(),
+            "TOKEN_REFRESH",
             "USER",
-            compromisedUserId.toString(),
-            "Phát hiện sử dụng lại Refresh Token đã thu hồi - Tất cả phiên đăng nhập đã bị vô hiệu"
-                + " hóa");
-      } catch (Exception ignored) {
+            user.getId().toString(),
+            "Làm mới access token thành công");
+
+        AuthResponse authResponse =
+            new AuthResponse(
+                user.getId(),
+                user.getEmail(),
+                user.getDisplayName(),
+                newAccessToken,
+                newRefreshToken,
+                roles);
+
+        // Record rotation for concurrent request grace window
+        refreshTokenService.recordRotation(oldRefreshToken, user.getId(), authResponse);
+
+        return authResponse;
+      } finally {
+        tokenLocks.remove(oldRefreshToken, lock);
       }
-      throw new BadCredentialsException("Refresh token đã bị thu hồi hoặc không hợp lệ");
     }
-
-    // 2. Validate token signature, expiration, and type ('refresh')
-    if (!jwtTokenService.validateRefreshToken(oldRefreshToken)
-        || !refreshTokenService.isValid(oldRefreshToken)) {
-      throw new BadCredentialsException("Refresh token không hợp lệ hoặc đã hết hạn");
-    }
-
-    UUID userId;
-    try {
-      userId = jwtTokenService.extractUserId(oldRefreshToken);
-    } catch (Exception e) {
-      throw new BadCredentialsException("Không thể xác thực thông tin từ refresh token");
-    }
-
-    var user =
-        userRepository
-            .findById(userId)
-            .orElseThrow(
-                () ->
-                    new BadCredentialsException(
-                        "Không tìm thấy tài khoản người dùng cho token này"));
-
-    if (!"ACTIVE".equalsIgnoreCase(user.getStatus())) {
-      throw new BadCredentialsException("Tài khoản đã bị tạm khóa hoặc ngừng hoạt động");
-    }
-
-    // 3. Rotation: Revoke old refresh token, issue fresh pair
-    refreshTokenService.revokeToken(oldRefreshToken);
-
-    var newAccessToken = jwtTokenService.generateAccessToken(user);
-    var newRefreshToken = jwtTokenService.generateRefreshToken(user);
-
-    refreshTokenService.registerToken(
-        user.getId(),
-        newRefreshToken,
-        Instant.now().plusMillis(jwtTokenService.getRefreshTokenExpirationMs()));
-
-    var roles =
-        user.getRoles().stream()
-            .map(r -> r.getCode().startsWith("ROLE_") ? r.getCode() : "ROLE_" + r.getCode())
-            .toList();
-
-    auditLogService.logAction(
-        user.getId(),
-        "TOKEN_REFRESH",
-        "USER",
-        user.getId().toString(),
-        "Làm mới access token thành công");
-
-    return new AuthResponse(
-        user.getId(),
-        user.getEmail(),
-        user.getDisplayName(),
-        newAccessToken,
-        newRefreshToken,
-        roles);
   }
 
   public void logout(String refreshToken) {
@@ -388,4 +447,67 @@ public class AuthService {
         roles,
         user.getPhoneNumber());
   }
+
+  public PasswordResetResponse forgotPassword(ForgotPasswordRequest request) {
+    var email = request.email().trim().toLowerCase();
+    var userOpt = userRepository.findByEmailIgnoreCase(email);
+    if (userOpt.isEmpty()) {
+      throw new IllegalArgumentException("Không tìm thấy tài khoản với email này trong hệ thống");
+    }
+
+    // Sinh mã OTP 6 chữ số ngẫu nhiên
+    int randomPin = ThreadLocalRandom.current().nextInt(100000, 1000000);
+    String otp = String.valueOf(randomPin);
+    Instant expiresAt = Instant.now().plus(Duration.ofMinutes(10));
+    otpStorage.put(email, new OtpRecord(otp, expiresAt));
+
+    log.info("Khởi tạo mã OTP khôi phục mật khẩu cho email {}: [OTP={}] (Hết hạn: {})", email, otp, expiresAt);
+
+    return new PasswordResetResponse(
+        "Mã xác thực OTP đã được gửi đến email " + email + ". Vui lòng kiểm tra hộp thư!",
+        otp
+    );
+  }
+
+  @Transactional
+  public PasswordResetResponse resetPassword(ResetPasswordRequest request) {
+    var email = request.email().trim().toLowerCase();
+    var user = userRepository.findByEmailIgnoreCase(email)
+        .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tài khoản với email này"));
+
+    var entry = otpStorage.get(email);
+    if (entry == null || Instant.now().isAfter(entry.expiresAt())) {
+      throw new IllegalArgumentException("Mã xác thực OTP đã hết hạn hoặc không tồn tại. Vui lòng yêu cầu lại!");
+    }
+
+    if (!entry.otp().equals(request.otp().trim())) {
+      throw new IllegalArgumentException("Mã xác thực OTP không chính xác. Vui lòng kiểm tra lại!");
+    }
+
+    // Kiểm tra chính sách mật khẩu mạnh (>= 10 ký tự, blacklist)
+    passwordPolicyValidator.validate(request.newPassword());
+
+    // Cập nhật mật khẩu đã mã hóa BCrypt
+    user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+    userRepository.save(user);
+
+    // Hủy mã OTP sau khi sử dụng thành công
+    otpStorage.remove(email);
+
+    // Thu hồi toàn bộ Refresh Token cũ vì lý do an toàn
+    refreshTokenService.revokeAllUserTokens(user.getId());
+
+    // Ghi nhật ký kiểm toán (Audit Log)
+    auditLogService.logAction(
+        user.getId(),
+        "PASSWORD_RESET_SUCCESS",
+        "USER",
+        user.getId().toString(),
+        "Người dùng đã đặt lại mật khẩu thành công qua OTP"
+    );
+
+    log.info("Đặt lại mật khẩu thành công cho tài khoản email {}", email);
+    return new PasswordResetResponse("Đặt lại mật khẩu thành công! Bạn có thể đăng nhập ngay.", null);
+  }
+
 }

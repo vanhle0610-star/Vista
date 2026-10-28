@@ -10,6 +10,7 @@ import {
   Clipboard,
   Platform,
 } from 'react-native';
+import { tokens } from '../../../theme/tokens';
 
 export interface VietQRModalProps {
   visible: boolean;
@@ -273,7 +274,7 @@ const styles = StyleSheet.create({
   amountValue: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#005ea5',
+    color: tokens.colors.primary,
   },
   copyRow: {
     flexDirection: 'row',
@@ -281,7 +282,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   copyBtn: {
-    backgroundColor: '#d3e4ff',
+    backgroundColor: tokens.colors.primarySoft,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 8,
@@ -289,18 +290,18 @@ const styles = StyleSheet.create({
   copyBtnText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#005ea5',
+    color: tokens.colors.primary,
   },
   actions: {
     gap: 8,
   },
   confirmBtn: {
     height: 46,
-    backgroundColor: '#005ea5',
+    backgroundColor: tokens.colors.primary,
     borderRadius: 23,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#005ea5',
+    shadowColor: tokens.colors.primary,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.25,
     shadowRadius: 8,

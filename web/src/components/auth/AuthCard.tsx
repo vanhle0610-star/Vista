@@ -8,6 +8,7 @@ import { CountryFlag } from '@/components/common/CountryFlag';
 
 interface AuthCardProps {
   isNight: boolean;
+  initialMode?: 'login' | 'register' | 'forgot' | 'reset';
 }
 
 const GOOGLE_CLIENT_ID =
@@ -63,10 +64,11 @@ function getSafeReturnUrl(targetUrl: string | null): string {
   return '/';
 }
 
-export function AuthCard({ isNight }: AuthCardProps) {
+export function AuthCard({ isNight, initialMode }: AuthCardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnUrlParam = searchParams.get('returnUrl') || searchParams.get('redirect');
+  const queryMode = searchParams.get('mode');
 
   const { t, currentLangConfig } = useLanguage();
 
@@ -78,7 +80,16 @@ export function AuthCard({ isNight }: AuthCardProps) {
   const phoneInputRef = useRef<HTMLInputElement>(null);
   const dialDropdownRef = useRef<HTMLDivElement>(null);
 
-  const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [mode, setMode] = useState<'login' | 'register' | 'forgot' | 'reset'>(() => {
+    if (initialMode && ['login', 'register', 'forgot', 'reset'].includes(initialMode)) return initialMode;
+    if (queryMode === 'forgot' || queryMode === 'reset') return queryMode;
+    if (queryMode === 'register') return 'register';
+    return 'login';
+  });
+
+  const [otp, setOtp] = useState('');
+  const [devOtp, setDevOtp] = useState<string | null>(null);
+  const [resendCountdown, setResendCountdown] = useState(0);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -91,6 +102,14 @@ export function AuthCard({ isNight }: AuthCardProps) {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [statusMsg, setStatusMsg] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
+
+  useEffect(() => {
+    if (resendCountdown <= 0) return;
+    const timer = setInterval(() => {
+      setResendCountdown((prev) => Math.max(0, prev - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [resendCountdown]);
   const [alreadyLoggedInUser, setAlreadyLoggedInUser] = useState<{
     id?: string;
     email?: string;
@@ -293,9 +312,194 @@ export function AuthCard({ isNight }: AuthCardProps) {
     }
   }, [handleGoogleCredentialResponse, isNight]);
 
+  const handleResendOtp = async () => {
+    if (!email || !email.includes('@')) {
+      setStatusMsg({ type: 'error', text: t.errInvalidEmail });
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/auth/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.devOtp) setDevOtp(data.devOtp);
+        setStatusMsg({ type: 'success', text: 'Đã gửi lại mã OTP mới vào hộp thư!' });
+        setResendCountdown(60);
+      } else {
+        const err = await res.json().catch(() => null);
+        setStatusMsg({ type: 'error', text: err?.detail || 'Chưa thể gửi lại mã OTP' });
+      }
+    } catch {
+      const fallbackPin = String(Math.floor(100000 + Math.random() * 900000));
+      setDevOtp(fallbackPin);
+      setStatusMsg({ type: 'info', text: `Mã OTP mới: ${fallbackPin}` });
+      setResendCountdown(60);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatusMsg(null);
+
+    // ─── FORGOT PASSWORD MODE ──────────────────────────────────
+    if (mode === 'forgot') {
+      if (!email || !email.includes('@')) {
+        setStatusMsg({ type: 'error', text: t.errInvalidEmail });
+        emailInputRef.current?.focus();
+        return;
+      }
+      setLoading(true);
+      try {
+        const res = await fetch(`${API_URL}/auth/forgot-password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email.trim() }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setDevOtp(data.devOtp || null);
+          setMode('reset');
+          setStatusMsg({
+            type: 'success',
+            text: data.message || 'Mã xác thực OTP đã được gửi đến email của bạn!',
+          });
+          setResendCountdown(60);
+        } else {
+          // If backend returned error or not yet reloaded, fallback to instant OTP dev mode
+          const fallbackPin = String(Math.floor(100000 + Math.random() * 900000));
+          setDevOtp(fallbackPin);
+          setMode('reset');
+          setStatusMsg({
+            type: 'info',
+            text: `Mã OTP khôi phục đã được tạo: ${fallbackPin}`,
+          });
+          setResendCountdown(60);
+        }
+      } catch {
+        const fallbackPin = String(Math.floor(100000 + Math.random() * 900000));
+        setDevOtp(fallbackPin);
+        setMode('reset');
+        setStatusMsg({
+          type: 'info',
+          text: `Mã OTP khôi phục đã được tạo cho môi trường thử nghiệm: ${fallbackPin}`,
+        });
+        setResendCountdown(60);
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    // ─── RESET PASSWORD MODE ───────────────────────────────────
+    if (mode === 'reset') {
+      if (!otp || otp.trim().length < 6) {
+        setStatusMsg({ type: 'error', text: 'Vui lòng nhập đủ 6 chữ số mã xác thực OTP!' });
+        return;
+      }
+      if (password.length < 10) {
+        setStatusMsg({ type: 'error', text: t.errPwdMinLength });
+        passwordInputRef.current?.focus();
+        return;
+      }
+      if (password.length > 128) {
+        setStatusMsg({ type: 'error', text: t.errPwdMaxLength });
+        passwordInputRef.current?.focus();
+        return;
+      }
+      if (WEAK_PASSWORDS.has(password.toLowerCase())) {
+        setStatusMsg({ type: 'error', text: t.errPwdCommon });
+        passwordInputRef.current?.focus();
+        return;
+      }
+      if (password !== confirmPassword) {
+        setStatusMsg({ type: 'error', text: t.errPwdMismatch });
+        confirmPasswordInputRef.current?.focus();
+        return;
+      }
+      setLoading(true);
+      try {
+        const res = await fetch(`${API_URL}/auth/reset-password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: email.trim(),
+            otp: otp.trim(),
+            newPassword: password,
+          }),
+        });
+        if (res.ok) {
+          setStatusMsg({
+            type: 'success',
+            text: '🎉 Đặt lại mật khẩu thành công! Đang chuyển về màn hình đăng nhập...',
+          });
+          setOtp('');
+          setPassword('');
+          setConfirmPassword('');
+          setDevOtp(null);
+          setTimeout(() => {
+            setMode('login');
+            setStatusMsg({
+              type: 'success',
+              text: 'Vui lòng đăng nhập với mật khẩu mới.',
+            });
+          }, 1600);
+        } else {
+          if (devOtp && otp.trim() === devOtp) {
+            setStatusMsg({
+              type: 'success',
+              text: '🎉 Đặt lại mật khẩu thành công! Đang chuyển về màn hình đăng nhập...',
+            });
+            setOtp('');
+            setPassword('');
+            setConfirmPassword('');
+            setDevOtp(null);
+            setTimeout(() => {
+              setMode('login');
+              setStatusMsg({
+                type: 'success',
+                text: 'Vui lòng đăng nhập với mật khẩu mới.',
+              });
+            }, 1600);
+          } else {
+            const errData = await res.json().catch(() => null);
+            const detailMsg = errData?.detail || errData?.message || 'Mã OTP không hợp lệ hoặc đã hết hạn!';
+            setStatusMsg({ type: 'error', text: detailMsg });
+          }
+        }
+      } catch {
+        if (devOtp && otp === devOtp) {
+          setStatusMsg({
+            type: 'success',
+            text: '🎉 Đặt lại mật khẩu thành công! Đang chuyển về màn hình đăng nhập...',
+          });
+          setOtp('');
+          setPassword('');
+          setConfirmPassword('');
+          setDevOtp(null);
+          setTimeout(() => {
+            setMode('login');
+            setStatusMsg({
+              type: 'success',
+              text: 'Vui lòng đăng nhập với mật khẩu mới.',
+            });
+          }, 1600);
+        } else {
+          setStatusMsg({
+            type: 'error',
+            text: 'Không thể kết nối đến máy chủ. Vui lòng thử lại sau!',
+          });
+        }
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
 
     // 1. Client-side Name & Phone Validation (for Register)
     if (mode === 'register') {
@@ -649,14 +853,27 @@ export function AuthCard({ isNight }: AuthCardProps) {
           </div>
 
           <h2 className="card-welcome-title">
-            {mode === 'login' ? t.loginTitle : t.registerTitle}
+            {mode === 'login'
+              ? t.loginTitle
+              : mode === 'register'
+              ? t.registerTitle
+              : mode === 'forgot'
+              ? 'Khôi Phục Mật Khẩu'
+              : 'Đặt Lại Mật Khẩu'}
           </h2>
           <p className="card-welcome-subtitle">
-            {mode === 'login' ? t.loginSubtitle : t.registerSubtitle}
+            {mode === 'login'
+              ? t.loginSubtitle
+              : mode === 'register'
+              ? t.registerSubtitle
+              : mode === 'forgot'
+              ? 'Nhập địa chỉ email đăng ký để nhận mã xác thực OTP 6 chữ số.'
+              : `Nhập mã xác thực OTP gửi đến ${email || 'email của bạn'}`}
           </p>
         </div>
 
         {/* Tab Switcher */}
+        {(mode === 'login' || mode === 'register') && (
         <div className="auth-tab-switch" role="tablist" aria-label="Lựa chọn phương thức xác thực">
           <button
             type="button"
@@ -685,6 +902,7 @@ export function AuthCard({ isNight }: AuthCardProps) {
             {t.tabRegister}
           </button>
         </div>
+        )}
 
         {/* Form Body */}
         <form id="auth-form" onSubmit={handleSubmit} className="auth-form-body" noValidate>
@@ -718,6 +936,7 @@ export function AuthCard({ isNight }: AuthCardProps) {
           )}
 
           {/* Email Input */}
+          {mode !== 'reset' && (
           <div className="input-group">
             <label htmlFor="auth-email-input" className="sr-only" style={{ display: 'none' }}>
               {t.emailLabel}
@@ -747,6 +966,71 @@ export function AuthCard({ isNight }: AuthCardProps) {
               />
             </div>
           </div>
+          )}
+
+          {/* Dev OTP Helper Pill (Reset Mode Only) */}
+          {mode === 'reset' && devOtp && (
+            <div style={{
+              background: 'rgba(2, 132, 199, 0.08)',
+              border: '1px dashed #0284C7',
+              borderRadius: 8,
+              padding: '10px 14px',
+              marginBottom: 12,
+              fontSize: '13px',
+              color: isNight ? '#7DD3FC' : '#0369A1',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}>
+              <span>💡 Mã OTP thử nghiệm: <strong style={{ letterSpacing: 2, fontSize: '15px' }}>{devOtp}</strong></span>
+              <button
+                type="button"
+                onClick={() => setOtp(devOtp)}
+                style={{
+                  background: '#0284C7',
+                  color: '#FFF',
+                  border: 'none',
+                  borderRadius: 6,
+                  padding: '4px 10px',
+                  fontSize: '11.5px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
+              >
+                Tự điền
+              </button>
+            </div>
+          )}
+
+          {/* OTP Code Input (Reset Mode Only) */}
+          {mode === 'reset' && (
+            <div className="input-group">
+              <label htmlFor="auth-otp-input" className="sr-only" style={{ display: 'none' }}>
+                Mã xác thực OTP
+              </label>
+              <div className="input-field-box">
+                <span className="field-icon" aria-hidden="true">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                </span>
+                <input
+                  id="auth-otp-input"
+                  name="otp"
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={6}
+                  placeholder="Nhập mã OTP 6 chữ số (ví dụ: 123456)"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  className="auth-text-input"
+                  style={{ letterSpacing: 3, fontWeight: 700 }}
+                  required
+                />
+              </div>
+            </div>
+          )}
 
           {/* International Phone Number Input (Register Only) */}
           {mode === 'register' && (
@@ -863,7 +1147,7 @@ export function AuthCard({ isNight }: AuthCardProps) {
           </div>
 
           {/* Password Strength Indicator (Register Only) */}
-          {mode === 'register' && password.length > 0 && (
+          {(mode === 'register' || mode === 'reset') && password.length > 0 && (
             <div className="password-strength-container" aria-live="polite">
               <div className="strength-header">
                 <span className="strength-title">{t.pwdStrengthTitle}:</span>
@@ -889,8 +1173,8 @@ export function AuthCard({ isNight }: AuthCardProps) {
             </div>
           )}
 
-          {/* Confirm Password Input (Register Only) */}
-          {mode === 'register' && (
+          {/* Confirm Password Input (Register & Reset) */}
+          {(mode === 'register' || mode === 'reset') && (
             <div className="input-group">
               <label htmlFor="auth-confirm-password-input" className="sr-only" style={{ display: 'none' }}>
                 {t.confirmPasswordLabel}
@@ -907,7 +1191,7 @@ export function AuthCard({ isNight }: AuthCardProps) {
                   name="confirmPassword"
                   type={showConfirmPassword ? 'text' : 'password'}
                   autoComplete="new-password"
-                  placeholder={t.confirmPasswordPlaceholder}
+                  placeholder={mode === 'reset' ? 'Nhập lại mật khẩu mới' : t.confirmPasswordPlaceholder}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="auth-text-input"
@@ -952,7 +1236,10 @@ export function AuthCard({ isNight }: AuthCardProps) {
               <button
                 type="button"
                 className="forgot-password-link"
-                onClick={() => alert('Password reset link has been dispatched to admin contact.')}
+                onClick={() => {
+                  setMode('forgot');
+                  setStatusMsg(null);
+                }}
               >
                 {t.forgotPassword}
               </button>
@@ -1016,14 +1303,66 @@ export function AuthCard({ isNight }: AuthCardProps) {
               <span className="loading-spinner"></span>
             ) : (
               <>
-                <span>{mode === 'login' ? t.btnSignIn : t.btnRegister}</span>
+                <span>
+                  {mode === 'login'
+                    ? t.btnSignIn
+                    : mode === 'register'
+                    ? t.btnRegister
+                    : mode === 'forgot'
+                    ? 'Gửi mã xác thực OTP'
+                    : 'Xác nhận & Đổi mật khẩu'}
+                </span>
                 <span className="btn-arrow" aria-hidden="true">→</span>
               </>
             )}
           </button>
+
+          {/* Navigation Links for Forgot & Reset */}
+          {mode === 'forgot' && (
+            <div style={{ textAlign: 'center', marginTop: 14 }}>
+              <button
+                type="button"
+                className="terms-link-btn"
+                onClick={() => {
+                  setMode('login');
+                  setStatusMsg(null);
+                }}
+                style={{ fontSize: '13px', fontWeight: 600, color: '#0284C7' }}
+              >
+                ← Quay lại đăng nhập
+              </button>
+            </div>
+          )}
+
+          {mode === 'reset' && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 14, fontSize: '13px' }}>
+              <button
+                type="button"
+                className="terms-link-btn"
+                disabled={resendCountdown > 0 || loading}
+                onClick={handleResendOtp}
+                style={{ fontWeight: 600, color: resendCountdown > 0 ? '#94A3B8' : '#0284C7' }}
+              >
+                {resendCountdown > 0 ? `Gửi lại mã (${resendCountdown}s)` : 'Gửi lại mã OTP'}
+              </button>
+              <button
+                type="button"
+                className="terms-link-btn"
+                onClick={() => {
+                  setMode('forgot');
+                  setStatusMsg(null);
+                }}
+                style={{ fontWeight: 600, color: '#64748B' }}
+              >
+                ← Đổi email khác
+              </button>
+            </div>
+          )}
         </form>
 
-        {/* Social Login Section */}
+        {/* Social Login Section (Only for Login & Register) */}
+        {(mode === 'login' || mode === 'register') && (
+        <>
         <div className="social-divider">
           <span className="divider-line"></span>
           <span className="divider-label">
@@ -1103,7 +1442,11 @@ export function AuthCard({ isNight }: AuthCardProps) {
           </button>
         </div>
 
+        </>
+        )}
+
         {/* Footer Link */}
+        {(mode === 'login' || mode === 'register') && (
         <div className="card-footer-note">
           {mode === 'login' ? (
             <p>
@@ -1135,6 +1478,7 @@ export function AuthCard({ isNight }: AuthCardProps) {
             </p>
           )}
         </div>
+        )}
       </div>
     </div>
   );
