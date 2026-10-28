@@ -945,8 +945,16 @@ export default function TripDetailPage() {
     );
   };
 
-  // Add proposal (W4-TV3-02)
+  // Add proposal (W4-TV3-02) - RBAC Member Guard
   const handleSaveNewProposal = () => {
+    if (!isTripMember) {
+      showToast('⚠️ Bạn chưa tham gia chuyến đi. Vui lòng tham gia nhóm để tạo đề xuất địa điểm!');
+      return;
+    }
+    if (isVotingClosed) {
+      showToast('❌ Biểu quyết đã đóng (Closed)! Không thể thêm đề xuất mới.');
+      return;
+    }
     if (!newPropTitle.trim()) return;
     const newProp = {
       id: `prop-${Date.now()}`,
@@ -2559,53 +2567,66 @@ export default function TripDetailPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                 <button
                   type="button"
-                  onClick={() => setShowAddPropModal(true)}
+                  onClick={() => {
+                    if (!isTripMember) {
+                      showToast('⚠️ Bạn chưa tham gia chuyến đi. Vui lòng tham gia nhóm để tạo đề xuất địa điểm!');
+                      return;
+                    }
+                    if (isVotingClosed) {
+                      showToast('❌ Biểu quyết đã đóng! Không thể thêm đề xuất mới.');
+                      return;
+                    }
+                    setShowAddPropModal(true);
+                  }}
                   style={{
                     padding: '9px 16px',
-                    background: '#0284C7',
+                    background: isTripMember && !isVotingClosed ? '#0284C7' : '#94A3B8',
                     color: '#FFFFFF',
                     border: 'none',
                     borderRadius: '10px',
                     fontSize: '13px',
                     fontWeight: 700,
-                    cursor: 'pointer',
+                    cursor: isTripMember && !isVotingClosed ? 'pointer' : 'not-allowed',
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '6px',
                   }}
+                  title={!isTripMember ? 'Cần tham gia nhóm để đề xuất địa điểm' : isVotingClosed ? 'Biểu quyết đã đóng' : undefined}
                 >
                   <span>+ Thêm đề xuất</span>
                 </button>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    const nextState = !isVotingClosed;
-                    setIsVotingClosed(nextState);
-                    showToast(
-                      nextState
-                        ? '🔒 Trưởng nhóm (Owner) đã ĐÓNG BIỂU QUYẾT! Kết quả đã khóa, thành viên không thể vote tiếp.'
-                        : '🔓 Đã MỞ LẠI BIỂU QUYẾT! Các thành viên có thể tiếp tục bỏ phiếu.'
-                    );
-                  }}
-                  style={{
-                    padding: '9px 16px',
-                    background: isVotingClosed ? '#FEF2F2' : '#F1F5F9',
-                    color: isVotingClosed ? '#DC2626' : '#475569',
-                    border: '1px solid',
-                    borderColor: isVotingClosed ? '#FECACA' : '#CBD5E1',
-                    borderRadius: '10px',
-                    fontSize: '13px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                  }}
-                  title="Đóng biểu quyết"
-                >
-                  <span>{isVotingClosed ? '🔓 Mở lại biểu quyết' : '🔒 Đóng biểu quyết (Chỉ Owner)'}</span>
-                </button>
+                {isTripOwner && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const nextState = !isVotingClosed;
+                      setIsVotingClosed(nextState);
+                      showToast(
+                        nextState
+                          ? '🔒 Trưởng nhóm (Owner) đã ĐÓNG BIỂU QUYẾT! Kết quả đã khóa, thành viên không thể vote tiếp.'
+                          : '🔓 Đã MỞ LẠI BIỂU QUYẾT! Các thành viên có thể tiếp tục bỏ phiếu.'
+                      );
+                    }}
+                    style={{
+                      padding: '9px 16px',
+                      background: isVotingClosed ? '#FEF2F2' : '#F1F5F9',
+                      color: isVotingClosed ? '#DC2626' : '#475569',
+                      border: '1px solid',
+                      borderColor: isVotingClosed ? '#FECACA' : '#CBD5E1',
+                      borderRadius: '10px',
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                    }}
+                    title="Đóng / mở biểu quyết"
+                  >
+                    <span>{isVotingClosed ? '🔓 Mở lại biểu quyết' : '🔒 Đóng biểu quyết (Chỉ Owner)'}</span>
+                  </button>
+                )}
               </div>
             </div>
 
