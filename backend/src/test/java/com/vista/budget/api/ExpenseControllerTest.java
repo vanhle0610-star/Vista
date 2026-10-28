@@ -2,6 +2,7 @@ package com.vista.budget.api;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
@@ -271,7 +272,11 @@ class ExpenseControllerTest {
             List.of());
 
     when(expenseService.updateExpense(
-            eq(tripId), eq(expenseId), eq(currentUserId), any(UpdateExpenseRequest.class)))
+            eq(tripId),
+            eq(expenseId),
+            eq(currentUserId),
+            any(UpdateExpenseRequest.class),
+            nullable(Long.class)))
         .thenReturn(response);
 
     mockMvc

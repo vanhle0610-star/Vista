@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -24,6 +24,18 @@ import {
   Star,
   X,
   ThumbsUp,
+  CheckSquare,
+  Users,
+  Trash2,
+  ClipboardList,
+  FileText,
+  ShieldAlert,
+  Crown,
+  Info,
+  Lock,
+  ArrowRight,
+  Clipboard,
+  KeyRound,
 } from 'lucide-react';
 import { Navbar } from '@/components/common/Navbar';
 import {
@@ -32,6 +44,15 @@ import {
   getDestinationHeroImage,
 } from '@/data/sampleItineraries';
 import styles from './trips.module.css';
+
+interface TripMember {
+  name: string;
+  avatar: string;
+  color: string;
+  role?: string;
+  userId?: string;
+  email?: string;
+}
 
 interface TripItem {
   id: string;
@@ -42,10 +63,11 @@ interface TripItem {
   endDate: string;
   status: 'ACTIVE' | 'PLANNING' | 'COMPLETED';
   role: 'OWNER' | 'MEMBER';
+  ownerId?: string;
   budgetTotal: number;
   budgetSpent: number;
   progressPercent: number;
-  members: Array<{ name: string; avatar: string; color: string; role?: string; email?: string }>;
+  members: TripMember[];
   image: string;
   treasuryPath: string;
   rating?: number;
@@ -54,6 +76,23 @@ interface TripItem {
   alertLinkText?: string;
   quickActions: Array<{ label: string; href?: string; actionType?: string }>;
   itineraryDays?: unknown[];
+}
+
+interface StoredUser {
+  id?: string;
+  email?: string;
+  displayName?: string;
+  role?: string;
+}
+
+function getStoredUser(): StoredUser | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem('vista_user');
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
 }
 
 const DEFAULT_DEMO_TRIPS: TripItem[] = [
@@ -154,40 +193,27 @@ function getDefaultEndString(): string {
   return `${y}-${m}-${d}`;
 }
 
-function getCurrentUserMember(defaultRole = 'Trưởng nhóm') {
-  if (typeof window !== 'undefined') {
-    try {
-      const stored = localStorage.getItem('vista_user');
-      if (stored) {
-        const u = JSON.parse(stored);
-        const name = u.displayName || u.email || 'Nguyễn Văn Sang';
-        const parts = name.trim().split(/\s+/);
-        const initials = (parts.length >= 2 ? parts[0][0] + parts[parts.length - 1][0] : name.slice(0, 2)).toUpperCase();
-        return {
-          name: `${name} (Bạn)`,
-          email: u.email || '',
-          avatar: initials || 'NS',
-          color: '#0284c7',
-          role: defaultRole,
-        };
-      }
-    } catch {
-      // fallback
-    }
-  }
+function getCurrentUserMember(defaultRole = 'Trưởng nhóm'): TripMember {
+  const u = getStoredUser();
+  const rawName = u?.displayName || u?.email || 'Thành viên VISTA';
+  const cleanName = rawName.replace(/\s*\(Bạn\)/g, '').trim() || 'Thành viên VISTA';
+  const parts = cleanName.split(/\s+/);
+  const initials = (parts.length >= 2 ? parts[0][0] + parts[parts.length - 1][0] : cleanName.slice(0, 2)).toUpperCase();
   return {
-    name: 'Nguyễn Văn Sang (Bạn)',
-    email: '',
-    avatar: 'NS',
+    name: cleanName,
+    avatar: initials || 'TV',
+
     color: '#0284c7',
     role: defaultRole,
+    userId: u?.id || 'u-me',
+    email: u?.email || '',
   };
 }
 
 function formatMembersForCurrentUser(
-  members: Array<{ name: string; avatar?: string; color?: string; role?: string; email?: string }>,
+  members: Array<{ name: string; avatar?: string; color?: string; role?: string; email?: string; userId?: string }>,
   defaultRole = 'Trưởng nhóm'
-) {
+): TripMember[] {
   let currentUser: any = null;
   if (typeof window !== 'undefined') {
     try {
@@ -204,21 +230,23 @@ function formatMembersForCurrentUser(
   }
 
   const seen = new Set<string>();
-  const result: Array<{ name: string; avatar: string; color: string; role?: string; email?: string }> = [];
+  const result: TripMember[] = [];
 
   for (const m of members) {
     if (!m) continue;
     const rawName = (m.name || '').replace(/\s*\([^)]*\)/g, '').trim();
     const rawEmail = (m.email || '').toLowerCase().trim();
-    const key = rawEmail || rawName.toLowerCase();
+    const key = (m.userId ? `id:${m.userId}` : '') || rawEmail || rawName.toLowerCase();
 
     if (!key || seen.has(key)) continue;
     seen.add(key);
 
-    const isMe =
+    const isMe = Boolean(
+      (currentUser && m.userId && currentUser.id && m.userId === currentUser.id) ||
       (currentEmail && rawEmail && currentEmail === rawEmail) ||
       (currentName && rawName.toLowerCase() === currentName) ||
-      (m.name || '').toLowerCase().includes('(bạn)');
+      (m.name || '').toLowerCase().includes('(bạn)')
+    );
 
     result.push({
       name: isMe ? `${rawName || 'Bạn'} (Bạn)` : rawName,
@@ -226,29 +254,444 @@ function formatMembersForCurrentUser(
       color: m.color || '#0284c7',
       email: m.email || (isMe && currentEmail ? currentEmail : undefined),
       role: m.role || 'Thành viên',
+      userId: m.userId || (isMe && currentUser?.id ? currentUser.id : undefined),
     });
   }
 
   return result.length > 0 ? result : [getCurrentUserMember(defaultRole)];
 }
 
+type DateFilterType = 'all' | 'upcoming' | 'month-10' | 'month-11' | 'month-12' | 'year-2026' | 'past';
+
+const DATE_FILTER_OPTIONS: Array<{ key: DateFilterType; label: string; desc?: string }> = [
+  { key: 'all', label: 'Tất cả thời gian', desc: 'Hiển thị mọi hành trình' },
+  { key: 'upcoming', label: 'Sắp tới & Đang diễn ra', desc: 'Các chuyến đi đang hoặc sắp đi' },
+  { key: 'month-10', label: 'Tháng 10 / 2026', desc: 'Hành trình trong tháng 10' },
+  { key: 'month-11', label: 'Tháng 11 / 2026', desc: 'Hành trình trong tháng 11' },
+  { key: 'month-12', label: 'Tháng 12 / 2026', desc: 'Hành trình cuối năm' },
+  { key: 'year-2026', label: 'Năm 2026', desc: 'Tất cả chuyến đi năm 2026' },
+  { key: 'past', label: 'Đã hoàn thành', desc: 'Các chuyến đi đã kết thúc' },
+];
+
+function matchesDateFilter(trip: TripItem, filter: DateFilterType): boolean {
+  if (filter === 'all') return true;
+  const text = `${trip.startDate || ''} ${trip.endDate || ''}`.toLowerCase();
+
+  if (filter === 'upcoming') {
+    return trip.status === 'PLANNING' || trip.status === 'ACTIVE';
+  }
+  if (filter === 'past') {
+    return trip.status === 'COMPLETED' || text.includes('2025');
+  }
+  if (filter === 'month-10') {
+    return text.includes('/10') || text.includes('-10-') || text.includes('10/2026') || text.includes('10/26');
+  }
+  if (filter === 'month-11') {
+    return text.includes('/11') || text.includes('-11-') || text.includes('11/2026') || text.includes('11/26');
+  }
+  if (filter === 'month-12') {
+    return text.includes('/12') || text.includes('-12-') || text.includes('12/2026') || text.includes('12/26');
+  }
+  if (filter === 'year-2026') {
+    return text.includes('2026') || text.includes('/26');
+  }
+  return true;
+}
+
+interface TripTask {
+  id: string;
+  title: string;
+  assignee: string;
+  done: boolean;
+}
+
+interface TripNote {
+  id: string;
+  content: string;
+  category: string;
+  done: boolean;
+}
+
+function getDefaultTasks(dest: string): TripTask[] {
+  return [
+    { id: 'task-1', title: 'Đặt vé máy bay / phương tiện di chuyển', assignee: 'Trưởng nhóm', done: true },
+    { id: 'task-2', title: 'Đặt phòng khách sạn / nơi lưu trú', assignee: 'Thành viên', done: true },
+    { id: 'task-3', title: `Lên danh sách các điểm ăn uống & đặc sản tại ${dest}`, assignee: 'Thành viên', done: false },
+    { id: 'task-4', title: 'Chuẩn bị thuốc dự phòng & vật dụng y tế', assignee: 'Thành viên', done: false },
+  ];
+}
+
+function getDefaultNotes(): TripNote[] {
+  return [
+    { id: 'note-1', content: 'Mang Căn cước công dân / Hộ chiếu bản gốc', category: 'Giấy tờ', done: true },
+    { id: 'note-2', content: 'Sạc dự phòng, cáp sạc điện thoại và máy ảnh', category: 'Công nghệ', done: true },
+    { id: 'note-3', content: 'Áo khoác gió nhẹ, kem chống nắng, kính râm', category: 'Trang phục', done: false },
+    { id: 'note-4', content: 'Thuốc say xe, thuốc dị ứng, băng gạc cá nhân', category: 'Y tế', done: false },
+  ];
+}
+
+const VIETNAM_POPULAR_CITIES = [
+  {
+    region: '🏖️ Miền Trung & Duyên Hải (Biển & Di sản)',
+    cities: [
+      { name: 'Đà Nẵng', defaultTitle: 'Khám phá Đà Nẵng - Cầu Vàng - Sơn Trà' },
+      { name: 'Quy Nhơn, Bình Định', defaultTitle: 'Khám phá Quy Nhơn - Kỳ Co - Eo Gió' },
+      { name: 'Nha Trang, Khánh Hòa', defaultTitle: 'Nghỉ dưỡng biển đảo Nha Trang' },
+      { name: 'Hội An, Quảng Nam', defaultTitle: 'Dạo bước Phố cổ Hội An' },
+      { name: 'Huế, Thừa Thiên Huế', defaultTitle: 'Hành trình Cố đô Huế di sản' },
+      { name: 'Phú Yên', defaultTitle: 'Xứ hoa vàng cỏ xanh Phú Yên' },
+      { name: 'Phan Thiết - Mũi Né, Bình Thuận', defaultTitle: 'Chuyến đi Phan Thiết - Mũi Né' },
+      { name: 'Phong Nha, Quảng Bình', defaultTitle: 'Khám phá Vương quốc hang động Quảng Bình' },
+    ],
+  },
+  {
+    region: '🏔️ Miền Bắc & Đông/Tây Bắc (Kỳ quan & Văn hóa)',
+    cities: [
+      { name: 'Hà Nội', defaultTitle: 'Du lịch Thủ đô Hà Nội 36 phố phường' },
+      { name: 'Hạ Long, Quảng Ninh', defaultTitle: 'Du ngoạn kỳ quan Vịnh Hạ Long' },
+      { name: 'Sa Pa, Lào Cai', defaultTitle: 'Chinh phục Sa Pa & Đỉnh Fansipan' },
+      { name: 'Ninh Bình', defaultTitle: 'Khám phá Quần thể danh thắng Tràng An' },
+      { name: 'Hà Giang', defaultTitle: 'Phượt Cao nguyên đá Hà Giang' },
+      { name: 'Cát Bà, Hải Phòng', defaultTitle: 'Khám phá đảo ngọc Cát Bà - Vịnh Lan Hạ' },
+      { name: 'Mộc Châu, Sơn La', defaultTitle: 'Săn mây cao nguyên Mộc Châu' },
+    ],
+  },
+  {
+    region: '🌲 Tây Nguyên (Khí hậu ôn hòa & Đại ngàn)',
+    cities: [
+      { name: 'Đà Lạt, Lâm Đồng', defaultTitle: 'Check-in thành phố sương mù Đà Lạt' },
+      { name: 'Măng Đen, Kon Tum', defaultTitle: 'Nghỉ dưỡng sinh thái Măng Đen' },
+      { name: 'Buôn Ma Thuột, Đắk Lắk', defaultTitle: 'Trải nghiệm văn hóa Buôn Ma Thuột' },
+    ],
+  },
+  {
+    region: '🌴 Miền Nam & Hải Đảo (Sôi động & Thiên đường nhiệt đới)',
+    cities: [
+      { name: 'Phú Quốc, Kiên Giang', defaultTitle: 'Nghỉ dưỡng đảo ngọc Phú Quốc' },
+      { name: 'TP. Hồ Chí Minh', defaultTitle: 'Sài Gòn City Tour & Ẩm thực đêm' },
+      { name: 'Vũng Tàu, Bà Rịa - Vũng Tàu', defaultTitle: 'Cuối tuần tại bãi biển Vũng Tàu' },
+      { name: 'Côn Đảo, Bà Rịa - Vũng Tàu', defaultTitle: 'Hành trình tâm linh & biển đảo Côn Đảo' },
+      { name: 'Cần Thơ', defaultTitle: 'Khám phá sông nước Tây Đô Cần Thơ' },
+      { name: 'An Giang', defaultTitle: 'Khám phá Thất Sơn Bảy Núi An Giang' },
+    ],
+  },
+];
+
+const QUICK_FEATURED_CITIES = [
+  'Đà Nẵng',
+  'Đà Lạt, Lâm Đồng',
+  'Phú Quốc, Kiên Giang',
+  'Nha Trang, Khánh Hòa',
+  'Hà Nội',
+  'Quy Nhơn, Bình Định',
+  'Hạ Long, Quảng Ninh',
+  'Sa Pa, Lào Cai',
+  'Huế, Thừa Thiên Huế',
+  'Hà Giang',
+];
 export default function TripsPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'all' | 'planning' | 'active' | 'completed'>('all');
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [currentUser, setCurrentUser] = useState<StoredUser | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setCurrentUser(getStoredUser());
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('vista_token');
+      if (!token) {
+        setIsAuthenticated(false);
+        router.replace('/login?returnUrl=/trips');
+      } else {
+        setIsAuthenticated(true);
+      }
+    }
+  }, [router]);
+
+  const [activeTab, setActiveTab] = useState<'all' | 'mine' | 'planning' | 'active' | 'completed'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [dateFilter, setDateFilter] = useState<DateFilterType>('all');
+  const [dateDropdownOpen, setDateDropdownOpen] = useState(false);
+  const dateDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dateDropdownRef.current && !dateDropdownRef.current.contains(e.target as Node)) {
+        setDateDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showVoteModal, setShowVoteModal] = useState(false);
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [showNoteModal, setShowNoteModal] = useState(false);
+  const [selectedTripForAction, setSelectedTripForAction] = useState<TripItem | null>(null);
+
+  const [tripTasks, setTripTasks] = useState<Record<string, TripTask[]>>({});
+  const [tripNotes, setTripNotes] = useState<Record<string, TripNote[]>>({});
+
+  const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [newTaskAssignee, setNewTaskAssignee] = useState('Trưởng nhóm');
+
+  const [newNoteContent, setNewNoteContent] = useState('');
+  const [newNoteCategory, setNewNoteCategory] = useState('Đồ dùng');
+
+  const isUserTrip = (t: TripItem) => {
+    if (!currentUser) return false;
+    const isOwner = Boolean(
+      (t.ownerId && (t.ownerId === currentUser.id || (currentUser.email && t.ownerId === currentUser.email))) ||
+      (t.members?.[0] && (
+        (t.members[0].userId && (t.members[0].userId === currentUser.id || (currentUser.email && t.members[0].userId === currentUser.email))) ||
+        (t.members[0].email && currentUser.email && t.members[0].email.toLowerCase() === currentUser.email.toLowerCase()) ||
+        (currentUser.displayName && t.members[0].name && t.members[0].name.trim().toLowerCase() === currentUser.displayName.trim().toLowerCase())
+      ))
+    );
+    if (isOwner) return true;
+    return Boolean(
+      t.members?.some((m) =>
+        (m.userId && (m.userId === currentUser.id || (currentUser.email && m.userId === currentUser.email))) ||
+        (m.email && currentUser.email && m.email.toLowerCase() === currentUser.email.toLowerCase()) ||
+        (currentUser.displayName && m.name && m.name.trim().toLowerCase() === currentUser.displayName.trim().toLowerCase())
+      )
+    );
+  };
+
+  const isTripOwnerUser = (t: TripItem) => {
+    if (!currentUser) return false;
+    return Boolean(
+      (t.ownerId && (t.ownerId === currentUser.id || (currentUser.email && t.ownerId === currentUser.email))) ||
+      (t.members?.[0] && (
+        (t.members[0].userId && (t.members[0].userId === currentUser.id || (currentUser.email && t.members[0].userId === currentUser.email))) ||
+        (t.members[0].email && currentUser.email && t.members[0].email.toLowerCase() === currentUser.email.toLowerCase()) ||
+        (currentUser.displayName && t.members[0].name && t.members[0].name.trim().toLowerCase() === currentUser.displayName.trim().toLowerCase())
+      ))
+    );
+  };
+
+  const handleOpenAssignModal = (t: TripItem) => {
+    if (!isUserTrip(t)) {
+      showToast(`⚠️ Bạn không thuộc chuyến đi "${t.title}". Chỉ thành viên nhóm mới có quyền xem phân công nhiệm vụ!`);
+      return;
+    }
+    setSelectedTripForAction(t);
+    // Initialize default assignee to team members
+    const firstOther = t.members?.find((m) => {
+      const isMe = (m.userId && m.userId === currentUser?.id) ||
+        (currentUser?.displayName && m.name && m.name.trim().toLowerCase() === currentUser.displayName.trim().toLowerCase());
+      return !isMe;
+    });
+    setNewTaskAssignee(firstOther?.name || 'Cả nhóm');
+    try {
+      const stored = localStorage.getItem(`vista_trip_tasks_${t.id}`);
+      if (stored) {
+        setTripTasks((prev) => ({ ...prev, [t.id]: JSON.parse(stored) }));
+      } else {
+        const def = getDefaultTasks(t.destination || t.title);
+        setTripTasks((prev) => ({ ...prev, [t.id]: def }));
+        localStorage.setItem(`vista_trip_tasks_${t.id}`, JSON.stringify(def));
+      }
+    } catch {
+      const def = getDefaultTasks(t.destination || t.title);
+      setTripTasks((prev) => ({ ...prev, [t.id]: def }));
+    }
+    setShowAssignModal(true);
+  };
+
+  const handleOpenNoteModal = (t: TripItem) => {
+    if (!isUserTrip(t)) {
+      showToast(`⚠️ Bạn không thuộc chuyến đi "${t.title}". Chỉ thành viên nhóm mới có quyền xem ghi chú & hành lý nội bộ!`);
+      return;
+    }
+    setSelectedTripForAction(t);
+    try {
+      const stored = localStorage.getItem(`vista_trip_notes_${t.id}`);
+      if (stored) {
+        setTripNotes((prev) => ({ ...prev, [t.id]: JSON.parse(stored) }));
+      } else {
+        const def = getDefaultNotes();
+        setTripNotes((prev) => ({ ...prev, [t.id]: def }));
+        localStorage.setItem(`vista_trip_notes_${t.id}`, JSON.stringify(def));
+      }
+    } catch {
+      const def = getDefaultNotes();
+      setTripNotes((prev) => ({ ...prev, [t.id]: def }));
+    }
+    setShowNoteModal(true);
+  };
+
+  const handleToggleTask = (tripId: string, taskId: string) => {
+    if (!selectedTripForAction || !isUserTrip(selectedTripForAction)) {
+      showToast('⚠️ Bạn không thuộc chuyến đi này. Thao tác bị từ chối!');
+      return;
+    }
+    setTripTasks((prev) => {
+      const current = prev[tripId] || [];
+      const updated = current.map((item) =>
+        item.id === taskId ? { ...item, done: !item.done } : item
+      );
+      try {
+        localStorage.setItem(`vista_trip_tasks_${tripId}`, JSON.stringify(updated));
+      } catch {}
+      return { ...prev, [tripId]: updated };
+    });
+  };
+
+  const handleAddTask = (e: React.FormEvent, tripId: string) => {
+    e.preventDefault();
+    if (!selectedTripForAction) return;
+    if (!isUserTrip(selectedTripForAction)) {
+      showToast('⚠️ Bạn không thuộc chuyến đi này. Quyền truy cập bị từ chối!');
+      return;
+    }
+    if (!isTripOwnerUser(selectedTripForAction)) {
+      showToast('⚠️ Bạn đang có vai trò Thành viên. Chỉ Trưởng nhóm mới có quyền tạo và giao nhiệm vụ mới!');
+      return;
+    }
+    if (!newTaskTitle.trim()) return;
+    const newTask: TripTask = {
+      id: `task-${Date.now()}`,
+      title: newTaskTitle.trim(),
+      assignee: newTaskAssignee || 'Cả nhóm',
+      done: false,
+    };
+    setTripTasks((prev) => {
+      const current = prev[tripId] || [];
+      const updated = [...current, newTask];
+      try {
+        localStorage.setItem(`vista_trip_tasks_${tripId}`, JSON.stringify(updated));
+      } catch {}
+      return { ...prev, [tripId]: updated };
+    });
+    setNewTaskTitle('');
+    showToast(`Đã giao việc cho: ${newTask.assignee}!`);
+  };
+
+  const handleDeleteTask = (tripId: string, taskId: string) => {
+    if (!selectedTripForAction) return;
+    if (!isUserTrip(selectedTripForAction)) {
+      showToast('⚠️ Bạn không thuộc chuyến đi này!');
+      return;
+    }
+    if (!isTripOwnerUser(selectedTripForAction)) {
+      showToast('⚠️ Chỉ Trưởng nhóm mới có quyền xóa nhiệm vụ phân công!');
+      return;
+    }
+    setTripTasks((prev) => {
+      const current = prev[tripId] || [];
+      const updated = current.filter((item) => item.id !== taskId);
+      try {
+        localStorage.setItem(`vista_trip_tasks_${tripId}`, JSON.stringify(updated));
+      } catch {}
+      return { ...prev, [tripId]: updated };
+    });
+    showToast('Đã xóa nhiệm vụ!');
+  };
+
+  const handleToggleNote = (tripId: string, noteId: string) => {
+    if (!selectedTripForAction || !isUserTrip(selectedTripForAction)) {
+      showToast('⚠️ Bạn không thuộc chuyến đi này. Thao tác bị từ chối!');
+      return;
+    }
+    setTripNotes((prev) => {
+      const current = prev[tripId] || [];
+      const updated = current.map((item) =>
+        item.id === noteId ? { ...item, done: !item.done } : item
+      );
+      try {
+        localStorage.setItem(`vista_trip_notes_${tripId}`, JSON.stringify(updated));
+      } catch {}
+      return { ...prev, [tripId]: updated };
+    });
+  };
+
+  const handleAddNote = (e: React.FormEvent, tripId: string) => {
+    e.preventDefault();
+    if (!selectedTripForAction || !isUserTrip(selectedTripForAction)) {
+      showToast('⚠️ Bạn không thuộc chuyến đi này. Không thể thêm ghi chú!');
+      return;
+    }
+    if (!newNoteContent.trim()) return;
+    const newNote: TripNote = {
+      id: `note-${Date.now()}`,
+      content: newNoteContent.trim(),
+      category: newNoteCategory,
+      done: false,
+    };
+    setTripNotes((prev) => {
+      const current = prev[tripId] || [];
+      const updated = [...current, newNote];
+      try {
+        localStorage.setItem(`vista_trip_notes_${tripId}`, JSON.stringify(updated));
+      } catch {}
+      return { ...prev, [tripId]: updated };
+    });
+    setNewNoteContent('');
+    showToast('Đã thêm ghi chú mới!');
+  };
+
+  const handleDeleteNote = (tripId: string, noteId: string) => {
+    if (!selectedTripForAction || !isUserTrip(selectedTripForAction)) {
+      showToast('⚠️ Bạn không thuộc chuyến đi này!');
+      return;
+    }
+    setTripNotes((prev) => {
+      const current = prev[tripId] || [];
+      const updated = current.filter((item) => item.id !== noteId);
+      try {
+        localStorage.setItem(`vista_trip_notes_${tripId}`, JSON.stringify(updated));
+      } catch {}
+      return { ...prev, [tripId]: updated };
+    });
+  };
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [todayStr] = useState<string>(() => getTodayString());
 
   // New trip form state
   const [newTitle, setNewTitle] = useState('');
   const [newDestination, setNewDestination] = useState('');
+  const [isCustomCity, setIsCustomCity] = useState(false);
+  const [customCityName, setCustomCityName] = useState('');
   const [newBudget, setNewBudget] = useState('20000000');
   const [newStartDate, setNewStartDate] = useState<string>(() => getTodayString());
   const [newEndDate, setNewEndDate] = useState<string>(() => getDefaultEndString());
   const [joinCode, setJoinCode] = useState('');
+
+  const calculateDuration = (startStr: string, endStr: string) => {
+    try {
+      const s = new Date(startStr);
+      const e = new Date(endStr);
+      if (isNaN(s.getTime()) || isNaN(e.getTime())) return '4 ngày 3 đêm';
+      const diffDays = Math.max(1, Math.round((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+      const nights = Math.max(0, diffDays - 1);
+      return `${diffDays} ngày ${nights} đêm`;
+    } catch {
+      return '4 ngày 3 đêm';
+    }
+  };
+
+  const handleSelectCity = (cityName: string, defaultTitleSuggestion?: string) => {
+    if (cityName === 'CUSTOM') {
+      setIsCustomCity(true);
+      return;
+    }
+    setIsCustomCity(false);
+    setNewDestination(cityName);
+
+    const dur = calculateDuration(newStartDate, newEndDate);
+    if (!newTitle.trim() || newTitle.includes('Khám phá') || newTitle.includes('Chuyến đi') || newTitle.includes('Du lịch') || newTitle.includes('Nghỉ dưỡng')) {
+      const cityNameShort = cityName.split(',')[0];
+      const suggested = defaultTitleSuggestion || `Khám phá ${cityNameShort} (${dur})`;
+      setNewTitle(suggested);
+    }
+  };
 
   // Proposals for voting demo
   const [proposals, setProposals] = useState([
@@ -260,6 +703,30 @@ export default function TripsPage() {
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  // Close modals on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowCreateModal(false);
+        setShowJoinModal(false);
+        setShowVoteModal(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const handlePasteCode = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text) {
+        setJoinCode(text.trim().toUpperCase());
+      }
+    } catch {
+      showToast('Vui lòng dán thủ công bằng tổ hợp phím Ctrl + V');
+    }
   };
 
   const [tripsList, setTripsList] = useState<TripItem[]>(DEFAULT_DEMO_TRIPS);
@@ -274,6 +741,8 @@ export default function TripsPage() {
           const stored = localStorage.getItem('vista_custom_trips');
           const customTrips: TripItem[] = stored ? JSON.parse(stored) : [];
           if (customTrips && customTrips.length > 0) {
+            const currentOwner = getCurrentUserMember('Trưởng nhóm');
+            let hasLegacyData = false;
             const normalized = customTrips.map((t) => {
               const dest = t.destination || 'Việt Nam';
               const isHanoiMismatch = dest && !dest.toLowerCase().includes('hà nội') && JSON.stringify(t.itineraryDays || '').includes('Hoàn Kiếm');
@@ -281,9 +750,69 @@ export default function TripsPage() {
                 ? getSampleItineraryForDestination(dest, t.startDate)
                 : t.itineraryDays;
 
+              const rawMembers = Array.isArray(t.members) && t.members.length > 0 ? t.members : [currentOwner];
+              const cleanedMembers: TripMember[] = rawMembers.map((m: any, idx: number) => {
+                const rawName = m.name || '';
+                let cleanName = rawName.replace(/\s*\(Bạn\)/g, '').trim();
+                if (!cleanName || cleanName === 'Bạn') {
+                  cleanName = idx === 0 ? 'Trưởng nhóm VISTA' : 'Thành viên VISTA';
+                }
+                if (cleanName !== rawName) {
+                  hasLegacyData = true;
+                }
+
+                // Match with currentUser only if name or email truly matches
+                const isMe = Boolean(
+                  currentUser && (
+                    (m.userId && m.userId === currentUser.id) ||
+                    (currentUser.displayName && cleanName.toLowerCase() === currentUser.displayName.toLowerCase()) ||
+                    (currentUser.email && m.email && m.email.toLowerCase() === currentUser.email.toLowerCase())
+                  )
+                );
+
+                const memberUserId = isMe
+                  ? (currentUser?.id || currentOwner.userId)
+                  : (m.userId && m.userId !== currentOwner.userId ? m.userId : `u-${encodeURIComponent(cleanName.toLowerCase().replace(/\s+/g, '-'))}`);
+
+                const memberEmail = isMe
+                  ? (currentUser?.email || currentOwner.email)
+                  : (m.email && m.email !== currentOwner.email ? m.email : `${encodeURIComponent(cleanName.toLowerCase().replace(/\s+/g, ''))}@vista.vn`);
+
+                return {
+                  name: cleanName,
+                  avatar: m.avatar || cleanName.slice(0, 2).toUpperCase(),
+                  color: m.color || '#0284c7',
+                  role: m.role || (idx === 0 ? 'Trưởng nhóm' : 'Thành viên'),
+                  userId: memberUserId,
+                  email: memberEmail,
+                };
+              });
+
+              const firstMember = cleanedMembers[0];
+              const isCreatorMe = Boolean(
+                currentUser && (
+                  (firstMember?.userId && firstMember.userId === currentUser.id) ||
+                  (currentUser.displayName && firstMember?.name && firstMember.name.toLowerCase() === currentUser.displayName.toLowerCase()) ||
+                  (currentUser.email && firstMember?.email && firstMember.email.toLowerCase() === currentUser.email.toLowerCase())
+                )
+              );
+
+              const resolvedOwnerId = isCreatorMe
+                ? (currentUser?.id || currentOwner.userId)
+                : (firstMember?.userId || `owner-${t.id}`);
+
+              const bSpent = typeof t.budgetSpent === 'number' ? t.budgetSpent : 0;
+              const bTotal = typeof t.budgetTotal === 'number' && t.budgetTotal > 0 ? t.budgetTotal : 20000000;
+              const calculatedProgress = bTotal > 0 ? Math.min(100, Math.round((bSpent / bTotal) * 100)) : 0;
+
+              if (t.progressPercent !== calculatedProgress || t.ownerId !== resolvedOwnerId) {
+                hasLegacyData = true;
+              }
+
               return {
                 ...t,
-                members: formatMembersForCurrentUser(t.members || []),
+                ownerId: resolvedOwnerId,
+                members: cleanedMembers,
                 image: getDestinationHeroImage(dest),
                 itineraryDays: fixedItinerary,
                 quickActions: Array.isArray(t.quickActions) && t.quickActions.length > 0
@@ -293,9 +822,9 @@ export default function TripsPage() {
                       { label: 'Phân công', actionType: 'ASSIGN' },
                       { label: 'Ghi chú', actionType: 'NOTE' },
                     ],
-                budgetTotal: t.budgetTotal || 20000000,
-                budgetSpent: t.budgetSpent || 0,
-                progressPercent: typeof t.progressPercent === 'number' ? t.progressPercent : 20,
+                budgetTotal: bTotal,
+                budgetSpent: bSpent,
+                progressPercent: calculatedProgress,
                 durationBadge: t.durationBadge || '4 ngày',
                 startDate: t.startDate || '15/11',
                 endDate: t.endDate || '18/11/2026',
@@ -305,6 +834,11 @@ export default function TripsPage() {
               };
             });
 
+            if (hasLegacyData) {
+              try {
+                localStorage.setItem('vista_custom_trips', JSON.stringify(normalized));
+              } catch {}
+            }
             const merged: TripItem[] = [...normalized];
             DEFAULT_DEMO_TRIPS.forEach((d) => {
               if (!merged.some((m) => m.id === d.id)) {
@@ -408,7 +942,7 @@ export default function TripsPage() {
         budgetSpent: 0,
         progressPercent: 20,
         members: [
-          { name: inv.inviterName || 'Trưởng nhóm', avatar: (inv.inviterName || 'TN').slice(0, 2).toUpperCase(), color: '#0070BA', role: 'Trưởng nhóm' },
+          { name: inv.inviterName || 'Trưởng nhóm', avatar: (inv.inviterName || 'TN').slice(0, 2).toUpperCase(), color: '#0070BA', role: 'Trưởng nhóm', userId: 'owner-stub' },
           currentUserMember,
         ],
         image: getDestinationHeroImage(inv.destination || 'Việt Nam'),
@@ -457,15 +991,21 @@ export default function TripsPage() {
     }
   };
 
+  // isUserTrip defined above
+  const myTripsList = tripsList.filter(isUserTrip);
+  const myCount = myTripsList.length;
   const totalCount = tripsList.length;
   const planningCount = tripsList.filter((t) => t.status === 'PLANNING').length;
   const activeCount = tripsList.filter((t) => t.status === 'ACTIVE').length;
   const completedCount = tripsList.filter((t) => t.status === 'COMPLETED').length;
 
   const filteredTrips = tripsList.filter((trip) => {
+    if (activeTab === 'mine' && !isUserTrip(trip)) return false;
     if (activeTab === 'planning' && trip.status !== 'PLANNING') return false;
     if (activeTab === 'active' && trip.status !== 'ACTIVE') return false;
     if (activeTab === 'completed' && trip.status !== 'COMPLETED') return false;
+
+    if (!matchesDateFilter(trip, dateFilter)) return false;
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -479,8 +1019,16 @@ export default function TripsPage() {
 
   const handleCreateTrip = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTitle.trim() || !newDestination.trim()) {
-      showToast('Vui lòng nhập đầy đủ tiêu đề và điểm đến!');
+    const token = typeof window !== 'undefined' ? localStorage.getItem('vista_token') : null;
+    if (!token) {
+      showToast('Vui lòng đăng nhập để tạo chuyến đi!');
+      router.replace('/login?returnUrl=/trips');
+      return;
+    }
+
+    const destinationToSave = isCustomCity ? customCityName.trim() : newDestination.trim();
+    if (!newTitle.trim() || !destinationToSave) {
+      showToast('Vui lòng chọn thành phố điểm đến và nhập tên chuyến đi!');
       return;
     }
 
@@ -505,24 +1053,26 @@ export default function TripsPage() {
 
     const tripId = `trip-${Date.now()}`;
     const currentOwner = getCurrentUserMember('Trưởng nhóm');
-    const generatedItinerary = getSampleItineraryForDestination(newDestination, formattedStartDate);
+    const generatedItinerary = getSampleItineraryForDestination(destinationToSave, formattedStartDate);
 
+    const parsedBudget = Number(newBudget) > 0 ? Number(newBudget) : 20000000;
     const newTrip: TripItem = {
       id: tripId,
       title: newTitle,
-      destination: newDestination,
+      destination: destinationToSave,
       durationBadge,
       startDate: formattedStartDate,
       endDate: formattedEndDate,
       status: 'PLANNING',
       role: 'OWNER',
-      budgetTotal: Number(newBudget) || 20000000,
+      ownerId: currentOwner.userId,
+      budgetTotal: parsedBudget,
       budgetSpent: 0,
-      progressPercent: 15,
+      progressPercent: 0,
       members: [currentOwner],
-      image: getDestinationHeroImage(newDestination),
+      image: getDestinationHeroImage(destinationToSave),
       treasuryPath: `/trips/${tripId}/treasury`,
-      alertText: `Hành trình ${durationBadge} khám phá ${newDestination}`,
+      alertText: `Hành trình ${durationBadge} khám phá ${destinationToSave}`,
       alertLinkText: 'Xem',
       itineraryDays: generatedItinerary,
       quickActions: [
@@ -547,6 +1097,8 @@ export default function TripsPage() {
     setShowCreateModal(false);
     setNewTitle('');
     setNewDestination('');
+    setCustomCityName('');
+    setIsCustomCity(false);
     showToast(`Đã tạo thành công chuyến đi "${newTrip.title}"!`);
   };
 
@@ -574,16 +1126,15 @@ export default function TripsPage() {
 
     if (matched) {
       // Add current user as member if not yet added
-      const hasMe = (matched.members || []).some((m) => m.name.includes('Bạn'));
-      if (!hasMe) {
-        matched.members = [
-          ...(matched.members || []),
-          {
-            name: 'Bạn (Thành viên)',
-            avatar: 'ME',
-            color: '#10b981',
-          },
-        ];
+      const meMember = getCurrentUserMember('Thành viên');
+      const alreadyIn = (matched.members || []).some(
+        (m) =>
+          (m.userId && m.userId === meMember.userId) ||
+          (m.email && meMember.email && m.email.toLowerCase() === meMember.email.toLowerCase()) ||
+          m.name.toLowerCase() === meMember.name.toLowerCase()
+      );
+      if (!alreadyIn) {
+        matched.members = [...(matched.members || []), meMember];
         // Save to localStorage
         try {
           const stored = localStorage.getItem('vista_custom_trips');
@@ -610,9 +1161,10 @@ export default function TripsPage() {
     }
 
     // If new custom code not matching existing, create a joined trip stub
-    const currentMember = getCurrentUserMember('Thành viên');
+    const meMember = getCurrentUserMember('Thành viên');
+    const newJoinedId = `trip-joined-${Date.now()}`;
     const newJoinedTrip: TripItem = {
-      id: `trip-joined-${Date.now()}`,
+      id: newJoinedId,
       title: `Chuyến đi theo mã ${cleanCode}`,
       destination: 'Việt Nam',
       durationBadge: '3 ngày',
@@ -622,13 +1174,13 @@ export default function TripsPage() {
       role: 'MEMBER',
       budgetTotal: 15000000,
       budgetSpent: 0,
-      progressPercent: 20,
+      progressPercent: 0,
       members: [
-        { name: 'Trưởng nhóm', avatar: 'TN', color: '#0070BA', role: 'Trưởng nhóm' },
-        currentMember,
+        { name: 'Trưởng nhóm', avatar: 'TN', color: '#0070BA', role: 'Trưởng nhóm', userId: 'owner-stub' },
+        meMember,
       ],
       image: 'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80',
-      treasuryPath: '/trips/demo-danang-2026/treasury',
+      treasuryPath: `/trips/${newJoinedId}/treasury`,
       alertType: 'BLUE',
       alertText: `Bạn đã tham gia qua mã mời ${cleanCode}`,
       quickActions: [
@@ -670,6 +1222,22 @@ export default function TripsPage() {
       })
     );
   };
+
+  if (isAuthenticated !== true) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc' }}>
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🔒</div>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0f172a', marginBottom: '0.5rem' }}>
+            Yêu cầu đăng nhập
+          </h2>
+          <p style={{ color: '#64748b', fontSize: '0.95rem' }}>
+            Vui lòng đăng nhập để xem và quản lý chuyến đi của bạn. Đang chuyển hướng...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.tripsPage}>
@@ -914,6 +1482,13 @@ export default function TripsPage() {
             </button>
             <button
               type="button"
+              className={`${styles.filterTabBtn} ${activeTab === 'mine' ? styles.filterTabBtnActive : ''}`}
+              onClick={() => setActiveTab('mine')}
+            >
+              Của tôi ({myCount})
+            </button>
+            <button
+              type="button"
               className={`${styles.filterTabBtn} ${activeTab === 'planning' ? styles.filterTabBtnActive : ''}`}
               onClick={() => setActiveTab('planning')}
             >
@@ -947,23 +1522,85 @@ export default function TripsPage() {
               />
             </div>
 
-            <button type="button" className={styles.dateFilterBtn}>
-              <Calendar size={15} />
-              <span>Thời gian</span>
-              <ChevronDown size={14} />
-            </button>
+            <div style={{ position: 'relative' }} ref={dateDropdownRef}>
+              <button
+                type="button"
+                className={`${styles.dateFilterBtn} ${dateFilter !== 'all' ? styles.dateFilterBtnActive : ''}`}
+                onClick={() => setDateDropdownOpen((prev) => !prev)}
+                id="btn-date-filter-toggle"
+                title="Lọc chuyến đi theo thời gian"
+              >
+                <Calendar size={15} color={dateFilter !== 'all' ? '#0070BA' : '#64748B'} />
+                <span>
+                  {dateFilter === 'all'
+                    ? 'Thời gian'
+                    : DATE_FILTER_OPTIONS.find((o) => o.key === dateFilter)?.label.replace(' / 2026', '')}
+                </span>
+                <ChevronDown
+                  size={14}
+                  style={{
+                    transition: 'transform 0.2s ease',
+                    transform: dateDropdownOpen ? 'rotate(180deg)' : 'none',
+                  }}
+                />
+              </button>
+
+              {dateDropdownOpen && (
+                <div className={styles.dateDropdownMenu}>
+                  <div className={styles.dateDropdownHeader}>
+                    <span>Lọc theo thời gian</span>
+                    {dateFilter !== 'all' && (
+                      <button
+                        type="button"
+                        className={styles.dateDropdownClear}
+                        onClick={() => {
+                          setDateFilter('all');
+                          setDateDropdownOpen(false);
+                        }}
+                      >
+                        Đặt lại
+                      </button>
+                    )}
+                  </div>
+                  <div className={styles.dateDropdownList}>
+                    {DATE_FILTER_OPTIONS.map((opt) => {
+                      const isSelected = dateFilter === opt.key;
+                      return (
+                        <button
+                          key={opt.key}
+                          type="button"
+                          className={`${styles.dateDropdownItem} ${isSelected ? styles.dateDropdownItemActive : ''}`}
+                          onClick={() => {
+                            setDateFilter(opt.key);
+                            setDateDropdownOpen(false);
+                          }}
+                        >
+                          <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
+                            <span className={styles.dateOptionLabel}>{opt.label}</span>
+                            {opt.desc && <span className={styles.dateOptionDesc}>{opt.desc}</span>}
+                          </div>
+                          {isSelected && <Check size={14} color="#0070BA" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
 
             <div className={styles.viewToggleGroup}>
               <button
                 type="button"
-                className={`${styles.viewToggleBtn} ${styles.viewToggleBtnActive}`}
+                className={`${styles.viewToggleBtn} ${viewMode === 'grid' ? styles.viewToggleBtnActive : ''}`}
+                onClick={() => setViewMode('grid')}
                 title="Xem dạng lưới"
               >
                 <LayoutGrid size={15} />
               </button>
               <button
                 type="button"
-                className={styles.viewToggleBtn}
+                className={`${styles.viewToggleBtn} ${viewMode === 'list' ? styles.viewToggleBtnActive : ''}`}
+                onClick={() => setViewMode('list')}
                 title="Xem dạng danh sách"
               >
                 <List size={15} />
@@ -972,12 +1609,35 @@ export default function TripsPage() {
           </div>
         </div>
 
-        {/* ─── 4. TRIP CARDS GRID (3 COLUMNS) ─────────────────────────── */}
-        <div className={styles.tripsGrid}>
+        {/* ─── 4. TRIP CARDS GRID OR LIST VIEW ────────────────────────── */}
+        <div className={viewMode === 'list' ? styles.tripsListView : styles.tripsGrid}>
           {filteredTrips.map((trip) => {
+            const currentOwnerMember = getCurrentUserMember('Trưởng nhóm');
             const membersList = Array.isArray(trip.members) && trip.members.length > 0
               ? trip.members
-              : [{ name: 'Lê Vân Anh (Bạn)', avatar: 'VA', color: '#0284c7' }];
+              : [currentOwnerMember];
+
+            const isTripOwner = Boolean(
+              currentUser && (
+                (trip.ownerId && (trip.ownerId === currentUser.id || (currentUser.email && trip.ownerId === currentUser.email))) ||
+                (trip.members?.[0] && (
+                  (trip.members[0].userId && (trip.members[0].userId === currentUser.id || (currentUser.email && trip.members[0].userId === currentUser.email))) ||
+                  (trip.members[0].email && currentUser.email && trip.members[0].email.toLowerCase() === currentUser.email.toLowerCase()) ||
+                  (currentUser.displayName && trip.members[0].name && trip.members[0].name.trim().toLowerCase() === currentUser.displayName.trim().toLowerCase())
+                ))
+              )
+            );
+
+            const isTripMember = Boolean(
+              currentUser && (
+                isTripOwner ||
+                trip.members?.some((m) =>
+                  (m.userId && (m.userId === currentUser.id || (currentUser.email && m.userId === currentUser.email))) ||
+                  (m.email && currentUser.email && m.email.toLowerCase() === currentUser.email.toLowerCase()) ||
+                  (currentUser.displayName && m.name && m.name.trim().toLowerCase() === currentUser.displayName.trim().toLowerCase())
+                )
+              )
+            );
 
             const actions = Array.isArray(trip.quickActions) && trip.quickActions.length > 0
               ? trip.quickActions
@@ -992,7 +1652,11 @@ export default function TripsPage() {
                 {/* Media Image Banner */}
                 <div
                   className={styles.tripMediaWrapper}
-                  style={{ backgroundImage: `url(${trip.image})` }}
+                  style={{
+                    backgroundImage: trip.image ? `url(${trip.image})` : 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                  }}
                 >
                   <div className={styles.tripMediaOverlay}>
                     {/* Top Row: Status badge + 3-dots menu */}
@@ -1059,10 +1723,14 @@ export default function TripsPage() {
                         <Star size={13} fill="#D97706" color="#D97706" />
                         <span>5.0</span>
                       </div>
-                    ) : trip.role === 'OWNER' ? (
+                    ) : isTripOwner ? (
                       <span className={styles.roleBadgeOwner}>Bạn là trưởng nhóm</span>
-                    ) : (
+                    ) : isTripMember ? (
                       <span className={styles.roleBadgeMember}>Thành viên nhóm</span>
+                    ) : (
+                      <span className={styles.roleBadgeOther}>
+                        Trưởng nhóm: {trip.members?.[0]?.name || 'Khác'}
+                      </span>
                     )}
 
                     <span className={styles.cardDateText}>
@@ -1081,22 +1749,28 @@ export default function TripsPage() {
                   {/* Row 3: Members Avatar Stack */}
                   <div className={styles.membersRow}>
                     <div className={styles.avatarStack}>
-                      {membersList.map((m, idx) => (
-                        <div
-                          key={idx}
-                          className={styles.avatarCircle}
-                          style={{ backgroundColor: m.color }}
-                          title={m.name}
-                        >
-                          {m.avatar}
-                        </div>
-                      ))}
-                      {trip.id === 'demo-danang-2026' && (
-                        <div className={styles.avatarCountBadge}>+1</div>
-                      )}
+                      {membersList.map((m, idx) => {
+                        const isMe = Boolean(
+                          currentUser && (
+                            (m.userId && currentUser.id && m.userId === currentUser.id) ||
+                            (m.email && currentUser.email && m.email.toLowerCase() === currentUser.email.toLowerCase()) ||
+                            (currentUser.displayName && m.name.toLowerCase() === currentUser.displayName.toLowerCase())
+                          )
+                        );
+                        return (
+                          <div
+                            key={idx}
+                            className={styles.avatarCircle}
+                            style={{ backgroundColor: m.color || '#0284c7' }}
+                            title={`${m.name}${isMe ? ' (Bạn)' : ''}`}
+                          >
+                            {m.avatar || 'TV'}
+                          </div>
+                        );
+                      })}
                     </div>
                     <span className={styles.memberCountText}>
-                      {trip.id === 'demo-danang-2026' ? '4' : membersList.length} thành viên
+                      {membersList.length} thành viên
                     </span>
                   </div>
 
@@ -1140,7 +1814,7 @@ export default function TripsPage() {
                     ) : (
                       <>
                         <div className={styles.progressLabelRow}>
-                          <span>Tiến độ chuẩn bị</span>
+                          <span>Chi phí đã chi</span>
                           <span className={styles.progressValueBold}>{trip.progressPercent}%</span>
                         </div>
                         <div className={styles.progressBarTrack}>
@@ -1150,10 +1824,9 @@ export default function TripsPage() {
                           />
                         </div>
                         <div className={styles.progressLabelRow}>
-                          <span>Ngân sách đã chi</span>
+                          <span>Ngân sách chuyến đi</span>
                           <span className={styles.progressValueBold}>
                             {trip.budgetSpent.toLocaleString('vi-VN')}đ / {trip.budgetTotal.toLocaleString('vi-VN')}đ
-                            {trip.id === 'trip-hagiang-2026' ? ' (23%)' : ''}
                           </span>
                         </div>
                       </>
@@ -1191,7 +1864,60 @@ export default function TripsPage() {
                     }
                   >
                     {actions.map((act, aIdx) => {
-                      if (act.actionType === 'VOTE') {
+                      const isItinerary = act.label.toLowerCase().includes('lịch trình') || act.actionType === 'PLAN';
+                      const isAssign = act.label.toLowerCase().includes('phân công') || act.actionType === 'ASSIGN';
+                      const isNote = act.label.toLowerCase().includes('ghi chú') || act.actionType === 'NOTE';
+                      const isVote = act.label.toLowerCase().includes('biểu quyết') || act.actionType === 'VOTE';
+
+                      if (isItinerary) {
+                        return (
+                          <Link
+                            key={aIdx}
+                            href={`/trips/${trip.id}?tab=itinerary`}
+                            className={styles.btnSecondaryPill}
+                            title="Mở lịch trình từng ngày của chuyến đi"
+                          >
+                            <Calendar size={13} style={{ marginRight: 4 }} />
+                            <span>{act.label}</span>
+                          </Link>
+                        );
+                      }
+
+                      if (isAssign) {
+                        return (
+                          <button
+                            key={aIdx}
+                            type="button"
+                            className={styles.btnSecondaryPill}
+                            onClick={() => handleOpenAssignModal(trip)}
+                            title={isTripMember ? "Mở bảng phân công nhiệm vụ nhóm" : "Chỉ thành viên chuyến đi mới có quyền xem phân công"}
+                            style={!isTripMember ? { opacity: 0.65 } : undefined}
+                          >
+                            <Users size={13} style={{ marginRight: 4 }} />
+                            <span>{act.label}</span>
+                            {!isTripMember && <Lock size={10} style={{ marginLeft: 3, opacity: 0.7 }} />}
+                          </button>
+                        );
+                      }
+
+                      if (isNote) {
+                        return (
+                          <button
+                            key={aIdx}
+                            type="button"
+                            className={styles.btnSecondaryPill}
+                            onClick={() => handleOpenNoteModal(trip)}
+                            title={isTripMember ? "Mở ghi chú và danh sách chuẩn bị" : "Chỉ thành viên chuyến đi mới có quyền xem ghi chú"}
+                            style={!isTripMember ? { opacity: 0.65 } : undefined}
+                          >
+                            <CheckSquare size={13} style={{ marginRight: 4 }} />
+                            <span>{act.label}</span>
+                            {!isTripMember && <Lock size={10} style={{ marginLeft: 3, opacity: 0.7 }} />}
+                          </button>
+                        );
+                      }
+
+                      if (isVote) {
                         return (
                           <button
                             key={aIdx}
@@ -1199,10 +1925,12 @@ export default function TripsPage() {
                             className={styles.btnSecondaryPill}
                             onClick={() => setShowVoteModal(true)}
                           >
-                            {act.label}
+                            <ThumbsUp size={13} style={{ marginRight: 4 }} />
+                            <span>{act.label}</span>
                           </button>
                         );
                       }
+
                       if (act.href) {
                         return (
                           <Link
@@ -1210,10 +1938,11 @@ export default function TripsPage() {
                             href={act.href}
                             className={styles.btnSecondaryPill}
                           >
-                            {act.label}
+                            <span>{act.label}</span>
                           </Link>
                         );
                       }
+
                       return (
                         <button
                           key={aIdx}
@@ -1221,7 +1950,7 @@ export default function TripsPage() {
                           className={styles.btnSecondaryPill}
                           onClick={() => showToast(`Mở tính năng: ${act.label}`)}
                         >
-                          {act.label}
+                          <span>{act.label}</span>
                         </button>
                       );
                     })}
@@ -1327,54 +2056,138 @@ export default function TripsPage() {
         </div>
       </footer>
 
-      {/* ─── MODAL: CREATE TRIP ────────────────────────────────────────── */}
+      {/* ─── MODAL: CREATE TRIP (LUXURY WITH CITY PICKER) ─────────────── */}
       {showCreateModal && (
         <div className={styles.modalBackdrop} onClick={() => setShowCreateModal(false)}>
-          <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h3 className={styles.modalTitle}>Tạo Chuyến Đi Nhóm Mới</h3>
-              <button
-                type="button"
-                className={styles.btnCloseModal}
-                onClick={() => setShowCreateModal(false)}
-              >
-                <X size={18} />
-              </button>
+          <div className={styles.modalBox} onClick={(e) => e.stopPropagation()} style={{ maxWidth: 540 }}>
+            <div className={styles.modalTopAccent} />
+            <button
+              type="button"
+              className={styles.btnCloseModal}
+              onClick={() => setShowCreateModal(false)}
+              aria-label="Đóng"
+              title="Đóng (Esc)"
+            >
+              <X size={18} strokeWidth={2.4} color="#334155" />
+            </button>
+
+            <div className={styles.modalHeaderFancy}>
+              <div className={styles.modalIconWrapper}>
+                <Compass size={24} color="#0070BA" strokeWidth={2.2} />
+              </div>
+              <div className={styles.modalHeaderText}>
+                <div className={styles.modalEyebrow}>VISTA CO-TRAVEL • KHỞI TẠO HÀNH TRÌNH</div>
+                <h3 className={styles.modalTitle}>Tạo Chuyến Đi Nhóm Mới</h3>
+              </div>
             </div>
 
-            <form onSubmit={handleCreateTrip}>
+            <form onSubmit={handleCreateTrip} className={styles.modalForm}>
+              {/* Điểm đến chính (Xác định thành phố rõ ràng) */}
               <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Tên chuyến đi</label>
+                <label className={styles.formLabel}>
+                  <span>THÀNH PHỐ / ĐIỂM ĐẾN CHÍNH</span>
+                  <span className={styles.formLabelHint}>Bắt buộc • Chọn thành phố</span>
+                </label>
+
+                <div className={styles.inputWithIconWrapper}>
+                  <div className={styles.inputLeadingIcon}>
+                    <MapPin size={18} color="#0070BA" />
+                  </div>
+                  <select
+                    className={styles.formSelectFancy}
+                    value={isCustomCity ? 'CUSTOM' : (newDestination || '')}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === 'CUSTOM') {
+                        setIsCustomCity(true);
+                      } else {
+                        handleSelectCity(val);
+                      }
+                    }}
+                    required={!isCustomCity}
+                  >
+                    <option value="" disabled>-- Chọn thành phố / tỉnh thành du lịch --</option>
+                    {VIETNAM_POPULAR_CITIES.map((group) => (
+                      <optgroup key={group.region} label={group.region}>
+                        {group.cities.map((city) => (
+                          <option key={city.name} value={city.name}>
+                            {city.name}
+                          </option>
+                        ))}
+                      </optgroup>
+                    ))}
+                    <option value="CUSTOM">✏️ Thành phố / Tỉnh thành khác (Tự nhập)...</option>
+                  </select>
+                </div>
+
+                {/* Ô tự nhập nếu chọn khác */}
+                {isCustomCity && (
+                  <div style={{ marginTop: 8 }}>
+                    <input
+                      type="text"
+                      className={styles.formInput}
+                      placeholder="Nhập tên thành phố / tỉnh thành (Ví dụ: Tuy Hòa, Phú Yên hoặc Pleiku, Gia Lai)"
+                      value={customCityName}
+                      onChange={(e) => {
+                        setCustomCityName(e.target.value);
+                        setNewDestination(e.target.value);
+                      }}
+                      autoFocus
+                      required
+                    />
+                  </div>
+                )}
+
+                {/* Các chip thành phố nổi tiếng chọn 1 chạm */}
+                <div style={{ marginTop: 4 }}>
+                  <div style={{ fontSize: '11.5px', color: '#64748B', fontWeight: 600, marginBottom: 4 }}>
+                    Gợi ý thành phố du lịch tiêu biểu:
+                  </div>
+                  <div className={styles.cityChipsContainer}>
+                    {QUICK_FEATURED_CITIES.map((cName) => {
+                      const isSelected = !isCustomCity && newDestination === cName;
+                      return (
+                        <button
+                          key={cName}
+                          type="button"
+                          className={`${styles.cityChip} ${isSelected ? styles.cityChipActive : ''}`}
+                          onClick={() => handleSelectCity(cName)}
+                        >
+                          <MapPin size={11} color={isSelected ? '#0070BA' : '#64748B'} />
+                          <span>{cName.split(',')[0]}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className={styles.cityHintText}>
+                  💡 <span>Xác định rõ thành phố giúp AI Planner đề xuất chính xác các địa điểm, vé tham quan và tối ưu cung đường.</span>
+                </div>
+              </div>
+
+              {/* Tên chuyến đi */}
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>
+                  <span>TÊN CHUYẾN ĐI</span>
+                  <span className={styles.formLabelHint}>Hấp dẫn & Dễ nhớ</span>
+                </label>
                 <input
                   type="text"
                   className={styles.formInput}
-                  placeholder="Ví dụ: Khám phá Quy Nhơn - Phú Yên 4N3Đ"
+                  placeholder={newDestination ? `Ví dụ: Khám phá ${newDestination.split(',')[0]} cùng nhóm bạn` : 'Ví dụ: Khám phá Quy Nhơn - Phú Yên 4N3Đ'}
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
                   required
                 />
               </div>
 
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Điểm đến chính</label>
-                <select
-                  className={styles.formInput}
-                  value={newDestination}
-                  onChange={(e) => setNewDestination(e.target.value)}
-                  required
-                >
-                  <option value="">-- Chọn khu vực / điểm đến cụ thể --</option>
-                  {POPULAR_DESTINATIONS.map((dest) => (
-                    <option key={dest} value={dest}>
-                      {dest}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
+              {/* Ngày bắt đầu & kết thúc */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Ngày bắt đầu</label>
+                  <label className={styles.formLabel}>
+                    <span>NGÀY BẮT ĐẦU</span>
+                  </label>
                   <input
                     type="date"
                     className={styles.formInput}
@@ -1391,7 +2204,12 @@ export default function TripsPage() {
                   />
                 </div>
                 <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Ngày kết thúc</label>
+                  <label className={styles.formLabel}>
+                    <span>NGÀY KẾT THÚC</span>
+                    <span className={styles.durationBadgeInline}>
+                      {calculateDuration(newStartDate, newEndDate)}
+                    </span>
+                  </label>
                   <input
                     type="date"
                     className={styles.formInput}
@@ -1403,8 +2221,14 @@ export default function TripsPage() {
                 </div>
               </div>
 
+              {/* Ngân sách */}
               <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Ngân sách nhóm dự kiến (VNĐ)</label>
+                <label className={styles.formLabel}>
+                  <span>NGÂN SÁCH NHÓM DỰ KIẾN</span>
+                  <span className={styles.formLabelHint}>
+                    {Number(newBudget) ? `${Number(newBudget).toLocaleString('vi-VN')} đ` : 'VNĐ'}
+                  </span>
+                </label>
                 <input
                   type="number"
                   className={styles.formInput}
@@ -1412,11 +2236,34 @@ export default function TripsPage() {
                   value={newBudget}
                   onChange={(e) => setNewBudget(e.target.value)}
                 />
+                <div className={styles.budgetChipsRow}>
+                  {['10000000', '20000000', '30000000', '50000000'].map((bVal) => (
+                    <button
+                      key={bVal}
+                      type="button"
+                      className={`${styles.budgetChip} ${newBudget === bVal ? styles.budgetChipActive : ''}`}
+                      onClick={() => setNewBudget(bVal)}
+                    >
+                      {Number(bVal) / 1000000} triệu
+                    </button>
+                  ))}
+                </div>
               </div>
 
-              <button type="submit" className={styles.btnSubmitForm}>
-                Hoàn tất & Khởi tạo chuyến đi
-              </button>
+              {/* Action Buttons */}
+              <div className={styles.modalActionsRow} style={{ marginTop: 6 }}>
+                <button
+                  type="button"
+                  className={styles.btnCancelModal}
+                  onClick={() => setShowCreateModal(false)}
+                >
+                  Hủy bỏ
+                </button>
+                <button type="submit" className={styles.btnSubmitFancy}>
+                  <Sparkles size={16} />
+                  <span>Hoàn tất & Khởi tạo chuyến đi</span>
+                </button>
+              </div>
             </form>
           </div>
         </div>
@@ -1426,55 +2273,558 @@ export default function TripsPage() {
       {showJoinModal && (
         <div className={styles.modalBackdrop} onClick={() => setShowJoinModal(false)}>
           <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h3 className={styles.modalTitle}>Gia Nhập Bằng Mã Mời</h3>
-              <button
-                type="button"
-                className={styles.btnCloseModal}
-                onClick={() => setShowJoinModal(false)}
-              >
-                <X size={18} />
-              </button>
+            <div className={styles.modalTopAccent} />
+
+            {/* Dấu X thoát rõ ràng, sang trọng */}
+            <button
+              type="button"
+              className={styles.btnCloseModal}
+              onClick={() => setShowJoinModal(false)}
+              aria-label="Đóng biểu mẫu"
+              title="Đóng (Esc)"
+            >
+              <X size={18} strokeWidth={2.4} color="#334155" />
+            </button>
+
+            {/* Header sang trọng với icon và badge */}
+            <div className={styles.modalHeaderFancy}>
+              <div className={styles.modalIconWrapper}>
+                <Ticket size={24} color="#0070BA" strokeWidth={2.2} />
+              </div>
+              <div className={styles.modalHeaderText}>
+                <div className={styles.modalEyebrow}>VISTA CO-TRAVEL • GIA NHẬP NHÓM</div>
+                <h3 className={styles.modalTitle}>Gia Nhập Bằng Mã Mời</h3>
+              </div>
             </div>
 
-            <p style={{ fontSize: '14px', color: '#64748b', margin: 0 }}>
-              Nhập mã token gồm 6 ký tự hoặc liên kết lời mời mà trưởng nhóm đã chia sẻ cho bạn:
+            <p className={styles.modalDescription}>
+              Nhập mã token gồm 6 ký tự hoặc liên kết lời mời mà trưởng nhóm đã chia sẻ để cùng lên lịch trình và quản lý ngân sách minh bạch:
             </p>
 
-            <form onSubmit={handleJoinTrip}>
+            <form onSubmit={handleJoinTrip} className={styles.modalForm}>
               <div className={styles.formGroup}>
-                <input
-                  type="text"
-                  className={styles.formInput}
-                  placeholder="Ví dụ: VISTA-DN2026 hoặc mã token"
-                  value={joinCode}
-                  onChange={(e) => setJoinCode(e.target.value)}
-                  style={{ textTransform: 'uppercase', letterSpacing: '2px', fontWeight: 700 }}
-                  required
-                />
+                <label className={styles.formLabel}>
+                  <span>MÃ TOKEN LỜI MỜI</span>
+                  <span className={styles.formLabelHint}>Ví dụ: VISTA-DN2026</span>
+                </label>
+
+                <div className={styles.inputWithIconWrapper}>
+                  <div className={styles.inputLeadingIcon}>
+                    <KeyRound size={18} color="#0070BA" />
+                  </div>
+                  <input
+                    type="text"
+                    className={styles.formInputFancy}
+                    placeholder="VÍ DỤ: VISTA-DN2026 HOẶC MÃ TOKEN"
+                    value={joinCode}
+                    onChange={(e) => setJoinCode(e.target.value)}
+                    autoFocus
+                    required
+                  />
+                  {joinCode ? (
+                    <button
+                      type="button"
+                      className={styles.inputTrailingClear}
+                      onClick={() => setJoinCode('')}
+                      aria-label="Xóa mã đã nhập"
+                      title="Xóa mã"
+                    >
+                      <X size={14} strokeWidth={2.5} color="#475569" />
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className={styles.inputTrailingPaste}
+                      onClick={handlePasteCode}
+                      title="Dán từ Clipboard"
+                    >
+                      <Clipboard size={13} color="#0284C7" />
+                      <span>Dán</span>
+                    </button>
+                  )}
+                </div>
               </div>
 
-              <button type="submit" className={styles.btnSubmitForm}>
-                Xác thực & Tham gia nhóm
-              </button>
+              {/* Gợi ý mã mẫu nhanh */}
+              <div className={styles.quickChipsWrapper}>
+                <span className={styles.quickChipsLabel}>Mã chuyến đi mẫu:</span>
+                <button
+                  type="button"
+                  className={styles.quickChip}
+                  onClick={() => setJoinCode('VISTA-DN2026')}
+                >
+                  VISTA-DN2026 (Đà Nẵng)
+                </button>
+                <button
+                  type="button"
+                  className={styles.quickChip}
+                  onClick={() => setJoinCode('VISTA-HG2026')}
+                >
+                  VISTA-HG2026 (Hà Giang)
+                </button>
+                <button
+                  type="button"
+                  className={styles.quickChip}
+                  onClick={() => setJoinCode('VISTA-PQ2026')}
+                >
+                  VISTA-PQ2026 (Phú Quốc)
+                </button>
+              </div>
+
+              {/* Thông tin bảo mật */}
+              <div className={styles.securityCallout}>
+                <Lock size={15} color="#0284C7" className={styles.securityIcon} />
+                <span>
+                  Mã mời được bảo mật mã hóa. Sau khi gia nhập, bạn sẽ được tự động đồng bộ vai trò thành viên và danh sách quỹ.
+                </span>
+              </div>
+
+              {/* Nút thao tác sang trọng */}
+              <div className={styles.modalActionsRow}>
+                <button
+                  type="button"
+                  className={styles.btnCancelModal}
+                  onClick={() => setShowJoinModal(false)}
+                >
+                  Hủy bỏ
+                </button>
+                <button type="submit" className={styles.btnSubmitFancy}>
+                  <span>Xác thực & Tham gia nhóm</span>
+                  <ArrowRight size={17} strokeWidth={2.4} />
+                </button>
+              </div>
             </form>
           </div>
         </div>
       )}
 
+      {/* ─── MODAL: TASK ASSIGNMENT (PHÂN CÔNG) ─────────────────────────── */}
+      {showAssignModal && selectedTripForAction && (() => {
+        const isMember = isUserTrip(selectedTripForAction);
+        const isOwner = isTripOwnerUser(selectedTripForAction);
+
+        if (!isMember) {
+          return (
+            <div className={styles.modalBackdrop} onClick={() => setShowAssignModal(false)}>
+              <div className={styles.modalBox} style={{ maxWidth: 460 }} onClick={(e) => e.stopPropagation()}>
+                <div className={styles.modalHeader}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <ShieldAlert size={20} color="#DC2626" />
+                    <h3 className={styles.modalTitle} style={{ color: '#DC2626' }}>Truy Cập Bị Từ Chối</h3>
+                  </div>
+                  <button type="button" className={styles.btnCloseModal} onClick={() => setShowAssignModal(false)}>
+                    <X size={18} />
+                  </button>
+                </div>
+                <div style={{ padding: '16px 0', textAlign: 'center' }}>
+                  <div style={{ width: 52, height: 52, borderRadius: '50%', background: '#FEE2E2', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+                    <Lock size={26} color="#DC2626" />
+                  </div>
+                  <h4 style={{ fontSize: '15px', fontWeight: 700, color: '#1E293B', margin: '0 0 6px' }}>Bạn không thuộc chuyến đi này</h4>
+                  <p style={{ fontSize: '13px', color: '#64748B', lineHeight: 1.5, margin: '0 0 16px' }}>
+                    Danh sách phân công nhiệm vụ là thông tin nội bộ của chuyến đi <strong>"{selectedTripForAction.title}"</strong>. Vui lòng tham gia chuyến đi để cùng thực hiện kế hoạch!
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setShowAssignModal(false)}
+                    style={{ padding: '9px 24px', borderRadius: 8, background: '#0070BA', color: '#FFF', border: 'none', fontWeight: 700, cursor: 'pointer' }}
+                  >
+                    Đóng cửa sổ
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        const curTasks = tripTasks[selectedTripForAction.id] || getDefaultTasks(selectedTripForAction.destination || selectedTripForAction.title);
+        const doneCount = curTasks.filter((t) => t.done).length;
+        const progressPct = curTasks.length > 0 ? Math.round((doneCount / curTasks.length) * 100) : 0;
+        const membersList: TripMember[] = selectedTripForAction.members && selectedTripForAction.members.length > 0
+          ? selectedTripForAction.members
+          : [{ name: 'Trưởng nhóm', avatar: 'TN', color: '#0284c7', userId: 'default-owner' }];
+
+        return (
+          <div className={styles.modalBackdrop} onClick={() => setShowAssignModal(false)}>
+            <div className={styles.modalBox} style={{ maxWidth: 540 }} onClick={(e) => e.stopPropagation()}>
+              <div className={styles.modalHeader}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Users size={20} color="#0070BA" />
+                  <h3 className={styles.modalTitle}>Phân Công Nhiệm Vụ Nhóm</h3>
+                </div>
+                <button
+                  type="button"
+                  className={styles.btnCloseModal}
+                  onClick={() => setShowAssignModal(false)}
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Role Indicator Banner */}
+              {isOwner ? (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  background: '#FEF3C7',
+                  border: '1px solid #FDE68A',
+                  color: '#92400E',
+                  padding: '8px 12px',
+                  borderRadius: 8,
+                  fontSize: '12.5px',
+                  fontWeight: 600,
+                  marginBottom: 12,
+                }}>
+                  <Crown size={15} color="#D97706" style={{ flexShrink: 0 }} />
+                  <span>Bạn là <strong>Trưởng nhóm</strong>: Có toàn quyền tạo nhiệm vụ, phân công cho các thành viên và quản lý đầu việc.</span>
+                </div>
+              ) : (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  background: '#E0F2FE',
+                  border: '1px solid #BAE6FD',
+                  color: '#0369A1',
+                  padding: '8px 12px',
+                  borderRadius: 8,
+                  fontSize: '12.5px',
+                  fontWeight: 500,
+                  marginBottom: 12,
+                }}>
+                  <Info size={15} color="#0284C7" style={{ flexShrink: 0 }} />
+                  <span>Vai trò của bạn: <strong>Thành viên nhóm</strong>. Bạn có thể đánh dấu công việc đã hoàn thành. Chỉ Trưởng nhóm ({selectedTripForAction.members?.[0]?.name || 'Trưởng nhóm'}) mới có quyền phân công việc mới.</span>
+                </div>
+              )}
+
+              <div style={{ background: '#F8FAFC', padding: '12px 16px', borderRadius: 10, marginBottom: 16 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#334155' }}>
+                    Chuyến đi: {selectedTripForAction.title}
+                  </span>
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#0070BA' }}>
+                    {doneCount}/{curTasks.length} hoàn thành ({progressPct}%)
+                  </span>
+                </div>
+                <div style={{ height: 6, width: '100%', background: '#E2E8F0', borderRadius: 999, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${progressPct}%`, background: '#10B981', transition: 'width 0.3s' }} />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 260, overflowY: 'auto', paddingRight: 4 }}>
+                {curTasks.map((t) => (
+                  <div
+                    key={t.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '10px 14px',
+                      background: t.done ? '#F0FDF4' : '#FFFFFF',
+                      border: `1px solid ${t.done ? '#BBF7D0' : '#E2E8F0'}`,
+                      borderRadius: 10,
+                      gap: 10,
+                    }}
+                  >
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, cursor: 'pointer', margin: 0 }}>
+                      <input
+                        type="checkbox"
+                        checked={t.done}
+                        onChange={() => handleToggleTask(selectedTripForAction.id, t.id)}
+                        style={{ width: 16, height: 16, cursor: 'pointer', accentColor: '#10B981' }}
+                      />
+                      <span style={{
+                        fontSize: '13.5px',
+                        fontWeight: 500,
+                        color: t.done ? '#15803D' : '#0F172A',
+                        textDecoration: t.done ? 'line-through' : 'none',
+                      }}>
+                        {t.title}
+                      </span>
+                    </label>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        padding: '3px 8px',
+                        borderRadius: 6,
+                        background: t.assignee.includes('Trưởng nhóm') ? '#FEF3C7' : '#E0F2FE',
+                        color: t.assignee.includes('Trưởng nhóm') ? '#B45309' : '#0284C7',
+                      }}>
+                        {t.assignee}
+                      </span>
+                      {isOwner && (
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteTask(selectedTripForAction.id, t.id)}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8', padding: 4 }}
+                          title="Xóa công việc (Chỉ Trưởng nhóm)"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Form to add tasks: ONLY rendered for Trưởng nhóm (Leader/Owner) */}
+              {isOwner ? (
+                <form onSubmit={(e) => handleAddTask(e, selectedTripForAction.id)} style={{ marginTop: 16, display: 'flex', gap: 8 }}>
+                  <input
+                    type="text"
+                    placeholder="Giao nhiệm vụ mới cho nhóm..."
+                    value={newTaskTitle}
+                    onChange={(e) => setNewTaskTitle(e.target.value)}
+                    style={{
+                      flex: 1,
+                      padding: '8px 12px',
+                      borderRadius: 8,
+                      border: '1px solid #CBD5E1',
+                      fontSize: '13px',
+                    }}
+                  />
+                  <select
+                    value={newTaskAssignee}
+                    onChange={(e) => setNewTaskAssignee(e.target.value)}
+                    style={{
+                      padding: '8px 10px',
+                      borderRadius: 8,
+                      border: '1px solid #CBD5E1',
+                      fontSize: '13px',
+                      background: '#FFFFFF',
+                      maxWidth: 160,
+                    }}
+                  >
+                    <option value="Cả nhóm">Cả nhóm (Tất cả)</option>
+                    {membersList.map((m, mIdx) => (
+                      <option key={m.userId || mIdx} value={m.name}>
+                        {m.name} {mIdx === 0 ? '(Trưởng nhóm)' : ''}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="submit"
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: 8,
+                      background: '#0070BA',
+                      color: '#FFFFFF',
+                      border: 'none',
+                      fontWeight: 700,
+                      fontSize: '13px',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    Giao việc
+                  </button>
+                </form>
+              ) : (
+                <div style={{ marginTop: 14, textAlign: 'center', fontSize: '12.5px', color: '#64748B', background: '#F8FAFC', padding: '8px 12px', borderRadius: 8 }}>
+                  🔒 Bạn đang xem với vai trò Thành viên. Chỉ Trưởng nhóm mới có quyền tạo và giao việc mới.
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ─── MODAL: NOTES & PACKING CHECKLIST (GHI CHÚ) ───────────────────── */}
+      {showNoteModal && selectedTripForAction && (() => {
+        const isMember = isUserTrip(selectedTripForAction);
+
+        if (!isMember) {
+          return (
+            <div className={styles.modalBackdrop} onClick={() => setShowNoteModal(false)}>
+              <div className={styles.modalBox} style={{ maxWidth: 460 }} onClick={(e) => e.stopPropagation()}>
+                <div className={styles.modalHeader}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <ShieldAlert size={20} color="#DC2626" />
+                    <h3 className={styles.modalTitle} style={{ color: '#DC2626' }}>Truy Cập Bị Từ Chối</h3>
+                  </div>
+                  <button type="button" className={styles.btnCloseModal} onClick={() => setShowNoteModal(false)}>
+                    <X size={18} />
+                  </button>
+                </div>
+                <div style={{ padding: '16px 0', textAlign: 'center' }}>
+                  <div style={{ width: 52, height: 52, borderRadius: '50%', background: '#FEE2E2', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+                    <Lock size={26} color="#DC2626" />
+                  </div>
+                  <h4 style={{ fontSize: '15px', fontWeight: 700, color: '#1E293B', margin: '0 0 6px' }}>Bạn không thuộc chuyến đi này</h4>
+                  <p style={{ fontSize: '13px', color: '#64748B', lineHeight: 1.5, margin: '0 0 16px' }}>
+                    Danh sách hành lý và ghi chú chuẩn bị là thông tin nội bộ của chuyến đi <strong>"{selectedTripForAction.title}"</strong>.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setShowNoteModal(false)}
+                    style={{ padding: '9px 24px', borderRadius: 8, background: '#0070BA', color: '#FFF', border: 'none', fontWeight: 700, cursor: 'pointer' }}
+                  >
+                    Đóng cửa sổ
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        const curNotes = tripNotes[selectedTripForAction.id] || getDefaultNotes();
+        const doneCount = curNotes.filter((n) => n.done).length;
+
+        return (
+          <div className={styles.modalBackdrop} onClick={() => setShowNoteModal(false)}>
+            <div className={styles.modalBox} style={{ maxWidth: 540 }} onClick={(e) => e.stopPropagation()}>
+              <div className={styles.modalHeader}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <FileText size={20} color="#0070BA" />
+                  <h3 className={styles.modalTitle}>Ghi Chú & Chuẩn Bị Hành Lý</h3>
+                </div>
+                <button
+                  type="button"
+                  className={styles.btnCloseModal}
+                  onClick={() => setShowNoteModal(false)}
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div style={{ background: '#F8FAFC', padding: '12px 16px', borderRadius: 10, marginBottom: 16 }}>
+                <span style={{ fontSize: '13px', fontWeight: 700, color: '#334155' }}>
+                  Hành trang: {selectedTripForAction.title}
+                </span>
+                <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748B' }}>
+                  Đã chuẩn bị {doneCount}/{curNotes.length} món đồ cần thiết cho chuyến đi.
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 260, overflowY: 'auto', paddingRight: 4 }}>
+                {curNotes.map((n) => (
+                  <div
+                    key={n.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '10px 14px',
+                      background: n.done ? '#F0FDF4' : '#FFFFFF',
+                      border: `1px solid ${n.done ? '#BBF7D0' : '#E2E8F0'}`,
+                      borderRadius: 10,
+                      gap: 10,
+                    }}
+                  >
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, cursor: 'pointer', margin: 0 }}>
+                      <input
+                        type="checkbox"
+                        checked={n.done}
+                        onChange={() => handleToggleNote(selectedTripForAction.id, n.id)}
+                        style={{ width: 16, height: 16, cursor: 'pointer', accentColor: '#10B981' }}
+                      />
+                      <span style={{
+                        fontSize: '13.5px',
+                        fontWeight: 500,
+                        color: n.done ? '#15803D' : '#0F172A',
+                        textDecoration: n.done ? 'line-through' : 'none',
+                      }}>
+                        {n.content}
+                      </span>
+                    </label>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        padding: '3px 8px',
+                        borderRadius: 6,
+                        background: '#EFF6FF',
+                        color: '#0070BA',
+                      }}>
+                        {n.category}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteNote(selectedTripForAction.id, n.id)}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8', padding: 4 }}
+                        title="Xóa ghi chú"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <form onSubmit={(e) => handleAddNote(e, selectedTripForAction.id)} style={{ marginTop: 16, display: 'flex', gap: 8 }}>
+                <input
+                  type="text"
+                  placeholder="Thêm món đồ hoặc ghi chú..."
+                  value={newNoteContent}
+                  onChange={(e) => setNewNoteContent(e.target.value)}
+                  style={{
+                    flex: 1,
+                    padding: '8px 12px',
+                    borderRadius: 8,
+                    border: '1px solid #CBD5E1',
+                    fontSize: '13px',
+                  }}
+                />
+                <select
+                  value={newNoteCategory}
+                  onChange={(e) => setNewNoteCategory(e.target.value)}
+                  style={{
+                    padding: '8px 10px',
+                    borderRadius: 8,
+                    border: '1px solid #CBD5E1',
+                    fontSize: '13px',
+                    background: '#FFFFFF',
+                  }}
+                >
+                  <option value="Giấy tờ">Giấy tờ</option>
+                  <option value="Đồ dùng">Đồ dùng</option>
+                  <option value="Công nghệ">Công nghệ</option>
+                  <option value="Trang phục">Trang phục</option>
+                  <option value="Y tế">Y tế</option>
+                  <option value="Khác">Khác</option>
+                </select>
+                <button
+                  type="submit"
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: 8,
+                    background: '#0070BA',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    fontWeight: 700,
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Thêm
+                </button>
+              </form>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* ─── MODAL: DESTINATION VOTING PREVIEW ──────────────────────────── */}
       {showVoteModal && (
         <div className={styles.modalBackdrop} onClick={() => setShowVoteModal(false)}>
           <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalTopAccent} />
+            <button
+              type="button"
+              className={styles.btnCloseModal}
+              onClick={() => setShowVoteModal(false)}
+              aria-label="Đóng"
+              title="Đóng (Esc)"
+            >
+              <X size={18} strokeWidth={2.4} color="#334155" />
+            </button>
+
             <div className={styles.modalHeader}>
               <h3 className={styles.modalTitle}>Biểu Quyết Địa Điểm Nhóm</h3>
-              <button
-                type="button"
-                className={styles.btnCloseModal}
-                onClick={() => setShowVoteModal(false)}
-              >
-                <X size={18} />
-              </button>
             </div>
 
             <p style={{ fontSize: '13.5px', color: '#64748b', margin: 0 }}>

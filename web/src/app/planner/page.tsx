@@ -7,6 +7,18 @@ import dynamic from 'next/dynamic';
 import { Navbar } from '@/components/common/Navbar';
 import type { DestinationMarker } from '@/features/map-location/types';
 import { getRealPlacesByProvince } from '@/data/realDestinationsData';
+import {
+  requestAiItinerary,
+  isBackendTripId,
+  type AiItinerarySuggestionResponse,
+  type AiProvider,
+  type AiCitation,
+} from '@/services/aiPlannerService';
+import {
+  getTripItinerary,
+  mergeTripItinerary,
+  type MergeItineraryDay,
+} from '@/services/itineraryService';
 import styles from './planner.module.css';
 import {
   Palmtree,
@@ -74,6 +86,11 @@ interface SavedItineraryRecord {
   totalEstimatedCost: number;
   savedAt: string;
   days: DayPlan[];
+}
+
+interface AiGenerationMetadata {
+  provider: AiProvider | 'offline';
+  fallbackUsed: boolean;
 }
 
 export interface DestinationOption {
@@ -753,6 +770,11 @@ export default function PlannerPage() {
   const [activeView, setActiveView] = useState<'timeline' | 'map'>('timeline');
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [hasPlanGenerated, setHasPlanGenerated] = useState<boolean>(true);
+  const [aiGenerationMetadata, setAiGenerationMetadata] = useState<AiGenerationMetadata>({
+    provider: 'offline',
+    fallbackUsed: true,
+  });
+  const [aiCitations, setAiCitations] = useState<AiCitation[]>([]);
 
   // Preference Form Inputs
   const [destination, setDestination] = useState<string>('Đà Nẵng');
@@ -837,6 +859,53 @@ export default function PlannerPage() {
         // Check if loading an existing trip
         if (tripIdParam) {
           try {
+            if (isBackendTripId(tripIdParam)) {
+              setLinkedTripId(tripIdParam);
+              setLinkedTripTitle('Chuyến đi VISTA');
+              const persisted = await getTripItinerary(tripIdParam);
+              if (persisted.days.length > 0) {
+                const destinationForPhoto = destParam || 'Đà Nẵng';
+                const destinationOption = DESTINATION_LIST.find(
+                  (item) =>
+                    destinationForPhoto.toLowerCase().includes(item.id)
+                    || destinationForPhoto.toLowerCase().includes(item.nameVi.toLowerCase()),
+                );
+                const photoUrl = destinationOption?.photo || DESTINATION_LIST[0].photo;
+                const persistedDays: DayPlan[] = persisted.days.map((day) => ({
+                  dayNumber: day.dayNumber,
+                  dateStr: new Date(`${day.tripDate}T00:00:00`).toLocaleDateString('vi-VN'),
+                  title: `Ngày ${day.dayNumber} · Lịch trình chính thức`,
+                  activities: day.activities.map((activity, index) => {
+                    const start = activity.startTime?.slice(0, 5);
+                    const end = activity.endTime?.slice(0, 5);
+                    const title = activity.destinationName || activity.customStopName || 'Hoạt động';
+                    return {
+                      id: activity.destinationId || activity.id,
+                      timeSlot: start && Number(start.slice(0, 2)) < 12
+                        ? 'MORNING'
+                        : start && Number(start.slice(0, 2)) < 18
+                          ? 'AFTERNOON'
+                          : 'EVENING',
+                      timeRange: start && end ? `${start}–${end}` : 'Chưa xác định',
+                      category: 'Lịch trình chính thức',
+                      title,
+                      description: activity.note || '',
+                      location: destinationForPhoto,
+                      costVnd: 0,
+                      costLabel: 'Theo dữ liệu chuyến đi',
+                      photoUrl,
+                      transferTimeAfter: index < day.activities.length - 1
+                        ? 'Tiếp tục theo thứ tự lịch trình'
+                        : undefined,
+                    };
+                  }),
+                }));
+                setItineraryDays(persistedDays);
+                setDuration(`${Math.min(persistedDays.length, 5)}n${Math.max(1, persistedDays.length - 1)}d`);
+                setAiGenerationMetadata({ provider: 'offline', fallbackUsed: false });
+              }
+            }
+
             const storedTrips = localStorage.getItem('vista_custom_trips');
             const customList: Array<{ id: string; title: string; destination: string; itineraryDays?: DayPlan[] }> =
               storedTrips ? JSON.parse(storedTrips) : [];
@@ -932,24 +1001,164 @@ export default function PlannerPage() {
     return found ? found.days : 3;
   }, [duration]);
 
-  // Total Estimated Cost Calculation
-  const totalEstimatedCost = useMemo(() => {
-    let actSum = 0;
+  // Unified Group-Scaled Budget Breakdown Model
+  const budgetBreakdown = useMemo(() => {
+    const count = Math.max(1, peopleCount);
+    const nights = Math.max(1, daysCount - 1);
+
+    // 1. Activities & Tickets (vé tham quan, trải nghiệm)
+    let totalActPerPerson = 0;
     itineraryDays.forEach((day) => {
       day.activities.forEach((act) => {
-        actSum += act.costVnd || 0;
+        totalActPerPerson += act.costVnd || 0;
       });
     });
-    // Multiplied by group size for per-person ticket items
-    const transportPerDay = 180000;
-    const hotelPerNight = budgetTier === 'economy' ? 450000 : budgetTier === 'luxury' ? 1800000 : 800000;
-    const nights = Math.max(1, daysCount - 1);
-    return actSum + transportPerDay * daysCount + hotelPerNight * nights;
-  }, [itineraryDays, daysCount, budgetTier]);
+    const totalActivities = totalActPerPerson * count;
+
+    // 2. Dining & Food (ăn uống đặc sản theo ngày)
+    // economy: 180k/người/ngày, standard: 350k/người/ngày, luxury: 750k/người/ngày
+    const diningPerPersonDay =
+      budgetTier === 'economy' ? 180000 : budgetTier === 'luxury' ? 750000 : 350000;
+    const totalDining = diningPerPersonDay * count * daysCount;
+
+    // 3. Lodging (Khách sạn / Homestay) - Quy chuẩn 2 người / phòng đôi
+    const roomsNeeded = Math.ceil(count / 2);
+    const roomRatePerNight =
+      budgetTier === 'economy' ? 450000 : budgetTier === 'luxury' ? 2200000 : 850000;
+    const totalLodging = roomsNeeded * roomRatePerNight * nights;
+
+    // 4. Local Transit (Phương tiện di chuyển nội tỉnh theo quy mô nhóm)
+    let vehicleDescription = '';
+    let dailyVehicleRate = 0;
+    if (count <= 2) {
+      vehicleDescription = 'Xe máy (1 xe)';
+      dailyVehicleRate = 160000;
+    } else if (count <= 4) {
+      vehicleDescription = 'Xe ô tô 4-5 chỗ tự lái/taxi';
+      dailyVehicleRate = 750000;
+    } else if (count <= 7) {
+      vehicleDescription = 'Xe du lịch 7 chỗ';
+      dailyVehicleRate = 1100000;
+    } else if (count <= 16) {
+      vehicleDescription = 'Xe du lịch 16 chỗ (Ford Transit)';
+      dailyVehicleRate = 1800000;
+    } else {
+      vehicleDescription = 'Xe du lịch 29-35 chỗ chuyên tuyến';
+      dailyVehicleRate = 2600000;
+    }
+    const totalLocalTransport = dailyVehicleRate * daysCount;
+
+    // Baseline Total On-Site Cost
+    const totalBaseline = totalActivities + totalDining + totalLodging + totalLocalTransport;
+    const perPersonBaseline = Math.round(totalBaseline / count);
+
+    // Fluctuation Range (Biên độ dao động thực tế: -12% ngày thường/sớm đến +25% cuối tuần/mùa cao điểm)
+    const minFluctuation = Math.round(totalBaseline * 0.88);
+    const maxFluctuation = Math.round(totalBaseline * 1.25);
+    const perPersonMin = Math.round(minFluctuation / count);
+    const perPersonMax = Math.round(maxFluctuation / count);
+
+    // Intercity transit estimate (từ tỉnh thành khác đến điểm đến)
+    const isNorthMountain = ['sa pa', 'sapa', 'hà giang', 'mộc châu', 'tam đảo', 'mai châu'].some((p) =>
+      destination.toLowerCase().includes(p)
+    );
+    const isIslandOrFar = ['phú quốc', 'côn đảo', 'nha trang', 'đà lạt', 'đà nẵng', 'quy nhơn'].some((p) =>
+      destination.toLowerCase().includes(p)
+    );
+
+    let intercityType = 'Xe khách giường nằm khứ hồi';
+    let intercityMinPerPerson = 560000;
+    let intercityMaxPerPerson = 850000;
+    if (isIslandOrFar) {
+      intercityType = 'Vé máy bay khứ hồi (ước tính hạng phổ thông)';
+      intercityMinPerPerson = 1800000;
+      intercityMaxPerPerson = 3600000;
+    } else if (isNorthMountain) {
+      intercityType = 'Xe khách Cabin VIP / Limousine 2 chiều';
+      intercityMinPerPerson = 600000;
+      intercityMaxPerPerson = 950000;
+    }
+
+    return {
+      count,
+      nights,
+      roomsNeeded,
+      roomRatePerNight,
+      totalLodging,
+      diningPerPersonDay,
+      totalDining,
+      dailyVehicleRate,
+      vehicleDescription,
+      totalLocalTransport,
+      totalActPerPerson,
+      totalActivities,
+      totalBaseline,
+      perPersonBaseline,
+      minFluctuation,
+      maxFluctuation,
+      perPersonMin,
+      perPersonMax,
+      intercityType,
+      intercityMinPerPerson,
+      intercityMaxPerPerson,
+      intercityMinGroup: intercityMinPerPerson * count,
+      intercityMaxGroup: intercityMaxPerPerson * count,
+      weekendSurchargeMin: Math.round(totalLodging * 0.15),
+      weekendSurchargeMax: Math.round(totalLodging * 0.35),
+      specialtyUpgradePerPerson: budgetTier === 'economy' ? 120000 : 250000,
+      contingencyGroup: Math.round(totalBaseline * 0.08),
+    };
+  }, [peopleCount, daysCount, budgetTier, itineraryDays, destination]);
+
+  // Total Estimated Cost Calculation (Group baseline)
+  const totalEstimatedCost = useMemo(() => {
+    return budgetBreakdown.totalBaseline;
+  }, [budgetBreakdown]);
 
   const perPersonCost = useMemo(() => {
-    return Math.round(totalEstimatedCost / Math.max(1, peopleCount));
-  }, [totalEstimatedCost, peopleCount]);
+    return budgetBreakdown.perPersonBaseline;
+  }, [budgetBreakdown]);
+
+  // Destination weather insight (Fixing hardcoded coastal text for mountain regions)
+  const destWeatherInsight = useMemo(() => {
+    const d = destination.toLowerCase();
+    if (
+      d.includes('sa pa') ||
+      d.includes('sapa') ||
+      d.includes('hà giang') ||
+      d.includes('mộc châu') ||
+      d.includes('tam đảo') ||
+      d.includes('đà lạt') ||
+      d.includes('fansipan')
+    ) {
+      return {
+        temp: '14°C – 22°C',
+        text: 'Khí hậu vùng cao mát lành se lạnh, sương mù sáng sớm; chiều tối nhiệt độ hạ nhanh, cần mang áo khoác ấm và giày êm bám đường tốt.',
+        badge: '⛰️ Khí hậu miền núi cao',
+      };
+    }
+    if (
+      d.includes('phú quốc') ||
+      d.includes('đà nẵng') ||
+      d.includes('nha trang') ||
+      d.includes('quy nhơn') ||
+      d.includes('vũng tàu') ||
+      d.includes('hạ long') ||
+      d.includes('côn đảo') ||
+      d.includes('phan thiết')
+    ) {
+      return {
+        temp: '27°C – 32°C',
+        text: 'Nắng ráo chan hòa, tầm nhìn biển thông thoáng, sóng êm thuận lợi tham quan vịnh đảo, tắm biển và thể thao nước.',
+        badge: '🌊 Thời tiết biển đảo',
+      };
+    }
+    return {
+      temp: '24°C – 30°C',
+      text: 'Thời tiết mát mẻ khô ráo, không khí trong lành, rất thuận tiện dạo phố, khám phá di tích văn hóa và thưởng thức ẩm thực.',
+      badge: '🏛️ Thời tiết văn hóa đô thị',
+    };
+  }, [destination]);
 
   // Active day plan
   const currentDayPlan = useMemo(() => {
@@ -959,13 +1168,13 @@ export default function PlannerPage() {
   // Day subtotal calculation
   const currentDaySubtotal = useMemo(() => {
     if (!currentDayPlan) return 1450000;
-    let sum = 0;
-    currentDayPlan.activities.forEach((a) => (sum += a.costVnd || 0));
-    // include daily transport + allocated accommodation
-    const transport = 190000;
-    const stayAlloc = 400000;
-    return sum + transport + stayAlloc;
-  }, [currentDayPlan]);
+    let actSum = 0;
+    currentDayPlan.activities.forEach((a) => (actSum += (a.costVnd || 0) * budgetBreakdown.count));
+    const dailyDining = budgetBreakdown.diningPerPersonDay * budgetBreakdown.count;
+    const transport = budgetBreakdown.dailyVehicleRate;
+    const stayAlloc = Math.round(budgetBreakdown.totalLodging / Math.max(1, daysCount));
+    return actSum + dailyDining + transport + stayAlloc;
+  }, [currentDayPlan, budgetBreakdown, daysCount]);
 
   // Destination filtered list
   const filteredDestinations = useMemo(() => {
@@ -1211,27 +1420,24 @@ export default function PlannerPage() {
     });
 
     try {
-      // Call live backend endpoint (proxied to port 8081 via next.config rewrite)
-      const response = await fetch('/api/v1/ai/quick-plan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          destinationProvince: destination,
-          totalDays: daysCount,
-          budgetLevel: budgetLevelApi,
-          interests: selectedStyleLabels,
-          customPrompt: wishesText,
-        }),
+      const data: AiItinerarySuggestionResponse = await requestAiItinerary({
+        destinationProvince: destination,
+        totalDays: daysCount,
+        budgetLevel: budgetLevelApi,
+        interests: wishesText.trim()
+          ? [...selectedStyleLabels, wishesText.trim()].slice(0, 10)
+          : selectedStyleLabels,
+      }, linkedTripId);
+
+      setAiGenerationMetadata({
+        provider: data.provider ?? 'unknown',
+        fallbackUsed: Boolean(data.fallbackUsed || data.isMockData),
       });
-
-      if (!response.ok) {
-        throw new Error(`Server returned ${response.status}`);
-      }
-
-      const data = await response.json();
+      setAiCitations(data.citations ?? []);
 
       if (data && data.days && Array.isArray(data.days) && data.days.length > 0) {
-        const transformedDays: DayPlan[] = data.days.map((dayItem: Record<string, unknown>, idx: number) => {
+        const responseDays = data.days as unknown as Record<string, unknown>[];
+        const transformedDays: DayPlan[] = responseDays.map((dayItem, idx: number) => {
           const dayNum = (dayItem.dayNumber as number) || idx + 1;
           const latOffset = (aIdx: number) => activeDestObj.lat + Math.sin(dayNum * 1.8 + aIdx * 1.2) * 0.02;
           const lngOffset = (aIdx: number) => activeDestObj.lng + Math.cos(dayNum * 1.8 + aIdx * 1.2) * 0.02;
@@ -1291,7 +1497,7 @@ export default function PlannerPage() {
           return {
             dayNumber: dayNum,
             dateStr: `Ngày ${dayNum}`,
-            title: dayItem.title || dayItem.dateLabel || `Ngày ${dayNum} · Trải nghiệm & Khám phá ${destination}`,
+            title: String(dayItem.title || dayItem.dateLabel || `Ngày ${dayNum} · Trải nghiệm & Khám phá ${destination}`),
             activities,
           };
         });
@@ -1299,7 +1505,12 @@ export default function PlannerPage() {
         setItineraryDays(transformedDays);
         setActiveDay(1);
         setHasPlanGenerated(true);
-        triggerToast(`Đã tạo lịch trình thông minh AI cho ${destination} (${daysCount} ngày)!`);
+        const sourceLabel = data.provider === 'local'
+          ? 'Local AI'
+          : data.provider === 'gemini'
+            ? 'Gemini AI'
+            : 'phương án an toàn';
+        triggerToast(`Đã tạo lịch trình bằng ${sourceLabel} cho ${destination} (${daysCount} ngày)!`);
         return;
       }
       throw new Error('Empty response from AI planner endpoint');
@@ -1318,6 +1529,8 @@ export default function PlannerPage() {
       );
 
       setItineraryDays(generated);
+      setAiGenerationMetadata({ provider: 'offline', fallbackUsed: true });
+      setAiCitations([]);
       setActiveDay(1);
       setHasPlanGenerated(true);
       triggerToast(`Đã tạo lịch trình thông minh tối ưu cho ${destination} (${daysCount} ngày)!`);
@@ -1327,7 +1540,7 @@ export default function PlannerPage() {
   };
 
   // ─── SAVE ITINERARY REAL PERSISTENCE ──────────────────────────────────────
-  const handleSaveToggle = () => {
+  const handleSaveToggle = async () => {
     const record: SavedItineraryRecord = {
       id: `saved-${Date.now()}`,
       destination,
@@ -1343,6 +1556,36 @@ export default function PlannerPage() {
     };
 
     try {
+      if (isBackendTripId(linkedTripId)) {
+        const source = aiGenerationMetadata.provider === 'local'
+          ? 'AI_LOCAL'
+          : aiGenerationMetadata.provider === 'gemini'
+            ? 'AI_GEMINI'
+            : 'AI_OFFLINE';
+        const mergeDays: MergeItineraryDay[] = itineraryDays.map((day) => ({
+          dayNumber: day.dayNumber,
+          activities: day.activities.map((activity, index) => {
+            const [startTime, endTime] = activity.timeRange
+              .split(/[–-]/)
+              .map((value) => value.trim())
+              .map((value) => /^\d{2}:\d{2}$/.test(value) ? `${value}:00` : undefined);
+            const destinationId = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(activity.id)
+              ? activity.id
+              : undefined;
+            return {
+              destinationId,
+              customStopName: destinationId ? undefined : activity.title,
+              startTime,
+              endTime,
+              sortOrder: index,
+              note: activity.description,
+              source,
+            };
+          }),
+        }));
+        await mergeTripItinerary(linkedTripId, mergeDays);
+      }
+
       const stored = localStorage.getItem('vista_saved_itineraries');
       const list: SavedItineraryRecord[] = stored ? JSON.parse(stored) : [];
       list.unshift(record);
@@ -1368,13 +1611,18 @@ export default function PlannerPage() {
         } catch {
           // ignore
         }
-        triggerToast(`Đã lưu và đồng bộ lịch trình vào chuyến đi "${linkedTripTitle}"!`);
+        triggerToast(
+          isBackendTripId(linkedTripId)
+            ? `Đã đồng bộ lịch trình chính thức vào chuyến đi "${linkedTripTitle}"!`
+            : `Đã lưu lịch trình vào chuyến đi cục bộ "${linkedTripTitle}"!`,
+        );
       } else {
         triggerToast(`Đã lưu lịch trình "${destination}" vào bộ sưu tập cá nhân.`);
       }
-    } catch {
-      setIsSaved(true);
-      triggerToast('Đã lưu lịch trình thành công.');
+    } catch (error) {
+      console.error('Could not persist itinerary:', error);
+      setIsSaved(false);
+      triggerToast('Không thể đồng bộ lịch trình. Dữ liệu hiện tại vẫn được giữ nguyên để thử lại.');
     }
   };
 
@@ -1382,6 +1630,32 @@ export default function PlannerPage() {
   const handleCreateTripSubmit = () => {
     const tripId = `trip-${Date.now()}`;
     const activityCount = itineraryDays.reduce((acc, d) => acc + d.activities.length, 0);
+    let plannerOwner = {
+      name: 'Thành viên VISTA',
+      avatar: 'TV',
+      color: '#0284c7',
+      role: 'Trưởng nhóm',
+      userId: 'u-me',
+      email: '',
+    };
+    try {
+      const userStr = localStorage.getItem('vista_user');
+      if (userStr) {
+        const u = JSON.parse(userStr);
+        const rawName = (u.displayName || u.email || 'Thành viên VISTA').replace(/\s*\(Bạn\)/g, '').trim();
+        const parts = rawName.split(/\s+/);
+        const initials = (parts.length >= 2 ? parts[0][0] + parts[parts.length - 1][0] : rawName.slice(0, 2)).toUpperCase();
+        plannerOwner = {
+          name: rawName,
+          avatar: initials || 'TV',
+          color: '#0284c7',
+          role: 'Trưởng nhóm',
+          userId: u.id || 'u-me',
+          email: u.email || '',
+        };
+      }
+    } catch {}
+
     const newTrip = {
       id: tripId,
       title: newTripTitle || `Chuyến đi ${destination} ${daysCount} ngày`,
@@ -1391,14 +1665,13 @@ export default function PlannerPage() {
       endDate: '24/11/2026',
       status: 'PLANNING',
       role: 'OWNER',
+      ownerId: plannerOwner.userId,
       budgetTotal: totalEstimatedCost || 20000000,
       budgetSpent: 0,
-      progressPercent: 25,
-      members: [
-        { name: 'Lê Vân Anh (Bạn)', avatar: 'VA', color: '#0284c7' },
-      ],
+      progressPercent: 0,
+      members: [plannerOwner],
       image: activeDestObj.photo || 'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80',
-      treasuryPath: '/trips/demo-danang-2026/treasury',
+      treasuryPath: `/trips/${tripId}/treasury`,
       alertType: 'BLUE',
       alertText: `Lịch trình AI ${daysCount} ngày (${activityCount} hoạt động) đã sẵn sàng`,
       alertLinkText: 'Xem',
@@ -1997,7 +2270,7 @@ export default function PlannerPage() {
               <div className={styles.generatingHeader}>
                 <div className={styles.spinnerBlue} />
                 <span className={styles.generatingText}>
-                  Đang sắp xếp trải nghiệm cho chuyến đi của bạn…
+                  Trợ lý AI đang tối ưu hóa lịch trình và ước tính chi phí… (khoảng 15–30 giây)
                 </span>
               </div>
               <div className={styles.skeletonBar} style={{ height: '110px' }} />
@@ -2136,15 +2409,40 @@ export default function PlannerPage() {
 
                 {/* Compact Expense Summary Bar */}
                 <div className={styles.summaryExpenseBar}>
-                  <div className={styles.expenseLeft}>
-                    <span className={styles.expenseLabel}>Dự toán cả nhóm</span>
-                    <span className={styles.expenseTotal}>
-                      {new Intl.NumberFormat('vi-VN').format(totalEstimatedCost)}đ
-                    </span>
-                    <span className={styles.expensePerPerson}>
-                      Khoảng {new Intl.NumberFormat('vi-VN').format(perPersonCost)}đ/người
-                    </span>
-                    <span className={styles.expenseEstimateBadge}>Ước tính</span>
+                  <div className={styles.expenseMainSection}>
+                    <div className={styles.expenseLeft}>
+                      <span className={styles.expenseLabel}>Dự toán cơ sở ({budgetBreakdown.count} người)</span>
+                      <span className={styles.expenseTotal}>
+                        {new Intl.NumberFormat('vi-VN').format(totalEstimatedCost)}đ
+                      </span>
+                      <span className={styles.expensePerPerson}>
+                        ~{new Intl.NumberFormat('vi-VN').format(perPersonCost)}đ / người
+                      </span>
+                      <span className={styles.expenseEstimateBadge}>Cơ sở tại điểm đến</span>
+                    </div>
+
+                    {/* Fluctuating Range Bar */}
+                    <div className={styles.expenseFluctuationRow}>
+                      <span className={styles.expenseFluctuationLabel}>
+                        ⚡ Khoản chi dao động thực tế:
+                      </span>
+                      <span className={styles.expenseFluctuationValue}>
+                        {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.minFluctuation)}đ – {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.maxFluctuation)}đ
+                      </span>
+                      <span className={styles.expenseFluctuationSub}>
+                        (~{new Intl.NumberFormat('vi-VN').format(budgetBreakdown.perPersonMin)}đ – {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.perPersonMax)}đ / người)
+                      </span>
+                    </div>
+
+                    {/* Scope tags */}
+                    <div className={styles.expenseScopeTags}>
+                      <span className={styles.scopeTagIncluded}>
+                        ✓ Đã gồm: Vé tham quan, ăn uống {daysCount}N, xe {budgetBreakdown.vehicleDescription}, {budgetBreakdown.roomsNeeded} phòng
+                      </span>
+                      <span className={styles.scopeTagExcluded}>
+                        ✕ Chưa gồm: {budgetBreakdown.intercityType} ({new Intl.NumberFormat('vi-VN').format(budgetBreakdown.intercityMinGroup)}đ – {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.intercityMaxGroup)}đ), phụ thu cuối tuần
+                      </span>
+                    </div>
                   </div>
 
                   <button
@@ -2152,7 +2450,7 @@ export default function PlannerPage() {
                     className={styles.btnViewBudgetDetail}
                     onClick={() => setShowBudgetModal(true)}
                   >
-                    <span>Xem chi tiết</span>
+                    <span>Xem chi tiết & khoản dao động</span>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <polyline points="9 18 15 12 9 6" />
                     </svg>
@@ -2164,19 +2462,52 @@ export default function PlannerPage() {
               <div className={styles.aiInsightsCard}>
                 <div className={styles.aiInsightsHeader}>
                   <div className={styles.aiInsightsTitleRow}>
-                    <span className={styles.aiInsightsBadge}>GEMINI AI</span>
+                    <span
+                      className={`${styles.aiInsightsBadge} ${
+                        aiGenerationMetadata.provider === 'local'
+                          ? styles.aiProviderLocal
+                          : aiGenerationMetadata.provider === 'gemini'
+                            ? styles.aiProviderCloud
+                            : styles.aiProviderOffline
+                      }`}
+                    >
+                      {aiGenerationMetadata.provider === 'local'
+                        ? '🤖 LOCAL AI'
+                        : aiGenerationMetadata.provider === 'gemini'
+                          ? '☁️ GEMINI AI'
+                          : '📋 PHƯƠNG ÁN AN TOÀN'}
+                    </span>
                     <h3 className={styles.aiInsightsMainTitle}>Phân tích & Đánh giá chuyến đi {destination}</h3>
                   </div>
                   <span className={styles.aiInsightsConfidence}>Độ phù hợp: 96%</span>
                 </div>
 
+                {aiGenerationMetadata.fallbackUsed && (
+                  <div className={styles.aiFallbackWarning} role="status">
+                    {aiGenerationMetadata.provider === 'gemini'
+                      ? 'Local AI không khả dụng; yêu cầu đã chuyển sang Gemini theo cấu hình fallback được cho phép.'
+                      : 'Đây là phương án an toàn từ dữ liệu địa điểm đã kiểm chứng, không phải nội dung do mô hình AI sinh trực tiếp.'}
+                  </div>
+                )}
+
+                {aiCitations.length > 0 && (
+                  <div className={styles.aiCitations} aria-label="Nguồn dữ liệu RAG">
+                    <strong>Nguồn dữ liệu đã đối chiếu:</strong>
+                    {aiCitations.slice(0, 5).map((citation) => (
+                      <span key={citation.chunkId} className={styles.aiCitationChip}>
+                        {citation.title}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
                 <div className={styles.aiInsightsGrid}>
                   <div className={styles.aiInsightItem}>
                     <span className={styles.aiInsightLabel}>
-                      🌤️ Dự báo thời tiết
+                      🌤️ Dự báo thời tiết ({destWeatherInsight.badge})
                     </span>
                     <span className={styles.aiInsightValue}>
-                      26°C – 31°C · Nắng nhẹ ráo đẹp, biển êm, thuận lợi cho tham quan và di chuyển.
+                      {destWeatherInsight.temp} · {destWeatherInsight.text}
                     </span>
                   </div>
 
@@ -2430,32 +2761,42 @@ export default function PlannerPage() {
                     {/* Expandable Daily Budget Breakdown */}
                     <div className={styles.dailyBudgetBox}>
                       <div className={styles.dailyBudgetHeader}>
-                        <span className={styles.dailyBudgetTitle}>Phân bổ chi phí dự kiến Ngày {activeDay}</span>
+                        <span className={styles.dailyBudgetTitle}>Phân bổ chi phí dự kiến Ngày {activeDay} ({budgetBreakdown.count} người)</span>
                         <span style={{ fontSize: '13px', fontWeight: '700', color: '#0088CC' }}>
-                          {new Intl.NumberFormat('vi-VN').format(currentDaySubtotal)}đ / nhóm
+                          {new Intl.NumberFormat('vi-VN').format(currentDaySubtotal)}đ / cả đoàn
                         </span>
                       </div>
                       <div className={styles.dailyBudgetGrid}>
                         <div className={styles.budgetCategoryItem}>
-                          <span className={styles.budgetCategoryLabel}>Hoạt động & Ăn uống</span>
+                          <span className={styles.budgetCategoryLabel}>Vé & Hoạt động ({budgetBreakdown.count} người)</span>
                           <span className={styles.budgetCategoryValue}>
                             {new Intl.NumberFormat('vi-VN').format(
-                              currentDayPlan.activities.reduce((acc, curr) => acc + (curr.costVnd || 0), 0)
+                              currentDayPlan.activities.reduce((acc, curr) => acc + (curr.costVnd || 0), 0) * budgetBreakdown.count
                             )}đ
                           </span>
                         </div>
                         <div className={styles.budgetCategoryItem}>
-                          <span className={styles.budgetCategoryLabel}>Di chuyển</span>
-                          <span className={styles.budgetCategoryValue}>190.000đ</span>
+                          <span className={styles.budgetCategoryLabel}>Ăn uống 3 bữa ({budgetBreakdown.count} người)</span>
+                          <span className={styles.budgetCategoryValue}>
+                            {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.diningPerPersonDay * budgetBreakdown.count)}đ
+                          </span>
                         </div>
                         <div className={styles.budgetCategoryItem}>
-                          <span className={styles.budgetCategoryLabel}>Lưu trú phân bổ</span>
-                          <span className={styles.budgetCategoryValue}>400.000đ</span>
+                          <span className={styles.budgetCategoryLabel}>Di chuyển ({budgetBreakdown.vehicleDescription})</span>
+                          <span className={styles.budgetCategoryValue}>
+                            {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.dailyVehicleRate)}đ
+                          </span>
+                        </div>
+                        <div className={styles.budgetCategoryItem}>
+                          <span className={styles.budgetCategoryLabel}>Lưu trú phân bổ ({budgetBreakdown.roomsNeeded} phòng)</span>
+                          <span className={styles.budgetCategoryValue}>
+                            {new Intl.NumberFormat('vi-VN').format(Math.round(budgetBreakdown.totalLodging / Math.max(1, daysCount)))}đ
+                          </span>
                         </div>
                         <div className={styles.budgetCategoryItem} style={{ textAlign: 'right' }}>
                           <span className={styles.budgetCategoryLabel}>Bình quân</span>
                           <span className={styles.budgetCategoryValue} style={{ color: '#149D83' }}>
-                            {new Intl.NumberFormat('vi-VN').format(Math.round(currentDaySubtotal / Math.max(1, peopleCount)))}đ / người
+                            {new Intl.NumberFormat('vi-VN').format(Math.round(currentDaySubtotal / budgetBreakdown.count))}đ / người
                           </span>
                         </div>
                       </div>
@@ -2639,12 +2980,12 @@ export default function PlannerPage() {
       {/* 3. BUDGET DETAILS MODAL */}
       {showBudgetModal && (
         <div className={styles.overlayBackdrop} onClick={() => setShowBudgetModal(false)}>
-          <div className={styles.modalBox} style={{ maxWidth: '540px' }} onClick={(e) => e.stopPropagation()}>
+          <div className={styles.modalBox} style={{ maxWidth: '680px', maxHeight: '90vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <div>
-                <h3 className={styles.modalTitle}>Dự toán chi phí chi tiết</h3>
+                <h3 className={styles.modalTitle}>Dự toán chi phí & Phân tích khoản dao động</h3>
                 <span style={{ fontSize: '12px', color: '#64748B' }}>
-                  Chuyến đi {destination} · {daysCount} ngày · {peopleCount} người
+                  Điểm đến: {destination} · {daysCount} ngày {budgetBreakdown.nights} đêm · Đoàn {budgetBreakdown.count} người ({budgetBreakdown.roomsNeeded} phòng đôi)
                 </span>
               </div>
               <button
@@ -2657,52 +2998,191 @@ export default function PlannerPage() {
             </div>
 
             <div className={styles.modalBody}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', background: '#F8FAFD', borderRadius: '8px' }}>
-                  <span style={{ fontSize: '13.5px', fontWeight: '600', color: '#14283F' }}>Vé tham quan & Hoạt động</span>
-                  <span style={{ fontSize: '14px', fontWeight: '700', color: '#14283F' }}>
-                    {new Intl.NumberFormat('vi-VN').format(
-                      itineraryDays.reduce((acc, d) => acc + d.activities.reduce((s, a) => s + (a.costVnd || 0), 0), 0)
-                    )}đ
-                  </span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', background: '#F8FAFD', borderRadius: '8px' }}>
-                  <span style={{ fontSize: '13.5px', fontWeight: '600', color: '#14283F' }}>Ăn uống & Đặc sản</span>
-                  <span style={{ fontSize: '14px', fontWeight: '700', color: '#14283F' }}>
-                    {new Intl.NumberFormat('vi-VN').format(350000 * daysCount * peopleCount)}đ
-                  </span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', background: '#F8FAFD', borderRadius: '8px' }}>
-                  <span style={{ fontSize: '13.5px', fontWeight: '600', color: '#14283F' }}>Di chuyển nội thành (Taxi / Thuê xe)</span>
-                  <span style={{ fontSize: '14px', fontWeight: '700', color: '#14283F' }}>
-                    {new Intl.NumberFormat('vi-VN').format(180000 * daysCount)}đ
-                  </span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', background: '#F8FAFD', borderRadius: '8px' }}>
-                  <span style={{ fontSize: '13.5px', fontWeight: '600', color: '#14283F' }}>
-                    Khách sạn lưu trú ({Math.max(1, daysCount - 1)} đêm {budgetTier === 'economy' ? 'tiết kiệm' : budgetTier === 'luxury' ? 'cao cấp' : 'tiêu chuẩn'})
-                  </span>
-                  <span style={{ fontSize: '14px', fontWeight: '700', color: '#14283F' }}>
-                    {new Intl.NumberFormat('vi-VN').format(
-                      (budgetTier === 'economy' ? 450000 : budgetTier === 'luxury' ? 1800000 : 800000) * Math.max(1, daysCount - 1)
-                    )}đ
-                  </span>
-                </div>
-              </div>
-
-              <div style={{ borderTop: '2px solid #E3EAF2', paddingTop: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                <div>
-                  <strong style={{ fontSize: '15px', color: '#14283F' }}>Tổng dự toán cả nhóm:</strong>
-                  <div style={{ fontSize: '12px', color: '#64748B' }}>Khoảng {new Intl.NumberFormat('vi-VN').format(perPersonCost)}đ / người</div>
-                </div>
-                <span style={{ fontSize: '20px', fontWeight: '800', color: '#0088CC' }}>
-                  {new Intl.NumberFormat('vi-VN').format(totalEstimatedCost)}đ
+              {/* Section 1: Base On-Site Budget */}
+              <div style={{ marginBottom: '16px' }}>
+                <span style={{ fontSize: '13px', fontWeight: '700', color: '#1E293B', display: 'block', marginBottom: '8px' }}>
+                  1. Chi phí cơ sở tại điểm đến (Đã tính trong lịch trình)
                 </span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '9px 12px', background: '#F8FAFD', borderRadius: '8px', border: '1px solid #EAF0F6' }}>
+                    <div>
+                      <span style={{ fontSize: '13px', fontWeight: '600', color: '#14283F', display: 'block' }}>Vé tham quan & Hoạt động</span>
+                      <span style={{ fontSize: '11.5px', color: '#64748B' }}>
+                        {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.totalActPerPerson)}đ/người × {budgetBreakdown.count} người
+                      </span>
+                    </div>
+                    <span style={{ fontSize: '14px', fontWeight: '700', color: '#14283F' }}>
+                      {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.totalActivities)}đ
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '9px 12px', background: '#F8FAFD', borderRadius: '8px', border: '1px solid #EAF0F6' }}>
+                    <div>
+                      <span style={{ fontSize: '13px', fontWeight: '600', color: '#14283F', display: 'block' }}>Ăn uống ({daysCount} ngày)</span>
+                      <span style={{ fontSize: '11.5px', color: '#64748B' }}>
+                        {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.diningPerPersonDay)}đ/người/ngày × {daysCount}N × {budgetBreakdown.count} người
+                      </span>
+                    </div>
+                    <span style={{ fontSize: '14px', fontWeight: '700', color: '#14283F' }}>
+                      {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.totalDining)}đ
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '9px 12px', background: '#F8FAFD', borderRadius: '8px', border: '1px solid #EAF0F6' }}>
+                    <div>
+                      <span style={{ fontSize: '13px', fontWeight: '600', color: '#14283F', display: 'block' }}>Di chuyển nội thành ({daysCount} ngày)</span>
+                      <span style={{ fontSize: '11.5px', color: '#64748B' }}>
+                        {budgetBreakdown.vehicleDescription} ({new Intl.NumberFormat('vi-VN').format(budgetBreakdown.dailyVehicleRate)}đ/ngày)
+                      </span>
+                    </div>
+                    <span style={{ fontSize: '14px', fontWeight: '700', color: '#14283F' }}>
+                      {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.totalLocalTransport)}đ
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '9px 12px', background: '#F8FAFD', borderRadius: '8px', border: '1px solid #EAF0F6' }}>
+                    <div>
+                      <span style={{ fontSize: '13px', fontWeight: '600', color: '#14283F', display: 'block' }}>
+                        Khách sạn lưu trú ({budgetBreakdown.nights} đêm {budgetTier === 'economy' ? 'tiết kiệm' : budgetTier === 'luxury' ? 'cao cấp' : 'tiêu chuẩn'})
+                      </span>
+                      <span style={{ fontSize: '11.5px', color: '#64748B' }}>
+                        {budgetBreakdown.roomsNeeded} phòng đôi × {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.roomRatePerNight)}đ × {budgetBreakdown.nights} đêm
+                      </span>
+                    </div>
+                    <span style={{ fontSize: '14px', fontWeight: '700', color: '#14283F' }}>
+                      {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.totalLodging)}đ
+                    </span>
+                  </div>
+                </div>
+
+                <div style={{ borderTop: '2px solid #E3EAF2', paddingTop: '10px', marginTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                  <div>
+                    <strong style={{ fontSize: '14.5px', color: '#14283F' }}>Tổng dự toán cơ sở:</strong>
+                    <div style={{ fontSize: '12px', color: '#0088CC', fontWeight: '600' }}>
+                      Khoảng {new Intl.NumberFormat('vi-VN').format(perPersonCost)}đ / người
+                    </div>
+                  </div>
+                  <span style={{ fontSize: '19px', fontWeight: '800', color: '#0088CC' }}>
+                    {new Intl.NumberFormat('vi-VN').format(totalEstimatedCost)}đ
+                  </span>
+                </div>
               </div>
 
-              <p className={styles.fieldHint} style={{ margin: 0 }}>
-                * Lưu ý: Dự toán này chưa bao gồm vé máy bay khứ hồi và các khoản mua sắm cá nhân.
-              </p>
+              {/* Section 2: Fluctuating / Variable Expenses (User's Core Requirement) */}
+              <div className={styles.modalFluctuationCard}>
+                <div className={styles.modalFluctuationHeader}>
+                  <div className={styles.modalFluctuationTitle}>
+                    <span>⚡ 2. Các khoản chi phí dao động thực tế</span>
+                  </div>
+                  <span className={styles.modalFluctuationBadge}>
+                    Biên độ: {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.minFluctuation)}đ – {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.maxFluctuation)}đ
+                  </span>
+                </div>
+
+                <div className={styles.modalFluctuationList}>
+                  {/* Fluctuation Item 1: Intercity Transport */}
+                  <div className={styles.modalFluctuationItem}>
+                    <div className={styles.modalFluctuationTop}>
+                      <span className={styles.modalFluctuationName}>
+                        🚌 Phương tiện khứ hồi liên tỉnh (Chưa bao gồm trong lịch trình)
+                      </span>
+                      <span className={styles.modalFluctuationVal}>
+                        {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.intercityMinGroup)}đ – {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.intercityMaxGroup)}đ
+                      </span>
+                    </div>
+                    <span className={styles.modalFluctuationDesc}>
+                      Gợi ý: <strong>{budgetBreakdown.intercityType}</strong> (~{new Intl.NumberFormat('vi-VN').format(budgetBreakdown.intercityMinPerPerson)}đ – {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.intercityMaxPerPerson)}đ / người khứ hồi). Mức giá phụ thuộc mạnh vào thời điểm đặt vé sớm hay muộn và khung giờ khởi hành.
+                    </span>
+                  </div>
+
+                  {/* Fluctuation Item 2: Weekend & Holiday Surcharge */}
+                  <div className={styles.modalFluctuationItem}>
+                    <div className={styles.modalFluctuationTop}>
+                      <span className={styles.modalFluctuationName}>
+                        🏨 Phụ thu phòng cuối tuần & Ngày lễ (Surcharge)
+                      </span>
+                      <span className={styles.modalFluctuationVal}>
+                        +{new Intl.NumberFormat('vi-VN').format(budgetBreakdown.weekendSurchargeMin)}đ – +{new Intl.NumberFormat('vi-VN').format(budgetBreakdown.weekendSurchargeMax)}đ
+                      </span>
+                    </div>
+                    <span className={styles.modalFluctuationDesc}>
+                      Các khách sạn và homestay thường áp dụng phụ thu từ +15% đến +35% vào các đêm thứ 6, thứ 7 hoặc dịp lễ lớn cho {budgetBreakdown.roomsNeeded} phòng lưu trú của đoàn.
+                    </span>
+                  </div>
+
+                  {/* Fluctuation Item 3: Specialty Upgrade */}
+                  <div className={styles.modalFluctuationItem}>
+                    <div className={styles.modalFluctuationTop}>
+                      <span className={styles.modalFluctuationName}>
+                        🍲 Nâng cấp ẩm thực đặc sản & Bữa tiệc riêng
+                      </span>
+                      <span className={styles.modalFluctuationVal}>
+                        +{new Intl.NumberFormat('vi-VN').format(budgetBreakdown.specialtyUpgradePerPerson)}đ / người / bữa
+                      </span>
+                    </div>
+                    <span className={styles.modalFluctuationDesc}>
+                      Dành cho nhu cầu gọi thêm lẩu cá hồi/cá tầm (vùng núi cao), tiệc hải sản tươi sống (vùng biển), tiệc nướng BBQ rượu ngô hoặc thực đơn tiệc liên hoan riêng.
+                    </span>
+                  </div>
+
+                  {/* Fluctuation Item 4: Optional High-Ticket Activities */}
+                  <div className={styles.modalFluctuationItem}>
+                    <div className={styles.modalFluctuationTop}>
+                      <span className={styles.modalFluctuationName}>
+                        🚠 Vé trải nghiệm cao cấp tự chọn (Fansipan / Dù lượn / Ca nô)
+                      </span>
+                      <span className={styles.modalFluctuationVal}>
+                        150.000đ – 850.000đ / người
+                      </span>
+                    </div>
+                    <span className={styles.modalFluctuationDesc}>
+                      Tùy thuộc vào việc các thành viên trong nhóm có nhu cầu đi Cáp treo Fansipan, bay dù lượn ngắm thung lũng, tour ca nô lặn biển hay thuê trang phục dân tộc check-in.
+                    </span>
+                  </div>
+
+                  {/* Fluctuation Item 5: Contingency */}
+                  <div className={styles.modalFluctuationItem}>
+                    <div className={styles.modalFluctuationTop}>
+                      <span className={styles.modalFluctuationName}>
+                        🛍️ Quỹ dự phòng phát sinh & Quà lưu niệm
+                      </span>
+                      <span className={styles.modalFluctuationVal}>
+                        ~{new Intl.NumberFormat('vi-VN').format(budgetBreakdown.contingencyGroup)}đ (8% dự toán)
+                      </span>
+                    </div>
+                    <span className={styles.modalFluctuationDesc}>
+                      Khuyến nghị chuẩn bị quỹ phát sinh dự phòng cho các chi phí ngoài lịch trình như cà phê giải khát, quà bánh địa phương, tiền tips và thuốc men sơ cứu.
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 3: Scope Transparency Grid */}
+              <div className={styles.modalScopeGrid}>
+                <div className={`${styles.modalScopeCol} ${styles.modalScopeIncluded}`}>
+                  <span className={styles.modalScopeTitle} style={{ color: '#047857' }}>
+                    ✓ ĐÃ BAO GỒM TRONG DỰ TOÁN
+                  </span>
+                  <ul style={{ margin: 0, paddingLeft: '16px', color: '#065F46', lineHeight: 1.5 }}>
+                    <li>Vé vào cửa các điểm tham quan theo lịch trình</li>
+                    <li>Chi phí ăn uống 3 bữa/ngày theo chuẩn {budgetTier}</li>
+                    <li>Xe di chuyển nội tỉnh ({budgetBreakdown.vehicleDescription})</li>
+                    <li>Khách sạn {budgetBreakdown.roomsNeeded} phòng đôi ({budgetBreakdown.nights} đêm)</li>
+                  </ul>
+                </div>
+
+                <div className={`${styles.modalScopeCol} ${styles.modalScopeExcluded}`}>
+                  <span className={styles.modalScopeTitle} style={{ color: '#B91C1C' }}>
+                    ✕ CHƯA BAO GỒM (DAO ĐỘNG RIÊNG)
+                  </span>
+                  <ul style={{ margin: 0, paddingLeft: '16px', color: '#991B1B', lineHeight: 1.5 }}>
+                    <li>Vé máy bay / xe khách khứ hồi từ tỉnh nhà đến {destination}</li>
+                    <li>Chi tiêu cá nhân, đồ uống ngoài thực đơn và quà biếu</li>
+                    <li>Phụ thu phòng đơn nếu ở 1 mình/phòng</li>
+                    <li>Phụ thu dịp cao điểm lễ Tết nếu trùng ngày</li>
+                  </ul>
+                </div>
+              </div>
             </div>
 
             <div className={styles.modalFooter}>
@@ -2711,7 +3191,7 @@ export default function PlannerPage() {
                 className={styles.btnCreateTripPrimary}
                 onClick={() => setShowBudgetModal(false)}
               >
-                Đã hiểu
+                Đã hiểu dự toán
               </button>
             </div>
           </div>

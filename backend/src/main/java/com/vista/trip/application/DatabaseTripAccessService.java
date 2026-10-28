@@ -147,4 +147,28 @@ public class DatabaseTripAccessService implements TripAccessService {
           "Bạn không có quyền chỉnh sửa hoặc thêm mới dữ liệu trong chuyến đi này");
     }
   }
+
+  @Override
+  public int getActiveMemberCount(UUID tripId) {
+    if (tripId == null) {
+      return 1;
+    }
+    try {
+      Integer count =
+          jdbcClient
+              .sql(
+                  "SELECT count(DISTINCT user_id) FROM ("
+                      + "SELECT owner_id AS user_id FROM trips WHERE id = :tripId "
+                      + "UNION "
+                      + "SELECT user_id FROM trip_members WHERE trip_id = :tripId AND status != 'REMOVED'"
+                      + ") members")
+              .param("tripId", tripId)
+              .query(Integer.class)
+              .single();
+      return (count != null && count > 0) ? count : 1;
+    } catch (Exception e) {
+      log.warn("Error querying active members count for tripId={}: {}", tripId, e.getMessage());
+      return 1;
+    }
+  }
 }

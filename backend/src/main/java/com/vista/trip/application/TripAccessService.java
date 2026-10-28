@@ -37,4 +37,9 @@ public interface TripAccessService {
    * an authorization exception if false.
    */
   void requireWriteAccess(UUID tripId, UUID userId);
+
+  /** Returns the count of distinct active members (including the owner) in the trip. */
+  default int getActiveMemberCount(UUID tripId) {
+    return 1;
+  }
 }

@@ -37,7 +37,6 @@ const DEFAULT_TRANSFERS: SettlementTransferItem[] = [
     toName: 'Vân Ánh',
     toAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&q=80',
     amount: 450000,
-    bankAccount: '19034567890123 (Techcombank)',
   },
   {
     id: '2',
@@ -46,7 +45,6 @@ const DEFAULT_TRANSFERS: SettlementTransferItem[] = [
     toName: 'Vân Ánh',
     toAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&q=80',
     amount: 800000,
-    bankAccount: '19034567890123 (Techcombank)',
   },
 ];
 
@@ -229,7 +227,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#005ea5',
+    backgroundColor: tokens.colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 6,
@@ -242,11 +240,11 @@ const styles = StyleSheet.create({
   personName: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#131b2e',
+    color: tokens.colors.ink,
   },
   arrowIcon: {
     fontSize: 14,
-    color: '#005ea5',
+    color: tokens.colors.primary,
     marginHorizontal: 4,
   },
   rightGroup: {
@@ -262,34 +260,34 @@ const styles = StyleSheet.create({
   transferAmount: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#131b2e',
+    color: tokens.colors.ink,
   },
   qrButton: {
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
-    backgroundColor: '#e2e7ff',
+    backgroundColor: tokens.colors.primarySoft,
     borderWidth: 1,
-    borderColor: '#005ea5',
+    borderColor: tokens.colors.primary,
   },
   qrButtonText: {
     fontSize: 10,
     fontWeight: '700',
-    color: '#005ea5',
+    color: tokens.colors.primary,
     letterSpacing: 0.4,
   },
   copyButton: {
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
-    backgroundColor: '#f2f3ff',
+    backgroundColor: tokens.colors.surfaceHighlight,
     borderWidth: 1,
-    borderColor: '#c0c7d4',
+    borderColor: tokens.colors.border,
   },
   copyButtonText: {
     fontSize: 10,
     fontWeight: '600',
-    color: '#404752',
+    color: tokens.colors.textSecondary,
     letterSpacing: 0.4,
   },
 });

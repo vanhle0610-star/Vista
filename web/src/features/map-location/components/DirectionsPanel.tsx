@@ -70,6 +70,13 @@ export function DirectionsPanel(props: Props) {
 
   const destMap = new Map<string, DestinationMarker>(destinations.map((d) => [d.id, d]));
 
+  const originCoords = originId === 'gps' && coords
+    ? coords
+    : (originId && destMap.has(originId) ? { latitude: destMap.get(originId)!.latitude, longitude: destMap.get(originId)!.longitude } : null);
+  const destCoords = destinationId && destMap.has(destinationId)
+    ? { latitude: destMap.get(destinationId)!.latitude, longitude: destMap.get(destinationId)!.longitude }
+    : null;
+
   const valid = Boolean(
     destinationId &&
       originId &&
@@ -497,7 +504,51 @@ export function DirectionsPanel(props: Props) {
       <div className={styles.resultContainer} aria-live="polite">
         {status === 'error' && (
           <div className={styles.errorNotice} role="alert">
-            {props.error || 'Không thể tìm thấy tuyến đường phù hợp. Vui lòng thử lại.'}
+            <p style={{ margin: '0 0 8px' }}>
+              {props.error || 'Dịch vụ chỉ đường hiện tại không phản hồi. Bạn vẫn có thể xem bản đồ hoặc mở ứng dụng bản đồ bên ngoài.'}
+            </p>
+            {originCoords && destCoords && (
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '10px' }}>
+                <a
+                  href={`https://www.google.com/maps/dir/?api=1&origin=${originCoords.latitude},${originCoords.longitude}&destination=${destCoords.latitude},${destCoords.longitude}&travelmode=${mode === 'WALKING' ? 'walking' : 'driving'}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                    background: '#0284c7',
+                    color: '#ffffff',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    textDecoration: 'none',
+                  }}
+                >
+                  Mở Google Maps ↗
+                </a>
+                <a
+                  href={`https://maps.apple.com/?saddr=${originCoords.latitude},${originCoords.longitude}&daddr=${destCoords.latitude},${destCoords.longitude}&dirflg=${mode === 'WALKING' ? 'w' : 'd'}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                    background: '#334155',
+                    color: '#ffffff',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    textDecoration: 'none',
+                  }}
+                >
+                  Mở Apple Maps ↗
+                </a>
+              </div>
+            )}
           </div>
         )}
 
@@ -548,6 +599,52 @@ export function DirectionsPanel(props: Props) {
                 </div>
               )}
             </div>
+
+            {/* External Navigation Links */}
+            {originCoords && destCoords && (
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '12px', paddingTop: '10px', borderTop: '1px solid #f1f5f9' }}>
+                <a
+                  href={`https://www.google.com/maps/dir/?api=1&origin=${originCoords.latitude},${originCoords.longitude}&destination=${destCoords.latitude},${destCoords.longitude}&travelmode=${mode === 'WALKING' ? 'walking' : 'driving'}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '5px 10px',
+                    borderRadius: '6px',
+                    background: '#f1f5f9',
+                    color: '#0284c7',
+                    fontSize: '11.5px',
+                    fontWeight: 600,
+                    textDecoration: 'none',
+                    border: '1px solid #e2e8f0',
+                  }}
+                >
+                  Dẫn đường trên Google Maps ↗
+                </a>
+                <a
+                  href={`https://maps.apple.com/?saddr=${originCoords.latitude},${originCoords.longitude}&daddr=${destCoords.latitude},${destCoords.longitude}&dirflg=${mode === 'WALKING' ? 'w' : 'd'}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '5px 10px',
+                    borderRadius: '6px',
+                    background: '#f1f5f9',
+                    color: '#334155',
+                    fontSize: '11.5px',
+                    fontWeight: 600,
+                    textDecoration: 'none',
+                    border: '1px solid #e2e8f0',
+                  }}
+                >
+                  Apple Maps ↗
+                </a>
+              </div>
+            )}
 
             <p className={styles.routeFooterNote}>
               Tuyến đường được tính toán theo dữ liệu giao thông thực tế OpenStreetMap (OSRM).

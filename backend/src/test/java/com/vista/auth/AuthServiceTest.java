@@ -279,13 +279,14 @@ class AuthServiceTest {
     when(jwtTokenService.generateAccessToken(user)).thenReturn("fresh_access_token");
     when(jwtTokenService.generateRefreshToken(user)).thenReturn("fresh_refresh_token");
     when(jwtTokenService.getRefreshTokenExpirationMs()).thenReturn(604800000L);
+    when(refreshTokenService.tryRevokeActiveToken("valid_old_refresh")).thenReturn(true);
 
     var response = authService.refreshToken("valid_old_refresh");
 
     assertThat(response.accessToken()).isEqualTo("fresh_access_token");
     assertThat(response.refreshToken()).isEqualTo("fresh_refresh_token");
 
-    verify(refreshTokenService).revokeToken("valid_old_refresh");
+    verify(refreshTokenService).tryRevokeActiveToken("valid_old_refresh");
     verify(refreshTokenService).registerToken(eq(userId), eq("fresh_refresh_token"), any());
   }
 

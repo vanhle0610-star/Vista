@@ -1,9 +1,12 @@
 import type { components } from '@/types/api.generated';
 import { validPoint } from '../data/publicDestinations';
 
-export type RouteInput = components['schemas']['RouteInput'];
+export type RouteWaypoint = { latitude: number; longitude: number; label?: string };
+export type RouteInput = components['schemas']['RouteInput'] & {
+  waypoints?: RouteWaypoint[];
+};
 export type RouteResult = components['schemas']['RouteResult'];
-export type TravelMode = RouteInput['mode'];
+export type TravelMode = components['schemas']['RouteInput']['mode'];
 
 export function validateRouteInput(input: RouteInput) {
   if (!validPoint(input.origin) || !validPoint(input.destination)) {
@@ -53,9 +56,9 @@ export async function computeVistaRoute(input: RouteInput): Promise<RouteResult 
   try {
     const orig = input.origin;
     const dest = input.destination;
-    const waypoints = (input as any).waypoints || [];
-    const allPoints = [orig, ...waypoints, dest];
-    const coordsStr = allPoints.map((p: any) => `${p.longitude},${p.latitude}`).join(';');
+    const waypoints = input.waypoints || [];
+    const allPoints: Array<{ latitude: number; longitude: number }> = [orig, ...waypoints, dest];
+    const coordsStr = allPoints.map((p) => `${p.longitude},${p.latitude}`).join(';');
     const profile = input.mode === 'WALKING' ? 'walking' : 'driving';
     const osrmUrl = `https://router.project-osrm.org/route/v1/${profile}/${coordsStr}?overview=full&geometries=geojson`;
 

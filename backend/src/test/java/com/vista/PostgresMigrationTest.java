@@ -16,7 +16,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @SpringBootTest
 class PostgresMigrationTest {
   @Container
-  static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:17-alpine");
+  static final PostgreSQLContainer<?> POSTGRES =
+      new PostgreSQLContainer<>("pgvector/pgvector:pg17");
 
   @DynamicPropertySource
   static void database(DynamicPropertyRegistry registry) {

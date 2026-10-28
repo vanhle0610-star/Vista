@@ -58,7 +58,7 @@ export default function VistaMapPage() {
   // Add To Trip Modal State
   const [showAddToTripModal, setShowAddToTripModal] = useState(false);
   const [destinationForTrip, setDestinationForTrip] = useState<DestinationMarker | null>(null);
-  const [availableTrips, setAvailableTrips] = useState<any[]>([]);
+  const [availableTrips, setAvailableTrips] = useState<Array<{ id: string; title: string }>>([]);
   const [selectedTripId, setSelectedTripId] = useState<string>('');
   const [selectedDayNumber, setSelectedDayNumber] = useState<number>(1);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -243,7 +243,7 @@ export default function VistaMapPage() {
     const origin =
       originId === 'gps'
         ? coords
-          ? { ...coords, label: 'Vị trí của tôi' }
+          ? { latitude: coords.latitude, longitude: coords.longitude, label: 'Vị trí của tôi' }
           : null
         : destinations.find((d) => d.id === originId);
     const destination = destinations.find((d) => d.id === destinationId);
@@ -251,94 +251,85 @@ export default function VistaMapPage() {
 
     const waypoints = waypointIds
       .map((id) => destinations.find((d) => d.id === id))
-      .filter(Boolean)
-      .map((d) => ({ latitude: d!.latitude, longitude: d!.longitude, label: d!.name }));
+      .filter((d): d is DestinationMarker => Boolean(d))
+      .map((d) => ({ latitude: d.latitude, longitude: d.longitude, label: d.name }));
 
     planner.compute({
-      origin: { ...origin, label: 'label' in origin ? origin.label : origin.name },
-      destination: { ...destination, label: destination.name },
+      origin: { latitude: origin.latitude, longitude: origin.longitude, label: 'label' in origin ? origin.label : origin.name },
+      destination: { latitude: destination.latitude, longitude: destination.longitude, label: destination.name },
       mode,
       fromGps: originId === 'gps',
       waypoints,
-    } as any);
+    });
   };
 
-  // Add To Trip Handler
-  const handleOpenAddToTrip = (destination: DestinationMarker) => {
+  // Add To Trip Handler using real backend APIs
+  const handleOpenAddToTrip = async (destination: DestinationMarker) => {
     setDestinationForTrip(destination);
 
-    // Read trips from localStorage
-    try {
-      const customTripsStr = localStorage.getItem('vista_custom_trips');
-      const trips = customTripsStr ? JSON.parse(customTripsStr) : [];
-      setAvailableTrips(trips);
-      if (trips.length > 0) {
-        setSelectedTripId(trips[0].id);
-      }
-    } catch {
-      setAvailableTrips([]);
+    const token = typeof window !== 'undefined' ? localStorage.getItem('vista_token') : null;
+    if (!token) {
+      showToast('Vui lòng đăng nhập để thêm địa điểm vào chuyến đi.');
+      return;
     }
 
-    setShowAddToTripModal(true);
+    try {
+      const trips = await apiRequest<Array<{ id: string; title: string }>>('/trips');
+      if (trips && trips.length > 0) {
+        setAvailableTrips(trips);
+        setSelectedTripId(trips[0].id);
+        setShowAddToTripModal(true);
+      } else {
+        showToast('Bạn chưa có chuyến đi nào. Vui lòng tạo chuyến đi mới trước.');
+      }
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Chưa tải được danh sách chuyến đi của bạn.');
+    }
   };
 
-  const handleConfirmAddToTrip = () => {
-    if (!destinationForTrip) return;
+  const handleConfirmAddToTrip = async () => {
+    if (!destinationForTrip || !selectedTripId) return;
 
     try {
-      const customTripsStr = localStorage.getItem('vista_custom_trips');
-      const trips = customTripsStr ? JSON.parse(customTripsStr) : [];
+      // 1. Lấy danh sách ngày của chuyến đi
+      const days = await apiRequest<Array<{ id: string; dayNumber: number }>>(
+        `/trips/${selectedTripId}/itinerary/days`
+      );
+      let targetDay = days?.find((d) => d.dayNumber === selectedDayNumber);
 
-      let targetTrip = trips.find((t: any) => t.id === selectedTripId);
-
-      // If no trip exists yet, create one for this destination
-      if (!targetTrip) {
-        targetTrip = {
-          id: `trip-${Date.now()}`,
-          title: `Chuyến đi ${destinationForTrip.province}`,
-          destination: destinationForTrip.province,
-          startDate: new Date().toISOString().split('T')[0],
-          endDate: new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0],
-          budgetTotal: 5000000,
-          budgetSpent: 0,
-          members: [{ id: 'u-me', name: 'Bạn', avatar: 'ME' }],
-          days: [],
-        };
-        trips.push(targetTrip);
+      // Nếu ngày chưa được tạo trên lịch trình, tự động khởi tạo ngày đó
+      if (!targetDay) {
+        targetDay = await apiRequest<{ id: string; dayNumber: number }>(
+          `/trips/${selectedTripId}/itinerary/days`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              dayNumber: selectedDayNumber,
+              tripDate: new Date().toISOString().split('T')[0],
+            }),
+          }
+        );
       }
 
-      if (!Array.isArray(targetTrip.days)) {
-        targetTrip.days = [];
-      }
-
-      let dayObj = targetTrip.days.find((d: any) => d.dayNumber === selectedDayNumber);
-      if (!dayObj) {
-        dayObj = { dayNumber: selectedDayNumber, activities: [] };
-        targetTrip.days.push(dayObj);
-      }
-
-      if (!Array.isArray(dayObj.activities)) {
-        dayObj.activities = [];
-      }
-
-      dayObj.activities.push({
-        id: `act-${Date.now()}`,
-        name: destinationForTrip.name,
-        category: destinationForTrip.category,
-        latitude: destinationForTrip.latitude,
-        longitude: destinationForTrip.longitude,
-        time: '09:00',
-        cost: destinationForTrip.priceMin || 0,
+      // 2. Thêm điểm dừng vào ngày lịch trình
+      await apiRequest(`/itinerary/days/${targetDay.id}/items`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          destinationId: destinationForTrip.id,
+          name: destinationForTrip.name,
+          latitude: destinationForTrip.latitude,
+          longitude: destinationForTrip.longitude,
+          notes: `Điểm đến: ${destinationForTrip.province} · ${destinationForTrip.category}`,
+        }),
       });
 
-      localStorage.setItem('vista_custom_trips', JSON.stringify(trips));
-      showToast(`Đã thêm "${destinationForTrip.name}" vào ${targetTrip.title} (Ngày ${selectedDayNumber})!`);
-    } catch (e) {
-      console.warn('Error saving to trip:', e);
-      showToast(`Đã thêm "${destinationForTrip.name}" vào chuyến đi thành công!`);
+      showToast(`Đã thêm "${destinationForTrip.name}" vào lịch trình Ngày ${selectedDayNumber}!`);
+      setShowAddToTripModal(false);
+    } catch (err) {
+      showToast(`Lỗi: ${err instanceof Error ? err.message : 'Không thể thêm vào chuyến đi'}`);
     }
-
-    setShowAddToTripModal(false);
   };
 
   const route = planner.route?.input.fromGps && !coords ? null : planner.route;
@@ -351,13 +342,13 @@ export default function VistaMapPage() {
       stops.push({
         latitude: route.input.origin.latitude,
         longitude: route.input.origin.longitude,
-        label: (route.input.origin as any).label || 'Điểm xuất phát',
+        label: route.input.origin.label || 'Điểm xuất phát',
         tag: 'A',
         type: 'origin',
       });
     }
-    const wps = (route.input as any)?.waypoints || [];
-    wps.forEach((wp: any, idx: number) => {
+    const wps = (route.input as { waypoints?: Array<{ latitude: number; longitude: number; label?: string }> } | undefined)?.waypoints || [];
+    wps.forEach((wp: { latitude: number; longitude: number; label?: string }, idx: number) => {
       stops.push({
         latitude: wp.latitude,
         longitude: wp.longitude,
@@ -371,7 +362,7 @@ export default function VistaMapPage() {
       stops.push({
         latitude: route.input.destination.latitude,
         longitude: route.input.destination.longitude,
-        label: (route.input.destination as any).label || 'Điểm đến',
+        label: route.input.destination.label || 'Điểm đến',
         tag: destTag,
         type: 'destination',
       });
@@ -559,9 +550,9 @@ export default function VistaMapPage() {
                     value={selectedTripId}
                     onChange={(e) => setSelectedTripId(e.target.value)}
                   >
-                    {availableTrips.map((t: any) => (
+                    {availableTrips.map((t) => (
                       <option key={t.id} value={t.id}>
-                        {t.title} ({t.destination || 'Việt Nam'})
+                        {t.title}
                       </option>
                     ))}
                   </select>

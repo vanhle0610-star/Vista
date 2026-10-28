@@ -16,14 +16,17 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vista.ai.api.dto.AiItinerarySuggestionRequest;
 import com.vista.ai.api.dto.RouteOptimizationRequest;
-import com.vista.ai.client.AiClientWrapper;
 import com.vista.ai.config.AiRateLimiter;
+import com.vista.ai.provider.AiProviderRouter;
 import com.vista.budget.util.RouteOptimizer.DestinationPoint;
 import com.vista.common.audit.AuditLogService;
 import com.vista.common.security.CurrentUserProvider;
 import com.vista.common.security.SecurityConfiguration;
 import com.vista.common.web.GlobalExceptionHandler;
+import com.vista.destination.application.DestinationQueryService;
+import com.vista.destination.application.DestinationSummary;
 import com.vista.trip.application.TripAccessService;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,8 +53,9 @@ class AiPlannerSecurityRbacTest {
   @MockitoBean private TripAccessService tripAccessService;
   @MockitoBean private CurrentUserProvider currentUserProvider;
   @MockitoBean private AiRateLimiter aiRateLimiter;
-  @MockitoBean private AiClientWrapper aiClientWrapper;
+  @MockitoBean private AiProviderRouter aiProviderRouter;
   @MockitoBean private AuditLogService auditLogService;
+  @MockitoBean private DestinationQueryService destinationQueryService;
 
   private UUID tripId;
   private UUID currentUserId;
@@ -61,7 +65,24 @@ class AiPlannerSecurityRbacTest {
     tripId = UUID.randomUUID();
     currentUserId = UUID.randomUUID();
     when(currentUserProvider.getCurrentUserId()).thenReturn(currentUserId);
-    when(aiClientWrapper.isAvailable()).thenReturn(false);
+    when(aiProviderRouter.isAvailable()).thenReturn(false);
+    when(destinationQueryService.searchPublished(
+            org.mockito.ArgumentMatchers.isNull(),
+            org.mockito.ArgumentMatchers.anyString(),
+            org.mockito.ArgumentMatchers.isNull(),
+            org.mockito.ArgumentMatchers.any(),
+            org.mockito.ArgumentMatchers.anyInt()))
+        .thenReturn(
+            List.of(
+                new DestinationSummary(
+                    UUID.fromString("11111111-1111-1111-1111-111111111111"),
+                    "Điểm đến đã duyệt",
+                    "Huế",
+                    "Văn hóa",
+                    BigDecimal.ZERO,
+                    BigDecimal.ZERO,
+                    16.4637,
+                    107.5909)));
   }
 
   @Test

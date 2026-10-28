@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { useParams, useSearchParams } from 'next/navigation';
+import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import {
   getSampleItineraryForDestination,
   getDestinationHeroImage,
@@ -36,6 +36,7 @@ import {
   Ticket,
 } from 'lucide-react';
 import { Navbar } from '@/components/common/Navbar';
+import { GroupMapTab } from '@/features/trip-location/components/GroupMapTab';
 import styles from './tripDetail.module.css';
 
 interface ActivityItem {
@@ -64,6 +65,7 @@ interface MemberItem {
   avatar: string;
   color: string;
   role?: string;
+  userId?: string;
   email?: string;
 }
 
@@ -76,16 +78,34 @@ interface TripDetailData {
   endDate: string;
   status: 'ACTIVE' | 'PLANNING' | 'COMPLETED';
   role: 'OWNER' | 'MEMBER';
+  ownerId?: string;
   budgetTotal: number;
   budgetSpent: number;
   progressPercent: number;
   members: MemberItem[];
-  image: string;
+  image?: string;
   treasuryPath: string;
   alertType?: 'AMBER' | 'BLUE' | 'COMPLETED';
   alertText?: string;
   itineraryDays?: DayPlanItem[];
   isPrivate?: boolean;
+}
+
+interface StoredUser {
+  id?: string;
+  email?: string;
+  displayName?: string;
+  role?: string;
+}
+
+function getStoredUser(): StoredUser | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem('vista_user');
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
 }
 
 const SAMPLE_HANOI_DAYS: DayPlanItem[] = [
@@ -335,31 +355,19 @@ const DEFAULT_DEMO_TRIPS: TripDetailData[] = [
   },
 ];
 
-function getCurrentUserMember(defaultRole = 'Trưởng nhóm') {
-  if (typeof window !== 'undefined') {
-    try {
-      const stored = localStorage.getItem('vista_user');
-      if (stored) {
-        const u = JSON.parse(stored);
-        const name = u.displayName || u.email || 'Nguyễn Văn Sang';
-        const parts = name.trim().split(/\s+/);
-        const initials = (parts.length >= 2 ? parts[0][0] + parts[parts.length - 1][0] : name.slice(0, 2)).toUpperCase();
-        return {
-          name: `${name} (Bạn)`,
-          avatar: initials || 'NS',
-          color: '#0284c7',
-          role: defaultRole,
-        };
-      }
-    } catch {
-      // fallback
-    }
-  }
+function getCurrentUserMember(defaultRole = 'Trưởng nhóm'): MemberItem {
+  const u = getStoredUser();
+  const rawName = u?.displayName || u?.email || 'Thành viên VISTA';
+  const cleanName = rawName.replace(/\s*\(Bạn\)/g, '').trim() || 'Thành viên VISTA';
+  const parts = cleanName.split(/\s+/);
+  const initials = (parts.length >= 2 ? parts[0][0] + parts[parts.length - 1][0] : cleanName.slice(0, 2)).toUpperCase();
   return {
-    name: 'Nguyễn Văn Sang (Bạn)',
-    avatar: 'NS',
+    name: cleanName,
+    avatar: initials || 'TV',
     color: '#0284c7',
     role: defaultRole,
+    userId: u?.id || 'u-me',
+    email: u?.email || '',
   };
 }
 
@@ -412,11 +420,33 @@ function formatMembersForCurrentUser(
 }
 
 export default function TripDetailPage() {
+  const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
   const tripId = typeof params?.tripId === 'string' ? params.tripId : '';
 
   const [accessDenied, setAccessDenied] = useState(() => Boolean(tripId && tripId.includes('private')));
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [currentUser, setCurrentUser] = useState<StoredUser | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setCurrentUser(getStoredUser());
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('vista_token');
+      if (!token) {
+        setIsAuthenticated(false);
+        router.replace('/login?returnUrl=' + encodeURIComponent(`/trips/${tripId}`));
+      } else {
+        setIsAuthenticated(true);
+      }
+    }
+  }, [router, tripId]);
+
   const [trip, setTrip] = useState<TripDetailData | null>(() => {
     if (typeof tripId === 'string' && tripId) {
       if (tripId.includes('private')) return null;
@@ -425,13 +455,20 @@ export default function TripDetailPage() {
     }
     return null;
   });
-  const [activeTab, setActiveTab] = useState<'itinerary' | 'members' | 'treasury' | 'voting'>('itinerary');
+  const [activeTab, setActiveTab] = useState<'itinerary' | 'members' | 'treasury' | 'voting' | 'group-map'>('itinerary');
+
+  useEffect(() => {
+    const tabParam = searchParams?.get('tab');
+    if (tabParam && ['itinerary', 'members', 'treasury', 'voting', 'group-map'].includes(tabParam)) {
+      setActiveTab(tabParam as any);
+    }
+  }, [searchParams]);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [copiedInvite, setCopiedInvite] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<ActivityItem | null>(null);
   const [showMembersModal, setShowMembersModal] = useState(false);
 
-  const handleTabChange = (tab: 'itinerary' | 'members' | 'treasury' | 'voting') => {
+  const handleTabChange = (tab: 'itinerary' | 'members' | 'treasury' | 'voting' | 'group-map') => {
     setActiveTab(tab);
     if (typeof window !== 'undefined') {
       try {
@@ -469,7 +506,66 @@ export default function TripDetailPage() {
   const [checkedActivities, setCheckedActivities] = useState<Record<string, boolean>>({});
   const [highlightedActId, setHighlightedActId] = useState<string | null>(null);
 
+  const isTripOwner = Boolean(
+    currentUser && trip && (
+      (trip.ownerId && (trip.ownerId === currentUser.id || (currentUser.email && trip.ownerId === currentUser.email))) ||
+      (trip.members?.[0] && (
+        (trip.members[0].userId && (trip.members[0].userId === currentUser.id || (currentUser.email && trip.members[0].userId === currentUser.email))) ||
+        (trip.members[0].email && currentUser.email && trip.members[0].email.toLowerCase() === currentUser.email.toLowerCase()) ||
+        (currentUser.displayName && trip.members[0].name && trip.members[0].name.trim().toLowerCase() === currentUser.displayName.trim().toLowerCase())
+      ))
+    )
+  );
+
+  const isTripMember = Boolean(
+    currentUser && trip && (
+      isTripOwner ||
+      trip.members?.some((m) =>
+        (m.userId && (m.userId === currentUser.id || (currentUser.email && m.userId === currentUser.email))) ||
+        (m.email && currentUser.email && m.email.toLowerCase() === currentUser.email.toLowerCase()) ||
+        (currentUser.displayName && m.name && m.name.trim().toLowerCase() === currentUser.displayName.trim().toLowerCase())
+      )
+    )
+  );
+
+  const handleJoinThisTrip = () => {
+    if (!trip || !currentUser) return;
+    const meMember = getCurrentUserMember('Thành viên');
+    const alreadyIn = (trip.members || []).some(
+      (m) =>
+        (m.userId && m.userId === meMember.userId) ||
+        (m.email && meMember.email && m.email.toLowerCase() === meMember.email.toLowerCase()) ||
+        m.name.toLowerCase() === meMember.name.toLowerCase()
+    );
+    if (alreadyIn) {
+      showToast('Bạn đã là thành viên của chuyến đi này!');
+      return;
+    }
+    const updatedMembers = [...(trip.members || []), meMember];
+    const updatedTrip = { ...trip, members: updatedMembers };
+    setTrip(updatedTrip);
+
+    // Save to localStorage
+    try {
+      const stored = localStorage.getItem('vista_custom_trips');
+      const list: TripDetailData[] = stored ? JSON.parse(stored) : [];
+      const idx = list.findIndex((x) => x.id === trip.id);
+      if (idx >= 0) {
+        list[idx] = { ...list[idx], members: updatedMembers };
+      } else {
+        list.unshift(updatedTrip);
+      }
+      localStorage.setItem('vista_custom_trips', JSON.stringify(list));
+    } catch {}
+
+    showToast(`🎉 Bạn đã tham gia thành công "${trip.title}"! Giờ đây bạn có thể check-in và biểu quyết.`);
+  };
+
   const toggleCheckActivity = (id: string, title: string) => {
+    if (!isTripMember) {
+      showToast('⚠️ Bạn chưa tham gia chuyến đi này. Vui lòng tham gia nhóm để check-in địa điểm!');
+      return;
+    }
     setCheckedActivities((prev) => {
       const nextVal = !prev[id];
       showToast(nextVal ? `Đã đánh dấu ghé thăm: ${title}` : `Đã bỏ đánh dấu: ${title}`);
@@ -615,12 +711,71 @@ export default function TripDetailPage() {
           const parsed: TripDetailData[] = JSON.parse(stored);
           const match = parsed.find((item) => item.id === tripId);
           if (match) {
-            // Normalize fields and clean mock members from custom trips
+            let needsUpdate = false;
+            const currentOwner = getCurrentUserMember('Trưởng nhóm');
             const isCustomTrip = match.id.startsWith('trip-') && !match.id.includes('danang') && !match.id.includes('hagiang');
-            const cleanMembers = isCustomTrip
-              ? (match.members || []).filter((m) => !m.name.includes('Trần Minh Tuấn') && !m.name.includes('Lê Vân Anh'))
+            const filteredMembers = isCustomTrip
+              ? (match.members || []).filter((m: any) => !m.name?.includes('Trần Minh Tuấn') && !m.name?.includes('Lê Vân Anh'))
               : (match.members || []);
-            const normalizedMembers = formatMembersForCurrentUser(cleanMembers.length > 0 ? cleanMembers : match.members || []);
+            const rawMembers = filteredMembers.length > 0 ? filteredMembers : (match.members && match.members.length > 0 ? match.members : [currentOwner]);
+            const normalizedMembers: MemberItem[] = rawMembers.map((m: any, idx: number) => {
+              const rawName = m.name || '';
+              let cleanName = rawName.replace(/\s*\(Bạn\)/g, '').trim();
+              if (!cleanName || cleanName === 'Bạn') {
+                cleanName = idx === 0 ? 'Trưởng nhóm VISTA' : 'Thành viên VISTA';
+              }
+              if (cleanName !== rawName) {
+                needsUpdate = true;
+              }
+
+              // Match with currentUser only if name or email truly matches
+              const isMe = Boolean(
+                currentUser && (
+                  (m.userId && m.userId === currentUser.id) ||
+                  (currentUser.displayName && cleanName.toLowerCase() === currentUser.displayName.toLowerCase()) ||
+                  (currentUser.email && m.email && m.email.toLowerCase() === currentUser.email.toLowerCase())
+                )
+              );
+
+              const memberUserId = isMe
+                ? (currentUser?.id || currentOwner.userId)
+                : (m.userId && m.userId !== currentOwner.userId ? m.userId : `u-${encodeURIComponent(cleanName.toLowerCase().replace(/\s+/g, '-'))}`);
+
+              const memberEmail = isMe
+                ? (currentUser?.email || currentOwner.email)
+                : (m.email && m.email !== currentOwner.email ? m.email : `${encodeURIComponent(cleanName.toLowerCase().replace(/\s+/g, ''))}@vista.vn`);
+
+              return {
+                ...m,
+                name: cleanName,
+                avatar: m.avatar || cleanName.slice(0, 2).toUpperCase(),
+                color: m.color || '#0284c7',
+                role: m.role || (idx === 0 ? 'Trưởng nhóm' : 'Thành viên'),
+                userId: memberUserId,
+                email: memberEmail,
+              };
+            });
+
+            const firstMember = normalizedMembers[0];
+            const isCreatorMe = Boolean(
+              currentUser && (
+                (firstMember?.userId && firstMember.userId === currentUser.id) ||
+                (currentUser.displayName && firstMember?.name && firstMember.name.toLowerCase() === currentUser.displayName.toLowerCase()) ||
+                (currentUser.email && firstMember?.email && firstMember.email.toLowerCase() === currentUser.email.toLowerCase())
+              )
+            );
+
+            const resolvedOwnerId = isCreatorMe
+              ? (currentUser?.id || currentOwner.userId)
+              : (firstMember?.userId || `owner-${match.id}`);
+
+            const bSpent = typeof match.budgetSpent === 'number' ? match.budgetSpent : 0;
+            const bTotal = typeof match.budgetTotal === 'number' && match.budgetTotal > 0 ? match.budgetTotal : 20000000;
+            const calculatedProgress = bTotal > 0 ? Math.min(100, Math.round((bSpent / bTotal) * 100)) : 0;
+
+            if (match.progressPercent !== calculatedProgress || match.ownerId !== resolvedOwnerId) {
+              needsUpdate = true;
+            }
 
             const isHanoiMismatch =
               match.destination &&
@@ -639,7 +794,11 @@ export default function TripDetailPage() {
 
             const updatedTrip: TripDetailData = {
               ...match,
+              ownerId: resolvedOwnerId,
               members: normalizedMembers,
+              budgetTotal: bTotal,
+              budgetSpent: bSpent,
+              progressPercent: calculatedProgress,
               image: heroImg,
               treasuryPath: match.treasuryPath || `/trips/${match.id}/treasury`,
               itineraryDays: itinerary,
@@ -654,7 +813,7 @@ export default function TripDetailPage() {
               }).catch(() => {});
             } catch {}
 
-            if (isHanoiMismatch) {
+            if (needsUpdate || isHanoiMismatch) {
               try {
                 const updatedList = parsed.map((item) => (item.id === tripId ? updatedTrip : item));
                 localStorage.setItem('vista_custom_trips', JSON.stringify(updatedList));
@@ -696,7 +855,7 @@ export default function TripDetailPage() {
         role: 'OWNER',
         budgetTotal: 3350000,
         budgetSpent: 0,
-        progressPercent: 20,
+        progressPercent: 0,
         members: [getCurrentUserMember('Trưởng nhóm')],
         image: getDestinationHeroImage(fallbackDest),
         treasuryPath: `/trips/${tripId}/treasury`,
@@ -919,6 +1078,10 @@ export default function TripDetailPage() {
 
   // Vote toggle with closing support (W4-TV3-02)
   const handleVoteToggle = (propId: string) => {
+    if (!isTripMember) {
+      showToast('⚠️ Bạn chưa tham gia chuyến đi này. Chỉ thành viên nhóm mới có quyền biểu quyết!');
+      return;
+    }
     if (isVotingClosed) {
       showToast('❌ Biểu quyết đã đóng (Closed)! Không thể bỏ phiếu hoặc đổi phiếu.');
       return;
@@ -1140,21 +1303,41 @@ export default function TripDetailPage() {
     const completedCount = activeActivities.filter((a) => checkedActivities[a.id]).length;
 
     let estCost = 0;
+    let sightCost = 0;
+    let foodCost = 0;
+    let transportCost = 0;
+    let otherCost = 0;
+
     activeActivities.forEach((a) => {
+      let cost = 100000;
       if (typeof a.costVnd === 'number' && a.costVnd > 0) {
-        estCost += a.costVnd;
+        cost = a.costVnd;
       } else if (a.costLabel) {
         const num = parseInt(a.costLabel.replace(/\D/g, ''), 10);
-        if (!isNaN(num) && num > 0) estCost += num;
-        else estCost += 100000;
+        if (!isNaN(num) && num > 0) cost = num;
+      }
+      estCost += cost;
+
+      const cat = (a.category || '').toLowerCase();
+      if (cat.includes('thăm') || cat.includes('quan') || cat.includes('tích') || cat.includes('vé') || cat.includes('văn hóa') || cat.includes('di tích')) {
+        sightCost += cost;
+      } else if (cat.includes('thực') || cat.includes('ăn') || cat.includes('uống') || cat.includes('chợ') || cat.includes('ẩm thực')) {
+        foodCost += cost;
+      } else if (cat.includes('chuyển') || cat.includes('xe') || cat.includes('mạo hiểm') || cat.includes('vui chơi')) {
+        transportCost += cost;
       } else {
-        estCost += 100000;
+        otherCost += cost;
       }
     });
 
     const distanceKm = Math.round((actCount * 3.6 + 1.2) * 10) / 10;
     const durationHours = Math.round((actCount * 1.5 + 0.5) * 10) / 10;
     const totalBudget = trip?.budgetTotal || 10000000;
+    const totalCatCost = sightCost + foodCost + transportCost + otherCost || 1;
+    const sightPct = Math.round((sightCost / totalCatCost) * 100);
+    const foodPct = Math.round((foodCost / totalCatCost) * 100);
+    const transportPct = Math.round((transportCost / totalCatCost) * 100);
+    const otherPct = Math.max(0, 100 - sightPct - foodPct - transportPct);
 
     return {
       actCount,
@@ -1164,7 +1347,11 @@ export default function TripDetailPage() {
       durationHours,
       percentOfBudget: totalBudget > 0
         ? Math.min(100, Math.round((estCost / totalBudget) * 100))
-        : 35,
+        : 0,
+      sightPct,
+      foodPct,
+      transportPct,
+      otherPct,
     };
   }, [activeActivities, checkedActivities, trip?.budgetTotal]);
 
@@ -1296,6 +1483,22 @@ export default function TripDetailPage() {
     );
   }
 
+  if (isAuthenticated !== true) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc' }}>
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🔒</div>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0f172a', marginBottom: '0.5rem' }}>
+            Yêu cầu đăng nhập
+          </h2>
+          <p style={{ color: '#64748b', fontSize: '0.95rem' }}>
+            Bạn cần đăng nhập để xem chi tiết chuyến đi này. Đang chuyển hướng...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.tripDetailPage}>
       <Navbar activeModule="trips" />
@@ -1312,19 +1515,17 @@ export default function TripDetailPage() {
               <span className={styles.headerBackText}>Tất cả chuyến đi</span>
             </Link>
 
-            <div className={styles.headerPolaroidCard} title={`${trip.destination} 🏮`}>
-              <img
-                src={destinationPhoto}
-                alt={trip.title}
-                className={styles.headerPolaroidImg}
-                onError={(e) => {
-                  e.currentTarget.onerror = null;
-                  e.currentTarget.src = 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=600&q=80';
-                }}
-              />
-              <div className={styles.headerPolaroidPin}>📍</div>
-              <span className={styles.headerPolaroidTag}>{trip.destination || 'Việt Nam'}</span>
-            </div>
+            {destinationPhoto && (
+              <div className={styles.headerPolaroidCard} title={`${trip.destination} 🏮`}>
+                <img
+                  src={destinationPhoto}
+                  alt={trip.title}
+                  className={styles.headerPolaroidImg}
+                />
+                <div className={styles.headerPolaroidPin}>📍</div>
+                <span className={styles.headerPolaroidTag}>{trip.destination || 'Việt Nam'}</span>
+              </div>
+            )}
 
             <div className={styles.headerTitleInfo}>
               <div className={styles.headerTitleRow}>
@@ -1344,6 +1545,20 @@ export default function TripDetailPage() {
                     <CheckCircle2 size={12} /> Đã hoàn thành
                   </span>
                 )}
+
+                {isTripOwner ? (
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#B45309', background: '#FEF3C7', padding: '3px 10px', borderRadius: '6px' }}>
+                    Bạn là trưởng nhóm
+                  </span>
+                ) : isTripMember ? (
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#0284C7', background: '#E0F2FE', padding: '3px 10px', borderRadius: '6px' }}>
+                    Thành viên nhóm
+                  </span>
+                ) : (
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: '#475569', background: '#F1F5F9', padding: '3px 10px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
+                    Trưởng nhóm: {trip.members?.[0]?.name || 'Khác'}
+                  </span>
+                )}
               </div>
 
               <div className={styles.headerChipsRow}>
@@ -1357,7 +1572,10 @@ export default function TripDetailPage() {
                 </div>
                 <div className={`${styles.headerChip} ${styles.chipDuration}`}>
                   <Clock size={12} />
-                  <span>{totalDays} ngày ({trip.itineraryDays?.reduce((acc, d) => acc + (d.activities?.length || 0), 0) || 12} địa điểm)</span>
+                  {(() => {
+                    const totalPlaces = trip.itineraryDays ? trip.itineraryDays.reduce((acc, d) => acc + (d.activities?.length || 0), 0) : 0;
+                    return <span>{totalDays} ngày{totalPlaces > 0 ? ` (${totalPlaces} địa điểm)` : ''}</span>;
+                  })()}
                 </div>
                 <button
                   type="button"
@@ -1421,6 +1639,51 @@ export default function TripDetailPage() {
           </div>
         </div>
 
+        {/* ─── GUEST OBSERVER NOTICE BANNER ────────────────────────────── */}
+        {!isTripMember && (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '12px 18px',
+              margin: '16px 0',
+              background: '#F0F9FF',
+              border: '1px solid #BAE6FD',
+              borderRadius: '12px',
+              gap: '12px',
+              flexWrap: 'wrap',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Compass size={18} style={{ color: '#0284C7', flexShrink: 0 }} />
+              <span style={{ fontSize: '13.5px', color: '#0369A1', fontWeight: 500 }}>
+                Bạn đang xem chuyến đi này ở chế độ <strong>Khách quan sát</strong>. Bạn chưa thể check-in các địa điểm hay biểu quyết cho đến khi tham gia nhóm.
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={handleJoinThisTrip}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 18px',
+                backgroundColor: '#0284C7',
+                color: '#FFFFFF',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '13px',
+                fontWeight: 700,
+                cursor: 'pointer',
+              }}
+            >
+              <Users size={14} />
+              <span>Tham gia chuyến đi này</span>
+            </button>
+          </div>
+        )}
+
         {/* ─── 4. MAIN WORKSPACE WITH TABS ───────────────────────────────── */}
         <div className={styles.tabsBar}>
           <button
@@ -1455,6 +1718,14 @@ export default function TripDetailPage() {
           >
             Biểu quyết địa điểm ({proposals.length})
           </button>
+          <button
+            type="button"
+            className={`${styles.tabBtn} ${activeTab === 'group-map' ? styles.tabBtnActive : ''}`}
+            onClick={() => setActiveTab('group-map')}
+            id="tab-btn-group-map"
+          >
+            🗺️ Bản đồ nhóm & Vị trí (Live)
+          </button>
         </div>
 
         <div id="tabs-content-anchor" style={{ scrollMarginTop: '80px' }} />
@@ -1486,27 +1757,30 @@ export default function TripDetailPage() {
                     </p>
 
                     <div className={styles.categoryProgressBar}>
-                      <div className={styles.catProgressSeg} style={{ width: '42%', background: '#6366F1' }} />
-                      <div className={styles.catProgressSeg} style={{ width: '38%', background: '#F59E0B' }} />
-                      <div className={styles.catProgressSeg} style={{ width: '20%', background: '#10B981' }} />
+                      <div className={styles.catProgressSeg} style={{ width: `${activeStats.sightPct}%`, background: '#6366F1' }} />
+                      <div className={styles.catProgressSeg} style={{ width: `${activeStats.foodPct}%`, background: '#F59E0B' }} />
+                      <div className={styles.catProgressSeg} style={{ width: `${activeStats.transportPct}%`, background: '#10B981' }} />
+                      {activeStats.otherPct > 0 && (
+                        <div className={styles.catProgressSeg} style={{ width: `${activeStats.otherPct}%`, background: '#0284C7' }} />
+                      )}
                     </div>
 
                     <div className={styles.categoryLegendGrid}>
                       <div className={styles.catLegendItem}>
                         <span className={styles.catLegendDot} style={{ background: '#6366F1' }} />
-                        <span>Vé tham quan: 42%</span>
+                        <span>Vé tham quan: {activeStats.sightPct}%</span>
                       </div>
                       <div className={styles.catLegendItem}>
                         <span className={styles.catLegendDot} style={{ background: '#F59E0B' }} />
-                        <span>Ẩm thực: 38%</span>
+                        <span>Ẩm thực: {activeStats.foodPct}%</span>
                       </div>
                       <div className={styles.catLegendItem}>
                         <span className={styles.catLegendDot} style={{ background: '#10B981' }} />
-                        <span>Di chuyển: 20%</span>
+                        <span>Di chuyển: {activeStats.transportPct}%</span>
                       </div>
                       <div className={styles.catLegendItem}>
                         <span className={styles.catLegendDot} style={{ background: '#0284C7' }} />
-                        <span>Dịch vụ khác</span>
+                        <span>Dịch vụ khác: {activeStats.otherPct}%</span>
                       </div>
                     </div>
                   </div>
@@ -1880,6 +2154,8 @@ export default function TripDetailPage() {
                                       type="button"
                                       className={`${styles.btnCheckIn} ${isDone ? styles.btnCheckInDone : ''}`}
                                       onClick={() => toggleCheckActivity(act.id, act.title)}
+                                      title={!isTripMember ? 'Cần tham gia nhóm để check-in' : undefined}
+                                      style={!isTripMember ? { opacity: 0.75, cursor: 'not-allowed' } : undefined}
                                     >
                                       <Check size={13} />
                                       <span>{isDone ? 'Đã vi vu 🌸' : 'Check-in'}</span>
@@ -1998,13 +2274,27 @@ export default function TripDetailPage() {
                 const avatar = typeof m === 'object' && m?.avatar ? m.avatar : name.slice(0, 2).toUpperCase();
                 const color = typeof m === 'object' && m?.color ? m.color : (idx % 2 === 0 ? '#0284c7' : '#10b981');
                 const role = typeof m === 'object' && m?.role ? m.role : (idx === 0 ? 'Trưởng nhóm' : 'Thành viên');
+                const isMe = Boolean(
+                  currentUser && (
+                    (m.userId && currentUser.id && m.userId === currentUser.id) ||
+                    (m.email && currentUser.email && m.email.toLowerCase() === currentUser.email.toLowerCase()) ||
+                    (currentUser.displayName && name.trim().toLowerCase() === currentUser.displayName.trim().toLowerCase())
+                  )
+                );
                 return (
                   <div key={idx} className={styles.memberCard}>
                     <div className={styles.memberAvatarCircle} style={{ background: color }}>
                       {avatar}
                     </div>
                     <div className={styles.memberInfo}>
-                      <h4 className={styles.memberName}>{name}</h4>
+                      <h4 className={styles.memberName}>
+                        {name}
+                        {isMe && (
+                          <span style={{ marginLeft: 8, fontSize: '13px', fontWeight: 600, color: '#0284c7' }}>
+                            (Bạn)
+                          </span>
+                        )}
+                      </h4>
                       <span className={styles.memberRole}>{role}</span>
                     </div>
                   </div>
@@ -2449,6 +2739,15 @@ export default function TripDetailPage() {
               </div>
             ))}
           </div>
+        )}
+
+        {/* TAB 5: GROUP MAP, LIVE MEMBER LOCATIONS & MEETUP POINTS (TV5) */}
+        {activeTab === 'group-map' && (
+          <GroupMapTab
+            tripId={trip.id}
+            tripTitle={trip.title}
+            defaultDestination={trip.destination}
+          />
         )}
       </main>
 

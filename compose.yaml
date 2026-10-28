@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:17-alpine
+    image: pgvector/pgvector:pg17
     restart: unless-stopped
     environment:
       POSTGRES_DB: vista
@@ -15,5 +15,14 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+  ollama:
+    image: ollama/ollama:latest
+    profiles: ["local-ai"]
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:11434:11434"
+    volumes:
+      - vista_ollama:/root/.ollama
 volumes:
   vista_postgres:
+  vista_ollama:
