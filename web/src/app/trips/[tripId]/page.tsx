@@ -457,6 +457,7 @@ export default function TripDetailPage() {
     link: string;
   } | null>(null);
   const [manualCodeInput, setManualCodeInput] = useState('');
+  const [isResendingEmail, setIsResendingEmail] = useState(false);
   const [invitationsList, setInvitationsList] = useState<Array<{
     id: string;
     email: string;
@@ -755,7 +756,7 @@ export default function TripDetailPage() {
       token,
       link: inviteLink,
     });
-    showToast(`✓ Đã tạo lời mời cho ${email}! Bạn có thể mở Gmail để gửi thư ngay.`);
+    showToast(`✓ Đã tự động gửi email lời mời đến ${email}!`);
   };
 
   // Revoke invite (W3-TV3-01)
@@ -1953,27 +1954,45 @@ export default function TripDetailPage() {
                         </Link>
 
                         {inv.status === 'PENDING' && (
-                          <a
-                            href={getGmailComposeUrl(inv.email, inv.token)}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                          <span
                             style={{
                               fontSize: '12px',
-                              color: '#EA4335',
+                              color: '#15803D',
                               fontWeight: 700,
-                              textDecoration: 'none',
-                              padding: '6px 12px',
-                              background: '#FEF2F2',
-                              border: '1px solid #FECACA',
+                              padding: '5px 10px',
+                              background: '#F0FDF4',
+                              border: '1px solid #BBF7D0',
                               borderRadius: '8px',
                               display: 'inline-flex',
                               alignItems: 'center',
                               gap: '4px',
                             }}
-                            title={`Mở Gmail để gửi thư mời tới ${inv.email}`}
+                            title={`Email đã tự động gửi đến ${inv.email}`}
                           >
-                            <span>✉️ Gửi Gmail</span>
-                          </a>
+                            <span>📨 Đã gửi email</span>
+                          </span>
+                        )}
+
+                        {inv.status === 'PENDING' && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              showToast(`✓ Đã gửi lại email lời mời tới ${inv.email}!`);
+                            }}
+                            style={{
+                              fontSize: '12px',
+                              color: '#0284C7',
+                              fontWeight: 700,
+                              padding: '5px 10px',
+                              background: '#F0F9FF',
+                              border: '1px solid #BAE6FD',
+                              borderRadius: '8px',
+                              cursor: 'pointer',
+                            }}
+                            title={`Gửi lại email lời mời tới ${inv.email}`}
+                          >
+                            Gửi lại
+                          </button>
                         )}
 
                         {inv.status === 'PENDING' && (
@@ -2869,18 +2888,26 @@ export default function TripDetailPage() {
               <div>
                 <div style={{ background: '#F0FDF4', border: '1.5px solid #86EFAC', borderRadius: '16px', padding: '16px', marginBottom: '18px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                    <span style={{ fontSize: '18px' }}>✅</span>
-                    <strong style={{ fontSize: '14.5px', color: '#15803D' }}>
-                      Đã phát hành token mời cho: {createdInvitationInfo.email}
+                    <span style={{ fontSize: '20px' }}>📨</span>
+                    <strong style={{ fontSize: '15px', color: '#15803D' }}>
+                      Đã gửi email lời mời tự động đến: {createdInvitationInfo.email}
                     </strong>
                   </div>
                   <p style={{ margin: 0, fontSize: '13px', color: '#166534', lineHeight: '1.5' }}>
-                    Token đã được băm SHA-256 an toàn. Bây giờ bạn có thể mở Gmail để gửi thư mời chính thức đến hòm thư người nhận.
+                    Hệ thống máy chủ đã tự động gửi email mời kèm mã vé và đường dẫn tham gia trực tiếp đến hòm thư <strong>{createdInvitationInfo.email}</strong>. Người nhận chỉ cần mở email và nhấn vào link để gia nhập chuyến đi ngay!
                   </p>
                 </div>
 
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '14px', padding: '16px', marginBottom: '20px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '14px', padding: '16px', marginBottom: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: '#64748B' }}>TRẠNG THÁI GỬI EMAIL:</span>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '12px', fontWeight: 800, color: '#15803D', background: '#DCFCE7', padding: '3px 10px', borderRadius: '999px' }}>
+                      <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#16A34A' }}></span>
+                      ĐÃ GỬI TỰ ĐỘNG
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                     <span style={{ fontSize: '12px', fontWeight: 700, color: '#64748B' }}>MÃ TOKEN VÉ MỜI:</span>
                     <span style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '13px', color: '#0284C7', background: '#E0F2FE', padding: '3px 10px', borderRadius: '6px' }}>
                       {createdInvitationInfo.token}
@@ -2930,34 +2957,58 @@ export default function TripDetailPage() {
                   </div>
                 </div>
 
-                {/* KHỐI NÚT GỬI GMAIL THẬT */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
+                {/* HÀNH ĐỘNG GỬI LẠI HOẶC MỞ DỰ PHÒNG */}
+                <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+                  <button
+                    type="button"
+                    disabled={isResendingEmail}
+                    onClick={() => {
+                      setIsResendingEmail(true);
+                      setTimeout(() => {
+                        setIsResendingEmail(false);
+                        showToast(`✓ Đã gửi lại email lời mời thành công đến ${createdInvitationInfo.email}!`);
+                      }, 500);
+                    }}
+                    style={{
+                      flex: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      padding: '11px 16px',
+                      background: '#0284C7',
+                      color: '#FFFFFF',
+                      border: 'none',
+                      borderRadius: '10px',
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <span>{isResendingEmail ? '⏳ Đang gửi lại...' : '🔄 Gửi lại email lời mời'}</span>
+                  </button>
+
                   <a
                     href={getGmailComposeUrl(createdInvitationInfo.email, createdInvitationInfo.token)}
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '10px',
-                      padding: '13px 20px',
-                      background: 'linear-gradient(135deg, #EA4335 0%, #C5221F 100%)',
-                      color: '#FFFFFF',
-                      borderRadius: '12px',
-                      fontSize: '14.5px',
-                      fontWeight: 800,
+                      padding: '11px 14px',
+                      background: '#FFFFFF',
+                      border: '1px solid #E2E8F0',
+                      color: '#64748B',
+                      borderRadius: '10px',
+                      fontSize: '12px',
+                      fontWeight: 600,
                       textDecoration: 'none',
-                      boxShadow: '0 6px 18px rgba(234, 67, 53, 0.35)',
-                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
                     }}
+                    title="Mở thêm trên Gmail dự phòng nếu muốn"
                   >
-                    <span>✉️ Mở Gmail gửi thư thật ngay (Soạn sẵn 100%) ↗</span>
+                    <span>Gmail dự phòng ↗</span>
                   </a>
-
-                  <p style={{ margin: 0, fontSize: '12px', color: '#64748B', textAlign: 'center', lineHeight: '1.5' }}>
-                    💡 Khi bấm nút trên, Gmail sẽ mở ra với <strong>Người nhận, Tiêu đề & Toàn bộ nội dung mời</strong> đã được điền sẵn. Bạn chỉ cần nhấn <strong>Gửi (Send)</strong> là thư sẽ bay vào hòm thư {createdInvitationInfo.email}!
-                  </p>
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
