@@ -316,6 +316,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/trips/{tripId}/itinerary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lấy lịch trình chính thức của chuyến đi */
+        get: operations["getTripItinerary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/trips/{tripId}/itinerary/merge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Thêm hoặc cập nhật hoạt động theo ngày và vị trí, không xóa dữ liệu ngoài request */
+        post: operations["mergeTripItinerary"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/map/destinations": {
         parameters: {
             query?: never;
@@ -751,6 +785,52 @@ export interface components {
             sortOrder: number;
             note?: string | null;
         };
+        MergeItineraryRequest: {
+            days: {
+                dayNumber: number;
+                activities: {
+                    /** Format: uuid */
+                    destinationId?: string;
+                    customStopName?: string;
+                    /** Format: time */
+                    startTime?: string;
+                    /** Format: time */
+                    endTime?: string;
+                    sortOrder: number;
+                    note?: string;
+                    /** @enum {string} */
+                    source: "AI_LOCAL" | "AI_GEMINI" | "AI_OFFLINE" | "MANUAL";
+                }[];
+            }[];
+        };
+        ItineraryResponse: {
+            /** Format: uuid */
+            tripId: string;
+            days: {
+                /** Format: uuid */
+                id: string;
+                dayNumber: number;
+                /** Format: date */
+                tripDate: string;
+                /** Format: int64 */
+                version: number;
+                activities: {
+                    /** Format: uuid */
+                    id: string;
+                    /** Format: uuid */
+                    destinationId?: string | null;
+                    destinationName?: string | null;
+                    customStopName?: string | null;
+                    startTime?: string | null;
+                    endTime?: string | null;
+                    sortOrder: number;
+                    note?: string | null;
+                    source: string;
+                    /** Format: int64 */
+                    version: number;
+                }[];
+            }[];
+        };
         TripMemberInfo: {
             /** Format: uuid */
             userId: string;
@@ -852,6 +932,7 @@ export interface components {
             /** Format: date-time */
             occurredAt: string;
             status?: string;
+            version?: number;
             splits: components["schemas"]["ExpenseSplitResponse"][];
         };
         TripExpenseSummaryResponse: {
@@ -876,6 +957,20 @@ export interface components {
             budgetLevel: string;
             estimatedTotalCost: number;
             isMockData: boolean;
+            /** @enum {string} */
+            provider: "local" | "gemini" | "deterministic" | "unknown";
+            fallbackUsed: boolean;
+            citations: {
+                sourceType: string;
+                /** Format: uuid */
+                sourceId: string;
+                title: string;
+                /** Format: uuid */
+                chunkId: string;
+                /** @enum {string} */
+                retrievalMethod: "HYBRID";
+                score: number;
+            }[];
             days: {
                 dayNumber: number;
                 dateLabel: string;
@@ -1728,6 +1823,59 @@ export interface operations {
             401: components["responses"]["Problem"];
             403: components["responses"]["Problem"];
             429: components["responses"]["Problem"];
+        };
+    };
+    getTripItinerary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tripId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Lịch trình hiện tại */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItineraryResponse"];
+                };
+            };
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
+        };
+    };
+    mergeTripItinerary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tripId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MergeItineraryRequest"];
+            };
+        };
+        responses: {
+            /** @description Lịch trình sau khi merge */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItineraryResponse"];
+                };
+            };
+            400: components["responses"]["Problem"];
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
         };
     };
     tv5ListMapDestinations: {

@@ -801,7 +801,6 @@ export function TripBudgetScreen({
                           fromName: 'Quốc Bảo',
                           toName: 'Vân Anh',
                           amount: 3000000,
-                          bankAccount: '0984838888 (MB Bank)',
                         })
                       }
                       activeOpacity={0.85}
@@ -854,7 +853,6 @@ export function TripBudgetScreen({
                           fromName: 'Minh Thư',
                           toName: 'Vân Anh',
                           amount: 1000000,
-                          bankAccount: '0984838888 (MB Bank)',
                         })
                       }
                       activeOpacity={0.85}
@@ -907,7 +905,6 @@ export function TripBudgetScreen({
                           fromName: 'Minh Thư',
                           toName: 'Hoàng Nam',
                           amount: 500000,
-                          bankAccount: '0984838888 (MB Bank)',
                         })
                       }
                       activeOpacity={0.85}

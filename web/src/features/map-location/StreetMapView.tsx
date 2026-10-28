@@ -202,33 +202,51 @@ export function MapViewAdapter(props: MapViewAdapterProps) {
       geometry: { type: 'LineString', coordinates: path.map((p) => [p.lng, p.lat]) },
     };
 
-    const source = map.getSource('vista-route') as GeoJSONSource | undefined;
-    if (source) {
-      source.setData(data);
-    } else {
-      map.addSource('vista-route', { type: 'geojson', data });
+    let cancelled = false;
+    const stopMarkers: maplibre.Marker[] = [];
 
-      // Outer casing line for high contrast
-      map.addLayer({
-        id: 'vista-route-casing',
-        type: 'line',
-        source: 'vista-route',
-        layout: { 'line-cap': 'round', 'line-join': 'round' },
-        paint: { 'line-color': '#ffffff', 'line-width': 8, 'line-opacity': 0.9 },
-      });
+    const applyRoute = () => {
+      if (cancelled || !mapRef.current) return;
+      if (!map.isStyleLoaded()) {
+        map.once('styledata', applyRoute);
+        return;
+      }
 
-      // Main route polyline
-      map.addLayer({
-        id: 'vista-route-line',
-        type: 'line',
-        source: 'vista-route',
-        layout: { 'line-cap': 'round', 'line-join': 'round' },
-        paint: { 'line-color': '#0284c7', 'line-width': 5, 'line-opacity': 0.95 },
-      });
-    }
+      try {
+        const source = map.getSource('vista-route') as GeoJSONSource | undefined;
+        if (source) {
+          source.setData(data);
+        } else {
+          map.addSource('vista-route', { type: 'geojson', data });
+
+          if (!map.getLayer('vista-route-casing')) {
+            map.addLayer({
+              id: 'vista-route-casing',
+              type: 'line',
+              source: 'vista-route',
+              layout: { 'line-cap': 'round', 'line-join': 'round' },
+              paint: { 'line-color': '#ffffff', 'line-width': 8, 'line-opacity': 0.9 },
+            });
+          }
+
+          if (!map.getLayer('vista-route-line')) {
+            map.addLayer({
+              id: 'vista-route-line',
+              type: 'line',
+              source: 'vista-route',
+              layout: { 'line-cap': 'round', 'line-join': 'round' },
+              paint: { 'line-color': '#0284c7', 'line-width': 5, 'line-opacity': 0.95 },
+            });
+          }
+        }
+      } catch (err) {
+        console.warn('Deferred adding route source/layer:', err);
+      }
+    };
+
+    applyRoute();
 
     // Render Stop Markers (A, B, C, D...)
-    const stopMarkers: maplibre.Marker[] = [];
     if (props.routeStops && props.routeStops.length > 0) {
       props.routeStops.forEach((stop) => {
         const el = document.createElement('div');
@@ -267,11 +285,19 @@ export function MapViewAdapter(props: MapViewAdapterProps) {
     map.fitBounds(bounds, { padding: { top: 80, right: 65, bottom: 200, left: 60 }, maxZoom: 15 });
 
     return () => {
+      cancelled = true;
+      map.off('styledata', applyRoute);
       stopMarkers.forEach((marker) => marker.remove());
       if (mapRef.current === map) {
-        if (map.getLayer('vista-route-line')) map.removeLayer('vista-route-line');
-        if (map.getLayer('vista-route-casing')) map.removeLayer('vista-route-casing');
-        if (map.getSource('vista-route')) map.removeSource('vista-route');
+        try {
+          if (map.isStyleLoaded()) {
+            if (map.getLayer('vista-route-line')) map.removeLayer('vista-route-line');
+            if (map.getLayer('vista-route-casing')) map.removeLayer('vista-route-casing');
+            if (map.getSource('vista-route')) map.removeSource('vista-route');
+          }
+        } catch {
+          // ignore cleanup on style change
+        }
       }
     };
   }, [props.routeGeometry, props.routeStops, status]);

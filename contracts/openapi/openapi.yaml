@@ -593,6 +593,55 @@ paths:
           $ref: '#/components/responses/Problem'
         '429':
           $ref: '#/components/responses/Problem'
+
+  /trips/{tripId}/itinerary:
+    get:
+      tags: [Itinerary]
+      security: [{ bearerAuth: [] }]
+      operationId: getTripItinerary
+      summary: Lấy lịch trình chính thức của chuyến đi
+      parameters:
+        - in: path
+          name: tripId
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Lịch trình hiện tại
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItineraryResponse'
+        '401': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
+
+  /trips/{tripId}/itinerary/merge:
+    post:
+      tags: [Itinerary]
+      security: [{ bearerAuth: [] }]
+      operationId: mergeTripItinerary
+      summary: Thêm hoặc cập nhật hoạt động theo ngày và vị trí, không xóa dữ liệu ngoài request
+      parameters:
+        - in: path
+          name: tripId
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MergeItineraryRequest'
+      responses:
+        '200':
+          description: Lịch trình sau khi merge
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItineraryResponse'
+        '400': { $ref: '#/components/responses/Problem' }
+        '401': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
   /map/destinations:
     $ref: "./tv5-week1.yaml#/paths/~1map~1destinations"
   /posts:
@@ -835,6 +884,70 @@ components:
         sortOrder: { type: integer }
         note: { type: [string, 'null'] }
 
+    MergeItineraryRequest:
+      type: object
+      additionalProperties: false
+      required: [days]
+      properties:
+        days:
+          type: array
+          minItems: 1
+          maxItems: 14
+          items:
+            type: object
+            additionalProperties: false
+            required: [dayNumber, activities]
+            properties:
+              dayNumber: { type: integer, minimum: 1, maximum: 14 }
+              activities:
+                type: array
+                minItems: 1
+                maxItems: 20
+                items:
+                  type: object
+                  additionalProperties: false
+                  required: [sortOrder, source]
+                  properties:
+                    destinationId: { type: string, format: uuid }
+                    customStopName: { type: string, maxLength: 200 }
+                    startTime: { type: string, format: time }
+                    endTime: { type: string, format: time }
+                    sortOrder: { type: integer, minimum: 0, maximum: 100 }
+                    note: { type: string, maxLength: 2000 }
+                    source: { type: string, enum: [AI_LOCAL, AI_GEMINI, AI_OFFLINE, MANUAL] }
+
+    ItineraryResponse:
+      type: object
+      required: [tripId, days]
+      properties:
+        tripId: { type: string, format: uuid }
+        days:
+          type: array
+          items:
+            type: object
+            required: [id, dayNumber, tripDate, version, activities]
+            properties:
+              id: { type: string, format: uuid }
+              dayNumber: { type: integer }
+              tripDate: { type: string, format: date }
+              version: { type: integer, format: int64 }
+              activities:
+                type: array
+                items:
+                  type: object
+                  required: [id, sortOrder, source, version]
+                  properties:
+                    id: { type: string, format: uuid }
+                    destinationId: { type: [string, 'null'], format: uuid }
+                    destinationName: { type: [string, 'null'] }
+                    customStopName: { type: [string, 'null'] }
+                    startTime: { type: [string, 'null'] }
+                    endTime: { type: [string, 'null'] }
+                    sortOrder: { type: integer }
+                    note: { type: [string, 'null'] }
+                    source: { type: string }
+                    version: { type: integer, format: int64 }
+
     TripMemberInfo:
       type: object
       required: [userId, displayName, role, status]
@@ -946,6 +1059,7 @@ components:
         category: { type: [string, 'null'] }
         occurredAt: { type: string, format: date-time }
         status: { type: string }
+        version: { type: integer }
         splits:
           type: array
           items:
@@ -976,13 +1090,27 @@ components:
 
     AiItinerarySuggestionResponse:
       type: object
-      required: [destinationProvince, totalDays, budgetLevel, estimatedTotalCost, isMockData, days]
+      required: [destinationProvince, totalDays, budgetLevel, estimatedTotalCost, isMockData, days, provider, fallbackUsed, citations]
       properties:
         destinationProvince: { type: string }
         totalDays: { type: integer }
         budgetLevel: { type: string }
         estimatedTotalCost: { type: number }
         isMockData: { type: boolean }
+        provider: { type: string, enum: [local, gemini, deterministic, unknown] }
+        fallbackUsed: { type: boolean }
+        citations:
+          type: array
+          items:
+            type: object
+            required: [sourceType, sourceId, title, chunkId, retrievalMethod, score]
+            properties:
+              sourceType: { type: string }
+              sourceId: { type: string, format: uuid }
+              title: { type: string }
+              chunkId: { type: string, format: uuid }
+              retrievalMethod: { type: string, enum: [HYBRID] }
+              score: { type: number }
         days:
           type: array
           items:

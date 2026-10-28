@@ -589,7 +589,7 @@ export const VIETNAM_MAP_PINS: MapPin[] = [
     "coords": "13.7800° N, 109.2200° E",
     "tagline": "Con đường ven biển đẹp ngỡ ngàng & Bãi biển Maldives Việt Nam",
     "description": "Thiên đường biển hoang sơ Kỳ Co với làn nước hai màu trong vắt, Eo Gió hùng vĩ đón gió đại dương và Trung tâm Khám phá Khoa học ExploraScience.",
-    "image": "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=1200&q=80",
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80",
     "ticketPrice": "100.000đ (Vé Kỳ Co ca nô)",
     "openHours": "07:00 – 18:00",
     "recommendedTime": "Tháng 3 – Tháng 9 mùa nắng vàng biển ngọc",

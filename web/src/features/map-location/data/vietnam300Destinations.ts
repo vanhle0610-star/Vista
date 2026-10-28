@@ -85,7 +85,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 60000,
     "priceMax": 60000,
     "openingHours": "07:30-17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://chammuseum.vn"
   },
   {
@@ -113,7 +113,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00-23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://danangfantasticity.com/cau-tinh-yeu"
   },
   {
@@ -127,7 +127,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 450000,
     "priceMax": 650000,
     "openingHours": "08:30-17:30",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://nuithantai.com"
   },
   {
@@ -141,7 +141,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00-23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://danangfantasticity.com/deo-hai-van"
   },
   {
@@ -197,7 +197,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 150000,
     "priceMax": 150000,
     "openingHours": "07:00-17:30",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://hueworldheritage.org.vn"
   },
   {
@@ -211,7 +211,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 150000,
     "priceMax": 150000,
     "openingHours": "07:00-17:30",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://hueworldheritage.org.vn"
   },
   {
@@ -225,7 +225,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "06:00-18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://khamphahue.com.vn/cho-dong-ba"
   },
   {
@@ -239,7 +239,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00-23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://khamphahue.com.vn/cau-truong-tien"
   },
   {
@@ -253,7 +253,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "06:00-18:30",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://khamphahue.com.vn/doi-vong-canh"
   },
   {
@@ -267,7 +267,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:00-18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://khamphahue.com.vn/lang-huong-thuy-xuan"
   },
   {
@@ -281,7 +281,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:00-17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://khamphahue.com.vn/quoc-hoc-hue"
   },
   {
@@ -323,7 +323,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 120000,
     "priceMax": 120000,
     "openingHours": "08:30-17:45",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://hoianworldheritage.org.vn"
   },
   {
@@ -337,7 +337,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 120000,
     "priceMax": 120000,
     "openingHours": "07:00-18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://hoianworldheritage.org.vn"
   },
   {
@@ -351,7 +351,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 150000,
     "priceMax": 300000,
     "openingHours": "07:00-17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://hoianworldheritage.org.vn"
   },
   {
@@ -365,7 +365,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 35000,
     "priceMax": 35000,
     "openingHours": "08:00-17:30",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://thanhhapottery.com"
   },
   {
@@ -379,7 +379,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 35000,
     "priceMax": 35000,
     "openingHours": "07:00-18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://hoianworldheritage.org.vn"
   },
   {
@@ -393,7 +393,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00-23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://hoianworldheritage.org.vn"
   },
   {
@@ -477,7 +477,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 70000,
     "priceMax": 70000,
     "openingHours": "08:00-17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://hoangthanhthanglong.vn"
   },
   {
@@ -505,7 +505,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00-23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://hanoi.gov.vn"
   },
   {
@@ -519,7 +519,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30-18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://hanoi.gov.vn"
   },
   {
@@ -533,7 +533,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 50000,
     "priceMax": 50000,
     "openingHours": "08:00-17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://hoalo.vn"
   },
   {
@@ -547,7 +547,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "08:00-17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://hanoiopera.org.vn"
   },
   {
@@ -561,7 +561,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00-23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://hanoi.gov.vn"
   },
   {
@@ -603,7 +603,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30-18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://visithcmc.vn"
   },
   {
@@ -631,7 +631,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 40000,
     "openingHours": "07:30-17:30",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://baotangchungtichchientranh.vn"
   },
   {
@@ -645,7 +645,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00-23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://visithcmc.vn"
   },
   {
@@ -659,7 +659,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 90000,
     "priceMax": 125000,
     "openingHours": "07:00-17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://diadaocuchi.com.vn"
   },
   {
@@ -673,7 +673,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "08:00-18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://visithcmc.vn"
   },
   {
@@ -701,7 +701,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 30000,
     "openingHours": "closed",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://baotanghochiminh.vn"
   },
   {
@@ -715,7 +715,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00-23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://dalat.lamdong.gov.vn"
   },
   {
@@ -729,7 +729,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 50000,
     "priceMax": 100000,
     "openingHours": "07:00-17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://dalat.lamdong.gov.vn"
   },
   {
@@ -743,7 +743,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30-17:30",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://dalat.lamdong.gov.vn"
   },
   {
@@ -757,7 +757,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 50000,
     "priceMax": 200000,
     "openingHours": "07:30-17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://dalat.lamdong.gov.vn"
   },
   {
@@ -771,7 +771,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 10000,
     "priceMax": 150000,
     "openingHours": "07:00-18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://dalat.lamdong.gov.vn"
   },
   {
@@ -799,7 +799,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 40000,
     "openingHours": "closed",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://baotangquangninh.org.vn"
   },
   {
@@ -813,7 +813,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 350000,
     "openingHours": "06:00-18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://yentu.gov.vn"
   },
   {
@@ -827,7 +827,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 350000,
     "openingHours": "07:00-21:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://halongbay.com.vn"
   },
   {
@@ -841,7 +841,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 350000,
     "priceMax": 750000,
     "openingHours": "09:00-19:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://halong.sunworld.vn"
   },
   {
@@ -855,7 +855,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/dai-quan-sat-lotte-center-ha-noi/"
   },
   {
@@ -869,7 +869,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/cot-co-ha-noi-ky-dai/"
   },
   {
@@ -883,7 +883,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/bao-tang-chien-thang-b52/"
   },
   {
@@ -897,7 +897,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/bao-tang-gom-bat-trang/"
   },
   {
@@ -911,7 +911,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/bao-tang-ho-chi-minh-ha-noi/"
   },
   {
@@ -925,7 +925,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/temple-of-literature-van-mieu-quoc-tu-giam/"
   },
   {
@@ -939,7 +939,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/ho-chi-minh-mausoleum-complex-mausoleum-presidential-palace-stilt-house-one-pillar-pagoda/"
   },
   {
@@ -953,7 +953,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/hoan-kiem-lake-hanoi-old-quarter/"
   },
   {
@@ -967,7 +967,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/perfume-pagoda-chua-huong/"
   },
   {
@@ -981,7 +981,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/do-son-beach/"
   },
   {
@@ -995,7 +995,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/con-son-kiep-bac-historical-relic-site/"
   },
   {
@@ -1009,7 +1009,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/lan-ha-bay/"
   },
   {
@@ -1023,7 +1023,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/cat-ba-archipelago/"
   },
   {
@@ -1037,7 +1037,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/du-hang-pagoda/"
   },
   {
@@ -1051,7 +1051,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/nha-hat-lon-hai-phong/"
   },
   {
@@ -1065,7 +1065,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/bao-tang-hai-phong/"
   },
   {
@@ -1079,7 +1079,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/thap-tuong-long-do-son-hai-phong-pagoda/"
   },
   {
@@ -1093,7 +1093,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/bach-moc-luong-tu-ky-quan-san-peak/"
   },
   {
@@ -1107,7 +1107,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/rong-may-glass-bridge/"
   },
   {
@@ -1121,7 +1121,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/pu-sam-cap-cave-complex/"
   },
   {
@@ -1135,7 +1135,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/sin-ho-plateau/"
   },
   {
@@ -1149,7 +1149,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/sin-suoi-ho-village/"
   },
   {
@@ -1163,7 +1163,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/muong-than-fields/"
   },
   {
@@ -1177,7 +1177,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/tu-le-valley/"
   },
   {
@@ -1191,7 +1191,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/sa-pa-town/"
   },
   {
@@ -1205,7 +1205,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/mu-cang-chai-rice-terraces/"
   },
   {
@@ -1289,7 +1289,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/hoang-lien-van-ban-nature-reserve/"
   },
   {
@@ -1303,7 +1303,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/trekking-ta-chi-nhu/"
   },
   {
@@ -1317,7 +1317,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/pha-din-pass/"
   },
   {
@@ -1331,7 +1331,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/muong-phang-campaign-command-post/"
   },
   {
@@ -1345,7 +1345,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/dien-bien-phu-battlefield-relic-complex/"
   },
   {
@@ -1359,7 +1359,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/dien-bien-phu-victory-museum/"
   },
   {
@@ -1373,7 +1373,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/a-pa-chai-westernmost-point-of-vietnam/"
   },
   {
@@ -1387,7 +1387,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/pa-khoang-lake/"
   },
   {
@@ -1401,7 +1401,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/nha-tu-son-la/"
   },
   {
@@ -1415,7 +1415,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/heart-shaped-tea-hill/"
   },
   {
@@ -1429,7 +1429,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/ta-xua-cloud-hunting-area/"
   },
   {
@@ -1443,7 +1443,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/moc-chau-national-tourist-area/"
   },
   {
@@ -1457,7 +1457,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/bach-long-glass-bridge-moc-chau-island/"
   },
   {
@@ -1471,7 +1471,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/hang-tau-hmong-village-son-la/"
   },
   {
@@ -1485,7 +1485,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/vuon-hoa-cam-tu-cau-moc-chau-son-la/"
   },
   {
@@ -1499,7 +1499,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/doi-moc-chau-son-la-cave/"
   },
   {
@@ -1513,7 +1513,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/nguom-ngao-cave/"
   },
   {
@@ -1541,7 +1541,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/angel-eye-mountain/"
   },
   {
@@ -1555,7 +1555,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/khuoi-ky-stone-village/"
   },
   {
@@ -1569,7 +1569,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/pac-bo-historical-site/"
   },
   {
@@ -1583,7 +1583,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/phia-den-nguyen-binh-cao-bang/"
   },
   {
@@ -1597,7 +1597,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/dong-dang-huu-nghi-border-gate/"
   },
   {
@@ -1611,7 +1611,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/mac-dynasty-citadel-to-thi-mountain/"
   },
   {
@@ -1625,7 +1625,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/bac-son-valley/"
   },
   {
@@ -1639,7 +1639,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/mau-son-mountain-resort/"
   },
   {
@@ -1653,7 +1653,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/tam-thanh-nhi-thanh-cave-complex/"
   },
   {
@@ -1667,7 +1667,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/hoang-su-phi-rice-terraces/"
   },
   {
@@ -1681,7 +1681,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/na-hang-lam-binh-ecotourism-area/"
   },
   {
@@ -1709,7 +1709,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/ma-pi-leng-pass-nho-que-river-tu-san-canyon/"
   },
   {
@@ -1723,7 +1723,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/ma-pi-leng-pass-nho-que-river-tu-san-canyon/"
   },
   {
@@ -1737,7 +1737,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/tan-trao-historical-relic-site/"
   },
   {
@@ -1751,7 +1751,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/hmong-king-s-palace-vuong-family-residence/"
   },
   {
@@ -1765,7 +1765,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/lung-cu-flag-tower/"
   },
   {
@@ -1779,7 +1779,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/dong-van-karst-plateau-town/"
   },
   {
@@ -1793,7 +1793,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/van-hoa-du-lich-lung-cam-dong-van-ha-giang-village/"
   },
   {
@@ -1807,7 +1807,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/tan-cuong-tea-hill/"
   },
   {
@@ -1821,7 +1821,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/nui-coc-lake-widow-island-ba-goa-islet/"
   },
   {
@@ -1835,7 +1835,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/ba-be-lake-pac-ngoi-village/"
   },
   {
@@ -1849,7 +1849,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/museum-of-cultures-of-vietnam-s-ethnic-groups/"
   },
   {
@@ -1863,7 +1863,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/dinh-hoa-atk-revolutionary-safety-zone/"
   },
   {
@@ -1877,7 +1877,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/hung-kings-temple-historical-relic-site/"
   },
   {
@@ -1891,7 +1891,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/xuan-son-national-park/"
   },
   {
@@ -1905,7 +1905,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/truc-lam-tay-thien-zen-monastery-tay-thien-mandala-great-stupa/"
   },
   {
@@ -1919,7 +1919,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/tam-dao-town-hill-station/"
   },
   {
@@ -1933,7 +1933,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/mai-chau-valley-lac-pom-coong-villages/"
   },
   {
@@ -1947,7 +1947,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/hoa-binh-lake-tourist-area/"
   },
   {
@@ -1961,7 +1961,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/bao-tang-hung-vuong-viet-tri/"
   },
   {
@@ -1975,7 +1975,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/da-trang-7ball-tan-lac-hoa-binh-mountain-pass/"
   },
   {
@@ -1989,7 +1989,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/den-do-temple/"
   },
   {
@@ -2003,7 +2003,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/dong-ho-folk-painting-village/"
   },
   {
@@ -2017,7 +2017,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/tay-yen-tu-spiritual-ecological-area/"
   },
   {
@@ -2031,7 +2031,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/tho-ha-ancient-village/"
   },
   {
@@ -2045,7 +2045,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/but-thap-pagoda/"
   },
   {
@@ -2059,7 +2059,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/chu-dong-tu-temple/"
   },
   {
@@ -2073,7 +2073,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/pho-hien-historic-relic-complex/"
   },
   {
@@ -2087,7 +2087,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/keo-pagoda/"
   },
   {
@@ -2101,7 +2101,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/xuan-thuy-national-park/"
   },
   {
@@ -2129,7 +2129,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/tam-coc-bich-dong-three-caves/"
   },
   {
@@ -2143,7 +2143,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/tam-coc-bich-dong-three-caves/"
   },
   {
@@ -2157,7 +2157,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/tam-chuc-pagoda/"
   },
   {
@@ -2171,7 +2171,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/phat-diem-cathedral/"
   },
   {
@@ -2185,7 +2185,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/hoa-lu-ancient-capital/"
   },
   {
@@ -2199,7 +2199,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/mua-cave-viewpoint/"
   },
   {
@@ -2213,7 +2213,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/bai-dinh-pagoda/"
   },
   {
@@ -2227,7 +2227,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/ma-tien-yen-mo-ninh-binh-cave/"
   },
   {
@@ -2241,7 +2241,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 450000,
     "priceMax": 950000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/sun-world-ha-long/"
   },
   {
@@ -2255,7 +2255,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/co-to-island/"
   },
   {
@@ -2269,7 +2269,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/yen-tu-scenic-mountain-pagoda-complex/"
   },
   {
@@ -2283,7 +2283,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/bai-tu-long-bay/"
   },
   {
@@ -2297,7 +2297,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/binh-lieu-border-run-dinosaur-spine-ridge/"
   },
   {
@@ -2311,7 +2311,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/suoi-tam-dong-trieu-quang-ninh-pagoda/"
   },
   {
@@ -2325,7 +2325,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/van-trieu-yen-hung-quang-ninh-pagoda/"
   },
   {
@@ -2339,7 +2339,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/vo-cuc-van-don-quang-ninh-hill/"
   },
   {
@@ -2353,7 +2353,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/ba-cua-cam-pha-quang-ninh-temple/"
   },
   {
@@ -2367,7 +2367,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/cam-luong-holy-fish-stream/"
   },
   {
@@ -2381,7 +2381,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/pu-luong-nature-reserve-kho-muong-village/"
   },
   {
@@ -2395,7 +2395,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/pu-luong-nature-reserve-kho-muong-village/"
   },
   {
@@ -2409,7 +2409,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/lam-kinh-historical-site/"
   },
   {
@@ -2423,7 +2423,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/ho-citadel-unesco-world-heritage-site/"
   },
   {
@@ -2437,7 +2437,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/sam-son-hai-tien-beaches/"
   },
   {
@@ -2451,7 +2451,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/sam-son-hai-tien-beaches/"
   },
   {
@@ -2465,7 +2465,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/bao-tang-tinh-thanh-hoa/"
   },
   {
@@ -2479,7 +2479,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 450000,
     "priceMax": 950000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/sun-world-sam-son/"
   },
   {
@@ -2493,7 +2493,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/doi-kho-muong-ba-thuoc-thanh-hoa-cave/"
   },
   {
@@ -2507,7 +2507,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/ong-hoang-muoi-temple-lam-river/"
   },
   {
@@ -2521,7 +2521,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/thanh-chuong-tea-hill-islet-lake/"
   },
   {
@@ -2535,7 +2535,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/muong-long-heaven-gate/"
   },
   {
@@ -2549,7 +2549,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/pu-mat-national-park-western-nghe-an-biosphere-reserve/"
   },
   {
@@ -2563,7 +2563,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/kim-lien-relic-site-sen-village-president-ho-chi-minh-s-hometown/"
   },
   {
@@ -2577,7 +2577,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/cua-lo-beach-lan-chau-island/"
   },
   {
@@ -2591,7 +2591,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/cua-lo-beach-lan-chau-island/"
   },
   {
@@ -2605,7 +2605,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/quang-truong-ho-chi-minh-vinh/"
   },
   {
@@ -2619,7 +2619,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/bao-tang-xo-viet-nghe-tinh/"
   },
   {
@@ -2633,7 +2633,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 450000,
     "priceMax": 950000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/muong-thanh-safari-dien-lam-nghe-an/"
   },
   {
@@ -2647,7 +2647,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/thien-cam-beach/"
   },
   {
@@ -2661,7 +2661,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/dong-loc-t-junction-historical-relic-site/"
   },
   {
@@ -2675,7 +2675,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/nguyen-du-memorial-site/"
   },
   {
@@ -2689,7 +2689,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/hoanh-son-pass-gate-ngang-pass/"
   },
   {
@@ -2703,7 +2703,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/huong-tich-pagoda-ha-tinh/"
   },
   {
@@ -2717,7 +2717,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/truong-bat-thach-ha-ha-tinh-temple/"
   },
   {
@@ -2731,7 +2731,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/xuan-hai-beach-2/"
   },
   {
@@ -2745,7 +2745,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/vu-quang-national-park/"
   },
   {
@@ -2759,7 +2759,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/son-kim-hot-spring-ecotourism-area/"
   },
   {
@@ -2773,7 +2773,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/ke-go-lake/"
   },
   {
@@ -2787,7 +2787,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/phong-nha-town-cluster-phong-nha-cave-dark-cave-mooc-spring-bong-lai-valley/"
   },
   {
@@ -2801,7 +2801,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/phong-nha-town-cluster-phong-nha-cave-dark-cave-mooc-spring-bong-lai-valley/"
   },
   {
@@ -2815,7 +2815,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/phong-nha-town-cluster-phong-nha-cave-dark-cave-mooc-spring-bong-lai-valley/"
   },
   {
@@ -2829,7 +2829,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/paradise-cave-thien-duong-cave/"
   },
   {
@@ -2843,7 +2843,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/dong-hoi-coastal-cluster-nhat-le-beach-quang-phu-sand-dunes-dong-hoi-citadel/"
   },
   {
@@ -2857,7 +2857,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/dong-hoi-coastal-cluster-nhat-le-beach-quang-phu-sand-dunes-dong-hoi-citadel/"
   },
   {
@@ -2871,7 +2871,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/quang-tri-dmz-vinh-moc-tunnels-hien-luong-bridge-khe-sanh-route-9/"
   },
   {
@@ -2885,7 +2885,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/quang-tri-dmz-vinh-moc-tunnels-hien-luong-bridge-khe-sanh-route-9/"
   },
   {
@@ -2899,7 +2899,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/quang-tri-dmz-vinh-moc-tunnels-hien-luong-bridge-khe-sanh-route-9/"
   },
   {
@@ -2913,7 +2913,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/quang-tri-ancient-citadel-thach-han-river-17th-parallel/"
   },
   {
@@ -2927,7 +2927,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/bao-tang-co-vat-cung-dinh-hue-dien-long-an/"
   },
   {
@@ -2955,7 +2955,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/tam-giang-lagoon-cluster-tam-giang-lagoon-ru-cha-mangrove-thuan-an-beach/"
   },
   {
@@ -2969,7 +2969,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/tam-giang-lagoon-cluster-tam-giang-lagoon-ru-cha-mangrove-thuan-an-beach/"
   },
   {
@@ -2983,7 +2983,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/thien-mu-pagoda-perfume-river/"
   },
   {
@@ -2997,7 +2997,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/complex-of-hue-monuments-unesco-world-heritage-site/"
   },
   {
@@ -3011,7 +3011,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/thuan-an-beach/"
   },
   {
@@ -3025,7 +3025,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/lap-an-lagoon/"
   },
   {
@@ -3053,7 +3053,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/cham-khuong-my-tower/"
   },
   {
@@ -3067,7 +3067,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/mikazuki-365-water-park/"
   },
   {
@@ -3081,7 +3081,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/thien-an-mountain-thien-an-pagoda/"
   },
   {
@@ -3095,7 +3095,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/mang-den-highland-plateau/"
   },
   {
@@ -3109,7 +3109,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/ly-son-island/"
   },
   {
@@ -3137,7 +3137,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/kon-tum-city-cluster-wooden-church-kon-klor-bridge-kon-tum-prison-kon-ktu-village/"
   },
   {
@@ -3151,7 +3151,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/kon-tum-city-cluster-wooden-church-kon-klor-bridge-kon-tum-prison-kon-ktu-village/"
   },
   {
@@ -3165,7 +3165,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/kon-tum-city-cluster-wooden-church-kon-klor-bridge-kon-tum-prison-kon-ktu-village/"
   },
   {
@@ -3179,7 +3179,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/son-my-vestige-area-my-lai-massacre-memorial-site/"
   },
   {
@@ -3193,7 +3193,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/sa-huynh-beach-go-co-ancient-village/"
   },
   {
@@ -3207,7 +3207,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/kon-trang-long-loi-rong-house/"
   },
   {
@@ -3221,7 +3221,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/explorascience-quy-nhon/"
   },
   {
@@ -3235,7 +3235,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/quang-trung-museum-tay-son-gia-lai/"
   },
   {
@@ -3249,7 +3249,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/banh-it-cham-towers/"
   },
   {
@@ -3263,7 +3263,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/ky-co-eo-gio-nhon-ly-hon-kho-coastal-cluster/"
   },
   {
@@ -3277,7 +3277,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/ky-co-eo-gio-nhon-ly-hon-kho-coastal-cluster/"
   },
   {
@@ -3291,7 +3291,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/ky-co-eo-gio-nhon-ly-hon-kho-coastal-cluster/"
   },
   {
@@ -3305,7 +3305,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/ghenh-rang-tien-sa-scenic-area/"
   },
   {
@@ -3319,7 +3319,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/bien-ho-sea-lake-t-nung-crater-lake/"
   },
   {
@@ -3333,7 +3333,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/chu-dang-ya-volcano/"
   },
   {
@@ -3347,7 +3347,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/bao-tang-tong-hop-binh-dinh-quy-nhon/"
   },
   {
@@ -3361,7 +3361,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/diep-son-island/"
   },
   {
@@ -3375,7 +3375,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/vinh-hy-bay-hang-rai-nui-chua-national-park/"
   },
   {
@@ -3389,7 +3389,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/vinh-hy-bay-hang-rai-nui-chua-national-park/"
   },
   {
@@ -3403,7 +3403,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/vinh-hy-bay-hang-rai-nui-chua-national-park/"
   },
   {
@@ -3417,7 +3417,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/po-klong-garai-cham-towers/"
   },
   {
@@ -3431,7 +3431,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/po-nagar-cham-towers-mud-bath-area/"
   },
   {
@@ -3445,7 +3445,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/nha-trang-bay-hon-mun-island-hopping/"
   },
   {
@@ -3459,7 +3459,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/mui-dinh-nam-cuong-sand-dunes/"
   },
   {
@@ -3473,7 +3473,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/mui-dinh-nam-cuong-sand-dunes/"
   },
   {
@@ -3487,7 +3487,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/hon-tre-island-vinwonders-nha-trang/"
   },
   {
@@ -3501,7 +3501,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/bau-trang-bau-sen-white-sand-dunes-freshwater-lake/"
   },
   {
@@ -3515,7 +3515,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/bau-trang-bau-sen-white-sand-dunes-freshwater-lake/"
   },
   {
@@ -3529,7 +3529,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/mui-ne-phan-thiet-beach-red-sand-dunes/"
   },
   {
@@ -3543,7 +3543,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/ta-dung-lake-ha-long-bay-of-the-central-highlands/"
   },
   {
@@ -3557,7 +3557,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/pongour-waterfall-cluster-duc-trong/"
   },
   {
@@ -3571,7 +3571,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/linh-phuoc-pagoda-bottle-pagoda-trai-mat/"
   },
   {
@@ -3585,7 +3585,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/da-lat-city-center-lakes-waterfalls/"
   },
   {
@@ -3599,7 +3599,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/tuyet-tinh-coc-ho-nuoc-xanh-bao-loc/"
   },
   {
@@ -3613,7 +3613,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/hon-rom/"
   },
   {
@@ -3627,7 +3627,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/tuy-hoa-heritage-cluster-mang-lang-church-nhan-tower/"
   },
   {
@@ -3641,7 +3641,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/tuy-hoa-heritage-cluster-mang-lang-church-nhan-tower/"
   },
   {
@@ -3669,7 +3669,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/bai-xep-beach-mui-dien-dai-lanh-cape-phu-yen/"
   },
   {
@@ -3683,7 +3683,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/bai-xep-beach-mui-dien-dai-lanh-cape-phu-yen/"
   },
   {
@@ -3697,7 +3697,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/yok-don-national-park-buon-don-elephant-heritage-village/"
   },
   {
@@ -3711,7 +3711,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/serepok-waterfalls-cluster-dray-nur-dray-sap-gia-long-kuop-community-village/"
   },
   {
@@ -3725,7 +3725,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/lak-lake-jun-mnong-village/"
   },
   {
@@ -3739,7 +3739,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/buon-ma-thuot-cluster-the-world-coffee-museum-ako-dhong-ede-village/"
   },
   {
@@ -3753,7 +3753,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/buon-ma-thuot-cluster-the-world-coffee-museum-ako-dhong-ede-village/"
   },
   {
@@ -3767,7 +3767,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/lac-canh-dai-nam-van-hien-binh-duong/"
   },
   {
@@ -3781,7 +3781,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/bao-tang-biet-dong-sai-gon-gia-dinh/"
   },
   {
@@ -3795,7 +3795,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/landmark-81-skyview-observation-deck-ho-chi-minh/"
   },
   {
@@ -3809,7 +3809,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/thao-cam-vien-sai-gon/"
   },
   {
@@ -3823,7 +3823,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/con-dao-national-park-prison-relic-complex/"
   },
   {
@@ -3837,7 +3837,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/vung-tau-city-cluster-front-beach-back-beach-christ-the-king-statue-lighthouse-bach-dinh-villa/"
   },
   {
@@ -3851,7 +3851,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/cu-chi-tunnels/"
   },
   {
@@ -3865,7 +3865,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/ba-ra-mountain/"
   },
   {
@@ -3879,7 +3879,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/soc-bom-bo-s-tieng-cultural-conservation-site/"
   },
   {
@@ -3893,7 +3893,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/tran-bien-temple-of-literature-first-temple-of-literature-in-southern-vietnam/"
   },
   {
@@ -3907,7 +3907,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/buu-long-scenic-area-lakes-rock-formations-pagodas/"
   },
   {
@@ -3921,7 +3921,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/tri-an-lake-camping-sup-on-the-dong-nai-river/"
   },
   {
@@ -3935,7 +3935,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/cat-tien-national-park-unesco-biosphere-reserve/"
   },
   {
@@ -3949,7 +3949,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/ba-hao-lake/"
   },
   {
@@ -3963,7 +3963,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/dao-o-tourist-area/"
   },
   {
@@ -3977,7 +3977,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/troi-waterfall/"
   },
   {
@@ -3991,7 +3991,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/vuon-xoai-tourist-area/"
   },
   {
@@ -4005,7 +4005,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/tan-lap-floating-village-melaleuca-forest/"
   },
   {
@@ -4019,7 +4019,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/trang-bang-rice-paper-village-dew-wetted-rice-paper/"
   },
   {
@@ -4033,7 +4033,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/lo-go-xa-mat-national-park/"
   },
   {
@@ -4047,7 +4047,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/tay-ninh-holy-see-cao-dai-temple/"
   },
   {
@@ -4061,7 +4061,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 450000,
     "priceMax": 950000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/ba-den-mountain-sun-world-ba-den-pagoda-complex/"
   },
   {
@@ -4075,7 +4075,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/long-chau-pagoda/"
   },
   {
@@ -4089,7 +4089,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/happyland-ben-luc-long-an-tourist-area/"
   },
   {
@@ -4103,7 +4103,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/dat-ngap-nuoc-lang-sen-conservation-area/"
   },
   {
@@ -4117,7 +4117,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/vam-nhut-tao-historical-site-complex/"
   },
   {
@@ -4131,7 +4131,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/canh-dong-bat-tan-tourist-area/"
   },
   {
@@ -4145,7 +4145,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/som-rong-pagoda-giant-reclining-buddha-khmer-garden/"
   },
   {
@@ -4159,7 +4159,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/soc-trang-khmer-pagoda-cluster-bat-clay-khleang-pagodas/"
   },
   {
@@ -4173,7 +4173,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/soc-trang-khmer-pagoda-cluster-bat-clay-khleang-pagodas/"
   },
   {
@@ -4187,7 +4187,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/soc-trang-khmer-pagoda-cluster-bat-clay-khleang-pagodas/"
   },
   {
@@ -4201,7 +4201,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/binh-thuy-ancient-house-colonial-villa-l-amant-film-location/"
   },
   {
@@ -4215,7 +4215,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/con-son-islet-orchard-homestay-community-tourism/"
   },
   {
@@ -4229,7 +4229,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/ninh-kieu-wharf-cai-rang-floating-market/"
   },
   {
@@ -4243,7 +4243,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "06:00 - 18:30",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/ninh-kieu-wharf-cai-rang-floating-market/"
   },
   {
@@ -4257,7 +4257,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/can-tho-city-museum/"
   },
   {
@@ -4271,7 +4271,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "06:00 - 18:30",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/vi-thanh-hau-giang-market/"
   },
   {
@@ -4285,7 +4285,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/ben-tre-coconut-canals-tien-river-four-sacred-islets-tour/"
   },
   {
@@ -4299,7 +4299,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/ba-dong-beach-quiet-beach-of-tra-vinh/"
   },
   {
@@ -4313,7 +4313,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/ba-om-pond-ang-pagoda-khmer-temple-complex/"
   },
   {
@@ -4327,7 +4327,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/ba-om-pond-ang-pagoda-khmer-temple-complex/"
   },
   {
@@ -4341,7 +4341,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/mang-thit-brick-pottery-village-red-kiln-kingdom/"
   },
   {
@@ -4355,7 +4355,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "06:00 - 18:30",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/tra-on-floating-market-last-floating-market-on-the-hau-river/"
   },
   {
@@ -4369,7 +4369,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/bao-tang-van-hoa-dan-toc-khmer-tra-vinh/"
   },
   {
@@ -4383,7 +4383,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/bung-islet/"
   },
   {
@@ -4397,7 +4397,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/vinh-sang-tourist-area/"
   },
   {
@@ -4411,7 +4411,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/thien-vien-truc-lam-tra-vinh/"
   },
   {
@@ -4425,7 +4425,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/xeo-quyt-relic-area-cajuput-forest-war-time-base/"
   },
   {
@@ -4439,7 +4439,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/tram-chim-national-park-ramsar-wetland-sarus-crane-sanctuary/"
   },
   {
@@ -4453,7 +4453,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/sa-dec-flower-village-flower-capital-of-the-mekong-delta/"
   },
   {
@@ -4467,7 +4467,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/huynh-thuy-le-ancient-house-the-lover-house-in-sa-dec/"
   },
   {
@@ -4481,7 +4481,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/my-tho-thoi-son-islet-cai-be-floating-market-classic-mekong-day-trip/"
   },
   {
@@ -4495,7 +4495,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/miet-vuon-cai-be-tien-giang/"
   },
   {
@@ -4509,7 +4509,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/go-cong-royal-mausoleum/"
   },
   {
@@ -4523,7 +4523,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/le-quang-xoat-ancient-house-dong-thap/"
   },
   {
@@ -4537,7 +4537,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/di-tich-lich-su-rach-gam-xoai-mut/"
   },
   {
@@ -4551,7 +4551,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/nguyen-sinh-sac-cao-lanh-dong-thap-historical-site/"
   },
   {
@@ -4565,7 +4565,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/vinwonders-phu-quoc/"
   },
   {
@@ -4579,7 +4579,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/tra-su-cajuput-forest/"
   },
   {
@@ -4593,7 +4593,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/ta-pa-rice-fields-sacred-seven-mountains-landscape/"
   },
   {
@@ -4607,7 +4607,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/chau-doc-sam-mountain-spiritual-border-town/"
   },
   {
@@ -4621,7 +4621,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/ha-tien-coastal-cave-town/"
   },
   {
@@ -4635,7 +4635,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/nam-du-archipelago-hon-son-island/"
   },
   {
@@ -4649,7 +4649,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/nam-du-archipelago-hon-son-island/"
   },
   {
@@ -4663,7 +4663,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/southern-phu-quoc-an-thoi-archipelago/"
   },
   {
@@ -4677,7 +4677,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/bao-tang-coi-nguon-phu-quoc/"
   },
   {
@@ -4691,7 +4691,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/cung-dien-hai-vuong-thuy-cung-vinwonders-phu-quoc/"
   },
   {
@@ -4705,7 +4705,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/u-minh-ha-national-park-peat-swamp-forest/"
   },
   {
@@ -4733,7 +4733,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/mui-ca-mau-biosphere-cluster-cape-nam-can-mangrove-khai-long-beach/"
   },
   {
@@ -4747,7 +4747,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/mui-ca-mau-biosphere-cluster-cape-nam-can-mangrove-khai-long-beach/"
   },
   {
@@ -4761,7 +4761,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/cong-tu-bac-lieu-heritage-house-prince-of-bac-lieu-house/"
   },
   {
@@ -4775,7 +4775,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/bac-lieu-coastal-cluster-wind-farm-xiem-can-khmer-pagoda/"
   },
   {
@@ -4789,7 +4789,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/dien-gio-bac-lieu-fields/"
   },
   {
@@ -4803,7 +4803,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/hoa-rung-u-minh-ca-mau-tourist-area/"
   },
   {
@@ -4817,7 +4817,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/vuon-nhan-co-tren-tram-tuoi-vinh-trach-dong-bac-lieu/"
   },
   {
@@ -4831,7 +4831,7 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80",
+    "thumbnailUrl": "",
     "sourceUrl": "https://govietnam.travel/destination/hung-thien-pagoda/"
   }
 ];

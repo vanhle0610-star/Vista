@@ -758,6 +758,8 @@
   border-bottom: 2px solid #E2E8F0;
   margin-bottom: 28px;
   overflow-x: auto;
+  position: relative;
+  z-index: 20;
 }
 
 .tabBtn {
@@ -769,8 +771,10 @@
   font-weight: 700;
   cursor: pointer;
   position: relative;
-  transition: color 0.2s;
+  transition: all 0.2s;
   white-space: nowrap;
+  pointer-events: auto;
+  user-select: none;
 }
 
 .tabBtn:hover {

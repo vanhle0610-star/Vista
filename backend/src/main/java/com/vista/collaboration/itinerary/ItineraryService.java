@@ -1,14 +1,21 @@
 package com.vista.collaboration.itinerary;
 
+import com.vista.budget.infrastructure.ExpenseRepository;
 import com.vista.collaboration.exception.ConflictException;
 import com.vista.collaboration.exception.ResourceNotFoundException;
+import com.vista.destination.domain.Destination;
+import com.vista.destination.repository.DestinationRepository;
+import com.vista.notification.application.NotificationService;
+import com.vista.notification.domain.NotificationType;
 import com.vista.trip.application.TripAccessService;
 import com.vista.trip.domain.TripEntity;
 import com.vista.trip.domain.TripRepository;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,16 +27,34 @@ public class ItineraryService {
   private final ItineraryItemRepository itemRepository;
   private final TripAccessService tripAccessService;
   private final TripRepository tripRepository;
+  private final NotificationService notificationService;
+  private final DestinationRepository destinationRepository;
+  private final ExpenseRepository expenseRepository;
+
+  @Autowired
+  public ItineraryService(
+      ItineraryDayRepository dayRepository,
+      ItineraryItemRepository itemRepository,
+      TripAccessService tripAccessService,
+      TripRepository tripRepository,
+      @Autowired(required = false) NotificationService notificationService,
+      @Autowired(required = false) DestinationRepository destinationRepository,
+      @Autowired(required = false) ExpenseRepository expenseRepository) {
+    this.dayRepository = dayRepository;
+    this.itemRepository = itemRepository;
+    this.tripAccessService = tripAccessService;
+    this.tripRepository = tripRepository;
+    this.notificationService = notificationService;
+    this.destinationRepository = destinationRepository;
+    this.expenseRepository = expenseRepository;
+  }
 
   public ItineraryService(
       ItineraryDayRepository dayRepository,
       ItineraryItemRepository itemRepository,
       TripAccessService tripAccessService,
       TripRepository tripRepository) {
-    this.dayRepository = dayRepository;
-    this.itemRepository = itemRepository;
-    this.tripAccessService = tripAccessService;
-    this.tripRepository = tripRepository;
+    this(dayRepository, itemRepository, tripAccessService, tripRepository, null, null, null);
   }
 
   // -- Itinerary Days ----------------------------------------------------
@@ -40,13 +65,16 @@ public class ItineraryService {
 
     if (dayRepository.existsByTripIdAndDayNumber(tripId, request.getDayNumber())) {
       throw new ConflictException(
-          "Ng\u00e0y s\u1ed1 "
+          "Ngày số "
               + request.getDayNumber()
-              + " \u0111\u00e3 t\u1ed3n t\u1ea1i trong l\u1ecbch tr\u00ecnh chuy\u1ebfn \u0111i");
+              + " đã tồn tại trong lịch trình chuyến đi");
     }
 
     ItineraryDay day = new ItineraryDay(tripId, request.getDayNumber(), request.getTripDate());
-    return ItineraryDayResponse.from(dayRepository.save(day));
+    ItineraryDay saved = dayRepository.save(day);
+
+    notifyTripMembers(tripId, "Lịch trình đã thay đổi", "Một ngày mới đã được thêm vào lịch trình", userId);
+    return ItineraryDayResponse.from(saved);
   }
 
   @Transactional(readOnly = true)
@@ -75,7 +103,13 @@ public class ItineraryService {
             request.getNote(),
             userId);
 
-    return ItineraryItemResponse.from(itemRepository.save(item));
+    ItineraryItem saved = itemRepository.save(item);
+    notifyTripMembers(
+        day.getTripId(),
+        "Lịch trình đã thay đổi",
+        "Điểm dừng \"" + stopLabel(saved) + "\" đã được thêm vào lịch trình",
+        userId);
+    return ItineraryItemResponse.from(saved);
   }
 
   public ItineraryItemResponse updateItem(
@@ -89,7 +123,7 @@ public class ItineraryService {
       long expected = request.getExpectedUpdatedAt().toEpochMilli();
       if (actual != expected) {
         throw new ConflictException(
-            "D\u1eef li\u1ec7u l\u1ecbch tr\u00ecnh \u0111\u00e3 b\u1ecb c\u1eadp nh\u1eadt b\u1edfi ng\u01b0\u1eddi kh\u00e1c (xung \u0111\u1ed9t phi\u00ean b\u1ea3n)");
+            "Dữ liệu lịch trình đã bị cập nhật bởi người khác (xung đột phiên bản)");
       }
     }
 
@@ -102,13 +136,27 @@ public class ItineraryService {
     item.setUpdatedBy(userId);
     item.setUpdatedAt(Instant.now());
 
-    return ItineraryItemResponse.from(itemRepository.save(item));
+    ItineraryItem saved = itemRepository.save(item);
+    notifyTripMembers(
+        item.getDay().getTripId(),
+        "Lịch trình đã thay đổi",
+        "Điểm dừng \"" + stopLabel(saved) + "\" đã được cập nhật",
+        userId);
+    return ItineraryItemResponse.from(saved);
   }
 
   public void deleteItem(UUID itemId, UUID userId) {
     ItineraryItem item = findItemOrThrow(itemId);
-    tripAccessService.requireMember(item.getDay().getTripId(), userId);
+    UUID tripId = item.getDay().getTripId();
+    tripAccessService.requireMember(tripId, userId);
+    String label = stopLabel(item);
     itemRepository.delete(item);
+
+    notifyTripMembers(
+        tripId,
+        "Lịch trình đã thay đổi",
+        "Điểm dừng \"" + label + "\" đã được xóa khỏi lịch trình",
+        userId);
   }
 
   // -- W3-TV3-03: Sap xep lai thu tu diem dung trong 1 ngay ----------------
@@ -120,8 +168,7 @@ public class ItineraryService {
 
     List<UUID> orderedIds = request.orderedItemIds();
     if (orderedIds == null || orderedIds.isEmpty()) {
-      throw new ConflictException(
-          "Danh s\u00e1ch th\u1ee9 t\u1ef1 kh\u00f4ng \u0111\u01b0\u1ee3c r\u1ed7ng");
+      throw new ConflictException("Danh sách thứ tự không được rỗng");
     }
 
     for (int i = 0; i < orderedIds.size(); i++) {
@@ -132,10 +179,10 @@ public class ItineraryService {
               .orElseThrow(
                   () ->
                       new ResourceNotFoundException(
-                          "Kh\u00f4ng t\u00ecm th\u1ea5y \u0111i\u1ec3m d\u1eebng: " + itemId));
+                          "Không tìm thấy điểm dừng: " + itemId));
       if (!item.getDay().getId().equals(dayId)) {
         throw new ConflictException(
-            "\u0110i\u1ec3m d\u1eebng " + itemId + " kh\u00f4ng thu\u1ed9c ng\u00e0y " + dayId);
+            "Điểm dừng " + itemId + " không thuộc ngày " + dayId);
       }
       item.setSortOrder(i);
       item.setUpdatedBy(userId);
@@ -143,12 +190,63 @@ public class ItineraryService {
       itemRepository.save(item);
     }
 
+    notifyTripMembers(
+        day.getTripId(),
+        "Lịch trình đã thay đổi",
+        "Thứ tự các điểm dừng trong ngày đã được sắp xếp lại",
+        userId);
+
     return itemRepository.findByDayIdOrderBySortOrderAsc(dayId).stream()
         .map(ItineraryItemResponse::from)
         .toList();
   }
 
-  // -- W4-TV3-04: Validate lich trinh so bo --------------------------------
+  // -- W5-TV3-04: Luu goi y AI vao lich trinh (Diem tich hop TV4) -----------
+
+  public ItineraryItemResponse createAiItem(
+      UUID tripId, UUID userId, CreateAiItineraryItemRequest request, boolean confirmedParam) {
+    boolean isConfirmed = confirmedParam || (request.getConfirmed() != null && request.getConfirmed());
+    if (!isConfirmed) {
+      throw new IllegalArgumentException(
+          "Chưa xác nhận gợi ý AI - yêu cầu confirmed = true để lưu vào lịch trình");
+    }
+
+    tripAccessService.requireMember(tripId, userId);
+    ItineraryDay day = findDayOrThrow(request.getDayId());
+    if (!day.getTripId().equals(tripId)) {
+      throw new ConflictException("Ngày lịch trình " + request.getDayId() + " không thuộc chuyến đi " + tripId);
+    }
+
+    if (request.getStartTime() != null
+        && request.getEndTime() != null
+        && !request.getEndTime().isAfter(request.getStartTime())) {
+      throw new IllegalArgumentException("Giờ kết thúc phải sau giờ bắt đầu");
+    }
+
+    ItineraryItem item =
+        new ItineraryItem(
+            day,
+            request.getDestinationId(),
+            request.getCustomStopName(),
+            request.getStartTime(),
+            request.getEndTime(),
+            request.getSortOrder(),
+            request.getNote(),
+            userId);
+    item.setSource("AI_SUGGESTED");
+
+    ItineraryItem saved = itemRepository.save(item);
+
+    notifyTripMembers(
+        tripId,
+        "Lịch trình đã thay đổi",
+        "Gợi ý AI \"" + stopLabel(saved) + "\" đã được thêm vào lịch trình",
+        userId);
+
+    return ItineraryItemResponse.from(saved);
+  }
+
+  // -- W4-TV3-04 & W5-TV3-01: Validate lich trinh + canh bao ngan sach ------
 
   @Transactional(readOnly = true)
   public List<ItineraryValidationWarning> validateItinerary(UUID tripId, UUID userId) {
@@ -160,11 +258,12 @@ public class ItineraryService {
             .orElseThrow(
                 () ->
                     new ResourceNotFoundException(
-                        "Kh\u00f4ng t\u00ecm th\u1ea5y chuy\u1ebfn \u0111i: " + tripId));
+                        "Không tìm thấy chuyến đi: " + tripId));
 
     List<ItineraryDay> days = dayRepository.findByTripIdOrderByDayNumberAsc(tripId);
     List<ItineraryValidationWarning> warnings = new ArrayList<>();
 
+    // 1. Kiểm tra ngày ngoài khoảng chuyến đi và trùng giờ
     for (ItineraryDay day : days) {
       if (day.getTripDate() != null) {
         if (day.getTripDate().isBefore(trip.getStartDate())
@@ -174,11 +273,11 @@ public class ItineraryService {
                   "OUT_OF_TRIP_DATE",
                   day.getId(),
                   null,
-                  "Ng\u00e0y "
+                  "Ngày "
                       + day.getTripDate()
-                      + " (ng\u00e0y "
+                      + " (ngày "
                       + day.getDayNumber()
-                      + ") n\u1eb1m ngo\u00e0i kho\u1ea3ng chuy\u1ebfn \u0111i "
+                      + ") nằm ngoài khoảng chuyến đi "
                       + trip.getStartDate()
                       + " - "
                       + trip.getEndDate()));
@@ -201,11 +300,11 @@ public class ItineraryService {
                   "INVALID_TIME_RANGE",
                   day.getId(),
                   item.getId(),
-                  "\u0110i\u1ec3m d\u1eebng \""
+                  "Điểm dừng \""
                       + stopLabel(item)
-                      + "\" c\u00f3 gi\u1edd k\u1ebft th\u00fac ("
+                      + "\" có giờ kết thúc ("
                       + item.getEndTime()
-                      + ") kh\u00f4ng sau gi\u1edd b\u1eaft \u0111\u1ea7u ("
+                      + ") không sau giờ bắt đầu ("
                       + item.getStartTime()
                       + ")"));
         }
@@ -226,13 +325,13 @@ public class ItineraryService {
                     "TIME_OVERLAP",
                     day.getId(),
                     a.getId(),
-                    "\u0110i\u1ec3m d\u1eebng \""
+                    "Điểm dừng \""
                         + stopLabel(a)
                         + "\" ("
                         + a.getStartTime()
                         + "-"
                         + a.getEndTime()
-                        + ") ch\u1ed3ng gi\u1edd v\u1edbi \""
+                        + ") chồng giờ với \""
                         + stopLabel(b)
                         + "\" ("
                         + b.getStartTime()
@@ -243,7 +342,93 @@ public class ItineraryService {
         }
       }
     }
+
+    // 2. W5-TV3-01: Kiểm tra cảnh báo ngân sách
+    if (trip.getBudgetTotal() != null && trip.getBudgetTotal().compareTo(BigDecimal.ZERO) > 0) {
+      BigDecimal totalExpenses =
+          expenseRepository != null ? expenseRepository.sumAmountByTripId(tripId) : BigDecimal.ZERO;
+      if (totalExpenses == null) totalExpenses = BigDecimal.ZERO;
+
+      BigDecimal runningTotal = totalExpenses;
+      boolean budgetWarningEmitted = false;
+
+      if (runningTotal.compareTo(trip.getBudgetTotal()) > 0) {
+        BigDecimal excess = runningTotal.subtract(trip.getBudgetTotal());
+        warnings.add(
+            new ItineraryValidationWarning(
+                "BUDGET_EXCEEDED",
+                null,
+                null,
+                "Tổng chi phí phát sinh thực tế ("
+                    + runningTotal
+                    + " "
+                    + trip.getCurrency()
+                    + ") đã vượt ngân sách chuyến ("
+                    + trip.getBudgetTotal()
+                    + " "
+                    + trip.getCurrency()
+                    + "), vượt "
+                    + excess
+                    + " "
+                    + trip.getCurrency()));
+        budgetWarningEmitted = true;
+      }
+
+      for (ItineraryDay day : days) {
+        List<ItineraryItem> items = itemRepository.findByDayIdOrderBySortOrderAsc(day.getId());
+        for (ItineraryItem item : items) {
+          BigDecimal stopCost = BigDecimal.ZERO;
+          if (item.getDestinationId() != null && destinationRepository != null) {
+            var destOpt = destinationRepository.findById(item.getDestinationId());
+            if (destOpt.isPresent()) {
+              Destination d = destOpt.get();
+              if (d.getPriceMax() != null) {
+                stopCost = d.getPriceMax();
+              } else if (d.getPriceMin() != null) {
+                stopCost = d.getPriceMin();
+              }
+            }
+          }
+          runningTotal = runningTotal.add(stopCost);
+          if (!budgetWarningEmitted && runningTotal.compareTo(trip.getBudgetTotal()) > 0) {
+            BigDecimal excess = runningTotal.subtract(trip.getBudgetTotal());
+            warnings.add(
+                new ItineraryValidationWarning(
+                    "BUDGET_EXCEEDED",
+                    day.getId(),
+                    item.getId(),
+                    "Tổng chi phí dự kiến lịch trình ("
+                        + runningTotal
+                        + " "
+                        + trip.getCurrency()
+                        + ") vượt ngân sách chuyến ("
+                        + trip.getBudgetTotal()
+                        + " "
+                        + trip.getCurrency()
+                        + ") tại điểm dừng \""
+                        + stopLabel(item)
+                        + "\", vượt "
+                        + excess
+                        + " "
+                        + trip.getCurrency()));
+            budgetWarningEmitted = true;
+          }
+        }
+      }
+    }
+
     return warnings;
+  }
+
+  private void notifyTripMembers(UUID tripId, String title, String body, UUID excludeUserId) {
+    if (notificationService != null && tripId != null) {
+      try {
+        notificationService.notifyTripMembers(
+            tripId, title, body, NotificationType.ITINERARY_CHANGED.name(), excludeUserId);
+      } catch (Exception e) {
+        // Log và không chặn luồng chính nếu notification gặp lỗi
+      }
+    }
   }
 
   private static String stopLabel(ItineraryItem item) {
@@ -260,7 +445,7 @@ public class ItineraryService {
         .orElseThrow(
             () ->
                 new ResourceNotFoundException(
-                    "Kh\u00f4ng t\u00ecm th\u1ea5y ng\u00e0y l\u1ecbch tr\u00ecnh v\u1edbi ID: "
+                    "Không tìm thấy ngày lịch trình với ID: "
                         + dayId));
   }
 
@@ -270,7 +455,8 @@ public class ItineraryService {
         .orElseThrow(
             () ->
                 new ResourceNotFoundException(
-                    "Kh\u00f4ng t\u00ecm th\u1ea5y m\u1ee5c l\u1ecbch tr\u00ecnh v\u1edbi ID: "
+                    "Không tìm thấy mục lịch trình với ID: "
                         + itemId));
   }
 }
+

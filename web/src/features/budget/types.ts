@@ -37,6 +37,7 @@ export interface Expense {
   status: string;
   createdAt: string;
   splits: ExpenseSplit[];
+  version?: number;
 }
 
 export interface SuggestedTransfer {

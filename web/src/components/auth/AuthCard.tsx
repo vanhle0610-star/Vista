@@ -15,7 +15,7 @@ const GOOGLE_CLIENT_ID =
   process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
   '577926332144-23qceg2o944n9hg5iv7nai2vr0s9u2d1.apps.googleusercontent.com';
 
-const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1').replace(/\/+$/, '');
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081/api/v1').replace(/\/+$/, '');
 
 const WEAK_PASSWORDS = new Set([
   '1234567890',
@@ -1261,9 +1261,10 @@ export function AuthCard({ isNight, initialMode }: AuthCardProps) {
                     type="button"
                     className="terms-link-btn"
                     onClick={() =>
-                      alert(
-                        'VISTA Global Terms:\n1. Community safety & verified travel guidelines.\n2. Transparent booking and smart trip planning.\n3. Zero data selling, compliant with international privacy standards.'
-                      )
+                      setStatusMsg({
+                        type: 'info',
+                        text: 'Điều khoản VISTA: An toàn cộng đồng, du lịch văn minh, bảo vệ quyền lợi du khách và minh bạch tài chính.',
+                      })
                     }
                   >
                     {t.termsLink}
@@ -1273,9 +1274,10 @@ export function AuthCard({ isNight, initialMode }: AuthCardProps) {
                     type="button"
                     className="terms-link-btn"
                     onClick={() =>
-                      alert(
-                        'VISTA Privacy Policy:\n1. Strict encryption of credentials and tokens.\n2. Location & phone number are strictly used for trip safety and SOS alerts.\n3. Fully GDPR, PDPA & Vietnam Decree 13 compliant.'
-                      )
+                      setStatusMsg({
+                        type: 'info',
+                        text: 'Chính sách bảo mật VISTA: Mã hóa thông tin đăng nhập, bảo vệ vị trí cá nhân theo Nghị định 13/2023/NĐ-CP & GDPR.',
+                      })
                     }
                   >
                     {t.privacyLink}

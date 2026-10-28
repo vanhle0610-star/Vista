@@ -1082,15 +1082,16 @@
   color: #0070BA;
 }
 
-/* ─── MODAL STYLES ───────────────────────────────────────────────────── */
+/* ─── MODAL STYLES (LUXURY & POLISHED) ────────────────────────────────── */
 .modalBackdrop {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(8px);
+  background: rgba(15, 23, 42, 0.68);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   z-index: 2000;
   display: flex;
   align-items: center;
@@ -1100,22 +1101,34 @@
 
 .modalBox {
   background: #FFFFFF;
-  border-radius: 20px;
+  border-radius: 24px;
   max-width: 520px;
   width: 100%;
-  padding: 28px;
-  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.25);
+  padding: 30px 32px 28px;
+  box-shadow:
+    0 24px 64px -12px rgba(15, 23, 42, 0.28),
+    0 0 0 1px rgba(15, 23, 42, 0.06);
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 18px;
   position: relative;
-  animation: modalPopIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  overflow: hidden;
+  animation: modalPopIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.modalTopAccent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: linear-gradient(90deg, #0070BA 0%, #0284C7 35%, #38BDF8 70%, #6366F1 100%);
 }
 
 @keyframes modalPopIn {
   from {
     opacity: 0;
-    transform: scale(0.96) translateY(12px);
+    transform: scale(0.95) translateY(12px);
   }
   to {
     opacity: 1;
@@ -1127,55 +1140,344 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding-right: 44px;
 }
 
-.modalTitle {
-  font-size: 20px;
-  font-weight: 800;
-  color: #0F172A;
-  margin: 0;
+.modalHeaderFancy {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding-right: 44px;
+  margin-top: 2px;
 }
 
-.btnCloseModal {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  border: 1px solid #E2E8F0;
-  background: #F8FAFC;
-  cursor: pointer;
+.modalIconWrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #E0F2FE 0%, #BAE6FD 100%);
+  border: 1px solid rgba(2, 132, 199, 0.25);
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.modalHeaderText {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.modalEyebrow {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.9px;
+  color: #0284C7;
+  text-transform: uppercase;
+}
+
+.modalTitle {
+  font-size: 21px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+.modalDescription {
+  font-size: 13.5px;
   color: #64748B;
-  transition: all 0.2s;
+  margin: 0;
+  line-height: 1.55;
+}
+
+/* Close Button (Dấu X Thoát) */
+.btnCloseModal {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid #E2E8F0;
+  background: #F8FAFC;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  color: #475569;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 10;
+  flex-shrink: 0;
+  outline: none;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+.btnCloseModal svg {
+  width: 18px;
+  height: 18px;
+  stroke: #475569;
+  stroke-width: 2.4;
+  display: block;
+  transition: transform 0.25s ease, stroke 0.2s ease;
 }
 
 .btnCloseModal:hover {
   background: #F1F5F9;
+  border-color: #CBD5E1;
   color: #0F172A;
+  transform: scale(1.08);
+}
+
+.btnCloseModal:hover svg {
+  stroke: #0F172A;
+  transform: rotate(90deg);
+}
+
+.btnCloseModal:active {
+  transform: scale(0.96);
+}
+
+.modalForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .formGroup {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 7px;
 }
 
 .formLabel {
-  font-size: 13.5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12.5px;
   font-weight: 700;
   color: #334155;
+  letter-spacing: 0.3px;
 }
 
-.formInput {
+.formLabelHint {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #94A3B8;
+}
+
+.inputWithIconWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.inputLeadingIcon {
+  position: absolute;
+  left: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.formInputFancy {
+  width: 100%;
+  padding: 13px 44px 13px 44px;
+  border-radius: 12px;
+  border: 1.5px solid #CBD5E1;
+  background: #F8FAFC;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #0F172A;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  outline: none;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+.formInputFancy::placeholder {
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: normal;
+  text-transform: none;
+  color: #94A3B8;
+}
+
+.formInputFancy:focus {
+  background: #FFFFFF;
+  border-color: #0284C7;
+  box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.12);
+}
+
+.inputTrailingClear {
+  position: absolute;
+  right: 12px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: #E2E8F0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  color: #475569;
+  transition: background 0.2s;
+  z-index: 2;
+}
+
+.inputTrailingClear:hover {
+  background: #CBD5E1;
+  color: #0F172A;
+}
+
+.inputTrailingPaste {
+  position: absolute;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid #E2E8F0;
+  background: #FFFFFF;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #0284C7;
+  cursor: pointer;
+  transition: all 0.2s;
+  z-index: 2;
+}
+
+.inputTrailingPaste:hover {
+  background: #F0F9FF;
+  border-color: #BAE6FD;
+}
+
+.quickChipsWrapper {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.quickChipsLabel {
+  font-size: 12px;
+  color: #64748B;
+  font-weight: 600;
+}
+
+.quickChip {
+  border: 1px dashed #CBD5E1;
+  background: #F8FAFC;
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #0070BA;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.quickChip:hover {
+  background: #E0F2FE;
+  border-color: #0070BA;
+  border-style: solid;
+  transform: translateY(-1px);
+}
+
+.securityCallout {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
   padding: 10px 14px;
+  border-radius: 12px;
+  background: #F0F9FF;
+  border: 1px solid #BAE6FD;
+  font-size: 12px;
+  color: #0369A1;
+  line-height: 1.45;
+}
+
+.securityIcon {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.modalActionsRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.btnCancelModal {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid #E2E8F0;
+  background: #F8FAFC;
+  color: #475569;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.btnCancelModal:hover {
+  background: #F1F5F9;
+  border-color: #CBD5E1;
+  color: #0F172A;
+}
+
+.btnSubmitFancy {
+  flex: 2;
+  padding: 12px 20px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #0070BA 0%, #0284C7 100%);
+  color: #FFFFFF;
+  font-size: 14.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 8px 20px -4px rgba(0, 112, 186, 0.4);
+  transition: all 0.2s ease;
+}
+
+.btnSubmitFancy:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -4px rgba(0, 112, 186, 0.5);
+  filter: brightness(1.05);
+}
+
+.btnSubmitFancy:active {
+  transform: translateY(0);
+}
+
+/* Classic Form styles for other modals */
+.formInput {
+  padding: 11px 14px;
   border-radius: 10px;
   border: 1px solid #CBD5E1;
   font-size: 14px;
   color: #0F172A;
   outline: none;
-  transition: border-color 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .formInput:focus {
@@ -1185,18 +1487,139 @@
 
 .btnSubmitForm {
   padding: 12px;
-  background: #0070BA;
+  background: linear-gradient(135deg, #0070BA 0%, #0284C7 100%);
   color: #FFFFFF;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(0, 112, 186, 0.3);
 }
 
 .btnSubmitForm:hover {
-  background: #005A96;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(0, 112, 186, 0.4);
+}
+
+/* ─── CITY & DESTINATION PICKER STYLES ──────────────────────────────── */
+.formSelectFancy {
+  width: 100%;
+  padding: 12px 38px 12px 42px;
+  border-radius: 12px;
+  border: 1.5px solid #CBD5E1;
+  background-color: #F8FAFC;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0F172A;
+  outline: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  box-sizing: border-box;
+}
+
+.formSelectFancy:focus {
+  background-color: #FFFFFF;
+  border-color: #0284C7;
+  box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.12);
+}
+
+.cityChipsContainer {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.cityChip {
+  border: 1px solid #E2E8F0;
+  background: #F8FAFC;
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cityChip:hover {
+  background: #F1F5F9;
+  border-color: #CBD5E1;
+  color: #0070BA;
+  transform: translateY(-1px);
+}
+
+.cityChipActive {
+  border-color: #0070BA !important;
+  background: #E0F2FE !important;
+  color: #0070BA !important;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(0, 112, 186, 0.18);
+}
+
+.cityHintText {
+  font-size: 11.5px;
+  color: #64748B;
+  margin-top: 4px;
+  line-height: 1.45;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.budgetChipsRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.budgetChip {
+  border: 1px solid #E2E8F0;
+  background: #F8FAFC;
+  border-radius: 8px;
+  padding: 6px 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.budgetChip:hover {
+  background: #F1F5F9;
+  color: #0F172A;
+}
+
+.budgetChipActive {
+  border-color: #0070BA;
+  background: #E0F2FE;
+  color: #0070BA;
+  font-weight: 700;
+}
+
+.durationBadgeInline {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #FEF3C7;
+  color: #B45309;
+  font-size: 11.5px;
+  font-weight: 700;
 }
 
 /* Toast */

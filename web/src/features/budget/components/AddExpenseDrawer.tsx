@@ -288,7 +288,18 @@ export function AddExpenseDrawer({
                 {/* Đính kèm hóa đơn */}
                 <div className={styles.formGroup}>
                   <label className={styles.formLabel}>Hình ảnh hóa đơn</label>
-                  <div className={styles.uploadZone} onClick={() => alert('Đã chọn file hóa đơn')}>
+                  <label className={styles.uploadZone} style={{ cursor: 'pointer' }}>
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp,image/heic"
+                      style={{ display: 'none' }}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setNote((prev: string) => prev ? `${prev} (Hóa đơn: ${file.name})` : `Hóa đơn: ${file.name}`);
+                        }
+                      }}
+                    />
                     <div className={styles.uploadIcon}>🖼️</div>
                     <div className={styles.uploadPrompt}>
                       Kéo thả ảnh vào đây hoặc <span className={styles.uploadLink}>Chọn ảnh từ thiết bị</span>
@@ -296,7 +307,7 @@ export function AddExpenseDrawer({
                     <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>
                       Hỗ trợ JPG, PNG, HEIC (tối đa 5MB)
                     </div>
-                  </div>
+                  </label>
                 </div>
 
                 {/* Ghi chú */}

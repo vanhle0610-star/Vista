@@ -10,6 +10,10 @@ public class CastVoteRequest {
 
   public CastVoteRequest() {}
 
+  public CastVoteRequest(String vote) {
+    this.vote = vote;
+  }
+
   public String getVote() {
     return vote;
   }

@@ -33,6 +33,9 @@ import {
   Crown,
   Info,
   Lock,
+  ArrowRight,
+  Clipboard,
+  KeyRound,
 } from 'lucide-react';
 import { Navbar } from '@/components/common/Navbar';
 import {
@@ -65,7 +68,7 @@ interface TripItem {
   budgetSpent: number;
   progressPercent: number;
   members: TripMember[];
-  image: string;
+  image?: string;
   treasuryPath: string;
   rating?: number;
   alertType?: 'AMBER' | 'BLUE' | 'COMPLETED';
@@ -91,6 +94,87 @@ function getStoredUser(): StoredUser | null {
     return null;
   }
 }
+
+const DEFAULT_DEMO_TRIPS: TripItem[] = [
+  {
+    id: 'trip-danang-2026',
+    title: 'Khám phá Đà Nẵng - Hội An 4N3Đ',
+    destination: 'Đà Nẵng & Quảng Nam',
+    durationBadge: '4 ngày 3 đêm',
+    startDate: '15/11',
+    endDate: '18/11/2026',
+    status: 'PLANNING',
+    role: 'OWNER',
+    budgetTotal: 18500000,
+    budgetSpent: 5200000,
+    progressPercent: 35,
+    members: [
+      { name: 'Quý Nguyễn (Bạn)', avatar: 'QN', color: '#0284c7' },
+      { name: 'Trần Minh Tuấn', avatar: 'MT', color: '#10b981' },
+      { name: 'Lê Vân Anh', avatar: 'VA', color: '#f59e0b' },
+    ],
+    image: 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=800&q=80',
+    treasuryPath: '/trips/trip-danang-2026/treasury',
+    alertType: 'BLUE',
+    alertText: 'Chờ biểu quyết chặng: Đang mở bình chọn địa điểm ăn tối Ngày 2.',
+    alertLinkText: 'Bình chọn',
+    quickActions: [
+      { label: 'Lịch trình', href: '/trips/trip-danang-2026' },
+      { label: 'Thủ quỹ', href: '/trips/trip-danang-2026/treasury' },
+      { label: 'Thành viên', href: '/trips/trip-danang-2026' },
+    ],
+  },
+  {
+    id: 'trip-hagiang-2026',
+    title: 'Chinh phục Cực Bắc Hà Giang',
+    destination: 'Hà Giang',
+    durationBadge: '3 ngày 2 đêm',
+    startDate: '28/11',
+    endDate: '30/11/2026',
+    status: 'ACTIVE',
+    role: 'MEMBER',
+    budgetTotal: 12000000,
+    budgetSpent: 8400000,
+    progressPercent: 70,
+    members: [
+      { name: 'Phạm Thanh Sơn', avatar: 'TS', color: '#6366f1' },
+      { name: 'Quý Nguyễn (Bạn)', avatar: 'QN', color: '#0284c7' },
+    ],
+    image: 'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80',
+    treasuryPath: '/trips/trip-hagiang-2026/treasury',
+    alertType: 'AMBER',
+    alertText: 'Đang diễn ra chặng đèo Mã Pí Lèng',
+    quickActions: [
+      { label: 'Xem chi tiết', href: '/trips/trip-hagiang-2026' },
+      { label: 'Sổ chi tiêu', href: '/trips/trip-hagiang-2026/treasury' },
+    ],
+  },
+  {
+    id: 'trip-phuquoc-2026',
+    title: 'Nghỉ dưỡng biển đảo ngọc Phú Quốc 3N2Đ',
+    destination: 'Phú Quốc, Kiên Giang',
+    durationBadge: '3 ngày 2 đêm',
+    startDate: '10/09',
+    endDate: '12/09/2026',
+    status: 'COMPLETED',
+    role: 'MEMBER',
+    budgetTotal: 15000000,
+    budgetSpent: 14200000,
+    progressPercent: 100,
+    members: [
+      { name: 'Nguyễn Văn Tuấn', avatar: 'VT', color: '#0284c7' },
+      { name: 'Quý Nguyễn (Bạn)', avatar: 'QN', color: '#10b981' },
+    ],
+    image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80',
+    treasuryPath: '/trips/trip-phuquoc-2026/treasury',
+    alertType: 'COMPLETED',
+    alertText: 'Chuyến đi đã hoàn tất xuất sắc',
+    quickActions: [
+      { label: 'Xem tổng kết', href: '/trips/trip-danang-2026' },
+      { label: 'Sổ quỹ', href: '/trips/trip-danang-2026/treasury' },
+    ],
+  },
+];
 
 function getTodayString(): string {
   const now = new Date();
@@ -193,6 +277,66 @@ function getDefaultNotes(): TripNote[] {
     { id: 'note-4', content: 'Thuốc say xe, thuốc dị ứng, băng gạc cá nhân', category: 'Y tế', done: false },
   ];
 }
+
+const VIETNAM_POPULAR_CITIES = [
+  {
+    region: '🏖️ Miền Trung & Duyên Hải (Biển & Di sản)',
+    cities: [
+      { name: 'Đà Nẵng', defaultTitle: 'Khám phá Đà Nẵng - Cầu Vàng - Sơn Trà' },
+      { name: 'Quy Nhơn, Bình Định', defaultTitle: 'Khám phá Quy Nhơn - Kỳ Co - Eo Gió' },
+      { name: 'Nha Trang, Khánh Hòa', defaultTitle: 'Nghỉ dưỡng biển đảo Nha Trang' },
+      { name: 'Hội An, Quảng Nam', defaultTitle: 'Dạo bước Phố cổ Hội An' },
+      { name: 'Huế, Thừa Thiên Huế', defaultTitle: 'Hành trình Cố đô Huế di sản' },
+      { name: 'Phú Yên', defaultTitle: 'Xứ hoa vàng cỏ xanh Phú Yên' },
+      { name: 'Phan Thiết - Mũi Né, Bình Thuận', defaultTitle: 'Chuyến đi Phan Thiết - Mũi Né' },
+      { name: 'Phong Nha, Quảng Bình', defaultTitle: 'Khám phá Vương quốc hang động Quảng Bình' },
+    ],
+  },
+  {
+    region: '🏔️ Miền Bắc & Đông/Tây Bắc (Kỳ quan & Văn hóa)',
+    cities: [
+      { name: 'Hà Nội', defaultTitle: 'Du lịch Thủ đô Hà Nội 36 phố phường' },
+      { name: 'Hạ Long, Quảng Ninh', defaultTitle: 'Du ngoạn kỳ quan Vịnh Hạ Long' },
+      { name: 'Sa Pa, Lào Cai', defaultTitle: 'Chinh phục Sa Pa & Đỉnh Fansipan' },
+      { name: 'Ninh Bình', defaultTitle: 'Khám phá Quần thể danh thắng Tràng An' },
+      { name: 'Hà Giang', defaultTitle: 'Phượt Cao nguyên đá Hà Giang' },
+      { name: 'Cát Bà, Hải Phòng', defaultTitle: 'Khám phá đảo ngọc Cát Bà - Vịnh Lan Hạ' },
+      { name: 'Mộc Châu, Sơn La', defaultTitle: 'Săn mây cao nguyên Mộc Châu' },
+    ],
+  },
+  {
+    region: '🌲 Tây Nguyên (Khí hậu ôn hòa & Đại ngàn)',
+    cities: [
+      { name: 'Đà Lạt, Lâm Đồng', defaultTitle: 'Check-in thành phố sương mù Đà Lạt' },
+      { name: 'Măng Đen, Kon Tum', defaultTitle: 'Nghỉ dưỡng sinh thái Măng Đen' },
+      { name: 'Buôn Ma Thuột, Đắk Lắk', defaultTitle: 'Trải nghiệm văn hóa Buôn Ma Thuột' },
+    ],
+  },
+  {
+    region: '🌴 Miền Nam & Hải Đảo (Sôi động & Thiên đường nhiệt đới)',
+    cities: [
+      { name: 'Phú Quốc, Kiên Giang', defaultTitle: 'Nghỉ dưỡng đảo ngọc Phú Quốc' },
+      { name: 'TP. Hồ Chí Minh', defaultTitle: 'Sài Gòn City Tour & Ẩm thực đêm' },
+      { name: 'Vũng Tàu, Bà Rịa - Vũng Tàu', defaultTitle: 'Cuối tuần tại bãi biển Vũng Tàu' },
+      { name: 'Côn Đảo, Bà Rịa - Vũng Tàu', defaultTitle: 'Hành trình tâm linh & biển đảo Côn Đảo' },
+      { name: 'Cần Thơ', defaultTitle: 'Khám phá sông nước Tây Đô Cần Thơ' },
+      { name: 'An Giang', defaultTitle: 'Khám phá Thất Sơn Bảy Núi An Giang' },
+    ],
+  },
+];
+
+const QUICK_FEATURED_CITIES = [
+  'Đà Nẵng',
+  'Đà Lạt, Lâm Đồng',
+  'Phú Quốc, Kiên Giang',
+  'Nha Trang, Khánh Hòa',
+  'Hà Nội',
+  'Quy Nhơn, Bình Định',
+  'Hạ Long, Quảng Ninh',
+  'Sa Pa, Lào Cai',
+  'Huế, Thừa Thiên Huế',
+  'Hà Giang',
+];
 
 export default function TripsPage() {
   const router = useRouter();
@@ -462,10 +606,41 @@ export default function TripsPage() {
   // New trip form state
   const [newTitle, setNewTitle] = useState('');
   const [newDestination, setNewDestination] = useState('');
+  const [isCustomCity, setIsCustomCity] = useState(false);
+  const [customCityName, setCustomCityName] = useState('');
   const [newBudget, setNewBudget] = useState('20000000');
   const [newStartDate, setNewStartDate] = useState<string>(() => getTodayString());
   const [newEndDate, setNewEndDate] = useState<string>(() => getDefaultEndString());
   const [joinCode, setJoinCode] = useState('');
+
+  const calculateDuration = (startStr: string, endStr: string) => {
+    try {
+      const s = new Date(startStr);
+      const e = new Date(endStr);
+      if (isNaN(s.getTime()) || isNaN(e.getTime())) return '4 ngày 3 đêm';
+      const diffDays = Math.max(1, Math.round((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+      const nights = Math.max(0, diffDays - 1);
+      return `${diffDays} ngày ${nights} đêm`;
+    } catch {
+      return '4 ngày 3 đêm';
+    }
+  };
+
+  const handleSelectCity = (cityName: string, defaultTitleSuggestion?: string) => {
+    if (cityName === 'CUSTOM') {
+      setIsCustomCity(true);
+      return;
+    }
+    setIsCustomCity(false);
+    setNewDestination(cityName);
+
+    const dur = calculateDuration(newStartDate, newEndDate);
+    if (!newTitle.trim() || newTitle.includes('Khám phá') || newTitle.includes('Chuyến đi') || newTitle.includes('Du lịch') || newTitle.includes('Nghỉ dưỡng')) {
+      const cityNameShort = cityName.split(',')[0];
+      const suggested = defaultTitleSuggestion || `Khám phá ${cityNameShort} (${dur})`;
+      setNewTitle(suggested);
+    }
+  };
 
   // Proposals for voting demo
   const [proposals, setProposals] = useState([
@@ -479,7 +654,31 @@ export default function TripsPage() {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  const [tripsList, setTripsList] = useState<TripItem[]>([]);
+  // Close modals on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowCreateModal(false);
+        setShowJoinModal(false);
+        setShowVoteModal(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const handlePasteCode = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text) {
+        setJoinCode(text.trim().toUpperCase());
+      }
+    } catch {
+      showToast('Vui lòng dán thủ công bằng tổ hợp phím Ctrl + V');
+    }
+  };
+
+  const [tripsList, setTripsList] = useState<TripItem[]>(DEFAULT_DEMO_TRIPS);
 
   // Synchronize with localStorage (custom trips created from Planner or Trips)
   useEffect(() => {
@@ -588,9 +787,15 @@ export default function TripsPage() {
                 localStorage.setItem('vista_custom_trips', JSON.stringify(normalized));
               } catch {}
             }
-            setTripsList(normalized);
+            const merged: TripItem[] = [...normalized];
+            DEFAULT_DEMO_TRIPS.forEach((d) => {
+              if (!merged.some((m) => m.id === d.id)) {
+                merged.push(d);
+              }
+            });
+            setTripsList(merged);
           } else {
-            setTripsList([]);
+            setTripsList(DEFAULT_DEMO_TRIPS);
           }
 
           // Check if user just created a trip from Planner
@@ -645,8 +850,9 @@ export default function TripsPage() {
       return;
     }
 
-    if (!newTitle.trim() || !newDestination.trim()) {
-      showToast('Vui lòng nhập đầy đủ tiêu đề và điểm đến!');
+    const destinationToSave = isCustomCity ? customCityName.trim() : newDestination.trim();
+    if (!newTitle.trim() || !destinationToSave) {
+      showToast('Vui lòng chọn thành phố điểm đến và nhập tên chuyến đi!');
       return;
     }
 
@@ -671,13 +877,13 @@ export default function TripsPage() {
 
     const tripId = `trip-${Date.now()}`;
     const currentOwner = getCurrentUserMember('Trưởng nhóm');
-    const generatedItinerary = getSampleItineraryForDestination(newDestination, formattedStartDate);
+    const generatedItinerary = getSampleItineraryForDestination(destinationToSave, formattedStartDate);
 
     const parsedBudget = Number(newBudget) > 0 ? Number(newBudget) : 20000000;
     const newTrip: TripItem = {
       id: tripId,
       title: newTitle,
-      destination: newDestination,
+      destination: destinationToSave,
       durationBadge,
       startDate: formattedStartDate,
       endDate: formattedEndDate,
@@ -688,9 +894,9 @@ export default function TripsPage() {
       budgetSpent: 0,
       progressPercent: 0,
       members: [currentOwner],
-      image: getDestinationHeroImage(newDestination),
+      image: getDestinationHeroImage(destinationToSave),
       treasuryPath: `/trips/${tripId}/treasury`,
-      alertText: `Hành trình ${durationBadge} khám phá ${newDestination}`,
+      alertText: `Hành trình ${durationBadge} khám phá ${destinationToSave}`,
       alertLinkText: 'Xem',
       itineraryDays: generatedItinerary,
       quickActions: [
@@ -715,6 +921,8 @@ export default function TripsPage() {
     setShowCreateModal(false);
     setNewTitle('');
     setNewDestination('');
+    setCustomCityName('');
+    setIsCustomCity(false);
     showToast(`Đã tạo thành công chuyến đi "${newTrip.title}"!`);
   };
 
@@ -1153,7 +1361,11 @@ export default function TripsPage() {
                 {/* Media Image Banner */}
                 <div
                   className={styles.tripMediaWrapper}
-                  style={{ backgroundImage: `url(${trip.image})` }}
+                  style={{
+                    backgroundImage: trip.image ? `url(${trip.image})` : 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                  }}
                 >
                   <div className={styles.tripMediaOverlay}>
                     {/* Top Row: Status badge + 3-dots menu */}
@@ -1553,54 +1765,138 @@ export default function TripsPage() {
         </div>
       </footer>
 
-      {/* ─── MODAL: CREATE TRIP ────────────────────────────────────────── */}
+      {/* ─── MODAL: CREATE TRIP (LUXURY WITH CITY PICKER) ─────────────── */}
       {showCreateModal && (
         <div className={styles.modalBackdrop} onClick={() => setShowCreateModal(false)}>
-          <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h3 className={styles.modalTitle}>Tạo Chuyến Đi Nhóm Mới</h3>
-              <button
-                type="button"
-                className={styles.btnCloseModal}
-                onClick={() => setShowCreateModal(false)}
-              >
-                <X size={18} />
-              </button>
+          <div className={styles.modalBox} onClick={(e) => e.stopPropagation()} style={{ maxWidth: 540 }}>
+            <div className={styles.modalTopAccent} />
+            <button
+              type="button"
+              className={styles.btnCloseModal}
+              onClick={() => setShowCreateModal(false)}
+              aria-label="Đóng"
+              title="Đóng (Esc)"
+            >
+              <X size={18} strokeWidth={2.4} color="#334155" />
+            </button>
+
+            <div className={styles.modalHeaderFancy}>
+              <div className={styles.modalIconWrapper}>
+                <Compass size={24} color="#0070BA" strokeWidth={2.2} />
+              </div>
+              <div className={styles.modalHeaderText}>
+                <div className={styles.modalEyebrow}>VISTA CO-TRAVEL • KHỞI TẠO HÀNH TRÌNH</div>
+                <h3 className={styles.modalTitle}>Tạo Chuyến Đi Nhóm Mới</h3>
+              </div>
             </div>
 
-            <form onSubmit={handleCreateTrip}>
+            <form onSubmit={handleCreateTrip} className={styles.modalForm}>
+              {/* Điểm đến chính (Xác định thành phố rõ ràng) */}
               <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Tên chuyến đi</label>
+                <label className={styles.formLabel}>
+                  <span>THÀNH PHỐ / ĐIỂM ĐẾN CHÍNH</span>
+                  <span className={styles.formLabelHint}>Bắt buộc • Chọn thành phố</span>
+                </label>
+
+                <div className={styles.inputWithIconWrapper}>
+                  <div className={styles.inputLeadingIcon}>
+                    <MapPin size={18} color="#0070BA" />
+                  </div>
+                  <select
+                    className={styles.formSelectFancy}
+                    value={isCustomCity ? 'CUSTOM' : (newDestination || '')}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === 'CUSTOM') {
+                        setIsCustomCity(true);
+                      } else {
+                        handleSelectCity(val);
+                      }
+                    }}
+                    required={!isCustomCity}
+                  >
+                    <option value="" disabled>-- Chọn thành phố / tỉnh thành du lịch --</option>
+                    {VIETNAM_POPULAR_CITIES.map((group) => (
+                      <optgroup key={group.region} label={group.region}>
+                        {group.cities.map((city) => (
+                          <option key={city.name} value={city.name}>
+                            {city.name}
+                          </option>
+                        ))}
+                      </optgroup>
+                    ))}
+                    <option value="CUSTOM">✏️ Thành phố / Tỉnh thành khác (Tự nhập)...</option>
+                  </select>
+                </div>
+
+                {/* Ô tự nhập nếu chọn khác */}
+                {isCustomCity && (
+                  <div style={{ marginTop: 8 }}>
+                    <input
+                      type="text"
+                      className={styles.formInput}
+                      placeholder="Nhập tên thành phố / tỉnh thành (Ví dụ: Tuy Hòa, Phú Yên hoặc Pleiku, Gia Lai)"
+                      value={customCityName}
+                      onChange={(e) => {
+                        setCustomCityName(e.target.value);
+                        setNewDestination(e.target.value);
+                      }}
+                      autoFocus
+                      required
+                    />
+                  </div>
+                )}
+
+                {/* Các chip thành phố nổi tiếng chọn 1 chạm */}
+                <div style={{ marginTop: 4 }}>
+                  <div style={{ fontSize: '11.5px', color: '#64748B', fontWeight: 600, marginBottom: 4 }}>
+                    Gợi ý thành phố du lịch tiêu biểu:
+                  </div>
+                  <div className={styles.cityChipsContainer}>
+                    {QUICK_FEATURED_CITIES.map((cName) => {
+                      const isSelected = !isCustomCity && newDestination === cName;
+                      return (
+                        <button
+                          key={cName}
+                          type="button"
+                          className={`${styles.cityChip} ${isSelected ? styles.cityChipActive : ''}`}
+                          onClick={() => handleSelectCity(cName)}
+                        >
+                          <MapPin size={11} color={isSelected ? '#0070BA' : '#64748B'} />
+                          <span>{cName.split(',')[0]}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className={styles.cityHintText}>
+                  💡 <span>Xác định rõ thành phố giúp AI Planner đề xuất chính xác các địa điểm, vé tham quan và tối ưu cung đường.</span>
+                </div>
+              </div>
+
+              {/* Tên chuyến đi */}
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>
+                  <span>TÊN CHUYẾN ĐI</span>
+                  <span className={styles.formLabelHint}>Hấp dẫn & Dễ nhớ</span>
+                </label>
                 <input
                   type="text"
                   className={styles.formInput}
-                  placeholder="Ví dụ: Khám phá Quy Nhơn - Phú Yên 4N3Đ"
+                  placeholder={newDestination ? `Ví dụ: Khám phá ${newDestination.split(',')[0]} cùng nhóm bạn` : 'Ví dụ: Khám phá Quy Nhơn - Phú Yên 4N3Đ'}
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
                   required
                 />
               </div>
 
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Điểm đến chính</label>
-                <select
-                  className={styles.formInput}
-                  value={newDestination}
-                  onChange={(e) => setNewDestination(e.target.value)}
-                  required
-                >
-                  <option value="">-- Chọn khu vực / điểm đến cụ thể --</option>
-                  {POPULAR_DESTINATIONS.map((dest) => (
-                    <option key={dest} value={dest}>
-                      {dest}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
+              {/* Ngày bắt đầu & kết thúc */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Ngày bắt đầu</label>
+                  <label className={styles.formLabel}>
+                    <span>NGÀY BẮT ĐẦU</span>
+                  </label>
                   <input
                     type="date"
                     className={styles.formInput}
@@ -1617,7 +1913,12 @@ export default function TripsPage() {
                   />
                 </div>
                 <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Ngày kết thúc</label>
+                  <label className={styles.formLabel}>
+                    <span>NGÀY KẾT THÚC</span>
+                    <span className={styles.durationBadgeInline}>
+                      {calculateDuration(newStartDate, newEndDate)}
+                    </span>
+                  </label>
                   <input
                     type="date"
                     className={styles.formInput}
@@ -1629,8 +1930,14 @@ export default function TripsPage() {
                 </div>
               </div>
 
+              {/* Ngân sách */}
               <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Ngân sách nhóm dự kiến (VNĐ)</label>
+                <label className={styles.formLabel}>
+                  <span>NGÂN SÁCH NHÓM DỰ KIẾN</span>
+                  <span className={styles.formLabelHint}>
+                    {Number(newBudget) ? `${Number(newBudget).toLocaleString('vi-VN')} đ` : 'VNĐ'}
+                  </span>
+                </label>
                 <input
                   type="number"
                   className={styles.formInput}
@@ -1638,11 +1945,34 @@ export default function TripsPage() {
                   value={newBudget}
                   onChange={(e) => setNewBudget(e.target.value)}
                 />
+                <div className={styles.budgetChipsRow}>
+                  {['10000000', '20000000', '30000000', '50000000'].map((bVal) => (
+                    <button
+                      key={bVal}
+                      type="button"
+                      className={`${styles.budgetChip} ${newBudget === bVal ? styles.budgetChipActive : ''}`}
+                      onClick={() => setNewBudget(bVal)}
+                    >
+                      {Number(bVal) / 1000000} triệu
+                    </button>
+                  ))}
+                </div>
               </div>
 
-              <button type="submit" className={styles.btnSubmitForm}>
-                Hoàn tất & Khởi tạo chuyến đi
-              </button>
+              {/* Action Buttons */}
+              <div className={styles.modalActionsRow} style={{ marginTop: 6 }}>
+                <button
+                  type="button"
+                  className={styles.btnCancelModal}
+                  onClick={() => setShowCreateModal(false)}
+                >
+                  Hủy bỏ
+                </button>
+                <button type="submit" className={styles.btnSubmitFancy}>
+                  <Sparkles size={16} />
+                  <span>Hoàn tất & Khởi tạo chuyến đi</span>
+                </button>
+              </div>
             </form>
           </div>
         </div>
@@ -1652,37 +1982,126 @@ export default function TripsPage() {
       {showJoinModal && (
         <div className={styles.modalBackdrop} onClick={() => setShowJoinModal(false)}>
           <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h3 className={styles.modalTitle}>Gia Nhập Bằng Mã Mời</h3>
-              <button
-                type="button"
-                className={styles.btnCloseModal}
-                onClick={() => setShowJoinModal(false)}
-              >
-                <X size={18} />
-              </button>
+            <div className={styles.modalTopAccent} />
+
+            {/* Dấu X thoát rõ ràng, sang trọng */}
+            <button
+              type="button"
+              className={styles.btnCloseModal}
+              onClick={() => setShowJoinModal(false)}
+              aria-label="Đóng biểu mẫu"
+              title="Đóng (Esc)"
+            >
+              <X size={18} strokeWidth={2.4} color="#334155" />
+            </button>
+
+            {/* Header sang trọng với icon và badge */}
+            <div className={styles.modalHeaderFancy}>
+              <div className={styles.modalIconWrapper}>
+                <Ticket size={24} color="#0070BA" strokeWidth={2.2} />
+              </div>
+              <div className={styles.modalHeaderText}>
+                <div className={styles.modalEyebrow}>VISTA CO-TRAVEL • GIA NHẬP NHÓM</div>
+                <h3 className={styles.modalTitle}>Gia Nhập Bằng Mã Mời</h3>
+              </div>
             </div>
 
-            <p style={{ fontSize: '14px', color: '#64748b', margin: 0 }}>
-              Nhập mã token gồm 6 ký tự hoặc liên kết lời mời mà trưởng nhóm đã chia sẻ cho bạn:
+            <p className={styles.modalDescription}>
+              Nhập mã token gồm 6 ký tự hoặc liên kết lời mời mà trưởng nhóm đã chia sẻ để cùng lên lịch trình và quản lý ngân sách minh bạch:
             </p>
 
-            <form onSubmit={handleJoinTrip}>
+            <form onSubmit={handleJoinTrip} className={styles.modalForm}>
               <div className={styles.formGroup}>
-                <input
-                  type="text"
-                  className={styles.formInput}
-                  placeholder="Ví dụ: VISTA-DN2026 hoặc mã token"
-                  value={joinCode}
-                  onChange={(e) => setJoinCode(e.target.value)}
-                  style={{ textTransform: 'uppercase', letterSpacing: '2px', fontWeight: 700 }}
-                  required
-                />
+                <label className={styles.formLabel}>
+                  <span>MÃ TOKEN LỜI MỜI</span>
+                  <span className={styles.formLabelHint}>Ví dụ: VISTA-DN2026</span>
+                </label>
+
+                <div className={styles.inputWithIconWrapper}>
+                  <div className={styles.inputLeadingIcon}>
+                    <KeyRound size={18} color="#0070BA" />
+                  </div>
+                  <input
+                    type="text"
+                    className={styles.formInputFancy}
+                    placeholder="VÍ DỤ: VISTA-DN2026 HOẶC MÃ TOKEN"
+                    value={joinCode}
+                    onChange={(e) => setJoinCode(e.target.value)}
+                    autoFocus
+                    required
+                  />
+                  {joinCode ? (
+                    <button
+                      type="button"
+                      className={styles.inputTrailingClear}
+                      onClick={() => setJoinCode('')}
+                      aria-label="Xóa mã đã nhập"
+                      title="Xóa mã"
+                    >
+                      <X size={14} strokeWidth={2.5} color="#475569" />
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className={styles.inputTrailingPaste}
+                      onClick={handlePasteCode}
+                      title="Dán từ Clipboard"
+                    >
+                      <Clipboard size={13} color="#0284C7" />
+                      <span>Dán</span>
+                    </button>
+                  )}
+                </div>
               </div>
 
-              <button type="submit" className={styles.btnSubmitForm}>
-                Xác thực & Tham gia nhóm
-              </button>
+              {/* Gợi ý mã mẫu nhanh */}
+              <div className={styles.quickChipsWrapper}>
+                <span className={styles.quickChipsLabel}>Mã chuyến đi mẫu:</span>
+                <button
+                  type="button"
+                  className={styles.quickChip}
+                  onClick={() => setJoinCode('VISTA-DN2026')}
+                >
+                  VISTA-DN2026 (Đà Nẵng)
+                </button>
+                <button
+                  type="button"
+                  className={styles.quickChip}
+                  onClick={() => setJoinCode('VISTA-HG2026')}
+                >
+                  VISTA-HG2026 (Hà Giang)
+                </button>
+                <button
+                  type="button"
+                  className={styles.quickChip}
+                  onClick={() => setJoinCode('VISTA-PQ2026')}
+                >
+                  VISTA-PQ2026 (Phú Quốc)
+                </button>
+              </div>
+
+              {/* Thông tin bảo mật */}
+              <div className={styles.securityCallout}>
+                <Lock size={15} color="#0284C7" className={styles.securityIcon} />
+                <span>
+                  Mã mời được bảo mật mã hóa. Sau khi gia nhập, bạn sẽ được tự động đồng bộ vai trò thành viên và danh sách quỹ.
+                </span>
+              </div>
+
+              {/* Nút thao tác sang trọng */}
+              <div className={styles.modalActionsRow}>
+                <button
+                  type="button"
+                  className={styles.btnCancelModal}
+                  onClick={() => setShowJoinModal(false)}
+                >
+                  Hủy bỏ
+                </button>
+                <button type="submit" className={styles.btnSubmitFancy}>
+                  <span>Xác thực & Tham gia nhóm</span>
+                  <ArrowRight size={17} strokeWidth={2.4} />
+                </button>
+              </div>
             </form>
           </div>
         </div>
@@ -2102,15 +2521,19 @@ export default function TripsPage() {
       {showVoteModal && (
         <div className={styles.modalBackdrop} onClick={() => setShowVoteModal(false)}>
           <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalTopAccent} />
+            <button
+              type="button"
+              className={styles.btnCloseModal}
+              onClick={() => setShowVoteModal(false)}
+              aria-label="Đóng"
+              title="Đóng (Esc)"
+            >
+              <X size={18} strokeWidth={2.4} color="#334155" />
+            </button>
+
             <div className={styles.modalHeader}>
               <h3 className={styles.modalTitle}>Biểu Quyết Địa Điểm Nhóm</h3>
-              <button
-                type="button"
-                className={styles.btnCloseModal}
-                onClick={() => setShowVoteModal(false)}
-              >
-                <X size={18} />
-              </button>
             </div>
 
             <p style={{ fontSize: '13.5px', color: '#64748b', margin: 0 }}>
