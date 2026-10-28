@@ -28,6 +28,19 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
   const resolvedParams = use(params);
   const tripId = resolvedParams.tripId;
   const router = useRouter();
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('vista_token');
+      if (!token) {
+        setIsAuthenticated(false);
+        router.replace('/login?returnUrl=' + encodeURIComponent(`/trips/${tripId}/treasury`));
+      } else {
+        setIsAuthenticated(true);
+      }
+    }
+  }, [router, tripId]);
 
   // State
   const [trip, setTrip] = useState<TripDetail | null>(null);
@@ -181,17 +194,24 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
             budgetTotal: budget,
             currency: 'VND',
             status: matched.status || 'ACTIVE',
-            ownerId: myId,
+            ownerId: matched.ownerId || matched.members?.[0]?.userId || myId,
           };
 
           if (Array.isArray(matched.members) && matched.members.length > 0) {
-            activeMembers = matched.members.map((m: any, idx: number) => ({
-              userId: idx === 0 ? myId : `mem-${idx}`,
-              displayName: idx === 0 ? myName : m.name,
-              email: idx === 0 ? myEmail : `${m.avatar?.toLowerCase() || 'tv'}@vista.vn`,
-              role: idx === 0 ? 'OWNER' : 'MEMBER',
-              budgetShare: Math.round(budget / matched.members.length),
-            }));
+            activeMembers = matched.members.map((m: any, idx: number) => {
+              const rawName = m.displayName || m.name || '';
+              const cleanName = rawName.replace(/\s*\(Bạn\)/g, '').trim() || (idx === 0 ? myName : `Thành viên ${idx + 1}`);
+              const isOwnerMember = idx === 0;
+              const isMe = (m.userId && m.userId === myId) || cleanName.toLowerCase() === myName.toLowerCase() || (m.email && m.email.toLowerCase() === myEmail.toLowerCase());
+              const memberId = isMe ? myId : (m.userId || (isOwnerMember ? (matched.ownerId || `u-${cleanName}`) : `mem-${idx}`));
+              return {
+                userId: memberId,
+                displayName: cleanName,
+                email: isMe ? myEmail : (m.email || `${cleanName.toLowerCase().replace(/\s+/g, '')}@vista.vn`),
+                role: m.role || (isOwnerMember ? 'OWNER' : 'MEMBER'),
+                budgetShare: Math.round(budget / matched.members.length),
+              };
+            });
           }
         }
       } catch {}
@@ -424,6 +444,22 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
     setSummary(updatedSummary);
     showToast(`Đã thêm bạn đồng hành "${newMemberName}" thành công!`);
   };
+
+  if (isAuthenticated !== true) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc' }}>
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🔒</div>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0f172a', marginBottom: '0.5rem' }}>
+            Yêu cầu đăng nhập
+          </h2>
+          <p style={{ color: '#64748b', fontSize: '0.95rem' }}>
+            Bạn cần đăng nhập để truy cập Sổ quỹ chuyến đi. Đang chuyển hướng...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#f8fafc' }}>
