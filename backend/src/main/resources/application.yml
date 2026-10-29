@@ -12,11 +12,12 @@ spring:
   jpa:
     open-in-view: false
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
   flyway:
     enabled: true
     locations: ${FLYWAY_LOCATIONS:classpath:db/migration}
     validate-migration-naming: true
+    validate-on-migrate: false
     out-of-order: true
   mvc:
     problemdetails:

@@ -5,21 +5,24 @@ import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const rootDir = path.resolve(__dirname, '..');
 const backendDir = path.resolve(__dirname, '..', 'backend');
-const envFile = path.join(backendDir, '.env');
+const envFiles = [path.join(rootDir, '.env'), path.join(backendDir, '.env')];
 
 const env = { ...process.env };
 
-if (fs.existsSync(envFile)) {
-  const content = fs.readFileSync(envFile, 'utf8');
-  for (const line of content.split(/\r?\n/)) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith('#')) continue;
-    const match = trimmed.match(/^([^=]+)=(.*)$/);
-    if (match) {
-      const key = match[1].trim();
-      const val = match[2].trim().replace(/^['"]|['"]$/g, '');
-      env[key] = val;
+for (const envFile of envFiles) {
+  if (fs.existsSync(envFile)) {
+    const content = fs.readFileSync(envFile, 'utf8');
+    for (const line of content.split(/\r?\n/)) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const match = trimmed.match(/^([^=]+)=(.*)$/);
+      if (match) {
+        const key = match[1].trim();
+        const val = match[2].trim().replace(/^['"]|['"]$/g, '');
+        env[key] = val;
+      }
     }
   }
 }
