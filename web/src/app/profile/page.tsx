@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Navbar } from '@/components/common/Navbar';
+import { SkeletonUniversalPage } from '@/components/common/Skeleton';
 import { uploadFileToCloud } from '@/utils/cloudImage';
 import {
   User,
@@ -412,14 +413,7 @@ export default function ProfilePage() {
   };
 
   if (loading) {
-    return (
-      <div className={styles.profilePageContainer}>
-        <Navbar />
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', color: '#64748B', fontWeight: 600 }}>
-          Đang tải hồ sơ VISTA...
-        </div>
-      </div>
-    );
+    return <SkeletonUniversalPage />;
   }
 
   return (
