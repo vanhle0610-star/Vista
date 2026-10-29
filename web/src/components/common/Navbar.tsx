@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import styles from './Navbar.module.css';
 
 export interface NavbarProps {
@@ -20,16 +20,30 @@ interface VistaUser {
 }
 
 export function Navbar({
-  activeModule = 'explore',
+  activeModule: propActiveModule,
   lang: propLang,
   onLangChange,
 }: NavbarProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [currentUser, setCurrentUser] = useState<VistaUser | null>(null);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [treasuryHref, setTreasuryHref] = useState<string>('/trips');
   const [optimisticModule, setOptimisticModule] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setOptimisticModule(null);
+  }, [pathname]);
+
+  const activeModule = optimisticModule || propActiveModule || (
+    pathname?.startsWith('/map') ? 'map' :
+    pathname?.startsWith('/planner') ? 'planner' :
+    pathname?.includes('/treasury') ? 'treasury' :
+    pathname?.startsWith('/trips') ? 'trips' :
+    pathname?.startsWith('/community') ? 'community' :
+    pathname === '/' ? 'explore' : undefined
+  );
 
   const handleNavClick = (moduleId: string, href: string) => {
     setOptimisticModule(moduleId);

@@ -561,9 +561,6 @@ export default function HomePage() {
         })}
       </aside>
 
-      {/* ─── 1. TOP GLOBAL NAVBAR ────────────────────────────────────────── */}
-      <Navbar activeModule="explore" />
-
       {/* ─── 2. HERO SECTION CINEMATIC ───────────────────────────────────── */}
       <section className={styles.heroWrapper} id="hero" aria-label="Giới thiệu VISTA">
         <div className={styles.heroContent}>

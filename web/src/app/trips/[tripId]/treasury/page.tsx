@@ -465,7 +465,7 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#f8fafc' }}>
       {/* ─── 1. GLOBAL NAVBAR ────────────────────────────────────────── */}
-      <Navbar activeModule="treasury" />
+
 
       {/* ─── 2. MAIN FULL-WIDTH TREASURY WORKSPACE (NO SECOND SIDEBAR) ── */}
       <div className={styles.treasuryLayout}>

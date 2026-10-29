@@ -374,8 +374,6 @@ export default function VistaMapPage() {
 
   return (
     <div className={styles.page}>
-      <Navbar activeModule="map" />
-
       <main className={styles.content}>
         <div className={styles.layout}>
           {/* ─── SIDEBAR: EXPLORE & DIRECTIONS STUDIO ─── */}
