@@ -79,6 +79,19 @@ class SecurityAuthorizationTest {
   }
 
   @Test
+  void expiredAccessTokenReturnsTokenExpiredCodeForSilentRefresh() throws Exception {
+    String expiredToken = "expired.jwt.token";
+    when(jwtTokenService.validateAccessTokenDetailed(expiredToken))
+        .thenReturn(JwtTokenService.JwtValidationResult.EXPIRED);
+
+    mockMvc
+        .perform(get("/api/v1/auth/me").header("Authorization", "Bearer " + expiredToken))
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.code").value("TOKEN_EXPIRED"))
+        .andExpect(jsonPath("$.status").value(401));
+  }
+
+  @Test
   void spoofedXUserIdHeaderIsIgnoredAndIdentityComesStrictlyFromJwtToken() throws Exception {
     UUID authenticUserId = UUID.fromString("11111111-1111-1111-1111-111111111111");
     String validToken = "valid.jwt.token";
