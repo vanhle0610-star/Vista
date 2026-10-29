@@ -86,6 +86,21 @@ public class InvitationService {
           "Lời mời cho email '" + request.getInviteeEmail() + "' đang ở trạng thái PENDING");
     }
 
+    // Không cho phép mời người đã là thành viên trong chuyến đi (bao gồm cả Owner)
+    if (userRepository != null) {
+      userRepository
+          .findByEmailIgnoreCase(request.getInviteeEmail())
+          .ifPresent(
+              existingUser -> {
+                if (tripAccessService.isMember(tripId, existingUser.getId())) {
+                  throw new ConflictException(
+                      "Người dùng với email '"
+                          + request.getInviteeEmail()
+                          + "' đã là thành viên trong chuyến đi này");
+                }
+              });
+    }
+
     // Sinh raw token ngẫu nhiên đủ mạnh (256-bit entropy), chỉ lưu SHA-256 hash vào DB
     String rawToken =
         UUID.randomUUID().toString().replace("-", "")

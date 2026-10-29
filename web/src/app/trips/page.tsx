@@ -68,7 +68,7 @@ interface TripItem {
   budgetSpent: number;
   progressPercent: number;
   members: TripMember[];
-  image?: string;
+  image: string;
   treasuryPath: string;
   rating?: number;
   alertType?: 'AMBER' | 'BLUE' | 'COMPLETED';
@@ -202,11 +202,63 @@ function getCurrentUserMember(defaultRole = 'Trưởng nhóm'): TripMember {
   return {
     name: cleanName,
     avatar: initials || 'TV',
+
     color: '#0284c7',
     role: defaultRole,
     userId: u?.id || 'u-me',
     email: u?.email || '',
   };
+}
+
+function formatMembersForCurrentUser(
+  members: Array<{ name: string; avatar?: string; color?: string; role?: string; email?: string; userId?: string }>,
+  defaultRole = 'Trưởng nhóm'
+): TripMember[] {
+  let currentUser: any = null;
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = localStorage.getItem('vista_user');
+      if (stored) currentUser = JSON.parse(stored);
+    } catch {}
+  }
+
+  const currentEmail = (currentUser?.email || '').toLowerCase().trim();
+  const currentName = (currentUser?.displayName || currentUser?.name || '').toLowerCase().trim();
+
+  if (!Array.isArray(members) || members.length === 0) {
+    return [getCurrentUserMember(defaultRole)];
+  }
+
+  const seen = new Set<string>();
+  const result: TripMember[] = [];
+
+  for (const m of members) {
+    if (!m) continue;
+    const rawName = (m.name || '').replace(/\s*\([^)]*\)/g, '').trim();
+    const rawEmail = (m.email || '').toLowerCase().trim();
+    const key = (m.userId ? `id:${m.userId}` : '') || rawEmail || rawName.toLowerCase();
+
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+
+    const isMe = Boolean(
+      (currentUser && m.userId && currentUser.id && m.userId === currentUser.id) ||
+      (currentEmail && rawEmail && currentEmail === rawEmail) ||
+      (currentName && rawName.toLowerCase() === currentName) ||
+      (m.name || '').toLowerCase().includes('(bạn)')
+    );
+
+    result.push({
+      name: isMe ? `${rawName || 'Bạn'} (Bạn)` : rawName,
+      avatar: m.avatar || (rawName.slice(0, 2)).toUpperCase() || 'TV',
+      color: m.color || '#0284c7',
+      email: m.email || (isMe && currentEmail ? currentEmail : undefined),
+      role: m.role || 'Thành viên',
+      userId: m.userId || (isMe && currentUser?.id ? currentUser.id : undefined),
+    });
+  }
+
+  return result.length > 0 ? result : [getCurrentUserMember(defaultRole)];
 }
 
 type DateFilterType = 'all' | 'upcoming' | 'month-10' | 'month-11' | 'month-12' | 'year-2026' | 'past';
@@ -337,7 +389,6 @@ const QUICK_FEATURED_CITIES = [
   'Huế, Thừa Thiên Huế',
   'Hà Giang',
 ];
-
 export default function TripsPage() {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -679,6 +730,7 @@ export default function TripsPage() {
   };
 
   const [tripsList, setTripsList] = useState<TripItem[]>(DEFAULT_DEMO_TRIPS);
+  const [incomingInvitations, setIncomingInvitations] = useState<any[]>([]);
 
   // Synchronize with localStorage (custom trips created from Planner or Trips)
   useEffect(() => {
@@ -798,6 +850,37 @@ export default function TripsPage() {
             setTripsList(DEFAULT_DEMO_TRIPS);
           }
 
+          // Also sync with server API to fetch trips from other windows / accounts
+          try {
+            fetch('/api/trips')
+              .then((r) => (r.ok ? r.json() : []))
+              .then((serverTrips) => {
+                if (Array.isArray(serverTrips) && serverTrips.length > 0) {
+                  setTripsList((prev) => {
+                    const map = new Map();
+                    prev.forEach((t) => map.set(t.id, t));
+                    serverTrips.forEach((st: any) => {
+                      if (map.has(st.id)) {
+                        const existing = map.get(st.id);
+                        map.set(st.id, {
+                          ...existing,
+                          ...st,
+                          members: formatMembersForCurrentUser([...(existing.members || []), ...(st.members || [])]),
+                        });
+                      } else {
+                        map.set(st.id, {
+                          ...st,
+                          members: formatMembersForCurrentUser(st.members || []),
+                        });
+                      }
+                    });
+                    return Array.from(map.values());
+                  });
+                }
+              })
+              .catch(() => {});
+          } catch {}
+
           // Check if user just created a trip from Planner
           const params = new URLSearchParams(window.location.search);
           const createdId = params.get('created');
@@ -813,7 +896,100 @@ export default function TripsPage() {
       }
     };
     void syncTrips();
+
+    // Load incoming invitations for currently logged in user
+    try {
+      const userStr = localStorage.getItem('vista_user');
+      if (userStr) {
+        const u = JSON.parse(userStr);
+        const email = (u.email || '').toLowerCase().trim();
+        if (email) {
+          fetch(`/api/invitations?email=${encodeURIComponent(email)}`)
+            .then((r) => r.json())
+            .then((list) => {
+              if (Array.isArray(list)) {
+                const pending = list.filter(
+                  (inv) => inv.inviteeEmail && inv.inviteeEmail.toLowerCase() === email && inv.status === 'PENDING'
+                );
+                setIncomingInvitations(pending);
+              }
+            })
+            .catch(() => {});
+        }
+      }
+    } catch {}
   }, []);
+
+  const handleAcceptIncomingInvite = async (inv: any) => {
+    try {
+      await fetch('/api/invitations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: inv.token, status: 'ACCEPTED' }),
+      });
+
+      const currentUserMember = getCurrentUserMember('Thành viên');
+      const newJoinedTrip: TripItem = {
+        id: inv.tripId || `trip-joined-${Date.now()}`,
+        title: inv.tripTitle || 'Chuyến đi tham gia qua lời mời',
+        destination: inv.destination || 'Việt Nam',
+        durationBadge: '4 ngày',
+        startDate: inv.startDate || 'Sắp tới',
+        endDate: inv.endDate || '2026',
+        status: 'PLANNING',
+        role: 'MEMBER',
+        budgetTotal: 15000000,
+        budgetSpent: 0,
+        progressPercent: 20,
+        members: [
+          { name: inv.inviterName || 'Trưởng nhóm', avatar: (inv.inviterName || 'TN').slice(0, 2).toUpperCase(), color: '#0070BA', role: 'Trưởng nhóm', userId: 'owner-stub' },
+          currentUserMember,
+        ],
+        image: getDestinationHeroImage(inv.destination || 'Việt Nam'),
+        treasuryPath: `/trips/${inv.tripId || 'demo-danang-2026'}/treasury`,
+        alertType: 'BLUE',
+        alertText: `Bạn đã tham gia qua lời mời từ ${inv.inviterName || 'Trưởng nhóm'}`,
+        quickActions: [
+          { label: 'Lịch trình', actionType: 'PLAN' },
+          { label: 'Thành viên', actionType: 'MEMBERS' },
+        ],
+      };
+
+      setTripsList((prev) => [newJoinedTrip, ...prev]);
+
+      try {
+        const stored = localStorage.getItem('vista_custom_trips');
+        const list: TripItem[] = stored ? JSON.parse(stored) : [];
+        if (!list.some((t) => t.id === newJoinedTrip.id)) {
+          list.unshift(newJoinedTrip);
+          localStorage.setItem('vista_custom_trips', JSON.stringify(list));
+        }
+      } catch {}
+
+      setIncomingInvitations((prev) => prev.filter((i) => i.token !== inv.token));
+      showToast(`🎉 Bạn đã gia nhập "${inv.tripTitle}" thành công!`);
+
+      setTimeout(() => {
+        router.push(`/trips/${newJoinedTrip.id}`);
+      }, 600);
+    } catch {
+      showToast('Có lỗi xảy ra khi chấp nhận lời mời');
+    }
+  };
+
+  const handleDeclineIncomingInvite = async (inv: any) => {
+    try {
+      await fetch('/api/invitations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: inv.token, status: 'REVOKED' }),
+      });
+      setIncomingInvitations((prev) => prev.filter((i) => i.token !== inv.token));
+      showToast('Đã từ chối lời mời.');
+    } catch {
+      showToast('Có lỗi khi từ chối lời mời');
+    }
+  };
 
   // isUserTrip defined above
   const myTripsList = tripsList.filter(isUserTrip);
@@ -1178,6 +1354,121 @@ export default function TripsPage() {
             </div>
           </div>
         </div>
+
+        {/* ─── 2.5 HỘP THƯ LỜI MỜI THAM GIA CHUYẾN ĐI (W3-TV3-01) ─── */}
+        {incomingInvitations.length > 0 && (
+          <div style={{
+            background: 'linear-gradient(135deg, #EFF6FF 0%, #EEF2FF 100%)',
+            border: '1.5px solid #BFDBFE',
+            borderRadius: '20px',
+            padding: '20px 24px',
+            marginBottom: '28px',
+            boxShadow: '0 8px 24px rgba(30, 64, 175, 0.08)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+              <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#0284C7', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
+                ✉️
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 800, color: '#1E3A8A' }}>
+                  Hộp thư Lời mời: Bạn có {incomingInvitations.length} lời mời tham gia chuyến đi mới!
+                </h3>
+                <p style={{ margin: 0, fontSize: '12.5px', color: '#475569' }}>
+                  Bạn bè đã mời bạn cùng đồng hành. Chọn Chấp nhận để tự động tham gia và đồng bộ lịch trình vào danh sách của bạn.
+                </p>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {incomingInvitations.map((inv) => (
+                <div
+                  key={inv.token}
+                  style={{
+                    background: '#FFFFFF',
+                    border: '1px solid #CBD5E1',
+                    borderRadius: '14px',
+                    padding: '14px 18px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flexWrap: 'wrap',
+                    gap: '12px',
+                  }}
+                >
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 800, background: '#E0F2FE', color: '#0284C7', padding: '2px 8px', borderRadius: '6px' }}>
+                        {inv.token}
+                      </span>
+                      <strong style={{ fontSize: '14.5px', color: '#0F172A' }}>
+                        {inv.tripTitle || 'Chuyến đi Vista'}
+                      </strong>
+                    </div>
+                    <div style={{ fontSize: '13px', color: '#64748B' }}>
+                      Người mời: <strong style={{ color: '#0284C7' }}>{inv.inviterName || 'Trưởng nhóm'}</strong> {inv.inviterEmail ? `(${inv.inviterEmail})` : ''} • Hạn: {inv.expiresAt || '7 ngày'}
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <button
+                      type="button"
+                      onClick={() => handleAcceptIncomingInvite(inv)}
+                      style={{
+                        padding: '9px 18px',
+                        background: '#16A34A',
+                        color: '#FFFFFF',
+                        border: 'none',
+                        borderRadius: '10px',
+                        fontSize: '13px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        boxShadow: '0 2px 8px rgba(22, 163, 74, 0.25)',
+                      }}
+                    >
+                      <CheckCircle2 size={16} />
+                      <span>Chấp nhận</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleDeclineIncomingInvite(inv)}
+                      style={{
+                        padding: '9px 14px',
+                        background: '#FFFFFF',
+                        color: '#64748B',
+                        border: '1px solid #CBD5E1',
+                        borderRadius: '10px',
+                        fontSize: '13px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Từ chối
+                    </button>
+
+                    <Link
+                      href={`/invitations/${inv.token}`}
+                      style={{
+                        padding: '9px 14px',
+                        background: '#F1F5F9',
+                        color: '#334155',
+                        borderRadius: '10px',
+                        fontSize: '13px',
+                        fontWeight: 700,
+                        textDecoration: 'none',
+                      }}
+                    >
+                      Chi tiết
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* ─── 3. FILTER TABS & SEARCH CONTROLS TOOLBAR ───────────────── */}
         <div className={styles.toolbarRow}>
