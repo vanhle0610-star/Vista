@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { Navbar } from '@/components/common/Navbar';
+import { SkeletonAiGenerating } from '@/components/common/Skeleton';
 import type { DestinationMarker } from '@/features/map-location/types';
 import { getRealPlacesByProvince } from '@/data/realDestinationsData';
 import {
@@ -2265,20 +2266,7 @@ export default function PlannerPage() {
             ════════════════════════════════════════════════════════════════════ */}
         <section className={styles.itineraryWorkspace} aria-label="Lịch trình gợi ý">
           {/* ─── REAL GENERATING LOADING SKELETON ─── */}
-          {isGenerating && (
-            <div className={styles.generatingCard}>
-              <div className={styles.generatingHeader}>
-                <div className={styles.spinnerBlue} />
-                <span className={styles.generatingText}>
-                  Trợ lý AI đang tối ưu hóa lịch trình và ước tính chi phí… (khoảng 15–30 giây)
-                </span>
-              </div>
-              <div className={styles.skeletonBar} style={{ height: '110px' }} />
-              <div className={styles.skeletonBar} style={{ height: '44px' }} />
-              <div className={styles.skeletonBar} style={{ height: '130px' }} />
-              <div className={styles.skeletonBar} style={{ height: '130px' }} />
-            </div>
-          )}
+          {isGenerating && <SkeletonAiGenerating />}
 
           {/* ─── EMPTY STATE (WHEN NOT YET GENERATED) ─── */}
           {!isGenerating && !hasPlanGenerated && (

@@ -18,6 +18,7 @@ import { DebtSettlementMatrix } from '@/features/budget/components/DebtSettlemen
 import { ExpenseLedgerTable } from '@/features/budget/components/ExpenseLedgerTable';
 import { AddExpenseDrawer } from '@/features/budget/components/AddExpenseDrawer';
 import { Navbar } from '@/components/common/Navbar';
+import { SkeletonKpiGrid, SkeletonTableRows } from '@/components/common/Skeleton';
 import styles from '@/features/budget/treasury.module.css';
 
 interface TreasuryPageProps {
@@ -469,6 +470,13 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
       {/* ─── 2. MAIN FULL-WIDTH TREASURY WORKSPACE (NO SECOND SIDEBAR) ── */}
       <div className={styles.treasuryLayout}>
         <main className={styles.mainContainer}>
+          {loading ? (
+            <>
+              <SkeletonKpiGrid />
+              <SkeletonTableRows count={5} />
+            </>
+          ) : (
+            <>
           {trip && (
             <TripHeader
               trip={trip}
@@ -511,6 +519,8 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
             onOpenAddExpense={() => setIsDrawerOpen(true)}
             onDeleteExpense={handleDeleteExpense}
           />
+            </>
+          )}
         </main>
 
         {/* 6. Slide-Over Add Expense Drawer */}

@@ -312,38 +312,211 @@ export function SkeletonTreasuryPage() {
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className={styles.kpiRow}>
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className={styles.kpiCard}>
-            <SkeletonBox width="90px" height="14px" borderRadius="4px" />
-            <SkeletonBox width="140px" height="30px" borderRadius="6px" />
-            <SkeletonBox width="70%" height="12px" borderRadius="3px" />
-          </div>
-        ))}
-      </div>
+      <SkeletonKpiGrid />
+      <SkeletonTableRows count={5} />
+    </div>
+  );
+}
 
-      {/* Ledger Table Skeleton */}
-      <div className={styles.tableSkeleton}>
-        <div className={styles.tableCard}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <SkeletonBox width="180px" height="24px" borderRadius="6px" />
-            <SkeletonBox width="100px" height="32px" borderRadius="16px" />
+/* ═════════════════════════════════════════════════════════════════════════
+   SECTION-LEVEL SKELETON COMPONENTS (CHO TỪNG MỤC CỤ THỂ TRONG TRANG)
+   ═════════════════════════════════════════════════════════════════════════ */
+
+/** 1. Skeleton thanh dự báo thời tiết lướt ngang */
+export function SkeletonWeatherBar({ count = 4 }: { count?: number }) {
+  return (
+    <div className={`${styles.weatherTrackSkeleton} ${styles.fadeIn}`} aria-label="Đang cập nhật dữ liệu thời tiết...">
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className={styles.weatherCardSkeleton}>
+          <div>
+            {/* Top row: City Name & Region */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
+              <div>
+                <SkeletonBox width="120px" height="22px" borderRadius="6px" style={{ marginBottom: '6px' }} />
+                <SkeletonBox width="70px" height="14px" borderRadius="10px" />
+              </div>
+              <SkeletonBox width="55px" height="18px" borderRadius="9px" />
+            </div>
+
+            {/* Temp & Icon */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '12px 0' }}>
+              <div>
+                <SkeletonBox width="85px" height="38px" borderRadius="8px" style={{ marginBottom: '4px' }} />
+                <SkeletonBox width="105px" height="12px" borderRadius="4px" />
+              </div>
+              <SkeletonCircle size={46} />
+            </div>
+
+            {/* Status text */}
+            <SkeletonBox width="80%" height="16px" borderRadius="4px" style={{ margin: '14px 0 12px' }} />
+
+            {/* Metrics */}
+            <div style={{ display: 'flex', gap: '12px', margin: '12px 0' }}>
+              <SkeletonBox width="45%" height="20px" borderRadius="6px" />
+              <SkeletonBox width="45%" height="20px" borderRadius="6px" />
+            </div>
+
+            {/* Advice Box */}
+            <SkeletonBox width="100%" height="42px" borderRadius="10px" style={{ marginTop: '12px' }} />
           </div>
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className={styles.tableRowItem}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <SkeletonCircle size={36} />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <SkeletonBox width="160px" height="16px" borderRadius="4px" />
-                  <SkeletonBox width="110px" height="12px" borderRadius="3px" />
+
+          {/* Button CTA */}
+          <SkeletonBox width="100%" height="38px" borderRadius="10px" style={{ marginTop: '20px' }} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** 2. Skeleton 4 thẻ KPI tài chính Thủ quỹ */
+export function SkeletonKpiGrid() {
+  return (
+    <div className={`${styles.kpiRow} ${styles.fadeIn}`} aria-busy="true">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div key={i} className={styles.kpiCard}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <SkeletonBox width="110px" height="15px" borderRadius="4px" />
+            <SkeletonCircle size={28} />
+          </div>
+          <SkeletonBox width="150px" height="32px" borderRadius="6px" />
+          <SkeletonBox width="65%" height="12px" borderRadius="3px" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** 3. Skeleton bảng Sổ cái thu chi / Danh sách dữ liệu bảng */
+export function SkeletonTableRows({ count = 5 }: { count?: number }) {
+  return (
+    <div className={`${styles.tableSkeleton} ${styles.fadeIn}`} aria-busy="true">
+      <div className={styles.tableCard}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <div>
+            <SkeletonBox width="200px" height="24px" borderRadius="6px" style={{ marginBottom: '6px' }} />
+            <SkeletonBox width="260px" height="13px" borderRadius="4px" />
+          </div>
+          <SkeletonBox width="120px" height="36px" borderRadius="18px" />
+        </div>
+        {Array.from({ length: count }).map((_, i) => (
+          <div key={i} className={styles.tableRowItem}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flex: 1 }}>
+              <SkeletonCircle size={40} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: 1 }}>
+                <SkeletonBox width="40%" height="17px" borderRadius="4px" />
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <SkeletonBox width="80px" height="12px" borderRadius="3px" />
+                  <SkeletonBox width="60px" height="12px" borderRadius="3px" />
                 </div>
               </div>
-              <SkeletonBox width="100px" height="20px" borderRadius="4px" />
             </div>
-          ))}
-        </div>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+              <SkeletonBox width="110px" height="20px" borderRadius="4px" />
+              <SkeletonBox width="70px" height="12px" borderRadius="3px" />
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
 }
+
+/** 4. Skeleton danh sách công việc/nhiệm vụ (Tasks) */
+export function SkeletonTaskList({ count = 4 }: { count?: number }) {
+  return (
+    <div className={`${styles.taskListSkeleton} ${styles.fadeIn}`} aria-busy="true">
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className={styles.taskItemSkeleton}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
+            <SkeletonBox width="22px" height="22px" borderRadius="6px" />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: 1 }}>
+              <SkeletonBox width={`${55 + (i % 3) * 15}%`} height="16px" borderRadius="4px" />
+              <SkeletonBox width="90px" height="11px" borderRadius="3px" />
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <SkeletonCircle size={28} />
+            <SkeletonBox width="20px" height="20px" borderRadius="4px" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** 5. Skeleton Lộ trình chi tiết từng ngày (Timeline) */
+export function SkeletonTimeline({ days = 2 }: { days?: number }) {
+  return (
+    <div className={styles.fadeIn} aria-busy="true">
+      {Array.from({ length: days }).map((_, dIdx) => (
+        <div key={dIdx} className={styles.timelineDaySkeleton}>
+          {/* Day Header */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9', paddingBottom: '14px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <SkeletonBox width="80px" height="28px" borderRadius="8px" />
+              <SkeletonBox width="160px" height="20px" borderRadius="6px" />
+            </div>
+            <SkeletonBox width="100px" height="14px" borderRadius="4px" />
+          </div>
+
+          {/* Activities */}
+          {Array.from({ length: 3 }).map((_, aIdx) => (
+            <div key={aIdx} className={styles.timelineItemSkeleton}>
+              <div className={styles.timelineDot} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <SkeletonBox width="110px" height="16px" borderRadius="4px" />
+                  <SkeletonBox width="75px" height="20px" borderRadius="10px" />
+                </div>
+                <SkeletonBox width="60%" height="18px" borderRadius="4px" />
+                <SkeletonBox width="85%" height="13px" borderRadius="3px" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** 6. Skeleton Sinh lộ trình AI thông minh (AI Generating Workspace) */
+export function SkeletonAiGenerating() {
+  return (
+    <div className={styles.fadeIn} aria-live="polite">
+      {/* Banner AI Pulse */}
+      <div className={styles.aiPulseBanner}>
+        <div className={styles.aiBrainIcon}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+          </svg>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: 1 }}>
+          <div style={{ fontWeight: 700, color: '#0369a1', fontSize: '15px' }}>
+            Trí tuệ nhân tạo VISTA AI đang tính toán & tối ưu hóa...
+          </div>
+          <div style={{ color: '#0284c7', fontSize: '13px' }}>
+            Đang tổng hợp các điểm tham quan, ẩm thực đặc sản và cân đối ngân sách cho bạn
+          </div>
+        </div>
+      </div>
+
+      {/* Summary card skeleton */}
+      <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '24px', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <SkeletonBox width="280px" height="26px" borderRadius="6px" />
+          <SkeletonBox width="110px" height="28px" borderRadius="14px" />
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '14px' }}>
+          <SkeletonBox height="60px" borderRadius="10px" />
+          <SkeletonBox height="60px" borderRadius="10px" />
+          <SkeletonBox height="60px" borderRadius="10px" />
+        </div>
+      </div>
+
+      {/* Day by Day skeleton */}
+      <SkeletonTimeline days={2} />
+    </div>
+  );
+}
+
+

@@ -317,3 +317,118 @@
   padding: 14px 0;
   border-bottom: 1px solid #f1f5f9;
 }
+
+/* ─── SECTION-LEVEL SPECIFIC SKELETONS ─────────────────────────────────── */
+
+/* 1. Weather Track */
+.weatherTrackSkeleton {
+  display: flex;
+  gap: 16px;
+  overflow-x: hidden;
+  padding: 12px 0 24px;
+  width: 100%;
+}
+
+.weatherCardSkeleton {
+  flex: 0 0 320px;
+  background: #ffffff;
+  border-radius: 18px;
+  border: 1px solid #e2e8f0;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.03);
+  box-sizing: border-box;
+}
+
+/* 2. Task List Skeleton */
+.taskListSkeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.taskItemSkeleton {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+/* 3. Timeline / Itinerary Day Skeleton */
+.timelineDaySkeleton {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.timelineItemSkeleton {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 12px 0;
+  border-left: 2px solid #e2e8f0;
+  margin-left: 12px;
+  padding-left: 20px;
+  position: relative;
+}
+
+.timelineDot {
+  position: absolute;
+  left: -7px;
+  top: 16px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  composes: shimmer;
+}
+
+/* 4. AI Generating Card Skeleton */
+.aiPulseBanner {
+  background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
+  border: 1px solid #bfdbfe;
+  border-radius: 16px;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+}
+
+.aiBrainIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #0284c7 0%, #06b6d4 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  animation: pulseGlow 2s ease-in-out infinite;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+  flex-shrink: 0;
+}
+
+

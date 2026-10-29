@@ -38,6 +38,7 @@ import {
   ShieldAlert,
 } from 'lucide-react';
 import { Navbar } from '@/components/common/Navbar';
+import { SkeletonTripsPage, SkeletonTimeline, SkeletonTaskList } from '@/components/common/Skeleton';
 import { GroupMapTab } from '@/features/trip-location/components/GroupMapTab';
 import styles from './tripDetail.module.css';
 
@@ -1324,14 +1325,7 @@ export default function TripDetailPage() {
   }
 
   if (!trip) {
-    return (
-      <div className={styles.tripDetailPage}>
-        <Navbar activeModule="trips" />
-        <div className={styles.container} style={{ paddingTop: '80px', textAlign: 'center' }}>
-          <p style={{ color: '#64748B', fontSize: '16px' }}>Đang tải thông tin chuyến đi...</p>
-        </div>
-      </div>
-    );
+    return <SkeletonTripsPage />;
   }
 
   if (isAuthenticated !== true) {
