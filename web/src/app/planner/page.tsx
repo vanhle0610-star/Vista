@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { Navbar } from '@/components/common/Navbar';
-import { SkeletonAiGenerating } from '@/components/common/Skeleton';
+import { SkeletonAiGenerating, SkeletonBox } from '@/components/common/Skeleton';
 import type { DestinationMarker } from '@/features/map-location/types';
 import { getRealPlacesByProvince } from '@/data/realDestinationsData';
 import {
@@ -43,8 +43,8 @@ const MapViewAdapter = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', minHeight: '520px', background: '#F8FAFC', color: '#64748B', fontSize: '13.5px', fontWeight: 600 }}>
-        Đang khởi tạo bản đồ tương tác VISTA MapLibre...
+      <div style={{ width: '100%', minHeight: '520px', borderRadius: '16px', overflow: 'hidden' }}>
+        <SkeletonBox width="100%" height="520px" borderRadius="16px" />
       </div>
     ),
   }

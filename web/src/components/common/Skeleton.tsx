@@ -199,56 +199,104 @@ export function SkeletonTripsPage() {
   );
 }
 
-/** Skeleton chuyên biệt cho Trang AI Planner */
+/** Skeleton chuyên biệt cho Trang AI Planner - khớp 100% bố cục trang thật */
 export function SkeletonPlannerPage() {
   return (
-    <div className={styles.fadeIn} style={{ minHeight: '100vh', background: '#f8fafc', display: 'flex', flexDirection: 'column' }}>
+    <div className={styles.fadeIn} style={{ minHeight: '100vh', background: '#F8FAFC' }}>
       <SkeletonNavbar />
-      <div className={styles.splitLayout}>
-        {/* Left Form Sidebar */}
-        <aside className={styles.splitSidebar}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-            <SkeletonCircle size={36} />
-            <div>
-              <SkeletonBox width="160px" height="20px" borderRadius="4px" style={{ marginBottom: '6px' }} />
+
+      {/* 1. Intro Header matching .introContainer */}
+      <section className={styles.plannerIntroSkeleton}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <SkeletonBox width="140px" height="14px" borderRadius="4px" />
+          <SkeletonBox width="340px" height="32px" borderRadius="8px" />
+          <SkeletonBox width="420px" height="16px" borderRadius="4px" />
+        </div>
+        <SkeletonBox width="140px" height="38px" borderRadius="10px" />
+      </section>
+
+      {/* 2. Workspace Grid matching .workspaceContainer (360px & 1fr) */}
+      <main className={styles.plannerWorkspaceSkeleton}>
+        {/* Left Column — Preferences Card Skeleton */}
+        <aside className={styles.plannerFormCardSkeleton}>
+          {/* Card Header */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingBottom: '12px', borderBottom: '1px solid #f1f5f9' }}>
+            <SkeletonCircle size={40} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <SkeletonBox width="150px" height="18px" borderRadius="4px" />
               <SkeletonBox width="200px" height="12px" borderRadius="3px" />
             </div>
           </div>
 
-          <SkeletonBox width="100%" height="48px" borderRadius="12px" />
-          <SkeletonBox width="100%" height="48px" borderRadius="12px" />
-          
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <SkeletonBox width="50%" height="44px" borderRadius="10px" />
-            <SkeletonBox width="50%" height="44px" borderRadius="10px" />
+          {/* Group A — Destination & Dates */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <SkeletonBox width="110px" height="14px" borderRadius="4px" />
+            <SkeletonBox width="100%" height="46px" borderRadius="12px" />
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '12px' }}>
-            <SkeletonBox width="120px" height="16px" borderRadius="4px" />
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-              <SkeletonBox width="70px" height="32px" borderRadius="16px" />
-              <SkeletonBox width="85px" height="32px" borderRadius="16px" />
-              <SkeletonBox width="65px" height="32px" borderRadius="16px" />
-              <SkeletonBox width="90px" height="32px" borderRadius="16px" />
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <SkeletonBox width="70px" height="14px" borderRadius="4px" />
+              <SkeletonBox width="100%" height="44px" borderRadius="10px" />
+            </div>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <SkeletonBox width="70px" height="14px" borderRadius="4px" />
+              <SkeletonBox width="100%" height="44px" borderRadius="10px" />
             </div>
           </div>
 
-          <SkeletonBox width="100%" height="52px" borderRadius="26px" style={{ marginTop: 'auto' }} />
+          {/* Group B — Styles */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '6px' }}>
+            <SkeletonBox width="120px" height="14px" borderRadius="4px" />
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+              <SkeletonBox height="42px" borderRadius="10px" />
+              <SkeletonBox height="42px" borderRadius="10px" />
+              <SkeletonBox height="42px" borderRadius="10px" />
+              <SkeletonBox height="42px" borderRadius="10px" />
+              <SkeletonBox height="42px" borderRadius="10px" />
+              <SkeletonBox height="42px" borderRadius="10px" />
+            </div>
+          </div>
+
+          {/* Generate Button CTA */}
+          <SkeletonBox width="100%" height="48px" borderRadius="24px" style={{ marginTop: '8px' }} />
         </aside>
 
-        {/* Right Canvas/Itinerary Skeleton */}
-        <main className={styles.splitMainContent}>
-          <div style={{ padding: '36px', display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '860px' }}>
-            <SkeletonBox width="300px" height="28px" borderRadius="8px" />
-            <SkeletonBox width="500px" height="16px" borderRadius="4px" />
-            <div style={{ display: 'flex', gap: '16px', marginTop: '12px' }}>
-              <SkeletonBox width="100%" height="180px" borderRadius="16px" />
-              <SkeletonBox width="100%" height="180px" borderRadius="16px" />
+        {/* Right Column — Itinerary Workspace Skeleton */}
+        <section className={styles.plannerItinerarySkeleton}>
+          {/* Summary Card */}
+          <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '18px', padding: '20px 24px', boxShadow: '0 4px 20px rgba(20, 40, 63, 0.04)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <SkeletonBox width="88px" height="88px" borderRadius="14px" />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <SkeletonBox width="260px" height="24px" borderRadius="6px" />
+                  <SkeletonBox width="180px" height="14px" borderRadius="4px" />
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <SkeletonBox width="75px" height="24px" borderRadius="12px" />
+                    <SkeletonBox width="85px" height="24px" borderRadius="12px" />
+                    <SkeletonBox width="65px" height="24px" borderRadius="12px" />
+                  </div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <SkeletonBox width="110px" height="38px" borderRadius="10px" />
+                <SkeletonBox width="130px" height="38px" borderRadius="10px" />
+              </div>
             </div>
-            <SkeletonBox width="100%" height="240px" borderRadius="16px" style={{ marginTop: '12px' }} />
           </div>
-        </main>
-      </div>
+
+          {/* Tabs row */}
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <SkeletonBox width="130px" height="36px" borderRadius="18px" />
+            <SkeletonBox width="140px" height="36px" borderRadius="18px" />
+            <SkeletonBox width="120px" height="36px" borderRadius="18px" />
+          </div>
+
+          {/* Day 1 and Day 2 Timeline */}
+          <SkeletonTimeline days={2} />
+        </section>
+      </main>
     </div>
   );
 }
