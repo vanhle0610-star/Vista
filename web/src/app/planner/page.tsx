@@ -1778,6 +1778,9 @@ export default function PlannerPage() {
 
   return (
     <div className={styles.plannerPage}>
+      {/* ─── 1. GLOBAL HEADER (100% UNIFIED WITH HOMEPAGE) ─── */}
+      <Navbar activeModule="planner" />
+
       {/* ─── LINKED TRIP BANNER (BIDIRECTIONAL CONNECTION) ─── */}
       {linkedTripTitle && (
         <div style={{

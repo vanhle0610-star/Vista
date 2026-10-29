@@ -321,6 +321,9 @@ export default function CommunityPage() {
 
   return (
     <div className={styles.pageRoot}>
+      {/* ── Top Navbar ── */}
+      <Navbar activeModule="community" />
+
       {/* ── 3-Column Layout Container ── */}
       <div className={styles.container3Col}>
         {/* ══════════════════════════════════════════════════════════════════

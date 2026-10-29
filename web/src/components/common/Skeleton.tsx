@@ -151,6 +151,7 @@ export function SkeletonCardGrid({ count = 6 }: { count?: number }) {
 export function SkeletonUniversalPage() {
   return (
     <div className={styles.fadeIn} style={{ minHeight: '100vh', background: '#f8fafc' }}>
+      <SkeletonNavbar />
       <section className={styles.heroSection}>
         <div className={styles.heroBadge} />
         <div className={styles.heroTitle} />
@@ -175,6 +176,7 @@ export function SkeletonUniversalPage() {
 export function SkeletonTripsPage() {
   return (
     <div className={styles.fadeIn} style={{ minHeight: '100vh', background: '#f8fafc' }}>
+      <SkeletonNavbar />
       <div style={{ maxWidth: '1320px', margin: '0 auto', padding: '32px 24px 20px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
           <div>
@@ -201,6 +203,8 @@ export function SkeletonTripsPage() {
 export function SkeletonPlannerPage() {
   return (
     <div className={styles.fadeIn} style={{ minHeight: '100vh', background: '#F8FAFC' }}>
+      <SkeletonNavbar />
+
       {/* 1. Intro Header matching .introContainer */}
       <section className={styles.plannerIntroSkeleton}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -301,6 +305,7 @@ export function SkeletonPlannerPage() {
 export function SkeletonMapPage() {
   return (
     <div className={styles.fadeIn} style={{ minHeight: '100vh', background: '#f8fafc', display: 'flex', flexDirection: 'column' }}>
+      <SkeletonNavbar />
       <div className={styles.splitLayout}>
         {/* Left Destination List Sidebar */}
         <aside className={styles.splitSidebar}>
@@ -341,6 +346,7 @@ export function SkeletonMapPage() {
 export function SkeletonTreasuryPage() {
   return (
     <div className={styles.fadeIn} style={{ minHeight: '100vh', background: '#f8fafc' }}>
+      <SkeletonNavbar />
       <div style={{ maxWidth: '1320px', margin: '0 auto', padding: '32px 24px 20px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px', flexWrap: 'wrap', gap: '16px' }}>
           <div>

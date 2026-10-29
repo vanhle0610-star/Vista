@@ -1243,6 +1243,9 @@ export default function TripsPage() {
 
   return (
     <div className={styles.tripsPage}>
+      {/* ─── GLOBAL NAVBAR ─────────────────────────────────────────────── */}
+      <Navbar activeModule="trips" />
+
       {/* ─── 1. TOP HEADER & ACTION ROW ───────────────────────────────── */}
       <section className={styles.headerSection}>
         <div className={styles.container}>

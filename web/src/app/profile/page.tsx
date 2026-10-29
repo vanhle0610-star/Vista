@@ -418,6 +418,8 @@ export default function ProfilePage() {
 
   return (
     <div className={styles.profilePageContainer}>
+      <Navbar />
+
       <main className={styles.profileContent}>
         {/* ─── 1. HERO HEADER ─── */}
         <section className={styles.profileHeroCard}>

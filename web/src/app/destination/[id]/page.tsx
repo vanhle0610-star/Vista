@@ -23,7 +23,10 @@ export default function DestinationPage() {
       .catch(() => { if (!controller.signal.aborted) setError('Chưa tải được thông tin. Kiểm tra kết nối rồi thử lại.'); });
     return () => controller.abort();
   }, [id, attempt]);
-  return <><Navbar /><main className={styles.content}>
+  return (
+    <>
+      <Navbar activeModule="map" />
+      <main className={styles.content}>
     <Link href="/map">← Khám phá trên bản đồ</Link>
     {error && <p role="alert">{error} <button onClick={() => setAttempt((n) => n + 1)}>Thử lại</button></p>}
     {!data && !error && <p role="status">Đang tải địa điểm…</p>}
@@ -35,5 +38,7 @@ export default function DestinationPage() {
         <Link href={`/map?destinationId=${data.id}&directions=1`}>Chỉ đường</Link>
       </div> : <p>Địa điểm chưa có tọa độ hợp lệ. Chưa thể hiển thị trên bản đồ hoặc tính tuyến.</p>}
     </article>}
-  </main></>;
+      </main>
+    </>
+  );
 }

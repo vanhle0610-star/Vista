@@ -1256,6 +1256,7 @@ export default function TripDetailPage() {
   if (accessDenied || (tripId && tripId.includes('private'))) {
     return (
       <div className={styles.tripDetailPage}>
+        <Navbar activeModule="trips" />
         <div className={styles.container} style={{ paddingTop: '60px', textAlign: 'center', maxWidth: '640px', margin: '0 auto' }}>
           <div style={{ background: '#FEF2F2', border: '1.5px solid #FECACA', borderRadius: '24px', padding: '36px 28px', boxShadow: '0 10px 32px rgba(239, 68, 68, 0.08)' }}>
             <div style={{ fontSize: '52px', marginBottom: '12px' }}>🔒</div>
@@ -1345,6 +1346,8 @@ export default function TripDetailPage() {
 
   return (
     <div className={styles.tripDetailPage}>
+      <Navbar activeModule="trips" />
+
       <main className={styles.container}>
         {/* ─── CREATIVE WANDERLUST PASSPORT & BOARDING PASS HEADER ───────── */}
         <div className={styles.compactTripHeader}>
