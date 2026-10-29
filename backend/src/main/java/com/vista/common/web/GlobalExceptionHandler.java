@@ -250,6 +250,21 @@ public class GlobalExceptionHandler {
     return problem;
   }
 
+  @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
+  ProblemDetail responseStatus(
+      org.springframework.web.server.ResponseStatusException exception,
+      HttpServletRequest request) {
+    var problem =
+        ProblemDetail.forStatusAndDetail(
+            exception.getStatusCode(), exception.getReason());
+    problem.setType(URI.create("https://vista.example/errors/" + exception.getStatusCode().value()));
+    problem.setTitle(exception.getStatusCode().toString());
+    problem.setInstance(URI.create(request.getRequestURI()));
+    problem.setProperty("code", exception.getStatusCode().toString());
+    problem.setProperty("requestId", MDC.get("requestId"));
+    return problem;
+  }
+
   @ExceptionHandler(Exception.class)
   ProblemDetail unexpected(Exception exception, HttpServletRequest request) {
     log.error("Unhandled exception for request: {}", request.getRequestURI(), exception);

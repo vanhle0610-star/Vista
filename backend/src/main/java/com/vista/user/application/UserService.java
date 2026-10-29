@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vista.auth.api.dto.UserResponse;
 import com.vista.auth.infrastructure.RefreshTokenRepository;
 import com.vista.common.audit.AuditLogService;
+import com.vista.trip.application.TripAccessService;
 import com.vista.user.api.dto.ChangePasswordRequest;
 import com.vista.user.api.dto.UpdateProfileRequest;
 import com.vista.user.domain.UserEntity;
@@ -15,10 +16,12 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class UserService {
@@ -46,9 +49,19 @@ public class UserService {
   private final PasswordEncoder passwordEncoder;
   private final RefreshTokenRepository refreshTokenRepository;
   private final ObjectMapper objectMapper;
+  private final TripAccessService tripAccessService;
 
   public UserService(UserRepository userRepository, AuditLogService auditLogService) {
-    this(userRepository, auditLogService, null, null, new ObjectMapper());
+    this(userRepository, auditLogService, null, null, new ObjectMapper(), null);
+  }
+
+  public UserService(
+      UserRepository userRepository,
+      AuditLogService auditLogService,
+      PasswordEncoder passwordEncoder,
+      RefreshTokenRepository refreshTokenRepository,
+      ObjectMapper objectMapper) {
+    this(userRepository, auditLogService, passwordEncoder, refreshTokenRepository, objectMapper, null);
   }
 
   @Autowired
@@ -57,12 +70,14 @@ public class UserService {
       AuditLogService auditLogService,
       PasswordEncoder passwordEncoder,
       @Autowired(required = false) RefreshTokenRepository refreshTokenRepository,
-      @Autowired(required = false) ObjectMapper objectMapper) {
+      @Autowired(required = false) ObjectMapper objectMapper,
+      @Autowired(required = false) TripAccessService tripAccessService) {
     this.userRepository = userRepository;
     this.auditLogService = auditLogService;
     this.passwordEncoder = passwordEncoder;
     this.refreshTokenRepository = refreshTokenRepository;
     this.objectMapper = objectMapper != null ? objectMapper : new ObjectMapper();
+    this.tripAccessService = tripAccessService;
   }
 
   @Transactional(readOnly = true)
@@ -166,6 +181,48 @@ public class UserService {
         "USER",
         userId.toString(),
         "Đổi mật khẩu tài khoản thành công và thu hồi các phiên đăng nhập cũ");
+  }
+
+  /**
+   * Xóa mềm tài khoản người dùng (FR-AUTH-05 / BR-01).
+   * Tuyệt đối không xóa cứng (userRepository.delete) để bảo vệ toàn vẹn lịch sử dữ liệu.
+   * Ràng buộc: Không được xóa nếu user đang là OWNER của bất kỳ chuyến đi nào chưa hủy.
+   */
+  @Transactional
+  public void deleteAccount(UUID userId) {
+    UserEntity user = findUserOrThrow(userId);
+
+    if (tripAccessService != null && tripAccessService.isOwnerOfAnyActiveTrip(userId)) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST,
+          "Bạn đang là Trưởng nhóm của một hoặc nhiều chuyến đi đang hoạt động. "
+              + "Vui lòng chuyển giao quyền Trưởng nhóm hoặc xóa chuyến đi trước khi xóa tài khoản.");
+    }
+
+    user.setStatus("DELETED");
+    userRepository.save(user);
+
+    if (refreshTokenRepository != null) {
+      try {
+        refreshTokenRepository.revokeAllByUserId(userId);
+      } catch (Exception ignored) {
+      }
+    }
+
+    auditLogService.logAction(
+        userId,
+        "ACCOUNT_DELETED",
+        "USER",
+        userId.toString(),
+        "Xóa mềm tài khoản người dùng thành công");
+  }
+
+  /**
+   * Vô hiệu hóa tài khoản (alias cho deleteAccount theo chuẩn SRS FR-AUTH-05).
+   */
+  @Transactional
+  public void deactivateAccount(UUID userId) {
+    deleteAccount(userId);
   }
 
   private UserEntity findUserOrThrow(UUID userId) {

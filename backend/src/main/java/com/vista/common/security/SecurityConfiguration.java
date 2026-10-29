@@ -52,18 +52,33 @@ public class SecurityConfiguration {
                         (request, response, authException) -> {
                           response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                           response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);
+
+                          String authError = (String) request.getAttribute("X-AUTH-ERROR");
+                          boolean isExpired = "TOKEN_EXPIRED".equals(authError);
+                          String errorCode = isExpired ? "TOKEN_EXPIRED" : "UNAUTHORIZED";
+                          String errorTitle = isExpired ? "Token Expired" : "Unauthorized";
+                          String errorDetail =
+                              isExpired
+                                  ? "Phiên làm việc đã hết hạn. Vui lòng làm mới token."
+                                  : "Yêu cầu cần có Access Token hợp lệ để truy cập";
+
                           response
                               .getWriter()
                               .write(
-                                  """
-                                  {
-                                    "type": "https://vista.example/errors/unauthorized",
-                                    "title": "Unauthorized",
-                                    "status": 401,
-                                    "detail": "Yêu cầu cần có Access Token hợp lệ để truy cập",
-                                    "code": "UNAUTHORIZED"
-                                  }
-                                  """);
+                                  String.format(
+                                      """
+                                      {
+                                        "type": "https://vista.example/errors/%s",
+                                        "title": "%s",
+                                        "status": 401,
+                                        "detail": "%s",
+                                        "code": "%s"
+                                      }
+                                      """,
+                                      isExpired ? "token-expired" : "unauthorized",
+                                      errorTitle,
+                                      errorDetail,
+                                      errorCode));
                         })
                     .accessDeniedHandler(
                         (request, response, accessDeniedException) -> {
