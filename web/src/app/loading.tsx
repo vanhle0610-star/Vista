@@ -1,1 +1,5 @@
-export default function Loading() { return <main className="main">Đang tải…</main>; }
+import { SkeletonUniversalPage } from '@/components/common/Skeleton';
+
+export default function Loading() {
+  return <SkeletonUniversalPage />;
+}

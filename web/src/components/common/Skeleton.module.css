@@ -1,0 +1,319 @@
+/* ─── VISTA SKELETON UI & SHIMMER ANIMATION SYSTEM ───────────────────── */
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fadeIn {
+  animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    #f1f5f9 0%,
+    #e2e8f0 30%,
+    #f8fafc 50%,
+    #e2e8f0 70%,
+    #f1f5f9 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  display: block;
+}
+
+/* ─── PRIMITIVES ────────────────────────────────────────────────────────── */
+.box {
+  composes: shimmer;
+  border-radius: 8px;
+}
+
+.circle {
+  composes: shimmer;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.text {
+  composes: shimmer;
+  border-radius: 6px;
+  height: 14px;
+}
+
+/* ─── NAVBAR SKELETON ──────────────────────────────────────────────────── */
+.navbarWrapper {
+  width: 100%;
+  background: #ffffff;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.04);
+}
+
+.navbarContainer {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: 64px;
+  box-sizing: border-box;
+}
+
+.brandGroup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brandIcon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  composes: shimmer;
+}
+
+.brandTextCol {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.navLinksGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (max-width: 900px) {
+  .navLinksGroup {
+    display: none;
+  }
+}
+
+.navPill {
+  height: 36px;
+  width: 96px;
+  border-radius: 20px;
+  composes: shimmer;
+}
+
+.navActionsGroup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ─── HERO & BANNER SKELETON ───────────────────────────────────────────── */
+.heroSection {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 40px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+}
+
+.heroBadge {
+  width: 140px;
+  height: 28px;
+  border-radius: 20px;
+  composes: shimmer;
+}
+
+.heroTitle {
+  width: min(600px, 90%);
+  height: 40px;
+  border-radius: 10px;
+  composes: shimmer;
+}
+
+.heroSubtitle {
+  width: min(420px, 80%);
+  height: 18px;
+  border-radius: 6px;
+  composes: shimmer;
+}
+
+.searchBarWrapper {
+  width: min(680px, 100%);
+  height: 54px;
+  border-radius: 28px;
+  composes: shimmer;
+  margin-top: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+/* ─── FILTER TABS SKELETON ─────────────────────────────────────────────── */
+.filterBarWrapper {
+  max-width: 1320px;
+  margin: 0 auto 24px;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow-x: auto;
+}
+
+.filterPill {
+  height: 38px;
+  width: 110px;
+  border-radius: 20px;
+  composes: shimmer;
+  flex-shrink: 0;
+}
+
+/* ─── CARD GRID SKELETON ───────────────────────────────────────────────── */
+.gridWrapper {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 24px 48px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.cardItem {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+  display: flex;
+  flex-direction: column;
+}
+
+.cardThumbnail {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  composes: shimmer;
+}
+
+.cardContent {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+.cardMetaRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cardFooter {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ─── SPLIT VIEW (MAP / PLANNER) ───────────────────────────────────────── */
+.splitLayout {
+  display: flex;
+  height: calc(100vh - 64px);
+  width: 100%;
+  overflow: hidden;
+  background: #f8fafc;
+}
+
+.splitSidebar {
+  width: 420px;
+  min-width: 360px;
+  background: #ffffff;
+  border-right: 1px solid #e2e8f0;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .splitLayout {
+    flex-direction: column;
+    height: auto;
+  }
+  .splitSidebar {
+    width: 100%;
+    min-width: auto;
+    border-right: none;
+    border-bottom: 1px solid #e2e8f0;
+  }
+}
+
+.splitMainContent {
+  flex: 1;
+  composes: shimmer;
+  position: relative;
+  background: #f1f5f9;
+}
+
+/* ─── TREASURY FINANCIAL KPI CARDS ─────────────────────────────────────── */
+.kpiRow {
+  max-width: 1320px;
+  margin: 0 auto 28px;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.kpiCard {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tableSkeleton {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 24px 40px;
+}
+
+.tableCard {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tableRowItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
