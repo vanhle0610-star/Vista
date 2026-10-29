@@ -28,7 +28,19 @@ export function Navbar({
   const [currentUser, setCurrentUser] = useState<VistaUser | null>(null);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [treasuryHref, setTreasuryHref] = useState<string>('/trips');
+  const [optimisticModule, setOptimisticModule] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const handleNavClick = (moduleId: string, href: string) => {
+    setOptimisticModule(moduleId);
+    if (typeof window !== 'undefined') {
+      (window as any).__VISTA_TARGET_ROUTE__ = href;
+      try {
+        sessionStorage.setItem('vista_target_route', href);
+      } catch {}
+      window.dispatchEvent(new CustomEvent('vista-nav-change', { detail: href }));
+    }
+  };
 
   useEffect(() => {
     const resolveTreasuryLink = () => {
@@ -218,11 +230,14 @@ export function Navbar({
         {/* Main navigation */}
         <nav className={styles.navMenu} aria-label="Menu chức năng chính">
           {navItems.map((item) => {
-            const isActive = activeModule === item.id;
+            const activeId = optimisticModule || activeModule;
+            const isActive = activeId === item.id;
             return (
               <Link
                 key={item.id}
                 href={item.href}
+                prefetch={true}
+                onClick={() => handleNavClick(item.id, item.href)}
                 className={`${styles.navLink} ${isActive ? styles.navLinkActive : ''}`}
                 id={`nav-${item.id}`}
               >
@@ -447,13 +462,18 @@ export function Navbar({
         <div className={styles.mobileDrawerOverlay} onClick={() => setMobileMenuOpen(false)}>
           <div className={styles.mobileDrawer} onClick={(e) => e.stopPropagation()}>
             {navItems.map((item) => {
-              const isActive = activeModule === item.id;
+              const activeId = optimisticModule || activeModule;
+              const isActive = activeId === item.id;
               return (
                 <Link
                   key={item.id}
                   href={item.href}
+                  prefetch={true}
                   className={`${styles.navLink} ${isActive ? styles.navLinkActive : ''}`}
-                  onClick={() => setMobileMenuOpen(false)}
+                  onClick={() => {
+                    handleNavClick(item.id, item.href);
+                    setMobileMenuOpen(false);
+                  }}
                 >
                   <span style={{ flex: 1 }}>{currentLang === 'vi' ? item.labelVi : item.labelEn}</span>
                   {item.badge && item.badgeType === 'ai' && (
