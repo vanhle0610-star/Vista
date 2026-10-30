@@ -38,7 +38,6 @@ import {
 } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
 import type { components } from '@/types/api.generated';
-import { Navbar } from '@/components/common/Navbar';
 import styles from './page.module.css';
 
 type Post = components['schemas']['Post'];
@@ -321,9 +320,6 @@ export default function CommunityPage() {
 
   return (
     <div className={styles.pageRoot}>
-      {/* ── Top Navbar ── */}
-      <Navbar activeModule="community" />
-
       {/* ── 3-Column Layout Container ── */}
       <div className={styles.container3Col}>
         {/* ══════════════════════════════════════════════════════════════════

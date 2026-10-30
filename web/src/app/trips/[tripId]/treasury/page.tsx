@@ -17,7 +17,6 @@ import { ExpenseCategoryDonut } from '@/features/budget/components/ExpenseCatego
 import { DebtSettlementMatrix } from '@/features/budget/components/DebtSettlementMatrix';
 import { ExpenseLedgerTable } from '@/features/budget/components/ExpenseLedgerTable';
 import { AddExpenseDrawer } from '@/features/budget/components/AddExpenseDrawer';
-import { Navbar } from '@/components/common/Navbar';
 import { SkeletonKpiGrid, SkeletonTableRows } from '@/components/common/Skeleton';
 import styles from '@/features/budget/treasury.module.css';
 
@@ -39,6 +38,9 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
         router.replace('/login?returnUrl=' + encodeURIComponent(`/trips/${tripId}/treasury`));
       } else {
         setIsAuthenticated(true);
+        if (!document.cookie.includes('vista_token=')) {
+          document.cookie = `vista_token=${token}; path=/; max-age=604800; SameSite=Lax`;
+        }
       }
     }
   }, [router, tripId]);
@@ -464,9 +466,6 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#f8fafc' }}>
-      {/* ─── 1. GLOBAL NAVBAR ────────────────────────────────────────── */}
-      <Navbar activeModule="treasury" />
-
       {/* ─── 2. MAIN FULL-WIDTH TREASURY WORKSPACE (NO SECOND SIDEBAR) ── */}
       <div className={styles.treasuryLayout}>
         <main className={styles.mainContainer}>

@@ -1,6 +1,6 @@
-import { SkeletonUniversalPage } from '@/components/common/Skeleton';
+import { SkeletonCommunityPage } from '@/components/common/Skeleton';
 
 export default function CommunityLoading() {
-  return <SkeletonUniversalPage />;
+  return <SkeletonCommunityPage />;
 }
 

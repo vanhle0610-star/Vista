@@ -7,12 +7,16 @@
   z-index: 1000;
   border-bottom: 1px solid rgba(226, 232, 240, 0.9);
   box-shadow: 0 2px 12px rgba(15, 23, 42, 0.04);
+  height: 65px;
+  box-sizing: border-box;
 }
 
 .navbarContainer {
   max-width: 1320px;
   margin: 0 auto;
-  padding: 10px 24px;
+  padding: 0 24px;
+  height: 64px;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: space-between;

@@ -151,7 +151,6 @@ export function SkeletonCardGrid({ count = 6 }: { count?: number }) {
 export function SkeletonUniversalPage() {
   return (
     <div className={styles.fadeIn} style={{ minHeight: '100vh', background: '#f8fafc' }}>
-      <SkeletonNavbar />
       <section className={styles.heroSection}>
         <div className={styles.heroBadge} />
         <div className={styles.heroTitle} />
@@ -176,8 +175,7 @@ export function SkeletonUniversalPage() {
 export function SkeletonTripsPage() {
   return (
     <div className={styles.fadeIn} style={{ minHeight: '100vh', background: '#f8fafc' }}>
-      <SkeletonNavbar />
-      <div style={{ maxWidth: '1320px', margin: '0 auto', padding: '32px 24px 20px' }}>
+      <div style={{ maxWidth: '1240px', margin: '0 auto', padding: '32px 24px 20px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
           <div>
             <SkeletonBox width="260px" height="34px" borderRadius="8px" style={{ marginBottom: '8px' }} />
@@ -203,8 +201,6 @@ export function SkeletonTripsPage() {
 export function SkeletonPlannerPage() {
   return (
     <div className={styles.fadeIn} style={{ minHeight: '100vh', background: '#F8FAFC' }}>
-      <SkeletonNavbar />
-
       {/* 1. Intro Header matching .introContainer */}
       <section className={styles.plannerIntroSkeleton}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -305,7 +301,6 @@ export function SkeletonPlannerPage() {
 export function SkeletonMapPage() {
   return (
     <div className={styles.fadeIn} style={{ minHeight: '100vh', background: '#f8fafc', display: 'flex', flexDirection: 'column' }}>
-      <SkeletonNavbar />
       <div className={styles.splitLayout}>
         {/* Left Destination List Sidebar */}
         <aside className={styles.splitSidebar}>
@@ -346,7 +341,6 @@ export function SkeletonMapPage() {
 export function SkeletonTreasuryPage() {
   return (
     <div className={styles.fadeIn} style={{ minHeight: '100vh', background: '#f8fafc' }}>
-      <SkeletonNavbar />
       <div style={{ maxWidth: '1320px', margin: '0 auto', padding: '32px 24px 20px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px', flexWrap: 'wrap', gap: '16px' }}>
           <div>
@@ -362,6 +356,120 @@ export function SkeletonTreasuryPage() {
 
       <SkeletonKpiGrid />
       <SkeletonTableRows count={5} />
+    </div>
+  );
+}
+
+/** Skeleton chuyên biệt cho Trang Cộng đồng (3 cột) */
+export function SkeletonCommunityPage() {
+  return (
+    <div className={styles.fadeIn} style={{ minHeight: '100vh', background: '#f8fafc' }}>
+      <div
+        style={{
+          maxWidth: '1320px',
+          margin: '0 auto',
+          padding: '24px 20px 80px',
+          display: 'grid',
+          gridTemplateColumns: '230px minmax(0, 720px) 300px',
+          gap: '24px',
+          boxSizing: 'border-box',
+        }}
+      >
+        {/* Left column */}
+        <aside style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '16px' }}>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '14px' }}>
+              <SkeletonCircle size={44} />
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <SkeletonBox width="80%" height="16px" borderRadius="4px" />
+                <SkeletonBox width="50%" height="12px" borderRadius="3px" />
+              </div>
+            </div>
+            <SkeletonBox width="100%" height="36px" borderRadius="8px" />
+          </div>
+          <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <SkeletonBox width="60%" height="14px" borderRadius="4px" />
+            <SkeletonBox width="90%" height="32px" borderRadius="8px" />
+            <SkeletonBox width="85%" height="32px" borderRadius="8px" />
+            <SkeletonBox width="80%" height="32px" borderRadius="8px" />
+          </div>
+        </aside>
+
+        {/* Center feed */}
+        <main style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '18px' }}>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+              <SkeletonCircle size={40} />
+              <SkeletonBox width="100%" height="42px" borderRadius="21px" />
+            </div>
+          </div>
+          {Array.from({ length: 2 }).map((_, idx) => (
+            <div key={idx} style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '20px' }}>
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px' }}>
+                <SkeletonCircle size={40} />
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <SkeletonBox width="140px" height="16px" borderRadius="4px" />
+                  <SkeletonBox width="90px" height="12px" borderRadius="3px" />
+                </div>
+              </div>
+              <SkeletonBox width="80%" height="22px" borderRadius="4px" style={{ marginBottom: '10px' }} />
+              <SkeletonBox width="100%" height="14px" borderRadius="4px" style={{ marginBottom: '6px' }} />
+              <SkeletonBox width="60%" height="14px" borderRadius="4px" style={{ marginBottom: '14px' }} />
+              <SkeletonBox width="100%" height="220px" borderRadius="12px" />
+            </div>
+          ))}
+        </main>
+
+        {/* Right sidebar */}
+        <aside style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '18px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <SkeletonBox width="120px" height="18px" borderRadius="4px" />
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              <SkeletonBox width="70px" height="28px" borderRadius="14px" />
+              <SkeletonBox width="90px" height="28px" borderRadius="14px" />
+              <SkeletonBox width="80px" height="28px" borderRadius="14px" />
+              <SkeletonBox width="65px" height="28px" borderRadius="14px" />
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  );
+}
+
+/** Skeleton chuyên biệt cho Trang Hồ sơ cá nhân */
+export function SkeletonProfilePage() {
+  return (
+    <div className={styles.fadeIn} style={{ minHeight: '100vh', background: '#f8fafc' }}>
+      <div style={{ maxWidth: '1040px', margin: '32px auto', padding: '0 24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        {/* Hero Card */}
+        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '20px', padding: '32px', display: 'flex', gap: '24px', alignItems: 'center' }}>
+          <SkeletonCircle size={96} />
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <SkeletonBox width="220px" height="28px" borderRadius="6px" />
+            <SkeletonBox width="160px" height="16px" borderRadius="4px" />
+            <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+              <SkeletonBox width="80px" height="24px" borderRadius="12px" />
+              <SkeletonBox width="90px" height="24px" borderRadius="12px" />
+            </div>
+          </div>
+        </div>
+
+        {/* Tab row */}
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <SkeletonBox width="120px" height="38px" borderRadius="19px" />
+          <SkeletonBox width="130px" height="38px" borderRadius="19px" />
+          <SkeletonBox width="110px" height="38px" borderRadius="19px" />
+        </div>
+
+        {/* Content Box */}
+        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '20px', padding: '28px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
+          <SkeletonBox width="180px" height="22px" borderRadius="6px" />
+          <SkeletonBox width="100%" height="48px" borderRadius="10px" />
+          <SkeletonBox width="100%" height="48px" borderRadius="10px" />
+          <SkeletonBox width="100%" height="48px" borderRadius="10px" />
+        </div>
+      </div>
     </div>
   );
 }

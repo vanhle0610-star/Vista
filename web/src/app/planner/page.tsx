@@ -4,7 +4,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { Navbar } from '@/components/common/Navbar';
 import { SkeletonAiGenerating, SkeletonBox } from '@/components/common/Skeleton';
 import type { DestinationMarker } from '@/features/map-location/types';
 import { getRealPlacesByProvince } from '@/data/realDestinationsData';
@@ -1778,9 +1777,6 @@ export default function PlannerPage() {
 
   return (
     <div className={styles.plannerPage}>
-      {/* ─── 1. GLOBAL HEADER (100% UNIFIED WITH HOMEPAGE) ─── */}
-      <Navbar activeModule="planner" />
-
       {/* ─── LINKED TRIP BANNER (BIDIRECTIONAL CONNECTION) ─── */}
       {linkedTripTitle && (
         <div style={{

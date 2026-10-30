@@ -19,6 +19,15 @@ interface VistaUser {
   avatarUrl?: string;
 }
 
+const HIDDEN_NAVBAR_ROUTES = [
+  '/login',
+  '/forgot-password',
+  '/dashboard',
+  '/moderation',
+  '/destinations',
+  '/users',
+];
+
 export function Navbar({
   activeModule: propActiveModule,
   lang: propLang,
@@ -26,7 +35,13 @@ export function Navbar({
 }: NavbarProps) {
   const router = useRouter();
   const pathname = usePathname();
+
+  // Hide Navbar completely on auth pages and admin dashboard
+  if (pathname && HIDDEN_NAVBAR_ROUTES.some((route) => pathname.startsWith(route))) {
+    return null;
+  }
   const [currentUser, setCurrentUser] = useState<VistaUser | null>(null);
+  const [mounted, setMounted] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [treasuryHref, setTreasuryHref] = useState<string>('/trips');
   const [optimisticModule, setOptimisticModule] = useState<string | null>(null);
@@ -80,6 +95,9 @@ export function Navbar({
         const userStr = localStorage.getItem('vista_user');
         if (token && userStr) {
           setCurrentUser(JSON.parse(userStr));
+          if (!document.cookie.includes('vista_token=')) {
+            document.cookie = `vista_token=${token}; path=/; max-age=604800; SameSite=Lax`;
+          }
         } else {
           setCurrentUser(null);
         }
@@ -88,6 +106,7 @@ export function Navbar({
       }
     };
 
+    setMounted(true);
     loadUser();
 
     window.addEventListener('vista-auth-change', loadUser);
@@ -288,7 +307,9 @@ export function Navbar({
           </button>
 
           {/* User Profile Dropdown or Login Link */}
-          {currentUser ? (
+          {!mounted ? (
+            <div style={{ width: '92px', height: '36px' }} />
+          ) : currentUser ? (
             <div className={styles.profileContainer} ref={dropdownRef}>
               <button
                 type="button"
@@ -501,7 +522,9 @@ export function Navbar({
             })}
 
             <div className={styles.mobileDrawerActions}>
-              {currentUser ? (
+              {!mounted ? (
+                <div style={{ height: '48px' }} />
+              ) : currentUser ? (
                 <Link
                   href="/profile"
                   className={styles.mobileUserCard}

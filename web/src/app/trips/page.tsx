@@ -37,7 +37,6 @@ import {
   Clipboard,
   KeyRound,
 } from 'lucide-react';
-import { Navbar } from '@/components/common/Navbar';
 import { SkeletonCardGrid } from '@/components/common/Skeleton';
 import {
   POPULAR_DESTINATIONS,
@@ -409,6 +408,9 @@ export default function TripsPage() {
         router.replace('/login?returnUrl=/trips');
       } else {
         setIsAuthenticated(true);
+        if (!document.cookie.includes('vista_token=')) {
+          document.cookie = `vista_token=${token}; path=/; max-age=604800; SameSite=Lax`;
+        }
       }
     }
   }, [router]);
@@ -1243,9 +1245,6 @@ export default function TripsPage() {
 
   return (
     <div className={styles.tripsPage}>
-      {/* ─── GLOBAL NAVBAR ─────────────────────────────────────────────── */}
-      <Navbar activeModule="trips" />
-
       {/* ─── 1. TOP HEADER & ACTION ROW ───────────────────────────────── */}
       <section className={styles.headerSection}>
         <div className={styles.container}>

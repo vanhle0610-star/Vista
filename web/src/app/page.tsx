@@ -3,7 +3,6 @@
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Navbar } from '@/components/common/Navbar';
 import {
   CompassIcon,
   MapPinIcon,
@@ -560,9 +559,6 @@ export default function HomePage() {
           );
         })}
       </aside>
-
-      {/* ─── 1. TOP GLOBAL NAVBAR ────────────────────────────────────────── */}
-      <Navbar activeModule="explore" />
 
       {/* ─── 2. HERO SECTION CINEMATIC ───────────────────────────────────── */}
       <section className={styles.heroWrapper} id="hero" aria-label="Giới thiệu VISTA">

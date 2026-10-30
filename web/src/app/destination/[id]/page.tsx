@@ -4,7 +4,6 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { apiRequest } from '@/lib/api';
 import type { components } from '@/types/api.generated';
-import { Navbar } from '@/components/common/Navbar';
 import { validPoint } from '@/features/map-location/data/publicDestinations';
 import { rememberDestination, viewedDestination } from '@/features/map-location/data/viewedDestinations';
 import styles from './page.module.css';
@@ -24,9 +23,7 @@ export default function DestinationPage() {
     return () => controller.abort();
   }, [id, attempt]);
   return (
-    <>
-      <Navbar activeModule="map" />
-      <main className={styles.content}>
+    <main className={styles.content}>
     <Link href="/map">← Khám phá trên bản đồ</Link>
     {error && <p role="alert">{error} <button onClick={() => setAttempt((n) => n + 1)}>Thử lại</button></p>}
     {!data && !error && <p role="status">Đang tải địa điểm…</p>}
@@ -39,6 +36,5 @@ export default function DestinationPage() {
       </div> : <p>Địa điểm chưa có tọa độ hợp lệ. Chưa thể hiển thị trên bản đồ hoặc tính tuyến.</p>}
     </article>}
       </main>
-    </>
   );
 }
