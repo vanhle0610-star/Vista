@@ -65,6 +65,13 @@ interface Activity {
   transferTimeAfter?: string;
   latitude?: number;
   longitude?: number;
+  rationale?: string;
+  timeSlotReason?: string;
+  whyVisitReason?: string;
+  costStatus?: 'FREE' | 'PAID' | 'ESTIMATED' | 'UNVERIFIED';
+  warning?: string;
+  travelDurationFromPreviousMinutes?: number;
+  bufferMinutes?: number;
 }
 
 interface DayPlan {
@@ -198,6 +205,8 @@ const INITIAL_DANANG_DAYS: DayPlan[] = [
         tip: 'Ưu tiên trang phục lịch sự khi vào khuôn viên chùa.',
         photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_bana_day.jpg',
         transferTimeAfter: 'Di chuyển khoảng 25 phút',
+        timeSlotReason: 'Khung giờ sáng (08:00 – 10:00) tiết trời mát mẻ, nắng chưa gắt, leo núi Sơn Trà không bị mệt và ngắm toàn cảnh vịnh biển trong vắt.',
+        whyVisitReason: 'Ngôi chùa linh thiêng với tượng Phật Bà Quan Âm cao 67m hướng ra biển, là điểm ngắm trọn vẹn thành phố từ trên cao đẹp nhất.',
       },
       {
         id: 'act-1-2',
@@ -211,6 +220,8 @@ const INITIAL_DANANG_DAYS: DayPlan[] = [
         costLabel: '240.000đ / nhóm',
         photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_panoramic_day.jpg',
         transferTimeAfter: 'Di chuyển khoảng 15 phút',
+        timeSlotReason: 'Thời điểm giữa trưa (11:00 – 12:30) vừa vặn sau chặng ngắm cảnh sáng, ghé quán ăn nạp năng lượng và nghỉ ngơi mát mẻ.',
+        whyVisitReason: 'Thưởng thức mì Quảng ếch hoặc bánh tráng cuốn thịt heo hai đầu da chuẩn vị Đà Thành, món ăn trứ danh ai đến cũng phải thử.',
       },
       {
         id: 'act-1-3',
@@ -224,6 +235,8 @@ const INITIAL_DANANG_DAYS: DayPlan[] = [
         costLabel: '120.000đ / nhóm',
         photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/halong_hanoi_day.jpg',
         transferTimeAfter: 'Di chuyển khoảng 20 phút',
+        timeSlotReason: 'Khung giờ chiều muộn (15:30 – 17:30) nắng đã dịu hẳn, gió biển thổi lồng lộng, thời điểm lý tưởng nhất để dạo cát và đón hoàng hôn.',
+        whyVisitReason: 'Được tạp chí Forbes vinh danh là một trong những bãi biển quyến rũ nhất hành tinh với bãi cát trắng mịn trải dài và sóng êm.',
       },
       {
         id: 'act-1-4',
@@ -236,6 +249,8 @@ const INITIAL_DANANG_DAYS: DayPlan[] = [
         costVnd: 500000,
         costLabel: '500.000đ / nhóm',
         photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_bana_night.jpg',
+        timeSlotReason: 'Buổi tối (19:00 – 21:00) phố lên đèn rực rỡ, không khí chợ đêm nhộn nhịp nhất và dễ dàng xem Cầu Rồng phun lửa/nước nếu đi cuối tuần.',
+        whyVisitReason: 'Biểu tượng hiện đại đầy tự hào của Đà Nẵng, nơi bạn vừa hòa mình vào nhịp sống trẻ trung vừa tha hồ thưởng thức hải sản đường phố.',
       },
     ],
   },
@@ -256,6 +271,8 @@ const INITIAL_DANANG_DAYS: DayPlan[] = [
         costLabel: '900.000đ / người',
         photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_bana_day.jpg',
         transferTimeAfter: 'Di chuyển nội khu cáp treo',
+        timeSlotReason: 'Sáng sớm (08:00 – 12:00) là lúc biển mây bồng bềnh nhất, không khí mát lạnh như châu Âu và chưa bị quá tải đoàn khách đông.',
+        whyVisitReason: 'Cây cầu Vàng nâng đỡ bởi đôi bàn tay khổng lồ nổi tiếng toàn cầu, cùng hệ thống cáp treo đạt nhiều kỷ lục thế giới.',
       },
       {
         id: 'act-2-2',
@@ -269,6 +286,8 @@ const INITIAL_DANANG_DAYS: DayPlan[] = [
         costLabel: '700.000đ / nhóm',
         photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/saigon_south_day.jpg',
         transferTimeAfter: 'Di chuyển 5 phút',
+        timeSlotReason: 'Khung giờ trưa (12:30 – 14:00) nghỉ ngơi giữa ngày, nạp năng lượng trong không gian nhà hàng có máy lạnh và biểu diễn âm nhạc sống động.',
+        whyVisitReason: 'Bữa tiệc ẩm thực phong phú với hơn 100 món Á – Âu đa dạng, bia tươi mát lạnh trong kiến trúc nhà vòm phong cách Đức.',
       },
       {
         id: 'act-2-3',
@@ -282,6 +301,8 @@ const INITIAL_DANANG_DAYS: DayPlan[] = [
         costLabel: 'Miễn phí kèm vé',
         photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/tay_nguyen_highlands.jpg',
         transferTimeAfter: 'Di chuyển về trung tâm 45 phút',
+        timeSlotReason: 'Đầu giờ chiều (14:30 – 17:00) vừa tiêu hóa bữa trưa, nhiệt độ trên đỉnh núi vẫn rất mát mẻ thích hợp vui chơi các trò mạo hiểm.',
+        whyVisitReason: 'Khu vui chơi trong nhà lớn nhất Việt Nam với xe trượt ống ngắm toàn cảnh rừng nguyên sinh và các rạp chiếu phim 4D, 5D hiện đại.',
       },
       {
         id: 'act-2-4',
@@ -294,6 +315,8 @@ const INITIAL_DANANG_DAYS: DayPlan[] = [
         costVnd: 300000,
         costLabel: '300.000đ / nhóm',
         photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_bana_night.jpg',
+        timeSlotReason: 'Tối muộn (19:30 – 21:30) sau khi xuống núi về thành phố, ngồi du thuyền lướt sóng đón gió sông Hàn mát rượi xua tan mệt mỏi.',
+        whyVisitReason: 'Góc nhìn độc đáo ngắm nhìn 4 cây cầu huyền thoại lung linh trên mặt nước cùng điệu múa Apsara truyền thống quyến rũ.',
       },
     ],
   },
@@ -314,6 +337,8 @@ const INITIAL_DANANG_DAYS: DayPlan[] = [
         costLabel: '80.000đ / nhóm',
         photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_panoramic_day.jpg',
         transferTimeAfter: 'Di chuyển khoảng 20 phút',
+        timeSlotReason: 'Buổi sáng (08:30 – 11:00) leo núi đá lúc trời còn râm mát, luồng ánh sáng mặt trời rọi qua vòm động Huyền Không tạo nên khung cảnh huyền ảo.',
+        whyVisitReason: 'Quần thể 5 ngọn núi ngũ hành kỳ vĩ với hệ thống hang động tự nhiên huyền bí và các ngôi chùa cổ hàng trăm năm tuổi.',
       },
       {
         id: 'act-3-2',
@@ -327,6 +352,8 @@ const INITIAL_DANANG_DAYS: DayPlan[] = [
         costLabel: '180.000đ / nhóm',
         photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/saigon_south_day.jpg',
         transferTimeAfter: 'Di chuyển khoảng 10 phút',
+        timeSlotReason: 'Bữa trưa (11:30 – 13:00) sau khi xuống núi, ghé quán ăn nức tiếng trong ngõ để thưởng thức đĩa bánh xèo nóng hổi giòn tan.',
+        whyVisitReason: 'Thương hiệu ẩm thực gia truyền hơn 30 năm với nước chấm gan thịt đậu phộng béo ngậy không nơi nào có được.',
       },
       {
         id: 'act-3-3',
@@ -340,6 +367,8 @@ const INITIAL_DANANG_DAYS: DayPlan[] = [
         costLabel: '200.000đ / nhóm',
         photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_bana_day.jpg',
         transferTimeAfter: 'Di chuyển khoảng 15 phút',
+        timeSlotReason: 'Đầu giờ chiều (14:00 – 16:30) không gian chợ trong nhà có mái che mát mẻ, thuận tiện mua quà trước khi kết thúc chuyến đi.',
+        whyVisitReason: 'Thiên đường đặc sản miền Trung uy tín: chả bò thơm giòn, mực rim me, cá khô và bánh khô mè đóng gói chuẩn sạch.',
       },
       {
         id: 'act-3-4',
@@ -352,6 +381,8 @@ const INITIAL_DANANG_DAYS: DayPlan[] = [
         costVnd: 80000,
         costLabel: '80.000đ / nhóm',
         photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_bana_night.jpg',
+        timeSlotReason: 'Chiều muộn (17:00 – 18:30) hoàng hôn buông trên mặt sông, thời điểm lý tưởng nhất để ngồi thảnh thơi trò chuyện và nhìn lại chuyến đi.',
+        whyVisitReason: 'Thưởng thức ly cà phê muối đặc sản ven đường Bạch Đằng rợp bóng cây xanh, tận hưởng trọn vẹn nhịp sống bình yên của Đà Nẵng.',
       },
     ],
   },
@@ -545,6 +576,9 @@ export interface ReplacementPlace {
   costLabel: string;
   costVnd: number;
   photoUrl: string;
+  latitude?: number;
+  longitude?: number;
+  openingHours?: string;
 }
 
 // Date helpers for smart quick planning (T1)
@@ -576,7 +610,95 @@ function getWeekendIso(): string {
   return `${y}-${m}-${day}`;
 }
 
-// Multi-day distinct itinerary generator (T1, T3)
+// Multi-day distinct itinerary generator & Semantic Intent Extractor (T1, T3)
+export function extractArrivalDepartureTimes(text: string): {
+  arrivalTime?: string;
+  departureTime?: string;
+  pace?: string;
+  travelMode?: string;
+  hasElderly?: boolean;
+  hasChildren?: boolean;
+  dietaryPreference?: string;
+} {
+  if (!text) return {};
+  const norm = text
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'd')
+    .toLowerCase();
+
+  let arrivalTime: string | undefined;
+  let departureTime: string | undefined;
+
+  // Arrival pattern: hạ cánh / đến / tới / check-in / có mặt / đáp / bay đến (hỗ trợ 14:00, 14h, 2 giờ chiều...)
+  const arrivalMatch = norm.match(
+    /(?:den|ha\s*canh|toi|check-?in|co\s*mat|dap|bay\s*den)[^0-9\n]{0,45}(\d{1,2})\s*(?:gio|h|:|g)\s*(\d{1,2})?\s*(sang|trua|chieu|toi|dem)?/i
+  );
+  if (arrivalMatch) {
+    let hourNum = parseInt(arrivalMatch[1], 10);
+    const minNum = arrivalMatch[2] ? parseInt(arrivalMatch[2], 10) : 0;
+    const period = arrivalMatch[3];
+    if (period && (period === 'chieu' || period === 'toi') && hourNum < 12) {
+      hourNum += 12;
+    } else if (period === 'trua' && hourNum >= 1 && hourNum <= 3) {
+      hourNum += 12;
+    }
+    if (hourNum >= 0 && hourNum <= 23 && minNum >= 0 && minNum <= 59) {
+      arrivalTime = `${String(hourNum).padStart(2, '0')}:${String(minNum).padStart(2, '0')}`;
+    }
+  } else if (/(?:den|ha\s*canh|toi|bay\s*den)[^.\n]{0,25}buoi\s*chieu/i.test(norm)) {
+    arrivalTime = '14:00';
+  } else if (/(?:den|ha\s*canh|toi|bay\s*den)[^.\n]{0,25}buoi\s*toi/i.test(norm)) {
+    arrivalTime = '19:30';
+  }
+
+  // Departure pattern: về / rời / bay về / khởi hành về / trả phòng / check-out / rời khỏi
+  const departureMatch = norm.match(
+    /(?:ve|roi|bay\s*ve|khoi\s*hanh\s*ve|tra\s*phong|check-?out|roi\s*khoi|ra\s*san\s*bay)[^0-9\n]{0,45}(\d{1,2})\s*(?:gio|h|:|g)\s*(\d{1,2})?\s*(sang|trua|chieu|toi|dem)?/i
+  );
+  if (departureMatch) {
+    let hourNum = parseInt(departureMatch[1], 10);
+    const minNum = departureMatch[2] ? parseInt(departureMatch[2], 10) : 0;
+    const period = departureMatch[3];
+    if (period && (period === 'chieu' || period === 'toi') && hourNum < 12) {
+      hourNum += 12;
+    } else if (period === 'trua' && hourNum >= 1 && hourNum <= 3) {
+      hourNum += 12;
+    }
+    if (hourNum >= 0 && hourNum <= 23 && minNum >= 0 && minNum <= 59) {
+      departureTime = `${String(hourNum).padStart(2, '0')}:${String(minNum).padStart(2, '0')}`;
+    }
+  } else if (/(?:bay\s*ve|khoi\s*hanh\s*ve|roi\s*di)[^.\n]{0,25}buoi\s*sang/i.test(norm)) {
+    departureTime = '11:00';
+  }
+
+  const hasElderly = /nguoi\s*lon\s*tuoi|nguoi\s*gia|ong\s*ba|bo\s*me|cha\s*me|cao\s*tuoi|phu\s*huynh/.test(norm);
+  const hasChildren = /tre\s*em|tre\s*nho|em\s*be|con\s*nho|gia\s*dinh\s*co\s*be/.test(norm);
+
+  let pace: string | undefined;
+  if (norm.includes('thu tha') || norm.includes('thong tha') || norm.includes('nghi duong') || norm.includes('cham rai') || norm.includes('nhe nhang') || hasElderly || hasChildren) {
+    pace = 'RELAXED';
+  } else if (norm.includes('day') || norm.includes('nhieu noi') || norm.includes('toi da') || norm.includes('check-in het') || norm.includes('lien tuc')) {
+    pace = 'PACKED';
+  }
+
+  let travelMode: string | undefined;
+  if (norm.includes('xe may') || norm.includes('phuot') || norm.includes('xe ga') || norm.includes('motorbike')) {
+    travelMode = 'MOTORBIKE';
+  } else if (norm.includes('di bo') || norm.includes('tan bo') || norm.includes('walking')) {
+    travelMode = 'WALKING';
+  } else if (hasElderly || hasChildren) {
+    travelMode = 'DRIVING';
+  }
+
+  let dietaryPreference: string | undefined;
+  if (norm.includes('chay')) dietaryPreference = 'Ăn chay thanh đạm';
+  else if (norm.includes('hai san')) dietaryPreference = 'Hải sản tươi sống';
+
+  return { arrivalTime, departureTime, pace, travelMode, hasElderly, hasChildren, dietaryPreference };
+}
+
 function generateDistinctDayPlan(
   destName: string,
   totalDays: number,
@@ -585,22 +707,30 @@ function generateDistinctDayPlan(
   interests: string[],
   baseLat: number,
   baseLng: number,
-  photoUrl: string
+  photoUrl: string,
+  arrivalTime?: string,
+  departureTime?: string,
+  hasElderly?: boolean
 ): DayPlan[] {
-  const realPlaces = getRealPlacesByProvince(destName);
+  const rawPlaces = getRealPlacesByProvince(destName);
+  // Nếu đoàn có người lớn tuổi, ưu tiên lọc bỏ các điểm leo núi/hang động dốc cao
+  const realPlaces = hasElderly
+    ? rawPlaces.filter((p) => !/đỉnh|đèo|hang|động|thác|leo|ngũ hành sơn/i.test(p.name))
+    : rawPlaces;
+  const effectivePlaces = realPlaces.length >= 4 ? realPlaces : rawPlaces;
   const days: DayPlan[] = [];
 
   // Categorize real places to pick smart daily slots
-  const landmarks = realPlaces.filter((p) =>
+  const landmarks = effectivePlaces.filter((p) =>
     /di tích|lịch sử|thắng cảnh|kiến trúc|tâm linh|văn hóa|khám phá|bảo tàng/i.test(p.category)
   );
-  const culinary = realPlaces.filter((p) =>
+  const culinary = effectivePlaces.filter((p) =>
     /ẩm thực|chợ|quán|đặc sản|mua sắm/i.test(p.category) || /chợ|ẩm thực|quán|bún|cơm|bánh/i.test(p.name)
   );
-  const natureCraft = realPlaces.filter((p) =>
+  const natureCraft = effectivePlaces.filter((p) =>
     /thiên nhiên|sinh thái|làng|nghỉ dưỡng|check-in|ngắm cảnh|phượt|biển/i.test(p.category)
   );
-  const eveningSpots = realPlaces.filter((p) =>
+  const eveningSpots = effectivePlaces.filter((p) =>
     /cầu|sông|đêm|phố|thuyền|biển/i.test(p.category) || /cầu|sông|đêm|phố|chợ|hồ/i.test(p.name)
   );
 
@@ -750,6 +880,28 @@ function generateDistinctDayPlan(
           longitude: eveningPlace.longitude,
         },
       ];
+
+      // Ràng buộc thời gian Ngày 1 (Hạ cánh muộn -> bỏ sáng/trưa)
+      if (d === 1 && arrivalTime) {
+        const arrH = parseInt(arrivalTime.split(':')[0], 10);
+        if (arrH >= 12) {
+          activities = activities.filter((a) => a.timeSlot === 'AFTERNOON' || a.timeSlot === 'EVENING');
+        } else if (arrH >= 10) {
+          activities = activities.filter((a) => a.timeSlot !== 'MORNING');
+        }
+      }
+
+      // Ràng buộc thời gian Ngày cuối (Bay về sớm -> bỏ chiều/tối)
+      if (d === totalDays && departureTime) {
+        const depH = parseInt(departureTime.split(':')[0], 10);
+        if (depH <= 12) {
+          activities = activities.filter((a) => a.timeSlot === 'MORNING');
+        } else if (depH <= 17) {
+          activities = activities.filter((a) => a.timeSlot === 'MORNING' || a.timeSlot === 'NOON');
+        } else if (depH < 20) {
+          activities = activities.filter((a) => a.timeSlot !== 'EVENING');
+        }
+      }
     }
 
     days.push({
@@ -775,6 +927,14 @@ export default function PlannerPage() {
     fallbackUsed: true,
   });
   const [aiCitations, setAiCitations] = useState<AiCitation[]>([]);
+  const [aiCustomInsights, setAiCustomInsights] = useState<{
+    weather?: string;
+    pacing?: string;
+    advice?: string;
+    strategic?: string;
+    companionFit?: string;
+    budgetOptimization?: string;
+  }>({});
 
   // Preference Form Inputs
   const [destination, setDestination] = useState<string>('Đà Nẵng');
@@ -808,6 +968,16 @@ export default function PlannerPage() {
   // Active Itinerary Data
   const [itineraryDays, setItineraryDays] = useState<DayPlan[]>(INITIAL_DANANG_DAYS);
   const [activeDay, setActiveDay] = useState<number>(1);
+  const [detectedArrivalTime, setDetectedArrivalTime] = useState<string | null>(null);
+  const [detectedDepartureTime, setDetectedDepartureTime] = useState<string | null>(null);
+  const [detectedElderly, setDetectedElderly] = useState<boolean>(false);
+  const [detectedChildren, setDetectedChildren] = useState<boolean>(false);
+  const [coPilotInput, setCoPilotInput] = useState<string>('');
+  const [coPilotReply, setCoPilotReply] = useState<string | null>(null);
+  const [isCoPilotBusy, setIsCoPilotBusy] = useState<boolean>(false);
+  const [showTripDna, setShowTripDna] = useState<boolean>(false);
+  const [showAiInsights, setShowAiInsights] = useState<boolean>(false);
+  const [showCoPilot, setShowCoPilot] = useState<boolean>(false);
   const [isSaved, setIsSaved] = useState<boolean>(false);
   const [savedCount, setSavedCount] = useState<number>(() => {
     if (typeof window !== 'undefined') {
@@ -832,6 +1002,8 @@ export default function PlannerPage() {
   const [showCreateTripModal, setShowCreateTripModal] = useState<boolean>(false);
   const [showSavedDrawer, setShowSavedDrawer] = useState<boolean>(false);
   const [replaceTargetActivityId, setReplaceTargetActivityId] = useState<string | null>(null);
+  const [replaceSearchQuery, setReplaceSearchQuery] = useState<string>('');
+  const [replaceBatchIndex, setReplaceBatchIndex] = useState<number>(0);
   const [showAddActivityModal, setShowAddActivityModal] = useState<boolean>(false);
   const [selectedMapPin, setSelectedMapPin] = useState<number>(1);
 
@@ -1207,203 +1379,159 @@ export default function PlannerPage() {
     }));
   }, [currentDayPlan, destination, activeDestObj, activeDay]);
 
-  // Dynamic Replacement Spots tailored to active destination
+  // Active activity currently selected for replacement
+  const targetActivityToReplace = useMemo(() => {
+    if (!replaceTargetActivityId) return null;
+    for (const day of itineraryDays) {
+      const found = day.activities.find((a) => a.id === replaceTargetActivityId);
+      if (found) return found;
+    }
+    return null;
+  }, [replaceTargetActivityId, itineraryDays]);
+
+  // Dynamic Replacement Spots tailored to active destination, slot context, elderly persona, and excluding already-used places
   const replacementPlaces: ReplacementPlace[] = useMemo(() => {
-    const destNorm = destination.toLowerCase();
-    if (destNorm.includes('huế') || destNorm.includes('hue')) {
-      return [
-        {
-          id: 'rep-hue-1',
-          category: 'Di tích & Cảnh quan',
-          title: 'Lăng Tự Đức & Hồ Lưu Khiêm',
-          description: 'Khu lăng tẩm thơ mộng mang phong cách hoa viên truyền thống Cố Đô.',
-          costLabel: '150.000đ / người',
-          costVnd: 150000,
-          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_panoramic_day.jpg',
-        },
-        {
-          id: 'rep-hue-2',
-          category: 'Văn hóa & Check-in',
-          title: 'Làng Hương Thủy Xuân',
-          description: 'Làng nghề làm hương thủ công truyền thống rực rỡ sắc màu bên chân đồi Vọng Cảnh.',
-          costLabel: 'Miễn phí',
-          costVnd: 0,
-          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/tay_nguyen_highlands.jpg',
-        },
-        {
-          id: 'rep-hue-3',
-          category: 'Ẩm thực Cố Đô',
-          title: 'Chợ Đông Ba & Bún bò mụ Rơi',
-          description: 'Thưởng thức bún bò Huế chuẩn vị cay nồng đậm đà và các loại bánh bèo nậm lọc.',
-          costLabel: '80.000đ / người',
-          costVnd: 80000,
-          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/saigon_south_day.jpg',
-        },
-        {
-          id: 'rep-hue-4',
-          category: 'Cảnh quan & Lịch sử',
-          title: 'Cầu Trường Tiền & Đi thuyền rồng Sông Hương',
-          description: 'Ngắm nhìn dòng sông Hương êm đềm và nghe ca Huế trên sông khi hoàng hôn buông xuống.',
-          costLabel: '120.000đ / nhóm',
-          costVnd: 120000,
-          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_bana_night.jpg',
-        },
-      ];
+    const allRealPlaces = getRealPlacesByProvince(destination);
+
+    // 1. Tập hợp các địa điểm đã có mặt trong lịch trình hiện tại để KHÔNG bao giờ gợi ý trùng
+    const usedTitles = new Set<string>();
+    itineraryDays.forEach((d) => {
+      d.activities.forEach((a) => {
+        if (a.title) usedTitles.add(a.title.toLowerCase().trim());
+      });
+    });
+
+    // 2. Xác định ngữ cảnh của hoạt động đang muốn thay thế (buổi nào? ăn uống hay tham quan?)
+    const targetSlot = targetActivityToReplace?.timeSlot?.toUpperCase() || 'AFTERNOON';
+    const targetCatNorm = (targetActivityToReplace?.category || '').toLowerCase();
+    const isReplacingFood =
+      targetSlot === 'NOON' ||
+      targetCatNorm.includes('ẩm thực') ||
+      targetCatNorm.includes('ăn') ||
+      targetCatNorm.includes('đặc sản');
+
+    const queryNorm = replaceSearchQuery
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/đ/g, 'd')
+      .replace(/Đ/g, 'd')
+      .toLowerCase()
+      .trim();
+
+    // 3. Lọc các địa điểm chưa dùng và khớp từ khóa tìm kiếm (nếu người dùng gõ tìm)
+    const availablePool = allRealPlaces.filter((p) => {
+      const pNameLower = p.name.toLowerCase().trim();
+      for (const used of usedTitles) {
+        if (used.includes(pNameLower) || pNameLower.includes(used)) {
+          return false; // Loại bỏ điểm đã nằm trong lịch trình
+        }
+      }
+      if (queryNorm) {
+        const pNorm = `${p.name} ${p.category} ${p.description}`
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/đ/g, 'd')
+          .replace(/Đ/g, 'd')
+          .toLowerCase();
+        return pNorm.includes(queryNorm);
+      }
+      return true;
+    });
+
+    const sourceList = availablePool.length > 0 ? availablePool : allRealPlaces;
+
+    // 4. Chấm điểm ưu tiên theo khung giờ (Sáng/Trưa/Chiều/Tối) và thể lực đoàn (Người lớn tuổi)
+    const scored = sourceList.map((p, idx) => {
+      const pText = `${p.name} ${p.category} ${p.description}`.toLowerCase();
+      const isFoodPlace =
+        pText.includes('ẩm thực') ||
+        pText.includes('quán') ||
+        pText.includes('nhà hàng') ||
+        pText.includes('chợ') ||
+        pText.includes('bún') ||
+        pText.includes('mì') ||
+        pText.includes('bánh') ||
+        pText.includes('cơm') ||
+        pText.includes('hải sản') ||
+        pText.includes('đặc sản');
+      const isNightPlace =
+        pText.includes('đêm') ||
+        pText.includes('cầu') ||
+        pText.includes('phố') ||
+        pText.includes('du thuyền') ||
+        pText.includes('quảng trường');
+      const isStrenuous =
+        pText.includes('đỉnh ') ||
+        pText.includes('núi ') ||
+        pText.includes('đèo ') ||
+        pText.includes('hang ') ||
+        pText.includes('động ') ||
+        pText.includes('thác ') ||
+        pText.includes('ngũ hành sơn');
+
+      let score = 100;
+      if (isReplacingFood) {
+        score += isFoodPlace ? 200 : -80;
+      } else if (targetSlot === 'EVENING') {
+        score += isNightPlace || isFoodPlace ? 150 : 0;
+        if (isStrenuous) score -= 120;
+      } else if (targetSlot === 'MORNING') {
+        score += !isFoodPlace ? 100 : -40;
+      } else {
+        // AFTERNOON
+        score += !isFoodPlace ? 90 : 20;
+      }
+
+      if (detectedElderly && isStrenuous) {
+        score -= 250; // Tránh gợi ý điểm leo trèo nặng khi đoàn có người lớn tuổi
+      }
+
+      return { place: p, score, idx };
+    });
+
+    scored.sort((a, b) => b.score - a.score || a.idx - b.idx);
+
+    // 5. Phân trang xoay vòng theo replaceBatchIndex (mỗi lần bấm "Đổi loạt gợi ý khác" sẽ lấy 6 địa điểm mới)
+    const pageSize = 6;
+    const total = scored.length;
+    const picked: typeof scored = [];
+    if (total <= pageSize || queryNorm) {
+      picked.push(...scored.slice(0, 10));
+    } else {
+      const startIdx = (replaceBatchIndex * pageSize) % total;
+      for (let i = 0; i < pageSize; i++) {
+        picked.push(scored[(startIdx + i) % total]);
+      }
     }
-    if (destNorm.includes('hội an') || destNorm.includes('quảng nam')) {
-      return [
-        {
-          id: 'rep-ha-1',
-          category: 'Sinh thái & Trải nghiệm',
-          title: 'Rừng dừa Bảy Mẫu Cẩm Thanh',
-          description: 'Trải nghiệm chèo thuyền thúng xoay vòng và câu cua giữa rừng dừa bạt ngàn.',
-          costLabel: '150.000đ / nhóm',
-          costVnd: 150000,
-          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_panoramic_day.jpg',
-        },
-        {
-          id: 'rep-ha-2',
-          category: 'Làng nghề & Văn hóa',
-          title: 'Làng gốm Thanh Hà & Công viên Đất Nung',
-          description: 'Tự tay nhào nặn chiếc bình gốm xinh xắn cùng nghệ nhân làng nghề 500 năm tuổi.',
-          costLabel: '40.000đ / người',
-          costVnd: 40000,
-          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/tay_nguyen_highlands.jpg',
-        },
-        {
-          id: 'rep-ha-3',
-          category: 'Ẩm thực Phố Hội',
-          title: 'Cơm gà Bà Buội & Bánh mì Phượng',
-          description: 'Hai món ăn trứ danh đã trở thành huyền thoại ẩm thực được quốc tế ca ngợi.',
-          costLabel: '90.000đ / người',
-          costVnd: 90000,
-          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/saigon_south_day.jpg',
-        },
-      ];
-    }
-    if (destNorm.includes('phú quốc')) {
-      return [
-        {
-          id: 'rep-pq-1',
-          category: 'Sinh thái & Biển đảo',
-          title: 'Làng chài Rạch Vẹm & Vương quốc Sao Biển',
-          description: 'Chụp ảnh cùng hàng trăm chú sao biển đỏ rực rỡ dưới làn nước trong vắt.',
-          costLabel: 'Miễn phí',
-          costVnd: 0,
-          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_panoramic_day.jpg',
-        },
-        {
-          id: 'rep-pq-2',
-          category: 'Ẩm thực hải sản',
-          title: 'Bún Quậy Kiến Xây & Chợ đêm Dinh Cậu',
-          description: 'Tô bún chả tôm mực tươi quậy tại chỗ ăn kèm nước chấm chua ngọt độc đáo.',
-          costLabel: '85.000đ / người',
-          costVnd: 85000,
-          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_bana_day.jpg',
-        },
-        {
-          id: 'rep-pq-3',
-          category: 'Thư giãn & Chill',
-          title: 'OCSEN Beach Bar ngắm hoàng hôn Bãi Trường',
-          description: 'Thưởng thức cocktail trên ghế lười bãi biển nghe nhạc acoustic lãng mạn.',
-          costLabel: '120.000đ / nhóm',
-          costVnd: 120000,
-          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_bana_night.jpg',
-        },
-      ];
-    }
-    if (destNorm.includes('hà nội')) {
-      return [
-        {
-          id: 'rep-hn-1',
-          category: 'Di tích & Lịch sử',
-          title: 'Văn Miếu - Quốc Tử Giám',
-          description: 'Trường đại học đầu tiên của Việt Nam với 82 bia tiến sĩ và kiến trúc cổ kính.',
-          costLabel: '70.000đ / người',
-          costVnd: 70000,
-          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/halong_hanoi_day.jpg',
-        },
-        {
-          id: 'rep-hn-2',
-          category: 'Ẩm thực phố cổ',
-          title: 'Bún chả Hương Liên & Cà phê Trứng Giảng',
-          description: 'Thưởng thức đặc sản bún chả than hoa và ly cà phê trứng béo ngậy trứ danh.',
-          costLabel: '90.000đ / người',
-          costVnd: 90000,
-          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/saigon_south_day.jpg',
-        },
-        {
-          id: 'rep-hn-3',
-          category: 'Bảo tàng & Lịch sử',
-          title: 'Tour đêm Di tích Nhà tù Hỏa Lò',
-          description: 'Không gian thiêng liêng và xúc động với những câu chuyện lịch sử bất khuất.',
-          costLabel: '150.000đ / người',
-          costVnd: 150000,
-          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_panoramic_night.jpg',
-        },
-      ];
-    }
-    if (destNorm.includes('đà nẵng') || destNorm.includes('da nang')) {
-      return [
-        {
-          id: 'rep-dn-1',
-          category: 'Tham quan & Thiên nhiên',
-          title: 'Danh thắng Ngũ Hành Sơn & Động Huyền Không',
-          description: 'Khám phá động Huyền Không kỳ ảo và viếng chùa Tam Thai cổ kính.',
-          costLabel: '40.000đ / nhóm',
-          costVnd: 40000,
-          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/tay_nguyen_highlands.jpg',
-        },
-        {
-          id: 'rep-dn-2',
-          category: 'Ẩm thực truyền thống',
-          title: 'Bánh xèo nem lụi Bà Dưỡng',
-          description: 'Bánh xèo giòn rụm cuốn rau sống với nước chấm gan thịt trứ danh.',
-          costLabel: '180.000đ / nhóm',
-          costVnd: 180000,
-          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/saigon_south_day.jpg',
-        },
-        {
-          id: 'rep-dn-3',
-          category: 'Check-in & Đi dạo',
-          title: 'Cầu Rồng & Cầu Tình Yêu Đà Nẵng',
-          description: 'Biểu tượng kiến trúc hiện đại rực rỡ sắc màu cạnh tượng cá chép hóa rồng.',
-          costLabel: 'Miễn phí',
-          costVnd: 0,
-          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_bana_night.jpg',
-        },
-      ];
-    }
-    return [
-      {
-        id: `rep-${destination}-1`,
-        category: 'Thắng cảnh & Thiên nhiên',
-        title: `Danh thắng tiêu biểu ${destination}`,
-        description: `Điểm tham quan nổi bật và được yêu thích hàng đầu tại ${destination}.`,
-        costLabel: '50.000đ / người',
-        costVnd: 50000,
-        photoUrl: activeDestObj.photo,
-      },
-      {
-        id: `rep-${destination}-2`,
-        category: 'Ẩm thực bản địa',
-        title: `Quán ăn đặc sản truyền thống ${destination}`,
-        description: `Thưởng thức hương vị ẩm thực gia truyền nức tiếng của người dân bản xứ.`,
-        costLabel: '120.000đ / nhóm',
-        costVnd: 120000,
-        photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/saigon_south_day.jpg',
-      },
-      {
-        id: `rep-${destination}-3`,
-        category: 'Văn hóa & Làng nghề',
-        title: `Làng nghề thủ công & Điểm check-in ${destination}`,
-        description: `Khám phá nét đẹp văn hóa lâu đời và chụp ảnh kỷ niệm tuyệt đẹp.`,
-        costLabel: 'Miễn phí',
-        costVnd: 0,
-        photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_panoramic_day.jpg',
-      },
-    ];
-  }, [destination, activeDestObj]);
+
+    return picked.map(({ place }, i) => {
+      const costVal = place.priceMin || 0;
+      const costLabel =
+        costVal === 0
+          ? 'Miễn phí vé'
+          : `${new Intl.NumberFormat('vi-VN').format(costVal)}đ / người`;
+      return {
+        id: `rep-dyn-${destination}-${replaceBatchIndex}-${i}-${place.name}`,
+        category: place.category || 'Tham quan & Trải nghiệm',
+        title: place.name,
+        description: place.description,
+        costLabel,
+        costVnd: costVal,
+        photoUrl: place.image || activeDestObj.photo,
+        latitude: place.latitude,
+        longitude: place.longitude,
+        openingHours: place.openingHours,
+      };
+    });
+  }, [
+    destination,
+    activeDestObj,
+    itineraryDays,
+    targetActivityToReplace,
+    replaceSearchQuery,
+    replaceBatchIndex,
+    detectedElderly,
+  ]);
 
   // ─── REAL AI ITINERARY GENERATION (T1, T3, T6) ───────────────────────────
   const handleGenerateClick = async () => {
@@ -1420,6 +1548,33 @@ export default function PlannerPage() {
     });
 
     try {
+      const companionType =
+        peopleCount === 1
+          ? 'Đi một mình (Solo)'
+          : peopleCount === 2
+            ? 'Cặp đôi (Couple)'
+            : peopleCount <= 4
+              ? 'Gia đình nhỏ / Bạn bè'
+              : 'Đoàn đông người';
+
+      const {
+        arrivalTime: detectedArrival,
+        departureTime: detectedDeparture,
+        pace: detectedPace,
+        travelMode: detectedTravelMode,
+        hasElderly,
+        hasChildren,
+      } = extractArrivalDepartureTimes(wishesText || '');
+
+      setDetectedArrivalTime(detectedArrival || null);
+      setDetectedDepartureTime(detectedDeparture || null);
+      setDetectedElderly(Boolean(hasElderly));
+      setDetectedChildren(Boolean(hasChildren));
+      setCoPilotReply(null);
+
+      const pace = detectedPace || 'MODERATE';
+      const travelMode = detectedTravelMode || 'DRIVING';
+
       const data: AiItinerarySuggestionResponse = await requestAiItinerary({
         destinationProvince: destination,
         totalDays: daysCount,
@@ -1427,6 +1582,14 @@ export default function PlannerPage() {
         interests: wishesText.trim()
           ? [...selectedStyleLabels, wishesText.trim()].slice(0, 10)
           : selectedStyleLabels,
+        startDate,
+        peopleCount,
+        travelWith: companionType,
+        specialRequests: wishesText.trim() || undefined,
+        arrivalTime: detectedArrival,
+        departureTime: detectedDeparture,
+        pace,
+        travelMode,
       }, linkedTripId);
 
       setAiGenerationMetadata({
@@ -1434,6 +1597,14 @@ export default function PlannerPage() {
         fallbackUsed: Boolean(data.fallbackUsed || data.isMockData),
       });
       setAiCitations(data.citations ?? []);
+      setAiCustomInsights({
+        weather: data.weatherSummary,
+        pacing: data.pacingSummary,
+        advice: data.localAdviceSummary,
+        strategic: data.strategicRationale,
+        companionFit: data.companionFitRationale,
+        budgetOptimization: data.budgetOptimizationRationale,
+      });
 
       if (data && data.days && Array.isArray(data.days) && data.days.length > 0) {
         const responseDays = data.days as unknown as Record<string, unknown>[];
@@ -1444,6 +1615,39 @@ export default function PlannerPage() {
 
           let rawActivities = (dayItem.activities as Record<string, unknown>[]) || [];
 
+          // Ràng buộc giờ đến Ngày 1: Nếu đến muộn (ví dụ 14:00) thì bỏ các slot MORNING, NOON
+          if (dayNum === 1 && detectedArrival) {
+            const arrH = parseInt(detectedArrival.split(':')[0], 10);
+            rawActivities = rawActivities.filter((act) => {
+              const slot = String(act.timeSlot || '').toUpperCase();
+              if (slot === 'MORNING') return false;
+              if (slot === 'NOON' && arrH >= 12) return false;
+              const st = act.startTime ? String(act.startTime) : undefined;
+              if (st) {
+                const stH = parseInt(st.split(':')[0], 10);
+                if (stH < arrH) return false;
+              }
+              return true;
+            });
+          }
+
+          // Ràng buộc giờ về Ngày cuối: Nếu bay về sớm (ví dụ 11:00) thì bỏ các slot sau đó
+          if (dayNum === responseDays.length && detectedDeparture) {
+            const depH = parseInt(detectedDeparture.split(':')[0], 10);
+            rawActivities = rawActivities.filter((act) => {
+              const slot = String(act.timeSlot || '').toUpperCase();
+              if (slot === 'EVENING' && depH < 19) return false;
+              if (slot === 'AFTERNOON' && depH < 14) return false;
+              if (slot === 'NOON' && depH < 12) return false;
+              const st = act.startTime ? String(act.startTime) : undefined;
+              if (st) {
+                const stH = parseInt(st.split(':')[0], 10);
+                if (stH >= depH) return false;
+              }
+              return true;
+            });
+          }
+
           // T1: If day 1 and late evening departure, ensure evening start
           if (dayNum === 1 && isLateEveningDeparture) {
             rawActivities = [
@@ -1452,45 +1656,123 @@ export default function PlannerPage() {
                 title: `Nhận phòng khách sạn & Thư giãn (${destination})`,
                 note: `Check-in khách sạn, cất hành lý và chuẩn bị cho buổi tối đầu tiên tại ${destination}.`,
                 estimatedCostVnd: 0,
+                rationale: `Khởi đầu nhẹ nhàng sau chuyến di chuyển, dành thời gian nghỉ ngơi nạp lại năng lượng.`,
               },
               {
                 timeSlot: 'NIGHT',
                 title: `Ăn tối muộn & Dạo phố đêm lung linh`,
                 note: `Thưởng thức ẩm thực đêm đặc sản và cảm nhận vẻ đẹp lung linh của thành phố.`,
                 estimatedCostVnd: 200000,
+                rationale: `Trải nghiệm ẩm thực đêm đặc trưng, không khí dịu mát và ngắm cảnh đêm rực rỡ.`,
               },
             ];
           }
 
+          const realPlaces = getRealPlacesByProvince(destination);
+
           const activities: Activity[] = rawActivities.map((act: Record<string, unknown>, actIdx: number) => {
             const costVal = Number(act.estimatedCost || act.estimatedCostVnd) || 0;
-            const timeSlot = act.timeSlot || (actIdx === 0 ? 'MORNING' : actIdx === 1 ? 'NOON' : actIdx === 2 ? 'AFTERNOON' : 'EVENING');
-            const timeRange =
-              dayNum === 1 && isLateEveningDeparture
-                ? (actIdx === 0 ? '20:30–21:30' : '21:45–23:15')
-                : actIdx === 0
-                  ? '08:00–10:30'
-                  : actIdx === 1
-                    ? '11:30–13:00'
-                    : actIdx === 2
-                      ? '14:30–17:00'
-                      : '18:30–21:00';
+            const rawSlot = String(act.timeSlot || '').toUpperCase();
+            const catStr = String(act.category || '').toLowerCase();
+            const placeTitle = String(act.destinationName || act.placeName || `Trải nghiệm điểm đến ${dayNum}.${actIdx + 1}`);
+            const titleStr = placeTitle.toLowerCase();
+            const isFoodStop = catStr.includes('ẩm thực') || catStr.includes('ăn') || catStr.includes('chợ') || titleStr.includes('ẩm thực') || titleStr.includes('chợ') || titleStr.includes('bún') || titleStr.includes('cơm') || titleStr.includes('bánh');
+
+            let timeSlot = rawSlot;
+            if (!timeSlot || timeSlot === 'UNKNOWN') {
+              if (actIdx === 0) timeSlot = 'MORNING';
+              else if (actIdx === 1) timeSlot = isFoodStop ? 'NOON' : (rawActivities.length === 3 ? 'AFTERNOON' : 'NOON');
+              else if (actIdx === 2) timeSlot = rawActivities.length === 3 ? 'EVENING' : 'AFTERNOON';
+              else timeSlot = 'EVENING';
+            }
+
+            let timeRange = '08:00–10:30';
+            if (act.startTime && act.endTime) {
+              timeRange = `${act.startTime}–${act.endTime}`;
+            } else if (dayNum === 1 && isLateEveningDeparture) {
+              timeRange = actIdx === 0 ? '20:30–21:30' : '21:45–23:15';
+            } else if (timeSlot === 'MORNING') {
+              timeRange = '08:00–10:30';
+            } else if (timeSlot === 'NOON') {
+              timeRange = '11:30–13:00';
+            } else if (timeSlot === 'AFTERNOON') {
+              timeRange = '14:30–17:00';
+            } else if (timeSlot === 'EVENING') {
+              timeRange = '18:30–21:00';
+            }
+
+            const rawCostStatus = (act as any).costStatus as string | undefined;
+            const costStatus: 'FREE' | 'PAID' | 'ESTIMATED' | 'UNVERIFIED' =
+              rawCostStatus === 'UNVERIFIED' ? 'UNVERIFIED' :
+              rawCostStatus === 'FREE' || costVal === 0 ? 'FREE' :
+              rawCostStatus === 'ESTIMATED' ? 'ESTIMATED' : 'PAID';
+
+            let costLabel = `${new Intl.NumberFormat('vi-VN').format(costVal)}đ / nhóm`;
+            if (costStatus === 'UNVERIFIED') {
+              costLabel = 'Chưa xác minh giá';
+            } else if (costStatus === 'FREE' || costVal === 0) {
+              costLabel = 'Miễn phí vé';
+            } else if (costStatus === 'ESTIMATED') {
+              costLabel = `~${new Intl.NumberFormat('vi-VN').format(costVal)}đ (Ước tính)`;
+            }
+
+            const nextAct = rawActivities[actIdx + 1];
+            let transferTimeAfter: string | undefined = undefined;
+            if (nextAct) {
+              const nextTravelMin = (nextAct as any).travelDurationFromPreviousMinutes;
+              const nextBufferMin = (nextAct as any).bufferMinutes;
+              if (typeof nextTravelMin === 'number' && nextTravelMin > 0) {
+                transferTimeAfter = `🚗 Di chuyển ~${nextTravelMin} phút${nextBufferMin ? ` · Đệm nghỉ ${nextBufferMin} phút` : ''}`;
+              } else {
+                transferTimeAfter = 'Di chuyển khoảng 15–20 phút';
+              }
+            }
+
+            const matchedPlace = realPlaces.find((p) => {
+              const pName = p.name.toLowerCase();
+              return pName.includes(titleStr) || titleStr.includes(pName);
+            });
+            const photoUrl = matchedPlace?.image || activeDestObj.photo;
+            const actLat = typeof act.latitude === 'number' ? act.latitude : (matchedPlace?.latitude || latOffset(actIdx));
+            const actLng = typeof act.longitude === 'number' ? act.longitude : (matchedPlace?.longitude || lngOffset(actIdx));
+
+            const defaultTimeSlotReason =
+              timeSlot === 'MORNING'
+                ? 'Sáng sớm (08:00 – 10:30) tiết trời mát mẻ, nắng dịu nhẹ, chụp hình không bị chói mắt và ít đông đúc.'
+                : timeSlot === 'NOON'
+                  ? 'Khung giờ trưa (11:30 – 13:00) nắng gắt nhất trong ngày, hoàn hảo để dừng chân nghỉ ngơi trong không gian mát mẻ, nạp năng lượng và thưởng thức đặc sản bản địa.'
+                  : timeSlot === 'AFTERNOON'
+                    ? 'Đầu giờ chiều (14:30 – 17:00) nắng đã dịu bớt, đường sá thông thoáng, rất thích hợp để dạo chơi ngắm cảnh và trải nghiệm làng nghề.'
+                    : 'Buổi tối (18:30 – 21:00) phố lên đèn lung linh, gió mát rượi, nhịp sống đêm sôi động nhất để dạo mát và thưởng thức ẩm thực.';
+
+            const defaultWhyVisitReason = isFoodStop || timeSlot === 'NOON'
+              ? 'Thiên đường ăn uống với vô vàn món đặc sản nóng hổi chuẩn vị bản địa, giá cả bình dân và không khí ấm cúng.'
+              : catStr.includes('biển')
+                ? 'Bãi biển tuyệt đẹp với bờ cát mịn và nước trong xanh, là biểu tượng du lịch nhất định phải check-in khi ghé thăm.'
+                : catStr.includes('văn hóa') || catStr.includes('chùa') || catStr.includes('bảo tàng') || catStr.includes('lăng') || catStr.includes('di tích')
+                  ? 'Không gian thanh tịnh với nét kiến trúc đặc sắc, mang lại cảm giác bình yên và những bức hình kỷ niệm có hồn.'
+                  : 'Điểm dừng chân nổi bật được du khách yêu thích, vừa vặn trên cung đường và mang đến nhiều trải nghiệm thú vị.';
 
             return {
               id: String(act.destinationId || `act-${dayNum}-${actIdx + 1}`),
               timeSlot: String(timeSlot),
               timeRange,
-              category: String(act.category || (actIdx === 1 ? 'Ẩm thực' : 'Tham quan & Trải nghiệm')),
-              title: String(act.destinationName || act.placeName || `Trải nghiệm điểm đến ${dayNum}.${actIdx + 1}`),
+              category: String(act.category || (timeSlot === 'NOON' ? 'Ẩm thực & Đặc sản' : 'Tham quan & Trải nghiệm')),
+              title: placeTitle,
               description: String(act.note || act.activityDescription || `Khám phá vẻ đẹp và không khí đặc trưng tại ${destination}.`),
               location: `${destination}, Việt Nam`,
               costVnd: costVal,
-              costLabel: costVal === 0 ? 'Miễn phí' : `${new Intl.NumberFormat('vi-VN').format(costVal)}đ / nhóm`,
+              costStatus,
+              costLabel,
               tip: actIdx === 0 ? 'Khởi hành đúng giờ để có trải nghiệm trọn vẹn.' : undefined,
-              photoUrl: activeDestObj.photo,
-              transferTimeAfter: actIdx < rawActivities.length - 1 ? 'Di chuyển khoảng 15–20 phút' : undefined,
-              latitude: typeof act.latitude === 'number' ? act.latitude : latOffset(actIdx),
-              longitude: typeof act.longitude === 'number' ? act.longitude : lngOffset(actIdx),
+              photoUrl,
+              transferTimeAfter,
+              latitude: actLat,
+              longitude: actLng,
+              rationale: act.rationale ? String(act.rationale) : undefined,
+              timeSlotReason: act.timeSlotReason ? String(act.timeSlotReason) : defaultTimeSlotReason,
+              whyVisitReason: act.whyVisitReason ? String(act.whyVisitReason) : defaultWhyVisitReason,
+              warning: (act as any).warning ? String((act as any).warning) : undefined,
             };
           });
 
@@ -1517,6 +1799,8 @@ export default function PlannerPage() {
     } catch (err) {
       console.warn('AI live call fallback to local multi-day distinct generator:', err);
       // Smart distinct multi-day generator (T1, T3)
+      const { arrivalTime: fallbackArrival, departureTime: fallbackDeparture, hasElderly: fallbackElderly } =
+        extractArrivalDepartureTimes(wishesText || '');
       const generated = generateDistinctDayPlan(
         destination,
         daysCount,
@@ -1525,7 +1809,10 @@ export default function PlannerPage() {
         selectedStyleLabels,
         activeDestObj.lat,
         activeDestObj.lng,
-        activeDestObj.photo
+        activeDestObj.photo,
+        fallbackArrival,
+        fallbackDeparture,
+        fallbackElderly
       );
 
       setItineraryDays(generated);
@@ -1537,6 +1824,173 @@ export default function PlannerPage() {
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  // ─── INTERACTIVE AI CO-PILOT (CONVERSATIONAL REPLANNING) ──────────────────
+  const handleCoPilotCommand = async (customText?: string) => {
+    const rawCmd = (customText ?? coPilotInput).trim();
+    if (!rawCmd) return;
+
+    setIsCoPilotBusy(true);
+    if (!customText) setCoPilotInput('');
+
+    const norm = rawCmd
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/đ/g, 'd')
+      .replace(/Đ/g, 'd')
+      .toLowerCase();
+
+    // 1. Xác định ngày mục tiêu (mặc định là activeDay hiện tại)
+    let targetDay = activeDay;
+    const dayMatch = norm.match(/ngay\s*(\d+)/);
+    if (dayMatch) {
+      const parsedDay = parseInt(dayMatch[1], 10);
+      if (parsedDay >= 1 && parsedDay <= itineraryDays.length) {
+        targetDay = parsedDay;
+      }
+    }
+
+    // 2. Xác định buổi mục tiêu
+    let targetSlot: 'MORNING' | 'NOON' | 'AFTERNOON' | 'EVENING' = 'AFTERNOON';
+    if (norm.includes('sang') || norm.includes('ngu nuong') || norm.includes('day muon') || norm.includes('morning')) {
+      targetSlot = 'MORNING';
+    } else if (norm.includes('trua') || norm.includes('an trua') || norm.includes('noon') || norm.includes('chay') || norm.includes('hai san') || norm.includes('quan an') || norm.includes('dac san')) {
+      targetSlot = 'NOON';
+    } else if (norm.includes('toi') || norm.includes('dem') || norm.includes('an toi') || norm.includes('evening') || norm.includes('cho dem')) {
+      targetSlot = 'EVENING';
+    } else if (norm.includes('chieu') || norm.includes('afternoon')) {
+      targetSlot = 'AFTERNOON';
+    }
+
+    // 3. Kịch bản A: Yêu cầu ngủ nướng / lùi giờ buổi sáng
+    if (norm.includes('ngu nuong') || norm.includes('day muon') || norm.includes('lui gio') || norm.includes('khoi hanh muon')) {
+      setItineraryDays((prev) =>
+        prev.map((d) => {
+          if (d.dayNumber !== targetDay || d.activities.length === 0) return d;
+          const updatedActs = [...d.activities];
+          updatedActs[0] = {
+            ...updatedActs[0],
+            timeRange: '09:30–11:15',
+            timeSlotReason: 'Đã lùi giờ khởi hành sang 09:30 theo yêu cầu để cả đoàn thoải mái ngủ nướng, ăn sáng thong thả.',
+          };
+          return { ...d, activities: updatedActs };
+        })
+      );
+      setActiveDay(targetDay);
+      setCoPilotReply(`✅ Đã điều chỉnh khung giờ sáng Ngày ${targetDay} lùi xuống 09:30–11:15 để cả đoàn thoải mái ngủ nướng và ăn sáng thư thả!`);
+      triggerToast(`Trợ lý AI đã lùi giờ sáng Ngày ${targetDay} xuống 09:30!`);
+      setIsCoPilotBusy(false);
+      return;
+    }
+
+    // 4. Kịch bản B: Đổi địa điểm theo nhu cầu tự nhiên (nhẹ nhàng cho người già, quán ăn đặc sản, biển, cafe...)
+    const realPool = getRealPlacesByProvince(destination);
+    const usedTitles = new Set<string>();
+    itineraryDays.forEach((d) =>
+      d.activities.forEach((a) => usedTitles.add(a.title.toLowerCase().trim()))
+    );
+
+    const wantFood =
+      targetSlot === 'NOON' ||
+      /an |quan|nha hang|chay|hai san|dac san|bun|mi|com|banh|lau/.test(norm);
+    const wantRelaxedOrElderly =
+      /nhe nhang|nguoi lon tuoi|nguoi gia|ong ba|met|khong leo|cafe|ca phe|nghi ngoi|bang phang| mát/.test(norm);
+    const wantBeachOrRiver = /bien|dao mat|ngam canh|song|cau|du thuyen/.test(norm);
+
+    let bestCand = realPool[0];
+    let bestScore = -9999;
+
+    for (const p of realPool) {
+      const pNameLower = p.name.toLowerCase().trim();
+      let score = usedTitles.has(pNameLower) ? -600 : 100;
+      const pNorm = `${p.name} ${p.category} ${p.description || ''}`
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'd')
+        .toLowerCase();
+
+      if (wantFood) {
+        if (/am thuc|cho|quan|nha hang|dac san|bun|mi|com|banh|hai san/.test(pNorm)) score += 300;
+        else score -= 150;
+      }
+      if (wantRelaxedOrElderly) {
+        if (/dinh|deo|hang|dong|thac|leo|ngu hanh son/.test(pNorm)) score -= 700;
+        if (/bao tang|bien|cau|song|pho co|chua|cafe|ca phe|ho|cong vien/.test(pNorm)) score += 260;
+      }
+      if (wantBeachOrRiver) {
+        if (/bien|bai|song|cau|dao|du thuyen/.test(pNorm)) score += 240;
+      }
+
+      if (score > bestScore) {
+        bestScore = score;
+        bestCand = p;
+      }
+    }
+
+    if (bestCand) {
+      const costVal = bestCand.priceMin ?? 0;
+      const costLabel =
+        costVal === 0
+          ? 'Miễn phí vé'
+          : `${new Intl.NumberFormat('vi-VN').format(costVal * peopleCount)}đ / nhóm`;
+
+      const customWhy = wantRelaxedOrElderly
+        ? 'Không gian bằng phẳng, thoáng mát, rất nhẹ nhàng và có nhiều chỗ nghỉ chân lý tưởng cho người lớn tuổi.'
+        : wantFood
+          ? 'Điểm thưởng thức ẩm thực bản địa nổi tiếng, hương vị đậm đà và không gian ngồi thoải mái.'
+          : bestCand.description || `Điểm trải nghiệm được yêu thích hàng đầu tại ${destination}.`;
+
+      setItineraryDays((prev) =>
+        prev.map((d) => {
+          if (d.dayNumber !== targetDay) return d;
+          let targetIdx = d.activities.findIndex((a) => a.timeSlot === targetSlot);
+          if (targetIdx === -1) {
+            targetIdx = targetSlot === 'MORNING' ? 0 : targetSlot === 'EVENING' ? d.activities.length - 1 : Math.min(1, d.activities.length - 1);
+          }
+          if (targetIdx < 0 || targetIdx >= d.activities.length) return d;
+
+          const oldAct = d.activities[targetIdx];
+          const updatedAct: Activity = {
+            ...oldAct,
+            id: `act-copilot-${Date.now()}`,
+            title: bestCand.name,
+            category: bestCand.category || oldAct.category,
+            description: bestCand.description || customWhy,
+            location: `${bestCand.name}, ${destination}`,
+            costVnd: costVal * peopleCount,
+            costStatus: costVal === 0 ? 'FREE' : 'PAID',
+            costLabel,
+            photoUrl: bestCand.image || oldAct.photoUrl,
+            latitude: bestCand.latitude || oldAct.latitude,
+            longitude: bestCand.longitude || oldAct.longitude,
+            whyVisitReason: customWhy,
+          };
+
+          const nextActs = [...d.activities];
+          nextActs[targetIdx] = updatedAct;
+          return { ...d, activities: nextActs };
+        })
+      );
+
+      const slotNameVi =
+        targetSlot === 'MORNING'
+          ? 'buổi sáng'
+          : targetSlot === 'NOON'
+            ? 'bữa trưa'
+            : targetSlot === 'EVENING'
+              ? 'buổi tối'
+              : 'buổi chiều';
+
+      setActiveDay(targetDay);
+      setCoPilotReply(
+        `✅ Đã đổi hoạt động ${slotNameVi} Ngày ${targetDay} sang "${bestCand.name}" (${bestCand.category}) — ${customWhy}`
+      );
+      triggerToast(`Đã cập nhật ${slotNameVi} Ngày ${targetDay} sang ${bestCand.name}!`);
+    }
+
+    setIsCoPilotBusy(false);
   };
 
   // ─── SAVE ITINERARY REAL PERSISTENCE ──────────────────────────────────────
@@ -1688,9 +2142,13 @@ export default function PlannerPage() {
               category: place.category,
               title: place.title,
               description: place.description,
+              location: `${place.title}, ${destination}`,
               costVnd: place.costVnd,
               costLabel: place.costLabel,
               photoUrl: place.photoUrl,
+              latitude: place.latitude ?? act.latitude,
+              longitude: place.longitude ?? act.longitude,
+              whyVisitReason: place.description,
             };
           }
           return act;
@@ -1698,6 +2156,7 @@ export default function PlannerPage() {
       }))
     );
     setReplaceTargetActivityId(null);
+    setReplaceSearchQuery('');
     markDirty();
     triggerToast(`Đã thay địa điểm thành: ${place.title}`);
   };
@@ -2433,9 +2892,141 @@ export default function PlannerPage() {
                 </div>
               </div>
 
-              {/* ─── AI TRAVEL INSIGHTS CARD (T6) ─── */}
-              <div className={styles.aiInsightsCard}>
-                <div className={styles.aiInsightsHeader}>
+              {/* ─── A. HỒ SƠ CHUYẾN ĐI (TRIP BRIEFING & DNA - COLLAPSIBLE BAR) ─── */}
+              <div className={styles.tripDnaCard} style={{ padding: showTripDna ? '16px 20px' : '12px 18px' }}>
+                <div
+                  className={styles.tripDnaHeader}
+                  style={{ cursor: 'pointer', marginBottom: showTripDna ? '12px' : 0, userSelect: 'none' }}
+                  onClick={() => setShowTripDna((prev) => !prev)}
+                  role="button"
+                  tabIndex={0}
+                  aria-expanded={showTripDna}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setShowTripDna((prev) => !prev);
+                    }
+                  }}
+                >
+                  <div className={styles.tripDnaTitle} style={{ flexWrap: 'wrap', gap: '8px' }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0088CC" strokeWidth="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    <span>Hồ sơ Chuyến đi & Yêu cầu của bạn</span>
+                    <span style={{ fontSize: '12px', fontWeight: 500, color: '#64748B' }}>
+                      ({destination} · {daysCount} ngày · {peopleCount} người)
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span className={styles.tripDnaBadge}>
+                      Đã cá nhân hóa
+                    </span>
+                    <span className={styles.collapsibleTogglePill}>
+                      {showTripDna ? 'Thu gọn ▴' : 'Xem chi tiết ▾'}
+                    </span>
+                  </div>
+                </div>
+
+                {(detectedElderly || detectedChildren || detectedArrivalTime || detectedDepartureTime) && (
+                  <div className={styles.semanticBadgesRow} style={{ marginTop: '8px', paddingTop: '8px' }}>
+                    <span className={styles.semanticRowTitle}>🧠 AI đã tự động nhận diện:</span>
+                    {detectedElderly && (
+                      <span className={styles.semanticBadgeElderly}>
+                        👴 Thân thiện Người lớn tuổi (Tránh leo dốc · Đệm nghỉ 30p)
+                      </span>
+                    )}
+                    {detectedChildren && (
+                      <span className={styles.semanticBadgeChildren}>
+                        👶 An toàn & Thoải mái cho Trẻ nhỏ
+                      </span>
+                    )}
+                    {detectedArrivalTime && (
+                      <span className={styles.semanticBadgeTime}>
+                        🛬 Hạ cánh Ngày 1 lúc {detectedArrivalTime} (Bỏ trống sáng)
+                      </span>
+                    )}
+                    {detectedDepartureTime && (
+                      <span className={styles.semanticBadgeTime}>
+                        🛫 Khởi hành về Ngày cuối lúc {detectedDepartureTime}
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {showTripDna && (
+                  <>
+                    <div className={styles.tripDnaGrid} style={{ marginTop: '12px' }}>
+                      <div className={styles.tripDnaItem}>
+                        <span className={styles.tripDnaLabel}>📍 Điểm đến</span>
+                        <span className={styles.tripDnaVal}>{destination}</span>
+                        <span className={styles.tripDnaSub}>{activeDestObj.region ? `Khu vực Miền ${activeDestObj.region}` : 'Việt Nam'}</span>
+                      </div>
+
+                      <div className={styles.tripDnaItem}>
+                        <span className={styles.tripDnaLabel}>📅 Khởi hành & Thời gian</span>
+                        <span className={styles.tripDnaVal}>{startDate}</span>
+                        <span className={styles.tripDnaSub}>{daysCount} ngày ({Math.max(1, daysCount - 1)} đêm)</span>
+                      </div>
+
+                      <div className={styles.tripDnaItem}>
+                        <span className={styles.tripDnaLabel}>👥 Thành viên & Quy mô</span>
+                        <span className={styles.tripDnaVal}>{peopleCount} người</span>
+                        <span className={styles.tripDnaSub}>
+                          {peopleCount === 1 ? 'Solo Traveler' : peopleCount === 2 ? 'Cặp đôi (Couple)' : peopleCount <= 4 ? 'Gia đình nhỏ / Bạn bè' : 'Đoàn đông người'}
+                        </span>
+                      </div>
+
+                      <div className={styles.tripDnaItem}>
+                        <span className={styles.tripDnaLabel}>💰 Hạn mức ngân sách</span>
+                        <span className={styles.tripDnaVal}>
+                          {budgetTier === 'economy' ? 'Tiết kiệm' : budgetTier === 'luxury' ? 'Cao cấp' : 'Tiêu chuẩn'}
+                        </span>
+                        <span className={styles.tripDnaSub}>
+                          ~{new Intl.NumberFormat('vi-VN').format(totalEstimatedCost)}đ / cả đoàn
+                        </span>
+                      </div>
+                    </div>
+
+                    {selectedStyles.length > 0 && (
+                      <div className={styles.tripDnaTagsRow}>
+                        <strong style={{ color: '#475569', fontSize: '11.5px', textTransform: 'uppercase' }}>Tổ hợp sở thích:</strong>
+                        {selectedStyles.map((sId) => {
+                          const found = TRAVEL_STYLES.find((t) => t.id === sId);
+                          return (
+                            <span key={sId} className={styles.tripDnaTagChip}>
+                              {found ? found.label : sId}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {wishesText.trim() && (
+                      <div className={styles.tripDnaNotesBox}>
+                        <span style={{ fontSize: '14px' }}>💬</span>
+                        <div>
+                          <strong>Mong muốn đặc biệt:</strong> &ldquo;{wishesText.trim()}&rdquo;
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+
+              {/* ─── B. LUẬN ĐIỂM CHIẾN LƯỢC TỪ AI (AI STRATEGIC DOSSIER - COLLAPSIBLE BAR) ─── */}
+              <div className={styles.aiInsightsCard} style={{ padding: showAiInsights ? '18px 20px' : '12px 18px' }}>
+                <div
+                  className={styles.aiInsightsHeader}
+                  style={{ cursor: 'pointer', marginBottom: showAiInsights ? '10px' : 0, userSelect: 'none' }}
+                  onClick={() => setShowAiInsights((prev) => !prev)}
+                  role="button"
+                  tabIndex={0}
+                  aria-expanded={showAiInsights}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setShowAiInsights((prev) => !prev);
+                    }
+                  }}
+                >
                   <div className={styles.aiInsightsTitleRow}>
                     <span
                       className={`${styles.aiInsightsBadge} ${
@@ -2447,67 +3038,95 @@ export default function PlannerPage() {
                       }`}
                     >
                       {aiGenerationMetadata.provider === 'local'
-                        ? '🤖 LOCAL AI'
+                        ? '✨ TRỢ LÝ DU LỊCH CLAUDE AI'
                         : aiGenerationMetadata.provider === 'gemini'
-                          ? '☁️ GEMINI AI'
-                          : '📋 PHƯƠNG ÁN AN TOÀN'}
+                          ? '✨ TRỢ LÝ DU LỊCH GEMINI AI'
+                          : '✨ TRỢ LÝ DU LỊCH VISTA'}
                     </span>
-                    <h3 className={styles.aiInsightsMainTitle}>Phân tích & Đánh giá chuyến đi {destination}</h3>
+                    <h3 className={styles.aiInsightsMainTitle} style={{ fontSize: '14px', margin: 0 }}>
+                      Vì sao lộ trình này hoàn hảo cho chuyến đi {destination}?
+                    </h3>
                   </div>
-                  <span className={styles.aiInsightsConfidence}>Độ phù hợp: 96%</span>
-                </div>
-
-                {aiGenerationMetadata.fallbackUsed && (
-                  <div className={styles.aiFallbackWarning} role="status">
-                    {aiGenerationMetadata.provider === 'gemini'
-                      ? 'Local AI không khả dụng; yêu cầu đã chuyển sang Gemini theo cấu hình fallback được cho phép.'
-                      : 'Đây là phương án an toàn từ dữ liệu địa điểm đã kiểm chứng, không phải nội dung do mô hình AI sinh trực tiếp.'}
-                  </div>
-                )}
-
-                {aiCitations.length > 0 && (
-                  <div className={styles.aiCitations} aria-label="Nguồn dữ liệu RAG">
-                    <strong>Nguồn dữ liệu đã đối chiếu:</strong>
-                    {aiCitations.slice(0, 5).map((citation) => (
-                      <span key={citation.chunkId} className={styles.aiCitationChip}>
-                        {citation.title}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                <div className={styles.aiInsightsGrid}>
-                  <div className={styles.aiInsightItem}>
-                    <span className={styles.aiInsightLabel}>
-                      🌤️ Dự báo thời tiết ({destWeatherInsight.badge})
-                    </span>
-                    <span className={styles.aiInsightValue}>
-                      {destWeatherInsight.temp} · {destWeatherInsight.text}
-                    </span>
-                  </div>
-
-                  <div className={styles.aiInsightItem}>
-                    <span className={styles.aiInsightLabel}>
-                      ⚡ Nhịp độ & Phân bổ
-                    </span>
-                    <span className={styles.aiInsightValue}>
-                      {isLateEveningDeparture
-                        ? 'Tối ưu giờ xuất phát muộn: Ngày 1 bắt đầu sau 20h; các ngày sau nhịp độ hài hòa 3–4 điểm.'
-                        : 'Nhịp độ hài hòa (3–4 hoạt động/ngày), khoảng cách di chuyển trung bình 15–20 phút.'}
-                    </span>
-                  </div>
-
-                  <div className={styles.aiInsightItem}>
-                    <span className={styles.aiInsightLabel}>
-                      💡 Lời khuyên bản địa
-                    </span>
-                    <span className={styles.aiInsightValue}>
-                      {budgetTier === 'economy'
-                        ? 'Nên ưu tiên các điểm tham quan mở và ẩm thực chợ đêm để tối ưu ngân sách.'
-                        : 'Nên đặt trước vé thắng cảnh và bàn ăn tại các quán nổi tiếng để tránh chờ đợi.'}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                    <span className={styles.aiInsightsConfidence}>Độ phù hợp: 98%</span>
+                    <span className={styles.collapsibleTogglePill}>
+                      {showAiInsights ? 'Ẩn phân tích ▴' : 'Xem lý do ▾'}
                     </span>
                   </div>
                 </div>
+
+                {showAiInsights && (
+                  <>
+                    {aiGenerationMetadata.fallbackUsed && (
+                      <div className={styles.aiFallbackWarning} role="status">
+                        💡 Kế hoạch được sắp xếp thông minh theo sở thích, thời gian và số lượng người đi của bạn.
+                      </div>
+                    )}
+
+                    {aiCitations.length > 0 && (
+                      <div className={styles.aiCitations} aria-label="Nguồn dữ liệu RAG">
+                        <strong>Điểm đến uy tín đã đối chiếu:</strong>
+                        {aiCitations.slice(0, 5).map((citation) => (
+                          <span key={citation.chunkId} className={styles.aiCitationChip}>
+                            {citation.title}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* 4 Thẻ Phân tích dễ hiểu, đời thường cho Khách du lịch */}
+                    <div className={styles.aiStrategicGrid} style={{ marginTop: '14px' }}>
+                      {/* Card 1: Tuyến đường & Phân cụm */}
+                      <div className={`${styles.aiStrategicCard} ${styles.aiStrategicRoute}`}>
+                        <div className={styles.aiStrategicCardHeader}>
+                          <span>🚗</span>
+                          <span>Cung đường tiện lợi & Đỡ say xe</span>
+                        </div>
+                        <div className={styles.aiStrategicCardBody}>
+                          {aiCustomInsights.strategic || `Các điểm tham quan trong ngày được chọn trên cùng một cung đường tiện lợi, giúp bạn di chuyển nhanh chóng, tiết kiệm tiền taxi và không bị mệt hay say xe. Nhịp độ đan xen giữa danh lam thắng cảnh nổi tiếng và khám phá đời sống địa phương.`}
+                        </div>
+                      </div>
+
+                      {/* Card 2: Thể lực & Đối tượng đoàn */}
+                      <div className={`${styles.aiStrategicCard} ${styles.aiStrategicCompanion}`}>
+                        <div className={styles.aiStrategicCardHeader}>
+                          <span>💪</span>
+                          <span>Nhịp độ thảnh thơi, vừa sức cả đoàn</span>
+                        </div>
+                        <div className={styles.aiStrategicCardBody}>
+                          {aiCustomInsights.companionFit || aiCustomInsights.pacing || `Lịch trình được cân đối vừa sức cho đoàn ${peopleCount} người: Buổi sáng dồi dào năng lượng đi ngắm cảnh ngoài trời; buổi chiều tối dành cho ẩm thực và dạo mát thư giãn, đảm bảo mọi người luôn tràn đầy hứng khởi.`}
+                        </div>
+                      </div>
+
+                      {/* Card 3: Dòng tiền & Ngân sách */}
+                      <div className={`${styles.aiStrategicCard} ${styles.aiStrategicBudget}`}>
+                        <div className={styles.aiStrategicCardHeader}>
+                          <span>💵</span>
+                          <span>Chi tiêu hợp lý, không lo phát sinh</span>
+                        </div>
+                        <div className={styles.aiStrategicCardBody}>
+                          {aiCustomInsights.budgetOptimization || `Cân đối tài chính thông minh: Kết hợp hài hòa giữa các điểm tham quan có vé danh tiếng và ẩm thực đặc sản bản địa uy tín, đảm bảo trải nghiệm đầy đủ mà chi phí dự kiến luôn nằm trong mức ~${new Intl.NumberFormat('vi-VN').format(totalEstimatedCost)}đ cho toàn đoàn.`}
+                        </div>
+                      </div>
+
+                      {/* Card 4: Thích ứng Thời tiết & Bản địa */}
+                      <div className={`${styles.aiStrategicCard} ${styles.aiStrategicWeather}`}>
+                        <div className={styles.aiStrategicCardHeader}>
+                          <span>🌤️</span>
+                          <span>Đón thời tiết đẹp & Mẹo ăn chơi</span>
+                        </div>
+                        <div className={styles.aiStrategicCardBody}>
+                          <strong>Thời tiết khởi hành ({startDate}): </strong>
+                          {aiCustomInsights.weather || `${destWeatherInsight.temp} · ${destWeatherInsight.text}`}
+                          <br />
+                          <span style={{ display: 'inline-block', marginTop: '4px' }}>
+                            <strong>💡 Mẹo nhỏ: </strong>{aiCustomInsights.advice || `Nên ưu tiên tham quan ngoài trời vào buổi sáng sớm hoặc hoàng hôn để có ánh sáng đẹp nhất và không khí mát lành.`}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* B. VIEW SWITCH BAR */}
@@ -2541,6 +3160,119 @@ export default function PlannerPage() {
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 4v6h-6" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" /></svg>
                   <span>Tạo lại gợi ý</span>
                 </button>
+              </div>
+
+              {/* ─── INTERACTIVE AI CO-PILOT (COLLAPSIBLE BAR) ─── */}
+              <div className={styles.coPilotPanel} style={{ padding: showCoPilot ? '16px 18px' : '11px 16px' }}>
+                <div
+                  className={styles.coPilotHeader}
+                  style={{ cursor: 'pointer', marginBottom: showCoPilot ? '12px' : 0, userSelect: 'none' }}
+                  onClick={() => setShowCoPilot((prev) => !prev)}
+                  role="button"
+                  tabIndex={0}
+                  aria-expanded={showCoPilot}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setShowCoPilot((prev) => !prev);
+                    }
+                  }}
+                >
+                  <div className={styles.coPilotHeaderLeft}>
+                    <span className={styles.coPilotAvatar} style={{ width: '30px', height: '30px', fontSize: '15px' }}>🤖</span>
+                    <div>
+                      <h4 className={styles.coPilotTitle} style={{ margin: 0 }}>
+                        Trợ lý AI Đồng hành — Trò chuyện tinh chỉnh lịch trình tức thì
+                      </h4>
+                      {showCoPilot && (
+                        <p className={styles.coPilotSub} style={{ marginTop: '2px' }}>
+                          Yêu cầu đổi quán ăn, lùi giờ ngủ nướng hoặc chọn điểm nhẹ nhàng cho Ngày {activeDay} mà không làm mất các điểm đã ưng ý.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                    <span className={styles.coPilotActiveDayBadge}>Đang chọn: Ngày {activeDay}</span>
+                    <span className={styles.collapsibleTogglePill}>
+                      {showCoPilot ? 'Thu gọn ▴' : 'Mở trợ lý ▾'}
+                    </span>
+                  </div>
+                </div>
+
+                {coPilotReply && (
+                  <div className={styles.coPilotReplyBubble} style={{ marginTop: showCoPilot ? 0 : '10px' }}>
+                    <span>{coPilotReply}</span>
+                  </div>
+                )}
+
+                {showCoPilot && (
+                  <>
+                    <div className={styles.coPilotQuickChips}>
+                      <button
+                        type="button"
+                        className={styles.coPilotChip}
+                        onClick={() =>
+                          handleCoPilotCommand(
+                            `Đổi buổi chiều Ngày ${activeDay} sang điểm nhẹ nhàng bằng phẳng cho người lớn tuổi`
+                          )
+                        }
+                      >
+                        👴 Đổi chiều Ngày {activeDay} nhẹ nhàng cho người lớn tuổi
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.coPilotChip}
+                        onClick={() =>
+                          handleCoPilotCommand(`Đổi quán ăn trưa Ngày ${activeDay} sang đặc sản bản địa khác`)
+                        }
+                      >
+                        🍜 Đổi quán ăn trưa Ngày {activeDay}
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.coPilotChip}
+                        onClick={() =>
+                          handleCoPilotCommand(`Sáng Ngày ${activeDay} cho đoàn ngủ nướng khởi hành lúc 09:30`)
+                        }
+                      >
+                        😴 Ngủ nướng sáng Ngày {activeDay} (đi lúc 09:30)
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.coPilotChip}
+                        onClick={() =>
+                          handleCoPilotCommand(`Đổi buổi tối Ngày ${activeDay} sang dạo biển hoặc ngắm cầu đêm`)
+                        }
+                      >
+                        🌊 Đổi điểm dạo mát tối Ngày {activeDay}
+                      </button>
+                    </div>
+
+                    <form
+                      className={styles.coPilotInputRow}
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        handleCoPilotCommand();
+                      }}
+                    >
+                      <input
+                        type="text"
+                        className={styles.coPilotInput}
+                        placeholder={`Gõ yêu cầu cho Ngày ${activeDay} (VD: "Chiều Ngày ${activeDay} đổi sang đi bảo tàng hoặc cafe ngắm biển", "Đổi bữa trưa sang hải sản")...`}
+                        value={coPilotInput}
+                        onChange={(e) => setCoPilotInput(e.target.value)}
+                        disabled={isCoPilotBusy}
+                      />
+                      <button
+                        type="submit"
+                        className={styles.coPilotSendBtn}
+                        disabled={isCoPilotBusy || !coPilotInput.trim()}
+                      >
+                        {isCoPilotBusy ? 'Đang xử lý...' : '✨ Tinh chỉnh ngay'}
+                      </button>
+                    </form>
+                  </>
+                )}
               </div>
 
               {/* C. DYNAMIC DAY NAVIGATION TABS */}
@@ -2579,6 +3311,27 @@ export default function PlannerPage() {
               {/* ─── 4. ACTIVITY TIMELINE VIEW ─── */}
               {activeView === 'timeline' && (
                 <div className={styles.timelineWrapper}>
+                  {/* Chặng đón tiếp & Nhận phòng Ngày 1 khi đến muộn (buổi chiều) */}
+                  {activeDay === 1 && (detectedArrivalTime || (currentDayPlan.activities.length > 0 && currentDayPlan.activities[0].timeSlot !== 'MORNING')) && (
+                    <div className={styles.welcomeBannerCard}>
+                      <div className={styles.welcomeBannerIcon}>🛬</div>
+                      <div className={styles.welcomeBannerBody}>
+                        <div className={styles.welcomeBannerHeader}>
+                          <span className={styles.welcomeBannerTag}>Chặng đón tiếp & Nhận phòng</span>
+                          <span className={styles.welcomeBannerTime}>
+                            {detectedArrivalTime ? `${detectedArrivalTime} – ${currentDayPlan.activities[0]?.timeRange?.split('–')[0] || '14:30'}` : '14:00 – 14:30'}
+                          </span>
+                        </div>
+                        <h4 className={styles.welcomeBannerTitle}>
+                          Đến {destination} & Check-in Khách sạn
+                        </h4>
+                        <p className={styles.welcomeBannerDesc}>
+                          Buổi sáng ngày đầu để trống lịch tham quan theo yêu cầu riêng để đoàn di chuyển đến nơi. Quý khách có mặt lúc {detectedArrivalTime || '14:00'}, di chuyển về khách sạn nhận phòng, sắp xếp hành lý và nghỉ ngơi trước khi khởi hành tham quan buổi chiều.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   {currentDayPlan.activities.map((act) => {
                     const isTipOpen = openTipId === act.id;
                     const isOverflowOpen = activeOverflowId === act.id;
@@ -2607,6 +3360,30 @@ export default function PlannerPage() {
                               <span className={styles.activityCategory}>{act.category}</span>
                               <h4 className={styles.activityTitle}>{act.title}</h4>
                               <p className={styles.activityDesc}>{act.description}</p>
+
+                              {/* Khối lý do đề xuất AI: Gộp gọn gàng, tiết kiệm diện tích */}
+                              {(act.timeSlotReason || act.whyVisitReason || act.rationale) && (
+                                <div className={styles.activityReasonDossier}>
+                                  <div className={styles.reasonUnifiedHeader}>
+                                    <span className={styles.reasonUnifiedTag}>💡 Lý do đề xuất</span>
+                                    <div className={styles.reasonUnifiedContent}>
+                                      {act.timeSlotReason && (
+                                        <span className={styles.reasonPart}>
+                                          <strong>Khung giờ:</strong> {act.timeSlotReason}{' '}
+                                        </span>
+                                      )}
+                                      {act.whyVisitReason && (
+                                        <span className={styles.reasonPart}>
+                                          <strong>· Điểm nổi bật:</strong> {act.whyVisitReason}
+                                        </span>
+                                      )}
+                                      {!act.timeSlotReason && !act.whyVisitReason && act.rationale && (
+                                        <span>{act.rationale}</span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
 
                               <div className={styles.activityMetaRow}>
                                 <span className={styles.locationLink}>
@@ -2647,11 +3424,18 @@ export default function PlannerPage() {
                                   {act.tip}
                                 </div>
                               )}
+
+                              {/* Thẻ cảnh báo giờ mở cửa hoặc quy định */}
+                              {act.warning && (
+                                <div className={styles.activityWarningBox}>
+                                  <span>⚠️ {act.warning}</span>
+                                </div>
+                              )}
                             </div>
 
                             {/* Activity Right Cost & Actions */}
                             <div className={styles.activityRight}>
-                              <span className={`${styles.costBadge} ${act.costVnd === 0 ? styles.costFree : ''}`}>
+                              <span className={`${styles.costBadge} ${act.costStatus === 'UNVERIFIED' ? styles.costUnverified : act.costVnd === 0 ? styles.costFree : ''}`}>
                                 {act.costLabel}
                               </span>
 
@@ -2721,6 +3505,27 @@ export default function PlannerPage() {
                       </React.Fragment>
                     );
                   })}
+
+                  {/* Chặng tiễn đoàn & Trả phòng Ngày cuối khi bay về sớm */}
+                  {activeDay === itineraryDays.length && (detectedDepartureTime || (currentDayPlan.activities.length > 0 && currentDayPlan.activities[currentDayPlan.activities.length - 1].timeSlot !== 'EVENING')) && (
+                    <div className={styles.welcomeBannerCard} style={{ marginTop: '16px', borderColor: '#FED7AA', background: '#FFFDF9' }}>
+                      <div className={styles.welcomeBannerIcon} style={{ background: '#FFF7ED', color: '#EA580C' }}>🛫</div>
+                      <div className={styles.welcomeBannerBody}>
+                        <div className={styles.welcomeBannerHeader}>
+                          <span className={styles.welcomeBannerTag} style={{ background: '#FFEDD5', color: '#C2410C' }}>Chặng tiễn đoàn & Trả phòng</span>
+                          <span className={styles.welcomeBannerTime}>
+                            {detectedDepartureTime || '11:00'}
+                          </span>
+                        </div>
+                        <h4 className={styles.welcomeBannerTitle}>
+                          Check-out Khách sạn & Khởi hành về
+                        </h4>
+                        <p className={styles.welcomeBannerDesc}>
+                          Hoàn tất trả phòng khách sạn và di chuyển ra sân bay / ga tàu theo lịch trình lúc {detectedDepartureTime || '11:00'}. Chiều tối để trống theo yêu cầu để quý khách bay về an toàn, khép lại chuyến khám phá {destination} trọn vẹn!
+                        </p>
+                      </div>
+                    </div>
+                  )}
 
                   {/* End of timeline actions & Daily budget breakdown */}
                   <div className={styles.timelineFooter}>
@@ -3253,20 +4058,74 @@ export default function PlannerPage() {
 
       {/* 5. REPLACE ACTIVITY SIDE DRAWER */}
       {replaceTargetActivityId && (
-        <div className={styles.drawerWrapper} onClick={() => setReplaceTargetActivityId(null)}>
+        <div
+          className={styles.drawerWrapper}
+          onClick={() => {
+            setReplaceTargetActivityId(null);
+            setReplaceSearchQuery('');
+          }}
+        >
           <div className={styles.drawerPanel} onClick={(e) => e.stopPropagation()}>
             <div className={styles.drawerHeader}>
               <div>
                 <h3 className={styles.drawerTitle}>Gợi ý địa điểm thay thế</h3>
-                <p className={styles.drawerSubtitle}>Các lựa chọn hấp dẫn khác tại {destination}</p>
+                <p className={styles.drawerSubtitle}>
+                  {targetActivityToReplace
+                    ? `Đang đổi cho: "${targetActivityToReplace.title}" (${targetActivityToReplace.timeRange})`
+                    : `Kho dữ liệu địa điểm thực tế tại ${destination} (Loại trừ điểm đã có trong lịch)`}
+                </p>
               </div>
               <button
                 type="button"
                 className={styles.modalCloseBtn}
-                onClick={() => setReplaceTargetActivityId(null)}
+                onClick={() => {
+                  setReplaceTargetActivityId(null);
+                  setReplaceSearchQuery('');
+                }}
               >
                 ✕
               </button>
+            </div>
+
+            <div style={{ padding: '10px 18px 4px', display: 'flex', flexDirection: 'column', gap: '8px', borderBottom: '1px solid #E2E8F0', background: '#F8FAFC' }}>
+              <input
+                type="text"
+                placeholder={`🔍 Tìm nhanh địa điểm tại ${destination} (VD: biển, bảo tàng, chùa, hải sản, chợ)...`}
+                value={replaceSearchQuery}
+                onChange={(e) => {
+                  setReplaceSearchQuery(e.target.value);
+                  setReplaceBatchIndex(0);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  border: '1px solid #CBD5E1',
+                  fontSize: '12.5px',
+                  outline: 'none',
+                }}
+              />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '6px' }}>
+                <span style={{ fontSize: '11.5px', color: '#64748B', fontWeight: 600 }}>
+                  ✨ Đã lọc bỏ các điểm trùng trong lịch trình
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setReplaceBatchIndex((prev) => prev + 1)}
+                  style={{
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    color: '#0284C7',
+                    background: '#E0F2FE',
+                    border: '1px solid #BAE6FD',
+                    borderRadius: '999px',
+                    padding: '4px 12px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  🔀 Đổi loạt địa điểm khác
+                </button>
+              </div>
             </div>
 
             <div className={styles.drawerBody}>

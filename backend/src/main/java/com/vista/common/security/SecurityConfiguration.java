@@ -31,31 +31,30 @@ public class SecurityConfiguration {
       @Autowired(required = false) JwtAuthenticationFilter jwtAuthenticationFilter)
       throws Exception {
     http.csrf(csrf -> csrf.disable())
-        .cors(cors -> {})
+        .cors(cors -> {
+        })
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .headers(
-            headers ->
-                headers
-                    .contentTypeOptions(content -> {})
-                    .frameOptions(frame -> frame.deny())
-                    .httpStrictTransportSecurity(
-                        hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31536000))
-                    .contentSecurityPolicy(
-                        csp ->
-                            csp.policyDirectives(
-                                "default-src 'self'; frame-ancestors 'none'; object-src 'none';")))
+            headers -> headers
+                .contentTypeOptions(content -> {
+                })
+                .frameOptions(frame -> frame.deny())
+                .httpStrictTransportSecurity(
+                    hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31536000))
+                .contentSecurityPolicy(
+                    csp -> csp.policyDirectives(
+                        "default-src 'self'; frame-ancestors 'none'; object-src 'none';")))
         .exceptionHandling(
-            exceptions ->
-                exceptions
-                    .authenticationEntryPoint(
-                        (request, response, authException) -> {
-                          response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                          response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);
-                          response
-                              .getWriter()
-                              .write(
-                                  """
+            exceptions -> exceptions
+                .authenticationEntryPoint(
+                    (request, response, authException) -> {
+                      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                      response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);
+                      response
+                          .getWriter()
+                          .write(
+                              """
                                   {
                                     "type": "https://vista.example/errors/unauthorized",
                                     "title": "Unauthorized",
@@ -64,15 +63,15 @@ public class SecurityConfiguration {
                                     "code": "UNAUTHORIZED"
                                   }
                                   """);
-                        })
-                    .accessDeniedHandler(
-                        (request, response, accessDeniedException) -> {
-                          response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                          response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);
-                          response
-                              .getWriter()
-                              .write(
-                                  """
+                    })
+                .accessDeniedHandler(
+                    (request, response, accessDeniedException) -> {
+                      response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                      response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);
+                      response
+                          .getWriter()
+                          .write(
+                              """
                                   {
                                     "type": "https://vista.example/errors/forbidden",
                                     "title": "Forbidden",
@@ -81,38 +80,37 @@ public class SecurityConfiguration {
                                     "code": "FORBIDDEN"
                                   }
                                   """);
-                        }))
+                    }))
         .authorizeHttpRequests(
-            auth ->
-                auth.requestMatchers(
-                        HttpMethod.POST,
-                        "/api/v1/auth/register",
-                        "/api/v1/auth/login",
-                        "/api/v1/auth/refresh",
-                        "/api/v1/auth/refresh-token",
-                        "/api/v1/auth/logout",
-                        "/api/v1/auth/google",
-                        "/api/v1/ai/quick-plan")
-                    .permitAll()
-                    .requestMatchers(HttpMethod.POST, "/api/v1/map/routes")
-                    .permitAll()
-                    .requestMatchers(
-                        HttpMethod.GET,
-                        "/api/v1/health",
-                        "/actuator/health/**",
-                        "/v3/api-docs/**",
-                        "/swagger-ui/**",
-                        "/swagger-ui.html",
-                        "/api/v1/destinations/**",
-                        "/api/v1/posts/**",
-                        "/api/v1/post-media/*",
-                        // W4-TV3-03: preview lời mời — public (deep link / nhập mã)
-                        "/api/v1/invitations/*/preview")
-                    .permitAll()
-                    .requestMatchers("/api/v1/admin/**")
-                    .hasAnyRole("ADMIN", "MODERATOR")
-                    .anyRequest()
-                    .authenticated());
+            auth -> auth.requestMatchers(
+                HttpMethod.POST,
+                "/api/v1/auth/register",
+                "/api/v1/auth/login",
+                "/api/v1/auth/refresh",
+                "/api/v1/auth/refresh-token",
+                "/api/v1/auth/logout",
+                "/api/v1/auth/google",
+                "/api/v1/ai/quick-plan")
+                .permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/map/routes")
+                .permitAll()
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/api/v1/health",
+                    "/actuator/health/**",
+                    "/v3/api-docs/**",
+                    "/swagger-ui/**",
+                    "/swagger-ui.html",
+                    "/api/v1/destinations/**",
+                    "/api/v1/posts/**",
+                    "/api/v1/post-media/*",
+                    // W4-TV3-03: preview lời mời — public (deep link / nhập mã)
+                    "/api/v1/invitations/*/preview")
+                .permitAll()
+                .requestMatchers("/api/v1/admin/**")
+                .hasAnyRole("ADMIN", "MODERATOR")
+                .anyRequest()
+                .authenticated());
 
     if (jwtAuthenticationFilter != null) {
       http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

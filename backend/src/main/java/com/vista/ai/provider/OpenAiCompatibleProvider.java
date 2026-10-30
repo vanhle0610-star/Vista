@@ -8,6 +8,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -61,19 +62,23 @@ public class OpenAiCompatibleProvider implements AiProvider {
   public Optional<String> generate(String systemPrompt, String userPrompt) {
     if (!isAvailable()) return Optional.empty();
     try {
-      String body =
-          objectMapper.writeValueAsString(
-              Map.of(
-                  "model",
-                  properties.localModel(),
-                  "temperature",
-                  properties.temperature(),
-                  "max_tokens",
-                  properties.maxOutputTokens(),
-                  "messages",
-                  List.of(
-                      Map.of("role", "system", "content", systemPrompt),
-                      Map.of("role", "user", "content", userPrompt))));
+      String modelName = properties.localModel() != null ? properties.localModel().trim() : "";
+      String effectiveUserPrompt =
+          modelName.toLowerCase().startsWith("qwen3")
+              ? userPrompt + "\n/no_think"
+              : userPrompt;
+
+      Map<String, Object> payload = new LinkedHashMap<>();
+      payload.put("model", modelName);
+      payload.put("temperature", properties.temperature());
+      payload.put("max_tokens", Math.min(properties.maxOutputTokens(), 800));
+      payload.put(
+          "messages",
+          List.of(
+              Map.of("role", "system", "content", systemPrompt),
+              Map.of("role", "user", "content", effectiveUserPrompt)));
+
+      String body = objectMapper.writeValueAsString(payload);
       HttpRequest.Builder requestBuilder =
           HttpRequest.newBuilder()
               .uri(chatCompletionsUri())
@@ -100,7 +105,7 @@ public class OpenAiCompatibleProvider implements AiProvider {
       if (content.isTextual()) {
         lastProbeStatus = true;
         lastProbeTimeMs = System.currentTimeMillis();
-        return Optional.of(content.asText());
+        return Optional.of(stripThinkBlocks(content.asText()));
       }
       return Optional.empty();
     } catch (InterruptedException exception) {
@@ -112,6 +117,11 @@ public class OpenAiCompatibleProvider implements AiProvider {
       lastProbeTimeMs = System.currentTimeMillis();
       return Optional.empty();
     }
+  }
+
+  private String stripThinkBlocks(String raw) {
+    if (raw == null) return "";
+    return raw.replaceAll("(?s)<think>.*?</think>", "").trim();
   }
 
   private boolean isServerReachable() {

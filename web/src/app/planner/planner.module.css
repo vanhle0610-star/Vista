@@ -1367,6 +1367,26 @@
   border-color: #DCFCE7;
 }
 
+.costUnverified {
+  color: #B45309;
+  background: #FFFBEB;
+  border-color: #FDE68A;
+}
+
+.activityWarningBox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #FEF3C7;
+  border: 1px solid #FCD34D;
+  color: #92400E;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 8px;
+}
+
 .activityActionButtons {
   display: flex;
   align-items: center;
@@ -2442,6 +2462,267 @@
   line-height: 1.4;
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   AI EXECUTIVE TRIP DOSSIER & STRATEGIC RATIONALE (T6 NÂNG CẤP CAO CẤP)
+   ══════════════════════════════════════════════════════════════════════════ */
+.tripDnaCard {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 18px 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.04);
+}
+
+.tripDnaHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  border-bottom: 1px dashed #E2E8F0;
+  padding-bottom: 10px;
+}
+
+.tripDnaTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #0F172A;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tripDnaBadge {
+  background: #EFF6FF;
+  color: #1D4ED8;
+  border: 1px solid #BFDBFE;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.tripDnaGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 900px) {
+  .tripDnaGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 540px) {
+  .tripDnaGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tripDnaItem {
+  background: #F8FAFC;
+  border: 1px solid #EEF2F6;
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.tripDnaLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748B;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.tripDnaVal {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1E293B;
+}
+
+.tripDnaSub {
+  font-size: 11px;
+  color: #94A3B8;
+  font-weight: 500;
+}
+
+.tripDnaTagsRow {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #F1F5F9;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.tripDnaTagChip {
+  background: #F0FDFA;
+  color: #0D9488;
+  border: 1px solid #CCFBF1;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.tripDnaNotesBox {
+  margin-top: 10px;
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 12.5px;
+  color: #92400E;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+/* 4 Strategic Rationale Cards */
+.aiStrategicSection {
+  margin-bottom: 20px;
+}
+
+.aiStrategicSectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.aiStrategicSectionTitle {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #0F172A;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.aiStrategicGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+@media (max-width: 900px) {
+  .aiStrategicGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.aiStrategicCard {
+  background: linear-gradient(145deg, #FFFFFF 0%, #F8FAFC 100%);
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.aiStrategicCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+}
+
+.aiStrategicRoute::before { background: #0284C7; }
+.aiStrategicCompanion::before { background: #8B5CF6; }
+.aiStrategicBudget::before { background: #10B981; }
+.aiStrategicWeather::before { background: #F59E0B; }
+
+.aiStrategicCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.06);
+  border-color: #CBD5E1;
+}
+
+.aiStrategicCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #1E293B;
+}
+
+.aiStrategicCardBody {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: #475569;
+}
+
+/* ✨ AI Activity Rationale & In-Depth Explanation Box - Compact & Unified */
+.activityReasonDossier {
+  margin-top: 8px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-left: 3px solid #0284C7;
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.reasonUnifiedHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.reasonUnifiedTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #EFF6FF;
+  color: #0369A1;
+  border: 1px solid #BAE6FD;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.reasonUnifiedContent {
+  color: #334155;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.55;
+  flex: 1;
+}
+
+.reasonPart strong {
+  color: #0F172A;
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .reasonUnifiedHeader {
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+
 /* T5: Real Map Container */
 .mapViewContainer {
   position: relative;
@@ -2561,4 +2842,280 @@
   border-radius: 50%;
   flex-shrink: 0;
 }
+
+/* Welcome & Departure Banner Card (T1 Arrival & Last-day Departure Constraints) */
+.welcomeBannerCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 18px;
+  background: #F0F9FF;
+  border: 1px solid #BAE6FD;
+  border-radius: 14px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.06);
+  transition: all 0.2s ease;
+}
+
+.welcomeBannerIcon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #E0F2FE;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.welcomeBannerBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.welcomeBannerHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.welcomeBannerTag {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: #E0F2FE;
+  color: #0369A1;
+}
+
+.welcomeBannerTime {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0284C7;
+}
+
+.welcomeBannerTitle {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #0C4A6E;
+  margin: 0 0 4px 0;
+}
+
+.welcomeBannerDesc {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #334155;
+  margin: 0;
+}
+
+/* Semantic Persona & Time Constraint Badges */
+.semanticBadgesRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed #E2E8F0;
+}
+
+.semanticRowTitle {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #475569;
+}
+
+.semanticBadgeElderly {
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #ECFDF5;
+  color: #065F46;
+  border: 1px solid #A7F3D0;
+}
+
+.semanticBadgeChildren {
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #FEF3C7;
+  color: #92400E;
+  border: 1px solid #FDE68A;
+}
+
+.semanticBadgeTime {
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #E0F2FE;
+  color: #075985;
+  border: 1px solid #BAE6FD;
+}
+
+/* Interactive AI Co-Pilot Conversational Panel */
+.coPilotPanel {
+  background: linear-gradient(135deg, #F8FAFC 0%, #F0F9FF 100%);
+  border: 1px solid #BAE6FD;
+  border-radius: 16px;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.06);
+}
+
+.coPilotHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.coPilotHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.coPilotAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #0284C7;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.coPilotTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0C4A6E;
+  margin: 0 0 2px 0;
+}
+
+.coPilotSub {
+  font-size: 12px;
+  color: #475569;
+  margin: 0;
+}
+
+.coPilotActiveDayBadge {
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #E0F2FE;
+  color: #0369A1;
+  white-space: nowrap;
+}
+
+.coPilotReplyBubble {
+  background: #ECFDF5;
+  border: 1px solid #6EE7B7;
+  color: #065F46;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 10px 14px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  line-height: 1.45;
+}
+
+.coPilotQuickChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.coPilotChip {
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid #CBD5E1;
+  background: #FFFFFF;
+  color: #1E293B;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.coPilotChip:hover {
+  background: #E0F2FE;
+  border-color: #7DD3FC;
+  color: #0369A1;
+}
+
+.coPilotInputRow {
+  display: flex;
+  gap: 8px;
+}
+
+.coPilotInput {
+  flex: 1;
+  padding: 9px 14px;
+  border-radius: 10px;
+  border: 1px solid #CBD5E1;
+  background: #FFFFFF;
+  font-size: 12.5px;
+  color: #0F172A;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.coPilotInput:focus {
+  border-color: #0284C7;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
+}
+
+.coPilotSendBtn {
+  padding: 9px 16px;
+  border-radius: 10px;
+  border: none;
+  background: #0284C7;
+  color: #FFFFFF;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+
+.coPilotSendBtn:hover:not(:disabled) {
+  background: #0369A1;
+}
+
+.coPilotSendBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.collapsibleTogglePill {
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #F1F5F9;
+  color: #0284C7;
+  border: 1px solid #CBD5E1;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.collapsibleTogglePill:hover {
+  background: #E0F2FE;
+  border-color: #7DD3FC;
+  color: #0369A1;
+}
+
 

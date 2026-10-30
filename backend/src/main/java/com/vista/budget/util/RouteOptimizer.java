@@ -92,16 +92,76 @@ public final class RouteOptimizer {
 
       if (nearest != null) {
         orderedRoute.add(nearest);
-        totalDistanceKm += minDistance;
         unvisited.remove(nearest);
         current = nearest;
       }
     }
+
+    // 2. Tinh chỉnh bằng thuật toán 2-Opt Local Search (gỡ bỏ các cung đường giao nhau chéo)
+    orderedRoute = twoOptRefine(startPoint, orderedRoute);
+
+    // Tính lại tổng quãng đường sau khi tinh chỉnh 2-Opt
+    totalDistanceKm = computeTotalRouteDistance(startPoint, orderedRoute);
 
     // Giá cước taxi/Grab 4 chỗ trung bình tại Việt Nam: khoảng 14.000 - 16.000đ/km
     double estimatedTaxiCostVnd = Math.round(totalDistanceKm * 15000.0);
 
     return new OptimizationResult(
         orderedRoute, Math.round(totalDistanceKm * 100.0) / 100.0, estimatedTaxiCostVnd);
+  }
+
+  private static List<DestinationPoint> twoOptRefine(
+      DestinationPoint startPoint, List<DestinationPoint> route) {
+    if (route == null || route.size() <= 2) {
+      return route;
+    }
+    List<DestinationPoint> best = new ArrayList<>(route);
+    boolean improved = true;
+    int maxIterations = 50;
+
+    while (improved && maxIterations-- > 0) {
+      improved = false;
+      for (int i = 0; i < best.size() - 1; i++) {
+        for (int k = i + 1; k < best.size(); k++) {
+          double delta = calculateTwoOptDelta(startPoint, best, i, k);
+          if (delta < -1e-5) {
+            Collections.reverse(best.subList(i, k + 1));
+            improved = true;
+          }
+        }
+      }
+    }
+    return best;
+  }
+
+  private static double calculateTwoOptDelta(
+      DestinationPoint startPoint, List<DestinationPoint> route, int i, int k) {
+    DestinationPoint prev = (i == 0) ? startPoint : route.get(i - 1);
+    DestinationPoint pi = route.get(i);
+    DestinationPoint pk = route.get(k);
+    DestinationPoint next = (k == route.size() - 1) ? null : route.get(k + 1);
+
+    double oldDist = calculateHaversineDistanceKm(prev.latitude(), prev.longitude(), pi.latitude(), pi.longitude());
+    double newDist = calculateHaversineDistanceKm(prev.latitude(), prev.longitude(), pk.latitude(), pk.longitude());
+
+    if (next != null) {
+      oldDist += calculateHaversineDistanceKm(pk.latitude(), pk.longitude(), next.latitude(), next.longitude());
+      newDist += calculateHaversineDistanceKm(pi.latitude(), pi.longitude(), next.latitude(), next.longitude());
+    }
+
+    return newDist - oldDist;
+  }
+
+  private static double computeTotalRouteDistance(
+      DestinationPoint startPoint, List<DestinationPoint> route) {
+    if (route.isEmpty()) return 0.0;
+    double total = 0.0;
+    DestinationPoint current = startPoint;
+    for (DestinationPoint point : route) {
+      total += calculateHaversineDistanceKm(
+          current.latitude(), current.longitude(), point.latitude(), point.longitude());
+      current = point;
+    }
+    return total;
   }
 }

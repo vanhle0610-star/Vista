@@ -42,7 +42,7 @@ vista:
   ai:
     api-key: ${GEMINI_API_KEY:}
     model: ${GEMINI_MODEL:gemini-2.5-flash}
-    timeout: ${AI_TIMEOUT:60s}
+    timeout: ${AI_TIMEOUT:120s}
     max-retries: ${AI_MAX_RETRIES:1}
     local-base-url: ${AI_LOCAL_BASE_URL:http://localhost:11434/v1}
     local-model: ${AI_LOCAL_MODEL:qwen3:4b}

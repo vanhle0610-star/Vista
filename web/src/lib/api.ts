@@ -21,10 +21,20 @@ export async function apiRequest<T>(path: string, init?: RequestInit): Promise<T
     }
   }
 
-  const response = await fetch(`${baseUrl}${path}`, {
+  let response = await fetch(`${baseUrl}${path}`, {
     ...init,
     headers,
   });
+
+  if (response.status === 401 && typeof window !== 'undefined' && headers['Authorization']) {
+    localStorage.removeItem('vista_token');
+    localStorage.removeItem('vista_access_token');
+    delete headers['Authorization'];
+    response = await fetch(`${baseUrl}${path}`, {
+      ...init,
+      headers,
+    });
+  }
 
   if (!response.ok) {
     const problem = (await response

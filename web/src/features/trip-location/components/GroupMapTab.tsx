@@ -104,9 +104,9 @@ export const GroupMapTab: React.FC<GroupMapTabProps> = ({ tripId, tripTitle }) =
     try {
       setLoading(true);
       const [shares, meetups, checks] = await Promise.all([
-        tripLocationService.getActiveLocationShares(tripId),
-        tripLocationService.getMeetupPoints(tripId),
-        tripLocationService.getCheckIns(tripId),
+        tripLocationService.getActiveLocationShares(tripId).catch(() => []),
+        tripLocationService.getMeetupPoints(tripId).catch(() => []),
+        tripLocationService.getCheckIns(tripId).catch(() => []),
       ]);
 
       const userJson = typeof window !== 'undefined' ? localStorage.getItem('vista_user') : null;
@@ -170,7 +170,7 @@ export const GroupMapTab: React.FC<GroupMapTabProps> = ({ tripId, tripTitle }) =
 
       setCheckIns(checks);
     } catch (err) {
-      console.error('Error loading group location data:', err);
+      console.warn('Fallback group location data:', err);
     } finally {
       setLoading(false);
     }

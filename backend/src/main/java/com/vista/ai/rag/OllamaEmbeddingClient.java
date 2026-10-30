@@ -26,7 +26,7 @@ public class OllamaEmbeddingClient {
       @Value("${vista.ai.rag.embedding-base-url:http://localhost:11434}") String baseUrl,
       @Value("${vista.ai.rag.embedding-model:bge-m3}") String model,
       @Value("${vista.ai.rag.enabled:false}") boolean enabled,
-      @Value("${vista.ai.rag.embedding-timeout:30s}") Duration timeout) {
+      @Value("${vista.ai.rag.embedding-timeout:5s}") Duration timeout) {
     this.objectMapper = objectMapper;
     this.baseUrl = baseUrl.replaceAll("/+$", "");
     this.model = model;
