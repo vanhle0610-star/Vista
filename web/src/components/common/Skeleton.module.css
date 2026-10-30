@@ -1,0 +1,501 @@
+/* ─── VISTA SKELETON UI & SHIMMER ANIMATION SYSTEM ───────────────────── */
+
+@keyframes shimmerWave {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0.85;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fadeIn {
+  animation: fadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.shimmer {
+  position: relative;
+  overflow: hidden;
+  background-color: #f1f5f9;
+  display: block;
+}
+
+.shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.7) 50%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+  animation: shimmerWave 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: transform;
+  pointer-events: none;
+}
+
+/* ─── AI PLANNER DEDICATED SKELETON CLASSES ──────────────────────────── */
+.plannerIntroSkeleton {
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 24px 32px 16px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  box-sizing: border-box;
+}
+
+.plannerWorkspaceSkeleton {
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 8px 32px 64px;
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 24px;
+  align-items: start;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1023px) {
+  .plannerWorkspaceSkeleton {
+    grid-template-columns: 1fr;
+    padding: 8px 20px 48px;
+  }
+  .plannerIntroSkeleton {
+    padding: 20px 20px 12px;
+  }
+}
+
+.plannerFormCardSkeleton {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 20px 16px;
+  box-shadow: 0 4px 20px rgba(20, 40, 63, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-sizing: border-box;
+}
+
+.plannerItinerarySkeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+
+
+/* ─── PRIMITIVES ────────────────────────────────────────────────────────── */
+.box {
+  composes: shimmer;
+  border-radius: 8px;
+}
+
+.circle {
+  composes: shimmer;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.text {
+  composes: shimmer;
+  border-radius: 6px;
+  height: 14px;
+}
+
+/* ─── NAVBAR SKELETON ──────────────────────────────────────────────────── */
+.navbarWrapper {
+  width: 100%;
+  background: #ffffff;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.04);
+  height: 65px;
+  box-sizing: border-box;
+}
+
+.navbarContainer {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: 64px;
+  box-sizing: border-box;
+}
+
+.brandGroup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brandIcon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  composes: shimmer;
+}
+
+.brandTextCol {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.navLinksGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (max-width: 900px) {
+  .navLinksGroup {
+    display: none;
+  }
+}
+
+.navPill {
+  height: 36px;
+  width: 96px;
+  border-radius: 20px;
+  composes: shimmer;
+}
+
+.navActionsGroup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ─── HERO & BANNER SKELETON ───────────────────────────────────────────── */
+.heroSection {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 40px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+}
+
+.heroBadge {
+  width: 140px;
+  height: 28px;
+  border-radius: 20px;
+  composes: shimmer;
+}
+
+.heroTitle {
+  width: min(600px, 90%);
+  height: 40px;
+  border-radius: 10px;
+  composes: shimmer;
+}
+
+.heroSubtitle {
+  width: min(420px, 80%);
+  height: 18px;
+  border-radius: 6px;
+  composes: shimmer;
+}
+
+.searchBarWrapper {
+  width: min(680px, 100%);
+  height: 54px;
+  border-radius: 28px;
+  composes: shimmer;
+  margin-top: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+/* ─── FILTER TABS SKELETON ─────────────────────────────────────────────── */
+.filterBarWrapper {
+  max-width: 1320px;
+  margin: 0 auto 24px;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow-x: auto;
+}
+
+.filterPill {
+  height: 38px;
+  width: 110px;
+  border-radius: 20px;
+  composes: shimmer;
+  flex-shrink: 0;
+}
+
+/* ─── CARD GRID SKELETON ───────────────────────────────────────────────── */
+.gridWrapper {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 24px 48px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.cardItem {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+  display: flex;
+  flex-direction: column;
+}
+
+.cardThumbnail {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  composes: shimmer;
+}
+
+.cardContent {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+.cardMetaRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cardFooter {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ─── SPLIT VIEW (MAP / PLANNER) ───────────────────────────────────────── */
+.splitLayout {
+  display: flex;
+  height: calc(100vh - 64px);
+  width: 100%;
+  overflow: hidden;
+  background: #f8fafc;
+}
+
+.splitSidebar {
+  width: 420px;
+  min-width: 360px;
+  background: #ffffff;
+  border-right: 1px solid #e2e8f0;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .splitLayout {
+    flex-direction: column;
+    height: auto;
+  }
+  .splitSidebar {
+    width: 100%;
+    min-width: auto;
+    border-right: none;
+    border-bottom: 1px solid #e2e8f0;
+  }
+}
+
+.splitMainContent {
+  flex: 1;
+  composes: shimmer;
+  position: relative;
+  background: #f1f5f9;
+}
+
+/* ─── TREASURY FINANCIAL KPI CARDS ─────────────────────────────────────── */
+.kpiRow {
+  max-width: 1320px;
+  margin: 0 auto 28px;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.kpiCard {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tableSkeleton {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 24px 40px;
+}
+
+.tableCard {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tableRowItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+/* ─── SECTION-LEVEL SPECIFIC SKELETONS ─────────────────────────────────── */
+
+/* 1. Weather Track */
+.weatherTrackSkeleton {
+  display: flex;
+  gap: 16px;
+  overflow-x: hidden;
+  padding: 12px 0 24px;
+  width: 100%;
+}
+
+.weatherCardSkeleton {
+  flex: 0 0 320px;
+  background: #ffffff;
+  border-radius: 18px;
+  border: 1px solid #e2e8f0;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.03);
+  box-sizing: border-box;
+}
+
+/* 2. Task List Skeleton */
+.taskListSkeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.taskItemSkeleton {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+/* 3. Timeline / Itinerary Day Skeleton */
+.timelineDaySkeleton {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.timelineItemSkeleton {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 12px 0;
+  border-left: 2px solid #e2e8f0;
+  margin-left: 12px;
+  padding-left: 20px;
+  position: relative;
+}
+
+.timelineDot {
+  position: absolute;
+  left: -7px;
+  top: 16px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  composes: shimmer;
+}
+
+/* 4. AI Generating Card Skeleton */
+.aiPulseBanner {
+  background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
+  border: 1px solid #bfdbfe;
+  border-radius: 16px;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+}
+
+.aiBrainIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #0284c7 0%, #06b6d4 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  animation: pulseGlow 2s ease-in-out infinite;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+  flex-shrink: 0;
+}
+
+

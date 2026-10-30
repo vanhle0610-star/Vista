@@ -30,6 +30,7 @@ body {
   color: var(--ink);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
+  scrollbar-gutter: stable;
 }
 
 a {
@@ -179,3 +180,18 @@ button:hover {
     padding: 24px;
   }
 }
+
+/* ─── VISTA SMOOTH PAGE TRANSITIONS ─────────────────────────────── */
+@keyframes vistaPageFadeIn {
+  from {
+    opacity: 0.85;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.vista-fade-in {
+  animation: vistaPageFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+

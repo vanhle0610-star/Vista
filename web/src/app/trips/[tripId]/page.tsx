@@ -37,7 +37,7 @@ import {
   Lock,
   ShieldAlert,
 } from 'lucide-react';
-import { Navbar } from '@/components/common/Navbar';
+import { SkeletonTripsPage, SkeletonTimeline, SkeletonTaskList } from '@/components/common/Skeleton';
 import { GroupMapTab } from '@/features/trip-location/components/GroupMapTab';
 import styles from './tripDetail.module.css';
 
@@ -1255,7 +1255,6 @@ export default function TripDetailPage() {
   if (accessDenied || (tripId && tripId.includes('private'))) {
     return (
       <div className={styles.tripDetailPage}>
-        <Navbar activeModule="trips" />
         <div className={styles.container} style={{ paddingTop: '60px', textAlign: 'center', maxWidth: '640px', margin: '0 auto' }}>
           <div style={{ background: '#FEF2F2', border: '1.5px solid #FECACA', borderRadius: '24px', padding: '36px 28px', boxShadow: '0 10px 32px rgba(239, 68, 68, 0.08)' }}>
             <div style={{ fontSize: '52px', marginBottom: '12px' }}>🔒</div>
@@ -1324,14 +1323,7 @@ export default function TripDetailPage() {
   }
 
   if (!trip) {
-    return (
-      <div className={styles.tripDetailPage}>
-        <Navbar activeModule="trips" />
-        <div className={styles.container} style={{ paddingTop: '80px', textAlign: 'center' }}>
-          <p style={{ color: '#64748B', fontSize: '16px' }}>Đang tải thông tin chuyến đi...</p>
-        </div>
-      </div>
-    );
+    return <SkeletonTripsPage />;
   }
 
   if (isAuthenticated !== true) {
@@ -1352,8 +1344,6 @@ export default function TripDetailPage() {
 
   return (
     <div className={styles.tripDetailPage}>
-      <Navbar activeModule="trips" />
-
       <main className={styles.container}>
         {/* ─── CREATIVE WANDERLUST PASSPORT & BOARDING PASS HEADER ───────── */}
         <div className={styles.compactTripHeader}>

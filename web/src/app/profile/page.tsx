@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Navbar } from '@/components/common/Navbar';
+import { SkeletonProfilePage } from '@/components/common/Skeleton';
 import { uploadFileToCloud } from '@/utils/cloudImage';
 import {
   User,
@@ -131,6 +131,9 @@ export default function ProfilePage() {
       router.replace('/login?returnUrl=/profile');
       return;
     }
+    if (!document.cookie.includes('vista_token=')) {
+      document.cookie = `vista_token=${token}; path=/; max-age=604800; SameSite=Lax`;
+    }
 
     const fetchProfile = async () => {
       try {
@@ -154,10 +157,40 @@ export default function ProfilePage() {
         } else if (res.status === 401) {
           localStorage.removeItem('vista_token');
           localStorage.removeItem('vista_user');
+          document.cookie = 'vista_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
+          window.dispatchEvent(new Event('vista-auth-change'));
           router.replace('/login?returnUrl=/profile');
+        } else {
+          // Fallback sang thông tin cached nếu backend phản hồi mã khác
+          try {
+            const userStr = localStorage.getItem('vista_user');
+            if (userStr) {
+              const cached = JSON.parse(userStr);
+              setUser({
+                id: cached.id || 'usr-cached',
+                email: cached.email || '',
+                displayName: cached.displayName || 'VISTA Traveler',
+                roles: cached.roles || ['USER'],
+              });
+              setDisplayName(cached.displayName || '');
+            }
+          } catch {}
         }
       } catch (err) {
         console.error('Fetch profile error:', err);
+        try {
+          const userStr = localStorage.getItem('vista_user');
+          if (userStr) {
+            const cached = JSON.parse(userStr);
+            setUser({
+              id: cached.id || 'usr-cached',
+              email: cached.email || '',
+              displayName: cached.displayName || 'VISTA Traveler',
+              roles: cached.roles || ['USER'],
+            });
+            setDisplayName(cached.displayName || '');
+          }
+        } catch {}
       } finally {
         setLoading(false);
       }
@@ -412,20 +445,11 @@ export default function ProfilePage() {
   };
 
   if (loading) {
-    return (
-      <div className={styles.profilePageContainer}>
-        <Navbar />
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', color: '#64748B', fontWeight: 600 }}>
-          Đang tải hồ sơ VISTA...
-        </div>
-      </div>
-    );
+    return <SkeletonProfilePage />;
   }
 
   return (
     <div className={styles.profilePageContainer}>
-      <Navbar />
-
       <main className={styles.profileContent}>
         {/* ─── 1. HERO HEADER ─── */}
         <section className={styles.profileHeroCard}>
