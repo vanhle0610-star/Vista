@@ -2,6 +2,7 @@ package com.vista.common.security;
 
 import com.vista.common.config.VistaProperties;
 import jakarta.servlet.http.HttpServletResponse;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -52,6 +53,7 @@ public class SecurityConfiguration {
                         (request, response, authException) -> {
                           response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                           response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);
+                          response.setCharacterEncoding(StandardCharsets.UTF_8.name());
                           response
                               .getWriter()
                               .write(
@@ -69,6 +71,7 @@ public class SecurityConfiguration {
                         (request, response, accessDeniedException) -> {
                           response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                           response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);
+                          response.setCharacterEncoding(StandardCharsets.UTF_8.name());
                           response
                               .getWriter()
                               .write(
@@ -96,6 +99,8 @@ public class SecurityConfiguration {
                     .permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/v1/map/routes")
                     .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/v1/posts/*/like")
+                    .authenticated()
                     .requestMatchers(
                         HttpMethod.GET,
                         "/api/v1/health",

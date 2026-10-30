@@ -8,6 +8,7 @@
     "dev:backend": "node scripts/run-backend.mjs",
     "dev:web": "npm run dev --prefix web",
     "dev:mobile": "npm start --prefix mobile -- --port 8082",
+    "seed:community": "node scripts/seed-community-demo.mjs",
     "db:up": "docker compose --env-file .env up -d postgres",
     "db:down": "docker compose down",
     "test": "npm run test --prefix web && npm run test --prefix mobile",

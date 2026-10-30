@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "test": "node scripts/test-map-gps.mjs",
+    "test": "node scripts/test-map-gps.mjs && node scripts/test-route-planner.mjs && node scripts/test-routing-server.mjs && node --test scripts/test-api-auth.mjs",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit"

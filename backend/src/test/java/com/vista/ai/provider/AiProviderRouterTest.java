@@ -65,7 +65,7 @@ class AiProviderRouterTest {
     when(local.generate("system", "user")).thenReturn(Optional.of("{}"));
 
     AiProviderRouter router =
-        new AiProviderRouter(properties(FallbackMode.LOCAL_ONLY), local, gemini, provider);
+        new AiProviderRouter(properties(FallbackMode.LOCAL_ONLY), local, gemini, null, provider);
 
     assertThat(router.generate("system", "user")).isPresent();
     assertThat(

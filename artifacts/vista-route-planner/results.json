@@ -1,0 +1,211 @@
+{
+  "passed": true,
+  "fixtureStyle": true,
+  "evidence": "Real page and MapLibre; destination/directions API controlled; GPS supplied by browser test context or mocked callback. No physical device or live ORS claim.",
+  "checks": [
+    "Two points: circle origin, red destination pin; request contains both selected coordinates",
+    "Granted browser Geolocation recenters to supplied device fix, renders blue dot and preserves route/manual origin",
+    "Append destination focuses new row and promotes old destination to waypoint; markers contain no letter badges",
+    "Reorder preserves row ID and values while updating roles, markers and request order",
+    "Deleting a waypoint preserves origin/destination and recalculates without resetting the list",
+    "390px/360px responsive: no horizontal overflow, GPS target at least 44px outside sheet, portal options clickable",
+    "Use GPS as origin: request uses exact device latitude/longitude without changing other places",
+    "Card action inserts the selected waypoint immediately before the existing destination",
+    "Keyboard reordering via Alt+ArrowUp updates the same stable rows and route order",
+    "Six-point limit is visible and prevents adding a seventh row without silently dropping any selected point",
+    "GPS denied: clear error, no fabricated user marker",
+    "GPS timeout: clear error, no fabricated user marker",
+    "GPS unavailable: clear error, no fabricated user marker",
+    "GPS prompt: explicit action calls platform API; supplied fix rendered (permission dialog itself not verified)"
+  ],
+  "errors": [],
+  "requests": [
+    {
+      "origin": {
+        "latitude": 16.061,
+        "longitude": 108.207,
+        "label": "Kiểm thử xuất phát"
+      },
+      "destination": {
+        "latitude": 16.041,
+        "longitude": 108.237,
+        "label": "Kiểm thử đích"
+      },
+      "waypoints": [],
+      "mode": "DRIVING",
+      "fromGps": false
+    },
+    {
+      "origin": {
+        "latitude": 16.061,
+        "longitude": 108.207,
+        "label": "Kiểm thử xuất phát"
+      },
+      "destination": {
+        "latitude": 16.051,
+        "longitude": 108.217,
+        "label": "Kiểm thử ghé thăm"
+      },
+      "waypoints": [
+        {
+          "latitude": 16.041,
+          "longitude": 108.237,
+          "label": "Kiểm thử đích"
+        }
+      ],
+      "mode": "DRIVING",
+      "fromGps": false
+    },
+    {
+      "origin": {
+        "latitude": 16.061,
+        "longitude": 108.207,
+        "label": "Kiểm thử xuất phát"
+      },
+      "destination": {
+        "latitude": 16.041,
+        "longitude": 108.237,
+        "label": "Kiểm thử đích"
+      },
+      "waypoints": [
+        {
+          "latitude": 16.051,
+          "longitude": 108.217,
+          "label": "Kiểm thử ghé thăm"
+        }
+      ],
+      "mode": "DRIVING",
+      "fromGps": false
+    },
+    {
+      "origin": {
+        "latitude": 16.061,
+        "longitude": 108.207,
+        "label": "Kiểm thử xuất phát"
+      },
+      "destination": {
+        "latitude": 16.041,
+        "longitude": 108.237,
+        "label": "Kiểm thử đích"
+      },
+      "waypoints": [],
+      "mode": "DRIVING",
+      "fromGps": false
+    },
+    {
+      "origin": {
+        "latitude": 16.061,
+        "longitude": 108.207,
+        "label": "Kiểm thử xuất phát"
+      },
+      "destination": {
+        "latitude": 16.031,
+        "longitude": 108.247,
+        "label": "Kiểm thử đích mới có tên rất dài để kiểm tra tên địa điểm không làm lệch hàng"
+      },
+      "waypoints": [
+        {
+          "latitude": 16.041,
+          "longitude": 108.237,
+          "label": "Kiểm thử đích"
+        }
+      ],
+      "mode": "DRIVING",
+      "fromGps": false
+    },
+    {
+      "origin": {
+        "latitude": 16.071,
+        "longitude": 108.201,
+        "label": "Vị trí của bạn"
+      },
+      "destination": {
+        "latitude": 16.031,
+        "longitude": 108.247,
+        "label": "Kiểm thử đích mới có tên rất dài để kiểm tra tên địa điểm không làm lệch hàng"
+      },
+      "waypoints": [
+        {
+          "latitude": 16.041,
+          "longitude": 108.237,
+          "label": "Kiểm thử đích"
+        }
+      ],
+      "mode": "DRIVING",
+      "fromGps": true
+    },
+    {
+      "origin": {
+        "latitude": 16.071,
+        "longitude": 108.201,
+        "label": "Vị trí của bạn"
+      },
+      "destination": {
+        "latitude": 16.031,
+        "longitude": 108.247,
+        "label": "Kiểm thử đích mới có tên rất dài để kiểm tra tên địa điểm không làm lệch hàng"
+      },
+      "waypoints": [
+        {
+          "latitude": 16.041,
+          "longitude": 108.237,
+          "label": "Kiểm thử đích"
+        }
+      ],
+      "mode": "DRIVING",
+      "fromGps": true
+    },
+    {
+      "origin": {
+        "latitude": 16.071,
+        "longitude": 108.201,
+        "label": "Vị trí của bạn"
+      },
+      "destination": {
+        "latitude": 16.031,
+        "longitude": 108.247,
+        "label": "Kiểm thử đích mới có tên rất dài để kiểm tra tên địa điểm không làm lệch hàng"
+      },
+      "waypoints": [
+        {
+          "latitude": 16.041,
+          "longitude": 108.237,
+          "label": "Kiểm thử đích"
+        },
+        {
+          "latitude": 16.051,
+          "longitude": 108.217,
+          "label": "Kiểm thử ghé thăm"
+        }
+      ],
+      "mode": "DRIVING",
+      "fromGps": true
+    },
+    {
+      "origin": {
+        "latitude": 16.071,
+        "longitude": 108.201,
+        "label": "Vị trí của bạn"
+      },
+      "destination": {
+        "latitude": 16.031,
+        "longitude": 108.247,
+        "label": "Kiểm thử đích mới có tên rất dài để kiểm tra tên địa điểm không làm lệch hàng"
+      },
+      "waypoints": [
+        {
+          "latitude": 16.051,
+          "longitude": 108.217,
+          "label": "Kiểm thử ghé thăm"
+        },
+        {
+          "latitude": 16.041,
+          "longitude": 108.237,
+          "label": "Kiểm thử đích"
+        }
+      ],
+      "mode": "DRIVING",
+      "fromGps": true
+    }
+  ]
+}

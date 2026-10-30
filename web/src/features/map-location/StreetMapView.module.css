@@ -21,13 +21,14 @@
   padding: 30px 24px 160px;
   gap: 12px;
   text-align: center;
-  background: #f8fafc;
+  background: rgba(248, 250, 252, 0.95);
+  backdrop-filter: blur(8px);
   color: #1e293b;
-  z-index: 10;
+  z-index: 20;
 }
 
 .notice strong {
-  font-size: 20px;
+  font-size: 19px;
   font-weight: 700;
   color: #0f172a;
 }
@@ -37,52 +38,325 @@
   margin: 0;
   line-height: 1.6;
   color: #64748b;
-  font-size: 14px;
+  font-size: 13.5px;
 }
 
-.notice small {
-  max-width: 440px;
-  overflow-wrap: anywhere;
-}
-
-.notice button,
-.locate {
+.notice button {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 10px 16px;
+  padding: 9px 18px;
   border: 1px solid #cbd5e1;
   background: #ffffff;
   border-radius: 12px;
   cursor: pointer;
   color: #0284c7;
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 600;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.locate {
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  z-index: 5;
-}
-
-.locate:hover,
 .notice button:hover {
   background: #f0f9ff;
   border-color: #0284c7;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.15);
 }
 
-.card {
+/* ─── TOP-LEFT: LOCATION PILL ─── */
+.locationPill {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 9999px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+  font-size: 13px;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.locationPill:hover {
+  background: #f8fafc;
+  border-color: #0284c7;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(2, 132, 199, 0.15);
+}
+
+.locationPinIcon {
+  color: #0284c7;
+  font-size: 14px;
+}
+
+.locationPillText strong {
+  color: #0284c7;
+  font-weight: 700;
+}
+
+/* ─── TOP-RIGHT: MAP TYPE SWITCHER (Bản đồ / Vệ tinh) ─── */
+.mapTypeSwitcher {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  padding: 4px;
+  border-radius: 9999px;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+  gap: 2px;
+}
+
+.mapTypeBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: none;
+  background: transparent;
+  border-radius: 9999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mapTypeBtn:hover {
+  color: #0f172a;
+}
+
+.mapTypeBtnActive {
+  background: #0284c7;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
+}
+
+.satelliteThumbIcon {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  object-fit: cover;
+}
+
+/* ─── BOTTOM-RIGHT: GROUPED CONTROLS ─── */
+.mapControlsGroup {
+  position: absolute;
+  bottom: 28px;
+  right: 16px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.1);
+  overflow: visible;
+}
+
+.mapControlBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  position: relative;
+  background: #ffffff;
+  border: none;
+  color: #334155;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.mapControlBtn:hover {
+  background: #f0f9ff;
+  color: #0284c7;
+}
+
+.mapControlBtn:active {
+  background: #e0f2fe;
+}
+
+.mapControlDivider {
+  height: 1px;
+  background: #f1f5f9;
+  width: 100%;
+}
+
+/* ─── BOTTOM-CENTER: FLOATING ROUTE SUMMARY BANNER ─── */
+.floatingRouteBanner {
   position: absolute;
   bottom: 24px;
-  left: 16px;
-  max-width: min(440px, calc(100% - 32px));
-  z-index: 5;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #ffffff;
+  padding: 10px 18px;
+  border-radius: 16px;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.14), 0 2px 8px rgba(0, 0, 0, 0.04);
+  max-width: min(580px, calc(100% - 32px));
+  animation: bannerSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes bannerSlideUp {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 16px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.routeBannerIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #e0f2fe;
+  color: #0284c7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.routeBannerContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.routeBannerTitle {
+  font-size: 13.5px;
+  color: #334155;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.routeBannerTitle strong {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.routeBannerMeta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.routeDurationText {
+  color: #0284c7;
+  font-weight: 750;
+  font-size: 13.5px;
+}
+
+.routeMetaDivider {
+  color: #cbd5e1;
+}
+
+.routeRoadSummary {
+  color: #64748b;
+}
+
+.routeBannerActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.routeBannerBtnStart {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+
+.routeBannerBtnStart:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);
+}
+
+.routeBannerBtnClose {
+  width: 28px;
+  height: 28px;
+  min-height: 28px;
+  padding: 0;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: none;
+  background: #f1f5f9;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  transition: all 0.15s ease;
+}
+
+.routeBannerBtnClose svg { display: block; flex-shrink: 0; }
+
+.routeBannerBtnClose:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+/* ─── FLOATING DESTINATION POPUP ON MAP ─── */
+.card {
+  position: absolute;
+  top: 72px;
+  right: 16px;
+  max-width: min(380px, calc(100% - 32px));
+  z-index: 12;
+  animation: popupSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes popupSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ─── MODERN PIN MARKERS ─── */
@@ -94,9 +368,9 @@
   border-radius: 50%;
   background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
   color: #ffffff;
-  width: 28px;
-  height: 28px;
-  min-height: 28px;
+  width: 32px;
+  height: 32px;
+  min-height: 32px;
   padding: 0;
   box-shadow: 0 3px 10px rgba(2, 132, 199, 0.4);
   cursor: pointer;
@@ -105,14 +379,14 @@
 }
 
 .marker:hover {
-  transform: scale(1.3) translateY(-2px);
+  transform: scale(1.25) translateY(-2px);
   box-shadow: 0 6px 16px rgba(2, 132, 199, 0.6);
   z-index: 10;
 }
 
 .selectedMarker {
   background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
-  transform: scale(1.35) translateY(-3px) !important;
+  transform: scale(1.3) translateY(-3px) !important;
   outline: 3px solid rgba(186, 230, 253, 0.9);
   box-shadow: 0 8px 24px rgba(2, 132, 199, 0.6) !important;
   z-index: 30;
@@ -153,182 +427,71 @@
   color: #f59e0b;
 }
 
-.locateDot {
-  font-size: 14px;
-}
-
 .markerIcon {
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1;
   pointer-events: none;
 }
 
 .userMarker {
   display: block;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   background: #0284c7;
-  border: 3px solid #ffffff;
+  border: 3.5px solid #ffffff;
   border-radius: 50%;
-  box-shadow: 0 0 0 6px rgba(2, 132, 199, 0.3);
+  box-shadow: 0 0 0 7px rgba(2, 132, 199, 0.35);
 }
 
-.endpoint {
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  color: #ffffff;
-  border: 2.5px solid #ffffff;
-  border-radius: 50%;
-  font-weight: 800;
-  font-size: 13.5px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
-  cursor: pointer;
-  position: relative;
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  z-index: 25;
-}
-
-.endpoint:hover {
-  transform: scale(1.18);
-  z-index: 30;
-}
-
-.endpointOrigin {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.45);
-}
-
-.endpointWaypoint {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.45);
-}
-
-.endpointDestination {
-  background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
-  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.45);
-}
-
-.endpointTooltip {
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(15, 23, 42, 0.95);
-  color: #ffffff;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 6px;
-  white-space: nowrap;
-  pointer-events: none;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
-  opacity: 0;
-  transition: opacity 0.15s ease, transform 0.15s ease;
-  transform: translate(-50%, 4px);
-}
-
-.endpointTooltip::after {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border: 5px solid transparent;
-  border-top-color: rgba(15, 23, 42, 0.95);
-}
-
-.endpoint:hover .endpointTooltip {
-  opacity: 1;
-  transform: translate(-50%, 0);
-}
-
-/* ─── STYLE SWITCHER ─── */
-.styleSwitcherContainer {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  z-index: 5;
-}
-
-.styleToggleBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 9px 14px;
-  border: 1px solid #cbd5e1;
-  background: #ffffff;
-  border-radius: 12px;
-  cursor: pointer;
-  color: #1e293b;
-  font-size: 13px;
-  font-weight: 600;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.styleToggleBtn:hover {
-  background: #f8fafc;
-  border-color: #94a3b8;
-  transform: translateY(-1px);
-}
-
-.styleDropdown {
-  position: absolute;
-  top: calc(100% + 6px);
-  right: 0;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
-  padding: 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 130px;
-  z-index: 10;
-}
-
-.styleOption {
-  padding: 8px 12px;
-  border: none;
-  background: transparent;
-  border-radius: 8px;
-  text-align: left;
-  font-size: 13px;
-  font-weight: 500;
-  color: #334155;
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
-.styleOption:hover {
-  background: #f1f5f9;
-  color: #0f172a;
-}
-
-.styleOptionActive {
-  background: #e0f2fe !important;
-  color: #0284c7 !important;
-  font-weight: 700;
-}
-
-@media (max-width: 540px) {
-  .notice {
-    padding: 24px 16px 160px;
+.endpoint { width:44px; height:44px; min-height:44px; border:0; padding:0; background:transparent; display:grid; place-items:center; cursor:pointer; }
+.endpoint:hover { background:transparent; }
+.endpointCircle { width:14px; height:14px; box-sizing:border-box; border:3px solid #334155; border-radius:50%; background:#fff; box-shadow:0 0 0 2px #fff; }
+.endpointPin { position:absolute; bottom:0; left:10px; width:24px; height:28px; }
+.endpoint:focus-visible { outline:2px solid #0284c7; outline-offset:-3px; border-radius:8px; }
+.locationActive { color:#1a73e8 !important; }
+.locationSpinner { animation:locationSpin 1s linear infinite; }
+@keyframes locationSpin { to { transform:rotate(360deg); } }
+.controlTooltip { position:absolute; right:calc(100% + 10px); top:7px; padding:8px 12px; border-radius:6px; background:#172b3a; color:white; font-size:12px; font-weight:500; width:max-content; max-width:220px; opacity:0; visibility:hidden; pointer-events:none; }
+.mapControlBtn:hover .controlTooltip,.mapControlBtn:focus-visible .controlTooltip { opacity:1; visibility:visible; }
+.gpsError { position:absolute; top:68px; left:12px; right:70px; max-height:calc(100% - 90px); overflow:auto; z-index:25; background:#fff; color:#9f1239; border:1px solid #fecdd3; padding:12px; border-radius:10px; font-size:12px; line-height:1.5; box-shadow:0 4px 12px #0f172a20; }
+@media (max-width: 768px) {
+  .locationPill {
+    top: 10px;
+    left: 10px;
+    padding: 6px 12px;
+    font-size: 12px;
   }
-  .notice strong {
-    font-size: 18px;
+  .mapTypeSwitcher {
+    top: 10px;
+    right: 10px;
+  }
+  .mapControlsGroup {
+    bottom: 24px;
+    right: 10px;
+  }
+  .floatingRouteBanner {
+    bottom: 12px;
+    padding: 8px 12px;
+    gap: 10px;
   }
   .card {
-    left: 8px;
-    bottom: 16px;
-    max-width: calc(100% - 16px);
+    top: auto;
+    bottom: 80px;
+    left: 10px;
+    right: 10px;
+    max-width: calc(100% - 20px);
   }
-  .styleSwitcherContainer {
-    top: 60px;
-    left: 16px;
-    right: auto;
-  }
+}
+
+@media(max-width:768px) {
+  .floatingRouteBanner { bottom:12px; left:10px; right:68px; transform:none; max-width:none; padding:8px 10px; animation:none; gap:6px; }
+  .routeBannerIcon { display:none; }
+  .routeBannerBtnStart { padding:6px 8px; font-size:11px; }
+  .routeBannerTitle { font-size:11px; }
+  .routeBannerBtnClose { display:none; }
+  .routeBannerActions { gap:0; }
+  .card { bottom:12px; max-height:calc(100% - 70px); overflow:auto; right:64px; max-width:calc(100% - 74px); }
+  .locationPill { top:10px; left:10px; padding:6px 10px; font-size:11px; }
+  .mapTypeSwitcher { top:10px; right:10px; }
+  .mapTypeBtn { padding:6px 8px; font-size:11px; }
 }

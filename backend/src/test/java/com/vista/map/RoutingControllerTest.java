@@ -9,6 +9,7 @@ import com.vista.map.application.RoutingService;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
@@ -55,6 +56,97 @@ class RoutingControllerTest {
         "http://127.0.0.1:" + server.getAddress().getPort(),
         interval,
         Duration.ofSeconds(2));
+  }
+
+  @Test
+  void preservesAllWaypointsAndSumsRealSegmentsIncludingRoundTrip() throws Exception {
+    var request = new AtomicReference<String>();
+    var server =
+        server(
+            200,
+            """
+        {"features":[{"geometry":{"type":"LineString","coordinates":[[108,16],[108.2,16.2],[108.3,16.3],[108,16]]},
+        "properties":{"summary":{"distance":6000,"duration":360},"segments":[
+        {"distance":1000,"duration":60},{"distance":2000,"duration":120},{"distance":3000,"duration":180}]}}]}
+        """,
+            request,
+            new AtomicInteger());
+    try {
+      var origin = new Point(16.0, 108.0, "Xuất phát");
+      var input =
+          new Input(
+              origin,
+              origin,
+              "DRIVING",
+              false,
+              List.of(
+                  new Point(16.2, 108.2, "Điểm dừng 1"), new Point(16.3, 108.3, "Điểm dừng 2")));
+      var result = service(server, 0).compute(input);
+      var coordinates = json.readTree(request.get().split("\n", 2)[1]).path("coordinates");
+      assertTrue(json.readTree(request.get().split("\n", 2)[1]).path("instructions").asBoolean());
+      assertEquals(4, coordinates.size());
+      assertEquals(108.2, coordinates.path(1).path(0).asDouble());
+      assertEquals(108.3, coordinates.path(2).path(0).asDouble());
+      assertEquals(108.0, coordinates.path(3).path(0).asDouble());
+      assertEquals(3, result.legs().size());
+      assertEquals("Điểm dừng 1", result.legs().get(0).toLabel());
+      assertEquals(6000, result.distanceMeters());
+      assertEquals(360000, result.durationMillis());
+      assertEquals(
+          result.durationMillis(), result.legs().stream().mapToLong(Leg::durationMillis).sum());
+    } finally {
+      server.stop(0);
+    }
+  }
+
+  @Test
+  void rejectsInvalidOrTooManyWaypointsAndIncompleteUpstreamLegs() throws Exception {
+    var base = input("DRIVING");
+    var service = new RoutingService(json, "", 0);
+    assertEquals(
+        400,
+        status(
+            () ->
+                service.compute(
+                    new Input(
+                        base.origin(),
+                        base.destination(),
+                        "DRIVING",
+                        false,
+                        List.of(new Point(99.0, 108.0, "Không hợp lệ"))))));
+    assertEquals(
+        400,
+        status(
+            () ->
+                service.compute(
+                    new Input(
+                        base.origin(),
+                        base.destination(),
+                        "DRIVING",
+                        false,
+                        java.util.Collections.nCopies(5, new Point(16.2, 108.2, "Điểm dừng"))))));
+    var server =
+        server(
+            200,
+            "{\"features\":[{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[108,16],[108.1,16.1]]},\"properties\":{\"summary\":{\"distance\":2000,\"duration\":120}}}]}",
+            new AtomicReference<>(),
+            new AtomicInteger());
+    try {
+      assertEquals(
+          503,
+          status(
+              () ->
+                  service(server, 0)
+                      .compute(
+                          new Input(
+                              base.origin(),
+                              base.destination(),
+                              "DRIVING",
+                              false,
+                              List.of(new Point(16.2, 108.2, "Điểm dừng"))))));
+    } finally {
+      server.stop(0);
+    }
   }
 
   @Test

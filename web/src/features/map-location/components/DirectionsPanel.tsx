@@ -1,657 +1,182 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import type { Coordinates, DestinationMarker } from '../types';
+import { useState, useMemo, useRef, useEffect, useId } from 'react';
+import { createPortal } from 'react-dom';
+import { GripVertical, CirclePlus, ArrowUp, ArrowDown, LoaderCircle } from 'lucide-react';
+import type { Coordinates, DestinationMarker, GeolocationStatus } from '../types';
 import type { RouteResult, TravelMode } from '../routing/routes';
-import { REGIONS_PROVINCES, HOTSPOT_PROVINCES } from './DestinationList';
-import { IconPin, IconClose, IconCar, IconWalk, IconSparkles, IconCrosshair } from './MapIcons';
+import { createStop, moveStop, stopRole, MAX_ROUTE_POINTS, type PlannerStop } from '../routing/stops';
+import { REGIONS_PROVINCES } from './DestinationList';
+import { IconPin, IconClose, IconCar, IconWalk, IconCrosshair } from './MapIcons';
 import styles from './DirectionsPanel.module.css';
 
-const normalize = (value: string) =>
-  value
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/đ/g, 'd');
-
+const normalize = (value: string) => value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
 interface Props {
   destinations: DestinationMarker[];
   coords: Coordinates | null;
-  originId: string;
-  destinationId: string;
+  stops: PlannerStop[];
+  onStopsChange: (stops: PlannerStop[]) => void;
   mode: TravelMode;
+  onMode: (mode: TravelMode) => void;
   selectedProvince?: string;
-  onProvinceChange?: (prov: string) => void;
-  onOrigin: (value: string) => void;
-  onDestination: (value: string) => void;
-  onMode: (value: TravelMode) => void;
+  onProvinceChange?: (province: string) => void;
   onRequestGps: () => void;
-  onCompute: (waypointIds?: string[]) => void;
+  gpsStatus: GeolocationStatus;
+  gpsError: string | null;
+  onCompute: () => void;
   onClear: () => void;
   onClose: () => void;
-  configured: boolean;
   status: 'idle' | 'loading' | 'success' | 'empty' | 'error';
   error: string | null;
   route: RouteResult | null;
 }
 
-// Công thức tính khoảng cách Haversine (km)
-function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371;
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
+function SearchableStopInput({ stop, onChange, destinations, allowGps, onRequestGps, loading, label, focusId }: {
+  stop: PlannerStop; onChange: (value: string) => void; destinations: DestinationMarker[];
+  allowGps: boolean; onRequestGps: () => void; loading: boolean; label: string; focusId: string | null;
+}) {
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState<string | null>(null);
+  const [active, setActive] = useState(0);
+  const [position, setPosition] = useState({ left: 0, top: 0, width: 0, maxHeight: 260 });
+  const input = useRef<HTMLInputElement>(null);
+  const popup = useRef<HTMLDivElement>(null);
+  const listId = useId();
+  const selected = destinations.find((destination) => destination.id === stop.placeId);
+  const selectedText = stop.placeId === 'gps' ? 'Vị trí của bạn' : selected ? selected.name + ' · ' + selected.province : '';
+  const filtered = useMemo(() => destinations.filter((destination) => normalize(destination.name + ' ' + destination.province + ' ' + destination.category).includes(normalize(draft ?? ''))).slice(0, 35), [destinations, draft]);
+  const options = [...(allowGps ? [{ id: 'gps', name: 'Vị trí của bạn', meta: 'Dùng vị trí thực của thiết bị' }] : []), ...filtered.map((destination) => ({ id: destination.id, name: destination.name, meta: destination.province + ' · ' + destination.category }))];
+  const choose = (id: string) => {
+    onChange(id); setDraft(null); setOpen(false);
+    if (id === 'gps') onRequestGps();
+    input.current?.focus();
+    // focus() may open the popup again; close it after that event.
+    setOpen(false);
+  };
+  useEffect(() => {
+    if (focusId === stop.id) { input.current?.focus(); input.current?.scrollIntoView({ block: 'nearest' }); }
+  }, [focusId, stop.id]);
+  useEffect(() => {
+    if (open) popup.current?.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: 'nearest' });
+  }, [active, open]);
+  useEffect(() => {
+    if (!open) return;
+    const update = () => {
+      const rect = input.current?.getBoundingClientRect();
+      if (!rect) return;
+      const viewport = window.visualViewport;
+      const viewportTop = viewport?.offsetTop ?? 0;
+      const viewportBottom = viewportTop + (viewport?.height ?? window.innerHeight);
+      const below = viewportBottom - rect.bottom - 10;
+      const above = rect.top - viewportTop - 10;
+      const height = Math.max(0, Math.min(260, Math.max(below, above)));
+      setPosition({ left: Math.max(8, Math.min(rect.left, window.innerWidth - rect.width - 8)), width: rect.width, top: below >= Math.min(180, above) ? rect.bottom + 4 : Math.max(viewportTop + 4, rect.top - height - 4), maxHeight: height });
+    };
+    const outside = (event: PointerEvent) => {
+      if (!input.current?.parentElement?.contains(event.target as Node) && !popup.current?.contains(event.target as Node)) { setOpen(false); setDraft(null); }
+    };
+    update();
+    window.addEventListener('resize', update);
+    window.addEventListener('scroll', update, true);
+    window.visualViewport?.addEventListener('resize', update);
+    window.visualViewport?.addEventListener('scroll', update);
+    document.addEventListener('pointerdown', outside);
+    return () => {
+      window.removeEventListener('resize', update); window.removeEventListener('scroll', update, true);
+      window.visualViewport?.removeEventListener('resize', update); window.visualViewport?.removeEventListener('scroll', update);
+      document.removeEventListener('pointerdown', outside);
+    };
+  }, [open]);
+  return <div className={styles.comboboxContainer}>
+    <input ref={input} id={stop.id} className={styles.comboboxInput} role="combobox" autoComplete="off"
+      aria-label={label} aria-expanded={open} aria-controls={open ? listId : undefined} aria-autocomplete="list"
+      aria-activedescendant={open && options[active] ? listId + '-' + active : undefined}
+      title={selectedText || label} placeholder={label} value={draft ?? selectedText}
+      onFocus={() => { setOpen(true); setActive(0); }}
+      onClick={() => setOpen(true)}
+      onBlur={() => { requestAnimationFrame(() => { if (!popup.current?.contains(document.activeElement) && document.activeElement !== input.current) { setOpen(false); setDraft(null); } }); }}
+      onChange={(event) => { setDraft(event.target.value); setOpen(true); setActive(0); if (stop.placeId) onChange(''); }}
+      onKeyDown={(event) => {
+        if (event.key === 'Escape') { setOpen(false); setDraft(null); }
+        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') { event.preventDefault(); setOpen(true); setActive((index) => Math.max(0, Math.min(options.length - 1, index + (event.key === 'ArrowDown' ? 1 : -1)))); }
+        if (event.key === 'Enter' && open) { event.preventDefault(); if (options[active]) choose(options[active].id); }
+        if (event.key === 'Tab') setOpen(false);
+      }} />
+    {loading && <LoaderCircle className={styles.inputSpinner} size={18} aria-label="Đang xác định vị trí" />}
+    {!loading && stop.placeId && <button type="button" className={styles.clearInput} aria-label={'Xóa nội dung ' + label.toLowerCase()} onClick={() => { onChange(''); setDraft(''); input.current?.focus(); }}><IconClose size={12} /></button>}
+    {open && createPortal(<div ref={popup} id={listId} role="listbox" aria-label={'Gợi ý ' + label.toLowerCase()} className={styles.dropdownList} style={position}>
+      {options.map((option, index) => <button type="button" role="option" aria-selected={active === index} id={listId + '-' + index} key={option.id} className={styles.dropdownItem}
+        onPointerDown={(event) => event.preventDefault()} onMouseEnter={() => setActive(index)} onClick={() => choose(option.id)}>
+        {option.id === 'gps' && <IconCrosshair size={16} />}<span><strong>{option.name}</strong><small>{option.meta}</small></span>
+      </button>)}
+      {!options.length && <p className={styles.dropdownEmpty}>Không tìm thấy địa điểm phù hợp</p>}
+    </div>, document.body)}
+  </div>;
 }
 
 export function DirectionsPanel(props: Props) {
-  const { destinations, coords, originId, destinationId, mode, route, status, selectedProvince = 'all' } = props;
-  const [waypointIds, setWaypointIds] = useState<string[]>([]);
-  const [optimizeNotice, setOptimizeNotice] = useState<string | null>(null);
-
-  // Scoped destinations based on chosen city / province
-  const scopedDestinations = useMemo(() => {
-    if (!selectedProvince || selectedProvince === 'all') {
-      return destinations;
-    }
-    const norm = normalize(selectedProvince);
-    const filtered = destinations.filter((d) => {
-      const provNorm = normalize(d.province);
-      return provNorm.includes(norm) || norm.includes(provNorm);
-    });
-    return filtered.length > 0 ? filtered : destinations;
-  }, [destinations, selectedProvince]);
-
-  const destMap = new Map<string, DestinationMarker>(destinations.map((d) => [d.id, d]));
-
-  const originCoords = originId === 'gps' && coords
-    ? coords
-    : (originId && destMap.has(originId) ? { latitude: destMap.get(originId)!.latitude, longitude: destMap.get(originId)!.longitude } : null);
-  const destCoords = destinationId && destMap.has(destinationId)
-    ? { latitude: destMap.get(destinationId)!.latitude, longitude: destMap.get(destinationId)!.longitude }
-    : null;
-
-  const valid = Boolean(
-    destinationId &&
-      originId &&
-      (originId !== 'gps' || coords) &&
-      originId !== destinationId
-  );
-
-  const handleAddWaypoint = () => {
-    if (waypointIds.length >= 4) return;
-    setWaypointIds([...waypointIds, '']);
-  };
-
-  const handleUpdateWaypoint = (index: number, val: string) => {
-    const updated = [...waypointIds];
-    updated[index] = val;
-    setWaypointIds(updated);
-    setOptimizeNotice(null);
-    props.onClear();
-  };
-
-  const handleRemoveWaypoint = (index: number) => {
-    const updated = waypointIds.filter((_, i) => i !== index);
-    setWaypointIds(updated);
-    setOptimizeNotice(null);
-    props.onClear();
-  };
-
-  // Hoán đổi vị trí 2 điểm dừng
-  const handleSwapStops = (idxA: number, idxB: number) => {
-    const updated = [...waypointIds];
-    const temp = updated[idxA];
-    updated[idxA] = updated[idxB];
-    updated[idxB] = temp;
-    setWaypointIds(updated);
-    props.onClear();
-  };
-
-  // Thuật toán Tối ưu hóa thứ tự ghé thăm Nearest Neighbor TSP
-  const handleOptimizeRoute = () => {
-    // Thu thập tọa độ điểm xuất phát
-    let startLat = 0;
-    let startLng = 0;
-    if (originId === 'gps' && coords) {
-      startLat = coords.latitude;
-      startLng = coords.longitude;
-    } else if (destMap.has(originId)) {
-      const d = destMap.get(originId)!;
-      startLat = d.latitude;
-      startLng = d.longitude;
-    } else {
-      return;
-    }
-
-    // Các điểm cần ghé (bao gồm các waypoints hợp lệ + điểm đến cuối cùng)
-    const validWps = waypointIds.filter((id) => Boolean(id) && destMap.has(id));
-    if (!destinationId || !destMap.has(destinationId)) return;
-
-    const allStops = [...new Set([...validWps, destinationId])];
-    if (allStops.length < 2) {
-      setOptimizeNotice('Cần ít nhất 2 điểm dừng để tối ưu hóa thứ tự.');
-      return;
-    }
-
-    // Tính tổng quãng đường ban đầu
-    let origDist = 0;
-    let curr = { lat: startLat, lng: startLng };
-    for (const stopId of allStops) {
-      const target = destMap.get(stopId)!;
-      origDist += haversineKm(curr.lat, curr.lng, target.latitude, target.longitude);
-      curr = { lat: target.latitude, lng: target.longitude };
-    }
-
-    // Thuật toán Nearest Neighbor
-    const unvisited = [...allStops];
-    const ordered: string[] = [];
-    curr = { lat: startLat, lng: startLng };
-
-    while (unvisited.length > 0) {
-      let nearestIdx = -1;
-      let minDist = Infinity;
-      for (let i = 0; i < unvisited.length; i++) {
-        const candidate = destMap.get(unvisited[i])!;
-        const d = haversineKm(curr.lat, curr.lng, candidate.latitude, candidate.longitude);
-        if (d < minDist) {
-          minDist = d;
-          nearestIdx = i;
-        }
-      }
-
-      const nextStop = unvisited.splice(nearestIdx, 1)[0];
-      ordered.push(nextStop);
-      const nextTarget = destMap.get(nextStop)!;
-      curr = { lat: nextTarget.latitude, lng: nextTarget.longitude };
-    }
-
-    // Tính tổng quãng đường sau tối ưu
-    let newDist = 0;
-    curr = { lat: startLat, lng: startLng };
-    for (const stopId of ordered) {
-      const target = destMap.get(stopId)!;
-      newDist += haversineKm(curr.lat, curr.lng, target.latitude, target.longitude);
-      curr = { lat: target.latitude, lng: target.longitude };
-    }
-
-    // Gán lại waypoints và destination
-    const newWaypoints = ordered.slice(0, -1);
-    const newDestId = ordered[ordered.length - 1];
-
-    setWaypointIds(newWaypoints);
-    props.onDestination(newDestId);
-
-    const savedKm = Math.max(0, origDist - newDist).toFixed(1);
-    if (parseFloat(savedKm) > 0.5) {
-      setOptimizeNotice(`Đã tối ưu thứ tự các điểm dừng, tiết kiệm ~${savedKm} km di chuyển.`);
-    } else {
-      setOptimizeNotice('Thứ tự các điểm dừng hiện tại đã tối ưu nhất.');
-    }
-
-    // Tự động tính tuyến mới
-    props.onCompute(newWaypoints);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const cleanWaypoints = waypointIds.filter(Boolean);
-    props.onCompute(cleanWaypoints);
-  };
-
-  // Ước tính giá taxi (khoảng 14.000 VNĐ / km)
-  const taxiFare = route ? Math.round((route.distanceMeters / 1000) * 14000) : 0;
-
-  // Nhãn ký hiệu chữ cái điểm đến cuối cùng: A -> B (nếu ko có waypoint), hoặc A -> B -> C (nếu 1 waypoint)
-  const finalDestBadge = String.fromCharCode(65 + 1 + waypointIds.length);
-
-  // Chuỗi tóm tắt toàn bộ lộ trình các trạm
-  const routeStopsSummary = useMemo(() => {
-    if (!route) return '';
-    const parts: string[] = [];
-    const origLabel = route.input?.origin?.label || 'Xuất phát';
-    parts.push(`A: ${origLabel}`);
-    const wps = (route.input as any)?.waypoints || [];
-    wps.forEach((wp: any, i: number) => {
-      parts.push(`${String.fromCharCode(66 + i)}: ${wp.label || `Điểm ${i + 1}`}`);
-    });
-    const destTag = String.fromCharCode(65 + 1 + wps.length);
-    const destLabel = route.input?.destination?.label || 'Điểm đến';
-    parts.push(`${destTag}: ${destLabel}`);
-    return parts.join(' ➔ ');
-  }, [route]);
-
-  return (
-    <section className={styles.panel} aria-label="Chỉ đường thông minh VISTA">
-      <div className={styles.heading}>
-        <div>
-          <span className={styles.subTitle}>VISTA ROUTE PLANNER</span>
-          <h2 className={styles.mainTitle}>Chỉ đường & Lộ trình</h2>
-        </div>
-        <button type="button" className={styles.btnClose} onClick={props.onClose} title="Đóng bảng chỉ đường">
-          <IconClose size={11} />
-          <span>Thu gọn</span>
-        </button>
+  const { stops, destinations, route, mode, status } = props;
+  const [focusId, setFocusId] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const dragged = useRef<string | null>(null);
+  const update = (id: string, placeId: string) => props.onStopsChange(stops.map((stop) => stop.id === id ? { ...stop, placeId } : stop));
+  const reorder = (id: string, target: number) => { props.onStopsChange(moveStop(stops, id, target)); setFocusId(null); };
+  const valid = stops.every((stop, index) => stop.placeId === 'gps' ? index === 0 && Boolean(props.coords) && props.gpsStatus !== 'requesting' : destinations.some((destination) => destination.id === stop.placeId));
+  return <section className={styles.panel} aria-label="Lên lịch trình VISTA">
+    <header className={styles.heading}><div><h2>Lộ trình của bạn</h2><p>Đi qua các điểm theo thứ tự đã chọn</p></div><button type="button" className={styles.close} onClick={props.onClose} aria-label="Thu gọn lộ trình"><IconClose size={18} /></button></header>
+    <div className={styles.scrollContent}>
+      <div className={styles.modePills} role="group" aria-label="Phương tiện">
+        <button type="button" aria-pressed={mode === 'DRIVING'} onClick={() => props.onMode('DRIVING')}><IconCar size={18} /> Ô tô</button>
+        <button type="button" aria-pressed={mode === 'WALKING'} onClick={() => props.onMode('WALKING')}><IconWalk size={18} /> Đi bộ</button>
       </div>
-
-      {/* Khoanh vùng thành phố selector */}
-      <div className={styles.cityScopeBar}>
-        <span className={styles.cityScopeLabel}>
-          <IconPin size={13} />
-          <span>Khoanh vùng:</span>
-        </span>
-        <select
-          className={styles.cityScopeSelect}
-          value={selectedProvince}
-          onChange={(e) => {
-            props.onProvinceChange?.(e.target.value);
-            props.onClear();
-          }}
-          aria-label="Khoanh vùng theo thành phố"
-        >
-          <option value="all">Toàn quốc</option>
-          {REGIONS_PROVINCES.map((reg) => (
-            <optgroup key={reg.region} label={reg.region}>
-              {reg.provinces.map((prov) => {
-                const count = destinations.filter((d) => normalize(d.province).includes(normalize(prov))).length;
-                if (count === 0) return null;
-                return (
-                  <option key={prov} value={prov}>
-                    {prov}
-                  </option>
-                );
-              })}
-            </optgroup>
-          ))}
+      <label className={styles.scopeBar}>Khu vực
+        <select value={props.selectedProvince ?? 'all'} onChange={(event) => props.onProvinceChange?.(event.target.value)}>
+          <option value="all">Toàn quốc</option>{REGIONS_PROVINCES.flatMap((region) => region.provinces).filter((province) => destinations.some((destination) => normalize(destination.province).includes(normalize(province)))).map((province) => <option key={province}>{province}</option>)}
         </select>
-      </div>
-
-      <form onSubmit={handleSubmit} className={styles.form}>
-        {/* Timeline Stepper Container */}
-        <div className={styles.stepperContainer}>
-          {/* Origin Stop */}
-          <div className={styles.stopItem}>
-            <div className={styles.stopBadgeA}>A</div>
-            <div className={styles.stopContent}>
-              <span className={styles.stopLabel}>Điểm xuất phát</span>
-              <select
-                className={styles.selectInput}
-                aria-label="Điểm xuất phát"
-                value={originId}
-                onChange={(event) => {
-                  if (event.target.value === '__switch_all__') {
-                    props.onProvinceChange?.('all');
-                    return;
-                  }
-                  props.onOrigin(event.target.value);
-                  setOptimizeNotice(null);
-                }}
-              >
-                <option value="">
-                  {selectedProvince !== 'all'
-                    ? `Chọn điểm tại ${selectedProvince}`
-                    : 'Chọn điểm xuất phát'}
-                </option>
-                <option value="gps">
-                  Vị trí của tôi {coords ? '(GPS sẵn sàng)' : '(Chưa bật định vị)'}
-                </option>
-                {scopedDestinations.map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {d.name} {selectedProvince === 'all' ? `· ${d.province}` : ''}
-                  </option>
-                ))}
-                {selectedProvince !== 'all' && (
-                  <option value="__switch_all__">Mở rộng sang Toàn quốc…</option>
-                )}
-              </select>
-            </div>
-          </div>
-
-          {originId === 'gps' && !coords && (
-            <button
-              type="button"
-              className={styles.btnGpsRequest}
-              onClick={props.onRequestGps}
-            >
-              <IconCrosshair size={13} />
-              <span>Cho phép truy cập vị trí hiện tại</span>
-            </button>
-          )}
-
-          {/* Intermediate Stops */}
-          {waypointIds.map((wpId, idx) => {
-            const stopLetter = String.fromCharCode(66 + idx);
-            return (
-              <div key={idx} className={styles.stopItem}>
-                <div className={styles.stopBadgeMid}>{stopLetter}</div>
-                <div className={styles.stopContent}>
-                  <div className={styles.stopHeader}>
-                    <span className={styles.stopLabel}>Điểm ghé thăm {stopLetter}</span>
-                    <div className={styles.stopActions}>
-                      {idx > 0 && (
-                        <button
-                          type="button"
-                          className={styles.btnReorder}
-                          onClick={() => handleSwapStops(idx, idx - 1)}
-                          title="Đổi lên trước"
-                        >
-                          ↑
-                        </button>
-                      )}
-                      {idx < waypointIds.length - 1 && (
-                        <button
-                          type="button"
-                          className={styles.btnReorder}
-                          onClick={() => handleSwapStops(idx, idx + 1)}
-                          title="Đổi xuống sau"
-                        >
-                          ↓
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        className={styles.btnRemoveStop}
-                        onClick={() => handleRemoveWaypoint(idx)}
-                        title="Xóa điểm ghé thăm"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  </div>
-                  <select
-                    className={styles.selectInput}
-                    value={wpId}
-                    onChange={(e) => {
-                      if (e.target.value === '__switch_all__') {
-                        props.onProvinceChange?.('all');
-                        return;
-                      }
-                      handleUpdateWaypoint(idx, e.target.value);
-                    }}
-                    aria-label={`Điểm dừng ${stopLetter}`}
-                  >
-                    <option value="">
-                      {selectedProvince !== 'all'
-                        ? `Chọn điểm tại ${selectedProvince}`
-                        : 'Chọn điểm ghé thăm dọc đường'}
-                    </option>
-                    {scopedDestinations.map((d) => (
-                      <option key={d.id} value={d.id}>
-                        {d.name} {selectedProvince === 'all' ? `· ${d.province}` : ''}
-                      </option>
-                    ))}
-                    {selectedProvince !== 'all' && (
-                      <option value="__switch_all__">Mở rộng sang Toàn quốc…</option>
-                    )}
-                  </select>
-                </div>
-              </div>
-            );
+      </label>
+      <form onSubmit={(event) => { event.preventDefault(); props.onCompute(); }}>
+        <div className={styles.stepper}>
+          {stops.map((stop, index) => {
+            const role = stopRole(index, stops.length);
+            const last = index === stops.length - 1;
+            return <div key={stop.id} className={styles.stopRow} data-stop-id={stop.id} data-role={index === 0 ? 'origin' : last ? 'destination' : 'waypoint'}
+              onDragOver={(event) => { if (index > 0) event.preventDefault(); }}
+              onDrop={(event) => { event.preventDefault(); if (dragged.current && index > 0) reorder(dragged.current, index); dragged.current = null; }}>
+              <div className={styles.dragCell}>{index > 0 && !last && <button type="button" draggable className={styles.dragHandle} aria-label={'Kéo ' + role.toLowerCase() + ' hoặc dùng Alt và phím mũi tên để sắp xếp'}
+                onDragStart={(event) => { dragged.current = stop.id; event.dataTransfer.setData('text/plain', stop.id); }} onDragEnd={() => { dragged.current = null; }}
+                onKeyDown={(event) => { if (event.altKey && ['ArrowUp', 'ArrowDown'].includes(event.key)) { event.preventDefault(); reorder(stop.id, index + (event.key === 'ArrowUp' ? -1 : 1)); } }}><GripVertical size={16} /></button>}</div>
+              <div className={styles.stopIcon} aria-hidden="true">{last ? <IconPin size={22} className={styles.destinationPin} /> : <span className={styles.stopCircle} />}{!last && <span className={styles.connector} />}</div>
+              <SearchableStopInput stop={stop} label={role} destinations={destinations} allowGps={index === 0} onChange={(value) => update(stop.id, value)} onRequestGps={props.onRequestGps} loading={index === 0 && stop.placeId === 'gps' && props.gpsStatus === 'requesting'} focusId={focusId} />
+              <div className={styles.reorder}>{index > 0 && <>
+                <button type="button" disabled={index === 1} aria-label={'Di chuyển ' + role.toLowerCase() + ' lên'} onClick={() => reorder(stop.id, index - 1)}><ArrowUp size={13} /></button>
+                <button type="button" disabled={last} aria-label={'Di chuyển ' + role.toLowerCase() + ' xuống'} onClick={() => reorder(stop.id, index + 1)}><ArrowDown size={13} /></button>
+              </>}</div>
+              <button type="button" className={styles.remove} aria-label={(stops.length <= 2 || index === 0 ? 'Xóa nội dung ' : 'Xóa ') + role.toLowerCase()}
+                onClick={() => { if (stops.length <= 2 || index === 0) update(stop.id, ''); else props.onStopsChange(stops.filter((item) => item.id !== stop.id)); }}><IconClose size={17} /></button>
+            </div>;
           })}
-
-          {/* Final Destination Stop */}
-          <div className={styles.stopItem}>
-            <div className={styles.stopBadgeB}>{finalDestBadge}</div>
-            <div className={styles.stopContent}>
-              <span className={styles.stopLabel}>Điểm đến cuối cùng</span>
-              <select
-                className={styles.selectInput}
-                aria-label="Điểm đến"
-                value={destinationId}
-                onChange={(event) => {
-                  if (event.target.value === '__switch_all__') {
-                    props.onProvinceChange?.('all');
-                    return;
-                  }
-                  props.onDestination(event.target.value);
-                  setOptimizeNotice(null);
-                }}
-              >
-                <option value="">
-                  {selectedProvince !== 'all'
-                    ? `Chọn điểm đến tại ${selectedProvince}`
-                    : 'Chọn điểm đến cuối cùng'}
-                </option>
-                {scopedDestinations.map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {d.name} {selectedProvince === 'all' ? `· ${d.province}` : ''}
-                  </option>
-                ))}
-                {selectedProvince !== 'all' && (
-                  <option value="__switch_all__">Mở rộng sang Toàn quốc…</option>
-                )}
-              </select>
-            </div>
-          </div>
         </div>
-
-        {/* Action Row: Add Stop + Optimize */}
-        <div className={styles.stepperActions}>
-          {waypointIds.length < 4 && (
-            <button
-              type="button"
-              className={styles.btnAddStop}
-              onClick={handleAddWaypoint}
-            >
-              + Thêm điểm ghé thăm
-            </button>
-          )}
-
-          {waypointIds.filter(Boolean).length >= 1 && destinationId && (
-            <button
-              type="button"
-              className={styles.btnOptimize}
-              onClick={handleOptimizeRoute}
-              title="Tự động sắp xếp lại chuỗi điểm dừng ngắn nhất (Nearest Neighbor TSP)"
-            >
-              <IconSparkles size={13} />
-              <span>Tối ưu thứ tự</span>
-            </button>
-          )}
-        </div>
-
-        {/* Optimize Toast Notice */}
-        {optimizeNotice && (
-          <div className={styles.optimizeBadge}>
-            {optimizeNotice}
-          </div>
-        )}
-
-        {/* Travel Mode Pills */}
-        <div className={styles.modeSection}>
-          <span className={styles.modeTitle}>Phương tiện di chuyển:</span>
-          <div className={styles.modePills}>
-            <button
-              type="button"
-              className={`${styles.modePill} ${mode === 'DRIVING' ? styles.modePillActive : ''}`}
-              onClick={() => props.onMode('DRIVING')}
-            >
-              <IconCar size={14} />
-              <span>Ô tô / Xe máy</span>
-            </button>
-            <button
-              type="button"
-              className={`${styles.modePill} ${mode === 'WALKING' ? styles.modePillActive : ''}`}
-              onClick={() => props.onMode('WALKING')}
-            >
-              <IconWalk size={14} />
-              <span>Đi bộ</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Submit Route Compute Button */}
-        <button
-          className={styles.btnCompute}
-          disabled={!valid || status === 'loading'}
-          type="submit"
-        >
-          {status === 'loading'
-            ? 'Đang tính toán tuyến đường…'
-            : waypointIds.length > 0
-              ? `Tính lộ trình ${waypointIds.filter(Boolean).length + 2} điểm dừng`
-              : 'Tính tuyến đường'}
-        </button>
+        <button type="button" className={styles.addStop} aria-disabled={stops.length >= MAX_ROUTE_POINTS} onClick={() => {
+          if (stops.length >= MAX_ROUTE_POINTS) { setNotice('Lộ trình hỗ trợ tối đa ' + MAX_ROUTE_POINTS + ' điểm. Hãy xóa một điểm trước khi thêm.'); return; }
+          const next = createStop(); props.onStopsChange([...stops, next]); setFocusId(next.id); setNotice(null);
+        }}><CirclePlus size={24} /> <span>Thêm điểm đến</span></button>
+        {(notice || stops.length >= MAX_ROUTE_POINTS) && <p className={styles.notice} role="status">{notice || 'Đã đạt giới hạn ' + MAX_ROUTE_POINTS + ' điểm cho mỗi lộ trình.'}</p>}
+        {stops[0].placeId === 'gps' && props.gpsError && <p role="alert" className={styles.error}>{props.gpsError} Bạn có thể nhập điểm xuất phát khác hoặc <button type="button" onClick={props.onRequestGps}>thử lại GPS</button>.</p>}
+        <button className={styles.compute} type="submit" disabled={!valid || status === 'loading'}>{status === 'loading' ? 'Đang tìm đường…' : 'Tìm đường' + (stops.length > 2 ? ' qua ' + stops.length + ' điểm' : '')}</button>
       </form>
-
-      {/* Results View */}
-      <div className={styles.resultContainer} aria-live="polite">
-        {status === 'error' && (
-          <div className={styles.errorNotice} role="alert">
-            <p style={{ margin: '0 0 8px' }}>
-              {props.error || 'Dịch vụ chỉ đường hiện tại không phản hồi. Bạn vẫn có thể xem bản đồ hoặc mở ứng dụng bản đồ bên ngoài.'}
-            </p>
-            {originCoords && destCoords && (
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '10px' }}>
-                <a
-                  href={`https://www.google.com/maps/dir/?api=1&origin=${originCoords.latitude},${originCoords.longitude}&destination=${destCoords.latitude},${destCoords.longitude}&travelmode=${mode === 'WALKING' ? 'walking' : 'driving'}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    padding: '6px 12px',
-                    borderRadius: '6px',
-                    background: '#0284c7',
-                    color: '#ffffff',
-                    fontSize: '12px',
-                    fontWeight: 600,
-                    textDecoration: 'none',
-                  }}
-                >
-                  Mở Google Maps ↗
-                </a>
-                <a
-                  href={`https://maps.apple.com/?saddr=${originCoords.latitude},${originCoords.longitude}&daddr=${destCoords.latitude},${destCoords.longitude}&dirflg=${mode === 'WALKING' ? 'w' : 'd'}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    padding: '6px 12px',
-                    borderRadius: '6px',
-                    background: '#334155',
-                    color: '#ffffff',
-                    fontSize: '12px',
-                    fontWeight: 600,
-                    textDecoration: 'none',
-                  }}
-                >
-                  Mở Apple Maps ↗
-                </a>
-              </div>
-            )}
-          </div>
-        )}
-
-        {status === 'empty' && (
-          <div className={styles.emptyNotice}>
-            Chưa tìm thấy tuyến phù hợp. Hãy thử đổi địa điểm hoặc phương tiện.
-          </div>
-        )}
-
-        {route && (
-          <section className={styles.resultCard} aria-label="Kết quả tuyến đường">
-            <div className={styles.resultHeader}>
-              <span className={styles.resultTag}>THÔNG TIN HÀNH TRÌNH</span>
-              <button type="button" className={styles.btnClearRoute} onClick={props.onClear}>
-                Xóa tuyến
-              </button>
-            </div>
-
-            <h3 className={styles.routeSummaryText}>
-              {routeStopsSummary || `${route.input.origin.label} ➔ ${route.input.destination.label}`}
-            </h3>
-
-            {/* Quick Metrics */}
-            <div className={styles.metricsGrid}>
-              <div className={styles.metricItem}>
-                <span className={styles.metricValue}>
-                  {new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 }).format(
-                    route.distanceMeters / 1000
-                  )}{' '}
-                  km
-                </span>
-                <span className={styles.metricLabel}>Khoảng cách</span>
-              </div>
-
-              <div className={styles.metricItem}>
-                <span className={styles.metricValue}>
-                  {Math.max(1, Math.ceil(route.durationMillis / 60000))} phút
-                </span>
-                <span className={styles.metricLabel}>Thời gian dự tính</span>
-              </div>
-
-              {taxiFare > 0 && mode === 'DRIVING' && (
-                <div className={styles.metricItem}>
-                  <span className={styles.metricValueHighlight}>
-                    ~{new Intl.NumberFormat('vi-VN').format(taxiFare)} đ
-                  </span>
-                  <span className={styles.metricLabel}>Ước tính taxi / xe</span>
-                </div>
-              )}
-            </div>
-
-            {/* External Navigation Links */}
-            {originCoords && destCoords && (
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '12px', paddingTop: '10px', borderTop: '1px solid #f1f5f9' }}>
-                <a
-                  href={`https://www.google.com/maps/dir/?api=1&origin=${originCoords.latitude},${originCoords.longitude}&destination=${destCoords.latitude},${destCoords.longitude}&travelmode=${mode === 'WALKING' ? 'walking' : 'driving'}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    padding: '5px 10px',
-                    borderRadius: '6px',
-                    background: '#f1f5f9',
-                    color: '#0284c7',
-                    fontSize: '11.5px',
-                    fontWeight: 600,
-                    textDecoration: 'none',
-                    border: '1px solid #e2e8f0',
-                  }}
-                >
-                  Dẫn đường trên Google Maps ↗
-                </a>
-                <a
-                  href={`https://maps.apple.com/?saddr=${originCoords.latitude},${originCoords.longitude}&daddr=${destCoords.latitude},${destCoords.longitude}&dirflg=${mode === 'WALKING' ? 'w' : 'd'}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    padding: '5px 10px',
-                    borderRadius: '6px',
-                    background: '#f1f5f9',
-                    color: '#334155',
-                    fontSize: '11.5px',
-                    fontWeight: 600,
-                    textDecoration: 'none',
-                    border: '1px solid #e2e8f0',
-                  }}
-                >
-                  Apple Maps ↗
-                </a>
-              </div>
-            )}
-
-            <p className={styles.routeFooterNote}>
-              Tuyến đường được tính toán theo dữ liệu giao thông thực tế OpenStreetMap (OSRM).
-            </p>
-          </section>
-        )}
-      </div>
-    </section>
-  );
+      {status === 'error' && <p className={styles.error} role="alert">{props.error}</p>}
+      {status === 'empty' && <p className={styles.notice} role="status">Không tìm thấy tuyến đi qua đủ các điểm. Hãy chọn địa điểm hoặc phương tiện khác.</p>}
+      {route && <section className={styles.resultCard} aria-label="Kết quả lộ trình">
+        <div className={styles.resultHeader}><strong>{Math.ceil(route.durationMillis / 60000)} phút · {(route.distanceMeters / 1000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} km</strong><button type="button" onClick={props.onClear}>Xóa tuyến</button></div>
+        <p className={styles.routeTitle}>{route.input.origin.label} → {route.input.destination.label}</p>
+        {route.legs?.map((leg, index) => <div className={styles.leg} key={index}>
+          <span className={styles.legRole}>{stopRole(index, stops.length)} → {stopRole(index + 1, stops.length)}</span>
+          <p>{leg.fromLabel} → {leg.toLabel}</p><small>{Math.ceil(leg.durationMillis / 60000)} phút · {(leg.distanceMeters / 1000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} km</small>
+        </div>)}
+        {route.warnings.map((warning) => <p className={styles.notice} key={warning}>{warning}</p>)}
+        <small className={styles.attribution}>{route.attribution}</small>
+        <a className={styles.mapFeedback} href="https://www.openstreetmap.org/fixthemap" target="_blank" rel="noopener noreferrer">Báo lỗi dữ liệu bản đồ ↗</a>
+      </section>}
+    </div>
+  </section>;
 }

@@ -1,0 +1,26 @@
+{
+  "mode": "apply-user-approved",
+  "phases": [
+    {
+      "phase": "preflight",
+      "version": "202611131200",
+      "sha256": "db7a1a177c56f0ae266c94278ad691daad70892805f78259c01101b2607b85e5",
+      "alreadyApplied": false,
+      "metadataColumns": 0,
+      "posts": 12,
+      "comments": 10
+    },
+    {
+      "phase": "verified",
+      "version": "202611131200",
+      "migrationsExecuted": 1,
+      "checksum": -599746301,
+      "metadataColumns": 5,
+      "constraints": 5,
+      "indexes": 2,
+      "posts": 12,
+      "comments": 10,
+      "rowCountsUnchanged": true
+    }
+  ]
+}

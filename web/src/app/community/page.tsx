@@ -24,25 +24,23 @@ import {
   Flag,
   X,
   Smile,
-  Check,
   ChevronRight,
   ChevronDown,
   ChevronUp,
   Globe,
-  Send,
   Trash2,
-  Clock,
-  DollarSign,
-  Calendar,
   Sparkles,
 } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
 import type { components } from '@/types/api.generated';
 import { Navbar } from '@/components/common/Navbar';
+import { CommunityComments } from '@/features/community/CommunityComments';
+import { FeelingPicker, PlacePicker, PublicAvatar } from '@/features/community/CommunityTools';
+import { feelingText, type FeelingCode, type Place } from '@/features/community/model';
+import extras from '@/features/community/communityExtras.module.css';
 import styles from './page.module.css';
 
 type Post = components['schemas']['Post'];
-type Comment = components['schemas']['Comment'];
 type PostCreate = components['schemas']['PostCreate'];
 type Photo = { file: File; preview: string; uploadId?: string };
 const base = (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8081/api/v1').replace(/\/+$/, '');
@@ -120,30 +118,32 @@ export default function CommunityPage() {
   // Composer state
   const [expanded, setExpanded] = useState(false);
   const [category, setCategory] = useState<'Khoảnh khắc' | 'Review' | 'Kinh nghiệm' | 'Cẩm nang'>('Khoảnh khắc');
-  const [locationTag, setLocationTag] = useState('');
-  const [showLocationInput, setShowLocationInput] = useState(false);
+  const [place, setPlace] = useState<Place | null>(null);
+  const [showPlacePicker, setShowPlacePicker] = useState(false);
+  const [feeling, setFeeling] = useState<FeelingCode | null>(null);
+  const [showFeelings, setShowFeelings] = useState(false);
   const [text, setText] = useState('');
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState('');
-  const [pending, setPending] = useState<PostCreate | null>(null);
 
   // Active filter & left sidebar
   const [activeFilter, setActiveFilter] = useState('Tất cả');
   const [showAllTopics, setShowAllTopics] = useState(false);
 
-  // Interactive sample post states (likes, saved, comments)
-  const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
+  // Saved items and post actions
   const [savedPosts, setSavedPosts] = useState<Set<string>>(new Set());
   const [savedDests, setSavedDests] = useState<Set<string>>(new Set());
-  const [openComments, setOpenComments] = useState<Set<string>>(new Set());
   const [reportingPost, setReportingPost] = useState<Post | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const filterScrollRef = useRef<HTMLDivElement>(null);
   const sendLock = useRef(false);
+  const postRequest = useRef<PostCreate | null>(null);
   const loadLock = useRef(false);
   const photoRef = useRef<Photo[]>([]);
+  const placeTrigger = useRef<HTMLButtonElement>(null);
+  const feelingTrigger = useRef<HTMLButtonElement>(null);
 
   const load = useCallback(async (next: number) => {
     if (loadLock.current) return;
@@ -174,6 +174,8 @@ export default function CommunityPage() {
           const user = JSON.parse(userStr);
           setUserId(user.id ?? null);
           setUserProfile(user);
+          void apiRequest<{ id: string; displayName?: string; avatarUrl?: string }>('/users/me')
+            .then(profile => { const current = JSON.parse(localStorage.getItem('vista_user') || '{}'); if (current.id === profile.id && localStorage.getItem('vista_token')) setUserProfile(profile); }).catch(() => {});
         } else {
           setUserId(null);
           setUserProfile(null);
@@ -187,9 +189,12 @@ export default function CommunityPage() {
       session();
       void load(0);
     });
-    window.addEventListener('vista-auth-change', session);
+    const refresh = () => { session(); void load(0); };
+    window.addEventListener('focus', refresh);
+    window.addEventListener('vista-auth-change', refresh);
     return () => {
-      window.removeEventListener('vista-auth-change', session);
+      window.removeEventListener('focus', refresh);
+      window.removeEventListener('vista-auth-change', refresh);
     };
   }, [load]);
 
@@ -212,18 +217,6 @@ export default function CommunityPage() {
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
-  };
-
-  const toggleLike = (id: string) => {
-    setLikedPosts((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
   };
 
   const toggleSave = (postId: string) => {
@@ -254,18 +247,6 @@ export default function CommunityPage() {
     });
   };
 
-  const toggleCommentBox = (id: string) => {
-    setOpenComments((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  };
-
   const scrollFiltersRight = () => {
     if (filterScrollRef.current) {
       filterScrollRef.current.scrollBy({ left: 160, behavior: 'smooth' });
@@ -276,6 +257,7 @@ export default function CommunityPage() {
     if (sendLock.current) return;
     sendLock.current = true;
     setSending(true);
+    setShowFeelings(false);
     setSendError('');
     try {
       const uploaded: string[] = [];
@@ -286,35 +268,38 @@ export default function CommunityPage() {
         } else {
           const form = new FormData();
           form.append('file', item.file);
-          const res = await apiRequest<{ uploadId: string }>('/post-uploads', { method: 'POST', body: form });
-          item.uploadId = res.uploadId;
-          uploaded.push(res.uploadId);
+          const res = await apiRequest<components['schemas']['Upload']>('/post-uploads', { method: 'POST', body: form });
+          updatePhotos(photoRef.current.map((photo) => photo.preview === item.preview ? { ...photo, uploadId: res.id } : photo));
+          uploaded.push(res.id);
         }
       }
 
-      const postBody = locationTag ? `${text}\n\n📍 ${locationTag}` : text;
-      const clientRequestId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `req-${Date.now()}`;
-      const payload: PostCreate = {
-        body: postBody,
-        clientRequestId,
+      const candidate = {
+        body: text,
+        destinationId: place?.id,
+        feeling,
         uploadIds: uploaded,
       };
-      setPending(payload);
+      const previous = postRequest.current;
+      const payload: PostCreate = previous && previous.body === candidate.body && previous.destinationId === candidate.destinationId && previous.feeling === candidate.feeling && JSON.stringify(previous.uploadIds) === JSON.stringify(candidate.uploadIds)
+        ? previous : { ...candidate, clientRequestId: crypto.randomUUID() };
+      postRequest.current = payload;
       const created = await apiRequest<Post>('/posts', json('POST', payload));
+      postRequest.current = null;
       setPosts((old) => [created, ...old.filter((p) => p.id !== created.id)]);
       setTotal((old) => old + 1);
       setText('');
-      setLocationTag('');
-      setShowLocationInput(false);
+      setPlace(null); setFeeling(null);
+      setShowPlacePicker(false);
       photoRef.current.forEach((p) => URL.revokeObjectURL(p.preview));
       updatePhotos([]);
       setExpanded(false);
       showToast('Đã chia sẻ bài viết thành công!');
     } catch (reason) {
       setSendError(message(reason));
+      if ([400, 401, 403, 404, 409, 413, 415].includes((reason as { status?: number }).status ?? 0)) postRequest.current = null;
     } finally {
       setSending(false);
-      setPending(null);
       sendLock.current = false;
     }
   };
@@ -322,7 +307,7 @@ export default function CommunityPage() {
   return (
     <div className={styles.pageRoot}>
       {/* ── Top Navbar ── */}
-      <Navbar />
+      <Navbar activeModule="community" />
 
       {/* ── 3-Column Layout Container ── */}
       <div className={styles.container3Col}>
@@ -525,7 +510,7 @@ export default function CommunityPage() {
                   className={styles.memberAvatarImg}
                 />
               </div>
-              <span className={styles.memberCountBadge}>128.4K thành viên</span>
+              <span className={styles.memberCountBadge}>{total} bài viết công khai</span>
               <button
                 type="button"
                 className={styles.btnWritePost}
@@ -542,16 +527,9 @@ export default function CommunityPage() {
 
           {/* Story Composer Card */}
           <section className={styles.composerCard} aria-label="Soạn bài chia sẻ">
+            <p>{userProfile?.displayName || (userId ? 'Người dùng VISTA' : 'Đăng nhập để chia sẻ')}</p>
             <div className={styles.composerTopRow}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={
-                  userProfile?.avatarUrl ||
-                  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop'
-                }
-                alt="Avatar của bạn"
-                className={styles.composerAvatar}
-              />
+              <PublicAvatar author={userProfile} />
               {!expanded ? (
                 <div className={styles.composerInputFake} onClick={() => setExpanded(true)}>
                   Bạn vừa khám phá điều gì?
@@ -582,26 +560,6 @@ export default function CommunityPage() {
                     autoFocus
                   />
 
-                  {showLocationInput && (
-                    <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-                      <input
-                        type="text"
-                        placeholder="Nhập tên địa điểm (VD: Cầu Vàng Đà Nẵng)..."
-                        value={locationTag}
-                        onChange={(e) => setLocationTag(e.target.value)}
-                        className={styles.commentInput}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowLocationInput(false)}
-                        className={styles.toolButton}
-                        style={{ padding: '0 8px' }}
-                      >
-                        <X size={16} />
-                      </button>
-                    </div>
-                  )}
-
                   {photos.length > 0 && (
                     <div className={styles.photoFilmstrip}>
                       {photos.map((p, i) => (
@@ -624,6 +582,10 @@ export default function CommunityPage() {
               )}
             </div>
 
+            {feeling && <span className={extras.chip}><button type="button" disabled={sending} onClick={() => { setShowPlacePicker(false); setShowFeelings(true); }}>{feelingText(feeling)}</button><button type="button" aria-label="Bỏ cảm xúc" disabled={sending} onClick={() => setFeeling(null)}>×</button></span>}
+            {place && <span className={extras.chip}><button type="button" disabled={sending} onClick={() => { setShowFeelings(false); setShowPlacePicker(true); }}>📍 {place.name}</button><button type="button" aria-label="Bỏ địa điểm" disabled={sending} onClick={() => setPlace(null)}>×</button></span>}
+            {showFeelings && <FeelingPicker value={feeling} onChange={setFeeling} onClose={() => { setShowFeelings(false); feelingTrigger.current?.focus(); }} />}
+            {showPlacePicker && <PlacePicker value={place?.id} onSelect={setPlace} onClose={() => { setShowPlacePicker(false); placeTrigger.current?.focus(); }} />}
             <div className={styles.composerBottomBar}>
               <div className={styles.composerToolsLeft}>
                 <label className={styles.toolButton} style={{ cursor: 'pointer' }}>
@@ -656,22 +618,29 @@ export default function CommunityPage() {
 
                 <button
                   type="button"
+                  ref={placeTrigger}
+                  disabled={sending}
                   className={styles.toolButton}
                   onClick={() => {
                     setExpanded(true);
-                    setShowLocationInput(true);
+                    setShowFeelings(false);
+                    setShowPlacePicker(true);
                   }}
                 >
                   <MapPin size={17} strokeWidth={1.8} className={styles.toolIcon} />
-                  <span>{locationTag ? locationTag : 'Gắn địa điểm'}</span>
+                  <span>{place ? place.name : 'Gắn địa điểm'}</span>
                 </button>
 
                 <button
                   type="button"
+                  ref={feelingTrigger}
+                  disabled={sending}
+                  aria-expanded={showFeelings}
                   className={styles.toolButton}
                   onClick={() => {
                     setExpanded(true);
-                    setText((prev) => `${prev} ✨`);
+                    setShowPlacePicker(false);
+                    setShowFeelings(true);
                   }}
                 >
                   <Smile size={17} strokeWidth={1.8} className={styles.toolIcon} />
@@ -687,8 +656,8 @@ export default function CommunityPage() {
                     onClick={() => {
                       setExpanded(false);
                       setText('');
-                      setLocationTag('');
-                      setShowLocationInput(false);
+                      setPlace(null); setFeeling(null);
+                      setShowPlacePicker(false); setShowFeelings(false);
                       setPhotos([]);
                     }}
                   >
@@ -742,491 +711,22 @@ export default function CommunityPage() {
               POSTS FEED LIST
              ══════════════════════════════════════════════════════════════════ */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-            {/* ── Post 1: Cầu Vàng, Đà Nẵng ── */}
-            <article className={styles.storyPostCard}>
-              <header className={styles.postHeaderRow}>
-                <div className={styles.authorContainer}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop"
-                    alt="Nguyễn Hải Đăng"
-                    className={styles.authorAvatarImg}
-                  />
-                  <div className={styles.authorMetaCol}>
-                    <div className={styles.authorTopLine}>
-                      <span className={styles.authorDisplayName}>Nguyễn Hải Đăng</span>
-                      <span className={styles.verifiedIcon} title="Đã xác thực">
-                        <Check size={14} strokeWidth={3} />
-                      </span>
-                    </div>
-                    <div className={styles.postSubMeta}>
-                      <span>3 giờ trước</span>
-                      <span>•</span>
-                      <span>Cầu Vàng, Đà Nẵng</span>
-                      <span>•</span>
-                      <span className={styles.categoryTagText}>Khoảnh khắc</span>
-                    </div>
-                  </div>
-                </div>
-
-                <PostDropdownMenu
-                  onCopy={() => {
-                    navigator.clipboard?.writeText(window.location.href);
-                    showToast('Đã sao chép liên kết bài viết!');
-                  }}
-                  onReport={() =>
-                    setReportingPost({
-                      id: 'sample-danang',
-                      body: 'Đón bình minh tại Bà Nà Hills lúc 6 giờ sáng...',
-                      createdAt: new Date().toISOString(),
-                      updatedAt: new Date().toISOString(),
-                      version: 1,
-                      author: { id: 'danang-user', displayName: 'Nguyễn Hải Đăng' },
-                      media: [],
-                    })
-                  }
-                />
-              </header>
-
-              <p className={styles.postBodyContent}>
-                Đón bình minh tại Bà Nà Hills lúc 6 giờ sáng. Khi sương mù vừa tan và những tia nắng đầu tiên
-                rọi qua đôi bàn tay đá khổng lồ, cảm giác như lạc vào cõi tiên vậy. Mọi người nên đi chuyến cáp
-                treo sớm nhất để tránh đông nhé!
-              </p>
-
-              <div className={styles.mediaSingleWrapper}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_golden_bridge.jpg"
-                  alt="Cầu Vàng Bà Nà Hills Đà Nẵng"
-                  onError={(e) => {
-                    (e.target as HTMLElement).style.display = 'none';
-                  }}
-                />
+            {error && (
+              <div role="alert">
+                <p>{error}</p>
+                <button type="button" onClick={() => void load(0)}>Thử tải lại bảng tin</button>
               </div>
-
-              <div>
-                <span className={styles.locationBadgePill}>
-                  <MapPin size={13} strokeWidth={2} />
-                  <span>Cầu Vàng - Bà Nà Hills, Đà Nẵng</span>
-                </span>
-              </div>
-
-              <div className={styles.postTagsRow}>
-                <span className={styles.hashtagItem}>#ĐàNẵng</span>
-                <span className={styles.hashtagItem}>#SănBìnhMinh</span>
-                <span className={styles.hashtagItem}>#BàNàHills</span>
-              </div>
-
-              <div className={styles.reactionsCountRow}>
-                <div className={styles.likesCounter}>
-                  <Heart size={14} fill="#E11D48" color="#E11D48" />
-                  <span style={{ fontWeight: 600, color: '#334155', marginLeft: 4 }}>
-                    {likedPosts.has('post-danang') ? 143 : 142} yêu thích
-                  </span>
-                </div>
-                <div className={styles.commentsSharesCounter}>
-                  <span>28 bình luận</span>
-                  <span>•</span>
-                  <span>12 chia sẻ</span>
-                </div>
-              </div>
-
-              <footer className={styles.interactionDockRow}>
-                <button
-                  type="button"
-                  className={`${styles.dockActionBtn} ${likedPosts.has('post-danang') ? styles.dockBtnLiked : ''}`}
-                  onClick={() => toggleLike('post-danang')}
-                >
-                  <Heart size={18} strokeWidth={1.8} />
-                  <span>{likedPosts.has('post-danang') ? 'Đã thích' : 'Thích'}</span>
-                </button>
-
-                <button
-                  type="button"
-                  className={styles.dockActionBtn}
-                  onClick={() => toggleCommentBox('post-danang')}
-                >
-                  <MessageCircle size={18} strokeWidth={1.8} />
-                  <span>Bình luận</span>
-                </button>
-
-                <button
-                  type="button"
-                  className={styles.dockActionBtn}
-                  onClick={() => {
-                    navigator.clipboard?.writeText(window.location.href);
-                    showToast('Đã sao chép liên kết bài viết!');
-                  }}
-                >
-                  <Share2 size={18} strokeWidth={1.8} />
-                  <span>Chia sẻ</span>
-                </button>
-
-                <button
-                  type="button"
-                  className={`${styles.dockActionBtn} ${savedPosts.has('post-danang') ? styles.dockBtnSaved : ''}`}
-                  onClick={() => toggleSave('post-danang')}
-                >
-                  <Bookmark size={18} strokeWidth={1.8} />
-                  <span>{savedPosts.has('post-danang') ? 'Đã lưu' : 'Lưu'}</span>
-                </button>
-              </footer>
-
-              {openComments.has('post-danang') && (
-                <div className={styles.commentsDrawer}>
-                  <div className={styles.commentBubble}>
-                    <div className={styles.commentAuthorRow}>
-                      <span className={styles.commentAuthorName}>Trần Bích Phương</span>
-                      <span className={styles.commentTimeText}>1 giờ trước</span>
-                    </div>
-                    <p className={styles.commentBodyText}>
-                      Ảnh chụp góc máy đỉnh quá bạn ơi! Cáp treo lên sớm có bị lạnh không vậy?
-                    </p>
-                  </div>
-                  <div className={styles.commentBubble}>
-                    <div className={styles.commentAuthorRow}>
-                      <span className={styles.commentAuthorName}>Nguyễn Hải Đăng</span>
-                      <span className={styles.commentTimeText}>45 phút trước</span>
-                    </div>
-                    <p className={styles.commentBodyText}>
-                      Sáng sớm trên đỉnh Bà Nà hơi se se lạnh khoảng 18-20 độ, nên khoác thêm áo gió mỏng nhé bạn!
-                    </p>
-                  </div>
-                  <CommentInputForm onSubmit={(val) => showToast(`Đã gửi bình luận: "${val}"`)} />
-                </div>
-              )}
-            </article>
-
-            {/* ── Post 2: Phố cổ Hội An ── */}
-            <article className={styles.storyPostCard}>
-              <header className={styles.postHeaderRow}>
-                <div className={styles.authorContainer}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&auto=format&fit=crop"
-                    alt="Trần Bích Phương"
-                    className={styles.authorAvatarImg}
-                  />
-                  <div className={styles.authorMetaCol}>
-                    <div className={styles.authorTopLine}>
-                      <span className={styles.authorDisplayName}>Trần Bích Phương</span>
-                      <span className={styles.verifiedIcon} title="Đã xác thực">
-                        <Check size={14} strokeWidth={3} />
-                      </span>
-                    </div>
-                    <div className={styles.postSubMeta}>
-                      <span>Hôm qua</span>
-                      <span>•</span>
-                      <span>Phố cổ Hội An</span>
-                      <span>•</span>
-                      <span className={styles.categoryTagText}>Trải nghiệm địa phương</span>
-                    </div>
-                  </div>
-                </div>
-
-                <PostDropdownMenu
-                  onCopy={() => {
-                    navigator.clipboard?.writeText(window.location.href);
-                    showToast('Đã sao chép liên kết bài viết!');
-                  }}
-                  onReport={() =>
-                    setReportingPost({
-                      id: 'sample-hoian',
-                      body: 'Một buổi chiều thật dịu dàng ở Hội An...',
-                      createdAt: new Date().toISOString(),
-                      updatedAt: new Date().toISOString(),
-                      version: 1,
-                      author: { id: 'hoian-user', displayName: 'Trần Bích Phương' },
-                      media: [],
-                    })
-                  }
-                />
-              </header>
-
-              <p className={styles.postBodyContent}>
-                Một buổi chiều thật dịu dàng ở Hội An 🌿 Những mái nhà rêu phong, giàn hoa giấy rực rỡ và những chiếc
-                đèn lồng lung linh khi phố lên đèn. Đừng quên ghé ăn một tô cao lầu gia truyền đậm đà!
-              </p>
-
-              <div className={styles.mediaDoubleWrapper}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=800&auto=format&fit=crop"
-                  alt="Sông Hoài Hội An rực rỡ đèn hoa đăng"
-                />
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="https://images.unsplash.com/photo-1555126634-323283e090fa?w=600&auto=format&fit=crop"
-                  alt="Cao lầu đặc sản Hội An"
-                />
-              </div>
-
-              <div>
-                <span className={styles.locationBadgePill}>
-                  <MapPin size={13} strokeWidth={2} />
-                  <span>Phố cổ Hội An, Quảng Nam</span>
-                </span>
-              </div>
-
-              <div className={styles.postTagsRow}>
-                <span className={styles.hashtagItem}>#HộiAn</span>
-                <span className={styles.hashtagItem}>#ẨmThựcĐịaPhương</span>
-                <span className={styles.hashtagItem}>#CaoLầu</span>
-              </div>
-
-              <div className={styles.reactionsCountRow}>
-                <div className={styles.likesCounter}>
-                  <Heart size={14} fill="#E11D48" color="#E11D48" />
-                  <span style={{ fontWeight: 600, color: '#334155', marginLeft: 4 }}>
-                    {likedPosts.has('post-hoian') ? 90 : 89} yêu thích
-                  </span>
-                </div>
-                <div className={styles.commentsSharesCounter}>
-                  <span>14 bình luận</span>
-                  <span>•</span>
-                  <span>8 chia sẻ</span>
-                </div>
-              </div>
-
-              <footer className={styles.interactionDockRow}>
-                <button
-                  type="button"
-                  className={`${styles.dockActionBtn} ${likedPosts.has('post-hoian') ? styles.dockBtnLiked : ''}`}
-                  onClick={() => toggleLike('post-hoian')}
-                >
-                  <Heart size={18} strokeWidth={1.8} />
-                  <span>{likedPosts.has('post-hoian') ? 'Đã thích' : 'Thích'}</span>
-                </button>
-
-                <button
-                  type="button"
-                  className={styles.dockActionBtn}
-                  onClick={() => toggleCommentBox('post-hoian')}
-                >
-                  <MessageCircle size={18} strokeWidth={1.8} />
-                  <span>Bình luận</span>
-                </button>
-
-                <button
-                  type="button"
-                  className={styles.dockActionBtn}
-                  onClick={() => {
-                    navigator.clipboard?.writeText(window.location.href);
-                    showToast('Đã sao chép liên kết bài viết!');
-                  }}
-                >
-                  <Share2 size={18} strokeWidth={1.8} />
-                  <span>Chia sẻ</span>
-                </button>
-
-                <button
-                  type="button"
-                  className={`${styles.dockActionBtn} ${savedPosts.has('post-hoian') ? styles.dockBtnSaved : ''}`}
-                  onClick={() => toggleSave('post-hoian')}
-                >
-                  <Bookmark size={18} strokeWidth={1.8} />
-                  <span>{savedPosts.has('post-hoian') ? 'Đã lưu' : 'Lưu'}</span>
-                </button>
-              </footer>
-
-              {openComments.has('post-hoian') && (
-                <div className={styles.commentsDrawer}>
-                  <div className={styles.commentBubble}>
-                    <div className={styles.commentAuthorRow}>
-                      <span className={styles.commentAuthorName}>Lê Minh Anh</span>
-                      <span className={styles.commentTimeText}>3 giờ trước</span>
-                    </div>
-                    <p className={styles.commentBodyText}>
-                      Quán cao lầu nào ngon nhất vậy bạn, cho mình xin địa chỉ với!
-                    </p>
-                  </div>
-                  <CommentInputForm onSubmit={(val) => showToast(`Đã gửi bình luận: "${val}"`)} />
-                </div>
-              )}
-            </article>
-
-            {/* ── Post 3: Hà Giang Travel Guide / Review ── */}
-            <article className={styles.storyPostCard}>
-              <header className={styles.postHeaderRow}>
-                <div className={styles.authorContainer}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop"
-                    alt="Lê Minh Anh"
-                    className={styles.authorAvatarImg}
-                  />
-                  <div className={styles.authorMetaCol}>
-                    <div className={styles.authorTopLine}>
-                      <span className={styles.authorDisplayName}>Lê Minh Anh</span>
-                      <span className={styles.verifiedIcon} title="Đã xác thực">
-                        <Check size={14} strokeWidth={3} />
-                      </span>
-                    </div>
-                    <div className={styles.postSubMeta}>
-                      <span>2 ngày trước</span>
-                      <span>•</span>
-                      <span>Hà Giang</span>
-                      <span>•</span>
-                      <span className={styles.categoryTagText}>Cẩm nang & Kinh nghiệm</span>
-                    </div>
-                  </div>
-                </div>
-
-                <PostDropdownMenu
-                  onCopy={() => {
-                    navigator.clipboard?.writeText(window.location.href);
-                    showToast('Đã sao chép liên kết bài viết!');
-                  }}
-                  onReport={() =>
-                    setReportingPost({
-                      id: 'sample-hagiang',
-                      body: 'Hành trình 3N2Đ chinh phục những cung đèo ngoạn mục...',
-                      createdAt: new Date().toISOString(),
-                      updatedAt: new Date().toISOString(),
-                      version: 1,
-                      author: { id: 'hagiang-user', displayName: 'Lê Minh Anh' },
-                      media: [],
-                    })
-                  }
-                />
-              </header>
-
-              <p className={styles.postBodyContent}>
-                Hành trình 3N2Đ chinh phục những cung đèo ngoạn mục nhất miền cực Bắc. Đứng trên đỉnh Mã Pì Lèng nhìn
-                xuống dòng sông Nho Quế xanh ngắt như dải lụa là trải nghiệm nhất định phải thử một lần trong đời!
-              </p>
-
-              {/* Structured Travel Review Guide Box */}
-              <div className={styles.travelReviewGuideBox}>
-                <div className={styles.guideItem}>
-                  <Clock size={16} color="#0284C7" />
-                  <span className={styles.guideLabel}>Thời gian:</span>
-                  <span className={styles.guideValue}>3 ngày 2 đêm</span>
-                </div>
-
-                <div className={styles.guideItem}>
-                  <DollarSign size={16} color="#0284C7" />
-                  <span className={styles.guideLabel}>Chi phí:</span>
-                  <span className={styles.guideValue}>~2.500.000đ/người</span>
-                </div>
-
-                <div className={styles.guideItem}>
-                  <Calendar size={16} color="#0284C7" />
-                  <span className={styles.guideLabel}>Thời điểm:</span>
-                  <span className={styles.guideValue}>Tháng 9 – 11</span>
-                </div>
-
-                <div className={styles.guideItem} style={{ gridColumn: '1 / -1' }}>
-                  <Sparkles size={16} color="#0284C7" />
-                  <span className={styles.guideLabel}>Mẹo nhỏ:</span>
-                  <span className={styles.guideValue}>
-                    Thuê xe máy có số khỏe, đổ đầy xăng trước các cung đèo và nhớ mang áo ấm vì đêm trên cao nguyên rất lạnh.
-                  </span>
-                </div>
-              </div>
-
-              <div className={styles.mediaSingleWrapper}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_lungcu_hero.jpg"
-                  alt="Đèo Mã Pì Lèng và sông Nho Quế Hà Giang"
-                />
-              </div>
-
-              <div>
-                <span className={styles.locationBadgePill}>
-                  <MapPin size={13} strokeWidth={2} />
-                  <span>Đèo Mã Pì Lèng, Hà Giang</span>
-                </span>
-              </div>
-
-              <div className={styles.postTagsRow}>
-                <span className={styles.hashtagItem}>#HàGiang</span>
-                <span className={styles.hashtagItem}>#PhượtTâyBắc</span>
-                <span className={styles.hashtagItem}>#SôngNhoQuế</span>
-              </div>
-
-              <div className={styles.reactionsCountRow}>
-                <div className={styles.likesCounter}>
-                  <Heart size={14} fill="#E11D48" color="#E11D48" />
-                  <span style={{ fontWeight: 600, color: '#334155', marginLeft: 4 }}>
-                    {likedPosts.has('post-hagiang') ? 216 : 215} yêu thích
-                  </span>
-                </div>
-                <div className={styles.commentsSharesCounter}>
-                  <span>42 bình luận</span>
-                  <span>•</span>
-                  <span>31 chia sẻ</span>
-                </div>
-              </div>
-
-              <footer className={styles.interactionDockRow}>
-                <button
-                  type="button"
-                  className={`${styles.dockActionBtn} ${likedPosts.has('post-hagiang') ? styles.dockBtnLiked : ''}`}
-                  onClick={() => toggleLike('post-hagiang')}
-                >
-                  <Heart size={18} strokeWidth={1.8} />
-                  <span>{likedPosts.has('post-hagiang') ? 'Đã thích' : 'Thích'}</span>
-                </button>
-
-                <button
-                  type="button"
-                  className={styles.dockActionBtn}
-                  onClick={() => toggleCommentBox('post-hagiang')}
-                >
-                  <MessageCircle size={18} strokeWidth={1.8} />
-                  <span>Bình luận</span>
-                </button>
-
-                <button
-                  type="button"
-                  className={styles.dockActionBtn}
-                  onClick={() => {
-                    navigator.clipboard?.writeText(window.location.href);
-                    showToast('Đã sao chép liên kết bài viết!');
-                  }}
-                >
-                  <Share2 size={18} strokeWidth={1.8} />
-                  <span>Chia sẻ</span>
-                </button>
-
-                <button
-                  type="button"
-                  className={`${styles.dockActionBtn} ${savedPosts.has('post-hagiang') ? styles.dockBtnSaved : ''}`}
-                  onClick={() => toggleSave('post-hagiang')}
-                >
-                  <Bookmark size={18} strokeWidth={1.8} />
-                  <span>{savedPosts.has('post-hagiang') ? 'Đã lưu' : 'Lưu'}</span>
-                </button>
-              </footer>
-
-              {openComments.has('post-hagiang') && (
-                <div className={styles.commentsDrawer}>
-                  <div className={styles.commentBubble}>
-                    <div className={styles.commentAuthorRow}>
-                      <span className={styles.commentAuthorName}>Đỗ Hoàng Long</span>
-                      <span className={styles.commentTimeText}>1 ngày trước</span>
-                    </div>
-                    <p className={styles.commentBodyText}>
-                      Review chi tiết và thiết thực quá! Cảm ơn bạn nhiều.
-                    </p>
-                  </div>
-                  <CommentInputForm onSubmit={(val) => showToast(`Đã gửi bình luận: "${val}"`)} />
-                </div>
-              )}
-            </article>
-
-            {/* ── Dynamic Live Posts from Spring Boot Backend ── */}
+            )}
+            {!loading && !error && posts.length === 0 && (
+              <p>Chưa có bài viết. Hãy chia sẻ câu chuyện đầu tiên của bạn.</p>
+            )}
             {posts.map((post) => (
               <LivePostCard
-                key={post.id}
+                key={`${post.id}:${userId ?? 'guest'}`}
                 post={post}
                 userId={userId}
+                viewer={userProfile}
                 isSaved={savedPosts.has(post.id)}
-                isLiked={likedPosts.has(post.id)}
-                onToggleLike={() => toggleLike(post.id)}
                 onToggleSave={() => toggleSave(post.id)}
                 onReport={() => setReportingPost(post)}
                 onToast={showToast}
@@ -1448,9 +948,8 @@ function PostDropdownMenu({
 function LivePostCard({
   post,
   userId,
+  viewer,
   isSaved,
-  isLiked,
-  onToggleLike,
   onToggleSave,
   onReport,
   onToast,
@@ -1458,38 +957,62 @@ function LivePostCard({
 }: {
   post: Post;
   userId: string | null;
+  viewer: { displayName?: string; avatarUrl?: string | null } | null;
   isSaved: boolean;
-  isLiked: boolean;
-  onToggleLike: () => void;
   onToggleSave: () => void;
   onReport: () => void;
   onToast: (msg: string) => void;
   onDelete: () => void;
 }) {
   const [commentsOpen, setCommentsOpen] = useState(false);
+  const [commentCount, setCommentCount] = useState(post.commentCount);
+  useEffect(() => { queueMicrotask(() => setCommentCount(post.commentCount)); }, [post.commentCount]);
+  const [like, setLike] = useState<components['schemas']['PostLike'] | null>(null);
+  const [liking, setLiking] = useState(false);
+  const [likeError, setLikeError] = useState('');
+  const [likeRetry, setLikeRetry] = useState(0);
+  const likeLock = useRef(false);
+
+  useEffect(() => {
+    if (!userId) return;
+    let active = true;
+    apiRequest<components['schemas']['PostLike']>(`/posts/${post.id}/like`)
+      .then((state) => { if (active) { setLike(state); setLikeError(''); } })
+      .catch((reason) => { if (active) setLikeError(message(reason)); });
+    return () => { active = false; };
+  }, [post.id, userId, likeRetry]);
+
+  const toggleLike = async () => {
+    if (!userId) {
+      onToast('Vui lòng đăng nhập để thích bài viết.');
+      return;
+    }
+    if (!like || likeLock.current) return;
+    likeLock.current = true;
+    setLiking(true);
+    setLikeError('');
+    try {
+      const state = await apiRequest<components['schemas']['PostLike']>(`/posts/${post.id}/like`, {
+        method: like.liked ? 'DELETE' : 'PUT',
+      });
+      setLike(state);
+    } catch (reason) {
+      setLikeError(message(reason));
+    } finally {
+      likeLock.current = false;
+      setLiking(false);
+    }
+  };
 
   return (
     <article className={styles.storyPostCard}>
       <header className={styles.postHeaderRow}>
         <div className={styles.authorContainer}>
-          <div
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: '50%',
-              background: '#E0F2FE',
-              color: '#0284C7',
-              fontWeight: 700,
-              display: 'grid',
-              placeItems: 'center',
-              fontSize: 15,
-            }}
-          >
-            {post.author.displayName.slice(0, 1).toUpperCase()}
-          </div>
+          <PublicAvatar author={post.author} />
           <div className={styles.authorMetaCol}>
-            <div className={styles.authorTopLine}>
+            <div className={`${styles.authorTopLine} ${extras.authorLine}`}>
               <span className={styles.authorDisplayName}>{post.author.displayName}</span>
+              {feelingText(post.feeling) && <span className={extras.muted}>đang cảm thấy {feelingText(post.feeling)}</span>}
             </div>
             <div className={styles.postSubMeta}>
               <span>{date(post.createdAt)}</span>
@@ -1538,11 +1061,11 @@ function LivePostCard({
         </div>
       )}
 
-      {post.destinationId && (
+      {post.destination && (
         <div>
           <Link href={`/destination/${post.destinationId}`} className={styles.locationBadgePill}>
             <MapPin size={13} strokeWidth={2} />
-            <span>Xem điểm đến liên quan →</span>
+            <span>{post.destination?.name || 'Xem điểm đến liên quan'} →</span>
           </Link>
         </div>
       )}
@@ -1550,11 +1073,13 @@ function LivePostCard({
       <footer className={styles.interactionDockRow}>
         <button
           type="button"
-          className={`${styles.dockActionBtn} ${isLiked ? styles.dockBtnLiked : ''}`}
-          onClick={onToggleLike}
+          className={`${styles.dockActionBtn} ${like?.liked ? styles.dockBtnLiked : ''}`}
+          aria-pressed={like?.liked ?? false}
+          disabled={liking || (!!userId && !like)}
+          onClick={() => void toggleLike()}
         >
           <Heart size={18} strokeWidth={1.8} />
-          <span>{isLiked ? 'Đã thích' : 'Thích'}</span>
+          <span>{like?.liked ? 'Đã thích' : 'Thích'}{like ? ` (${like.likeCount})` : ''}</span>
         </button>
 
         <button
@@ -1563,7 +1088,7 @@ function LivePostCard({
           onClick={() => setCommentsOpen(!commentsOpen)}
         >
           <MessageCircle size={18} strokeWidth={1.8} />
-          <span>Bình luận</span>
+          <span>{typeof commentCount === 'number' ? `${commentCount} bình luận` : 'Bình luận'}</span>
         </button>
 
         <button
@@ -1588,113 +1113,20 @@ function LivePostCard({
         </button>
       </footer>
 
+      {likeError && (
+        <div role="alert">
+          <p>{likeError}</p>
+          {!like && <button type="button" onClick={() => setLikeRetry((value) => value + 1)}>Thử tải lại lượt thích</button>}
+        </div>
+      )}
+
       {/* Collapsible Comments Section */}
-      {commentsOpen && <PostCommentsDrawer postId={post.id} userId={userId} />}
+      {commentsOpen && <CommunityComments postId={post.id} userId={userId} viewer={viewer} onCountChange={setCommentCount} />}
     </article>
   );
 }
 
 // ─── POST COMMENTS DRAWER ──────────────────────────────────────────────────
-function PostCommentsDrawer({ postId, userId }: { postId: string; userId: string | null }) {
-  const [items, setItems] = useState<Comment[]>([]);
-  const [body, setBody] = useState('');
-  const [loading, setLoading] = useState(true);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await apiRequest<components['schemas']['CommentPage']>(
-        `/posts/${postId}/comments?page=0&size=10`
-      );
-      setItems(data.items);
-    } catch {
-      // ignore
-    } finally {
-      setLoading(false);
-    }
-  }, [postId]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
-
-  const addComment = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!body.trim()) return;
-    try {
-      await apiRequest(`/posts/${postId}/comments`, json('POST', { body }));
-      setBody('');
-      void load();
-    } catch {
-      // ignore
-    }
-  };
-
-  return (
-    <div className={styles.commentsDrawer}>
-      {loading && <p style={{ fontSize: 13, color: '#94A3B8' }}>Đang tải bình luận…</p>}
-      {items.map((c) => (
-        <div key={c.id} className={styles.commentBubble}>
-          <div className={styles.commentAuthorRow}>
-            <span className={styles.commentAuthorName}>{c.author.displayName}</span>
-            <span className={styles.commentTimeText}>{date(c.createdAt)}</span>
-          </div>
-          <p className={styles.commentBodyText}>{c.body}</p>
-        </div>
-      ))}
-
-      {userId ? (
-        <form onSubmit={addComment} className={styles.commentFormRow}>
-          <input
-            type="text"
-            placeholder="Gửi lời nhắn tới tác giả..."
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            className={styles.commentInput}
-          />
-          <button type="submit" className={styles.btnSubmitComment} disabled={!body.trim()}>
-            <Send size={14} />
-            <span>Gửi</span>
-          </button>
-        </form>
-      ) : (
-        <Link href="/login?returnUrl=%2Fcommunity" style={{ fontSize: 12.5, color: '#0284C7', textDecoration: 'none' }}>
-          Đăng nhập để gửi bình luận →
-        </Link>
-      )}
-    </div>
-  );
-}
-
-// ─── GENERIC COMMENT INPUT FORM FOR STATIC EXEMPLARS ────────────────────────
-function CommentInputForm({ onSubmit }: { onSubmit: (val: string) => void }) {
-  const [val, setVal] = useState('');
-  return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (val.trim()) {
-          onSubmit(val.trim());
-          setVal('');
-        }
-      }}
-      className={styles.commentFormRow}
-    >
-      <input
-        type="text"
-        placeholder="Gửi lời nhắn tới tác giả..."
-        value={val}
-        onChange={(e) => setVal(e.target.value)}
-        className={styles.commentInput}
-      />
-      <button type="submit" className={styles.btnSubmitComment} disabled={!val.trim()}>
-        <Send size={14} />
-        <span>Gửi</span>
-      </button>
-    </form>
-  );
-}
-
 // ─── REPORT DIALOG MODAL (FAITHFUL TO VISTA MASTER SPEC) ────────────────────
 function ReportDialogModal({
   post,

@@ -650,6 +650,41 @@ paths:
     $ref: "./tv5-week3.json#/paths/~1posts~1{postId}"
   /posts/{postId}/comments:
     $ref: "./tv5-week3.json#/paths/~1posts~1{postId}~1comments"
+  /posts/{postId}/like:
+    parameters:
+      - in: path
+        name: postId
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [TV5 Community]
+      operationId: getCommunityPostLike
+      summary: Get this account's like and the total likes for a public post
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/PostLikeState' }
+        '401': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
+    put:
+      tags: [TV5 Community]
+      operationId: likeCommunityPost
+      summary: Like a public post; repeating this request does not add another like
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/PostLikeState' }
+        '401': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
+    delete:
+      tags: [TV5 Community]
+      operationId: unlikeCommunityPost
+      summary: Remove this account's like; repeating this request is safe
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/PostLikeState' }
+        '401': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
+  /posts/{postId}/comments/{rootId}/replies:
+    $ref: "./tv5-week3.json#/paths/~1posts~1{postId}~1comments~1{rootId}~1replies"
   /posts/{postId}/comments/{commentId}:
     $ref: "./tv5-week3.json#/paths/~1posts~1{postId}~1comments~1{commentId}"
   /post-uploads:
@@ -677,6 +712,12 @@ components:
       bearerFormat: JWT
 
   responses:
+    PostLikeState:
+      description: Persisted like state for the authenticated account
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PostLike'
     Problem:
       description: Chi tiết lỗi chuẩn Problem Details theo RFC 9457
       content:
@@ -685,6 +726,13 @@ components:
             $ref: '#/components/schemas/Problem'
 
   schemas:
+    PostLike:
+      type: object
+      required: [postId, liked, likeCount]
+      properties:
+        postId: { type: string, format: uuid }
+        liked: { type: boolean }
+        likeCount: { type: integer, format: int64, minimum: 0 }
     HealthResponse:
       type: object
       required: [status, service, timestamp]

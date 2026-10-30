@@ -21,6 +21,7 @@ import org.springframework.web.ErrorResponseException;
 /** No persistence, coordinate logs or client-selected upstream URLs. Key remains server-only. */
 @Service
 public class RoutingService {
+  public static final int MAX_ROUTE_POINTS = 6;
   private final ObjectMapper json;
   private final String key;
   private final String base;
@@ -54,12 +55,23 @@ public class RoutingService {
         || !valid(input.origin())
         || !valid(input.destination())
         || !List.of("DRIVING", "WALKING").contains(input.mode() == null ? "" : input.mode())
-        || (input.origin().latitude().equals(input.destination().latitude())
-            && input.origin().longitude().equals(input.destination().longitude())))
+        || (input.waypoints() != null
+            && (input.waypoints().size() > MAX_ROUTE_POINTS - 2
+                || input.waypoints().stream().anyMatch(point -> !valid(point)))))
       throw error(
           HttpStatus.BAD_REQUEST,
           "INVALID_ROUTE",
           "Chọn hai địa điểm hợp lệ khác nhau và phương tiện được hỗ trợ.");
+    var points = new ArrayList<Point>();
+    points.add(input.origin());
+    if (input.waypoints() != null) points.addAll(input.waypoints());
+    points.add(input.destination());
+    for (int i = 1; i < points.size(); i++) {
+      if (points.get(i).latitude().equals(points.get(i - 1).latitude())
+          && points.get(i).longitude().equals(points.get(i - 1).longitude()))
+        throw error(
+            HttpStatus.BAD_REQUEST, "INVALID_ROUTE", "Hai điểm liên tiếp cần có tọa độ khác nhau.");
+    }
     if (key.isBlank())
       throw error(
           HttpStatus.SERVICE_UNAVAILABLE,
@@ -76,16 +88,15 @@ public class RoutingService {
     }
     try {
       String profile = input.mode().equals("DRIVING") ? "driving-car" : "foot-walking";
-      var a = input.origin();
-      var b = input.destination();
       String payload =
           json.writeValueAsString(
               Map.of(
                   "coordinates",
-                  List.of(
-                      List.of(a.longitude(), a.latitude()), List.of(b.longitude(), b.latitude())),
+                  points.stream()
+                      .map(point -> List.of(point.longitude(), point.latitude()))
+                      .toList(),
                   "instructions",
-                  false));
+                  true));
       var request =
           HttpRequest.newBuilder(URI.create(base + "/v2/directions/" + profile + "/geojson"))
               .timeout(timeout)
@@ -140,11 +151,45 @@ public class RoutingService {
           || !Double.isFinite(seconds)
           || distance < 0
           || seconds < 0) throw new IllegalArgumentException();
+      var segments = feature.path("properties").path("segments");
+      var legs = new ArrayList<Leg>();
+      // A multi-stop response must have a real segment for every selected leg.
+      if (segments.isArray() && segments.size() == points.size() - 1) {
+        for (int i = 0; i < segments.size(); i++) {
+          double meters = segments.get(i).path("distance").asDouble(-1);
+          double duration = segments.get(i).path("duration").asDouble(-1);
+          if (!Double.isFinite(meters) || !Double.isFinite(duration) || meters < 0 || duration < 0)
+            throw new IllegalArgumentException();
+          legs.add(
+              new Leg(
+                  points.get(i).label(),
+                  points.get(i + 1).label(),
+                  meters,
+                  Math.round(duration * 1000)));
+        }
+        double legDistance = legs.stream().mapToDouble(Leg::distanceMeters).sum();
+        long legDuration = legs.stream().mapToLong(Leg::durationMillis).sum();
+        if (Math.abs(legDistance - distance) > Math.max(1, legs.size() * 0.2)
+            || Math.abs(legDuration - seconds * 1000) > legs.size() * 100 + 1)
+          throw new IllegalArgumentException();
+        distance = legDistance;
+        seconds = legDuration / 1000.0;
+      } else if (points.size() == 2) {
+        legs.add(
+            new Leg(
+                points.get(0).label(),
+                points.get(1).label(),
+                distance,
+                Math.round(seconds * 1000)));
+      } else {
+        throw new IllegalArgumentException();
+      }
       return new Result(
           input,
           path,
           distance,
           Math.round(seconds * 1000),
+          legs,
           List.of("Thời gian ước tính, chưa tính giao thông trực tiếp."),
           "© openrouteservice.org by HeiGIT · © OpenStreetMap contributors");
     } catch (ErrorResponseException ex) {

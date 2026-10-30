@@ -1283,3 +1283,16 @@
   border-radius: 10px;
 }
 
+@media (max-width: 480px) {
+  .interactionDockRow {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .dockActionBtn {
+    justify-content: center;
+    white-space: nowrap;
+  }
+}
+

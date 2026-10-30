@@ -370,7 +370,8 @@
               "default": 20
             }
           }
-        ]
+        ],
+        "description": "Paginated root comments, including deleted root placeholders with surviving visible replies. total counts root rows; commentCount counts live visible content across the post."
       },
       "post": {
         "tags": [
@@ -711,6 +712,94 @@
           }
         }
       }
+    },
+    "/posts/{postId}/comments/{rootId}/replies": {
+      "get": {
+        "tags": [
+          "TV5 Community"
+        ],
+        "operationId": "tv5ListCommentReplies",
+        "summary": "Paginate replies in one root thread",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommentPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "401": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "403": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "404": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "409": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "413": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "415": {
+            "description": "RFC 9457 ProblemDetail"
+          },
+          "503": {
+            "description": "RFC 9457 ProblemDetail"
+          }
+        },
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            }
+          },
+          {
+            "in": "path",
+            "name": "rootId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "description": "Two-level thread: replies to replies retain rootId and replyToId. A deleted root remains a placeholder while replies survive."
+      },
+      "parameters": [
+        {
+          "in": "path",
+          "name": "postId",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ]
     }
   },
   "components": {
@@ -735,6 +824,12 @@
           },
           "displayName": {
             "type": "string"
+          },
+          "avatarUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
           }
         }
       },
@@ -763,7 +858,8 @@
           "version",
           "createdAt",
           "updatedAt",
-          "media"
+          "media",
+          "commentCount"
         ],
         "properties": {
           "id": {
@@ -802,6 +898,23 @@
             "items": {
               "$ref": "#/components/schemas/Media"
             }
+          },
+          "feeling": {
+            "$ref": "#/components/schemas/Feeling"
+          },
+          "commentCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "destination": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CommunityPlace"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         }
       },
@@ -836,6 +949,9 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          "feeling": {
+            "$ref": "#/components/schemas/Feeling"
           }
         }
       },
@@ -854,6 +970,18 @@
           "version": {
             "type": "integer",
             "minimum": 0
+          },
+          "destinationId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Omit to preserve the current destination; null removes it. Non-null IDs must be PUBLISHED."
+          },
+          "feeling": {
+            "$ref": "#/components/schemas/Feeling",
+            "description": "Omit to preserve the current feeling; null removes it."
           }
         }
       },
@@ -875,8 +1003,8 @@
           },
           "body": {
             "type": "string",
-            "minLength": 1,
-            "maxLength": 4000
+            "minLength": 0,
+            "maxLength": 2000
           },
           "version": {
             "type": "integer",
@@ -896,6 +1024,37 @@
           },
           "author": {
             "$ref": "#/components/schemas/Author"
+          },
+          "rootId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "replyToId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "replyToAuthor": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Author"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "replyCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "deleted": {
+            "type": "boolean"
           }
         }
       },
@@ -909,8 +1068,46 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 2000
+          },
+          "replyToId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "clientRequestId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Retain the same ID and payload across network retries. Optional for legacy clients."
           }
-        }
+        },
+        "description": "New clients always send clientRequestId and retain it across retries. Legacy root-only writes may omit it. Replies require it.",
+        "allOf": [
+          {
+            "if": {
+              "required": [
+                "replyToId"
+              ],
+              "properties": {
+                "replyToId": {
+                  "type": "string"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "clientRequestId"
+              ],
+              "properties": {
+                "clientRequestId": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          }
+        ]
       },
       "CommentUpdate": {
         "type": "object",
@@ -1002,6 +1199,69 @@
           "size": {
             "type": "integer",
             "minimum": 1
+          },
+          "commentCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "All visible, nondeleted roots plus replies for this post, independent of pagination."
+          }
+        }
+      },
+      "Feeling": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "enum": [
+          null,
+          "HAPPY",
+          "DELIGHTED",
+          "EXCITED",
+          "RELAXED",
+          "GRATEFUL",
+          "CONFIDENT",
+          "SAD",
+          "TIRED"
+        ]
+      },
+      "CommunityPlace": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "area"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "area": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "imageUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "latitude": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "longitude": {
+            "type": [
+              "number",
+              "null"
+            ]
           }
         }
       }
