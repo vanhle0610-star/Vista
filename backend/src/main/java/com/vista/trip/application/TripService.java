@@ -1,5 +1,6 @@
 package com.vista.trip.application;
 
+import com.vista.common.audit.AuditLogService;
 import com.vista.trip.api.dto.CreateTripRequest;
 import com.vista.trip.api.dto.TripResponse;
 import com.vista.trip.api.dto.UpdateTripRequest;
@@ -14,6 +15,7 @@ import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -24,14 +26,26 @@ public class TripService {
   private final TripRepository tripRepository;
   private final TripMemberRepository tripMemberRepository;
   private final TripAccessService tripAccessService;
+  private final AuditLogService auditLogService;
 
   public TripService(
       TripRepository tripRepository,
       TripMemberRepository tripMemberRepository,
       TripAccessService tripAccessService) {
+    this(tripRepository, tripMemberRepository, tripAccessService, null);
+  }
+
+  @org.springframework.beans.factory.annotation.Autowired
+  public TripService(
+      TripRepository tripRepository,
+      TripMemberRepository tripMemberRepository,
+      TripAccessService tripAccessService,
+      @org.springframework.beans.factory.annotation.Autowired(required = false)
+          AuditLogService auditLogService) {
     this.tripRepository = tripRepository;
     this.tripMemberRepository = tripMemberRepository;
     this.tripAccessService = tripAccessService;
+    this.auditLogService = auditLogService;
   }
 
   /** Tạo trip mới — owner tự động trở thành thành viên OWNER. */
@@ -98,6 +112,14 @@ public class TripService {
     tripAccessService.requireOwner(tripId, requesterId);
     TripEntity trip = findTripOrThrow(tripId);
     tripRepository.delete(trip);
+    if (auditLogService != null) {
+      auditLogService.logAction(
+          requesterId,
+          "DELETE_TRIP",
+          "TRIP",
+          tripId.toString(),
+          "{\"title\":\"" + trip.getTitle() + "\"}");
+    }
   }
 
   /** Xóa thành viên khỏi trip — chỉ owner hoặc chính họ mới được phép. */
@@ -123,6 +145,14 @@ public class TripService {
                         HttpStatus.NOT_FOUND, "Không tìm thấy thành viên trong chuyến đi"));
     member.setStatus(TripMemberStatus.REMOVED);
     tripMemberRepository.save(member);
+    if (auditLogService != null) {
+      auditLogService.logAction(
+          requesterId,
+          "REMOVE_MEMBER",
+          "TRIP",
+          tripId.toString(),
+          "{\"removedUserId\":\"" + targetUserId + "\"}");
+    }
   }
 
   /** Rời khỏi trip (TV2 W4) — chỉ member tự rời, owner phải chuyển quyền trước. */
@@ -144,11 +174,22 @@ public class TripService {
                         HttpStatus.NOT_FOUND, "Không tìm thấy thành viên trong chuyến đi"));
     member.setStatus(TripMemberStatus.REMOVED);
     tripMemberRepository.save(member);
+    if (auditLogService != null) {
+      auditLogService.logAction(
+          userId,
+          "LEAVE_TRIP",
+          "TRIP",
+          tripId.toString(),
+          "{\"userId\":\"" + userId + "\"}");
+    }
   }
 
   /**
-   * Chuyển quyền Owner (TV2 W4) — chỉ owner hiện tại mới được phép chuyển cho một active member.
+   * Chuyển quyền Owner (TV2 W4 / BR-01) — chỉ owner hiện tại mới được phép chuyển cho một active member.
+   * Sử dụng isolation = SERIALIZABLE và flush tuần tự để chống Race Condition và đảm bảo invariant
+   * chỉ duy nhất 1 OWNER tồn tại tại mọi thời điểm.
    */
+  @Transactional(isolation = Isolation.SERIALIZABLE)
   public TripResponse transferOwner(UUID tripId, UUID currentUserId, UUID newOwnerId) {
     if (currentUserId.equals(newOwnerId)) {
       throw new ResponseStatusException(
@@ -182,17 +223,26 @@ public class TripService {
                         HttpStatus.NOT_FOUND,
                         "Không tìm thấy bản ghi thành viên của chủ sở hữu hiện tại"));
 
-    // 1. Demote old owner to VIEWER (hoặc EDITOR)
+    // 1. Demote old owner to VIEWER first and flush to avoid violating uq_trip_single_active_owner
     oldOwnerMember.setRole(TripMemberRole.VIEWER);
-    tripMemberRepository.save(oldOwnerMember);
+    tripMemberRepository.saveAndFlush(oldOwnerMember);
 
-    // 2. Promote new owner to OWNER
+    // 2. Promote new owner to OWNER and flush
     newOwnerMember.setRole(TripMemberRole.OWNER);
-    tripMemberRepository.save(newOwnerMember);
+    tripMemberRepository.saveAndFlush(newOwnerMember);
 
     // 3. Update trip ownerId
     trip.setOwnerId(newOwnerId);
-    TripEntity savedTrip = tripRepository.save(trip);
+    TripEntity savedTrip = tripRepository.saveAndFlush(trip);
+
+    if (auditLogService != null) {
+      auditLogService.logAction(
+          currentUserId,
+          "TRANSFER_OWNER",
+          "TRIP",
+          tripId.toString(),
+          String.format("{\"oldOwnerId\":\"%s\",\"newOwnerId\":\"%s\"}", currentUserId, newOwnerId));
+    }
 
     return TripResponse.from(savedTrip);
   }

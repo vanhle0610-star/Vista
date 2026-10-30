@@ -171,4 +171,23 @@ public class DatabaseTripAccessService implements TripAccessService {
       return 1;
     }
   }
+
+  @Override
+  public boolean isOwnerOfAnyActiveTrip(UUID userId) {
+    if (userId == null) {
+      return false;
+    }
+    try {
+      Integer count =
+          jdbcClient
+              .sql("SELECT count(*) FROM trips WHERE owner_id = :userId AND status != 'CANCELLED'")
+              .param("userId", userId)
+              .query(Integer.class)
+              .single();
+      return count != null && count > 0;
+    } catch (Exception e) {
+      log.warn("Error querying active owned trips for userId={}: {}", userId, e.getMessage());
+      return false;
+    }
+  }
 }

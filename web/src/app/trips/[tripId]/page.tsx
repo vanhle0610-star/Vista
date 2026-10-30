@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { useParams, useSearchParams } from 'next/navigation';
+import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import {
   getSampleItineraryForDestination,
   getDestinationHeroImage,
@@ -34,6 +34,8 @@ import {
   Camera,
   Layers,
   Ticket,
+  Lock,
+  ShieldAlert,
 } from 'lucide-react';
 import { Navbar } from '@/components/common/Navbar';
 import { GroupMapTab } from '@/features/trip-location/components/GroupMapTab';
@@ -65,6 +67,8 @@ interface MemberItem {
   avatar: string;
   color: string;
   role?: string;
+  userId?: string;
+  email?: string;
 }
 
 interface TripDetailData {
@@ -76,6 +80,7 @@ interface TripDetailData {
   endDate: string;
   status: 'ACTIVE' | 'PLANNING' | 'COMPLETED';
   role: 'OWNER' | 'MEMBER';
+  ownerId?: string;
   budgetTotal: number;
   budgetSpent: number;
   progressPercent: number;
@@ -86,6 +91,23 @@ interface TripDetailData {
   alertText?: string;
   itineraryDays?: DayPlanItem[];
   isPrivate?: boolean;
+}
+
+interface StoredUser {
+  id?: string;
+  email?: string;
+  displayName?: string;
+  role?: string;
+}
+
+function getStoredUser(): StoredUser | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem('vista_user');
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
 }
 
 const SAMPLE_HANOI_DAYS: DayPlanItem[] = [
@@ -335,40 +357,50 @@ const DEFAULT_DEMO_TRIPS: TripDetailData[] = [
   },
 ];
 
-function getCurrentUserMember(defaultRole = 'Trưởng nhóm') {
-  if (typeof window !== 'undefined') {
-    try {
-      const stored = localStorage.getItem('vista_user');
-      if (stored) {
-        const u = JSON.parse(stored);
-        const name = u.displayName || u.email || 'Nguyễn Văn Sang';
-        const parts = name.trim().split(/\s+/);
-        const initials = (parts.length >= 2 ? parts[0][0] + parts[parts.length - 1][0] : name.slice(0, 2)).toUpperCase();
-        return {
-          name: `${name} (Bạn)`,
-          avatar: initials || 'NS',
-          color: '#0284c7',
-          role: defaultRole,
-        };
-      }
-    } catch {
-      // fallback
-    }
-  }
+function getCurrentUserMember(defaultRole = 'Trưởng nhóm'): MemberItem {
+  const u = getStoredUser();
+  const rawName = u?.displayName || u?.email || 'Thành viên VISTA';
+  const cleanName = rawName.replace(/\s*\(Bạn\)/g, '').trim() || 'Thành viên VISTA';
+  const parts = cleanName.split(/\s+/);
+  const initials = (parts.length >= 2 ? parts[0][0] + parts[parts.length - 1][0] : cleanName.slice(0, 2)).toUpperCase();
   return {
-    name: 'Nguyễn Văn Sang (Bạn)',
-    avatar: 'NS',
+    name: cleanName,
+    avatar: initials || 'TV',
     color: '#0284c7',
     role: defaultRole,
+    userId: u?.id || 'u-me',
+    email: u?.email || '',
   };
 }
 
 export default function TripDetailPage() {
+  const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
   const tripId = typeof params?.tripId === 'string' ? params.tripId : '';
 
   const [accessDenied, setAccessDenied] = useState(() => Boolean(tripId && tripId.includes('private')));
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [currentUser, setCurrentUser] = useState<StoredUser | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setCurrentUser(getStoredUser());
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('vista_token');
+      if (!token) {
+        setIsAuthenticated(false);
+        router.replace('/login?returnUrl=' + encodeURIComponent(`/trips/${tripId}`));
+      } else {
+        setIsAuthenticated(true);
+      }
+    }
+  }, [router, tripId]);
+
   const [trip, setTrip] = useState<TripDetailData | null>(() => {
     if (typeof tripId === 'string' && tripId) {
       if (tripId.includes('private')) return null;
@@ -378,12 +410,19 @@ export default function TripDetailPage() {
     return null;
   });
   const [activeTab, setActiveTab] = useState<'itinerary' | 'members' | 'treasury' | 'voting' | 'group-map'>('itinerary');
+
+  useEffect(() => {
+    const tabParam = searchParams?.get('tab');
+    if (tabParam && ['itinerary', 'members', 'treasury', 'voting', 'group-map'].includes(tabParam)) {
+      setActiveTab(tabParam as any);
+    }
+  }, [searchParams]);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [copiedInvite, setCopiedInvite] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<ActivityItem | null>(null);
   const [showMembersModal, setShowMembersModal] = useState(false);
 
-  const handleTabChange = (tab: 'itinerary' | 'members' | 'treasury' | 'voting') => {
+  const handleTabChange = (tab: 'itinerary' | 'members' | 'treasury' | 'voting' | 'group-map') => {
     setActiveTab(tab);
     if (typeof window !== 'undefined') {
       try {
@@ -421,7 +460,66 @@ export default function TripDetailPage() {
   const [checkedActivities, setCheckedActivities] = useState<Record<string, boolean>>({});
   const [highlightedActId, setHighlightedActId] = useState<string | null>(null);
 
+  const isTripOwner = Boolean(
+    currentUser && trip && (
+      (trip.ownerId && (trip.ownerId === currentUser.id || (currentUser.email && trip.ownerId === currentUser.email))) ||
+      (trip.members?.[0] && (
+        (trip.members[0].userId && (trip.members[0].userId === currentUser.id || (currentUser.email && trip.members[0].userId === currentUser.email))) ||
+        (trip.members[0].email && currentUser.email && trip.members[0].email.toLowerCase() === currentUser.email.toLowerCase()) ||
+        (currentUser.displayName && trip.members[0].name && trip.members[0].name.trim().toLowerCase() === currentUser.displayName.trim().toLowerCase())
+      ))
+    )
+  );
+
+  const isTripMember = Boolean(
+    currentUser && trip && (
+      isTripOwner ||
+      trip.members?.some((m) =>
+        (m.userId && (m.userId === currentUser.id || (currentUser.email && m.userId === currentUser.email))) ||
+        (m.email && currentUser.email && m.email.toLowerCase() === currentUser.email.toLowerCase()) ||
+        (currentUser.displayName && m.name && m.name.trim().toLowerCase() === currentUser.displayName.trim().toLowerCase())
+      )
+    )
+  );
+
+  const handleJoinThisTrip = () => {
+    if (!trip || !currentUser) return;
+    const meMember = getCurrentUserMember('Thành viên');
+    const alreadyIn = (trip.members || []).some(
+      (m) =>
+        (m.userId && m.userId === meMember.userId) ||
+        (m.email && meMember.email && m.email.toLowerCase() === meMember.email.toLowerCase()) ||
+        m.name.toLowerCase() === meMember.name.toLowerCase()
+    );
+    if (alreadyIn) {
+      showToast('Bạn đã là thành viên của chuyến đi này!');
+      return;
+    }
+    const updatedMembers = [...(trip.members || []), meMember];
+    const updatedTrip = { ...trip, members: updatedMembers };
+    setTrip(updatedTrip);
+
+    // Save to localStorage
+    try {
+      const stored = localStorage.getItem('vista_custom_trips');
+      const list: TripDetailData[] = stored ? JSON.parse(stored) : [];
+      const idx = list.findIndex((x) => x.id === trip.id);
+      if (idx >= 0) {
+        list[idx] = { ...list[idx], members: updatedMembers };
+      } else {
+        list.unshift(updatedTrip);
+      }
+      localStorage.setItem('vista_custom_trips', JSON.stringify(list));
+    } catch {}
+
+    showToast(`🎉 Bạn đã tham gia thành công "${trip.title}"! Giờ đây bạn có thể check-in và biểu quyết.`);
+  };
+
   const toggleCheckActivity = (id: string, title: string) => {
+    if (!isTripMember) {
+      showToast('⚠️ Bạn chưa tham gia chuyến đi này. Vui lòng tham gia nhóm để check-in địa điểm!');
+      return;
+    }
     setCheckedActivities((prev) => {
       const nextVal = !prev[id];
       showToast(nextVal ? `Đã đánh dấu ghé thăm: ${title}` : `Đã bỏ đánh dấu: ${title}`);
@@ -520,11 +618,76 @@ export default function TripDetailPage() {
           const parsed: TripDetailData[] = JSON.parse(stored);
           const match = parsed.find((item) => item.id === tripId);
           if (match) {
-            // Normalize fields
+            let needsUpdate = false;
             const currentOwner = getCurrentUserMember('Trưởng nhóm');
-            const normalizedMembers = match.members && match.members.length > 0
-              ? match.members.map((m) => (m.name.includes('Lê Vân Anh') ? currentOwner : m))
-              : [currentOwner];
+            const filteredMembers = (match.members && match.members.length > 0 ? match.members : [currentOwner]).filter(
+              (m: any) => {
+                const n = (m?.name || '').toLowerCase();
+                if (n.includes('nguyễn văn b') && currentUser && !currentUser.displayName?.toLowerCase().includes('nguyễn văn b')) {
+                  needsUpdate = true;
+                  return false;
+                }
+                return true;
+              }
+            );
+            const rawMembers = filteredMembers.length > 0 ? filteredMembers : [currentOwner];
+            const normalizedMembers: MemberItem[] = rawMembers.map((m: any, idx: number) => {
+              const rawName = m.name || '';
+              let cleanName = rawName.replace(/\s*\(Bạn.*?\)/gi, '').trim();
+              if (!cleanName || cleanName === 'Bạn') {
+                cleanName = idx === 0 ? 'Trưởng nhóm VISTA' : 'Thành viên VISTA';
+              }
+              if (cleanName !== rawName) {
+                needsUpdate = true;
+              }
+
+              const isMe = Boolean(
+                currentUser && (
+                  (m.userId && m.userId === currentUser.id) ||
+                  (currentUser.displayName && cleanName.toLowerCase() === currentUser.displayName.toLowerCase()) ||
+                  (currentUser.email && m.email && m.email.toLowerCase() === currentUser.email.toLowerCase())
+                )
+              );
+
+              const memberUserId = isMe
+                ? (currentUser?.id || currentOwner.userId)
+                : (m.userId && m.userId !== currentOwner.userId ? m.userId : `u-${encodeURIComponent(cleanName.toLowerCase().replace(/\s+/g, '-'))}`);
+
+              const memberEmail = isMe
+                ? (currentUser?.email || currentOwner.email)
+                : (m.email && m.email !== currentOwner.email ? m.email : `${encodeURIComponent(cleanName.toLowerCase().replace(/\s+/g, ''))}@vista.vn`);
+
+              return {
+                ...m,
+                name: cleanName,
+                avatar: m.avatar || cleanName.slice(0, 2).toUpperCase(),
+                color: m.color || '#0284c7',
+                role: m.role || (idx === 0 ? 'Trưởng nhóm' : 'Thành viên'),
+                userId: memberUserId,
+                email: memberEmail,
+              };
+            });
+
+            const firstMember = normalizedMembers[0];
+            const isCreatorMe = Boolean(
+              currentUser && (
+                (firstMember?.userId && firstMember.userId === currentUser.id) ||
+                (currentUser.displayName && firstMember?.name && firstMember.name.toLowerCase() === currentUser.displayName.toLowerCase()) ||
+                (currentUser.email && firstMember?.email && firstMember.email.toLowerCase() === currentUser.email.toLowerCase())
+              )
+            );
+
+            const resolvedOwnerId = isCreatorMe
+              ? (currentUser?.id || currentOwner.userId)
+              : (firstMember?.userId || `owner-${match.id}`);
+
+            const bSpent = typeof match.budgetSpent === 'number' ? match.budgetSpent : 0;
+            const bTotal = typeof match.budgetTotal === 'number' && match.budgetTotal > 0 ? match.budgetTotal : 20000000;
+            const calculatedProgress = bTotal > 0 ? Math.min(100, Math.round((bSpent / bTotal) * 100)) : 0;
+
+            if (match.progressPercent !== calculatedProgress || match.ownerId !== resolvedOwnerId) {
+              needsUpdate = true;
+            }
 
             const isHanoiMismatch =
               match.destination &&
@@ -543,13 +706,17 @@ export default function TripDetailPage() {
 
             const updatedTrip: TripDetailData = {
               ...match,
+              ownerId: resolvedOwnerId,
               members: normalizedMembers,
+              budgetTotal: bTotal,
+              budgetSpent: bSpent,
+              progressPercent: calculatedProgress,
               image: heroImg,
               treasuryPath: match.treasuryPath || `/trips/${match.id}/treasury`,
               itineraryDays: itinerary,
             };
 
-            if (isHanoiMismatch) {
+            if (needsUpdate || isHanoiMismatch) {
               try {
                 const updatedList = parsed.map((item) => (item.id === tripId ? updatedTrip : item));
                 localStorage.setItem('vista_custom_trips', JSON.stringify(updatedList));
@@ -591,7 +758,7 @@ export default function TripDetailPage() {
         role: 'OWNER',
         budgetTotal: 3350000,
         budgetSpent: 0,
-        progressPercent: 20,
+        progressPercent: 0,
         members: [getCurrentUserMember('Trưởng nhóm')],
         image: getDestinationHeroImage(fallbackDest),
         treasuryPath: `/trips/${tripId}/treasury`,
@@ -693,8 +860,12 @@ export default function TripDetailPage() {
     ]);
   };
 
-  // Create invite (W3-TV3-01)
+  // Create invite (W3-TV3-01) - RBAC Member Guard
   const handleCreateInviteSubmit = () => {
+    if (!isTripMember) {
+      showToast('⚠️ Quyền hạn không đủ! Bạn phải là thành viên chuyến đi mới có quyền tạo lời mời.');
+      return;
+    }
     setInviteError(null);
     const email = inviteInputEmail.trim().toLowerCase();
     if (!email) return;
@@ -736,8 +907,12 @@ export default function TripDetailPage() {
     showToast(`✓ Đã tạo lời mời cho ${email}! Bạn có thể mở Gmail để gửi thư ngay.`);
   };
 
-  // Revoke invite (W3-TV3-01)
+  // Revoke invite (W3-TV3-01) - RBAC Owner Guard
   const handleRevokeInvite = (id: string) => {
+    if (!isTripOwner) {
+      showToast('⚠️ Quyền hạn không đủ! Chỉ Trưởng nhóm (Owner) mới có quyền thu hồi lời mời.');
+      return;
+    }
     setInvitationsList((prev) =>
       prev.map((inv) => (inv.id === id ? { ...inv, status: 'REVOKED' } : inv))
     );
@@ -746,6 +921,10 @@ export default function TripDetailPage() {
 
   // Vote toggle with closing support (W4-TV3-02)
   const handleVoteToggle = (propId: string) => {
+    if (!isTripMember) {
+      showToast('⚠️ Bạn chưa tham gia chuyến đi này. Chỉ thành viên nhóm mới có quyền biểu quyết!');
+      return;
+    }
     if (isVotingClosed) {
       showToast('❌ Biểu quyết đã đóng (Closed)! Không thể bỏ phiếu hoặc đổi phiếu.');
       return;
@@ -766,8 +945,16 @@ export default function TripDetailPage() {
     );
   };
 
-  // Add proposal (W4-TV3-02)
+  // Add proposal (W4-TV3-02) - RBAC Member Guard
   const handleSaveNewProposal = () => {
+    if (!isTripMember) {
+      showToast('⚠️ Bạn chưa tham gia chuyến đi. Vui lòng tham gia nhóm để tạo đề xuất địa điểm!');
+      return;
+    }
+    if (isVotingClosed) {
+      showToast('❌ Biểu quyết đã đóng (Closed)! Không thể thêm đề xuất mới.');
+      return;
+    }
     if (!newPropTitle.trim()) return;
     const newProp = {
       id: `prop-${Date.now()}`,
@@ -967,21 +1154,41 @@ export default function TripDetailPage() {
     const completedCount = activeActivities.filter((a) => checkedActivities[a.id]).length;
 
     let estCost = 0;
+    let sightCost = 0;
+    let foodCost = 0;
+    let transportCost = 0;
+    let otherCost = 0;
+
     activeActivities.forEach((a) => {
+      let cost = 100000;
       if (typeof a.costVnd === 'number' && a.costVnd > 0) {
-        estCost += a.costVnd;
+        cost = a.costVnd;
       } else if (a.costLabel) {
         const num = parseInt(a.costLabel.replace(/\D/g, ''), 10);
-        if (!isNaN(num) && num > 0) estCost += num;
-        else estCost += 100000;
+        if (!isNaN(num) && num > 0) cost = num;
+      }
+      estCost += cost;
+
+      const cat = (a.category || '').toLowerCase();
+      if (cat.includes('thăm') || cat.includes('quan') || cat.includes('tích') || cat.includes('vé') || cat.includes('văn hóa') || cat.includes('di tích')) {
+        sightCost += cost;
+      } else if (cat.includes('thực') || cat.includes('ăn') || cat.includes('uống') || cat.includes('chợ') || cat.includes('ẩm thực')) {
+        foodCost += cost;
+      } else if (cat.includes('chuyển') || cat.includes('xe') || cat.includes('mạo hiểm') || cat.includes('vui chơi')) {
+        transportCost += cost;
       } else {
-        estCost += 100000;
+        otherCost += cost;
       }
     });
 
     const distanceKm = Math.round((actCount * 3.6 + 1.2) * 10) / 10;
     const durationHours = Math.round((actCount * 1.5 + 0.5) * 10) / 10;
     const totalBudget = trip?.budgetTotal || 10000000;
+    const totalCatCost = sightCost + foodCost + transportCost + otherCost || 1;
+    const sightPct = Math.round((sightCost / totalCatCost) * 100);
+    const foodPct = Math.round((foodCost / totalCatCost) * 100);
+    const transportPct = Math.round((transportCost / totalCatCost) * 100);
+    const otherPct = Math.max(0, 100 - sightPct - foodPct - transportPct);
 
     return {
       actCount,
@@ -991,7 +1198,11 @@ export default function TripDetailPage() {
       durationHours,
       percentOfBudget: totalBudget > 0
         ? Math.min(100, Math.round((estCost / totalBudget) * 100))
-        : 35,
+        : 0,
+      sightPct,
+      foodPct,
+      transportPct,
+      otherPct,
     };
   }, [activeActivities, checkedActivities, trip?.budgetTotal]);
 
@@ -1123,6 +1334,22 @@ export default function TripDetailPage() {
     );
   }
 
+  if (isAuthenticated !== true) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc' }}>
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🔒</div>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0f172a', marginBottom: '0.5rem' }}>
+            Yêu cầu đăng nhập
+          </h2>
+          <p style={{ color: '#64748b', fontSize: '0.95rem' }}>
+            Bạn cần đăng nhập để xem chi tiết chuyến đi này. Đang chuyển hướng...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.tripDetailPage}>
       <Navbar activeModule="trips" />
@@ -1169,6 +1396,20 @@ export default function TripDetailPage() {
                     <CheckCircle2 size={12} /> Đã hoàn thành
                   </span>
                 )}
+
+                {isTripOwner ? (
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#B45309', background: '#FEF3C7', padding: '3px 10px', borderRadius: '6px' }}>
+                    Bạn là trưởng nhóm
+                  </span>
+                ) : isTripMember ? (
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#0284C7', background: '#E0F2FE', padding: '3px 10px', borderRadius: '6px' }}>
+                    Thành viên nhóm
+                  </span>
+                ) : (
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: '#475569', background: '#F1F5F9', padding: '3px 10px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
+                    Trưởng nhóm: {trip.members?.[0]?.name || 'Khác'}
+                  </span>
+                )}
               </div>
 
               <div className={styles.headerChipsRow}>
@@ -1182,7 +1423,10 @@ export default function TripDetailPage() {
                 </div>
                 <div className={`${styles.headerChip} ${styles.chipDuration}`}>
                   <Clock size={12} />
-                  <span>{totalDays} ngày ({trip.itineraryDays?.reduce((acc, d) => acc + (d.activities?.length || 0), 0) || 12} địa điểm)</span>
+                  {(() => {
+                    const totalPlaces = trip.itineraryDays ? trip.itineraryDays.reduce((acc, d) => acc + (d.activities?.length || 0), 0) : 0;
+                    return <span>{totalDays} ngày{totalPlaces > 0 ? ` (${totalPlaces} địa điểm)` : ''}</span>;
+                  })()}
                 </div>
                 <button
                   type="button"
@@ -1245,6 +1489,51 @@ export default function TripDetailPage() {
             </Link>
           </div>
         </div>
+
+        {/* ─── GUEST OBSERVER NOTICE BANNER ────────────────────────────── */}
+        {!isTripMember && (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '12px 18px',
+              margin: '16px 0',
+              background: '#F0F9FF',
+              border: '1px solid #BAE6FD',
+              borderRadius: '12px',
+              gap: '12px',
+              flexWrap: 'wrap',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Compass size={18} style={{ color: '#0284C7', flexShrink: 0 }} />
+              <span style={{ fontSize: '13.5px', color: '#0369A1', fontWeight: 500 }}>
+                Bạn đang xem chuyến đi này ở chế độ <strong>Khách quan sát</strong>. Bạn chưa thể check-in các địa điểm hay biểu quyết cho đến khi tham gia nhóm.
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={handleJoinThisTrip}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 18px',
+                backgroundColor: '#0284C7',
+                color: '#FFFFFF',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '13px',
+                fontWeight: 700,
+                cursor: 'pointer',
+              }}
+            >
+              <Users size={14} />
+              <span>Tham gia chuyến đi này</span>
+            </button>
+          </div>
+        )}
 
         {/* ─── 4. MAIN WORKSPACE WITH TABS ───────────────────────────────── */}
         <div className={styles.tabsBar}>
@@ -1319,27 +1608,30 @@ export default function TripDetailPage() {
                     </p>
 
                     <div className={styles.categoryProgressBar}>
-                      <div className={styles.catProgressSeg} style={{ width: '42%', background: '#6366F1' }} />
-                      <div className={styles.catProgressSeg} style={{ width: '38%', background: '#F59E0B' }} />
-                      <div className={styles.catProgressSeg} style={{ width: '20%', background: '#10B981' }} />
+                      <div className={styles.catProgressSeg} style={{ width: `${activeStats.sightPct}%`, background: '#6366F1' }} />
+                      <div className={styles.catProgressSeg} style={{ width: `${activeStats.foodPct}%`, background: '#F59E0B' }} />
+                      <div className={styles.catProgressSeg} style={{ width: `${activeStats.transportPct}%`, background: '#10B981' }} />
+                      {activeStats.otherPct > 0 && (
+                        <div className={styles.catProgressSeg} style={{ width: `${activeStats.otherPct}%`, background: '#0284C7' }} />
+                      )}
                     </div>
 
                     <div className={styles.categoryLegendGrid}>
                       <div className={styles.catLegendItem}>
                         <span className={styles.catLegendDot} style={{ background: '#6366F1' }} />
-                        <span>Vé tham quan: 42%</span>
+                        <span>Vé tham quan: {activeStats.sightPct}%</span>
                       </div>
                       <div className={styles.catLegendItem}>
                         <span className={styles.catLegendDot} style={{ background: '#F59E0B' }} />
-                        <span>Ẩm thực: 38%</span>
+                        <span>Ẩm thực: {activeStats.foodPct}%</span>
                       </div>
                       <div className={styles.catLegendItem}>
                         <span className={styles.catLegendDot} style={{ background: '#10B981' }} />
-                        <span>Di chuyển: 20%</span>
+                        <span>Di chuyển: {activeStats.transportPct}%</span>
                       </div>
                       <div className={styles.catLegendItem}>
                         <span className={styles.catLegendDot} style={{ background: '#0284C7' }} />
-                        <span>Dịch vụ khác</span>
+                        <span>Dịch vụ khác: {activeStats.otherPct}%</span>
                       </div>
                     </div>
                   </div>
@@ -1713,6 +2005,8 @@ export default function TripDetailPage() {
                                       type="button"
                                       className={`${styles.btnCheckIn} ${isDone ? styles.btnCheckInDone : ''}`}
                                       onClick={() => toggleCheckActivity(act.id, act.title)}
+                                      title={!isTripMember ? 'Cần tham gia nhóm để check-in' : undefined}
+                                      style={!isTripMember ? { opacity: 0.75, cursor: 'not-allowed' } : undefined}
                                     >
                                       <Check size={13} />
                                       <span>{isDone ? 'Đã vi vu 🌸' : 'Check-in'}</span>
@@ -1800,26 +2094,35 @@ export default function TripDetailPage() {
                   Thành viên chuyến đi ({trip.members?.length || 1})
                 </h3>
                 <p style={{ margin: '2px 0 0', fontSize: '13px', color: '#64748B' }}>
-                  Các thành viên có quyền cùng xem lịch trình, tạo lời mời và tham gia biểu quyết.
+                  {isTripMember
+                    ? 'Các thành viên có quyền cùng xem lịch trình, tạo lời mời và tham gia biểu quyết.'
+                    : 'Bạn đang xem chuyến đi này ở chế độ Khách quan sát (chưa gia nhập nhóm).'}
                 </p>
               </div>
               <button
                 type="button"
-                onClick={() => setShowInviteModal(true)}
+                onClick={() => {
+                  if (!isTripMember) {
+                    showToast('⚠️ Bạn đang ở chế độ Khách quan sát. Vui lòng bấm "Tham gia chuyến đi" để có quyền tạo lời mời!');
+                    return;
+                  }
+                  setShowInviteModal(true);
+                }}
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '6px',
                   padding: '9px 16px',
-                  background: '#0284C7',
+                  background: isTripMember ? '#0284C7' : '#94A3B8',
                   color: '#FFFFFF',
                   border: 'none',
                   borderRadius: '10px',
                   fontSize: '13px',
                   fontWeight: 700,
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 12px rgba(2, 132, 199, 0.25)',
+                  cursor: isTripMember ? 'pointer' : 'not-allowed',
+                  boxShadow: isTripMember ? '0 4px 12px rgba(2, 132, 199, 0.25)' : 'none',
                 }}
+                title={!isTripMember ? 'Chỉ thành viên chuyến đi mới có quyền tạo lời mời' : undefined}
               >
                 <span>+ Tạo lời mời mới</span>
               </button>
@@ -1831,13 +2134,27 @@ export default function TripDetailPage() {
                 const avatar = typeof m === 'object' && m?.avatar ? m.avatar : name.slice(0, 2).toUpperCase();
                 const color = typeof m === 'object' && m?.color ? m.color : (idx % 2 === 0 ? '#0284c7' : '#10b981');
                 const role = typeof m === 'object' && m?.role ? m.role : (idx === 0 ? 'Trưởng nhóm' : 'Thành viên');
+                const isMe = Boolean(
+                  currentUser && (
+                    (m.userId && currentUser.id && m.userId === currentUser.id) ||
+                    (m.email && currentUser.email && m.email.toLowerCase() === currentUser.email.toLowerCase()) ||
+                    (currentUser.displayName && name.trim().toLowerCase() === currentUser.displayName.trim().toLowerCase())
+                  )
+                );
                 return (
                   <div key={idx} className={styles.memberCard}>
                     <div className={styles.memberAvatarCircle} style={{ background: color }}>
                       {avatar}
                     </div>
                     <div className={styles.memberInfo}>
-                      <h4 className={styles.memberName}>{name}</h4>
+                      <h4 className={styles.memberName}>
+                        {name}
+                        {isMe && (
+                          <span style={{ marginLeft: 8, fontSize: '13px', fontWeight: 600, color: '#0284c7' }}>
+                            (Bạn)
+                          </span>
+                        )}
+                      </h4>
                       <span className={styles.memberRole}>{role}</span>
                     </div>
                   </div>
@@ -1845,170 +2162,230 @@ export default function TripDetailPage() {
               })}
             </div>
 
-            {/* QUẢN LÝ LỜI MỜI */}
-            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '20px', padding: '24px', marginBottom: '24px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
-                <h4 style={{ fontSize: '16px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
-                  ✉️ Danh sách lời mời đã phát hành
-                </h4>
-                <span style={{ fontSize: '12px', color: '#64748B' }}>
-                  Chỉ Trưởng nhóm (Owner) mới có quyền thu hồi lời mời
-                </span>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
-                {invitationsList.map((inv) => (
+            {/* QUẢN LÝ LỜI MỜI - BẢO VỆ PHÂN QUYỀN RBAC */}
+            {!isTripMember ? (
+              <div
+                style={{
+                  background: '#F8FAFC',
+                  border: '1.5px dashed #CBD5E1',
+                  borderRadius: '20px',
+                  padding: '28px 24px',
+                  marginBottom: '24px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: '16px',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', maxWidth: '640px' }}>
                   <div
-                    key={inv.id}
                     style={{
+                      width: '46px',
+                      height: '46px',
+                      borderRadius: '12px',
+                      background: '#E2E8F0',
                       display: 'flex',
                       alignItems: 'center',
-                      justifyContent: 'space-between',
-                      flexWrap: 'wrap',
-                      gap: '10px',
-                      padding: '12px 16px',
-                      background: '#F8FAFC',
-                      border: '1px solid #E2E8F0',
-                      borderRadius: '12px',
+                      justifyContent: 'center',
+                      color: '#475569',
+                      flexShrink: 0,
                     }}
                   >
-                    <div>
-                      <span style={{ fontWeight: 700, fontSize: '13.5px', color: '#0F172A' }}>{inv.email}</span>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-                        <span style={{ fontFamily: 'monospace', fontSize: '12px', color: '#0284C7', background: '#E0F2FE', padding: '1px 6px', borderRadius: '4px', fontWeight: 800 }}>
-                          {inv.token}
-                        </span>
-                        <span style={{ fontSize: '12px', color: '#64748B' }}>Hạn: {inv.expiresAt}</span>
+                    <Lock size={22} />
+                  </div>
+                  <div>
+                    <h4 style={{ margin: 0, fontSize: '15.5px', fontWeight: 800, color: '#1E293B' }}>
+                      Danh sách lời mời & Quản lý nhóm được bảo mật
+                    </h4>
+                    <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#64748B', lineHeight: '1.4' }}>
+                      Bạn đang xem với tư cách Khách quan sát. Chỉ Trưởng nhóm và Thành viên chính thức mới có quyền phát hành lời mời và xem danh sách token của chuyến đi.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleJoinThisTrip}
+                  style={{
+                    padding: '10px 20px',
+                    background: '#0284C7',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    borderRadius: '10px',
+                    fontSize: '13.5px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 12px rgba(2, 132, 199, 0.25)',
+                  }}
+                >
+                  Tham gia chuyến đi ngay
+                </button>
+              </div>
+            ) : (
+              <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '20px', padding: '24px', marginBottom: '24px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+                  <h4 style={{ fontSize: '16px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
+                    ✉️ Danh sách lời mời đã phát hành
+                  </h4>
+                  <span style={{ fontSize: '12px', color: '#64748B' }}>
+                    {isTripOwner ? 'Trưởng nhóm (Owner): có quyền tạo & thu hồi lời mời' : 'Thành viên: có quyền tạo lời mời'}
+                  </span>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
+                  {invitationsList.map((inv) => (
+                    <div
+                      key={inv.id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        flexWrap: 'wrap',
+                        gap: '10px',
+                        padding: '12px 16px',
+                        background: '#F8FAFC',
+                        border: '1px solid #E2E8F0',
+                        borderRadius: '12px',
+                      }}
+                    >
+                      <div>
+                        <span style={{ fontWeight: 700, fontSize: '13.5px', color: '#0F172A' }}>{inv.email}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                          <span style={{ fontFamily: 'monospace', fontSize: '12px', color: '#0284C7', background: '#E0F2FE', padding: '1px 6px', borderRadius: '4px', fontWeight: 800 }}>
+                            {inv.token}
+                          </span>
+                          <span style={{ fontSize: '12px', color: '#64748B' }}>Hạn: {inv.expiresAt}</span>
+                        </div>
                       </div>
-                    </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{
-                        fontSize: '11.5px',
-                        fontWeight: 800,
-                        padding: '3px 8px',
-                        borderRadius: '999px',
-                        background: inv.status === 'PENDING' ? '#DCFCE7' : inv.status === 'REVOKED' ? '#FEE2E2' : '#F1F5F9',
-                        color: inv.status === 'PENDING' ? '#15803D' : inv.status === 'REVOKED' ? '#991B1B' : '#475569',
-                      }}>
-                        {inv.status}
-                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{
+                          fontSize: '11.5px',
+                          fontWeight: 800,
+                          padding: '3px 8px',
+                          borderRadius: '999px',
+                          background: inv.status === 'PENDING' ? '#DCFCE7' : inv.status === 'REVOKED' ? '#FEE2E2' : '#F1F5F9',
+                          color: inv.status === 'PENDING' ? '#15803D' : inv.status === 'REVOKED' ? '#991B1B' : '#475569',
+                        }}>
+                          {inv.status}
+                        </span>
 
-                      <Link
-                        href={`/invitations/${inv.token}`}
-                        target="_blank"
-                        style={{
-                          fontSize: '12px',
-                          color: '#0284C7',
-                          fontWeight: 700,
-                          textDecoration: 'none',
-                          padding: '6px 12px',
-                          background: '#FFFFFF',
-                          border: '1px solid #BAE6FD',
-                          borderRadius: '8px',
-                        }}
-                        title="Mở link mời như người nhận (B)"
-                      >
-                        Mở link mời ↗
-                      </Link>
-
-                      {inv.status === 'PENDING' && (
-                        <a
-                          href={getGmailComposeUrl(inv.email, inv.token)}
+                        <Link
+                          href={`/invitations/${inv.token}`}
                           target="_blank"
-                          rel="noopener noreferrer"
                           style={{
                             fontSize: '12px',
-                            color: '#EA4335',
+                            color: '#0284C7',
                             fontWeight: 700,
                             textDecoration: 'none',
                             padding: '6px 12px',
-                            background: '#FEF2F2',
-                            border: '1px solid #FECACA',
+                            background: '#FFFFFF',
+                            border: '1px solid #BAE6FD',
                             borderRadius: '8px',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px',
                           }}
-                          title={`Mở Gmail để gửi thư mời thật tới ${inv.email}`}
+                          title="Mở link mời như người nhận (B)"
                         >
-                          <span>✉️ Gửi Gmail</span>
-                        </a>
-                      )}
+                          Mở link mời ↗
+                        </Link>
 
-                      {inv.status === 'PENDING' && (
-                        <button
-                          type="button"
-                          onClick={() => handleRevokeInvite(inv.id)}
-                          style={{
-                            fontSize: '12px',
-                            color: '#DC2626',
-                            fontWeight: 700,
-                            padding: '6px 12px',
-                            background: '#FEF2F2',
-                            border: '1px solid #FECACA',
-                            borderRadius: '8px',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          Thu hồi (Revoke)
-                        </button>
-                      )}
+                        {inv.status === 'PENDING' && (
+                          <a
+                            href={getGmailComposeUrl(inv.email, inv.token)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              fontSize: '12px',
+                              color: '#EA4335',
+                              fontWeight: 700,
+                              textDecoration: 'none',
+                              padding: '6px 12px',
+                              background: '#FEF2F2',
+                              border: '1px solid #FECACA',
+                              borderRadius: '8px',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                            }}
+                            title={`Mở Gmail để gửi thư mời thật tới ${inv.email}`}
+                          >
+                            <span>✉️ Gửi Gmail</span>
+                          </a>
+                        )}
+
+                        {isTripOwner && inv.status === 'PENDING' && (
+                          <button
+                            type="button"
+                            onClick={() => handleRevokeInvite(inv.id)}
+                            style={{
+                              fontSize: '12px',
+                              color: '#DC2626',
+                              fontWeight: 700,
+                              padding: '6px 12px',
+                              background: '#FEF2F2',
+                              border: '1px solid #FECACA',
+                              borderRadius: '8px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            Thu hồi (Revoke)
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
 
-              {/* Ô NHẬP MÃ THỦ CÔNG (W4-TV3-03) */}
-              <div style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', borderRadius: '14px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
-                <div>
-                  <strong style={{ fontSize: '13.5px', color: '#0369A1' }}>
-                    📱 Nhập mã mời thủ công:
-                  </strong>
-                  <p style={{ margin: '2px 0 0', fontSize: '12.5px', color: '#0284C7' }}>
-                    Nếu link không mở được trên điện thoại, nhập trực tiếp mã mời vào đây:
-                  </p>
-                </div>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  <input
-                    type="text"
-                    value={manualCodeInput}
-                    onChange={(e) => setManualCodeInput(e.target.value)}
-                    placeholder="Ví dụ: VISTA-NG2026"
-                    style={{
-                      padding: '8px 12px',
-                      borderRadius: '8px',
-                      border: '1px solid #93C5FD',
-                      fontSize: '13px',
-                      fontWeight: 700,
-                      width: '180px',
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (!manualCodeInput.trim()) {
-                        showToast('Vui lòng nhập mã vé mời!');
-                        return;
-                      }
-                      window.location.href = `/invitations/${manualCodeInput.trim()}`;
-                    }}
-                    style={{
-                      padding: '8px 16px',
-                      background: '#0284C7',
-                      color: '#FFFFFF',
-                      border: 'none',
-                      borderRadius: '8px',
-                      fontSize: '13px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Gia nhập
-                  </button>
+                {/* Ô NHẬP MÃ THỦ CÔNG (W4-TV3-03) */}
+                <div style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', borderRadius: '14px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+                  <div>
+                    <strong style={{ fontSize: '13.5px', color: '#0369A1' }}>
+                      📱 Nhập mã mời thủ công:
+                    </strong>
+                    <p style={{ margin: '2px 0 0', fontSize: '12.5px', color: '#0284C7' }}>
+                      Nếu link không mở được trên điện thoại, nhập trực tiếp mã mời vào đây:
+                    </p>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <input
+                      type="text"
+                      value={manualCodeInput}
+                      onChange={(e) => setManualCodeInput(e.target.value)}
+                      placeholder="Ví dụ: VISTA-NG2026"
+                      style={{
+                        padding: '8px 12px',
+                        borderRadius: '8px',
+                        border: '1px solid #93C5FD',
+                        fontSize: '13px',
+                        fontWeight: 700,
+                        width: '180px',
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!manualCodeInput.trim()) {
+                          showToast('Vui lòng nhập mã vé mời!');
+                          return;
+                        }
+                        window.location.href = `/invitations/${manualCodeInput.trim()}`;
+                      }}
+                      style={{
+                        padding: '8px 16px',
+                        background: '#0284C7',
+                        color: '#FFFFFF',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontSize: '13px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Gia nhập
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             <div className={styles.inviteCardBanner}>
               <div>
@@ -2190,53 +2567,66 @@ export default function TripDetailPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                 <button
                   type="button"
-                  onClick={() => setShowAddPropModal(true)}
+                  onClick={() => {
+                    if (!isTripMember) {
+                      showToast('⚠️ Bạn chưa tham gia chuyến đi. Vui lòng tham gia nhóm để tạo đề xuất địa điểm!');
+                      return;
+                    }
+                    if (isVotingClosed) {
+                      showToast('❌ Biểu quyết đã đóng! Không thể thêm đề xuất mới.');
+                      return;
+                    }
+                    setShowAddPropModal(true);
+                  }}
                   style={{
                     padding: '9px 16px',
-                    background: '#0284C7',
+                    background: isTripMember && !isVotingClosed ? '#0284C7' : '#94A3B8',
                     color: '#FFFFFF',
                     border: 'none',
                     borderRadius: '10px',
                     fontSize: '13px',
                     fontWeight: 700,
-                    cursor: 'pointer',
+                    cursor: isTripMember && !isVotingClosed ? 'pointer' : 'not-allowed',
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '6px',
                   }}
+                  title={!isTripMember ? 'Cần tham gia nhóm để đề xuất địa điểm' : isVotingClosed ? 'Biểu quyết đã đóng' : undefined}
                 >
                   <span>+ Thêm đề xuất</span>
                 </button>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    const nextState = !isVotingClosed;
-                    setIsVotingClosed(nextState);
-                    showToast(
-                      nextState
-                        ? '🔒 Trưởng nhóm (Owner) đã ĐÓNG BIỂU QUYẾT! Kết quả đã khóa, thành viên không thể vote tiếp.'
-                        : '🔓 Đã MỞ LẠI BIỂU QUYẾT! Các thành viên có thể tiếp tục bỏ phiếu.'
-                    );
-                  }}
-                  style={{
-                    padding: '9px 16px',
-                    background: isVotingClosed ? '#FEF2F2' : '#F1F5F9',
-                    color: isVotingClosed ? '#DC2626' : '#475569',
-                    border: '1px solid',
-                    borderColor: isVotingClosed ? '#FECACA' : '#CBD5E1',
-                    borderRadius: '10px',
-                    fontSize: '13px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                  }}
-                  title="Đóng biểu quyết"
-                >
-                  <span>{isVotingClosed ? '🔓 Mở lại biểu quyết' : '🔒 Đóng biểu quyết (Chỉ Owner)'}</span>
-                </button>
+                {isTripOwner && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const nextState = !isVotingClosed;
+                      setIsVotingClosed(nextState);
+                      showToast(
+                        nextState
+                          ? '🔒 Trưởng nhóm (Owner) đã ĐÓNG BIỂU QUYẾT! Kết quả đã khóa, thành viên không thể vote tiếp.'
+                          : '🔓 Đã MỞ LẠI BIỂU QUYẾT! Các thành viên có thể tiếp tục bỏ phiếu.'
+                      );
+                    }}
+                    style={{
+                      padding: '9px 16px',
+                      background: isVotingClosed ? '#FEF2F2' : '#F1F5F9',
+                      color: isVotingClosed ? '#DC2626' : '#475569',
+                      border: '1px solid',
+                      borderColor: isVotingClosed ? '#FECACA' : '#CBD5E1',
+                      borderRadius: '10px',
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                    }}
+                    title="Đóng / mở biểu quyết"
+                  >
+                    <span>{isVotingClosed ? '🔓 Mở lại biểu quyết' : '🔒 Đóng biểu quyết (Chỉ Owner)'}</span>
+                  </button>
+                )}
               </div>
             </div>
 

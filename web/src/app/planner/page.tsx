@@ -2084,6 +2084,32 @@ export default function PlannerPage() {
   const handleCreateTripSubmit = () => {
     const tripId = `trip-${Date.now()}`;
     const activityCount = itineraryDays.reduce((acc, d) => acc + d.activities.length, 0);
+    let plannerOwner = {
+      name: 'Thành viên VISTA',
+      avatar: 'TV',
+      color: '#0284c7',
+      role: 'Trưởng nhóm',
+      userId: 'u-me',
+      email: '',
+    };
+    try {
+      const userStr = localStorage.getItem('vista_user');
+      if (userStr) {
+        const u = JSON.parse(userStr);
+        const rawName = (u.displayName || u.email || 'Thành viên VISTA').replace(/\s*\(Bạn\)/g, '').trim();
+        const parts = rawName.split(/\s+/);
+        const initials = (parts.length >= 2 ? parts[0][0] + parts[parts.length - 1][0] : rawName.slice(0, 2)).toUpperCase();
+        plannerOwner = {
+          name: rawName,
+          avatar: initials || 'TV',
+          color: '#0284c7',
+          role: 'Trưởng nhóm',
+          userId: u.id || 'u-me',
+          email: u.email || '',
+        };
+      }
+    } catch {}
+
     const newTrip = {
       id: tripId,
       title: newTripTitle || `Chuyến đi ${destination} ${daysCount} ngày`,
@@ -2093,14 +2119,13 @@ export default function PlannerPage() {
       endDate: '24/11/2026',
       status: 'PLANNING',
       role: 'OWNER',
+      ownerId: plannerOwner.userId,
       budgetTotal: totalEstimatedCost || 20000000,
       budgetSpent: 0,
-      progressPercent: 25,
-      members: [
-        { name: 'Lê Vân Anh (Bạn)', avatar: 'VA', color: '#0284c7' },
-      ],
+      progressPercent: 0,
+      members: [plannerOwner],
       image: activeDestObj.photo || 'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80',
-      treasuryPath: '/trips/demo-danang-2026/treasury',
+      treasuryPath: `/trips/${tripId}/treasury`,
       alertType: 'BLUE',
       alertText: `Lịch trình AI ${daysCount} ngày (${activityCount} hoạt động) đã sẵn sàng`,
       alertLinkText: 'Xem',

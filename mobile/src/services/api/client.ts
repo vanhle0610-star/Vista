@@ -58,7 +58,7 @@ export const api = create({
 });
 
 api.interceptors.request.use(async (config) => {
-  const token = (await authStorage.getAccessToken()) ?? (await storage.getItem('vista_token'));
+  const token = await authStorage.getAccessToken();
   if (token && config.headers && !config.headers['Authorization']) {
     config.headers['Authorization'] = `Bearer ${token}`;
   }

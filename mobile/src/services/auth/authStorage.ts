@@ -64,7 +64,9 @@ async function deleteItem(key: string): Promise<void> {
 
 export const authStorage = {
   async getAccessToken(): Promise<string | null> {
-    return getItem(ACCESS_TOKEN_KEY);
+    const token = await getItem(ACCESS_TOKEN_KEY);
+    if (token) return token;
+    return getItem('vista_token');
   },
   async getRefreshToken(): Promise<string | null> {
     return getItem(REFRESH_TOKEN_KEY);
@@ -85,6 +87,7 @@ export const authStorage = {
   }): Promise<void> {
     if (tokens.accessToken) {
       await setItem(ACCESS_TOKEN_KEY, tokens.accessToken);
+      await setItem('vista_token', tokens.accessToken);
     }
     if (tokens.refreshToken) {
       await setItem(REFRESH_TOKEN_KEY, tokens.refreshToken);
@@ -95,8 +98,20 @@ export const authStorage = {
   },
   async clearSession(): Promise<void> {
     await deleteItem(ACCESS_TOKEN_KEY);
+    await deleteItem('vista_token');
     await deleteItem(REFRESH_TOKEN_KEY);
     await deleteItem(USER_KEY);
+    memoryStorage.clear();
+    if (Platform.OS === 'web') {
+      try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          window.localStorage.removeItem(ACCESS_TOKEN_KEY);
+          window.localStorage.removeItem('vista_token');
+          window.localStorage.removeItem(REFRESH_TOKEN_KEY);
+          window.localStorage.removeItem(USER_KEY);
+        }
+      } catch {}
+    }
   },
 };
 

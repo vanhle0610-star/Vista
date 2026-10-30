@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,14 +8,19 @@ import {
   StyleSheet,
   RefreshControl,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
+import { authStorage } from '@/services/auth/authStorage';
+import { AuthGatekeeperCard } from '../../../components/feedback/AuthGatekeeperCard';
 import { tokens } from '../../../theme/tokens';
 import { tripApi, TripDto } from '../../../services/api/tripApi';
 import { expenseApi, TripExpenseSummaryDto } from '../../../services/api/expenseApi';
 import { CreateTripModal } from './CreateTripModal';
 import { InviteCodeModal } from './InviteCodeModal';
+import { AvatarGroup } from '../../../components/ui/AvatarGroup';
+import { StatusBadge } from '../../../components/ui/StatusBadge';
 import {
   WalletIcon,
   MapIcon,
@@ -89,6 +94,22 @@ export function TripsHubScreen() {
   const [activeTab, setActiveTab] = useState<FilterTab>('ALL');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+
+  const checkAuth = useCallback(async () => {
+    const token = await authStorage.getAccessToken();
+    setIsAuthenticated(!!token);
+  }, []);
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  useFocusEffect(
+    useCallback(() => {
+      checkAuth();
+    }, [checkAuth])
+  );
 
   // 1. Fetch real trips from backend API
   const {
@@ -99,6 +120,7 @@ export function TripsHubScreen() {
   } = useQuery({
     queryKey: ['trips'],
     queryFn: tripApi.fetchMyTrips,
+    enabled: !!isAuthenticated,
     staleTime: 15_000,
   });
 
@@ -159,14 +181,39 @@ export function TripsHubScreen() {
           </View>
           <TouchableOpacity
             style={styles.keyButton}
-            onPress={() => setIsInviteModalOpen(true)}
+            onPress={() => {
+              if (!isAuthenticated) {
+                Alert.alert(
+                  'Yêu cầu đăng nhập',
+                  'Bạn cần đăng nhập tài khoản VISTA để tham gia chuyến đi qua mã mời.',
+                  [
+                    { text: 'Hủy', style: 'cancel' },
+                    { text: 'Đăng nhập', onPress: () => router.push('/(auth)/login') },
+                  ]
+                );
+                return;
+              }
+              setIsInviteModalOpen(true);
+            }}
             activeOpacity={0.8}
           >
-            <KeyIcon size={16} color="#005ea5" />
+            <KeyIcon size={16} color={tokens.colors.primary} />
             <Text style={styles.keyButtonText}>Mã mời</Text>
           </TouchableOpacity>
         </View>
 
+        {isAuthenticated === false ? (
+          <AuthGatekeeperCard
+            title="Lên kế hoạch cho hành trình của bạn"
+            description="Đăng nhập hoặc đăng ký tài khoản VISTA để bắt đầu tạo chuyến đi, mời bạn bè cùng tham gia và theo dõi chi phí nhóm."
+            iconType="trips"
+          />
+        ) : isAuthenticated === null ? (
+          <View style={{ paddingVertical: 48, alignItems: 'center' }}>
+            <ActivityIndicator size="small" color={tokens.colors.primary} />
+          </View>
+        ) : (
+          <>
         {/* Filter Tabs */}
         <ScrollView
           horizontal
@@ -202,7 +249,7 @@ export function TripsHubScreen() {
         {/* Loading State */}
         {isLoading && trips.length === 0 ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#005ea5" />
+            <ActivityIndicator size="large" color={tokens.colors.primary} />
             <Text style={styles.loadingText}>Đang tải danh sách chuyến đi...</Text>
           </View>
         ) : null}
@@ -210,7 +257,7 @@ export function TripsHubScreen() {
         {/* Empty State */}
         {!isLoading && filteredTrips.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <LuggageIcon size={44} color="#94a3b8" />
+            <LuggageIcon size={44} color={tokens.colors.textMuted} />
             <Text style={styles.emptyTitle}>
               {activeTab === 'ALL'
                 ? 'Chưa có chuyến đi nào'
@@ -244,25 +291,8 @@ export function TripsHubScreen() {
                 <View style={styles.bannerOverlay} />
 
                 {/* Status Badge */}
-                <View
-                  style={[
-                    styles.statusBadge,
-                    spotlightTrip.status === 'ACTIVE'
-                      ? styles.statusBadgeActive
-                      : styles.statusBadgePlanning,
-                  ]}
-                >
-                  <View
-                    style={[
-                      styles.statusDot,
-                      spotlightTrip.status === 'ACTIVE'
-                        ? styles.statusDotActive
-                        : styles.statusDotPlanning,
-                    ]}
-                  />
-                  <Text style={styles.statusBadgeText}>
-                    {getStatusLabel(spotlightTrip.status)}
-                  </Text>
+                <View style={styles.spotlightBadgeWrap}>
+                  <StatusBadge status={spotlightTrip.status} />
                 </View>
 
                 {/* Title & Dates on image */}
@@ -284,30 +314,21 @@ export function TripsHubScreen() {
                 {/* Members row & social vote badge */}
                 <View style={styles.metaRow}>
                   <View style={styles.membersStack}>
-                    <View style={styles.avatarGroup}>
-                      {(spotlightTrip.members || []).slice(0, 3).map((m, idx) => (
-                        <View key={m.userId || idx} style={styles.avatarCircle}>
-                          <Text style={styles.avatarText}>
-                            {(m.displayName || 'U').charAt(0).toUpperCase()}
-                          </Text>
-                        </View>
-                      ))}
-                      {(spotlightTrip.members || []).length > 3 ? (
-                        <View style={[styles.avatarCircle, styles.avatarMore]}>
-                          <Text style={styles.avatarMoreText}>
-                            +{(spotlightTrip.members || []).length - 3}
-                          </Text>
-                        </View>
-                      ) : null}
-                    </View>
+                    <AvatarGroup
+                      members={(spotlightTrip.members || []).map((m) => ({
+                        name: m.displayName || 'Thành viên',
+                      }))}
+                      max={3}
+                      size={26}
+                    />
                     <Text style={styles.membersCountText}>
                       {spotlightTrip.members?.length || 1} thành viên
                     </Text>
                   </View>
 
                   <View style={styles.voteBadge}>
-                    <VoteIcon size={13} color="#8455ef" style={{ marginRight: 4 }} />
-                    <Text style={styles.voteBadgeText}>
+                    <VoteIcon size={13} color={tokens.colors.primaryDark} style={{ marginRight: 4 }} />
+                    <Text style={styles.voteBadgeText} numberOfLines={1}>
                       {spotlightTrip.destinationSummary || 'Kế hoạch mở'}
                     </Text>
                   </View>
@@ -350,7 +371,7 @@ export function TripsHubScreen() {
                     onPress={() => router.push('/(tabs)/treasury')}
                     activeOpacity={0.85}
                   >
-                    <WalletIcon size={18} color="#005ea5" style={{ marginRight: 6 }} />
+                    <WalletIcon size={18} color={tokens.colors.primary} style={{ marginRight: 6 }} />
                     <Text style={styles.treasuryBtnText}>Thủ quỹ</Text>
                   </TouchableOpacity>
 
@@ -383,22 +404,20 @@ export function TripsHubScreen() {
             />
             <View style={styles.secondaryContent}>
               <View style={styles.secondaryHeader}>
-                <View style={styles.secondaryStatusPill}>
-                  <Text style={styles.secondaryStatusText}>{getStatusLabel(trip.status)}</Text>
-                </View>
+                <StatusBadge status={trip.status} size="small" />
               </View>
               <Text style={styles.secondaryTitle} numberOfLines={1}>
                 {trip.title}
               </Text>
               <View style={styles.secondaryDateRow}>
-                <CalendarIcon size={12} color="#707784" style={{ marginRight: 4 }} />
+                <CalendarIcon size={12} color={tokens.colors.textMuted} style={{ marginRight: 4 }} />
                 <Text style={styles.secondaryDate}>
                   {formatDateRange(trip.startDate, trip.endDate)}
                 </Text>
               </View>
               <View style={styles.secondaryFooter}>
                 <View style={styles.secondaryMembersRow}>
-                  <GroupIcon size={13} color="#005ea5" style={{ marginRight: 4 }} />
+                  <GroupIcon size={13} color={tokens.colors.primary} style={{ marginRight: 4 }} />
                   <Text style={styles.secondaryMembers}>
                     {trip.members?.length || 1} thành viên
                   </Text>
@@ -424,7 +443,7 @@ export function TripsHubScreen() {
             onPress={() => router.push('/(tabs)/ai-planner')}
             activeOpacity={0.85}
           >
-            <SparkleIcon size={18} color="#8455ef" style={{ marginRight: 6 }} />
+            <SparkleIcon size={18} color={tokens.colors.aiCoPilot} style={{ marginRight: 6 }} />
             <Text style={styles.aiPlannerBtnText}>Thử AI lập lịch trình</Text>
             <View style={styles.newBadge}>
               <Text style={styles.newBadgeText}>Mới</Text>
@@ -436,7 +455,7 @@ export function TripsHubScreen() {
         <View style={styles.invitePromptBox}>
           <View style={styles.invitePromptLeft}>
             <View style={styles.inviteIconCircle}>
-              <KeyIcon size={18} color="#005ea5" />
+              <KeyIcon size={18} color={tokens.colors.primary} />
             </View>
             <View style={styles.inviteTextWrapper}>
               <Text style={styles.invitePromptTitle}>Được bạn bè mời tham gia?</Text>
@@ -451,6 +470,8 @@ export function TripsHubScreen() {
             <Text style={styles.inviteActionText}>Nhập mã</Text>
           </TouchableOpacity>
         </View>
+        </>
+        )}
       </ScrollView>
 
       {/* Modals */}
@@ -472,7 +493,7 @@ export function TripsHubScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#faf8ff',
+    backgroundColor: tokens.colors.canvas,
     width: '100%',
     maxWidth: 440,
     alignSelf: 'center',
@@ -481,8 +502,8 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   topSection: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
+    paddingHorizontal: tokens.spacing.md,
+    paddingTop: tokens.spacing.md,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -491,51 +512,48 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   mainTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#131b2e',
+    fontSize: tokens.font.heading,
+    fontWeight: '800',
+    color: tokens.colors.ink,
     letterSpacing: -0.3,
   },
   subTitle: {
-    fontSize: 13,
-    color: '#404752',
+    fontSize: tokens.font.caption,
+    color: tokens.colors.textMuted,
     marginTop: 2,
   },
   keyButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#d3e4ff',
+    backgroundColor: tokens.colors.primarySoft,
     paddingHorizontal: 12,
     paddingVertical: 7,
     borderRadius: 20,
     gap: 4,
   },
-  keyIcon: {
-    fontSize: 14,
-  },
   keyButtonText: {
-    color: '#005ea5',
+    color: tokens.colors.primary,
     fontWeight: '700',
     fontSize: 12,
   },
   filterTabsContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 14,
+    paddingHorizontal: tokens.spacing.md,
+    paddingVertical: tokens.spacing.sm,
     gap: 8,
   },
   filterChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
     borderRadius: 20,
-    backgroundColor: '#f2f3ff',
+    backgroundColor: tokens.colors.surfaceHighlight,
   },
   filterChipActive: {
-    backgroundColor: '#005ea5',
+    backgroundColor: tokens.colors.primary,
   },
   filterChipText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#404752',
+    color: tokens.colors.textSecondary,
   },
   filterChipTextActive: {
     color: '#ffffff',
@@ -547,43 +565,37 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 14,
-    color: '#64748b',
+    color: tokens.colors.textMuted,
   },
   emptyContainer: {
-    marginHorizontal: 20,
-    marginVertical: 16,
-    padding: 24,
-    backgroundColor: '#ffffff',
+    marginHorizontal: tokens.spacing.md,
+    marginVertical: tokens.spacing.md,
+    padding: tokens.spacing.lg,
+    backgroundColor: tokens.colors.surface,
     borderRadius: 20,
     alignItems: 'center',
-    shadowColor: '#0f172a',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 2,
-  },
-  emptyIcon: {
-    fontSize: 48,
-    marginBottom: 8,
+    ...tokens.shadows.card,
   },
   emptyTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#131b2e',
+    color: tokens.colors.ink,
     marginBottom: 6,
+    marginTop: 8,
   },
   emptyDesc: {
     fontSize: 13,
-    color: '#64748b',
+    color: tokens.colors.textMuted,
     textAlign: 'center',
     lineHeight: 18,
     marginBottom: 16,
   },
   emptyCta: {
-    backgroundColor: '#005ea5',
+    backgroundColor: tokens.colors.primary,
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 20,
+    ...tokens.shadows.buttonPrimary,
   },
   emptyCtaText: {
     color: '#ffffff',
@@ -591,19 +603,15 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   spotlightWrapper: {
-    paddingHorizontal: 20,
-    marginTop: 6,
-    marginBottom: 14,
+    paddingHorizontal: tokens.spacing.md,
+    marginTop: 4,
+    marginBottom: tokens.spacing.sm,
   },
   spotlightCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: tokens.colors.surface,
     borderRadius: 20,
     overflow: 'hidden',
-    shadowColor: '#0f172a',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 14,
-    elevation: 4,
+    ...tokens.shadows.cardLift,
   },
   spotlightBanner: {
     height: 170,
@@ -619,46 +627,12 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(19, 27, 46, 0.45)',
+    backgroundColor: 'rgba(15, 23, 42, 0.45)',
   },
-  statusBadge: {
+  spotlightBadgeWrap: {
     position: 'absolute',
     top: 12,
     left: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 14,
-    gap: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
-  statusBadgeActive: {
-    backgroundColor: '#006a67',
-  },
-  statusBadgePlanning: {
-    backgroundColor: '#005ea5',
-  },
-  statusDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
-  },
-  statusDotActive: {
-    backgroundColor: '#5af9f3',
-  },
-  statusDotPlanning: {
-    backgroundColor: '#d3e4ff',
-  },
-  statusBadgeText: {
-    color: '#ffffff',
-    fontSize: 10,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
   },
   bannerBottomInfo: {
     position: 'absolute',
@@ -677,10 +651,12 @@ const styles = StyleSheet.create({
   datePill: {
     marginTop: 4,
     alignSelf: 'flex-start',
-    backgroundColor: 'rgba(19, 27, 46, 0.65)',
+    backgroundColor: 'rgba(15, 23, 42, 0.65)',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   datePillText: {
     color: '#f8fafc',
@@ -688,8 +664,8 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   cardBody: {
-    padding: 16,
-    gap: 14,
+    padding: tokens.spacing.md,
+    gap: 12,
   },
   metaRow: {
     flexDirection: 'row',
@@ -701,59 +677,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  avatarGroup: {
-    flexDirection: 'row',
-  },
-  avatarCircle: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    backgroundColor: '#d3e4ff',
-    borderWidth: 1.5,
-    borderColor: '#ffffff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: -6,
-  },
-  avatarMore: {
-    backgroundColor: '#6b38d4',
-  },
-  avatarText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#005ea5',
-  },
-  avatarMoreText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#ffffff',
-  },
   membersCountText: {
     fontSize: 12,
     fontWeight: '500',
-    color: '#404752',
-    marginLeft: 8,
+    color: tokens.colors.textSecondary,
   },
   voteBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#e9ddff',
+    backgroundColor: tokens.colors.primarySoft,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
-    gap: 4,
     maxWidth: '45%',
-  },
-  voteBadgeIcon: {
-    fontSize: 12,
   },
   voteBadgeText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#6b38d4',
+    color: tokens.colors.primaryDark,
   },
   budgetModule: {
-    backgroundColor: '#f2f3ff',
+    backgroundColor: tokens.colors.surfaceHighlight,
     borderRadius: 14,
     padding: 12,
     gap: 8,
@@ -770,27 +714,27 @@ const styles = StyleSheet.create({
   },
   budgetSpentLabel: {
     fontSize: 12,
-    color: '#404752',
+    color: tokens.colors.textSecondary,
   },
   budgetSpentValue: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#005ea5',
+    color: tokens.colors.primary,
   },
   budgetPercentText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#005ea5',
+    color: tokens.colors.primary,
   },
   progressBarTrack: {
-    height: 7,
-    backgroundColor: '#e2e7ff',
+    height: 6,
+    backgroundColor: tokens.colors.border,
     borderRadius: 4,
     overflow: 'hidden',
   },
   progressBarFill: {
     height: '100%',
-    backgroundColor: '#005ea5',
+    backgroundColor: tokens.colors.primary,
     borderRadius: 4,
   },
   budgetRowBottom: {
@@ -800,12 +744,12 @@ const styles = StyleSheet.create({
   },
   budgetSubText: {
     fontSize: 11,
-    color: '#404752',
+    color: tokens.colors.textMuted,
   },
   budgetRemainingText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#006a67',
+    color: tokens.colors.aiCoPilot,
   },
   actionButtonsGrid: {
     flexDirection: 'row',
@@ -814,55 +758,42 @@ const styles = StyleSheet.create({
   treasuryBtn: {
     flex: 1,
     height: 44,
-    borderRadius: 22,
-    backgroundColor: '#f2f3ff',
+    borderRadius: 12,
+    backgroundColor: tokens.colors.surfaceHighlight,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
   },
   treasuryBtnText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#131b2e',
+    color: tokens.colors.ink,
   },
   itineraryBtn: {
     flex: 1,
     height: 44,
-    borderRadius: 22,
-    backgroundColor: '#005ea5',
+    borderRadius: 12,
+    backgroundColor: tokens.colors.primary,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
-    shadowColor: '#005ea5',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 3,
+    ...tokens.shadows.buttonPrimary,
   },
   itineraryBtnText: {
     fontSize: 13,
     fontWeight: '700',
     color: '#ffffff',
   },
-  btnIcon: {
-    fontSize: 14,
-  },
   secondaryCard: {
-    marginHorizontal: 20,
+    marginHorizontal: tokens.spacing.md,
     marginBottom: 10,
-    backgroundColor: '#ffffff',
+    backgroundColor: tokens.colors.surface,
     borderRadius: 16,
     padding: 12,
     flexDirection: 'row',
     gap: 12,
     alignItems: 'center',
-    shadowColor: '#0f172a',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 1,
+    ...tokens.shadows.card,
   },
   secondaryThumb: {
     width: 80,
@@ -879,21 +810,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 2,
   },
-  secondaryStatusPill: {
-    backgroundColor: '#e2e7ff',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 10,
-  },
-  secondaryStatusText: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: '#404752',
-  },
   secondaryTitle: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#131b2e',
+    color: tokens.colors.ink,
   },
   secondaryDateRow: {
     flexDirection: 'row',
@@ -902,7 +822,7 @@ const styles = StyleSheet.create({
   },
   secondaryDate: {
     fontSize: 11,
-    color: '#64748b',
+    color: tokens.colors.textMuted,
   },
   secondaryFooter: {
     flexDirection: 'row',
@@ -916,30 +836,26 @@ const styles = StyleSheet.create({
   },
   secondaryMembers: {
     fontSize: 11,
-    color: '#005ea5',
+    color: tokens.colors.primary,
     fontWeight: '500',
   },
   secondaryDetailLink: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#005ea5',
+    color: tokens.colors.primary,
   },
   hubActionsContainer: {
-    paddingHorizontal: 20,
+    paddingHorizontal: tokens.spacing.md,
     marginTop: 12,
     gap: 10,
   },
   primaryCreateBtn: {
     height: 48,
-    backgroundColor: '#005ea5',
+    backgroundColor: tokens.colors.primary,
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#005ea5',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 3,
+    ...tokens.shadows.buttonPrimary,
   },
   primaryCreateBtnText: {
     fontSize: 14,
@@ -948,30 +864,23 @@ const styles = StyleSheet.create({
   },
   aiPlannerBtn: {
     height: 48,
-    backgroundColor: '#ffffff',
+    backgroundColor: tokens.colors.surface,
     borderRadius: 14,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
     borderWidth: 1,
-    borderColor: '#e9ddff',
-    shadowColor: '#6b38d4',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 1,
-  },
-  aiPlannerIcon: {
-    fontSize: 15,
+    borderColor: tokens.colors.border,
+    ...tokens.shadows.card,
   },
   aiPlannerBtnText: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#6b38d4',
+    color: tokens.colors.aiCoPilot,
   },
   newBadge: {
-    backgroundColor: '#e9ddff',
+    backgroundColor: tokens.colors.aiSoft,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 8,
@@ -980,12 +889,12 @@ const styles = StyleSheet.create({
   newBadgeText: {
     fontSize: 9,
     fontWeight: '700',
-    color: '#6b38d4',
+    color: tokens.colors.aiCoPilot,
   },
   invitePromptBox: {
-    marginHorizontal: 20,
+    marginHorizontal: tokens.spacing.md,
     marginTop: 14,
-    backgroundColor: '#f2f3ff',
+    backgroundColor: tokens.colors.surfaceHighlight,
     borderRadius: 16,
     padding: 14,
     flexDirection: 'row',
@@ -1003,12 +912,9 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#d3e4ff',
+    backgroundColor: tokens.colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  inviteIconText: {
-    fontSize: 16,
   },
   inviteTextWrapper: {
     flex: 1,
@@ -1016,15 +922,17 @@ const styles = StyleSheet.create({
   invitePromptTitle: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#131b2e',
+    color: tokens.colors.ink,
   },
   invitePromptDesc: {
     fontSize: 11,
-    color: '#404752',
+    color: tokens.colors.textMuted,
     marginTop: 1,
   },
   inviteActionBtn: {
-    backgroundColor: '#e2e7ff',
+    backgroundColor: tokens.colors.surface,
+    borderWidth: 1,
+    borderColor: tokens.colors.border,
     paddingHorizontal: 12,
     paddingVertical: 7,
     borderRadius: 10,
@@ -1032,6 +940,6 @@ const styles = StyleSheet.create({
   inviteActionText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#005ea5',
+    color: tokens.colors.primary,
   },
 });
