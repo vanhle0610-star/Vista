@@ -38,6 +38,7 @@ import {
   KeyRound,
 } from 'lucide-react';
 import { Navbar } from '@/components/common/Navbar';
+import { apiRequest } from '@/lib/api';
 import {
   POPULAR_DESTINATIONS,
   getSampleItineraryForDestination,
@@ -732,172 +733,130 @@ export default function TripsPage() {
   const [tripsList, setTripsList] = useState<TripItem[]>(DEFAULT_DEMO_TRIPS);
   const [incomingInvitations, setIncomingInvitations] = useState<any[]>([]);
 
-  // Synchronize with localStorage (custom trips created from Planner or Trips)
+  // Fetch trips from PostgreSQL Database via Spring Boot API & one-time migration
   useEffect(() => {
     const syncTrips = async () => {
-      await Promise.resolve();
-      if (typeof window !== 'undefined') {
-        try {
-          const stored = localStorage.getItem('vista_custom_trips');
-          const customTrips: TripItem[] = stored ? JSON.parse(stored) : [];
-          if (customTrips && customTrips.length > 0) {
-            const currentOwner = getCurrentUserMember('Trưởng nhóm');
-            let hasLegacyData = false;
-            const normalized = customTrips.map((t) => {
-              const dest = t.destination || 'Việt Nam';
-              const isHanoiMismatch = dest && !dest.toLowerCase().includes('hà nội') && JSON.stringify(t.itineraryDays || '').includes('Hoàn Kiếm');
-              const fixedItinerary = (!t.itineraryDays || (t.itineraryDays as unknown[]).length === 0 || isHanoiMismatch)
-                ? getSampleItineraryForDestination(dest, t.startDate)
-                : t.itineraryDays;
+      if (typeof window === 'undefined') return;
 
-              const rawMembers = Array.isArray(t.members) && t.members.length > 0 ? t.members : [currentOwner];
-              const cleanedMembers: TripMember[] = rawMembers.map((m: any, idx: number) => {
-                const rawName = m.name || '';
-                let cleanName = rawName.replace(/\s*\(Bạn\)/g, '').trim();
-                if (!cleanName || cleanName === 'Bạn') {
-                  cleanName = idx === 0 ? 'Trưởng nhóm VISTA' : 'Thành viên VISTA';
-                }
-                if (cleanName !== rawName) {
-                  hasLegacyData = true;
-                }
+      const currentOwner = getCurrentUserMember('Trưởng nhóm');
 
-                // Match with currentUser only if name or email truly matches
-                const isMe = Boolean(
-                  currentUser && (
-                    (m.userId && m.userId === currentUser.id) ||
-                    (currentUser.displayName && cleanName.toLowerCase() === currentUser.displayName.toLowerCase()) ||
-                    (currentUser.email && m.email && m.email.toLowerCase() === currentUser.email.toLowerCase())
-                  )
-                );
+      // Helper to map a backend trip to TripItem
+      const mapBackendTrip = (bt: any): TripItem => {
+        const dest = bt.destinationSummary || 'Việt Nam';
+        const start = bt.startDate || getTodayString();
+        const end = bt.endDate || getDefaultEndString();
+        const bTotal = typeof bt.budgetTotal === 'number' && bt.budgetTotal > 0 ? bt.budgetTotal : 15000000;
+        const isOwner = currentUser?.id ? bt.ownerId === currentUser.id : true;
 
-                const memberUserId = isMe
-                  ? (currentUser?.id || currentOwner.userId)
-                  : (m.userId && m.userId !== currentOwner.userId ? m.userId : `u-${encodeURIComponent(cleanName.toLowerCase().replace(/\s+/g, '-'))}`);
+        const rawMembers = Array.isArray(bt.members) && bt.members.length > 0 ? bt.members : [];
+        const members: TripMember[] = rawMembers.length > 0
+          ? rawMembers.map((m: any) => ({
+              name: m.displayName || m.email || (m.role === 'OWNER' ? 'Trưởng nhóm' : 'Thành viên'),
+              avatar: (m.displayName || m.email || 'TV').slice(0, 2).toUpperCase(),
+              color: m.role === 'OWNER' ? '#0284c7' : '#10b981',
+              role: m.role === 'OWNER' ? 'Trưởng nhóm' : 'Thành viên',
+              userId: m.userId,
+              email: m.email || '',
+            }))
+          : [currentOwner];
 
-                const memberEmail = isMe
-                  ? (currentUser?.email || currentOwner.email)
-                  : (m.email && m.email !== currentOwner.email ? m.email : `${encodeURIComponent(cleanName.toLowerCase().replace(/\s+/g, ''))}@vista.vn`);
+        return {
+          id: bt.id,
+          title: bt.title || 'Chuyến đi VISTA',
+          destination: dest,
+          durationBadge: '3 ngày',
+          startDate: start,
+          endDate: end,
+          status: (bt.status as any) || 'PLANNING',
+          role: isOwner ? 'OWNER' : 'MEMBER',
+          ownerId: bt.ownerId || currentOwner.userId,
+          budgetTotal: bTotal,
+          budgetSpent: 0,
+          progressPercent: 0,
+          members,
+          image: getDestinationHeroImage(dest),
+          treasuryPath: `/trips/${bt.id}/treasury`,
+          alertText: `Hành trình khám phá ${dest}`,
+          alertLinkText: 'Xem',
+          quickActions: [
+            { label: 'Lịch trình', href: `/trips/${bt.id}` },
+            { label: 'Thủ quỹ', href: `/trips/${bt.id}/treasury` },
+            { label: 'Phân công', actionType: 'ASSIGN' },
+          ],
+          itineraryDays: getSampleItineraryForDestination(dest, start),
+        };
+      };
 
-                return {
-                  name: cleanName,
-                  avatar: m.avatar || cleanName.slice(0, 2).toUpperCase(),
-                  color: m.color || '#0284c7',
-                  role: m.role || (idx === 0 ? 'Trưởng nhóm' : 'Thành viên'),
-                  userId: memberUserId,
-                  email: memberEmail,
-                };
-              });
-
-              const firstMember = cleanedMembers[0];
-              const isCreatorMe = Boolean(
-                currentUser && (
-                  (firstMember?.userId && firstMember.userId === currentUser.id) ||
-                  (currentUser.displayName && firstMember?.name && firstMember.name.toLowerCase() === currentUser.displayName.toLowerCase()) ||
-                  (currentUser.email && firstMember?.email && firstMember.email.toLowerCase() === currentUser.email.toLowerCase())
-                )
-              );
-
-              const resolvedOwnerId = isCreatorMe
-                ? (currentUser?.id || currentOwner.userId)
-                : (firstMember?.userId || `owner-${t.id}`);
-
-              const bSpent = typeof t.budgetSpent === 'number' ? t.budgetSpent : 0;
-              const bTotal = typeof t.budgetTotal === 'number' && t.budgetTotal > 0 ? t.budgetTotal : 20000000;
-              const calculatedProgress = bTotal > 0 ? Math.min(100, Math.round((bSpent / bTotal) * 100)) : 0;
-
-              if (t.progressPercent !== calculatedProgress || t.ownerId !== resolvedOwnerId) {
-                hasLegacyData = true;
-              }
-
-              return {
-                ...t,
-                ownerId: resolvedOwnerId,
-                members: cleanedMembers,
-                image: getDestinationHeroImage(dest),
-                itineraryDays: fixedItinerary,
-                quickActions: Array.isArray(t.quickActions) && t.quickActions.length > 0
-                  ? t.quickActions
-                  : [
-                      { label: 'Lịch trình', href: `/trips/${t.id}` },
-                      { label: 'Phân công', actionType: 'ASSIGN' },
-                      { label: 'Ghi chú', actionType: 'NOTE' },
-                    ],
-                budgetTotal: bTotal,
-                budgetSpent: bSpent,
-                progressPercent: calculatedProgress,
-                durationBadge: t.durationBadge || '4 ngày',
-                startDate: t.startDate || '15/11',
-                endDate: t.endDate || '18/11/2026',
-                role: t.role || 'OWNER',
-                status: t.status || 'PLANNING',
-                treasuryPath: t.treasuryPath || `/trips/${t.id}/treasury`,
-              };
-            });
-
-            if (hasLegacyData) {
-              try {
-                localStorage.setItem('vista_custom_trips', JSON.stringify(normalized));
-              } catch {}
-            }
-            const merged: TripItem[] = [...normalized];
-            DEFAULT_DEMO_TRIPS.forEach((d) => {
-              if (!merged.some((m) => m.id === d.id)) {
-                merged.push(d);
-              }
-            });
-            setTripsList(merged);
-          } else {
-            setTripsList(DEFAULT_DEMO_TRIPS);
-          }
-
-          // Also sync with server API to fetch trips from other windows / accounts
+      try {
+        // 1. One-time Migration: check if legacy localStorage trips exist
+        const stored = localStorage.getItem('vista_custom_trips');
+        if (stored) {
           try {
-            fetch('/api/trips')
-              .then((r) => (r.ok ? r.json() : []))
-              .then((serverTrips) => {
-                if (Array.isArray(serverTrips) && serverTrips.length > 0) {
-                  setTripsList((prev) => {
-                    const map = new Map();
-                    prev.forEach((t) => map.set(t.id, t));
-                    serverTrips.forEach((st: any) => {
-                      if (map.has(st.id)) {
-                        const existing = map.get(st.id);
-                        map.set(st.id, {
-                          ...existing,
-                          ...st,
-                          members: formatMembersForCurrentUser([...(existing.members || []), ...(st.members || [])]),
-                        });
-                      } else {
-                        map.set(st.id, {
-                          ...st,
-                          members: formatMembersForCurrentUser(st.members || []),
-                        });
-                      }
+            const legacyList: any[] = JSON.parse(stored);
+            if (Array.isArray(legacyList) && legacyList.length > 0) {
+              for (const leg of legacyList) {
+                // Only migrate local generated IDs, skip demo IDs
+                if (typeof leg.id === 'string' && leg.id.startsWith('trip-') && !leg.id.includes('danang') && !leg.id.includes('hagiang') && !leg.id.includes('phuquoc')) {
+                  try {
+                    await apiRequest('/trips', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        title: leg.title || 'Chuyến đi lưu trữ',
+                        startDate: leg.startDate?.includes('-') ? leg.startDate : getTodayString(),
+                        endDate: leg.endDate?.includes('-') ? leg.endDate : getDefaultEndString(),
+                        destinationSummary: leg.destination || 'Việt Nam',
+                        budgetTotal: leg.budgetTotal || 15000000,
+                        currency: 'VND',
+                      }),
                     });
-                    return Array.from(map.values());
-                  });
+                  } catch {
+                    // ignore individual sync failure
+                  }
                 }
-              })
-              .catch(() => {});
-          } catch {}
-
-          // Check if user just created a trip from Planner
-          const params = new URLSearchParams(window.location.search);
-          const createdId = params.get('created');
-          if (createdId) {
-            const createdTrip = customTrips.find((t) => t.id === createdId);
-            const title = createdTrip ? createdTrip.title : 'Chuyến đi mới';
-            showToast(`🎉 Đã đồng bộ thành công chuyến đi "${title}" từ AI Planner!`);
-            setActiveTab('planning');
+              }
+            }
+            // Once processed, clean up localStorage
+            localStorage.removeItem('vista_custom_trips');
+          } catch {
+            // ignore
           }
-        } catch {
-          // SSR safe
         }
+
+        // 2. Fetch live trips directly from PostgreSQL Database via Spring Boot API
+        const serverTrips = await apiRequest<any[]>('/trips');
+        if (Array.isArray(serverTrips) && serverTrips.length > 0) {
+          const loadedTrips = serverTrips.map(mapBackendTrip);
+          
+          // Merge with default demo trips for rich preview if needed
+          const merged = [...loadedTrips];
+          DEFAULT_DEMO_TRIPS.forEach((d) => {
+            if (!merged.some((m) => m.id === d.id)) {
+              merged.push(d);
+            }
+          });
+          setTripsList(merged);
+        } else {
+          setTripsList(DEFAULT_DEMO_TRIPS);
+        }
+
+        // Check if user just created a trip from Planner
+        const params = new URLSearchParams(window.location.search);
+        const createdId = params.get('created');
+        if (createdId) {
+          showToast(`🎉 Đã đồng bộ thành công chuyến đi từ AI Planner vào Database!`);
+          setActiveTab('planning');
+        }
+      } catch (err) {
+        console.warn('Trips API fetch fallback:', err);
+        setTripsList(DEFAULT_DEMO_TRIPS);
       }
     };
     void syncTrips();
+  }, [currentUser]);
 
-    // Load incoming invitations for currently logged in user
+  // Load incoming invitations for currently logged in user
+  useEffect(() => {
     try {
       const userStr = localStorage.getItem('vista_user');
       if (userStr) {
@@ -905,7 +864,7 @@ export default function TripsPage() {
         const email = (u.email || '').toLowerCase().trim();
         if (email) {
           fetch(`/api/invitations?email=${encodeURIComponent(email)}`)
-            .then((r) => r.json())
+            .then((r) => (r.ok ? r.json() : []))
             .then((list) => {
               if (Array.isArray(list)) {
                 const pending = list.filter(
@@ -957,14 +916,14 @@ export default function TripsPage() {
 
       setTripsList((prev) => [newJoinedTrip, ...prev]);
 
-      try {
-        const stored = localStorage.getItem('vista_custom_trips');
-        const list: TripItem[] = stored ? JSON.parse(stored) : [];
-        if (!list.some((t) => t.id === newJoinedTrip.id)) {
-          list.unshift(newJoinedTrip);
-          localStorage.setItem('vista_custom_trips', JSON.stringify(list));
+      // If token is provided, accept on backend
+      if (inv.token) {
+        try {
+          await apiRequest(`/invitations/${inv.token}/accept`, { method: 'POST' });
+        } catch {
+          // ignore if already member or preview
         }
-      } catch {}
+      }
 
       setIncomingInvitations((prev) => prev.filter((i) => i.token !== inv.token));
       showToast(`🎉 Bạn đã gia nhập "${inv.tripTitle}" thành công!`);
@@ -1017,7 +976,7 @@ export default function TripsPage() {
     return true;
   });
 
-  const handleCreateTrip = (e: React.FormEvent) => {
+  const handleCreateTrip = async (e: React.FormEvent) => {
     e.preventDefault();
     const token = typeof window !== 'undefined' ? localStorage.getItem('vista_token') : null;
     if (!token) {
@@ -1051,58 +1010,65 @@ export default function TripsPage() {
     const formattedStartDate = startParts.length === 3 ? `${startParts[2]}/${startParts[1]}` : newStartDate;
     const formattedEndDate = endParts.length === 3 ? `${endParts[2]}/${endParts[1]}/${endParts[0]}` : newEndDate;
 
-    const tripId = `trip-${Date.now()}`;
     const currentOwner = getCurrentUserMember('Trưởng nhóm');
-    const generatedItinerary = getSampleItineraryForDestination(destinationToSave, formattedStartDate);
-
     const parsedBudget = Number(newBudget) > 0 ? Number(newBudget) : 20000000;
-    const newTrip: TripItem = {
-      id: tripId,
-      title: newTitle,
-      destination: destinationToSave,
-      durationBadge,
-      startDate: formattedStartDate,
-      endDate: formattedEndDate,
-      status: 'PLANNING',
-      role: 'OWNER',
-      ownerId: currentOwner.userId,
-      budgetTotal: parsedBudget,
-      budgetSpent: 0,
-      progressPercent: 0,
-      members: [currentOwner],
-      image: getDestinationHeroImage(destinationToSave),
-      treasuryPath: `/trips/${tripId}/treasury`,
-      alertText: `Hành trình ${durationBadge} khám phá ${destinationToSave}`,
-      alertLinkText: 'Xem',
-      itineraryDays: generatedItinerary,
-      quickActions: [
-        { label: 'Lịch trình', href: `/trips/${tripId}` },
-        { label: 'Phân công', actionType: 'ASSIGN' },
-        { label: 'Ghi chú', actionType: 'NOTE' },
-      ],
-    };
 
-    setTripsList((prev) => [newTrip, ...prev]);
-
-    // Persist to localStorage
     try {
-      const stored = localStorage.getItem('vista_custom_trips');
-      const list = stored ? JSON.parse(stored) : [];
-      list.unshift(newTrip);
-      localStorage.setItem('vista_custom_trips', JSON.stringify(list));
-    } catch {
-      // ignore
-    }
+      // Persist directly to PostgreSQL Database via Spring Boot API
+      const createdBackendTrip = await apiRequest<any>('/trips', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: newTitle.trim(),
+          startDate: newStartDate,
+          endDate: newEndDate,
+          destinationSummary: destinationToSave,
+          budgetTotal: parsedBudget,
+          currency: 'VND',
+        }),
+      });
 
-    setShowCreateModal(false);
-    setNewTitle('');
-    setNewDestination('');
-    setCustomCityName('');
-    setIsCustomCity(false);
-    showToast(`Đã tạo thành công chuyến đi "${newTrip.title}"!`);
+      const realId = createdBackendTrip.id;
+      const newTrip: TripItem = {
+        id: realId,
+        title: createdBackendTrip.title || newTitle,
+        destination: destinationToSave,
+        durationBadge,
+        startDate: formattedStartDate,
+        endDate: formattedEndDate,
+        status: 'PLANNING',
+        role: 'OWNER',
+        ownerId: createdBackendTrip.ownerId || currentOwner.userId,
+        budgetTotal: parsedBudget,
+        budgetSpent: 0,
+        progressPercent: 0,
+        members: [currentOwner],
+        image: getDestinationHeroImage(destinationToSave),
+        treasuryPath: `/trips/${realId}/treasury`,
+        alertText: `Hành trình ${durationBadge} khám phá ${destinationToSave}`,
+        alertLinkText: 'Xem',
+        itineraryDays: getSampleItineraryForDestination(destinationToSave, formattedStartDate),
+        quickActions: [
+          { label: 'Lịch trình', href: `/trips/${realId}` },
+          { label: 'Thủ quỹ', href: `/trips/${realId}/treasury` },
+          { label: 'Phân công', actionType: 'ASSIGN' },
+          { label: 'Ghi chú', actionType: 'NOTE' },
+        ],
+      };
+
+      setTripsList((prev) => [newTrip, ...prev]);
+      setShowCreateModal(false);
+      setNewTitle('');
+      setNewDestination('');
+      setCustomCityName('');
+      setIsCustomCity(false);
+      showToast(`🎉 Đã lưu thành công chuyến đi "${newTrip.title}" vào Database!`);
+    } catch (err: any) {
+      showToast(`⚠️ Lỗi khi lưu chuyến đi vào Database: ${err.message || 'Lỗi kết nối'}`);
+    }
   };
 
-  const handleJoinTrip = (e: React.FormEvent) => {
+  const handleJoinTrip = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanCode = joinCode.trim().toUpperCase();
     if (!cleanCode) {
@@ -1135,20 +1101,6 @@ export default function TripsPage() {
       );
       if (!alreadyIn) {
         matched.members = [...(matched.members || []), meMember];
-        // Save to localStorage
-        try {
-          const stored = localStorage.getItem('vista_custom_trips');
-          const list: TripItem[] = stored ? JSON.parse(stored) : [];
-          const idx = list.findIndex((x) => x.id === matched.id);
-          if (idx >= 0) {
-            list[idx] = matched;
-          } else {
-            list.unshift(matched);
-          }
-          localStorage.setItem('vista_custom_trips', JSON.stringify(list));
-        } catch {
-          // ignore
-        }
       }
 
       setShowJoinModal(false);
@@ -1158,6 +1110,22 @@ export default function TripsPage() {
         router.push(`/trips/${matched.id}`);
       }, 500);
       return;
+    }
+
+    // Try joining via backend invitation token if available
+    try {
+      await apiRequest(`/invitations/${cleanCode}/accept`, { method: 'POST' });
+      showToast(`🎉 Đã tham gia chuyến đi thành công qua mã ${cleanCode}!`);
+      setShowJoinModal(false);
+      setJoinCode('');
+      // Re-sync trips
+      const updatedServerTrips = await apiRequest<any[]>('/trips');
+      if (Array.isArray(updatedServerTrips)) {
+        window.location.reload();
+      }
+      return;
+    } catch {
+      // If code is not an active backend invitation token, provide friendly fallback
     }
 
     // If new custom code not matching existing, create a joined trip stub
@@ -1190,15 +1158,6 @@ export default function TripsPage() {
     };
 
     setTripsList((prev) => [newJoinedTrip, ...prev]);
-    try {
-      const stored = localStorage.getItem('vista_custom_trips');
-      const list = stored ? JSON.parse(stored) : [];
-      list.unshift(newJoinedTrip);
-      localStorage.setItem('vista_custom_trips', JSON.stringify(list));
-    } catch {
-      // ignore
-    }
-
     setShowJoinModal(false);
     setJoinCode('');
     showToast(`Gia nhập thành công chuyến đi theo mã ${cleanCode}! Đang chuyển hướng...`);

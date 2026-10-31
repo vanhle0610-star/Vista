@@ -13,6 +13,7 @@ import type {
 } from '@/features/budget/types';
 import { TripHeader } from '@/features/budget/components/TripHeader';
 import { FinancialKpiCards } from '@/features/budget/components/FinancialKpiCards';
+import { PersonalBalanceHub } from '@/features/budget/components/PersonalBalanceHub';
 import { ExpenseCategoryDonut } from '@/features/budget/components/ExpenseCategoryDonut';
 import { DebtSettlementMatrix } from '@/features/budget/components/DebtSettlementMatrix';
 import { ExpenseLedgerTable } from '@/features/budget/components/ExpenseLedgerTable';
@@ -216,36 +217,56 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
         }
       } catch {}
 
-      // Fallback: If no custom trip exists, create a clean default trip for the current user
+      // Fallback: If no custom trip exists, create a clean trip (supporting seeded demo trip)
       if (!activeTrip) {
+        const isSeededTrip = tripId === 'd0000000-0000-0000-0000-000000000001' || tripId === 'trip-danang-2026';
+        const realTripId = isSeededTrip ? 'd0000000-0000-0000-0000-000000000001' : tripId;
+
         activeTrip = {
-          id: tripId,
-          title: `Chuyến đi của ${myName}`,
+          id: realTripId,
+          title: isSeededTrip ? 'Khám phá Đà Nẵng 3 ngày' : `Chuyến đi của ${myName}`,
           startDate: '15/11/2026',
           endDate: '18/11/2026',
           destinationSummary: 'Đà Nẵng & Hội An',
-          budgetTotal: 20000000,
+          budgetTotal: 15000000,
           currency: 'VND',
           status: 'ACTIVE',
-          ownerId: myId,
+          ownerId: isSeededTrip ? 'a0000000-0000-0000-0000-000000000001' : myId,
         };
 
-        activeMembers = [
-          {
-            userId: myId,
-            displayName: myName,
-            email: myEmail,
-            role: 'OWNER',
-            budgetShare: 10000000,
-          },
-          {
-            userId: 'mem-2',
-            displayName: 'Bạn đồng hành',
-            email: 'donghanh@vista.vn',
-            role: 'MEMBER',
-            budgetShare: 10000000,
-          },
-        ];
+        activeMembers = isSeededTrip
+          ? [
+              {
+                userId: 'a0000000-0000-0000-0000-000000000001',
+                displayName: 'Nguyễn Văn A (Owner)',
+                email: 'userA@vista.vn',
+                role: 'OWNER',
+                budgetShare: 7500000,
+              },
+              {
+                userId: 'b0000000-0000-0000-0000-000000000002',
+                displayName: 'Trần Thị B (Member)',
+                email: 'userB@vista.vn',
+                role: 'MEMBER',
+                budgetShare: 7500000,
+              },
+            ]
+          : [
+              {
+                userId: myId,
+                displayName: myName,
+                email: myEmail,
+                role: 'OWNER',
+                budgetShare: 10000000,
+              },
+              {
+                userId: 'mem-2',
+                displayName: 'Bạn đồng hành',
+                email: 'donghanh@vista.vn',
+                role: 'MEMBER',
+                budgetShare: 10000000,
+              },
+            ];
       }
 
       if (activeMembers.length === 0) {
@@ -263,20 +284,85 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
       setTrip(activeTrip);
       setMembers(activeMembers);
 
-      // 3. Load Real Expenses for this trip
+      // 3. Load Real Expenses for this trip (from Backend if UUID or fallback localStorage)
       let loadedExpenses: Expense[] = [];
-      try {
-        const storedExpensesStr = localStorage.getItem(`vista_expenses_${activeTrip.id}`);
-        if (storedExpensesStr) {
-          loadedExpenses = JSON.parse(storedExpensesStr);
+      let loadedBackendSummary: TripExpenseSummary | null = null;
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(activeTrip.id);
+
+      if (isUuid && typeof window !== 'undefined') {
+        try {
+          const apiExpenses = await apiRequest<any[]>(`/trips/${activeTrip.id}/expenses`);
+          if (Array.isArray(apiExpenses) && apiExpenses.length > 0) {
+            loadedExpenses = apiExpenses.map((e: any) => ({
+              id: String(e.id),
+              tripId: String(e.tripId || activeTrip?.id),
+              title: String(e.title),
+              amount: Number(e.amount),
+              currency: e.currency || 'VND',
+              paidBy: String(e.paidBy),
+              category: e.category || 'FOOD',
+              occurredAt: e.occurredAt || new Date().toISOString(),
+              status: e.status || 'ACTIVE',
+              createdAt: e.createdAt || new Date().toISOString(),
+              splits: Array.isArray(e.splits)
+                ? e.splits.map((s: any) => ({
+                    id: String(s.id),
+                    userId: String(s.userId),
+                    shareAmount: Number(s.shareAmount),
+                    settledStatus: s.settledStatus || 'UNSETTLED',
+                  }))
+                : [],
+              version: e.version,
+            }));
+          }
+
+          // Fetch real backend settlement summary if available
+          try {
+            const apiSum = await apiRequest<any>(
+              `/trips/${activeTrip.id}/expenses/summary?budgetTarget=${activeTrip.budgetTotal}`
+            );
+            if (apiSum && apiSum.settlementDeltas) {
+              loadedBackendSummary = {
+                tripId: activeTrip.id,
+                totalSpent: Number(apiSum.totalSpent) || 0,
+                budgetTotal: Number(apiSum.budgetTotal) || activeTrip.budgetTotal,
+                remainingBudget: Number(apiSum.remainingBudget) || 0,
+                spentPercentage: Number(apiSum.spentPercentage) || 0,
+                currency: apiSum.currency || 'VND',
+                settlementDeltas: apiSum.settlementDeltas || {},
+                suggestedTransfers: Array.isArray(apiSum.suggestedTransfers)
+                  ? apiSum.suggestedTransfers.map((t: any) => ({
+                      fromUserId: String(t.fromUserId),
+                      toUserId: String(t.toUserId),
+                      amount: Number(t.amount),
+                    }))
+                  : [],
+              };
+            }
+          } catch {}
+        } catch {
+          // Backend fetch fallback to localStorage below
         }
-      } catch {}
+      }
+
+      if (loadedExpenses.length === 0) {
+        try {
+          const storedExpensesStr = localStorage.getItem(`vista_expenses_${activeTrip.id}`);
+          if (storedExpensesStr) {
+            loadedExpenses = JSON.parse(storedExpensesStr);
+          }
+        } catch {}
+      }
 
       setExpenses(loadedExpenses);
 
-      // 4. Compute real summary
-      const sum = computeSummary(loadedExpenses, activeTrip.budgetTotal, activeMembers);
-      setSummary(sum);
+      // 4. Set summary: Prioritize backend calculated summary if available, else compute locally
+      if (loadedBackendSummary) {
+        setSummary(loadedBackendSummary);
+      } else {
+        const sum = computeSummary(loadedExpenses, activeTrip.budgetTotal, activeMembers);
+        setSummary(sum);
+      }
     } catch (err) {
       console.error('Error loading treasury data:', err);
     } finally {
@@ -291,6 +377,27 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
   // Handle Create Expense
   const handleCreateExpense = async (payload: CreateExpensePayload) => {
     if (!trip) return;
+
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(trip.id);
+
+    // Save directly to PostgreSQL Database via Spring Boot API
+    if (isUuid) {
+      try {
+        await apiRequest(`/trips/${trip.id}/expenses`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        // Refresh live data directly from Database
+        await loadTreasuryData();
+        setIsDrawerOpen(false);
+        showToast(`🎉 Đã lưu khoản chi "${payload.title}" vào Database thành công!`);
+        return;
+      } catch (err: any) {
+        console.warn('Backend expense POST error:', err);
+      }
+    }
 
     const payer = payload.paidBy || currentUserId;
     const participants =
@@ -333,39 +440,6 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
     const updatedExpenses = [newExpense, ...expenses];
     setExpenses(updatedExpenses);
 
-    // Persist to localStorage
-    try {
-      localStorage.setItem(`vista_expenses_${trip.id}`, JSON.stringify(updatedExpenses));
-
-      // Update budgetSpent in vista_custom_trips
-      const customTripsStr = localStorage.getItem('vista_custom_trips');
-      if (customTripsStr) {
-        const list = JSON.parse(customTripsStr);
-        const idx = list.findIndex((t: any) => t.id === trip.id);
-        if (idx !== -1) {
-          const totalSpent = updatedExpenses.reduce((acc, curr) => acc + curr.amount, 0);
-          list[idx].budgetSpent = totalSpent;
-          list[idx].progressPercent = trip.budgetTotal > 0
-            ? Math.min(100, Math.round((totalSpent / trip.budgetTotal) * 100))
-            : 0;
-          localStorage.setItem('vista_custom_trips', JSON.stringify(list));
-        }
-      }
-    } catch (e) {
-      console.warn('Storage save error:', e);
-    }
-
-    // Try optional backend sync if authenticated
-    try {
-      await apiRequest(`/trips/${trip.id}/expenses`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-    } catch {
-      // Ignore if offline / mock mode
-    }
-
     const updatedSummary = computeSummary(updatedExpenses, trip.budgetTotal, members);
     setSummary(updatedSummary);
     setIsDrawerOpen(false);
@@ -376,29 +450,22 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
   const handleDeleteExpense = async (expenseId: string) => {
     if (!trip) return;
 
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(trip.id);
+    if (isUuid) {
+      try {
+        await apiRequest(`/trips/${trip.id}/expenses/${expenseId}`, {
+          method: 'DELETE',
+        });
+        await loadTreasuryData();
+        showToast('Đã xóa khoản chi khỏi Database thành công!');
+        return;
+      } catch (err) {
+        console.warn('Backend delete expense error:', err);
+      }
+    }
+
     const updatedExpenses = expenses.filter((e) => e.id !== expenseId);
     setExpenses(updatedExpenses);
-
-    try {
-      localStorage.setItem(`vista_expenses_${trip.id}`, JSON.stringify(updatedExpenses));
-
-      // Update budgetSpent in vista_custom_trips
-      const customTripsStr = localStorage.getItem('vista_custom_trips');
-      if (customTripsStr) {
-        const list = JSON.parse(customTripsStr);
-        const idx = list.findIndex((t: any) => t.id === trip.id);
-        if (idx !== -1) {
-          const totalSpent = updatedExpenses.reduce((acc, curr) => acc + curr.amount, 0);
-          list[idx].budgetSpent = totalSpent;
-          list[idx].progressPercent = trip.budgetTotal > 0
-            ? Math.min(100, Math.round((totalSpent / trip.budgetTotal) * 100))
-            : 0;
-          localStorage.setItem('vista_custom_trips', JSON.stringify(list));
-        }
-      }
-    } catch (e) {
-      console.warn('Storage save error:', e);
-    }
 
     const updatedSummary = computeSummary(updatedExpenses, trip.budgetTotal, members);
     setSummary(updatedSummary);
@@ -474,6 +541,17 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
               trip={trip}
               memberCount={members.length}
               onOpenAddExpense={() => setIsDrawerOpen(true)}
+            />
+          )}
+
+          {/* 1 & 8: Personal Balance Hero Card [Idea 1] + Group Gamification Badges [Idea 8] */}
+          {summary && (
+            <PersonalBalanceHub
+              summary={summary}
+              members={members}
+              currentUserId={currentUserId}
+              expenses={expenses}
+              tripTitle={trip?.title}
             />
           )}
 

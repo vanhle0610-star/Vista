@@ -1,6 +1,16 @@
 'use client';
 
 import React, { useState } from 'react';
+import {
+  Utensils,
+  Building2,
+  Car,
+  Ticket,
+  ShoppingBag,
+  Trash2,
+  Receipt,
+  Plus,
+} from 'lucide-react';
 import type { Expense, TripMember } from '../types';
 import styles from '../treasury.module.css';
 
@@ -11,12 +21,15 @@ interface ExpenseLedgerTableProps {
   onDeleteExpense: (expenseId: string) => Promise<void>;
 }
 
-const CATEGORY_MAP: Record<string, { label: string; icon: string; bg: string; color: string }> = {
-  FOOD: { label: 'Ăn uống', icon: '🍜', bg: '#ffedd5', color: '#ea580c' },
-  ACCOMMODATION: { label: 'Lưu trú', icon: '🛏️', bg: '#e0f2fe', color: '#0284c7' },
-  TRANSPORT: { label: 'Di chuyển', icon: '🚗', bg: '#cffafe', color: '#0891b2' },
-  ACTIVITIES: { label: 'Vé tham quan', icon: '🎟️', bg: '#f3e8ff', color: '#9333ea' },
-  OTHER: { label: 'Mua sắm / Khác', icon: '🛍️', bg: '#ffe4e6', color: '#e11d48' },
+const CATEGORY_MAP: Record<
+  string,
+  { label: string; icon: React.ComponentType<{ size?: number }>; bg: string; color: string }
+> = {
+  FOOD: { label: 'Ăn uống', icon: Utensils, bg: '#ffedd5', color: '#ea580c' },
+  ACCOMMODATION: { label: 'Lưu trú', icon: Building2, bg: '#e0f2fe', color: '#0284c7' },
+  TRANSPORT: { label: 'Di chuyển', icon: Car, bg: '#cffafe', color: '#0891b2' },
+  ACTIVITIES: { label: 'Vé tham quan', icon: Ticket, bg: '#f3e8ff', color: '#9333ea' },
+  OTHER: { label: 'Mua sắm / Khác', icon: ShoppingBag, bg: '#ffe4e6', color: '#e11d48' },
 };
 
 export function ExpenseLedgerTable({
@@ -36,10 +49,13 @@ export function ExpenseLedgerTable({
     return new Intl.NumberFormat('vi-VN').format(Math.round(val)) + ' ₫';
   };
 
-  const formatDate = (isoString?: string) => {
-    if (!isoString) return '--/--/----';
+  const parseDateBlock = (isoString?: string) => {
+    if (!isoString) return { day: '--', month: '--' };
     const d = new Date(isoString);
-    return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+    return {
+      day: String(d.getDate()).padStart(2, '0'),
+      month: `Th${d.getMonth() + 1}`,
+    };
   };
 
   const filteredExpenses = expenses.filter((exp) => {
@@ -75,7 +91,7 @@ export function ExpenseLedgerTable({
           <input
             type="text"
             className={styles.searchInput}
-            placeholder="🔍 Tìm kiếm theo mô tả, người chi..."
+            placeholder="Tìm kiếm theo mô tả, người chi..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -86,11 +102,11 @@ export function ExpenseLedgerTable({
             onChange={(e) => setCategoryFilter(e.target.value)}
           >
             <option value="ALL">Tất cả danh mục ▾</option>
-            <option value="FOOD">🍜 Ăn uống</option>
-            <option value="ACCOMMODATION">🛏️ Lưu trú</option>
-            <option value="TRANSPORT">🚗 Di chuyển</option>
-            <option value="ACTIVITIES">🎟️ Vé tham quan</option>
-            <option value="OTHER">🛍️ Khác</option>
+            <option value="FOOD">Ăn uống</option>
+            <option value="ACCOMMODATION">Lưu trú</option>
+            <option value="TRANSPORT">Di chuyển</option>
+            <option value="ACTIVITIES">Vé tham quan</option>
+            <option value="OTHER">Mua sắm / Khác</option>
           </select>
 
           <button
@@ -98,7 +114,7 @@ export function ExpenseLedgerTable({
             className={styles.primaryAddBtn}
             onClick={onOpenAddExpense}
           >
-            <span>+</span>
+            <Plus size={15} />
             <span>Ghi Khoản Chi Mới</span>
           </button>
         </div>
@@ -121,30 +137,37 @@ export function ExpenseLedgerTable({
             {filteredExpenses.length > 0 ? (
               filteredExpenses.map((exp) => {
                 const cat = CATEGORY_MAP[exp.category] || CATEGORY_MAP.OTHER;
+                const IconComponent = cat.icon;
                 const payer = memberMap.get(exp.paidBy);
                 const payerName = payer ? payer.displayName : 'Thành viên';
                 const payerInitial = payerName.charAt(0).toUpperCase();
                 const splitCount = exp.splits ? exp.splits.length : 1;
+                const dateBlock = parseDateBlock(exp.occurredAt);
 
                 return (
-                  <tr key={exp.id}>
-                    <td style={{ color: '#64748b' }}>{formatDate(exp.occurredAt)}</td>
+                  <tr key={exp.id} className={styles.receiptStubRow}>
+                    <td style={{ width: '60px' }}>
+                      <div className={styles.calendarDateBlock}>
+                        <span className={styles.calendarDay}>{dateBlock.day}</span>
+                        <span className={styles.calendarMonth}>{dateBlock.month}</span>
+                      </div>
+                    </td>
                     <td className={styles.descBold}>{exp.title}</td>
                     <td>
                       <span
                         style={{
                           display: 'inline-flex',
                           alignItems: 'center',
-                          gap: '6px',
+                          gap: '5px',
                           padding: '3px 8px',
                           borderRadius: '6px',
                           background: cat.bg,
                           color: cat.color,
-                          fontWeight: 650,
-                          fontSize: '12px',
+                          fontWeight: 700,
+                          fontSize: '11.5px',
                         }}
                       >
-                        <span>{cat.icon}</span>
+                        <IconComponent size={12} />
                         <span>{cat.label}</span>
                       </span>
                     </td>
@@ -152,15 +175,15 @@ export function ExpenseLedgerTable({
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <div
                           className={styles.avatarCircle}
-                          style={{ width: '26px', height: '26px', fontSize: '11px' }}
+                          style={{ width: '24px', height: '24px', fontSize: '10.5px' }}
                         >
                           {payerInitial}
                         </div>
-                        <span style={{ fontWeight: 500 }}>{payerName}</span>
+                        <span style={{ fontWeight: 600, color: '#334155', fontSize: '12.5px' }}>{payerName}</span>
                       </div>
                     </td>
                     <td className={styles.amountBold}>{formatVnd(exp.amount)}</td>
-                    <td style={{ color: '#64748b' }}>{splitCount} người</td>
+                    <td style={{ color: '#64748b', fontSize: '12.5px' }}>{splitCount} người</td>
                     <td style={{ textAlign: 'right' }}>
                       <button
                         type="button"
@@ -168,8 +191,10 @@ export function ExpenseLedgerTable({
                         onClick={() => handleDelete(exp.id, exp.title)}
                         disabled={deletingId === exp.id}
                         title="Hủy khoản chi"
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                       >
-                        {deletingId === exp.id ? '...' : '🗑️ Xóa'}
+                        <Trash2 size={12} />
+                        <span>{deletingId === exp.id ? '...' : 'Xóa'}</span>
                       </button>
                     </td>
                   </tr>
@@ -179,13 +204,18 @@ export function ExpenseLedgerTable({
               <tr>
                 <td colSpan={7}>
                   <div className={styles.emptyStateBox}>
-                    <span style={{ fontSize: '32px' }}>🧾</span>
-                    <span style={{ fontWeight: 600, color: '#0f172a' }}>
-                      Chưa có khoản chi tiêu nào
+                    <Receipt size={32} color="#94a3b8" />
+                    <span style={{ fontWeight: 700, color: '#334155', fontSize: '13.5px' }}>
+                      Chưa có khoản chi nào
                     </span>
-                    <span style={{ fontSize: '13px' }}>
-                      Hãy nhấn nút <b>&quot;+ Ghi Khoản Chi Mới&quot;</b> để thêm khoản chi đầu tiên cho chuyến đi!
-                    </span>
+                    <button
+                      type="button"
+                      className={styles.btnSecondary}
+                      onClick={onOpenAddExpense}
+                      style={{ marginTop: '8px' }}
+                    >
+                      <Plus size={14} /> Ghi khoản chi
+                    </button>
                   </div>
                 </td>
               </tr>

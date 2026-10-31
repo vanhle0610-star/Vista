@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Utensils, Hotel, Car, Ticket, ShoppingBag, PieChart } from 'lucide-react';
 import type { Expense } from '../types';
 import styles from '../treasury.module.css';
@@ -18,15 +18,16 @@ interface CategoryMeta {
 }
 
 export function ExpenseCategoryDonut({ expenses, totalSpent }: ExpenseCategoryDonutProps) {
+  const [selectedCat, setSelectedCat] = useState<string | null>(null);
+
   const CATEGORY_CONFIG: Record<string, CategoryMeta> = {
-    FOOD: { label: 'Ăn uống', icon: <Utensils size={14} />, color: '#f97316', bg: '#ffedd5' },
-    ACCOMMODATION: { label: 'Lưu trú', icon: <Hotel size={14} />, color: '#0284c7', bg: '#e0f2fe' },
-    TRANSPORT: { label: 'Di chuyển', icon: <Car size={14} />, color: '#06b6d4', bg: '#cffafe' },
-    ACTIVITIES: { label: 'Vé tham quan', icon: <Ticket size={14} />, color: '#a855f7', bg: '#f3e8ff' },
-    OTHER: { label: 'Mua sắm / Khác', icon: <ShoppingBag size={14} />, color: '#f43f5e', bg: '#ffe4e6' },
+    FOOD: { label: 'Ăn uống', icon: <Utensils size={13} />, color: '#ea580c', bg: '#ffedd5' },
+    ACCOMMODATION: { label: 'Lưu trú', icon: <Hotel size={13} />, color: '#0284c7', bg: '#e0f2fe' },
+    TRANSPORT: { label: 'Di chuyển', icon: <Car size={13} />, color: '#0891b2', bg: '#cffafe' },
+    ACTIVITIES: { label: 'Vé vui chơi', icon: <Ticket size={13} />, color: '#9333ea', bg: '#f3e8ff' },
+    OTHER: { label: 'Mua sắm', icon: <ShoppingBag size={13} />, color: '#e11d48', bg: '#ffe4e6' },
   };
 
-  // Aggregate totals by category
   const categoryTotals: Record<string, number> = {
     FOOD: 0,
     ACCOMMODATION: 0,
@@ -48,9 +49,8 @@ export function ExpenseCategoryDonut({ expenses, totalSpent }: ExpenseCategoryDo
     return new Intl.NumberFormat('vi-VN').format(Math.round(val)) + ' ₫';
   };
 
-  // Build SVG Donut Segments
   const radius = 62;
-  const strokeWidth = 20;
+  const strokeWidth = 18;
   const circumference = 2 * Math.PI * radius;
 
   let cumulativeOffset = 0;
@@ -65,39 +65,57 @@ export function ExpenseCategoryDonut({ expenses, totalSpent }: ExpenseCategoryDo
       return {
         key: catKey,
         amount,
-        pct: (pct * 100).toFixed(1),
+        pct: (pct * 100).toFixed(0),
         config: CATEGORY_CONFIG[catKey] || CATEGORY_CONFIG.OTHER,
         strokeDasharray,
         strokeDashoffset,
+        isSelected: selectedCat === catKey,
       };
     });
+
+  const activeAmount = selectedCat ? categoryTotals[selectedCat] || 0 : totalSpent;
+  const activeLabel = selectedCat
+    ? CATEGORY_CONFIG[selectedCat]?.label || 'Chi tiêu'
+    : 'Tổng chi';
 
   return (
     <div className={styles.sectionCard}>
       <div className={styles.sectionCardHeader}>
-        <div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <PieChart size={16} color="#0284c7" />
           <h2 className={styles.sectionTitle}>Phân Bổ Chi Tiêu</h2>
-          <div className={styles.sectionSubtitle}>
-            Tổng chi: {formatVnd(totalSpent)}
-          </div>
         </div>
-        <div className={styles.cardHeaderBadge}>
-          <PieChart size={15} color="#0284c7" />
-          <span>Theo danh mục</span>
-        </div>
+        {selectedCat && (
+          <button
+            type="button"
+            className={styles.resetFilterBtn}
+            onClick={() => setSelectedCat(null)}
+          >
+            Xem tất cả
+          </button>
+        )}
       </div>
 
-      <div className={styles.donutContainer}>
-        {/* SVG Donut Visual */}
-        <div className={styles.donutVisualBox}>
-          <svg width="160" height="160" viewBox="0 0 160 160" className={styles.donutSvg}>
-            {/* Background Track */}
+      <div className={styles.donutContainerCentered}>
+        {/* Dual-ring Glass Rim Visual [Khung 5] */}
+        <div className={styles.donutVisualBoxGlass}>
+          <svg width="154" height="154" viewBox="0 0 160 160" className={styles.donutSvg}>
+            {/* Outer glass ring */}
+            <circle
+              cx="80"
+              cy="80"
+              r="74"
+              fill="transparent"
+              stroke="#f1f5f9"
+              strokeWidth="1.5"
+            />
+            {/* Base track */}
             <circle
               cx="80"
               cy="80"
               r={radius}
               fill="transparent"
-              stroke="#f1f5f9"
+              stroke="#f8fafc"
               strokeWidth={strokeWidth}
             />
             {/* Active Segments */}
@@ -109,42 +127,53 @@ export function ExpenseCategoryDonut({ expenses, totalSpent }: ExpenseCategoryDo
                 r={radius}
                 fill="transparent"
                 stroke={seg.config.color}
-                strokeWidth={strokeWidth}
+                strokeWidth={seg.isSelected ? strokeWidth + 4 : strokeWidth}
                 strokeDasharray={seg.strokeDasharray}
                 strokeDashoffset={seg.strokeDashoffset}
-                strokeLinecap="butt"
+                strokeLinecap="round"
+                style={{
+                  cursor: 'pointer',
+                  transition: 'all 0.25s ease',
+                  opacity: selectedCat && !seg.isSelected ? 0.35 : 1,
+                }}
+                onClick={() => setSelectedCat(selectedCat === seg.key ? null : seg.key)}
               />
             ))}
           </svg>
 
-          {/* Centered Total Amount (Strictly upright, never sideways) */}
+          {/* Upright Center Total */}
           <div className={styles.donutCenterText}>
-            <span className={styles.donutCenterAmount}>{formatVnd(totalSpent)}</span>
-            <span className={styles.donutCenterLabel}>Tổng chi</span>
+            <span className={styles.donutCenterAmount}>{formatVnd(activeAmount)}</span>
+            <span className={styles.donutCenterLabel}>{activeLabel}</span>
           </div>
         </div>
 
-        {/* Legend Breakdown */}
-        <div className={styles.legendList}>
+        {/* Interactive Category Chips Grid */}
+        <div className={styles.donutCategoryChipsGrid}>
           {Object.entries(CATEGORY_CONFIG).map(([key, config]) => {
             const amount = categoryTotals[key] || 0;
-            const pct = totalSpent > 0 ? ((amount / totalSpent) * 100).toFixed(1) : '0.0';
+            const pct = totalSpent > 0 ? Math.round((amount / totalSpent) * 100) : 0;
+            const isSelected = selectedCat === key;
+
             return (
-              <div key={key} className={styles.legendRow}>
-                <div className={styles.legendLeft}>
-                  <div
-                    className={styles.categoryIconPill}
-                    style={{ background: config.bg, color: config.color }}
-                  >
-                    {config.icon}
-                  </div>
-                  <span className={styles.legendLabelText}>{config.label}</span>
+              <button
+                key={key}
+                type="button"
+                className={`${styles.donutChipRow} ${isSelected ? styles.donutChipSelected : ''}`}
+                onClick={() => setSelectedCat(isSelected ? null : key)}
+              >
+                <div className={styles.donutChipLeft}>
+                  <span
+                    className={styles.donutChipDot}
+                    style={{ background: config.color }}
+                  />
+                  <span className={styles.donutChipName}>{config.label}</span>
                 </div>
-                <div className={styles.legendRight}>
-                  <span className={styles.legendAmount}>{formatVnd(amount)}</span>
-                  <span className={styles.legendPercent}>({pct}%)</span>
+                <div className={styles.donutChipRight}>
+                  <strong>{formatVnd(amount)}</strong>
+                  <span className={styles.donutChipPct}>{pct}%</span>
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>

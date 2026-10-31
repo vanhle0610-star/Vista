@@ -10,7 +10,7 @@ import {
   Plus,
   Compass,
   FileDown,
-  Share2,
+  Sparkles,
 } from 'lucide-react';
 import type { TripDetail } from '../types';
 import styles from '../treasury.module.css';
@@ -50,7 +50,7 @@ export function TripHeader({
   const formatDateRange = (start?: string, end?: string) => {
     const s = normalizeDateStr(start);
     const e = normalizeDateStr(end);
-    if (!s && !e) return 'Chưa thiết lập ngày';
+    if (!s && !e) return 'Lịch trình linh hoạt';
     if (s && e) return `${s} – ${e}`;
     return s || e;
   };
@@ -68,77 +68,82 @@ export function TripHeader({
   };
 
   return (
-    <header className={styles.headerWrapper}>
-      {/* Breadcrumb Navigation */}
-      <div className={styles.breadcrumbBar}>
-        <Link href={`/trips/${trip.id}`} className={styles.breadcrumbLink}>
-          <ArrowLeft size={16} />
-          <span>Chi tiết chuyến đi</span>
-        </Link>
-        <span className={styles.breadcrumbDivider}>/</span>
-        <span className={styles.breadcrumbCurrent}>Sổ quỹ & Quản lý Chi tiêu</span>
-      </div>
+    <header className={styles.editorialHeaderWrapper}>
+      {/* Ambient backdrop glow */}
+      <div className={styles.headerAmbientGlow} />
 
-      <div className={styles.tripHeaderBox}>
-        <div className={styles.tripTitleGroup}>
-          <div className={styles.titleWithBadge}>
-            <h1 className={styles.tripTitle}>{trip.title}</h1>
-            <div className={styles.statusPill}>
-              <span className={styles.statusDot} />
-              <span>{getStatusLabel(trip.status)}</span>
-            </div>
-          </div>
-
-          <div className={styles.tripMetaRow}>
-            {trip.destinationSummary && (
-              <>
-                <div className={styles.tripMetaItem}>
-                  <MapPin size={15} color="#0284c7" />
-                  <span>{trip.destinationSummary}</span>
-                </div>
-                <span className={styles.metaDot}>•</span>
-              </>
-            )}
-            <div className={styles.tripMetaItem}>
-              <Calendar size={15} color="#0284c7" />
-              <span>{formatDateRange(trip.startDate, trip.endDate)}</span>
-            </div>
-            <span className={styles.metaDot}>•</span>
-            <div className={styles.tripMetaItem}>
-              <Users size={15} color="#0284c7" />
-              <span>{memberCount} thành viên tham gia</span>
-            </div>
-          </div>
+      {/* Top Navigation Bar */}
+      <div className={styles.headerTopBar}>
+        <div className={styles.breadcrumbBar}>
+          <Link href={`/trips/${trip.id}`} className={styles.breadcrumbLink}>
+            <ArrowLeft size={15} />
+            <span>Chuyến đi</span>
+          </Link>
+          <span className={styles.breadcrumbDivider}>/</span>
+          <span className={styles.breadcrumbCurrent}>Sổ quỹ</span>
         </div>
 
         <div className={styles.headerActionButtons}>
           <Link
             href={`/trips/${trip.id}`}
-            className={styles.btnSecondary}
-            title="Xem lịch trình chi tiết từng ngày"
+            className={styles.headerSubActionBtn}
+            title="Xem lịch trình"
           >
-            <Compass size={16} />
+            <Compass size={14} />
             <span>Lịch trình</span>
           </Link>
 
           <button
             type="button"
-            className={styles.btnSecondary}
+            className={styles.headerSubActionBtn}
             onClick={() => window.print()}
-            title="Xuất báo cáo thu chi nhóm"
+            title="Xuất PDF"
           >
-            <FileDown size={16} />
-            <span>Xuất báo cáo</span>
+            <FileDown size={14} />
+            <span>Xuất</span>
           </button>
 
           <button
             type="button"
-            className={styles.btnPrimaryHighlight}
+            className={styles.headerPrimaryActionBtn}
             onClick={onOpenAddExpense}
           >
-            <Plus size={18} />
-            <span>Ghi nhận chi tiêu</span>
+            <Plus size={15} />
+            <span>+ Ghi chi tiêu</span>
           </button>
+        </div>
+      </div>
+
+      {/* Main Editorial Hero */}
+      <div className={styles.editorialMainRow}>
+        <div className={styles.editorialTitleGroup}>
+          <div className={styles.editorialTitleRow}>
+            <h1 className={styles.editorialTitle}>{trip.title}</h1>
+            {/* Passport Stamp Badge [Khung 1] */}
+            <div className={styles.passportStampBadge}>
+              <span className={styles.stampDot} />
+              <span className={styles.stampText}>{getStatusLabel(trip.status)}</span>
+            </div>
+          </div>
+
+          <div className={styles.editorialMetaRow}>
+            {trip.destinationSummary && (
+              <div className={styles.editorialMetaItem}>
+                <MapPin size={14} className={styles.metaIconSky} />
+                <span>{trip.destinationSummary}</span>
+              </div>
+            )}
+            <span className={styles.metaBullet}>•</span>
+            <div className={styles.editorialMetaItem}>
+              <Calendar size={14} className={styles.metaIconSky} />
+              <span>{formatDateRange(trip.startDate, trip.endDate)}</span>
+            </div>
+            <span className={styles.metaBullet}>•</span>
+            <div className={styles.editorialMetaItem}>
+              <Users size={14} className={styles.metaIconSky} />
+              <span>{memberCount} thành viên</span>
+            </div>
+          </div>
         </div>
       </div>
     </header>

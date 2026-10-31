@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Wallet, Receipt, Target, Scale } from 'lucide-react';
+import { Wallet, Users, Scale, ArrowUpRight, ArrowDownLeft, Check } from 'lucide-react';
 import type { TripExpenseSummary } from '../types';
 import styles from '../treasury.module.css';
 
@@ -22,8 +22,9 @@ export function FinancialKpiCards({
 
   const spentPct = budget > 0 ? Math.min(100, Math.round((spent / budget) * 100)) : 0;
   const remainingPct = Math.max(0, 100 - spentPct);
+  const perPersonSpent = Math.round(spent / Math.max(1, memberCount));
 
-  // User's net balance delta from summary.settlementDeltas
+  // User's net balance delta
   const myDelta =
     currentUserId && summary.settlementDeltas && summary.settlementDeltas[currentUserId] !== undefined
       ? summary.settlementDeltas[currentUserId]
@@ -34,94 +35,111 @@ export function FinancialKpiCards({
   };
 
   return (
-    <div className={styles.kpiGrid}>
-      {/* 1. Ngân Quỹ Còn Lại */}
-      <div className={styles.kpiCard}>
-        <div className={styles.kpiHeader}>
-          <div className={`${styles.kpiIconCircle} ${styles.kpiIconBlue}`}>
-            <Wallet size={19} />
+    <div className={styles.asymmetricKpiContainer}>
+      {/* ─── 1. HERO REMAINING BUDGET BAR (60% WIDTH) ─── */}
+      <div className={styles.kpiHeroBlock}>
+        <div className={styles.kpiHeroHeader}>
+          <div className={styles.kpiHeroTitleGroup}>
+            <div className={styles.kpiHeroIconCircle}>
+              <Wallet size={18} />
+            </div>
+            <span className={styles.kpiHeroLabel}>Ngân Quỹ Khả Dụng</span>
           </div>
-          <span className={styles.kpiLabel}>Ngân Quỹ Còn Lại</span>
+          <span
+            className={styles.kpiHeroBadge}
+            style={{
+              background: remaining >= 0 ? '#ecfdf5' : '#fef2f2',
+              color: remaining >= 0 ? '#059669' : '#dc2626',
+            }}
+          >
+            {remainingPct}% dự toán
+          </span>
         </div>
-        <div className={styles.kpiMetric} style={{ color: remaining >= 0 ? '#0284c7' : '#ef4444' }}>
+
+        <div
+          className={styles.kpiHeroValue}
+          style={{ color: remaining >= 0 ? '#0f172a' : '#ef4444' }}
+        >
           {formatVnd(remaining)}
         </div>
-        <div className={styles.kpiProgressBarTrack}>
-          <div
-            className={styles.kpiProgressBarFill}
-            style={{ width: `${remainingPct}%`, background: '#0284c7' }}
-          />
-        </div>
-        <div className={styles.kpiSubtext}>Còn {remainingPct}% so với dự toán</div>
-      </div>
 
-      {/* 2. Tổng Tiền Đã Chi */}
-      <div className={styles.kpiCard}>
-        <div className={styles.kpiHeader}>
-          <div className={`${styles.kpiIconCircle} ${styles.kpiIconCoral}`}>
-            <Receipt size={19} />
-          </div>
-          <span className={styles.kpiLabel}>Tổng Tiền Đã Chi</span>
-        </div>
-        <div className={styles.kpiMetric}>{formatVnd(spent)}</div>
-        <div className={styles.kpiProgressBarTrack}>
+        {/* High-end Segmented Progress Track */}
+        <div className={styles.kpiSegmentedTrack}>
           <div
-            className={styles.kpiProgressBarFill}
-            style={{ width: `${spentPct}%`, background: spentPct > 90 ? '#ef4444' : '#ea580c' }}
+            className={styles.kpiSegmentSpent}
+            style={{ width: `${spentPct}%` }}
+          />
+          <div
+            className={styles.kpiSegmentRemaining}
+            style={{ width: `${remainingPct}%` }}
           />
         </div>
-        <div className={styles.kpiSubtext}>Đã chi {spentPct}% ngân sách</div>
-      </div>
 
-      {/* 3. Dự Toán Ban Đầu */}
-      <div className={styles.kpiCard}>
-        <div className={styles.kpiHeader}>
-          <div className={`${styles.kpiIconCircle} ${styles.kpiIconPurple}`}>
-            <Target size={19} />
-          </div>
-          <span className={styles.kpiLabel}>Dự Toán Ban Đầu</span>
-        </div>
-        <div className={styles.kpiMetric}>{formatVnd(budget)}</div>
-        <div className={styles.kpiProgressBarTrack}>
-          <div
-            className={styles.kpiProgressBarFill}
-            style={{ width: '100%', background: '#94a3b8' }}
-          />
-        </div>
-        <div className={styles.kpiSubtext}>
-          Dành cho {memberCount} thành viên ({formatVnd(Math.round(budget / Math.max(1, memberCount)))}/người)
+        <div className={styles.kpiHeroFooter}>
+          <span className={styles.kpiFooterChip}>
+            <span className={styles.dotSpent} />
+            Đã chi: <strong>{formatVnd(spent)}</strong> ({spentPct}%)
+          </span>
+          <span className={styles.kpiFooterChip}>
+            <span className={styles.dotBudget} />
+            Dự toán: <strong>{formatVnd(budget)}</strong>
+          </span>
         </div>
       </div>
 
-      {/* 4. Vị Thế Ròng Của Bạn */}
-      <div className={styles.kpiCard}>
-        <div className={styles.kpiHeader}>
-          <div className={`${styles.kpiIconCircle} ${styles.kpiIconGreen}`}>
-            <Scale size={19} />
+      {/* ─── 2. DUAL DENSE METRIC CARDS (40% WIDTH) ─── */}
+      <div className={styles.kpiSideGrid}>
+        {/* Metric 1: Bình quân / người */}
+        <div className={styles.kpiSubCard}>
+          <div className={styles.kpiSubHeader}>
+            <div className={`${styles.kpiSubIcon} ${styles.iconSky}`}>
+              <Users size={16} />
+            </div>
+            <span className={styles.kpiSubLabel}>Bình quân / người</span>
           </div>
-          <span className={styles.kpiLabel}>Vị Thế Ròng Của Bạn</span>
+          <div className={styles.kpiSubMetric}>{formatVnd(perPersonSpent)}</div>
+          <div className={styles.kpiSubFooterText}>
+            {memberCount} thành viên trong đoàn
+          </div>
         </div>
-        <div
-          className={styles.kpiMetric}
-          style={{ color: myDelta > 0 ? '#0284c7' : myDelta < 0 ? '#ef4444' : '#0f172a' }}
-        >
-          {myDelta > 0 ? `+${formatVnd(myDelta)}` : myDelta < 0 ? `-${formatVnd(myDelta)}` : '0 ₫'}
-        </div>
-        <div className={styles.kpiProgressBarTrack}>
+
+        {/* Metric 2: Vị thế ròng cá nhân */}
+        <div className={styles.kpiSubCard}>
+          <div className={styles.kpiSubHeader}>
+            <div
+              className={`${styles.kpiSubIcon} ${
+                myDelta > 0 ? styles.iconEmerald : myDelta < 0 ? styles.iconRose : styles.iconGray
+              }`}
+            >
+              {myDelta > 0 ? (
+                <ArrowDownLeft size={16} />
+              ) : myDelta < 0 ? (
+                <ArrowUpRight size={16} />
+              ) : (
+                <Scale size={16} />
+              )}
+            </div>
+            <span className={styles.kpiSubLabel}>Vị thế của bạn</span>
+          </div>
           <div
-            className={styles.kpiProgressBarFill}
+            className={styles.kpiSubMetric}
             style={{
-              width: myDelta !== 0 ? '100%' : '0%',
-              background: myDelta >= 0 ? '#10b981' : '#ef4444',
+              color: myDelta > 0 ? '#059669' : myDelta < 0 ? '#e11d48' : '#0f172a',
             }}
-          />
-        </div>
-        <div className={styles.kpiSubtext}>
-          {myDelta > 0
-            ? 'Bạn được nhóm hoàn lại'
-            : myDelta < 0
-            ? 'Bạn cần đóng thêm vào quỹ'
-            : 'Đã cân bằng chi phí'}
+          >
+            {myDelta > 0
+              ? `+${formatVnd(myDelta)}`
+              : myDelta < 0
+              ? `-${formatVnd(myDelta)}`
+              : '0 ₫'}
+          </div>
+          <div className={styles.kpiSubFooterText}>
+            {myDelta > 0
+              ? 'Đoàn hoàn lại'
+              : myDelta < 0
+              ? 'Cần bù vào quỹ'
+              : 'Đã cân bằng'}
+          </div>
         </div>
       </div>
     </div>

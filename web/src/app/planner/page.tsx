@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { Navbar } from '@/components/common/Navbar';
+import { apiRequest } from '@/lib/api';
 import type { DestinationMarker } from '@/features/map-location/types';
 import { getRealPlacesByProvince } from '@/data/realDestinationsData';
 import {
@@ -2080,78 +2081,63 @@ export default function PlannerPage() {
     }
   };
 
-  // ─── CREATE REAL GROUP TRIP ───────────────────────────────────────────────
-  const handleCreateTripSubmit = () => {
-    const tripId = `trip-${Date.now()}`;
-    const activityCount = itineraryDays.reduce((acc, d) => acc + d.activities.length, 0);
-    let plannerOwner = {
-      name: 'Thành viên VISTA',
-      avatar: 'TV',
-      color: '#0284c7',
-      role: 'Trưởng nhóm',
-      userId: 'u-me',
-      email: '',
-    };
+  // ─── CREATE REAL GROUP TRIP DIRECTLY ON DATABASE ────────────────────────
+  const handleCreateTripSubmit = async () => {
+    const destName = destination.includes('Việt Nam') ? destination : `${destination}, Việt Nam`;
+    const tripTitle = newTripTitle || `Chuyến đi ${destination} ${daysCount} ngày`;
+
+    // Calculate dates
+    const today = new Date();
+    const startIso = today.toISOString().split('T')[0];
+    const endDateObj = new Date(today);
+    endDateObj.setDate(today.getDate() + Math.max(1, daysCount));
+    const endIso = endDateObj.toISOString().split('T')[0];
+
     try {
-      const userStr = localStorage.getItem('vista_user');
-      if (userStr) {
-        const u = JSON.parse(userStr);
-        const rawName = (u.displayName || u.email || 'Thành viên VISTA').replace(/\s*\(Bạn\)/g, '').trim();
-        const parts = rawName.split(/\s+/);
-        const initials = (parts.length >= 2 ? parts[0][0] + parts[parts.length - 1][0] : rawName.slice(0, 2)).toUpperCase();
-        plannerOwner = {
-          name: rawName,
-          avatar: initials || 'TV',
-          color: '#0284c7',
-          role: 'Trưởng nhóm',
-          userId: u.id || 'u-me',
-          email: u.email || '',
-        };
+      // 1. Create Trip directly on PostgreSQL Database via Spring Boot API
+      const backendTrip = await apiRequest<any>('/trips', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: tripTitle,
+          startDate: startIso,
+          endDate: endIso,
+          destinationSummary: destName,
+          budgetTotal: totalEstimatedCost || 15000000,
+          currency: 'VND',
+        }),
+      });
+
+      const realTripId = backendTrip.id;
+
+      // 2. Persist AI itinerary days into database if activities exist
+      if (Array.isArray(itineraryDays) && itineraryDays.length > 0) {
+        try {
+          const mergeDays: MergeItineraryDay[] = itineraryDays.map((d) => ({
+            dayNumber: d.dayNumber,
+            activities: d.activities.map((a, idx) => ({
+              customStopName: a.title,
+              note: a.description,
+              startTime: a.timeSlot === 'MORNING' ? '08:00' : a.timeSlot === 'AFTERNOON' ? '14:00' : '19:00',
+              endTime: a.timeSlot === 'MORNING' ? '11:30' : a.timeSlot === 'AFTERNOON' ? '17:00' : '21:30',
+              sortOrder: idx + 1,
+              source: 'AI_GEMINI',
+            })),
+          }));
+          await mergeTripItinerary(realTripId, mergeDays);
+        } catch (itinErr) {
+          console.warn('Itinerary merge error:', itinErr);
+        }
       }
-    } catch {}
 
-    const newTrip = {
-      id: tripId,
-      title: newTripTitle || `Chuyến đi ${destination} ${daysCount} ngày`,
-      destination: destination.includes('Việt Nam') ? destination : `${destination}, Việt Nam`,
-      durationBadge: `${daysCount} ngày`,
-      startDate: startDate || '20/11',
-      endDate: '24/11/2026',
-      status: 'PLANNING',
-      role: 'OWNER',
-      ownerId: plannerOwner.userId,
-      budgetTotal: totalEstimatedCost || 20000000,
-      budgetSpent: 0,
-      progressPercent: 0,
-      members: [plannerOwner],
-      image: activeDestObj.photo || 'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80',
-      treasuryPath: `/trips/${tripId}/treasury`,
-      alertType: 'BLUE',
-      alertText: `Lịch trình AI ${daysCount} ngày (${activityCount} hoạt động) đã sẵn sàng`,
-      alertLinkText: 'Xem',
-      quickActions: [
-        { label: 'Lịch trình', href: `/planner?tripId=${tripId}&dest=${encodeURIComponent(destination)}` },
-        { label: 'Phân công', actionType: 'ASSIGN' },
-        { label: 'Ghi chú', actionType: 'NOTE' },
-      ],
-      itineraryDays,
-      createdAt: Date.now(),
-    };
-
-    try {
-      const storedTrips = localStorage.getItem('vista_custom_trips');
-      const list = storedTrips ? JSON.parse(storedTrips) : [];
-      list.unshift(newTrip);
-      localStorage.setItem('vista_custom_trips', JSON.stringify(list));
-    } catch {
-      // ignore
+      setShowCreateTripModal(false);
+      triggerToast('🎉 Đã lưu chuyến đi và toàn bộ lịch trình AI vào Database thành công!');
+      setTimeout(() => {
+        router.push(`/trips/${realTripId}`);
+      }, 700);
+    } catch (err: any) {
+      triggerToast(`⚠️ Không thể lưu vào Database: ${err.message || 'Lỗi kết nối'}`);
     }
-
-    setShowCreateTripModal(false);
-    triggerToast('Tạo chuyến đi nhóm thành công! Đang chuyển đến không gian Chuyến đi…');
-    setTimeout(() => {
-      router.push(`/trips?created=${tripId}`);
-    }, 1000);
   };
 
   // ─── REPLACE ACTIVITY HANDLER ─────────────────────────────────────────────

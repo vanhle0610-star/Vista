@@ -38,6 +38,7 @@ import {
   ShieldAlert,
 } from 'lucide-react';
 import { Navbar } from '@/components/common/Navbar';
+import { apiRequest } from '@/lib/api';
 import { GroupMapTab } from '@/features/trip-location/components/GroupMapTab';
 import styles from './tripDetail.module.css';
 
@@ -592,147 +593,84 @@ export default function TripDetailPage() {
 
   const persistTrip = (updatedTrip: TripDetailData) => {
     setTrip(updatedTrip);
-    try {
-      const stored = localStorage.getItem('vista_custom_trips');
-      let list: TripDetailData[] = stored ? JSON.parse(stored) : [];
-      const idx = list.findIndex((t) => t.id === updatedTrip.id);
-      if (idx >= 0) {
-        list[idx] = updatedTrip;
-      } else {
-        list.push(updatedTrip);
-      }
-      localStorage.setItem('vista_custom_trips', JSON.stringify(list));
-    } catch {
-      // ignore
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(updatedTrip.id);
+    if (isUuid) {
+      apiRequest(`/trips/${updatedTrip.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: updatedTrip.title,
+          destinationSummary: updatedTrip.destination,
+          budgetTotal: updatedTrip.budgetTotal,
+        }),
+      }).catch(() => {});
     }
   };
 
   useEffect(() => {
     if (!tripId) return;
 
-    const timer = setTimeout(() => {
-      // 1. Try finding in custom trips in localStorage
+    const loadData = async () => {
+      // 0. Primary: Fetch directly from PostgreSQL Database via Spring Boot API
       try {
-        const stored = localStorage.getItem('vista_custom_trips');
-        if (stored) {
-          const parsed: TripDetailData[] = JSON.parse(stored);
-          const match = parsed.find((item) => item.id === tripId);
-          if (match) {
-            let needsUpdate = false;
-            const currentOwner = getCurrentUserMember('Trưởng nhóm');
-            const filteredMembers = (match.members && match.members.length > 0 ? match.members : [currentOwner]).filter(
-              (m: any) => {
-                const n = (m?.name || '').toLowerCase();
-                if (n.includes('nguyễn văn b') && currentUser && !currentUser.displayName?.toLowerCase().includes('nguyễn văn b')) {
-                  needsUpdate = true;
-                  return false;
-                }
-                return true;
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tripId);
+        if (isUuid) {
+          const serverTrip = await apiRequest<any>(`/trips/${tripId}/detail`).catch(() => null);
+          if (serverTrip && serverTrip.id) {
+            let members: MemberItem[] = [];
+            try {
+              const memList = await apiRequest<any[]>(`/trips/${tripId}/members`);
+              if (Array.isArray(memList) && memList.length > 0) {
+                members = memList.map((m: any) => ({
+                  name: m.displayName || m.email || (m.role === 'OWNER' ? 'Trưởng nhóm' : 'Thành viên'),
+                  avatar: (m.displayName || m.email || 'TV').slice(0, 2).toUpperCase(),
+                  color: m.role === 'OWNER' ? '#0284c7' : '#10b981',
+                  role: m.role === 'OWNER' ? 'Trưởng nhóm' : 'Thành viên',
+                  userId: m.userId,
+                  email: m.email || '',
+                }));
               }
-            );
-            const rawMembers = filteredMembers.length > 0 ? filteredMembers : [currentOwner];
-            const normalizedMembers: MemberItem[] = rawMembers.map((m: any, idx: number) => {
-              const rawName = m.name || '';
-              let cleanName = rawName.replace(/\s*\(Bạn.*?\)/gi, '').trim();
-              if (!cleanName || cleanName === 'Bạn') {
-                cleanName = idx === 0 ? 'Trưởng nhóm VISTA' : 'Thành viên VISTA';
-              }
-              if (cleanName !== rawName) {
-                needsUpdate = true;
-              }
+            } catch {}
 
-              const isMe = Boolean(
-                currentUser && (
-                  (m.userId && m.userId === currentUser.id) ||
-                  (currentUser.displayName && cleanName.toLowerCase() === currentUser.displayName.toLowerCase()) ||
-                  (currentUser.email && m.email && m.email.toLowerCase() === currentUser.email.toLowerCase())
-                )
-              );
-
-              const memberUserId = isMe
-                ? (currentUser?.id || currentOwner.userId)
-                : (m.userId && m.userId !== currentOwner.userId ? m.userId : `u-${encodeURIComponent(cleanName.toLowerCase().replace(/\s+/g, '-'))}`);
-
-              const memberEmail = isMe
-                ? (currentUser?.email || currentOwner.email)
-                : (m.email && m.email !== currentOwner.email ? m.email : `${encodeURIComponent(cleanName.toLowerCase().replace(/\s+/g, ''))}@vista.vn`);
-
-              return {
-                ...m,
-                name: cleanName,
-                avatar: m.avatar || cleanName.slice(0, 2).toUpperCase(),
-                color: m.color || '#0284c7',
-                role: m.role || (idx === 0 ? 'Trưởng nhóm' : 'Thành viên'),
-                userId: memberUserId,
-                email: memberEmail,
-              };
-            });
-
-            const firstMember = normalizedMembers[0];
-            const isCreatorMe = Boolean(
-              currentUser && (
-                (firstMember?.userId && firstMember.userId === currentUser.id) ||
-                (currentUser.displayName && firstMember?.name && firstMember.name.toLowerCase() === currentUser.displayName.toLowerCase()) ||
-                (currentUser.email && firstMember?.email && firstMember.email.toLowerCase() === currentUser.email.toLowerCase())
-              )
-            );
-
-            const resolvedOwnerId = isCreatorMe
-              ? (currentUser?.id || currentOwner.userId)
-              : (firstMember?.userId || `owner-${match.id}`);
-
-            const bSpent = typeof match.budgetSpent === 'number' ? match.budgetSpent : 0;
-            const bTotal = typeof match.budgetTotal === 'number' && match.budgetTotal > 0 ? match.budgetTotal : 20000000;
-            const calculatedProgress = bTotal > 0 ? Math.min(100, Math.round((bSpent / bTotal) * 100)) : 0;
-
-            if (match.progressPercent !== calculatedProgress || match.ownerId !== resolvedOwnerId) {
-              needsUpdate = true;
+            if (members.length === 0) {
+              const currentOwner = getCurrentUserMember('Trưởng nhóm');
+              members = [currentOwner];
             }
 
-            const isHanoiMismatch =
-              match.destination &&
-              !match.destination.toLowerCase().includes('hà nội') &&
-              JSON.stringify(match.itineraryDays || '').includes('Hoàn Kiếm');
+            const dest = serverTrip.destinationSummary || 'Việt Nam';
+            const bTotal = serverTrip.budgetTotal || 15000000;
+            const heroImg = getDestinationHeroImage(dest);
+            const itinerary = getSampleItineraryForDestination(dest, serverTrip.startDate);
 
-            const itinerary =
-              !match.itineraryDays || match.itineraryDays.length === 0 || isHanoiMismatch
-                ? getSampleItineraryForDestination(match.destination, match.startDate)
-                : match.itineraryDays;
-
-            const heroImg =
-              match.image && !match.image.includes('photo-1528127269322-539801943592')
-                ? match.image
-                : getDestinationHeroImage(match.destination);
-
-            const updatedTrip: TripDetailData = {
-              ...match,
-              ownerId: resolvedOwnerId,
-              members: normalizedMembers,
+            const dbTrip: TripDetailData = {
+              id: serverTrip.id,
+              title: serverTrip.title || 'Hành trình VISTA',
+              destination: dest,
+              durationBadge: '3 ngày',
+              startDate: serverTrip.startDate || '15/11/2026',
+              endDate: serverTrip.endDate || '18/11/2026',
+              status: serverTrip.status || 'PLANNING',
+              role: currentUser && serverTrip.ownerId === currentUser.id ? 'OWNER' : 'MEMBER',
+              ownerId: serverTrip.ownerId,
               budgetTotal: bTotal,
-              budgetSpent: bSpent,
-              progressPercent: calculatedProgress,
+              budgetSpent: 0,
+              progressPercent: 0,
+              members,
               image: heroImg,
-              treasuryPath: match.treasuryPath || `/trips/${match.id}/treasury`,
+              treasuryPath: `/trips/${serverTrip.id}/treasury`,
               itineraryDays: itinerary,
             };
 
-            if (needsUpdate || isHanoiMismatch) {
-              try {
-                const updatedList = parsed.map((item) => (item.id === tripId ? updatedTrip : item));
-                localStorage.setItem('vista_custom_trips', JSON.stringify(updatedList));
-              } catch {}
-            }
-
-            setTrip(updatedTrip);
-            setProposals(getSampleProposals(match.destination));
+            setTrip(dbTrip);
+            setProposals(getSampleProposals(dest));
             return;
           }
         }
-      } catch (e) {
-        console.error('Error reading vista_custom_trips from localStorage:', e);
+      } catch (err) {
+        console.warn('DB fetch error, falling back to demo:', err);
       }
 
-      // 2. Try demo trips
+      // 1. Try demo trips
       const demoMatch = DEFAULT_DEMO_TRIPS.find((item) => item.id === tripId);
       if (demoMatch) {
         setTrip(demoMatch);
@@ -767,9 +705,9 @@ export default function TripDetailPage() {
         itineraryDays: fallbackItinerary,
       });
       setProposals(getSampleProposals(fallbackDest));
-    }, 0);
+    };
 
-    return () => clearTimeout(timer);
+    void loadData();
   }, [tripId, searchParams]);
 
   // Reorder activities
