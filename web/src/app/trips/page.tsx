@@ -39,6 +39,7 @@ import {
 } from 'lucide-react';
 import { Navbar } from '@/components/common/Navbar';
 import { apiRequest } from '@/lib/api';
+import { SkeletonCardGrid } from '@/components/common/Skeleton';
 import {
   POPULAR_DESTINATIONS,
   getSampleItineraryForDestination,
@@ -409,6 +410,9 @@ export default function TripsPage() {
         router.replace('/login?returnUrl=/trips');
       } else {
         setIsAuthenticated(true);
+        if (!document.cookie.includes('vista_token=')) {
+          document.cookie = `vista_token=${token}; path=/; max-age=604800; SameSite=Lax`;
+        }
       }
     }
   }, [router]);
@@ -731,6 +735,7 @@ export default function TripsPage() {
   };
 
   const [tripsList, setTripsList] = useState<TripItem[]>(DEFAULT_DEMO_TRIPS);
+  const [isSyncingTrips, setIsSyncingTrips] = useState<boolean>(true);
   const [incomingInvitations, setIncomingInvitations] = useState<any[]>([]);
 
   // Fetch trips from PostgreSQL Database via Spring Boot API & one-time migration
@@ -852,7 +857,7 @@ export default function TripsPage() {
         setTripsList(DEFAULT_DEMO_TRIPS);
       }
     };
-    void syncTrips();
+    void syncTrips().finally(() => setIsSyncingTrips(false));
   }, [currentUser]);
 
   // Load incoming invitations for currently logged in user
@@ -1200,9 +1205,6 @@ export default function TripsPage() {
 
   return (
     <div className={styles.tripsPage}>
-      {/* ─── GLOBAL NAVBAR ─────────────────────────────────────────────── */}
-      <Navbar activeModule="trips" />
-
       {/* ─── 1. TOP HEADER & ACTION ROW ───────────────────────────────── */}
       <section className={styles.headerSection}>
         <div className={styles.container}>
@@ -1569,6 +1571,9 @@ export default function TripsPage() {
         </div>
 
         {/* ─── 4. TRIP CARDS GRID OR LIST VIEW ────────────────────────── */}
+        {isSyncingTrips ? (
+          <SkeletonCardGrid count={3} />
+        ) : (
         <div className={viewMode === 'list' ? styles.tripsListView : styles.tripsGrid}>
           {filteredTrips.map((trip) => {
             const currentOwnerMember = getCurrentUserMember('Trưởng nhóm');
@@ -1947,6 +1952,8 @@ export default function TripsPage() {
             </div>
           )}
         </div>
+
+        )}
 
         {/* ─── 5. BOTTOM INSPIRATION & CTA BANNER ───────────────────────── */}
         <section className={styles.bottomCtaSection}>

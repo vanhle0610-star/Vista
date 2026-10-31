@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Navbar } from '@/components/common/Navbar';
 import { MapViewAdapter } from '@/features/map-location/adapter/MapViewAdapter';
 import { DestinationList, filterDestinations, REGIONS_PROVINCES } from '@/features/map-location/components/DestinationList';
 import { DirectionsPanel } from '@/features/map-location/components/DirectionsPanel';
@@ -374,8 +373,6 @@ export default function VistaMapPage() {
 
   return (
     <div className={styles.page}>
-      <Navbar activeModule="map" />
-
       <main className={styles.content}>
         <div className={styles.layout}>
           {/* ─── SIDEBAR: EXPLORE & DIRECTIONS STUDIO ─── */}

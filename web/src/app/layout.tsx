@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Navbar } from '@/components/common/Navbar';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -17,7 +18,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           rel="stylesheet"
         />
       </head>
-      <body suppressHydrationWarning>{children}</body>
+      <body suppressHydrationWarning>
+        <Navbar />
+        {children}
+      </body>
     </html>
   );
 }

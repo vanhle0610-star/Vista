@@ -14,7 +14,6 @@ import {
   ShieldCheck,
   Ticket,
 } from 'lucide-react';
-import { Navbar } from '@/components/common/Navbar';
 
 export default function InvitationAcceptPage() {
   const params = useParams();
@@ -133,8 +132,6 @@ export default function InvitationAcceptPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#F8FAFC', color: '#0F172A', paddingBottom: '80px' }}>
-      <Navbar activeModule="trips" />
-
       <main style={{ maxWidth: '640px', margin: '40px auto 0', padding: '0 20px' }}>
         {/* Banner kiểm thử Tuần 3 / Tuần 4 */}
         <div style={{ background: '#EFF6FF', border: '1.5px solid #BFDBFE', borderRadius: '16px', padding: '14px 18px', marginBottom: '20px' }}>
