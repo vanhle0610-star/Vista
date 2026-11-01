@@ -52,6 +52,7 @@ public class JwtTokenService {
             .toList();
 
     return Jwts.builder()
+        .id(UUID.randomUUID().toString())
         .subject(userId)
         .claim(CLAIM_TYPE, TYPE_ACCESS)
         .claim("email", user.getEmail())
@@ -69,6 +70,7 @@ public class JwtTokenService {
     var userId = user.getId() != null ? user.getId().toString() : UUID.randomUUID().toString();
 
     return Jwts.builder()
+        .id(UUID.randomUUID().toString())
         .subject(userId)
         .claim(CLAIM_TYPE, TYPE_REFRESH)
         .issuedAt(Date.from(now))
