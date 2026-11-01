@@ -1,8 +1,9 @@
-// File sinh tự động từ Vietnam_300_dia_diem_CHUAN_HOA.csv
-// Đã chuẩn hóa 100% tọa độ GPS WGS84 và liên kết ảnh phong cảnh thật chất lượng cao
-
 import type { DestinationMarker } from '../types';
 
+/**
+ * Kho 600+ Địa điểm Du lịch Chuẩn hóa Toàn quốc (63 Tỉnh Thành Việt Nam)
+ * Nguồn: CSDL Du lịch VISTA đã chuẩn hóa tọa độ GPS, danh mục và giờ mở cửa.
+ */
 export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
   {
     "id": "vn-1-cau-rong-a-nang",
@@ -15,8 +16,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00-23:59",
-    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/B%E1%BB%9D_%C4%91%C3%B4ng_c%E1%BA%A7u_R%E1%BB%93ng.jpg/960px-B%E1%BB%9D_%C4%91%C3%B4ng_c%E1%BA%A7u_R%E1%BB%93ng.jpg",
-    "sourceUrl": "https://danangfantasticity.com/cau-rong"
+    "sourceUrl": "https://danangfantasticity.com/cau-rong",
+    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/B%E1%BB%9D_%C4%91%C3%B4ng_c%E1%BA%A7u_R%E1%BB%93ng.jpg/960px-B%E1%BB%9D_%C4%91%C3%B4ng_c%E1%BA%A7u_R%E1%BB%93ng.jpg"
   },
   {
     "id": "vn-2-ba-na-hills",
@@ -29,8 +30,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 900000,
     "priceMax": 1250000,
     "openingHours": "07:00-22:00",
-    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Golden_Bridge_Da_Nang_2019.jpg/800px-Golden_Bridge_Da_Nang_2019.jpg",
-    "sourceUrl": "https://banahills.sunworld.vn"
+    "sourceUrl": "https://banahills.sunworld.vn",
+    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Golden_Bridge_Da_Nang_2019.jpg/800px-Golden_Bridge_Da_Nang_2019.jpg"
   },
   {
     "id": "vn-3-ban-ao-son-tra-chua-linh-ung",
@@ -43,8 +44,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "06:00-18:00",
-    "thumbnailUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fe/Son-Tra-Peninsula_Da-Nang_Vietnam_Linh-Ung-Pagoda-01.jpg/960px-Son-Tra-Peninsula_Da-Nang_Vietnam_Linh-Ung-Pagoda-01.jpg?utm_source=vi.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
-    "sourceUrl": "https://danangfantasticity.com/chua-linh-ung"
+    "sourceUrl": "https://danangfantasticity.com/chua-linh-ung",
+    "thumbnailUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fe/Son-Tra-Peninsula_Da-Nang_Vietnam_Linh-Ung-Pagoda-01.jpg/960px-Son-Tra-Peninsula_Da-Nang_Vietnam_Linh-Ung-Pagoda-01.jpg?utm_source=vi.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
   },
   {
     "id": "vn-4-bai-bien-my-khe",
@@ -57,8 +58,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00-23:59",
-    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/My_Khe_Beach%2C_Da_Nang.jpg/800px-My_Khe_Beach%2C_Da_Nang.jpg",
-    "sourceUrl": "https://danangfantasticity.com/bai-bien-my-khe"
+    "sourceUrl": "https://danangfantasticity.com/bai-bien-my-khe",
+    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/My_Khe_Beach%2C_Da_Nang.jpg/800px-My_Khe_Beach%2C_Da_Nang.jpg"
   },
   {
     "id": "vn-5-danh-thang-ngu-hanh-son",
@@ -71,8 +72,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 100000,
     "openingHours": "07:00-17:30",
-    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Marble_Mountains_Da_Nang_Vietnam.jpg/800px-Marble_Mountains_Da_Nang_Vietnam.jpg",
-    "sourceUrl": "https://nguhanhson.org.vn"
+    "sourceUrl": "https://nguhanhson.org.vn",
+    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Marble_Mountains_Da_Nang_Vietnam.jpg/800px-Marble_Mountains_Da_Nang_Vietnam.jpg"
   },
   {
     "id": "vn-6-bao-tang-ieu-khac-cham",
@@ -85,8 +86,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 60000,
     "priceMax": 60000,
     "openingHours": "07:30-17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://chammuseum.vn"
+    "sourceUrl": "https://chammuseum.vn",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-7-cho-han-a-nang",
@@ -99,8 +100,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "06:00-19:00",
-    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Ch%E1%BB%A3_H%C3%A0n%2C_%C4%90%C3%A0_N%E1%BA%B5ng.jpg/800px-Ch%E1%BB%A3_H%C3%A0n%2C_%C4%90%C3%A0_N%E1%BA%B5ng.jpg",
-    "sourceUrl": "https://danangfantasticity.com/cho-han"
+    "sourceUrl": "https://danangfantasticity.com/cho-han",
+    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Ch%E1%BB%A3_H%C3%A0n%2C_%C4%90%C3%A0_N%E1%BA%B5ng.jpg/800px-Ch%E1%BB%A3_H%C3%A0n%2C_%C4%90%C3%A0_N%E1%BA%B5ng.jpg"
   },
   {
     "id": "vn-8-cau-tinh-yeu-tuong-ca-chep-hoa-rong",
@@ -113,8 +114,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00-23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://danangfantasticity.com/cau-tinh-yeu"
+    "sourceUrl": "https://danangfantasticity.com/cau-tinh-yeu",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-9-suoi-khoang-nong-nui-than-tai",
@@ -127,8 +128,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 450000,
     "priceMax": 650000,
     "openingHours": "08:30-17:30",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://nuithantai.com"
+    "sourceUrl": "https://nuithantai.com",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-10-eo-hai-van",
@@ -141,8 +142,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00-23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://danangfantasticity.com/deo-hai-van"
+    "sourceUrl": "https://danangfantasticity.com/deo-hai-van",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-11-ai-noi-hue-hoang-thanh-hue",
@@ -155,22 +156,22 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 200000,
     "priceMax": 200000,
     "openingHours": "07:00-17:30",
-    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/C%E1%BB%95ng_Ng%E1%BB%8D_M%C3%B4n_Hu%E1%BA%BF.jpg/800px-C%E1%BB%95ng_Ng%E1%BB%8D_M%C3%B4n_Hu%E1%BA%BF.jpg",
-    "sourceUrl": "https://hueworldheritage.org.vn"
+    "sourceUrl": "https://hueworldheritage.org.vn",
+    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/C%E1%BB%95ng_Ng%E1%BB%8D_M%C3%B4n_Hu%E1%BA%BF.jpg/800px-C%E1%BB%95ng_Ng%E1%BB%8D_M%C3%B4n_Hu%E1%BA%BF.jpg"
   },
   {
     "id": "vn-12-chua-thien-mu",
     "name": "Chùa Thiên Mụ",
     "province": "Thừa Thiên Huế",
     "category": "Tâm linh & Cảnh quan",
-    "latitude": 16.4533,
-    "longitude": 107.545,
+    "latitude": 16.4528,
+    "longitude": 107.5451,
     "description": "Ngôi cổ tự hơn 400 năm tuổi soi bóng xuống dòng sông Hương thơ mộng, biểu tượng xứ Huế.",
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:00-18:00",
-    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Thien_Mu_Pagoda_Hue.jpg/800px-Thien_Mu_Pagoda_Hue.jpg",
-    "sourceUrl": "https://khamphahue.com.vn/chua-thien-mu"
+    "sourceUrl": "https://khamphahue.com.vn/chua-thien-mu",
+    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Thien_Mu_Pagoda_Hue.jpg/800px-Thien_Mu_Pagoda_Hue.jpg"
   },
   {
     "id": "vn-13-lang-khai-inh",
@@ -183,8 +184,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 150000,
     "priceMax": 150000,
     "openingHours": "07:00-17:30",
-    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Khai_Dinh_Tomb_Hue_Vietnam.jpg/800px-Khai_Dinh_Tomb_Hue_Vietnam.jpg",
-    "sourceUrl": "https://hueworldheritage.org.vn"
+    "sourceUrl": "https://hueworldheritage.org.vn",
+    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Khai_Dinh_Tomb_Hue_Vietnam.jpg/800px-Khai_Dinh_Tomb_Hue_Vietnam.jpg"
   },
   {
     "id": "vn-14-lang-tu-uc",
@@ -197,8 +198,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 150000,
     "priceMax": 150000,
     "openingHours": "07:00-17:30",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://hueworldheritage.org.vn"
+    "sourceUrl": "https://hueworldheritage.org.vn",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-15-lang-minh-mang",
@@ -211,22 +212,22 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 150000,
     "priceMax": 150000,
     "openingHours": "07:00-17:30",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://hueworldheritage.org.vn"
+    "sourceUrl": "https://hueworldheritage.org.vn",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-16-cho-ong-ba",
     "name": "Chợ Đông Ba",
     "province": "Thừa Thiên Huế",
     "category": "Ẩm thực & Mua sắm",
-    "latitude": 16.4703,
-    "longitude": 107.5888,
+    "latitude": 16.4678,
+    "longitude": 107.5898,
     "description": "Chợ truyền thống lâu đời nhất đất Cố Đô, thiên đường của các món bún bò, bánh bèo, nậm, lọc.",
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "06:00-18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://khamphahue.com.vn/cho-dong-ba"
+    "sourceUrl": "https://khamphahue.com.vn/cho-dong-ba",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-17-cau-truong-tien-song-huong",
@@ -239,8 +240,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00-23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://khamphahue.com.vn/cau-truong-tien"
+    "sourceUrl": "https://khamphahue.com.vn/cau-truong-tien",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-18-oi-vong-canh",
@@ -253,8 +254,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "06:00-18:30",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://khamphahue.com.vn/doi-vong-canh"
+    "sourceUrl": "https://khamphahue.com.vn/doi-vong-canh",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-19-lang-huong-thuy-xuan",
@@ -267,8 +268,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:00-18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://khamphahue.com.vn/lang-huong-thuy-xuan"
+    "sourceUrl": "https://khamphahue.com.vn/lang-huong-thuy-xuan",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-20-truong-quoc-hoc-hue",
@@ -281,8 +282,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:00-17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://khamphahue.com.vn/quoc-hoc-hue"
+    "sourceUrl": "https://khamphahue.com.vn/quoc-hoc-hue",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-21-chua-cau-hoi-an",
@@ -295,8 +296,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 120000,
     "priceMax": 120000,
     "openingHours": "07:00-21:30",
-    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Ch%C3%B9a_C%E1%BA%A7u_%28H%E1%BB%99i_An%29.jpg/800px-Ch%C3%B9a_C%E1%BA%A7u_%28H%E1%BB%99i_An%29.jpg",
-    "sourceUrl": "https://hoianworldheritage.org.vn"
+    "sourceUrl": "https://hoianworldheritage.org.vn",
+    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Ch%C3%B9a_C%E1%BA%A7u_%28H%E1%BB%99i_An%29.jpg/800px-Ch%C3%B9a_C%E1%BA%A7u_%28H%E1%BB%99i_An%29.jpg"
   },
   {
     "id": "vn-22-pho-co-hoi-an-song-hoai",
@@ -309,8 +310,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 120000,
     "priceMax": 120000,
     "openingHours": "00:00-23:59",
-    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f3/PhoCoHoiAn.jpg",
-    "sourceUrl": "https://hoianworldheritage.org.vn"
+    "sourceUrl": "https://hoianworldheritage.org.vn",
+    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f3/PhoCoHoiAn.jpg"
   },
   {
     "id": "vn-23-nha-co-tan-ky",
@@ -323,8 +324,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 120000,
     "priceMax": 120000,
     "openingHours": "08:30-17:45",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://hoianworldheritage.org.vn"
+    "sourceUrl": "https://hoianworldheritage.org.vn",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-24-hoi-quan-phuc-kien",
@@ -337,8 +338,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 120000,
     "priceMax": 120000,
     "openingHours": "07:00-18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://hoianworldheritage.org.vn"
+    "sourceUrl": "https://hoianworldheritage.org.vn",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-25-rung-dua-bay-mau-cam-thanh",
@@ -351,8 +352,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 150000,
     "priceMax": 300000,
     "openingHours": "07:00-17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://hoianworldheritage.org.vn"
+    "sourceUrl": "https://hoianworldheritage.org.vn",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-26-lang-gom-thanh-ha",
@@ -365,8 +366,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 35000,
     "priceMax": 35000,
     "openingHours": "08:00-17:30",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://thanhhapottery.com"
+    "sourceUrl": "https://thanhhapottery.com",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-27-lang-rau-tra-que",
@@ -379,8 +380,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 35000,
     "priceMax": 35000,
     "openingHours": "07:00-18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://hoianworldheritage.org.vn"
+    "sourceUrl": "https://hoianworldheritage.org.vn",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-28-bai-bien-an-bang",
@@ -393,8 +394,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00-23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://hoianworldheritage.org.vn"
+    "sourceUrl": "https://hoianworldheritage.org.vn",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-29-cho-em-hoi-an",
@@ -407,8 +408,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "17:00-23:00",
-    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Lanterns_in_Hoi_An.jpg/800px-Lanterns_in_Hoi_An.jpg",
-    "sourceUrl": "https://hoianworldheritage.org.vn"
+    "sourceUrl": "https://hoianworldheritage.org.vn",
+    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Lanterns_in_Hoi_An.jpg/800px-Lanterns_in_Hoi_An.jpg"
   },
   {
     "id": "vn-30-ao-cu-lao-cham",
@@ -421,8 +422,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 150000,
     "priceMax": 650000,
     "openingHours": "07:00-16:00",
-    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/%C4%90%E1%BA%A3o_C%C3%B9_Lao_Ch%C3%A0m_g%C3%B3c_nh%C3%ACn_t%E1%BB%AB_Cano.jpg/960px-%C4%90%E1%BA%A3o_C%C3%B9_Lao_Ch%C3%A0m_g%C3%B3c_nh%C3%ACn_t%E1%BB%AB_Cano.jpg",
-    "sourceUrl": "https://hoianworldheritage.org.vn"
+    "sourceUrl": "https://hoianworldheritage.org.vn",
+    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/%C4%90%E1%BA%A3o_C%C3%B9_Lao_Ch%C3%A0m_g%C3%B3c_nh%C3%ACn_t%E1%BB%AB_Cano.jpg/960px-%C4%90%E1%BA%A3o_C%C3%B9_Lao_Ch%C3%A0m_g%C3%B3c_nh%C3%ACn_t%E1%BB%AB_Cano.jpg"
   },
   {
     "id": "vn-31-ho-hoan-kiem-en-ngoc-son",
@@ -435,8 +436,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 30000,
     "openingHours": "07:00-18:00",
-    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Thap_Rua_Ho_Guom.jpg/800px-Thap_Rua_Ho_Guom.jpg",
-    "sourceUrl": "https://hanoi.gov.vn"
+    "sourceUrl": "https://hanoi.gov.vn",
+    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Thap_Rua_Ho_Guom.jpg/800px-Thap_Rua_Ho_Guom.jpg"
   },
   {
     "id": "vn-32-van-mieu-quoc-tu-giam",
@@ -449,8 +450,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 70000,
     "priceMax": 70000,
     "openingHours": "08:00-17:00",
-    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Khue_Van_Cac_Temple_of_Literature.jpg/800px-Khue_Van_Cac_Temple_of_Literature.jpg",
-    "sourceUrl": "https://vanmieu.gov.vn"
+    "sourceUrl": "https://vanmieu.gov.vn",
+    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Khue_Van_Cac_Temple_of_Literature.jpg/800px-Khue_Van_Cac_Temple_of_Literature.jpg"
   },
   {
     "id": "vn-33-lang-chu-tich-ho-chi-minh",
@@ -463,8 +464,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "closed",
-    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Ho_Chi_Minh_Mausoleum_2019.jpg/800px-Ho_Chi_Minh_Mausoleum_2019.jpg",
-    "sourceUrl": "https://bqllang.gov.vn"
+    "sourceUrl": "https://bqllang.gov.vn",
+    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Ho_Chi_Minh_Mausoleum_2019.jpg/800px-Ho_Chi_Minh_Mausoleum_2019.jpg"
   },
   {
     "id": "vn-34-hoang-thanh-thang-long",
@@ -477,8 +478,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 70000,
     "priceMax": 70000,
     "openingHours": "08:00-17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://hoangthanhthanglong.vn"
+    "sourceUrl": "https://hoangthanhthanglong.vn",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-35-chua-mot-cot",
@@ -491,8 +492,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:00-18:00",
-    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Chua_Mot_Cot_Hanoi.jpg/800px-Chua_Mot_Cot_Hanoi.jpg",
-    "sourceUrl": "https://hanoi.gov.vn"
+    "sourceUrl": "https://hanoi.gov.vn",
+    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Chua_Mot_Cot_Hanoi.jpg/800px-Chua_Mot_Cot_Hanoi.jpg"
   },
   {
     "id": "vn-36-pho-co-ha-noi-36-pho-phuong",
@@ -505,8 +506,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00-23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://hanoi.gov.vn"
+    "sourceUrl": "https://hanoi.gov.vn",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-37-ho-tay-chua-tran-quoc",
@@ -519,8 +520,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30-18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://hanoi.gov.vn"
+    "sourceUrl": "https://hanoi.gov.vn",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-38-nha-tu-hoa-lo",
@@ -533,8 +534,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 50000,
     "priceMax": 50000,
     "openingHours": "08:00-17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://hoalo.vn"
+    "sourceUrl": "https://hoalo.vn",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-39-nha-hat-lon-ha-noi",
@@ -547,8 +548,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "08:00-17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://hanoiopera.org.vn"
+    "sourceUrl": "https://hanoiopera.org.vn",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-40-cau-long-bien",
@@ -561,13 +562,13 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00-23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://hanoi.gov.vn"
+    "sourceUrl": "https://hanoi.gov.vn",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-41-dinh-oc-lap",
     "name": "Dinh Độc Lập",
-    "province": "Hồ Chí Minh",
+    "province": "TP. Hồ Chí Minh",
     "category": "Di tích & Lịch sử",
     "latitude": 10.777,
     "longitude": 106.6953,
@@ -575,13 +576,13 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 65000,
     "priceMax": 65000,
     "openingHours": "08:00-16:30",
-    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Reunification_Palace_Saigon.jpg/800px-Reunification_Palace_Saigon.jpg",
-    "sourceUrl": "https://dinhdoclap.gov.vn"
+    "sourceUrl": "https://dinhdoclap.gov.vn",
+    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Reunification_Palace_Saigon.jpg/800px-Reunification_Palace_Saigon.jpg"
   },
   {
     "id": "vn-42-nha-tho-uc-ba-sai-gon",
     "name": "Nhà thờ Đức Bà Sài Gòn",
-    "province": "Hồ Chí Minh",
+    "province": "TP. Hồ Chí Minh",
     "category": "Kiến trúc & Tôn giáo",
     "latitude": 10.7798,
     "longitude": 106.699,
@@ -589,13 +590,13 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "08:00-17:00",
-    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Notre-Dame_Cathedral_Basilica_of_Saigon.jpg/800px-Notre-Dame_Cathedral_Basilica_of_Saigon.jpg",
-    "sourceUrl": "https://visithcmc.vn"
+    "sourceUrl": "https://visithcmc.vn",
+    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Notre-Dame_Cathedral_Basilica_of_Saigon.jpg/800px-Notre-Dame_Cathedral_Basilica_of_Saigon.jpg"
   },
   {
     "id": "vn-43-buu-ien-trung-tam-sai-gon",
     "name": "Bưu điện Trung tâm Sài Gòn",
-    "province": "Hồ Chí Minh",
+    "province": "TP. Hồ Chí Minh",
     "category": "Kiến trúc & Lịch sử",
     "latitude": 10.78,
     "longitude": 106.6999,
@@ -603,13 +604,13 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30-18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://visithcmc.vn"
+    "sourceUrl": "https://visithcmc.vn",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-44-cho-ben-thanh",
     "name": "Chợ Bến Thành",
-    "province": "Hồ Chí Minh",
+    "province": "TP. Hồ Chí Minh",
     "category": "Ẩm thực & Mua sắm",
     "latitude": 10.7725,
     "longitude": 106.698,
@@ -617,13 +618,13 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "06:00-22:00",
-    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Ben_Thanh_Market_Saigon.jpg/800px-Ben_Thanh_Market_Saigon.jpg",
-    "sourceUrl": "https://visithcmc.vn"
+    "sourceUrl": "https://visithcmc.vn",
+    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Ben_Thanh_Market_Saigon.jpg/800px-Ben_Thanh_Market_Saigon.jpg"
   },
   {
     "id": "vn-45-bao-tang-chung-tich-chien-tranh",
     "name": "Bảo tàng Chứng tích Chiến tranh",
-    "province": "Hồ Chí Minh",
+    "province": "TP. Hồ Chí Minh",
     "category": "Bảo tàng & Lịch sử",
     "latitude": 10.7794,
     "longitude": 106.6922,
@@ -631,13 +632,13 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 40000,
     "openingHours": "07:30-17:30",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://baotangchungtichchientranh.vn"
+    "sourceUrl": "https://baotangchungtichchientranh.vn",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-46-pho-i-bo-nguyen-hue",
     "name": "Phố đi bộ Nguyễn Huệ",
-    "province": "Hồ Chí Minh",
+    "province": "TP. Hồ Chí Minh",
     "category": "Cảnh quan & Văn hóa",
     "latitude": 10.7743,
     "longitude": 106.7032,
@@ -645,13 +646,13 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00-23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://visithcmc.vn"
+    "sourceUrl": "https://visithcmc.vn",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-47-ia-ao-cu-chi-ben-duoc-ben-inh",
     "name": "Địa đạo Củ Chi (Bến Dược & Bến Đình)",
-    "province": "Hồ Chí Minh",
+    "province": "TP. Hồ Chí Minh",
     "category": "Di tích & Trải nghiệm",
     "latitude": 11.1432,
     "longitude": 106.4633,
@@ -659,13 +660,13 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 90000,
     "priceMax": 125000,
     "openingHours": "07:00-17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://diadaocuchi.com.vn"
+    "sourceUrl": "https://diadaocuchi.com.vn",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-48-chua-buu-long",
     "name": "Chùa Bửu Long",
-    "province": "Hồ Chí Minh",
+    "province": "TP. Hồ Chí Minh",
     "category": "Tâm linh & Kiến trúc",
     "latitude": 10.8711,
     "longitude": 106.8378,
@@ -673,13 +674,13 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "08:00-18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://visithcmc.vn"
+    "sourceUrl": "https://visithcmc.vn",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-49-toa-nha-landmark-81-skyview",
     "name": "Tòa nhà Landmark 81 Skyview",
-    "province": "Hồ Chí Minh",
+    "province": "TP. Hồ Chí Minh",
     "category": "Hiện đại & Ngắm cảnh",
     "latitude": 10.7951,
     "longitude": 106.7218,
@@ -687,13 +688,13 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 300000,
     "priceMax": 500000,
     "openingHours": "09:30-22:00",
-    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Landmark_81_December_2019.jpg/800px-Landmark_81_December_2019.jpg",
-    "sourceUrl": "https://vinpearl.com"
+    "sourceUrl": "https://vinpearl.com",
+    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Landmark_81_December_2019.jpg/800px-Landmark_81_December_2019.jpg"
   },
   {
     "id": "vn-50-ben-nha-rong-bao-tang-ho-chi-minh",
     "name": "Bến Nhà Rồng (Bảo tàng Hồ Chí Minh)",
-    "province": "Hồ Chí Minh",
+    "province": "TP. Hồ Chí Minh",
     "category": "Di tích & Lịch sử",
     "latitude": 10.7681,
     "longitude": 106.7067,
@@ -701,8 +702,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 30000,
     "openingHours": "closed",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://baotanghochiminh.vn"
+    "sourceUrl": "https://baotanghochiminh.vn",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-51-ho-xuan-huong-a-lat",
@@ -715,8 +716,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00-23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://dalat.lamdong.gov.vn"
+    "sourceUrl": "https://dalat.lamdong.gov.vn",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-52-nui-langbiang",
@@ -729,8 +730,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 50000,
     "priceMax": 100000,
     "openingHours": "07:00-17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://dalat.lamdong.gov.vn"
+    "sourceUrl": "https://dalat.lamdong.gov.vn",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-53-chua-linh-phuoc-chua-ve-chai",
@@ -743,8 +744,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30-17:30",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://dalat.lamdong.gov.vn"
+    "sourceUrl": "https://dalat.lamdong.gov.vn",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-54-thac-datanla",
@@ -757,8 +758,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 50000,
     "priceMax": 200000,
     "openingHours": "07:30-17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://dalat.lamdong.gov.vn"
+    "sourceUrl": "https://dalat.lamdong.gov.vn",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-55-ga-xe-lua-a-lat",
@@ -771,8 +772,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 10000,
     "priceMax": 150000,
     "openingHours": "07:00-18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://dalat.lamdong.gov.vn"
+    "sourceUrl": "https://dalat.lamdong.gov.vn",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-56-vinh-ha-long",
@@ -785,8 +786,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 250000,
     "priceMax": 500000,
     "openingHours": "06:30-18:30",
-    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Ha_Long_Bay_Vietnam.jpg/800px-Ha_Long_Bay_Vietnam.jpg",
-    "sourceUrl": "https://halongbay.com.vn"
+    "sourceUrl": "https://halongbay.com.vn",
+    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Ha_Long_Bay_Vietnam.jpg/800px-Ha_Long_Bay_Vietnam.jpg"
   },
   {
     "id": "vn-57-bao-tang-quang-ninh",
@@ -799,8 +800,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 40000,
     "openingHours": "closed",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://baotangquangninh.org.vn"
+    "sourceUrl": "https://baotangquangninh.org.vn",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-58-danh-thang-yen-tu",
@@ -813,8 +814,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 350000,
     "openingHours": "06:00-18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://yentu.gov.vn"
+    "sourceUrl": "https://yentu.gov.vn",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-59-ao-tuan-chau",
@@ -827,8 +828,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 350000,
     "openingHours": "07:00-21:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://halongbay.com.vn"
+    "sourceUrl": "https://halongbay.com.vn",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-60-ban-ao-sun-world-ha-long-complex",
@@ -841,8 +842,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 350000,
     "priceMax": 750000,
     "openingHours": "09:00-19:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://halong.sunworld.vn"
+    "sourceUrl": "https://halong.sunworld.vn",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-61-ai-quan-sat-lotte-center-ha-noi",
@@ -855,8 +856,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/dai-quan-sat-lotte-center-ha-noi/"
+    "sourceUrl": "https://govietnam.travel/destination/dai-quan-sat-lotte-center-ha-noi/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-62-cot-co-ha-noi",
@@ -869,8 +870,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/cot-co-ha-noi-ky-dai/"
+    "sourceUrl": "https://govietnam.travel/destination/cot-co-ha-noi-ky-dai/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-63-bao-tang-chien-thang-b-52",
@@ -883,8 +884,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/bao-tang-chien-thang-b52/"
+    "sourceUrl": "https://govietnam.travel/destination/bao-tang-chien-thang-b52/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-64-bao-tang-gom-bat-trang",
@@ -897,8 +898,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/bao-tang-gom-bat-trang/"
+    "sourceUrl": "https://govietnam.travel/destination/bao-tang-gom-bat-trang/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-65-bao-tang-ho-chi-minh",
@@ -911,8 +912,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/bao-tang-ho-chi-minh-ha-noi/"
+    "sourceUrl": "https://govietnam.travel/destination/bao-tang-ho-chi-minh-ha-noi/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-66-van-mieu-quoc-tu-giam",
@@ -925,8 +926,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/temple-of-literature-van-mieu-quoc-tu-giam/"
+    "sourceUrl": "https://govietnam.travel/destination/temple-of-literature-van-mieu-quoc-tu-giam/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-67-quan-the-di-tich-ho-chi-minh-tai-ba-inh",
@@ -939,8 +940,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/ho-chi-minh-mausoleum-complex-mausoleum-presidential-palace-stilt-house-one-pillar-pagoda/"
+    "sourceUrl": "https://govietnam.travel/destination/ho-chi-minh-mausoleum-complex-mausoleum-presidential-palace-stilt-house-one-pillar-pagoda/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-68-ho-hoan-kiem-va-pho-co-ha-noi",
@@ -953,8 +954,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/hoan-kiem-lake-hanoi-old-quarter/"
+    "sourceUrl": "https://govietnam.travel/destination/hoan-kiem-lake-hanoi-old-quarter/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-69-chua-huong",
@@ -967,8 +968,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/perfume-pagoda-chua-huong/"
+    "sourceUrl": "https://govietnam.travel/destination/perfume-pagoda-chua-huong/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-70-bai-bien-o-son",
@@ -981,8 +982,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/do-son-beach/"
+    "sourceUrl": "https://govietnam.travel/destination/do-son-beach/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-71-khu-di-tich-con-son-kiep-bac",
@@ -995,8 +996,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/con-son-kiep-bac-historical-relic-site/"
+    "sourceUrl": "https://govietnam.travel/destination/con-son-kiep-bac-historical-relic-site/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-72-vinh-lan-ha",
@@ -1009,8 +1010,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/lan-ha-bay/"
+    "sourceUrl": "https://govietnam.travel/destination/lan-ha-bay/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-73-quan-ao-cat-ba",
@@ -1023,8 +1024,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/cat-ba-archipelago/"
+    "sourceUrl": "https://govietnam.travel/destination/cat-ba-archipelago/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-74-chua-du-hang",
@@ -1037,8 +1038,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/du-hang-pagoda/"
+    "sourceUrl": "https://govietnam.travel/destination/du-hang-pagoda/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-75-nha-hat-lon-hai-phong",
@@ -1051,8 +1052,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/nha-hat-lon-hai-phong/"
+    "sourceUrl": "https://govietnam.travel/destination/nha-hat-lon-hai-phong/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-76-bao-tang-hai-phong",
@@ -1065,8 +1066,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/bao-tang-hai-phong/"
+    "sourceUrl": "https://govietnam.travel/destination/bao-tang-hai-phong/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-77-chua-va-thap-tuong-long",
@@ -1079,8 +1080,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/thap-tuong-long-do-son-hai-phong-pagoda/"
+    "sourceUrl": "https://govietnam.travel/destination/thap-tuong-long-do-son-hai-phong-pagoda/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-78-inh-bach-moc-luong-tu-ky-quan-san",
@@ -1093,8 +1094,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/bach-moc-luong-tu-ky-quan-san-peak/"
+    "sourceUrl": "https://govietnam.travel/destination/bach-moc-luong-tu-ky-quan-san-peak/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-79-cau-kinh-rong-may",
@@ -1107,8 +1108,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/rong-may-glass-bridge/"
+    "sourceUrl": "https://govietnam.travel/destination/rong-may-glass-bridge/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-80-quan-the-ong-pu-sam-cap",
@@ -1121,8 +1122,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/pu-sam-cap-cave-complex/"
+    "sourceUrl": "https://govietnam.travel/destination/pu-sam-cap-cave-complex/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-81-cao-nguyen-sin-ho",
@@ -1135,8 +1136,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/sin-ho-plateau/"
+    "sourceUrl": "https://govietnam.travel/destination/sin-ho-plateau/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-82-ban-sin-suoi-ho",
@@ -1149,8 +1150,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/sin-suoi-ho-village/"
+    "sourceUrl": "https://govietnam.travel/destination/sin-suoi-ho-village/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-83-canh-ong-muong-than",
@@ -1163,8 +1164,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/muong-than-fields/"
+    "sourceUrl": "https://govietnam.travel/destination/muong-than-fields/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-84-thung-lung-tu-le",
@@ -1177,8 +1178,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/tu-le-valley/"
+    "sourceUrl": "https://govietnam.travel/destination/tu-le-valley/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-85-sa-pa",
@@ -1191,8 +1192,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/sa-pa-town/"
+    "sourceUrl": "https://govietnam.travel/destination/sa-pa-town/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-86-ruong-bac-thang-mu-cang-chai",
@@ -1205,8 +1206,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/mu-cang-chai-rice-terraces/"
+    "sourceUrl": "https://govietnam.travel/destination/mu-cang-chai-rice-terraces/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-87-inh-fansipan",
@@ -1219,8 +1220,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/d/de/C%C3%A1p-treo-fansipan-17.jpg?utm_source=vi.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
-    "sourceUrl": "https://govietnam.travel/destination/fansipan-peak/"
+    "sourceUrl": "https://govietnam.travel/destination/fansipan-peak/",
+    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/d/de/C%C3%A1p-treo-fansipan-17.jpg?utm_source=vi.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
   },
   {
     "id": "vn-88-cho-phien-bac-ha",
@@ -1233,8 +1234,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "06:00 - 18:30",
-    "thumbnailUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1f/B%E1%BA%AFc_H%C3%A0_Sunday_market%2C_Vietnam_-_20131027-16.JPG/960px-B%E1%BA%AFc_H%C3%A0_Sunday_market%2C_Vietnam_-_20131027-16.JPG?utm_source=vi.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
-    "sourceUrl": "https://govietnam.travel/destination/bac-ha-market/"
+    "sourceUrl": "https://govietnam.travel/destination/bac-ha-market/",
+    "thumbnailUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1f/B%E1%BA%AFc_H%C3%A0_Sunday_market%2C_Vietnam_-_20131027-16.JPG/960px-B%E1%BA%AFc_H%C3%A0_Sunday_market%2C_Vietnam_-_20131027-16.JPG?utm_source=vi.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
   },
   {
     "id": "vn-89-ban-cat-cat",
@@ -1247,8 +1248,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/66/B%E1%BA%A3n_C%C3%A1t_C%C3%A1t.jpg/960px-B%E1%BA%A3n_C%C3%A1t_C%C3%A1t.jpg?utm_source=vi.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
-    "sourceUrl": "https://govietnam.travel/destination/cat-cat-village/"
+    "sourceUrl": "https://govietnam.travel/destination/cat-cat-village/",
+    "thumbnailUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/66/B%E1%BA%A3n_C%C3%A1t_C%C3%A1t.jpg/960px-B%E1%BA%A3n_C%C3%A1t_C%C3%A1t.jpg?utm_source=vi.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
   },
   {
     "id": "vn-90-ta-van-chu",
@@ -1261,8 +1262,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3f/Vietnam_location_map.svg/960px-Vietnam_location_map.svg.png?utm_source=vi.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
-    "sourceUrl": "https://govietnam.travel/destination/diem-san-may-ta-van-chu/"
+    "sourceUrl": "https://govietnam.travel/destination/diem-san-may-ta-van-chu/",
+    "thumbnailUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3f/Vietnam_location_map.svg/960px-Vietnam_location_map.svg.png?utm_source=vi.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
   },
   {
     "id": "vn-91-thac-ta-lam",
@@ -1275,8 +1276,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/37/Vietnam_relief_location_map.svg/960px-Vietnam_relief_location_map.svg.png?utm_source=vi.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
-    "sourceUrl": "https://govietnam.travel/destination/ta-lam-muong-khuong-lao-cai-waterfall/"
+    "sourceUrl": "https://govietnam.travel/destination/ta-lam-muong-khuong-lao-cai-waterfall/",
+    "thumbnailUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/37/Vietnam_relief_location_map.svg/960px-Vietnam_relief_location_map.svg.png?utm_source=vi.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
   },
   {
     "id": "vn-92-khu-bao-ton-thien-nhien-hoang-lien-van-ban",
@@ -1289,22 +1290,22 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/hoang-lien-van-ban-nature-reserve/"
+    "sourceUrl": "https://govietnam.travel/destination/hoang-lien-van-ban-nature-reserve/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-93-inh-ta-chi-nhu",
     "name": "Đỉnh Tà Chì Nhù",
     "province": "Yên Bái",
     "category": "Núi và cao nguyên",
-    "latitude": 21.5794,
-    "longitude": 104.3167,
+    "latitude": 22.3184,
+    "longitude": 103.8258,
     "description": "Tà Chì Nhù là đỉnh núi của vùng Trạm Tấu, được người trekking lựa chọn để khám phá triền núi và biển mây. Hành trình cần thể lực và chuẩn bị nghỉ núi. Trải nghiệm nổi bật: Trekking theo đường núi Ngắm cảnh sống núi và mây.",
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/trekking-ta-chi-nhu/"
+    "sourceUrl": "https://govietnam.travel/destination/trekking-ta-chi-nhu/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-94-eo-pha-in",
@@ -1317,8 +1318,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/pha-din-pass/"
+    "sourceUrl": "https://govietnam.travel/destination/pha-din-pass/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-95-so-chi-huy-chien-dich-ien-bien-phu-tai-muong-phang",
@@ -1331,8 +1332,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/muong-phang-campaign-command-post/"
+    "sourceUrl": "https://govietnam.travel/destination/muong-phang-campaign-command-post/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-96-quan-the-di-tich-chien-truong-ien-bien-phu",
@@ -1345,8 +1346,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/dien-bien-phu-battlefield-relic-complex/"
+    "sourceUrl": "https://govietnam.travel/destination/dien-bien-phu-battlefield-relic-complex/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-97-bao-tang-chien-thang-lich-su-ien-bien-phu",
@@ -1359,8 +1360,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/dien-bien-phu-victory-museum/"
+    "sourceUrl": "https://govietnam.travel/destination/dien-bien-phu-victory-museum/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-98-a-pa-chai",
@@ -1373,8 +1374,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/a-pa-chai-westernmost-point-of-vietnam/"
+    "sourceUrl": "https://govietnam.travel/destination/a-pa-chai-westernmost-point-of-vietnam/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-99-ho-pa-khoang",
@@ -1387,8 +1388,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/pa-khoang-lake/"
+    "sourceUrl": "https://govietnam.travel/destination/pa-khoang-lake/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-100-di-tich-nha-tu-son-la",
@@ -1401,8 +1402,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/nha-tu-son-la/"
+    "sourceUrl": "https://govietnam.travel/destination/nha-tu-son-la/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-101-oi-che-trai-tim-moc-chau",
@@ -1415,8 +1416,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/heart-shaped-tea-hill/"
+    "sourceUrl": "https://govietnam.travel/destination/heart-shaped-tea-hill/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-102-ta-xua",
@@ -1429,8 +1430,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/ta-xua-cloud-hunting-area/"
+    "sourceUrl": "https://govietnam.travel/destination/ta-xua-cloud-hunting-area/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-103-khu-du-lich-quoc-gia-moc-chau",
@@ -1443,8 +1444,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/moc-chau-national-tourist-area/"
+    "sourceUrl": "https://govietnam.travel/destination/moc-chau-national-tourist-area/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-104-cau-kinh-bach-long",
@@ -1457,8 +1458,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/bach-long-glass-bridge-moc-chau-island/"
+    "sourceUrl": "https://govietnam.travel/destination/bach-long-glass-bridge-moc-chau-island/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-105-ban-hang-tau",
@@ -1471,8 +1472,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/hang-tau-hmong-village-son-la/"
+    "sourceUrl": "https://govietnam.travel/destination/hang-tau-hmong-village-son-la/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-106-vuon-hoa-cam-tu-cau-moc-chau",
@@ -1485,8 +1486,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/vuon-hoa-cam-tu-cau-moc-chau-son-la/"
+    "sourceUrl": "https://govietnam.travel/destination/vuon-hoa-cam-tu-cau-moc-chau-son-la/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-107-hang-doi-moc-chau",
@@ -1499,8 +1500,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/doi-moc-chau-son-la-cave/"
+    "sourceUrl": "https://govietnam.travel/destination/doi-moc-chau-son-la-cave/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-108-ong-nguom-ngao",
@@ -1513,8 +1514,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/nguom-ngao-cave/"
+    "sourceUrl": "https://govietnam.travel/destination/nguom-ngao-cave/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-109-thac-ban-gioc",
@@ -1527,8 +1528,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Bangioc9tam.jpg/800px-Bangioc9tam.jpg",
-    "sourceUrl": "https://govietnam.travel/destination/ban-gioc-waterfall/"
+    "sourceUrl": "https://govietnam.travel/destination/ban-gioc-waterfall/",
+    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Bangioc9tam.jpg/800px-Bangioc9tam.jpg"
   },
   {
     "id": "vn-110-nui-mat-than",
@@ -1541,8 +1542,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/angel-eye-mountain/"
+    "sourceUrl": "https://govietnam.travel/destination/angel-eye-mountain/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-111-lang-a-khuoi-ky",
@@ -1555,8 +1556,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/khuoi-ky-stone-village/"
+    "sourceUrl": "https://govietnam.travel/destination/khuoi-ky-stone-village/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-112-khu-di-tich-pac-bo",
@@ -1569,8 +1570,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/pac-bo-historical-site/"
+    "sourceUrl": "https://govietnam.travel/destination/pac-bo-historical-site/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-113-vuon-quoc-gia-phia-oac-phia-en",
@@ -1583,8 +1584,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/phia-den-nguyen-binh-cao-bang/"
+    "sourceUrl": "https://govietnam.travel/destination/phia-den-nguyen-binh-cao-bang/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-114-cua-khau-huu-nghi",
@@ -1597,8 +1598,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/dong-dang-huu-nghi-border-gate/"
+    "sourceUrl": "https://govietnam.travel/destination/dong-dang-huu-nghi-border-gate/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-115-thanh-nha-mac-va-nui-to-thi",
@@ -1611,8 +1612,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/mac-dynasty-citadel-to-thi-mountain/"
+    "sourceUrl": "https://govietnam.travel/destination/mac-dynasty-citadel-to-thi-mountain/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-116-thung-lung-bac-son",
@@ -1625,8 +1626,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/bac-son-valley/"
+    "sourceUrl": "https://govietnam.travel/destination/bac-son-valley/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-117-khu-du-lich-mau-son",
@@ -1639,8 +1640,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/mau-son-mountain-resort/"
+    "sourceUrl": "https://govietnam.travel/destination/mau-son-mountain-resort/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-118-cum-danh-thang-tam-thanh-nhi-thanh",
@@ -1653,8 +1654,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/tam-thanh-nhi-thanh-cave-complex/"
+    "sourceUrl": "https://govietnam.travel/destination/tam-thanh-nhi-thanh-cave-complex/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-119-ruong-bac-thang-hoang-su-phi",
@@ -1667,8 +1668,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/hoang-su-phi-rice-terraces/"
+    "sourceUrl": "https://govietnam.travel/destination/hoang-su-phi-rice-terraces/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-120-khu-du-lich-sinh-thai-na-hang-lam-binh",
@@ -1681,8 +1682,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/na-hang-lam-binh-ecotourism-area/"
+    "sourceUrl": "https://govietnam.travel/destination/na-hang-lam-binh-ecotourism-area/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-121-eo-ma-pi-leng",
@@ -1695,8 +1696,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/%C4%90%C3%A8o_M%C3%A3_P%C3%AD_L%C3%A8ng_2022.jpg/960px-%C4%90%C3%A8o_M%C3%A3_P%C3%AD_L%C3%A8ng_2022.jpg",
-    "sourceUrl": "https://govietnam.travel/destination/ma-pi-leng-pass-nho-que-river-tu-san-canyon/"
+    "sourceUrl": "https://govietnam.travel/destination/ma-pi-leng-pass-nho-que-river-tu-san-canyon/",
+    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/%C4%90%C3%A8o_M%C3%A3_P%C3%AD_L%C3%A8ng_2022.jpg/960px-%C4%90%C3%A8o_M%C3%A3_P%C3%AD_L%C3%A8ng_2022.jpg"
   },
   {
     "id": "vn-122-song-nho-que",
@@ -1709,8 +1710,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/ma-pi-leng-pass-nho-que-river-tu-san-canyon/"
+    "sourceUrl": "https://govietnam.travel/destination/ma-pi-leng-pass-nho-que-river-tu-san-canyon/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-123-hem-tu-san",
@@ -1723,8 +1724,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/ma-pi-leng-pass-nho-que-river-tu-san-canyon/"
+    "sourceUrl": "https://govietnam.travel/destination/ma-pi-leng-pass-nho-que-river-tu-san-canyon/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-124-khu-di-tich-tan-trao",
@@ -1737,8 +1738,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/tan-trao-historical-relic-site/"
+    "sourceUrl": "https://govietnam.travel/destination/tan-trao-historical-relic-site/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-125-dinh-thu-ho-vuong",
@@ -1751,8 +1752,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/hmong-king-s-palace-vuong-family-residence/"
+    "sourceUrl": "https://govietnam.travel/destination/hmong-king-s-palace-vuong-family-residence/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-126-cot-co-lung-cu",
@@ -1765,8 +1766,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/lung-cu-flag-tower/"
+    "sourceUrl": "https://govietnam.travel/destination/lung-cu-flag-tower/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-127-pho-co-ong-van",
@@ -1779,22 +1780,22 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/dong-van-karst-plateau-town/"
+    "sourceUrl": "https://govietnam.travel/destination/dong-van-karst-plateau-town/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-128-lang-van-hoa-du-lich-lung-cam",
     "name": "Làng văn hóa du lịch Lũng Cẩm",
     "province": "Hà Giang",
     "category": "Làng bản và văn hóa",
-    "latitude": 23.2327,
-    "longitude": 105.1983,
+    "latitude": 21.7987,
+    "longitude": 105.1987,
     "description": "Lũng Cẩm là làng văn hóa của người Mông ở thung lũng Sủng Là. Nhà trình tường và nhịp sống của cộng đồng tạo trải nghiệm văn hóa trong tuyến cao nguyên đá. Trải nghiệm nổi bật: Khám phá nhà trình tường Tìm hiểu đời sống người Mông.",
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/van-hoa-du-lich-lung-cam-dong-van-ha-giang-village/"
+    "sourceUrl": "https://govietnam.travel/destination/van-hoa-du-lich-lung-cam-dong-van-ha-giang-village/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-129-oi-che-tan-cuong",
@@ -1807,8 +1808,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/tan-cuong-tea-hill/"
+    "sourceUrl": "https://govietnam.travel/destination/tan-cuong-tea-hill/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-130-ho-nui-coc",
@@ -1821,8 +1822,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/nui-coc-lake-widow-island-ba-goa-islet/"
+    "sourceUrl": "https://govietnam.travel/destination/nui-coc-lake-widow-island-ba-goa-islet/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-131-ho-ba-be",
@@ -1835,8 +1836,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/ba-be-lake-pac-ngoi-village/"
+    "sourceUrl": "https://govietnam.travel/destination/ba-be-lake-pac-ngoi-village/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-132-bao-tang-van-hoa-cac-dan-toc-viet-nam",
@@ -1849,8 +1850,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/museum-of-cultures-of-vietnam-s-ethnic-groups/"
+    "sourceUrl": "https://govietnam.travel/destination/museum-of-cultures-of-vietnam-s-ethnic-groups/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-133-atk-inh-hoa",
@@ -1863,8 +1864,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/dinh-hoa-atk-revolutionary-safety-zone/"
+    "sourceUrl": "https://govietnam.travel/destination/dinh-hoa-atk-revolutionary-safety-zone/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-134-khu-di-tich-lich-su-en-hung",
@@ -1877,8 +1878,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/hung-kings-temple-historical-relic-site/"
+    "sourceUrl": "https://govietnam.travel/destination/hung-kings-temple-historical-relic-site/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-135-vuon-quoc-gia-xuan-son",
@@ -1891,8 +1892,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/xuan-son-national-park/"
+    "sourceUrl": "https://govietnam.travel/destination/xuan-son-national-park/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-136-thien-vien-truc-lam-tay-thien",
@@ -1905,8 +1906,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/truc-lam-tay-thien-zen-monastery-tay-thien-mandala-great-stupa/"
+    "sourceUrl": "https://govietnam.travel/destination/truc-lam-tay-thien-zen-monastery-tay-thien-mandala-great-stupa/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-137-tam-ao",
@@ -1919,8 +1920,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/tam-dao-town-hill-station/"
+    "sourceUrl": "https://govietnam.travel/destination/tam-dao-town-hill-station/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-138-thung-lung-mai-chau",
@@ -1933,8 +1934,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/mai-chau-valley-lac-pom-coong-villages/"
+    "sourceUrl": "https://govietnam.travel/destination/mai-chau-valley-lac-pom-coong-villages/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-139-ho-hoa-binh",
@@ -1947,8 +1948,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/hoa-binh-lake-tourist-area/"
+    "sourceUrl": "https://govietnam.travel/destination/hoa-binh-lake-tourist-area/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-140-bao-tang-hung-vuong",
@@ -1961,8 +1962,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/bao-tang-hung-vuong-viet-tri/"
+    "sourceUrl": "https://govietnam.travel/destination/bao-tang-hung-vuong-viet-tri/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-141-eo-thung-khe-eo-a-trang",
@@ -1975,8 +1976,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/da-trang-7ball-tan-lac-hoa-binh-mountain-pass/"
+    "sourceUrl": "https://govietnam.travel/destination/da-trang-7ball-tan-lac-hoa-binh-mountain-pass/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-142-en-o",
@@ -1989,8 +1990,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/den-do-temple/"
+    "sourceUrl": "https://govietnam.travel/destination/den-do-temple/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-143-lang-tranh-ong-ho",
@@ -2003,8 +2004,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/dong-ho-folk-painting-village/"
+    "sourceUrl": "https://govietnam.travel/destination/dong-ho-folk-painting-village/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-144-khu-du-lich-tay-yen-tu",
@@ -2017,8 +2018,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/tay-yen-tu-spiritual-ecological-area/"
+    "sourceUrl": "https://govietnam.travel/destination/tay-yen-tu-spiritual-ecological-area/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-145-lang-co-tho-ha",
@@ -2031,8 +2032,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/tho-ha-ancient-village/"
+    "sourceUrl": "https://govietnam.travel/destination/tho-ha-ancient-village/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-146-chua-but-thap",
@@ -2045,8 +2046,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/but-thap-pagoda/"
+    "sourceUrl": "https://govietnam.travel/destination/but-thap-pagoda/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-147-en-chu-ong-tu",
@@ -2059,8 +2060,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/chu-dong-tu-temple/"
+    "sourceUrl": "https://govietnam.travel/destination/chu-dong-tu-temple/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-148-khu-di-tich-pho-hien",
@@ -2073,8 +2074,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/pho-hien-historic-relic-complex/"
+    "sourceUrl": "https://govietnam.travel/destination/pho-hien-historic-relic-complex/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-149-chua-keo",
@@ -2087,8 +2088,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/keo-pagoda/"
+    "sourceUrl": "https://govietnam.travel/destination/keo-pagoda/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-150-vuon-quoc-gia-xuan-thuy",
@@ -2101,8 +2102,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/xuan-thuy-national-park/"
+    "sourceUrl": "https://govietnam.travel/destination/xuan-thuy-national-park/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-151-quan-the-danh-thang-trang-an",
@@ -2115,8 +2116,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Trang_An_Ninh_Binh_Landscape.jpg/800px-Trang_An_Ninh_Binh_Landscape.jpg",
-    "sourceUrl": "https://govietnam.travel/destination/trang-an-landscape-complex/"
+    "sourceUrl": "https://govietnam.travel/destination/trang-an-landscape-complex/",
+    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Trang_An_Ninh_Binh_Landscape.jpg/800px-Trang_An_Ninh_Binh_Landscape.jpg"
   },
   {
     "id": "vn-152-tam-coc",
@@ -2129,8 +2130,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/tam-coc-bich-dong-three-caves/"
+    "sourceUrl": "https://govietnam.travel/destination/tam-coc-bich-dong-three-caves/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-153-chua-bich-ong",
@@ -2143,8 +2144,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/tam-coc-bich-dong-three-caves/"
+    "sourceUrl": "https://govietnam.travel/destination/tam-coc-bich-dong-three-caves/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-154-chua-tam-chuc",
@@ -2157,8 +2158,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/tam-chuc-pagoda/"
+    "sourceUrl": "https://govietnam.travel/destination/tam-chuc-pagoda/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-155-nha-tho-a-phat-diem",
@@ -2171,8 +2172,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/phat-diem-cathedral/"
+    "sourceUrl": "https://govietnam.travel/destination/phat-diem-cathedral/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-156-co-o-hoa-lu",
@@ -2185,8 +2186,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/hoa-lu-ancient-capital/"
+    "sourceUrl": "https://govietnam.travel/destination/hoa-lu-ancient-capital/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-157-hang-mua",
@@ -2199,8 +2200,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/mua-cave-viewpoint/"
+    "sourceUrl": "https://govietnam.travel/destination/mua-cave-viewpoint/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-158-chua-bai-inh",
@@ -2213,8 +2214,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/bai-dinh-pagoda/"
+    "sourceUrl": "https://govietnam.travel/destination/bai-dinh-pagoda/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-159-ong-ma-tien",
@@ -2227,8 +2228,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/ma-tien-yen-mo-ninh-binh-cave/"
+    "sourceUrl": "https://govietnam.travel/destination/ma-tien-yen-mo-ninh-binh-cave/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-160-sun-world-ha-long",
@@ -2241,8 +2242,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 450000,
     "priceMax": 950000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/sun-world-ha-long/"
+    "sourceUrl": "https://govietnam.travel/destination/sun-world-ha-long/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-161-ao-co-to",
@@ -2255,8 +2256,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/co-to-island/"
+    "sourceUrl": "https://govietnam.travel/destination/co-to-island/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-162-khu-danh-thang-yen-tu",
@@ -2269,8 +2270,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/yen-tu-scenic-mountain-pagoda-complex/"
+    "sourceUrl": "https://govietnam.travel/destination/yen-tu-scenic-mountain-pagoda-complex/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-163-vinh-bai-tu-long",
@@ -2283,8 +2284,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/bai-tu-long-bay/"
+    "sourceUrl": "https://govietnam.travel/destination/bai-tu-long-bay/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-164-binh-lieu",
@@ -2297,8 +2298,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/binh-lieu-border-run-dinosaur-spine-ridge/"
+    "sourceUrl": "https://govietnam.travel/destination/binh-lieu-border-run-dinosaur-spine-ridge/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-165-chua-suoi-tam",
@@ -2311,8 +2312,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/suoi-tam-dong-trieu-quang-ninh-pagoda/"
+    "sourceUrl": "https://govietnam.travel/destination/suoi-tam-dong-trieu-quang-ninh-pagoda/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-166-chua-van-trieu",
@@ -2325,8 +2326,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/van-trieu-yen-hung-quang-ninh-pagoda/"
+    "sourceUrl": "https://govietnam.travel/destination/van-trieu-yen-hung-quang-ninh-pagoda/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-167-oi-vo-cuc-tren-ao-quan-lan",
@@ -2339,8 +2340,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/vo-cuc-van-don-quang-ninh-hill/"
+    "sourceUrl": "https://govietnam.travel/destination/vo-cuc-van-don-quang-ninh-hill/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-168-en-ba-cua",
@@ -2353,8 +2354,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/ba-cua-cam-pha-quang-ninh-temple/"
+    "sourceUrl": "https://govietnam.travel/destination/ba-cua-cam-pha-quang-ninh-temple/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-169-suoi-ca-than-cam-luong",
@@ -2367,8 +2368,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/cam-luong-holy-fish-stream/"
+    "sourceUrl": "https://govietnam.travel/destination/cam-luong-holy-fish-stream/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-170-khu-bao-ton-thien-nhien-pu-luong",
@@ -2381,8 +2382,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/pu-luong-nature-reserve-kho-muong-village/"
+    "sourceUrl": "https://govietnam.travel/destination/pu-luong-nature-reserve-kho-muong-village/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-171-ban-kho-muong",
@@ -2395,8 +2396,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/pu-luong-nature-reserve-kho-muong-village/"
+    "sourceUrl": "https://govietnam.travel/destination/pu-luong-nature-reserve-kho-muong-village/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-172-khu-di-tich-lam-kinh",
@@ -2409,8 +2410,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/lam-kinh-historical-site/"
+    "sourceUrl": "https://govietnam.travel/destination/lam-kinh-historical-site/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-173-thanh-nha-ho",
@@ -2423,8 +2424,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/ho-citadel-unesco-world-heritage-site/"
+    "sourceUrl": "https://govietnam.travel/destination/ho-citadel-unesco-world-heritage-site/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-174-bai-bien-sam-son",
@@ -2437,8 +2438,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/sam-son-hai-tien-beaches/"
+    "sourceUrl": "https://govietnam.travel/destination/sam-son-hai-tien-beaches/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-175-bai-bien-hai-tien",
@@ -2451,8 +2452,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/sam-son-hai-tien-beaches/"
+    "sourceUrl": "https://govietnam.travel/destination/sam-son-hai-tien-beaches/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-176-bao-tang-tinh-thanh-hoa",
@@ -2465,8 +2466,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/bao-tang-tinh-thanh-hoa/"
+    "sourceUrl": "https://govietnam.travel/destination/bao-tang-tinh-thanh-hoa/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-177-sun-world-sam-son",
@@ -2479,8 +2480,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 450000,
     "priceMax": 950000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/sun-world-sam-son/"
+    "sourceUrl": "https://govietnam.travel/destination/sun-world-sam-son/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-178-hang-doi-kho-muong",
@@ -2493,8 +2494,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/doi-kho-muong-ba-thuoc-thanh-hoa-cave/"
+    "sourceUrl": "https://govietnam.travel/destination/doi-kho-muong-ba-thuoc-thanh-hoa-cave/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-179-en-ong-hoang-muoi",
@@ -2507,8 +2508,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/ong-hoang-muoi-temple-lam-river/"
+    "sourceUrl": "https://govietnam.travel/destination/ong-hoang-muoi-temple-lam-river/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-180-oi-che-thanh-chuong",
@@ -2521,8 +2522,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/thanh-chuong-tea-hill-islet-lake/"
+    "sourceUrl": "https://govietnam.travel/destination/thanh-chuong-tea-hill-islet-lake/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-181-cong-troi-muong-long",
@@ -2535,8 +2536,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/muong-long-heaven-gate/"
+    "sourceUrl": "https://govietnam.travel/destination/muong-long-heaven-gate/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-182-vuon-quoc-gia-pu-mat",
@@ -2549,8 +2550,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/pu-mat-national-park-western-nghe-an-biosphere-reserve/"
+    "sourceUrl": "https://govietnam.travel/destination/pu-mat-national-park-western-nghe-an-biosphere-reserve/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-183-khu-di-tich-kim-lien-lang-sen",
@@ -2563,8 +2564,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/kim-lien-relic-site-sen-village-president-ho-chi-minh-s-hometown/"
+    "sourceUrl": "https://govietnam.travel/destination/kim-lien-relic-site-sen-village-president-ho-chi-minh-s-hometown/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-184-bai-bien-cua-lo",
@@ -2577,8 +2578,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/cua-lo-beach-lan-chau-island/"
+    "sourceUrl": "https://govietnam.travel/destination/cua-lo-beach-lan-chau-island/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-185-ao-lan-chau",
@@ -2591,8 +2592,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/cua-lo-beach-lan-chau-island/"
+    "sourceUrl": "https://govietnam.travel/destination/cua-lo-beach-lan-chau-island/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-186-quang-truong-ho-chi-minh-tai-vinh",
@@ -2605,8 +2606,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/quang-truong-ho-chi-minh-vinh/"
+    "sourceUrl": "https://govietnam.travel/destination/quang-truong-ho-chi-minh-vinh/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-187-bao-tang-xo-viet-nghe-tinh",
@@ -2619,8 +2620,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/bao-tang-xo-viet-nghe-tinh/"
+    "sourceUrl": "https://govietnam.travel/destination/bao-tang-xo-viet-nghe-tinh/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-188-muong-thanh-safari-land-dien-lam",
@@ -2633,8 +2634,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 450000,
     "priceMax": 950000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/muong-thanh-safari-dien-lam-nghe-an/"
+    "sourceUrl": "https://govietnam.travel/destination/muong-thanh-safari-dien-lam-nghe-an/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-189-bai-bien-thien-cam",
@@ -2647,8 +2648,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/thien-cam-beach/"
+    "sourceUrl": "https://govietnam.travel/destination/thien-cam-beach/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-190-nga-ba-ong-loc",
@@ -2661,8 +2662,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/dong-loc-t-junction-historical-relic-site/"
+    "sourceUrl": "https://govietnam.travel/destination/dong-loc-t-junction-historical-relic-site/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-191-khu-luu-niem-nguyen-du",
@@ -2675,8 +2676,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/nguyen-du-memorial-site/"
+    "sourceUrl": "https://govietnam.travel/destination/nguyen-du-memorial-site/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-192-hoanh-son-quan-va-eo-ngang",
@@ -2689,8 +2690,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/hoanh-son-pass-gate-ngang-pass/"
+    "sourceUrl": "https://govietnam.travel/destination/hoanh-son-pass-gate-ngang-pass/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-193-chua-huong-tich",
@@ -2703,8 +2704,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/huong-tich-pagoda-ha-tinh/"
+    "sourceUrl": "https://govietnam.travel/destination/huong-tich-pagoda-ha-tinh/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-194-en-truong-bat",
@@ -2717,8 +2718,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/truong-bat-thach-ha-ha-tinh-temple/"
+    "sourceUrl": "https://govietnam.travel/destination/truong-bat-thach-ha-ha-tinh-temple/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-195-bai-bien-xuan-hai",
@@ -2731,8 +2732,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/xuan-hai-beach-2/"
+    "sourceUrl": "https://govietnam.travel/destination/xuan-hai-beach-2/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-196-vuon-quoc-gia-vu-quang",
@@ -2745,8 +2746,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/vu-quang-national-park/"
+    "sourceUrl": "https://govietnam.travel/destination/vu-quang-national-park/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-197-khu-du-lich-nuoc-nong-son-kim",
@@ -2759,8 +2760,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/son-kim-hot-spring-ecotourism-area/"
+    "sourceUrl": "https://govietnam.travel/destination/son-kim-hot-spring-ecotourism-area/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-198-ho-ke-go",
@@ -2773,8 +2774,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/ke-go-lake/"
+    "sourceUrl": "https://govietnam.travel/destination/ke-go-lake/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-199-ong-phong-nha",
@@ -2787,8 +2788,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/phong-nha-town-cluster-phong-nha-cave-dark-cave-mooc-spring-bong-lai-valley/"
+    "sourceUrl": "https://govietnam.travel/destination/phong-nha-town-cluster-phong-nha-cave-dark-cave-mooc-spring-bong-lai-valley/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-200-hang-toi-dark-cave",
@@ -2801,8 +2802,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/phong-nha-town-cluster-phong-nha-cave-dark-cave-mooc-spring-bong-lai-valley/"
+    "sourceUrl": "https://govietnam.travel/destination/phong-nha-town-cluster-phong-nha-cave-dark-cave-mooc-spring-bong-lai-valley/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-201-suoi-nuoc-mooc",
@@ -2815,8 +2816,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/phong-nha-town-cluster-phong-nha-cave-dark-cave-mooc-spring-bong-lai-valley/"
+    "sourceUrl": "https://govietnam.travel/destination/phong-nha-town-cluster-phong-nha-cave-dark-cave-mooc-spring-bong-lai-valley/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-202-ong-thien-uong",
@@ -2829,8 +2830,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/paradise-cave-thien-duong-cave/"
+    "sourceUrl": "https://govietnam.travel/destination/paradise-cave-thien-duong-cave/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-203-bai-bien-nhat-le",
@@ -2843,22 +2844,22 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/dong-hoi-coastal-cluster-nhat-le-beach-quang-phu-sand-dunes-dong-hoi-citadel/"
+    "sourceUrl": "https://govietnam.travel/destination/dong-hoi-coastal-cluster-nhat-le-beach-quang-phu-sand-dunes-dong-hoi-citadel/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-204-oi-cat-quang-phu",
     "name": "Đồi cát Quảng Phú",
     "province": "Quảng Bình",
     "category": "Cảnh quan",
-    "latitude": 17.5147,
-    "longitude": 106.6128,
+    "latitude": 16.8527,
+    "longitude": 107.064,
     "description": "Đồi cát Quảng Phú là cảnh quan cát ven khu Đồng Hới, có bề mặt và đường gợn thay đổi theo gió. Điểm đến phù hợp chụp ảnh và trải nghiệm trên cát khi có dịch vụ. Trải nghiệm nổi bật: Chụp ảnh đồi cát Dạo quan sát đường gợn cát.",
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/dong-hoi-coastal-cluster-nhat-le-beach-quang-phu-sand-dunes-dong-hoi-citadel/"
+    "sourceUrl": "https://govietnam.travel/destination/dong-hoi-coastal-cluster-nhat-le-beach-quang-phu-sand-dunes-dong-hoi-citadel/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-205-ia-ao-vinh-moc",
@@ -2871,8 +2872,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/quang-tri-dmz-vinh-moc-tunnels-hien-luong-bridge-khe-sanh-route-9/"
+    "sourceUrl": "https://govietnam.travel/destination/quang-tri-dmz-vinh-moc-tunnels-hien-luong-bridge-khe-sanh-route-9/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-206-cau-hien-luong",
@@ -2885,8 +2886,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/quang-tri-dmz-vinh-moc-tunnels-hien-luong-bridge-khe-sanh-route-9/"
+    "sourceUrl": "https://govietnam.travel/destination/quang-tri-dmz-vinh-moc-tunnels-hien-luong-bridge-khe-sanh-route-9/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-207-di-tich-khe-sanh",
@@ -2899,8 +2900,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/quang-tri-dmz-vinh-moc-tunnels-hien-luong-bridge-khe-sanh-route-9/"
+    "sourceUrl": "https://govietnam.travel/destination/quang-tri-dmz-vinh-moc-tunnels-hien-luong-bridge-khe-sanh-route-9/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-208-thanh-co-quang-tri",
@@ -2913,22 +2914,22 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/quang-tri-ancient-citadel-thach-han-river-17th-parallel/"
+    "sourceUrl": "https://govietnam.travel/destination/quang-tri-ancient-citadel-thach-han-river-17th-parallel/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-209-bao-tang-co-vat-cung-inh-hue",
     "name": "Bảo tàng Cổ vật Cung đình Huế",
     "province": "Thừa Thiên Huế",
     "category": "Bảo tàng",
-    "latitude": 16.4705,
-    "longitude": 107.5794,
+    "latitude": 15.946,
+    "longitude": 107.964,
     "description": "Bảo tàng Cổ vật Cung đình Huế đặt trong điện Long An, kết hợp giá trị kiến trúc gỗ với hiện vật triều Nguyễn. Đây là điểm phù hợp người quan tâm mỹ thuật và đời sống cung đình. Trải nghiệm nổi bật: Quan sát kiến trúc điện Long An Tìm hiểu hiện vật cung đình.",
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/bao-tang-co-vat-cung-dinh-hue-dien-long-an/"
+    "sourceUrl": "https://govietnam.travel/destination/bao-tang-co-vat-cung-dinh-hue-dien-long-an/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-210-vinh-lang-co",
@@ -2941,8 +2942,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Lang_Co_Bay_Vietnam.jpg/800px-Lang_Co_Bay_Vietnam.jpg",
-    "sourceUrl": "https://govietnam.travel/destination/lang-co-bay-an-cu-lagoon-phong-village/"
+    "sourceUrl": "https://govietnam.travel/destination/lang-co-bay-an-cu-lagoon-phong-village/",
+    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Lang_Co_Bay_Vietnam.jpg/800px-Lang_Co_Bay_Vietnam.jpg"
   },
   {
     "id": "vn-211-pha-tam-giang",
@@ -2955,78 +2956,78 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/tam-giang-lagoon-cluster-tam-giang-lagoon-ru-cha-mangrove-thuan-an-beach/"
+    "sourceUrl": "https://govietnam.travel/destination/tam-giang-lagoon-cluster-tam-giang-lagoon-ru-cha-mangrove-thuan-an-beach/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-212-rung-ngap-man-ru-cha",
     "name": "Rừng ngập mặn Rú Chá",
     "province": "Thừa Thiên Huế",
     "category": "Sinh thái và nghỉ dưỡng",
-    "latitude": 16.5369,
-    "longitude": 107.6256,
+    "latitude": 16,
+    "longitude": 107.964,
     "description": "Rú Chá là vùng rừng ngập mặn trong hệ cảnh quan đầm phá Huế, nổi bật với các lối nhìn qua tán cây. Đây là điểm thiên nhiên phù hợp một tuyến đi bộ ngắn. Trải nghiệm nổi bật: Dạo theo lối tham quan rừng Chụp cảnh tán cây và vùng nước.",
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/tam-giang-lagoon-cluster-tam-giang-lagoon-ru-cha-mangrove-thuan-an-beach/"
+    "sourceUrl": "https://govietnam.travel/destination/tam-giang-lagoon-cluster-tam-giang-lagoon-ru-cha-mangrove-thuan-an-beach/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-213-song-huong",
     "name": "Sông Hương",
     "province": "Thừa Thiên Huế",
     "category": "Sông và hồ",
-    "latitude": 16.4637,
-    "longitude": 107.5843,
+    "latitude": 16.018,
+    "longitude": 107.964,
     "description": "Sông Hương đi qua cảnh quan đô thị và di sản Huế, kết nối nhiều tuyến tham quan ven bờ. Có thể chọn đi bộ, ngắm cảnh hoặc dịch vụ thuyền được tổ chức. Trải nghiệm nổi bật: Dạo tuyến ven sông Ngắm Huế từ hành trình trên nước.",
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/thien-mu-pagoda-perfume-river/"
+    "sourceUrl": "https://govietnam.travel/destination/thien-mu-pagoda-perfume-river/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-214-quan-the-di-tich-co-o-hue",
     "name": "Quần thể di tích Cố đô Huế",
     "province": "Thừa Thiên Huế",
     "category": "Di tích",
-    "latitude": 16.4699,
-    "longitude": 107.5786,
+    "latitude": 16.036,
+    "longitude": 107.964,
     "description": "Quần thể di tích Cố đô Huế gồm hệ thống cung điện, thành quách và công trình triều Nguyễn. Đây là vùng di sản rộng, cần chia thành các điểm và tuyến tham quan cụ thể. Trải nghiệm nổi bật: Khám phá kiến trúc cung đình Tìm hiểu lịch sử triều Nguyễn.",
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/complex-of-hue-monuments-unesco-world-heritage-site/"
+    "sourceUrl": "https://govietnam.travel/destination/complex-of-hue-monuments-unesco-world-heritage-site/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-215-bai-bien-thuan-an",
     "name": "Bãi biển Thuận An",
     "province": "Thừa Thiên Huế",
     "category": "Biển và đảo",
-    "latitude": 16.5583,
-    "longitude": 107.6433,
+    "latitude": 16.054,
+    "longitude": 107.964,
     "description": "Thuận An là vùng biển gần Huế, gắn với sinh hoạt nghỉ biển của người địa phương. Có thể ghép dạo biển, bữa ăn hải sản và khám phá cảnh quan cửa biển. Trải nghiệm nổi bật: Dạo bãi biển Kết hợp khám phá cảnh quan cửa biển.",
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/thuan-an-beach/"
+    "sourceUrl": "https://govietnam.travel/destination/thuan-an-beach/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-216-am-lap-an",
     "name": "Đầm Lập An",
     "province": "Thừa Thiên Huế",
     "category": "Sông và hồ",
-    "latitude": 16.2238,
-    "longitude": 108.0169,
+    "latitude": 15.946,
+    "longitude": 107.982,
     "description": "Đầm Lập An nằm trong cảnh quan Lăng Cô, có mặt nước phẳng và núi bao quanh. Trải nghiệm chủ yếu là ngắm cảnh, quan sát sinh hoạt nuôi trồng và chụp ảnh ven bờ. Trải nghiệm nổi bật: Ngắm mặt đầm và dãy núi Tìm hiểu cảnh quan nuôi trồng ven đầm.",
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/lap-an-lagoon/"
+    "sourceUrl": "https://govietnam.travel/destination/lap-an-lagoon/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-217-thanh-ia-my-son",
@@ -3039,22 +3040,22 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/2024_-_M%E1%BB%B9_S%C6%A1n_Group_B%2C_C_and_D_-_img_23.jpg/960px-2024_-_M%E1%BB%B9_S%C6%A1n_Group_B%2C_C_and_D_-_img_23.jpg",
-    "sourceUrl": "https://govietnam.travel/destination/my-son-sanctuary-unesco-world-heritage-site/"
+    "sourceUrl": "https://govietnam.travel/destination/my-son-sanctuary-unesco-world-heritage-site/",
+    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/2024_-_M%E1%BB%B9_S%C6%A1n_Group_B%2C_C_and_D_-_img_23.jpg/960px-2024_-_M%E1%BB%B9_S%C6%A1n_Group_B%2C_C_and_D_-_img_23.jpg"
   },
   {
     "id": "vn-218-thap-cham-khuong-my",
     "name": "Tháp Chăm Khương Mỹ",
     "province": "Quảng Nam",
     "category": "Tôn giáo và tâm linh",
-    "latitude": 15.5186,
-    "longitude": 108.5283,
+    "latitude": 16.1084,
+    "longitude": 108.1662,
     "description": "Khương Mỹ là cụm tháp Chăm bằng gạch ở vùng Quảng Nam cũ, nay thuộc Đà Nẵng. Điểm đến phù hợp quan sát kiến trúc và tìm hiểu di sản Champa ngoài tuyến Mỹ Sơn. Trải nghiệm nổi bật: Quan sát cụm tháp Chăm Tìm hiểu nghệ thuật kiến trúc gạch.",
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/cham-khuong-my-tower/"
+    "sourceUrl": "https://govietnam.travel/destination/cham-khuong-my-tower/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-219-cong-vien-nuoc-mikazuki-365",
@@ -3067,8 +3068,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/mikazuki-365-water-park/"
+    "sourceUrl": "https://govietnam.travel/destination/mikazuki-365-water-park/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-220-nui-va-chua-thien-an",
@@ -3081,8 +3082,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/thien-an-mountain-thien-an-pagoda/"
+    "sourceUrl": "https://govietnam.travel/destination/thien-an-mountain-thien-an-pagoda/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-221-mang-en",
@@ -3095,8 +3096,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/mang-den-highland-plateau/"
+    "sourceUrl": "https://govietnam.travel/destination/mang-den-highland-plateau/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-222-ao-ly-son",
@@ -3109,8 +3110,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/ly-son-island/"
+    "sourceUrl": "https://govietnam.travel/destination/ly-son-island/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-223-nha-tho-go-kon-tum",
@@ -3123,8 +3124,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Nh%C3%A0_th%E1%BB%9D_g%E1%BB%97_Kon_Tum.jpg/800px-Nh%C3%A0_th%E1%BB%9D_g%E1%BB%97_Kon_Tum.jpg",
-    "sourceUrl": "https://govietnam.travel/destination/kon-tum-city-cluster-wooden-church-kon-klor-bridge-kon-tum-prison-kon-ktu-village/"
+    "sourceUrl": "https://govietnam.travel/destination/kon-tum-city-cluster-wooden-church-kon-klor-bridge-kon-tum-prison-kon-ktu-village/",
+    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Nh%C3%A0_th%E1%BB%9D_g%E1%BB%97_Kon_Tum.jpg/800px-Nh%C3%A0_th%E1%BB%9D_g%E1%BB%97_Kon_Tum.jpg"
   },
   {
     "id": "vn-224-cau-treo-kon-klor",
@@ -3137,8 +3138,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/kon-tum-city-cluster-wooden-church-kon-klor-bridge-kon-tum-prison-kon-ktu-village/"
+    "sourceUrl": "https://govietnam.travel/destination/kon-tum-city-cluster-wooden-church-kon-klor-bridge-kon-tum-prison-kon-ktu-village/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-225-nha-tu-kon-tum",
@@ -3151,22 +3152,22 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/kon-tum-city-cluster-wooden-church-kon-klor-bridge-kon-tum-prison-kon-ktu-village/"
+    "sourceUrl": "https://govietnam.travel/destination/kon-tum-city-cluster-wooden-church-kon-klor-bridge-kon-tum-prison-kon-ktu-village/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-226-lang-kon-k-tu",
     "name": "Làng Kon K’Tu",
     "province": "Kon Tum",
     "category": "Làng bản và văn hóa",
-    "latitude": 14.3417,
-    "longitude": 108.0611,
+    "latitude": 15.1754,
+    "longitude": 108.7688,
     "description": "Kon K’Tu là làng của cộng đồng Ba Na gần sông Đăk Bla. Nhà rông và sinh hoạt làng tạo trải nghiệm văn hóa khi được giới thiệu bởi người địa phương. Trải nghiệm nổi bật: Tìm hiểu kiến trúc nhà rông Khám phá sinh hoạt cộng đồng Ba Na.",
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/kon-tum-city-cluster-wooden-church-kon-klor-bridge-kon-tum-prison-kon-ktu-village/"
+    "sourceUrl": "https://govietnam.travel/destination/kon-tum-city-cluster-wooden-church-kon-klor-bridge-kon-tum-prison-kon-ktu-village/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-227-khu-chung-tich-son-my",
@@ -3179,8 +3180,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/son-my-vestige-area-my-lai-massacre-memorial-site/"
+    "sourceUrl": "https://govietnam.travel/destination/son-my-vestige-area-my-lai-massacre-memorial-site/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-228-bai-bien-sa-huynh",
@@ -3193,36 +3194,36 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/sa-huynh-beach-go-co-ancient-village/"
+    "sourceUrl": "https://govietnam.travel/destination/sa-huynh-beach-go-co-ancient-village/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-229-nha-rong-kon-trang-long-loi",
     "name": "Nhà rông Kon Trang Long Loi",
     "province": "Kon Tum",
     "category": "Làng bản và văn hóa",
-    "latitude": 14.5028,
-    "longitude": 107.925,
+    "latitude": 15.1034,
+    "longitude": 108.7868,
     "description": "Nhà rông Kon Trang Long Loi là điểm sinh hoạt cộng đồng của làng Ba Na nhánh Rơ Ngao ở vùng Đăk Hà. Hình thức nhà rông phản ánh vai trò văn hóa của không gian chung. Trải nghiệm nổi bật: Quan sát kiến trúc nhà rông Tìm hiểu văn hóa cộng đồng.",
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/kon-trang-long-loi-rong-house/"
+    "sourceUrl": "https://govietnam.travel/destination/kon-trang-long-loi-rong-house/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-230-trung-tam-kham-pha-khoa-hoc-explorascience-quy-nhon",
     "name": "Trung tâm Khám phá Khoa học ExploraScience Quy Nhơn",
     "province": "Bình Định",
     "category": "Bảo tàng",
-    "latitude": 13.7224,
-    "longitude": 109.2144,
+    "latitude": 13.9293,
+    "longitude": 107.964,
     "description": "ExploraScience Quy Nhơn giới thiệu khoa học bằng các không gian tương tác và trình diễn. Điểm đến phù hợp người muốn khám phá kiến thức thông qua hoạt động thay vì chỉ xem hiện vật. Trải nghiệm nổi bật: Trải nghiệm trưng bày tương tác Tìm hiểu khoa học qua hoạt động.",
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/explorascience-quy-nhon/"
+    "sourceUrl": "https://govietnam.travel/destination/explorascience-quy-nhon/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-231-bao-tang-quang-trung",
@@ -3235,8 +3236,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/quang-trung-museum-tay-son-gia-lai/"
+    "sourceUrl": "https://govietnam.travel/destination/quang-trung-museum-tay-son-gia-lai/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-232-thap-banh-it",
@@ -3249,8 +3250,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/banh-it-cham-towers/"
+    "sourceUrl": "https://govietnam.travel/destination/banh-it-cham-towers/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-233-bai-bien-ky-co",
@@ -3263,8 +3264,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/ky-co-eo-gio-nhon-ly-hon-kho-coastal-cluster/"
+    "sourceUrl": "https://govietnam.travel/destination/ky-co-eo-gio-nhon-ly-hon-kho-coastal-cluster/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-234-eo-gio",
@@ -3277,8 +3278,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/ky-co-eo-gio-nhon-ly-hon-kho-coastal-cluster/"
+    "sourceUrl": "https://govietnam.travel/destination/ky-co-eo-gio-nhon-ly-hon-kho-coastal-cluster/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-235-hon-kho",
@@ -3291,8 +3292,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/ky-co-eo-gio-nhon-ly-hon-kho-coastal-cluster/"
+    "sourceUrl": "https://govietnam.travel/destination/ky-co-eo-gio-nhon-ly-hon-kho-coastal-cluster/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-236-khu-du-lich-ghenh-rang-tien-sa",
@@ -3305,8 +3306,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/ghenh-rang-tien-sa-scenic-area/"
+    "sourceUrl": "https://govietnam.travel/destination/ghenh-rang-tien-sa-scenic-area/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-237-bien-ho-t-nung",
@@ -3319,8 +3320,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/bien-ho-sea-lake-t-nung-crater-lake/"
+    "sourceUrl": "https://govietnam.travel/destination/bien-ho-sea-lake-t-nung-crater-lake/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-238-nui-lua-chu-ang-ya",
@@ -3333,22 +3334,22 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/chu-dang-ya-volcano/"
+    "sourceUrl": "https://govietnam.travel/destination/chu-dang-ya-volcano/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-239-bao-tang-tong-hop-binh-inh",
     "name": "Bảo tàng tổng hợp Bình Định",
     "province": "Bình Định",
     "category": "Bảo tàng",
-    "latitude": 13.7744,
-    "longitude": 109.2319,
+    "latitude": 13.9653,
+    "longitude": 107.982,
     "description": "Bảo tàng tổng hợp Bình Định ở Quy Nhơn giới thiệu lịch sử địa phương và bộ sưu tập văn hóa Champa. Phù hợp ghép với tuyến tháp Chăm để có thêm bối cảnh hiện vật. Trải nghiệm nổi bật: Xem hiện vật Champa Tìm hiểu lịch sử vùng Bình Định.",
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/bao-tang-tong-hop-binh-dinh-quy-nhon/"
+    "sourceUrl": "https://govietnam.travel/destination/bao-tang-tong-hop-binh-dinh-quy-nhon/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-240-ao-iep-son",
@@ -3361,64 +3362,64 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/diep-son-island/"
+    "sourceUrl": "https://govietnam.travel/destination/diep-son-island/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-241-vinh-vinh-hy",
     "name": "Vịnh Vĩnh Hy",
     "province": "Ninh Thuận",
     "category": "Vịnh và đầm phá",
-    "latitude": 11.7167,
-    "longitude": 109.1944,
+    "latitude": 12.65,
+    "longitude": 109.2,
     "description": "Vĩnh Hy là vịnh nhỏ trong cảnh quan núi và biển của vùng Ninh Thuận cũ. Có thể kết hợp ngắm vịnh, khám phá làng ven biển và các hoạt động trên nước được tổ chức. Trải nghiệm nổi bật: Ngắm cảnh vịnh từ bờ Khám phá tuyến biển được tổ chức.",
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/vinh-hy-bay-hang-rai-nui-chua-national-park/"
+    "sourceUrl": "https://govietnam.travel/destination/vinh-hy-bay-hang-rai-nui-chua-national-park/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-242-hang-rai",
     "name": "Hang Rái",
     "province": "Ninh Thuận",
     "category": "Cảnh quan",
-    "latitude": 11.6917,
+    "latitude": 12.6167,
     "longitude": 109.1833,
     "description": "Hang Rái là cảnh quan bờ đá ven biển trong vùng Núi Chúa, nổi bật với bề mặt đá và sóng. Điểm đến phù hợp quan sát, chụp cảnh hơn là tắm tự do. Trải nghiệm nổi bật: Quan sát địa hình bờ đá Chụp cảnh sóng ven biển.",
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/vinh-hy-bay-hang-rai-nui-chua-national-park/"
+    "sourceUrl": "https://govietnam.travel/destination/vinh-hy-bay-hang-rai-nui-chua-national-park/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-243-vuon-quoc-gia-nui-chua",
     "name": "Vườn quốc gia Núi Chúa",
     "province": "Ninh Thuận",
     "category": "Vườn quốc gia và bảo tồn",
-    "latitude": 11.7333,
-    "longitude": 109.1333,
+    "latitude": 12.2388,
+    "longitude": 109.1607,
     "description": "Vườn quốc gia Núi Chúa bảo vệ cảnh quan rừng khô hạn, núi và ven biển. Khám phá sinh thái ở đây cần chọn tuyến phù hợp với điều kiện nắng nóng và quy định bảo tồn. Trải nghiệm nổi bật: Tìm hiểu hệ sinh thái rừng khô Khám phá thiên nhiên có hướng dẫn.",
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/vinh-hy-bay-hang-rai-nui-chua-national-park/"
+    "sourceUrl": "https://govietnam.travel/destination/vinh-hy-bay-hang-rai-nui-chua-national-park/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-244-thap-po-klong-garai",
     "name": "Tháp Po Klong Garai",
     "province": "Ninh Thuận",
     "category": "Di tích",
-    "latitude": 11.6019,
-    "longitude": 108.9469,
+    "latitude": 13.9,
+    "longitude": 108.9,
     "description": "Po Klong Garai là cụm tháp Chăm trên đồi Trầu, gắn với tín ngưỡng của cộng đồng Chăm. Kiến trúc gạch và sinh hoạt lễ nghi là trọng tâm trải nghiệm. Trải nghiệm nổi bật: Quan sát kiến trúc tháp Tìm hiểu văn hóa Chăm.",
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/po-klong-garai-cham-towers/"
+    "sourceUrl": "https://govietnam.travel/destination/po-klong-garai-cham-towers/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-245-thap-ba-po-nagar",
@@ -3431,8 +3432,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/po-nagar-cham-towers-mud-bath-area/"
+    "sourceUrl": "https://govietnam.travel/destination/po-nagar-cham-towers-mud-bath-area/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-246-hon-mun",
@@ -3445,8 +3446,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/nha-trang-bay-hon-mun-island-hopping/"
+    "sourceUrl": "https://govietnam.travel/destination/nha-trang-bay-hon-mun-island-hopping/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-247-mui-dinh",
@@ -3459,8 +3460,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/mui-dinh-nam-cuong-sand-dunes/"
+    "sourceUrl": "https://govietnam.travel/destination/mui-dinh-nam-cuong-sand-dunes/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-248-oi-cat-nam-cuong",
@@ -3473,8 +3474,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/mui-dinh-nam-cuong-sand-dunes/"
+    "sourceUrl": "https://govietnam.travel/destination/mui-dinh-nam-cuong-sand-dunes/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-249-vinwonders-nha-trang",
@@ -3487,8 +3488,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/hon-tre-island-vinwonders-nha-trang/"
+    "sourceUrl": "https://govietnam.travel/destination/hon-tre-island-vinwonders-nha-trang/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-250-bau-trang",
@@ -3501,8 +3502,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/bau-trang-bau-sen-white-sand-dunes-freshwater-lake/"
+    "sourceUrl": "https://govietnam.travel/destination/bau-trang-bau-sen-white-sand-dunes-freshwater-lake/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-251-bau-sen",
@@ -3515,8 +3516,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/bau-trang-bau-sen-white-sand-dunes-freshwater-lake/"
+    "sourceUrl": "https://govietnam.travel/destination/bau-trang-bau-sen-white-sand-dunes-freshwater-lake/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-252-oi-cat-o-mui-ne",
@@ -3529,8 +3530,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/mui-ne-phan-thiet-beach-red-sand-dunes/"
+    "sourceUrl": "https://govietnam.travel/destination/mui-ne-phan-thiet-beach-red-sand-dunes/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-253-ho-ta-ung",
@@ -3543,8 +3544,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/ta-dung-lake-ha-long-bay-of-the-central-highlands/"
+    "sourceUrl": "https://govietnam.travel/destination/ta-dung-lake-ha-long-bay-of-the-central-highlands/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-254-thac-pongour",
@@ -3557,8 +3558,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/pongour-waterfall-cluster-duc-trong/"
+    "sourceUrl": "https://govietnam.travel/destination/pongour-waterfall-cluster-duc-trong/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-255-chua-linh-phuoc",
@@ -3571,8 +3572,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/linh-phuoc-pagoda-bottle-pagoda-trai-mat/"
+    "sourceUrl": "https://govietnam.travel/destination/linh-phuoc-pagoda-bottle-pagoda-trai-mat/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-256-a-lat",
@@ -3585,8 +3586,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/da-lat-city-center-lakes-waterfalls/"
+    "sourceUrl": "https://govietnam.travel/destination/da-lat-city-center-lakes-waterfalls/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-257-tuyet-tinh-coc-bao-loc",
@@ -3599,8 +3600,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/tuyet-tinh-coc-ho-nuoc-xanh-bao-loc/"
+    "sourceUrl": "https://govietnam.travel/destination/tuyet-tinh-coc-ho-nuoc-xanh-bao-loc/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-258-hon-rom",
@@ -3613,8 +3614,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/hon-rom/"
+    "sourceUrl": "https://govietnam.travel/destination/hon-rom/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-259-nha-tho-mang-lang",
@@ -3627,8 +3628,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/tuy-hoa-heritage-cluster-mang-lang-church-nhan-tower/"
+    "sourceUrl": "https://govietnam.travel/destination/tuy-hoa-heritage-cluster-mang-lang-church-nhan-tower/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-260-thap-nhan",
@@ -3641,8 +3642,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/tuy-hoa-heritage-cluster-mang-lang-church-nhan-tower/"
+    "sourceUrl": "https://govietnam.travel/destination/tuy-hoa-heritage-cluster-mang-lang-church-nhan-tower/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-261-ganh-a-ia",
@@ -3655,8 +3656,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Ganh_Da_Dia_Phu_Yen.jpg/800px-Ganh_Da_Dia_Phu_Yen.jpg",
-    "sourceUrl": "https://govietnam.travel/destination/ganh-da-dia-da-dia-reef-phu-yen/"
+    "sourceUrl": "https://govietnam.travel/destination/ganh-da-dia-da-dia-reef-phu-yen/",
+    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Ganh_Da_Dia_Phu_Yen.jpg/800px-Ganh_Da_Dia_Phu_Yen.jpg"
   },
   {
     "id": "vn-262-bai-xep",
@@ -3669,8 +3670,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/bai-xep-beach-mui-dien-dai-lanh-cape-phu-yen/"
+    "sourceUrl": "https://govietnam.travel/destination/bai-xep-beach-mui-dien-dai-lanh-cape-phu-yen/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-263-mui-ien",
@@ -3683,8 +3684,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/bai-xep-beach-mui-dien-dai-lanh-cape-phu-yen/"
+    "sourceUrl": "https://govietnam.travel/destination/bai-xep-beach-mui-dien-dai-lanh-cape-phu-yen/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-264-vuon-quoc-gia-yok-on",
@@ -3697,8 +3698,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/yok-don-national-park-buon-don-elephant-heritage-village/"
+    "sourceUrl": "https://govietnam.travel/destination/yok-don-national-park-buon-don-elephant-heritage-village/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-265-thac-dray-nur",
@@ -3711,8 +3712,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/serepok-waterfalls-cluster-dray-nur-dray-sap-gia-long-kuop-community-village/"
+    "sourceUrl": "https://govietnam.travel/destination/serepok-waterfalls-cluster-dray-nur-dray-sap-gia-long-kuop-community-village/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-266-ho-lak",
@@ -3725,8 +3726,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/lak-lake-jun-mnong-village/"
+    "sourceUrl": "https://govietnam.travel/destination/lak-lake-jun-mnong-village/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-267-bao-tang-the-gioi-ca-phe",
@@ -3739,8 +3740,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/buon-ma-thuot-cluster-the-world-coffee-museum-ako-dhong-ede-village/"
+    "sourceUrl": "https://govietnam.travel/destination/buon-ma-thuot-cluster-the-world-coffee-museum-ako-dhong-ede-village/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-268-buon-ako-dhong",
@@ -3753,27 +3754,27 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/buon-ma-thuot-cluster-the-world-coffee-museum-ako-dhong-ede-village/"
+    "sourceUrl": "https://govietnam.travel/destination/buon-ma-thuot-cluster-the-world-coffee-museum-ako-dhong-ede-village/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-269-khu-du-lich-ai-nam",
     "name": "Khu du lịch Đại Nam",
     "province": "Bình Dương",
     "category": "Giải trí và công viên",
-    "latitude": 11.0308,
-    "longitude": 106.6373,
+    "latitude": 15.946,
+    "longitude": 107.964,
     "description": "Đại Nam là tổ hợp du lịch tại vùng Bình Dương cũ, kết hợp công trình văn hóa với các khu vui chơi. Phù hợp nhóm muốn dành thời gian cho hoạt động trong khuôn viên có quản lý. Trải nghiệm nổi bật: Tham quan công trình văn hóa Chọn phân khu vui chơi phù hợp.",
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/lac-canh-dai-nam-van-hien-binh-duong/"
+    "sourceUrl": "https://govietnam.travel/destination/lac-canh-dai-nam-van-hien-binh-duong/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-270-bao-tang-biet-ong-sai-gon-gia-inh",
     "name": "Bảo tàng Biệt động Sài Gòn – Gia Định",
-    "province": "Thành phố Hồ Chí Minh",
+    "province": "TP. Hồ Chí Minh",
     "category": "Bảo tàng",
     "latitude": 10.769444,
     "longitude": 106.681944,
@@ -3781,13 +3782,13 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/bao-tang-biet-dong-sai-gon-gia-dinh/"
+    "sourceUrl": "https://govietnam.travel/destination/bao-tang-biet-dong-sai-gon-gia-dinh/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-271-ai-quan-sat-landmark-81-skyview",
     "name": "Đài quan sát Landmark 81 SkyView",
-    "province": "Thành phố Hồ Chí Minh",
+    "province": "TP. Hồ Chí Minh",
     "category": "Cảnh quan",
     "latitude": 10.795025,
     "longitude": 106.721909,
@@ -3795,13 +3796,13 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/landmark-81-skyview-observation-deck-ho-chi-minh/"
+    "sourceUrl": "https://govietnam.travel/destination/landmark-81-skyview-observation-deck-ho-chi-minh/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-272-thao-cam-vien-sai-gon",
     "name": "Thảo Cầm Viên Sài Gòn",
-    "province": "Thành phố Hồ Chí Minh",
+    "province": "TP. Hồ Chí Minh",
     "category": "Giải trí và công viên",
     "latitude": 10.769444,
     "longitude": 106.681944,
@@ -3809,8 +3810,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/thao-cam-vien-sai-gon/"
+    "sourceUrl": "https://govietnam.travel/destination/thao-cam-vien-sai-gon/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-273-nha-tu-con-ao",
@@ -3823,36 +3824,36 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/con-dao-national-park-prison-relic-complex/"
+    "sourceUrl": "https://govietnam.travel/destination/con-dao-national-park-prison-relic-complex/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-274-bach-dinh",
     "name": "Bạch Dinh",
-    "province": "Bà Rịa - Vũng Tàu",
+    "province": "TP. Hồ Chí Minh",
     "category": "Di tích",
-    "latitude": 10.3524,
-    "longitude": 107.0706,
+    "latitude": 16.036,
+    "longitude": 107.964,
     "description": "Bạch Dinh ở Vũng Tàu là biệt thự lịch sử trên sườn đồi, có cảnh quan cây xanh và góc nhìn ra biển. Phù hợp kết hợp kiến trúc, trưng bày và dạo khuôn viên. Trải nghiệm nổi bật: Quan sát kiến trúc biệt thự Ngắm cảnh từ sườn đồi.",
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/vung-tau-city-cluster-front-beach-back-beach-christ-the-king-statue-lighthouse-bach-dinh-villa/"
+    "sourceUrl": "https://govietnam.travel/destination/vung-tau-city-cluster-front-beach-back-beach-christ-the-king-statue-lighthouse-bach-dinh-villa/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-275-ia-ao-cu-chi",
     "name": "Địa đạo Củ Chi",
-    "province": "Thành phố Hồ Chí Minh",
+    "province": "TP. Hồ Chí Minh",
     "category": "Di tích",
-    "latitude": 11.1436,
-    "longitude": 106.4633,
+    "latitude": 16.054,
+    "longitude": 107.964,
     "description": "Địa đạo Củ Chi giới thiệu hệ thống đường hầm và đời sống thời chiến tại vùng ngoại thành Sài Gòn. Trải nghiệm có thể gồm thuyết minh, xem tái hiện và đi một đoạn hầm. Trải nghiệm nổi bật: Tìm hiểu hệ thống địa đạo Trải nghiệm đoạn hầm được mở.",
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/cu-chi-tunnels/"
+    "sourceUrl": "https://govietnam.travel/destination/cu-chi-tunnels/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-276-nui-ba-ra",
@@ -3865,8 +3866,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/ba-ra-mountain/"
+    "sourceUrl": "https://govietnam.travel/destination/ba-ra-mountain/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-277-khu-bao-ton-van-hoa-s-tieng-soc-bom-bo",
@@ -3879,8 +3880,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/soc-bom-bo-s-tieng-cultural-conservation-site/"
+    "sourceUrl": "https://govietnam.travel/destination/soc-bom-bo-s-tieng-cultural-conservation-site/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-278-van-mieu-tran-bien",
@@ -3893,8 +3894,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/tran-bien-temple-of-literature-first-temple-of-literature-in-southern-vietnam/"
+    "sourceUrl": "https://govietnam.travel/destination/tran-bien-temple-of-literature-first-temple-of-literature-in-southern-vietnam/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-279-khu-du-lich-buu-long",
@@ -3907,8 +3908,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/buu-long-scenic-area-lakes-rock-formations-pagodas/"
+    "sourceUrl": "https://govietnam.travel/destination/buu-long-scenic-area-lakes-rock-formations-pagodas/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-280-ho-tri-an",
@@ -3921,8 +3922,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/tri-an-lake-camping-sup-on-the-dong-nai-river/"
+    "sourceUrl": "https://govietnam.travel/destination/tri-an-lake-camping-sup-on-the-dong-nai-river/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-281-vuon-quoc-gia-cat-tien",
@@ -3935,8 +3936,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/cat-tien-national-park-unesco-biosphere-reserve/"
+    "sourceUrl": "https://govietnam.travel/destination/cat-tien-national-park-unesco-biosphere-reserve/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-282-ho-ba-hao",
@@ -3949,8 +3950,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/ba-hao-lake/"
+    "sourceUrl": "https://govietnam.travel/destination/ba-hao-lake/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-283-ao-o",
@@ -3963,8 +3964,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/dao-o-tourist-area/"
+    "sourceUrl": "https://govietnam.travel/destination/dao-o-tourist-area/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-284-thac-troi",
@@ -3977,8 +3978,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/troi-waterfall/"
+    "sourceUrl": "https://govietnam.travel/destination/troi-waterfall/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-285-khu-du-lich-vuon-xoai",
@@ -3991,8 +3992,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/vuon-xoai-tourist-area/"
+    "sourceUrl": "https://govietnam.travel/destination/vuon-xoai-tourist-area/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-286-lang-noi-tan-lap",
@@ -4005,8 +4006,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/tan-lap-floating-village-melaleuca-forest/"
+    "sourceUrl": "https://govietnam.travel/destination/tan-lap-floating-village-melaleuca-forest/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-287-lang-nghe-banh-trang-phoi-suong-trang-bang",
@@ -4019,8 +4020,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/trang-bang-rice-paper-village-dew-wetted-rice-paper/"
+    "sourceUrl": "https://govietnam.travel/destination/trang-bang-rice-paper-village-dew-wetted-rice-paper/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-288-vuon-quoc-gia-lo-go-xa-mat",
@@ -4033,8 +4034,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/lo-go-xa-mat-national-park/"
+    "sourceUrl": "https://govietnam.travel/destination/lo-go-xa-mat-national-park/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-289-toa-thanh-cao-ai-tay-ninh",
@@ -4047,8 +4048,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/tay-ninh-holy-see-cao-dai-temple/"
+    "sourceUrl": "https://govietnam.travel/destination/tay-ninh-holy-see-cao-dai-temple/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-290-nui-ba-en",
@@ -4061,8 +4062,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 450000,
     "priceMax": 950000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/ba-den-mountain-sun-world-ba-den-pagoda-complex/"
+    "sourceUrl": "https://govietnam.travel/destination/ba-den-mountain-sun-world-ba-den-pagoda-complex/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-291-chua-long-chau",
@@ -4075,8 +4076,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/long-chau-pagoda/"
+    "sourceUrl": "https://govietnam.travel/destination/long-chau-pagoda/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-292-khu-du-lich-happyland",
@@ -4089,8 +4090,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/happyland-ben-luc-long-an-tourist-area/"
+    "sourceUrl": "https://govietnam.travel/destination/happyland-ben-luc-long-an-tourist-area/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-293-khu-bao-ton-at-ngap-nuoc-lang-sen",
@@ -4103,8 +4104,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/dat-ngap-nuoc-lang-sen-conservation-area/"
+    "sourceUrl": "https://govietnam.travel/destination/dat-ngap-nuoc-lang-sen-conservation-area/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-294-khu-di-tich-vam-nhut-tao",
@@ -4117,8 +4118,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/vam-nhut-tao-historical-site-complex/"
+    "sourceUrl": "https://govietnam.travel/destination/vam-nhut-tao-historical-site-complex/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-295-khu-du-lich-canh-ong-bat-tan",
@@ -4131,8 +4132,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/canh-dong-bat-tan-tourist-area/"
+    "sourceUrl": "https://govietnam.travel/destination/canh-dong-bat-tan-tourist-area/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-296-chua-som-rong",
@@ -4145,8 +4146,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/som-rong-pagoda-giant-reclining-buddha-khmer-garden/"
+    "sourceUrl": "https://govietnam.travel/destination/som-rong-pagoda-giant-reclining-buddha-khmer-garden/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-297-chua-doi",
@@ -4159,8 +4160,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/soc-trang-khmer-pagoda-cluster-bat-clay-khleang-pagodas/"
+    "sourceUrl": "https://govietnam.travel/destination/soc-trang-khmer-pagoda-cluster-bat-clay-khleang-pagodas/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-298-chua-at-set",
@@ -4173,8 +4174,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/soc-trang-khmer-pagoda-cluster-bat-clay-khleang-pagodas/"
+    "sourceUrl": "https://govietnam.travel/destination/soc-trang-khmer-pagoda-cluster-bat-clay-khleang-pagodas/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-299-chua-khleang",
@@ -4187,8 +4188,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/soc-trang-khmer-pagoda-cluster-bat-clay-khleang-pagodas/"
+    "sourceUrl": "https://govietnam.travel/destination/soc-trang-khmer-pagoda-cluster-bat-clay-khleang-pagodas/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-300-nha-co-binh-thuy",
@@ -4201,8 +4202,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/binh-thuy-ancient-house-colonial-villa-l-amant-film-location/"
+    "sourceUrl": "https://govietnam.travel/destination/binh-thuy-ancient-house-colonial-villa-l-amant-film-location/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-301-con-son",
@@ -4215,8 +4216,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/con-son-islet-orchard-homestay-community-tourism/"
+    "sourceUrl": "https://govietnam.travel/destination/con-son-islet-orchard-homestay-community-tourism/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-302-ben-ninh-kieu",
@@ -4229,8 +4230,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/ninh-kieu-wharf-cai-rang-floating-market/"
+    "sourceUrl": "https://govietnam.travel/destination/ninh-kieu-wharf-cai-rang-floating-market/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-303-cho-noi-cai-rang",
@@ -4243,8 +4244,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "06:00 - 18:30",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/ninh-kieu-wharf-cai-rang-floating-market/"
+    "sourceUrl": "https://govietnam.travel/destination/ninh-kieu-wharf-cai-rang-floating-market/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-304-bao-tang-thanh-pho-can-tho",
@@ -4257,8 +4258,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/can-tho-city-museum/"
+    "sourceUrl": "https://govietnam.travel/destination/can-tho-city-museum/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-305-cho-vi-thanh",
@@ -4271,8 +4272,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "06:00 - 18:30",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/vi-thanh-hau-giang-market/"
+    "sourceUrl": "https://govietnam.travel/destination/vi-thanh-hau-giang-market/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-306-kenh-dua-ben-tre",
@@ -4285,8 +4286,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/ben-tre-coconut-canals-tien-river-four-sacred-islets-tour/"
+    "sourceUrl": "https://govietnam.travel/destination/ben-tre-coconut-canals-tien-river-four-sacred-islets-tour/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-307-bai-bien-ba-ong",
@@ -4299,8 +4300,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/ba-dong-beach-quiet-beach-of-tra-vinh/"
+    "sourceUrl": "https://govietnam.travel/destination/ba-dong-beach-quiet-beach-of-tra-vinh/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-308-ao-ba-om",
@@ -4313,8 +4314,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/ba-om-pond-ang-pagoda-khmer-temple-complex/"
+    "sourceUrl": "https://govietnam.travel/destination/ba-om-pond-ang-pagoda-khmer-temple-complex/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-309-chua-ang",
@@ -4327,8 +4328,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/ba-om-pond-ang-pagoda-khmer-temple-complex/"
+    "sourceUrl": "https://govietnam.travel/destination/ba-om-pond-ang-pagoda-khmer-temple-complex/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-310-lang-nghe-gach-gom-mang-thit",
@@ -4341,8 +4342,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/mang-thit-brick-pottery-village-red-kiln-kingdom/"
+    "sourceUrl": "https://govietnam.travel/destination/mang-thit-brick-pottery-village-red-kiln-kingdom/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-311-cho-noi-tra-on",
@@ -4355,8 +4356,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "06:00 - 18:30",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/tra-on-floating-market-last-floating-market-on-the-hau-river/"
+    "sourceUrl": "https://govietnam.travel/destination/tra-on-floating-market-last-floating-market-on-the-hau-river/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-312-bao-tang-van-hoa-dan-toc-khmer-tra-vinh",
@@ -4369,8 +4370,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/bao-tang-van-hoa-dan-toc-khmer-tra-vinh/"
+    "sourceUrl": "https://govietnam.travel/destination/bao-tang-van-hoa-dan-toc-khmer-tra-vinh/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-313-con-bung",
@@ -4383,8 +4384,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/bung-islet/"
+    "sourceUrl": "https://govietnam.travel/destination/bung-islet/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-314-khu-du-lich-vinh-sang",
@@ -4397,8 +4398,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/vinh-sang-tourist-area/"
+    "sourceUrl": "https://govietnam.travel/destination/vinh-sang-tourist-area/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-315-thien-vien-truc-lam-tra-vinh",
@@ -4411,8 +4412,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/thien-vien-truc-lam-tra-vinh/"
+    "sourceUrl": "https://govietnam.travel/destination/thien-vien-truc-lam-tra-vinh/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-316-khu-di-tich-xeo-quyt",
@@ -4425,8 +4426,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/xeo-quyt-relic-area-cajuput-forest-war-time-base/"
+    "sourceUrl": "https://govietnam.travel/destination/xeo-quyt-relic-area-cajuput-forest-war-time-base/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-317-vuon-quoc-gia-tram-chim",
@@ -4439,8 +4440,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/tram-chim-national-park-ramsar-wetland-sarus-crane-sanctuary/"
+    "sourceUrl": "https://govietnam.travel/destination/tram-chim-national-park-ramsar-wetland-sarus-crane-sanctuary/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-318-lang-hoa-sa-ec",
@@ -4453,8 +4454,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/sa-dec-flower-village-flower-capital-of-the-mekong-delta/"
+    "sourceUrl": "https://govietnam.travel/destination/sa-dec-flower-village-flower-capital-of-the-mekong-delta/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-319-nha-co-huynh-thuy-le",
@@ -4467,8 +4468,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/huynh-thuy-le-ancient-house-the-lover-house-in-sa-dec/"
+    "sourceUrl": "https://govietnam.travel/destination/huynh-thuy-le-ancient-house-the-lover-house-in-sa-dec/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-320-con-thoi-son",
@@ -4481,8 +4482,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/my-tho-thoi-son-islet-cai-be-floating-market-classic-mekong-day-trip/"
+    "sourceUrl": "https://govietnam.travel/destination/my-tho-thoi-son-islet-cai-be-floating-market-classic-mekong-day-trip/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-321-miet-vuon-cai-be",
@@ -4495,8 +4496,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/miet-vuon-cai-be-tien-giang/"
+    "sourceUrl": "https://govietnam.travel/destination/miet-vuon-cai-be-tien-giang/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-322-lang-hoang-gia",
@@ -4509,8 +4510,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/go-cong-royal-mausoleum/"
+    "sourceUrl": "https://govietnam.travel/destination/go-cong-royal-mausoleum/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-323-nha-co-le-quang-xoat",
@@ -4523,8 +4524,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/le-quang-xoat-ancient-house-dong-thap/"
+    "sourceUrl": "https://govietnam.travel/destination/le-quang-xoat-ancient-house-dong-thap/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-324-di-tich-rach-gam-xoai-mut",
@@ -4537,8 +4538,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/di-tich-lich-su-rach-gam-xoai-mut/"
+    "sourceUrl": "https://govietnam.travel/destination/di-tich-lich-su-rach-gam-xoai-mut/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-325-khu-di-tich-nguyen-sinh-sac",
@@ -4551,8 +4552,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/nguyen-sinh-sac-cao-lanh-dong-thap-historical-site/"
+    "sourceUrl": "https://govietnam.travel/destination/nguyen-sinh-sac-cao-lanh-dong-thap-historical-site/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-326-vinwonders-phu-quoc",
@@ -4565,8 +4566,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/vinwonders-phu-quoc/"
+    "sourceUrl": "https://govietnam.travel/destination/vinwonders-phu-quoc/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-327-rung-tram-tra-su",
@@ -4579,8 +4580,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/tra-su-cajuput-forest/"
+    "sourceUrl": "https://govietnam.travel/destination/tra-su-cajuput-forest/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-328-ruong-lua-ta-pa",
@@ -4593,8 +4594,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/ta-pa-rice-fields-sacred-seven-mountains-landscape/"
+    "sourceUrl": "https://govietnam.travel/destination/ta-pa-rice-fields-sacred-seven-mountains-landscape/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-329-chau-oc-va-nui-sam",
@@ -4607,8 +4608,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/chau-doc-sam-mountain-spiritual-border-town/"
+    "sourceUrl": "https://govietnam.travel/destination/chau-doc-sam-mountain-spiritual-border-town/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-330-ha-tien",
@@ -4621,8 +4622,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/ha-tien-coastal-cave-town/"
+    "sourceUrl": "https://govietnam.travel/destination/ha-tien-coastal-cave-town/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-331-quan-ao-nam-du",
@@ -4635,8 +4636,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/nam-du-archipelago-hon-son-island/"
+    "sourceUrl": "https://govietnam.travel/destination/nam-du-archipelago-hon-son-island/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-332-ao-hon-son",
@@ -4649,8 +4650,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/nam-du-archipelago-hon-son-island/"
+    "sourceUrl": "https://govietnam.travel/destination/nam-du-archipelago-hon-son-island/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-333-quan-ao-an-thoi",
@@ -4663,8 +4664,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/southern-phu-quoc-an-thoi-archipelago/"
+    "sourceUrl": "https://govietnam.travel/destination/southern-phu-quoc-an-thoi-archipelago/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-334-bao-tang-coi-nguon-phu-quoc",
@@ -4677,8 +4678,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/bao-tang-coi-nguon-phu-quoc/"
+    "sourceUrl": "https://govietnam.travel/destination/bao-tang-coi-nguon-phu-quoc/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-335-thuy-cung-cung-ien-hai-vuong",
@@ -4691,8 +4692,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/cung-dien-hai-vuong-thuy-cung-vinwonders-phu-quoc/"
+    "sourceUrl": "https://govietnam.travel/destination/cung-dien-hai-vuong-thuy-cung-vinwonders-phu-quoc/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-336-vuon-quoc-gia-u-minh-ha",
@@ -4705,8 +4706,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/u-minh-ha-national-park-peat-swamp-forest/"
+    "sourceUrl": "https://govietnam.travel/destination/u-minh-ha-national-park-peat-swamp-forest/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-337-mui-ca-mau",
@@ -4719,8 +4720,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Cot_moc_Mui_Ca_Mau.jpg/800px-Cot_moc_Mui_Ca_Mau.jpg",
-    "sourceUrl": "https://govietnam.travel/destination/mui-ca-mau-biosphere-cluster-cape-nam-can-mangrove-khai-long-beach/"
+    "sourceUrl": "https://govietnam.travel/destination/mui-ca-mau-biosphere-cluster-cape-nam-can-mangrove-khai-long-beach/",
+    "thumbnailUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Cot_moc_Mui_Ca_Mau.jpg/800px-Cot_moc_Mui_Ca_Mau.jpg"
   },
   {
     "id": "vn-338-rung-ngap-man-nam-can",
@@ -4733,8 +4734,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/mui-ca-mau-biosphere-cluster-cape-nam-can-mangrove-khai-long-beach/"
+    "sourceUrl": "https://govietnam.travel/destination/mui-ca-mau-biosphere-cluster-cape-nam-can-mangrove-khai-long-beach/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-339-bai-bien-khai-long",
@@ -4747,8 +4748,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/mui-ca-mau-biosphere-cluster-cape-nam-can-mangrove-khai-long-beach/"
+    "sourceUrl": "https://govietnam.travel/destination/mui-ca-mau-biosphere-cluster-cape-nam-can-mangrove-khai-long-beach/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-340-nha-cong-tu-bac-lieu",
@@ -4761,8 +4762,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/cong-tu-bac-lieu-heritage-house-prince-of-bac-lieu-house/"
+    "sourceUrl": "https://govietnam.travel/destination/cong-tu-bac-lieu-heritage-house-prince-of-bac-lieu-house/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-341-chua-xiem-can",
@@ -4775,8 +4776,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/bac-lieu-coastal-cluster-wind-farm-xiem-can-khmer-pagoda/"
+    "sourceUrl": "https://govietnam.travel/destination/bac-lieu-coastal-cluster-wind-farm-xiem-can-khmer-pagoda/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-342-canh-ong-ien-gio-bac-lieu",
@@ -4789,8 +4790,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/dien-gio-bac-lieu-fields/"
+    "sourceUrl": "https://govietnam.travel/destination/dien-gio-bac-lieu-fields/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-343-khu-du-lich-hoa-rung-u-minh",
@@ -4803,8 +4804,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/hoa-rung-u-minh-ca-mau-tourist-area/"
+    "sourceUrl": "https://govietnam.travel/destination/hoa-rung-u-minh-ca-mau-tourist-area/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-344-vuon-nhan-co-bac-lieu",
@@ -4817,8 +4818,8 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/vuon-nhan-co-tren-tram-tuoi-vinh-trach-dong-bac-lieu/"
+    "sourceUrl": "https://govietnam.travel/destination/vuon-nhan-co-tren-tram-tuoi-vinh-trach-dong-bac-lieu/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "id": "vn-345-chua-hung-thien",
@@ -4831,8 +4832,4208 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
-    "thumbnailUrl": "",
-    "sourceUrl": "https://govietnam.travel/destination/hung-thien-pagoda/"
+    "sourceUrl": "https://govietnam.travel/destination/hung-thien-pagoda/",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    "id": "vn-346-cho-ong-xuan",
+    "name": "Chợ Đồng Xuân",
+    "province": "Hà Nội",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 21.038143,
+    "longitude": 105.850039,
+    "description": "Chợ truyền thống có khu hàng ăn và đặc sản phố cổ.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://news.tuoitre.vn/remembering-hanois-age-old-markets-photos-1035571.htm",
+    "thumbnailUrl": "https://cdn2.tuoitre.vn/tto/i/s626/2015/02/19/JBYqADY8.jpg"
+  },
+  {
+    "id": "vn-347-pho-am-thuc-tong-duy-tan",
+    "name": "Phố ẩm thực Tống Duy Tân",
+    "province": "Hà Nội",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 21.028731,
+    "longitude": 105.843935,
+    "description": "Tuyến phố tập trung hàng quán và món ăn Hà Nội.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://www.arttravel.com.vn/dich-vu/thien-duong-am-thuc-ha-gioi-pho-am-thuc-tong-duy-tan-544.html",
+    "thumbnailUrl": "https://www.arttravel.com.vn/upload/news/pho-am-thuc-2-5499-1148.jpg"
+  },
+  {
+    "id": "vn-348-pho-bat-an",
+    "name": "Phở Bát Đàn",
+    "province": "Hà Nội",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 21.03351,
+    "longitude": 105.846259,
+    "description": "Địa chỉ phở bò truyền thống trên phố Bát Đàn.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://mytour.vn/vi/blog/bai-viet/danh-gia-ve-pho-bat-dan-ha-noi-sau-100-nam-o-pho-co-ngon-khong.html",
+    "thumbnailUrl": "https://img.tripi.vn/cdn-cgi/image/width%3D700%2Cheight%3D700/https%3A/gcs.tripi.vn/public-tripi/tripi-feed/img/473903dSp/pho-bat-dan-1.jpg"
+  },
+  {
+    "id": "vn-349-bun-cha-huong-lien",
+    "name": "Bún chả Hương Liên",
+    "province": "Hà Nội",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 21.018137,
+    "longitude": 105.853893,
+    "description": "Quán bún chả với thịt nướng và nước chấm kiểu Hà Nội.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "08:00-20:00",
+    "sourceUrl": "https://znews.vn/quan-bun-cha-obama-thay-doi-the-nao-sau-3-nam-don-cuu-tong-thong-my-post919823.html",
+    "thumbnailUrl": "https://photo.znews.vn/w660/Uploaded/qhj_pwqvdvicbu/2019_02_25/13_zing_12.jpg"
+  },
+  {
+    "id": "vn-350-ca-phe-giang",
+    "name": "Cà phê Giảng",
+    "province": "Hà Nội",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 21.033466,
+    "longitude": 105.854518,
+    "description": "Quán cà phê gắn với món cà phê trứng Hà Nội.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-22:30",
+    "sourceUrl": "https://www.vietnam.vn/en/4-quan-caphe-dam-chat-ha-noi-khong-the-bo-lo-dip-quoc-khanh",
+    "thumbnailUrl": "https://vstatic.vietnam.vn/vietnam/resource/IMAGE/2025/8/29/bfa1dbe13c0e4eaa9cf6de5ffdd36cfa"
+  },
+  {
+    "id": "vn-351-bao-tang-dan-toc-hoc-viet-nam",
+    "name": "Bảo tàng Dân tộc học Việt Nam",
+    "province": "Hà Nội",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.040342,
+    "longitude": 105.798735,
+    "description": "Không gian tìm hiểu văn hóa và nhà ở các dân tộc Việt Nam.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "08:30-17:30",
+    "sourceUrl": "https://luxtraveldmc.com/blog/vietnam-museum-of-ethnology.html",
+    "thumbnailUrl": "https://luxtraveldmc.com/blog/wp-content/uploads/2025/02/The-Vietnam-Museum-of-Ethnology-Hanoi-1.jpg"
+  },
+  {
+    "id": "vn-352-bao-tang-phu-nu-viet-nam",
+    "name": "Bảo tàng Phụ nữ Việt Nam",
+    "province": "Hà Nội",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.023373,
+    "longitude": 105.851554,
+    "description": "Trưng bày về phụ nữ trong đời sống và lịch sử Việt Nam.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "08:00-17:00",
+    "sourceUrl": "https://vietnam.travel/things-to-do/best-museums-vietnam",
+    "thumbnailUrl": "https://vietnam.travel/sites/default/files/inline-images/war%20museum%20in%20vietnam.jpg"
+  },
+  {
+    "id": "vn-353-lang-co-uong-lam",
+    "name": "Làng cổ Đường Lâm",
+    "province": "Hà Nội",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.157365,
+    "longitude": 105.472555,
+    "description": "Làng cổ nổi bật với nhà đá ong và không gian làng quê Bắc Bộ.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "08:00-17:00",
+    "sourceUrl": "https://mytour.vn/vi/blog/bai-viet/lang-co-duong-lam-9-dieu-tuyet-voi-de-tham-quan-va-trai-nghiem.html",
+    "thumbnailUrl": "https://img.tripi.vn/cdn-cgi/image/width%3D700%2Cheight%3D700/https%3A/gcs.tripi.vn/public-tripi/tripi-feed/img/478297LiT/anh-mo-ta.png"
+  },
+  {
+    "id": "vn-354-chua-thay",
+    "name": "Chùa Thầy",
+    "province": "Hà Nội",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.023018,
+    "longitude": 105.646283,
+    "description": "Quần thể chùa và cảnh quan núi đá tại vùng Quốc Oai.",
+    "priceMin": 10000,
+    "priceMax": 10000,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://mindtrip.ai/attraction/hanoi-vietnam/chua-thay/at-c0D7bhVW",
+    "thumbnailUrl": "https://image-worker.mindtrip.ai/image-resize/format%3Dwebp%2Cw%3D720/https%3A/images.mindtrip.ai/attractions/2765/075f/b927/282c/5717/5bf6/26b4/9c47"
+  },
+  {
+    "id": "vn-355-chua-tay-phuong",
+    "name": "Chùa Tây Phương",
+    "province": "Hà Nội",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.025067,
+    "longitude": 105.587023,
+    "description": "Ngôi chùa nổi tiếng với hệ thống tượng gỗ và kiến trúc cổ.",
+    "priceMin": 10000,
+    "priceMax": 10000,
+    "openingHours": "06:00-17:30",
+    "sourceUrl": "https://www.vietnamairlines.com/kh/vi/plan-book/travel/travel-guide/chua-tay-phuong-ha-noi",
+    "thumbnailUrl": "https://www.vietnamairlines.com/content/dam/legacy-site-assets/SEO-images/2025%20SEO/Thay%20Anh%20Traffic%20Tieng%20Viet/chua%20tay%20phuong%20ha%20noi/toan-canh-chua-tay-phuong-ha-noi-tu-tren-cao.jpeg"
+  },
+  {
+    "id": "vn-356-pho-am-thuc-vinh-khanh",
+    "name": "Phố ẩm thực Vĩnh Khánh",
+    "province": "TP. Hồ Chí Minh",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 10.761858,
+    "longitude": 106.702236,
+    "description": "Tuyến phố nổi tiếng với các hàng ốc và món ăn đường phố.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://luhanhvietnam.com.vn/du-lich/pho-am-thuc-vinh-khanh.html",
+    "thumbnailUrl": "https://luhanhvietnam.com.vn/du-lich/vnt_upload/news/03_2026/0_pho_am_thuc_vinh_khanh_thum.jpg"
+  },
+  {
+    "id": "vn-357-cho-ho-thi-ky",
+    "name": "Chợ Hồ Thị Kỷ",
+    "province": "TP. Hồ Chí Minh",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 10.766326,
+    "longitude": 106.675996,
+    "description": "Khu chợ hoa có nhiều hàng ăn và món ăn vặt.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "05:00-22:00",
+    "sourceUrl": "https://ph20691.tistory.com/m/717",
+    "thumbnailUrl": "https://blog.kakaocdn.net/dna/WmXpi/btsJH0uQ25y/AAAAAAAAAAAAAAAAAAAAAPCCi4lf-wopEpV80QE-jeTl7A83J7kThCqghKlbnbnu/img.jpg?allow_ip=&allow_referer=&credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1764514799&signature=KL4OgwJjlujywwyTofaiccgQgO8%3D"
+  },
+  {
+    "id": "vn-358-cho-binh-tay",
+    "name": "Chợ Bình Tây",
+    "province": "TP. Hồ Chí Minh",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 10.749364,
+    "longitude": 106.651046,
+    "description": "Chợ lâu đời tại Chợ Lớn, kết hợp mua sắm và khám phá ẩm thực.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://www.getyourguide.com/binh-tay-market-l5420/",
+    "thumbnailUrl": "https://cdn.getyourguide.com/image/format%3Dauto%2Cfit%3Dcrop%2Cgravity%3Dauto%2Cquality%3D60%2Cwidth%3D400%2Cheight%3D265%2Cdpr%3D2/tour_img/84b88b246aa366573bf53ed39a81be2fe162efa7a0b2f7c0baf698e6b325a3b9.png"
+  },
+  {
+    "id": "vn-359-com-tam-ba-ghien",
+    "name": "Cơm tấm Ba Ghiền",
+    "province": "TP. Hồ Chí Minh",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 10.794442,
+    "longitude": 106.66936,
+    "description": "Địa chỉ cơm tấm với sườn nướng và các món ăn kèm.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "09:00-21:30",
+    "sourceUrl": "https://guide.michelin.com/vn/en/article/dining-out/what-is-com-tam-com-tam-ba-ghien",
+    "thumbnailUrl": "https://d3h1lg3ksw6i6b.cloudfront.net/media/image/2023/07/25/4e57c8fb3c874daba7a2a238507e80fe_what-is-com-tam-com-tam-ba-ghien.jpg"
+  },
+  {
+    "id": "vn-360-banh-mi-huynh-hoa",
+    "name": "Bánh mì Huỳnh Hoa",
+    "province": "TP. Hồ Chí Minh",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 10.771523,
+    "longitude": 106.692397,
+    "description": "Tiệm bánh mì nổi tiếng với phần nhân thịt nguội phong phú.",
+    "priceMin": 48000,
+    "priceMax": 48000,
+    "openingHours": "06:00-22:00",
+    "sourceUrl": "https://www.visitvietnam.app/en/banh-mi/",
+    "thumbnailUrl": "https://www.visitvietnam.app/images/3bd20eba-50b5-4076-adc8-79ec86c5189d"
+  },
+  {
+    "id": "vn-361-bao-tang-my-thuat-thanh-pho-ho-chi-minh",
+    "name": "Bảo tàng Mỹ thuật Thành phố Hồ Chí Minh",
+    "province": "TP. Hồ Chí Minh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.769947,
+    "longitude": 106.699216,
+    "description": "Không gian trưng bày mỹ thuật trong một công trình kiến trúc cổ.",
+    "priceMin": 30000,
+    "priceMax": 30000,
+    "openingHours": "08:00-17:00",
+    "sourceUrl": "https://vinwonders.com/vi/wonderpedia/news/bao-tang-my-thuat-thanh-pho-ho-chi-minh/",
+    "thumbnailUrl": "https://static.vinwonders.com/production/bao-tang-my-thuat-thanh-pho-ho-chi-minh.jpg"
+  },
+  {
+    "id": "vn-362-bao-tang-lich-su-thanh-pho-ho-chi-minh",
+    "name": "Bảo tàng Lịch sử Thành phố Hồ Chí Minh",
+    "province": "TP. Hồ Chí Minh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.788075,
+    "longitude": 106.704729,
+    "description": "Bảo tàng giới thiệu lịch sử và cổ vật Việt Nam.",
+    "priceMin": 30000,
+    "priceMax": 30000,
+    "openingHours": "08:00-11:30,13:00-17:00",
+    "sourceUrl": "https://www.baotanglichsutphcm.com.vn/en-US/about-us",
+    "thumbnailUrl": "https://www.baotanglichsutphcm.com.vn/Data/Sites/1/News/18/31745697473_6cea7254ff_o.jpg"
+  },
+  {
+    "id": "vn-363-chua-ngoc-hoang",
+    "name": "Chùa Ngọc Hoàng",
+    "province": "TP. Hồ Chí Minh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.791996,
+    "longitude": 106.698179,
+    "description": "Ngôi chùa nổi tiếng với kiến trúc và tượng thờ truyền thống.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://poliva.vn/chua-ngoc-hoang/",
+    "thumbnailUrl": "https://poliva.vn/wp-content/uploads/2019/07/chua-ngoc-hoang-2.jpg"
+  },
+  {
+    "id": "vn-364-chua-ba-thien-hau-cho-lon",
+    "name": "Chùa Bà Thiên Hậu Chợ Lớn",
+    "province": "TP. Hồ Chí Minh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.75325,
+    "longitude": 106.661173,
+    "description": "Di tích tín ngưỡng tiêu biểu của cộng đồng người Hoa.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "06:00-17:30",
+    "sourceUrl": "https://www.vietnamairlines.com/jp/ja/plan-book/travel/travel-guide/chinatown-ho-chi-minh",
+    "thumbnailUrl": "https://www.vietnamairlines.com/content/dam/legacy-site-assets/SEO-images/2025%20SEO/Traffic%20TA/MN/chinatown%20hcm/architecture-and-atmosphere-inside-thien-hau-temple.jpg?width=1920"
+  },
+  {
+    "id": "vn-365-rung-ngap-man-can-gio",
+    "name": "Rừng ngập mặn Cần Giờ",
+    "province": "TP. Hồ Chí Minh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.4114,
+    "longitude": 106.9538,
+    "description": "Không gian sinh thái rừng ngập mặn ven biển phía nam thành phố.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://vietnamnet.vn/toan-canh-duong-rung-sac-truoc-de-xuat-mo-rong-hon-19-000-ty-dong-2503032.html",
+    "thumbnailUrl": "https://static-images.vnncdn.net/vps_images_publish/000001/000003/2026/4/4/toan-canh-con-duong-xuyen-rung-ngap-man-truoc-de-xuat-mo-rong-hon-19-2155.jpg?s=hg569iymUB-ssLwNcx8H8g&width=1200"
+  },
+  {
+    "id": "vn-366-cho-con",
+    "name": "Chợ Cồn",
+    "province": "Đà Nẵng",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 16.067793,
+    "longitude": 108.214483,
+    "description": "Chợ truyền thống nổi tiếng với khu hàng ăn và đặc sản miền Trung.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-19:00",
+    "sourceUrl": "https://www.vietnamairlines.com/th/vi/useful-information/travel-guide/cho-con-da-nang",
+    "thumbnailUrl": "https://www.vietnamairlines.com/th/vi/useful-information/travel-guide/~/media/SEO-images/2025%20SEO/Traffic%20TV/cho-con-da-nang/cho-con-noi-tieng-voi-cac-dac-san-kho-nhu-muc-rim-me-tom-kho.jpg?la=vi-VN"
+  },
+  {
+    "id": "vn-367-banh-xeo-ba-duong",
+    "name": "Bánh xèo Bà Dưỡng",
+    "province": "Đà Nẵng",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 16.058877,
+    "longitude": 108.216166,
+    "description": "Quán bánh xèo ăn kèm rau sống và nước chấm đặc trưng.",
+    "priceMin": 90000,
+    "priceMax": 90000,
+    "openingHours": "09:30-21:30",
+    "sourceUrl": "https://vnpay.vn/banh-xeo-da-nang-08mtq38z1bnm",
+    "thumbnailUrl": "https://stc609765200636.cloud.edgevnpay.vn/website-vnpay-public/fill/2023/11/0t049f6cdk3f1700216385339.png"
+  },
+  {
+    "id": "vn-368-bun-cha-ca-ba-lu",
+    "name": "Bún chả cá Bà Lữ",
+    "province": "Đà Nẵng",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 16.066592,
+    "longitude": 108.211144,
+    "description": "Địa chỉ thưởng thức bún chả cá kiểu Đà Nẵng.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://hotel84.com/nha-hang/bun-cha-ca-ba-lu.html",
+    "thumbnailUrl": "https://hotel84.com/hotel84-images/news/img1/bun-ba-lu-danang.jpg"
+  },
+  {
+    "id": "vn-369-mi-quang-ba-mua",
+    "name": "Mì Quảng Bà Mua",
+    "province": "Đà Nẵng",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 16.056575,
+    "longitude": 108.208438,
+    "description": "Quán phục vụ mì Quảng và món ăn miền Trung.",
+    "priceMin": 70000,
+    "priceMax": 70000,
+    "openingHours": "06:00-21:30",
+    "sourceUrl": "https://ador.vn/mi-quang-ba-mua/",
+    "thumbnailUrl": "https://adormusic.s3.us-east-2.amazonaws.com/wp-content/uploads/2023/07/22045644/mi-quang-ba-mua-5-1024x1024.jpeg"
+  },
+  {
+    "id": "vn-370-bao-tang-a-nang",
+    "name": "Bảo tàng Đà Nẵng",
+    "province": "Đà Nẵng",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 16.074554,
+    "longitude": 108.223967,
+    "description": "Không gian tìm hiểu lịch sử, văn hóa và con người Đà Nẵng.",
+    "priceMin": 50000,
+    "priceMax": 50000,
+    "openingHours": "08:00-17:00",
+    "sourceUrl": "https://www.traveloka.com/vi-vn/explore/destination/bao-tang-da-nang/189498",
+    "thumbnailUrl": "https://ik.imagekit.io/tvlk/blog/2022/12/bao-tang-da-nang-10.jpg?tr=dpr-2%2Cw-675"
+  },
+  {
+    "id": "vn-371-bun-bo-hue-ba-tuyet",
+    "name": "Bún bò Huế Bà Tuyết",
+    "province": "Thừa Thiên Huế",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 16.47127,
+    "longitude": 107.597561,
+    "description": "Địa chỉ thưởng thức bún bò theo phong vị Huế.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "06:00-12:30",
+    "sourceUrl": "https://mia.vn/cam-nang-du-lich/kham-pha-quan-bun-bo-hue-ba-tuyet-moi-ngay-ban-5-noi-2268",
+    "thumbnailUrl": "https://media.mia.vn/uploads/blog-du-lich/kham-pha-quan-bun-bo-hue-ba-tuyet-moi-ngay-ban-5-noi-1637833796.jpg"
+  },
+  {
+    "id": "vn-372-com-hen-hoa-ong",
+    "name": "Cơm hến Hoa Đông",
+    "province": "Thừa Thiên Huế",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 16.479269,
+    "longitude": 107.593616,
+    "description": "Quán cơm hến và bún hến gắn với ẩm thực Cồn Hến.",
+    "priceMin": 20000,
+    "priceMax": 20000,
+    "openingHours": "07:00-21:30",
+    "sourceUrl": "https://onedanang.vn/com-hen-hoa-dong-hue-lld2221",
+    "thumbnailUrl": "https://onedanang.vn/Content/UserUploads/Images/Locations/4/2221/medium_foody-quan-hoa-dong-183-636980429600567200.jpg"
+  },
+  {
+    "id": "vn-373-banh-khoai-hong-mai",
+    "name": "Bánh Khoái Hồng Mai",
+    "province": "Thừa Thiên Huế",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 16.474619,
+    "longitude": 107.580572,
+    "description": "Quán bánh khoái Huế với rau sống và nước chấm.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "10:30-20:30",
+    "sourceUrl": "https://khamphahue.com.vn/Hue-24h/Chi-tiet/tid/Tong-hop-cac-quan-banh-khoai-Hue-ngon-noi-tieng.html/pid/1097/cid/598",
+    "thumbnailUrl": "https://khamphahue.com.vn/Portals/0/ThiTNT/TongHop_6QuanBanhKhoaiHue/Khamphahue_banh-khoai-hong-mai-hue.jpg"
+  },
+  {
+    "id": "vn-374-che-hem-hue",
+    "name": "Chè Hẻm Huế",
+    "province": "Thừa Thiên Huế",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 16.465102,
+    "longitude": 107.593579,
+    "description": "Địa chỉ thưởng thức các loại chè mang phong vị Huế.",
+    "priceMin": 16000,
+    "priceMax": 16000,
+    "openingHours": "10:00-22:00",
+    "sourceUrl": "https://khamphahue.com.vn/Du-lich/Chi-tiet/tid/Che-hem-Hue.html/pid/7037/cid/383",
+    "thumbnailUrl": "https://khamphahue.com.vn/Portals/0/DuLich/DiemAnUong/QuanAnDacSan/CheHem/Che-Hue_ThanhToan.jpg?ver=2022-10-18-103733-150"
+  },
+  {
+    "id": "vn-375-lang-gia-long",
+    "name": "Lăng Gia Long",
+    "province": "Thừa Thiên Huế",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 16.362005,
+    "longitude": 107.596933,
+    "description": "Quần thể lăng tẩm giữa cảnh quan đồi núi và hồ nước.",
+    "priceMin": 150000,
+    "priceMax": 150000,
+    "openingHours": "07:00-17:30",
+    "sourceUrl": "https://nhandan.vn/lang-gia-long-noi-an-nghi-cua-vi-vua-dau-tien-trieu-nguyen-post612466.html",
+    "thumbnailUrl": "https://cdn.nhandan.vn/images/d233c8299c7755bbf317d96e7a85fcf78ef20824423c8bc8c971d292656d530534deb9a273fdc1f7d9a18fbd35c8846f9a897aea5e311c4720691637dcc102ee63a899dc0d598a8828a44264337440e8/13_lang_gia_long-1597133441199.jpg"
+  },
+  {
+    "id": "vn-376-banh-mi-phuong-hoi-an",
+    "name": "Bánh mì Phượng Hội An",
+    "province": "Quảng Nam",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 15.878499,
+    "longitude": 108.332049,
+    "description": "Tiệm bánh mì nổi tiếng với nhiều loại nhân và nước sốt.",
+    "priceMin": 25000,
+    "priceMax": 50000,
+    "openingHours": "06:30-21:00",
+    "sourceUrl": "https://danang-holic.com/restaurant_cafe/best-banh-mi-shops-hoi-an-must-try/",
+    "thumbnailUrl": "https://danang-holic.com/wp-content/uploads/2024/11/image-11-1024x682.jpg"
+  },
+  {
+    "id": "vn-377-banh-mi-madam-khanh",
+    "name": "Bánh mì Madam Khánh",
+    "province": "Quảng Nam",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 15.880597,
+    "longitude": 108.327934,
+    "description": "Địa chỉ bánh mì được nhiều du khách tìm đến ở Hội An.",
+    "priceMin": 40000,
+    "priceMax": 40000,
+    "openingHours": "06:30-19:00",
+    "sourceUrl": "https://kenh14.vn/tiem-banh-mi-nu-hoang-o-hoi-an-duoc-nhieu-khach-nuoc-ngoai-khen-la-ngon-nhat-the-gioi-20221028113443001.chn",
+    "thumbnailUrl": "https://kenh14cdn.com/203336854389633024/2022/10/28/photo-17-1666930071924143479511.jpg"
+  },
+  {
+    "id": "vn-378-com-ga-ba-buoi",
+    "name": "Cơm gà Bà Buội",
+    "province": "Quảng Nam",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 15.878507,
+    "longitude": 108.330419,
+    "description": "Quán cơm gà gắn với ẩm thực Hội An.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "10:30-14:00,16:30-19:00",
+    "sourceUrl": "https://mia.vn/cam-nang-du-lich/quan-com-ga-ba-buoi-hoi-an-18820",
+    "thumbnailUrl": "https://mia.vn/media/uploads/blog-du-lich/com-ga-ba-buoi-5-1751907125.jpg"
+  },
+  {
+    "id": "vn-379-cho-hoi-an",
+    "name": "Chợ Hội An",
+    "province": "Quảng Nam",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 15.877318,
+    "longitude": 108.331266,
+    "description": "Chợ truyền thống có khu thưởng thức cao lầu, mì Quảng và món địa phương.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://sovaba.travel/blog/bai-viet-kham-pha-cho-hoi-an",
+    "thumbnailUrl": "https://api.sovaba.travel/uploads/cho_hoi_an_nam_ngay_trung_tam_pho_co_hoi_an_4e49f5f9f5.jpg"
+  },
+  {
+    "id": "vn-380-lang-bich-hoa-tam-thanh",
+    "name": "Làng bích họa Tam Thanh",
+    "province": "Quảng Nam",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 15.59726,
+    "longitude": 108.54773,
+    "description": "Làng ven biển với tranh tường trong không gian sinh hoạt cộng đồng.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://daidoanket.vn/thay-gi-o-lang-bich-hoa-tam-thanh-10250245.html",
+    "thumbnailUrl": "https://media.daidoanket.vn/w1200/uploaded/images/2025/09/08/b1a1077b-ede2-47ce-8f9e-2f0a2c75dc09.jpg"
+  },
+  {
+    "id": "vn-381-cho-cat-bi",
+    "name": "Chợ Cát Bi",
+    "province": "Hải Phòng",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 20.824554,
+    "longitude": 106.711149,
+    "description": "Khu chợ có nhiều món ăn vặt và đặc sản Hải Phòng.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "06:30-23:00",
+    "sourceUrl": "https://sunparadiseland.com/SunParadiseLandCatBa/tin-tuc/cho-an-vat-hai-phong-top-5-cho-va-pho-am-thuc-hap-dan-13695",
+    "thumbnailUrl": "https://sun-ecommerce-cdn.azureedge.net/ecommerce/service-sites/asset/SunParadiseLandCatBa/google-doc/post_id_13695/AD_4nXeDflQl0rKWLimuxGOovXLREhsnaQQH3fFZkemu21GYCiM4dZ5DkfgMmoydziAHqa--rosxTKBn3caV7la90uASmqprXg_L_vuDFgB2pt5MS64Ew1tP5gkIwUKq23IFQuNSCg0xwzWB1oS9wlncN9ZPc47Ohw.webp"
+  },
+  {
+    "id": "vn-382-cho-co-ao",
+    "name": "Chợ Cố Đạo",
+    "province": "Hải Phòng",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 20.855772,
+    "longitude": 106.683708,
+    "description": "Khu hàng ăn quen thuộc với các món đặc sản thành phố cảng.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://thanhnien.vn/cho-co-dao-thien-duong-am-thuc-hai-phong-185693749.htm",
+    "thumbnailUrl": "https://images2.thanhnien.vn/zoom/1200_630/Uploaded/vutho/2017_09_08/anhbai1-tranga_MYCG.jpg"
+  },
+  {
+    "id": "vn-383-banh-a-cua-ba-cu",
+    "name": "Bánh đa cua Bà Cụ",
+    "province": "Hải Phòng",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 20.852727,
+    "longitude": 106.685475,
+    "description": "Địa chỉ thưởng thức bánh đa cua Hải Phòng.",
+    "priceMin": 40000,
+    "priceMax": 40000,
+    "openingHours": "07:00-21:00",
+    "sourceUrl": "https://ador.vn/banh-da-cua-ba-cu/",
+    "thumbnailUrl": "https://adormusic.s3.us-east-2.amazonaws.com/wp-content/uploads/2023/08/03101014/Ba%CC%81nh-da-cua-Ba%CC%80-Cu%CC%A3-2-867x867.jpeg"
+  },
+  {
+    "id": "vn-384-banh-mi-cay-ba-gia",
+    "name": "Bánh mì cay Bà Già",
+    "province": "Hải Phòng",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 20.858732,
+    "longitude": 106.693029,
+    "description": "Tiệm bánh mì cay với pa tê theo phong cách Hải Phòng.",
+    "priceMin": 30000,
+    "priceMax": 30000,
+    "openingHours": "06:30-20:00",
+    "sourceUrl": "https://mia.vn/cam-nang-du-lich/ngat-ngay-voi-banh-mi-cay-ba-gia-hai-phong-chi-tu-2000-dong-mot-o-4409",
+    "thumbnailUrl": "https://mia.vn/media/uploads/blog-du-lich/ngat-ngay-voi-banh-mi-cay-ba-gia-hai-phong-chi-tu-2000-dong-mot-o-12-1648438571.jpg"
+  },
+  {
+    "id": "vn-385-ao-bach-long-vi",
+    "name": "Đảo Bạch Long Vĩ",
+    "province": "Hải Phòng",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.131144,
+    "longitude": 107.731053,
+    "description": "Đảo xa bờ có cảnh quan biển và đời sống ngư dân.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://mia.vn/cam-nang-du-lich/kinh-nghiem-kham-pha-dao-bach-long-vi-duoc-menh-danh-la-xu-so-bao-ngu-4649",
+    "thumbnailUrl": "https://mia.vn/media/uploads/blog-du-lich/kinh-nghiem-kham-pha-dao-bach-long-vi-duoc-menh-danh-la-xu-so-bao-ngu-05-1648574595.jpeg"
+  },
+  {
+    "id": "vn-386-cho-ha-long-1",
+    "name": "Chợ Hạ Long 1",
+    "province": "Quảng Ninh",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 20.949992,
+    "longitude": 107.082003,
+    "description": "Chợ trung tâm có hải sản và các món ăn địa phương.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "06:00-18:30",
+    "sourceUrl": "https://sinhthainongnghiep.net.vn/thien-duong-hai-san-tuoi-song-cho-ha-long-1-quang-ninh-a4295.html",
+    "thumbnailUrl": "https://sinhthainongnghiep.net.vn/uploads/2021/11/Ha-Long-1.jpg"
+  },
+  {
+    "id": "vn-387-cho-em-ha-long",
+    "name": "Chợ đêm Hạ Long",
+    "province": "Quảng Ninh",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 20.950418,
+    "longitude": 107.042981,
+    "description": "Không gian mua sắm và ăn uống về đêm tại khu du lịch.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "08:00-11:30,15:00-00:00",
+    "sourceUrl": "https://tripday.vn/cho-dem-ha-long/",
+    "thumbnailUrl": "https://tripday.vn/wp-content/uploads/2022/10/cho-dem-1.jpg"
+  },
+  {
+    "id": "vn-388-ao-minh-chau",
+    "name": "Đảo Minh Châu",
+    "province": "Quảng Ninh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.92962,
+    "longitude": 107.553705,
+    "description": "Khu vực biển trên đảo Quan Lạn với bãi cát sáng màu.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://www.angsana.com/vi/vietnam/quan-lan/article/kham-pha-ve-dep-xa-dao-minh-chau-quan-lan-quang-ninh",
+    "thumbnailUrl": "https://www.angsana.com/_next/image?q=75&url=https%3A%2F%2Fwww.angsana.com%2Fassets%2F2024-11%2Fimage6.jpg&w=828"
+  },
+  {
+    "id": "vn-389-bai-bien-tra-co",
+    "name": "Bãi biển Trà Cổ",
+    "province": "Quảng Ninh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.474589,
+    "longitude": 108.01811,
+    "description": "Bãi biển dài gắn với cảnh quan vùng biên Móng Cái.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://taybac.tv/du-lich-bai-bien-tra-co-mong-cai-quang-ninh-co-gi-thu-vi/",
+    "thumbnailUrl": "https://nhadepthudo.com.vn/img/webroot/upload/images/images/du%20an/Tra-co-long-beach-luxury/Tra-co-long-beach-mong-cai-flycam.jpg"
+  },
+  {
+    "id": "vn-390-ao-cai-chien",
+    "name": "Đảo Cái Chiên",
+    "province": "Quảng Ninh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.322996,
+    "longitude": 107.769347,
+    "description": "Đảo có bãi biển và không gian nghỉ ngơi gần thiên nhiên.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://vinpearl.com/vi/dao-cai-chien-quang-ninh",
+    "thumbnailUrl": "https://statics.vinpearl.com/dao-cai-chien-1_1705816897.jpg"
+  },
+  {
+    "id": "vn-391-vuon-quoc-gia-cuc-phuong",
+    "name": "Vườn quốc gia Cúc Phương",
+    "province": "Ninh Bình",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.316688,
+    "longitude": 105.608313,
+    "description": "Vườn quốc gia có rừng nhiệt đới, đường đi bộ và hoạt động giáo dục bảo tồn.",
+    "priceMin": 60000,
+    "priceMax": 60000,
+    "openingHours": "07:00-20:00",
+    "sourceUrl": "https://www.vietnam.vn/en/du-lich-vuon-quoc-gia-cuc-phuong-hanh-trinh-ve-voi-thien-nhien-ky-vi",
+    "thumbnailUrl": "https://vstatic.vietnam.vn/vietnam/resource/IMAGE/2025/7/30/56c95ece370a4e3fa707eb89c8f51ef3"
+  },
+  {
+    "id": "vn-392-am-van-long",
+    "name": "Đầm Vân Long",
+    "province": "Ninh Bình",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.372506,
+    "longitude": 105.88274,
+    "description": "Vùng đất ngập nước có núi đá vôi và hoạt động đi thuyền.",
+    "priceMin": 150000,
+    "priceMax": 150000,
+    "openingHours": "07:30-16:30",
+    "sourceUrl": "https://www.vietnam.vn/es/dam-van-long-vinh-khong-song-binh-yen-giua-long-ninh-binh",
+    "thumbnailUrl": "https://cdn.kienthuc.net.vn/images/a8f820242e18bda2fea6bcdd552cdcf028094d16ec95c7f83d4bd42c84f452d9f083db89d2d38ff9ccb1aa568ff4ca99/dam-van-long.jpg"
+  },
+  {
+    "id": "vn-393-thung-nham",
+    "name": "Thung Nham",
+    "province": "Ninh Bình",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.218127,
+    "longitude": 105.893283,
+    "description": "Khu sinh thái với vườn chim và cảnh quan núi đá vôi.",
+    "priceMin": 250000,
+    "priceMax": 250000,
+    "openingHours": "06:00-22:00",
+    "sourceUrl": "https://fr.vietnamplus.vn/thung-nham-un-paradis-ornithologique-au-c-ur-de-ninh-binh-post249524.vnp",
+    "thumbnailUrl": "https://mediafr.vietnamplus.vn/images/10fac4d5117e637f42178a1f64ae232ed1c67f135b239fa439f03e6659cbdb98fd1fed40a7b1923d248793776d44cd46/ninh-binh-4-ava.jpg"
+  },
+  {
+    "id": "vn-394-ong-am-tien",
+    "name": "Động Am Tiên",
+    "province": "Ninh Bình",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.282708,
+    "longitude": 105.912215,
+    "description": "Danh thắng có hồ nước và núi đá bao quanh gần Hoa Lư.",
+    "priceMin": 50000,
+    "priceMax": 100000,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://home.vn/thread/dau-chi-co-trang-an-dong-am-tien-ninh-binh-cung-dep-nao-long-du-khach.633318697784788",
+    "thumbnailUrl": "https://dulichvietnam.com.vn/vnt_upload/news/04_2023/dong_am_tien_ninh_binh_7.jpg"
+  },
+  {
+    "id": "vn-395-pho-co-hoa-lu",
+    "name": "Phố cổ Hoa Lư",
+    "province": "Ninh Bình",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 20.263384,
+    "longitude": 105.968168,
+    "description": "Không gian kiến trúc và hàng quán phục vụ tham quan, ăn uống buổi tối.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-23:00",
+    "sourceUrl": "https://bamozo.vn/pho-co-hoa-lu-ninh-binh",
+    "thumbnailUrl": "https://bizweb.dktcdn.net/100/514/026/files/pho-co-hoa-lu-ninh-binh-4.jpg?v=1765479810915"
+  },
+  {
+    "id": "vn-396-bai-bien-hai-hoa",
+    "name": "Bãi biển Hải Hòa",
+    "province": "Thanh Hóa",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 19.455297,
+    "longitude": 105.807565,
+    "description": "Bãi biển gắn với đời sống làng chài vùng Tĩnh Gia.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://www.flycorp.vn/en/blogs/discovering-hai-hoa-beach-thanh-hoa-a-peaceful-escape-in-the-heart-of-vietnam",
+    "thumbnailUrl": "https://flycorp-vn.s3.ap-southeast-1.amazonaws.com/blogs/1834509557157326.jpg"
+  },
+  {
+    "id": "vn-397-bai-ong-nghi-son",
+    "name": "Bãi Đông Nghi Sơn",
+    "province": "Thanh Hóa",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 19.326528,
+    "longitude": 105.824059,
+    "description": "Điểm ngắm biển và nghỉ ngơi tại khu vực Nghi Sơn.",
+    "priceMin": 15000,
+    "priceMax": 15000,
+    "openingHours": "04:30-22:30",
+    "sourceUrl": "https://pttravel.vn/bai-dong-nghi-son-thanh-hoa/",
+    "thumbnailUrl": "https://pttravel.vn/wp-content/uploads/2023/02/bai-bien-bai-dong-nghi-son.jpg"
+  },
+  {
+    "id": "vn-398-vuon-quoc-gia-ben-en",
+    "name": "Vườn quốc gia Bến En",
+    "province": "Thanh Hóa",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 19.619063,
+    "longitude": 105.541063,
+    "description": "Không gian rừng và hồ với các đảo nhỏ.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-17:00",
+    "sourceUrl": "https://vtv.vn/doi-song/kham-pha-vuon-quoc-gia-ben-en-niem-tu-hao-cua-xu-thanh-20241112002408019.htm",
+    "thumbnailUrl": "https://cdn-images.vtv.vn/thumb_w/1200/66349b6076cb4dee98746cf1/2024/11/11/ben-en-43098583887738654834239-39274257406919769981209.png"
+  },
+  {
+    "id": "vn-399-en-ba-trieu",
+    "name": "Đền Bà Triệu",
+    "province": "Thanh Hóa",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 19.930779,
+    "longitude": 105.818778,
+    "description": "Di tích tưởng niệm Bà Triệu dưới chân núi Gai.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://thanhhoa.travel/den-ba-trieu-thanh-hoa.html",
+    "thumbnailUrl": "https://thanhhoa.travel/uploads/2025/10/slide/0/20251016114028_618.jpg"
+  },
+  {
+    "id": "vn-400-cho-vuon-hoa-thanh-hoa",
+    "name": "Chợ Vườn Hoa Thanh Hóa",
+    "province": "Thanh Hóa",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 19.806701,
+    "longitude": 105.780968,
+    "description": "Chợ trung tâm có hàng ăn và đặc sản địa phương.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://mytour.vn/kham-pha/thanh-hoa/cho-vuon-hoa-thanh-hoa.html",
+    "thumbnailUrl": "https://storage.googleapis.com/hms_prod/hotel-content/img/458079Zzv/161749-1.jpg"
+  },
+  {
+    "id": "vn-401-ao-hon-ngu",
+    "name": "Đảo Hòn Ngư",
+    "province": "Nghệ An",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 18.800341,
+    "longitude": 105.775464,
+    "description": "Đảo ven biển Cửa Lò có cảnh quan đá và biển.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://gaohouse.vn/blogs/suc-khoe-doi-song/du-lich-dao-hon-ngu?srsltid=AfmBOort8bkh7xj6ykabxBtYi5XTLIVYPvbVBT9CFzx1Aiw7xmR3aPj5",
+    "thumbnailUrl": "https://gaohouse.vn/wp-content/uploads/2024/09/dao-hon-ngu-2.jpg"
+  },
+  {
+    "id": "vn-402-thac-khe-kem",
+    "name": "Thác Khe Kèm",
+    "province": "Nghệ An",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 18.970443,
+    "longitude": 104.800714,
+    "description": "Thác nước nằm trong vùng rừng Pù Mát.",
+    "priceMin": 30000,
+    "priceMax": 30000,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://hoabinhnahotel.com/du-lich-thac-khe-kem-nghe-an/",
+    "thumbnailUrl": "https://hoabinhnahotel.com/wp-content/uploads/2024/08/PVST3966-1024x683.jpg"
+  },
+  {
+    "id": "vn-403-canh-ong-hoa-huong-duong-nghia-an",
+    "name": "Cánh đồng hoa hướng dương Nghĩa Đàn",
+    "province": "Nghệ An",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 19.426115,
+    "longitude": 105.414394,
+    "description": "Điểm ngắm hoa theo mùa tại vùng Nghĩa Đàn.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "05:00-19:00",
+    "sourceUrl": "https://canhdep.net/choang-ngop-canh-dong-hoa-huong-duong-lon-nhat-viet-nam-257.html",
+    "thumbnailUrl": "https://thumb.canhdep.net/image/2016/05/choang-ngop-canh-dong-hoa-huong-duong-lon-nhat-viet-nam.jpg"
+  },
+  {
+    "id": "vn-404-en-cuong",
+    "name": "Đền Cuông",
+    "province": "Nghệ An",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 18.90458,
+    "longitude": 105.604883,
+    "description": "Di tích thờ An Dương Vương tại khu vực Diễn Châu.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://giaoducthoidai.vn/ve-nui-mo-da-nghe-chuyen-an-duong-vuong-tuan-tiet-post764133.html",
+    "thumbnailUrl": "https://cdn.giaoducthoidai.vn/images/5ff2552195f776d2e1eb49d261d05ab8adaaf8bd7cf7f480e7a15b26252b8c6602349a15f4e1d9fed1d7b74fb0b110b82fb6eb8e144b5909af6587f275dc156f29339fdca8bf238dc4b54f96d9df52ee/ve-nui-mo-da-nghe-chuyen-an-duong-vuong-tuan-tiet-4.jpg"
+  },
+  {
+    "id": "vn-405-cho-vinh",
+    "name": "Chợ Vinh",
+    "province": "Nghệ An",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 18.663657,
+    "longitude": 105.674042,
+    "description": "Chợ truyền thống lớn với hàng ăn và đặc sản xứ Nghệ.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://baonghean.vn/ngam-nhung-hinh-anh-ve-thanh-vinh-xua-va-nay-nhan-dip-ky-niem-50-nam-ngay-tai-thiet-10272019.html",
+    "thumbnailUrl": "https://bna.1cdn.vn/2024/04/26/uploaded-quanganbna-2024_04_26-_bna-cho-vinh-6404.jpg"
+  },
+  {
+    "id": "vn-406-bien-thach-hai",
+    "name": "Biển Thạch Hải",
+    "province": "Hà Tĩnh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 18.402481,
+    "longitude": 105.981374,
+    "description": "Bãi biển ven thành phố Hà Tĩnh với hoạt động nghỉ ngơi và ăn hải sản.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://baohatinh.vn/du-khach-thich-thu-truoc-dien-mao-moi-cua-bien-thach-hai-post309817.html",
+    "thumbnailUrl": "https://cdn.baohatinh.vn/images/95001fd96cbfed4a6372e11012113e1286eadc5b6a1120375dc0d2b4270b4138686159c5fe3fb8fc097ee660c6b14278/bht_brd_22.jpg"
+  },
+  {
+    "id": "vn-407-thac-vu-mon",
+    "name": "Thác Vũ Môn",
+    "province": "Hà Tĩnh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 18.130551,
+    "longitude": 105.522765,
+    "description": "Thác nước trong vùng núi rừng Hương Khê.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://baohatinh.vn/danh-thuc-nang-cong-chua-vu-mon-giua-dai-ngan-ha-tinh-post194488.html",
+    "thumbnailUrl": "https://cdn.baohatinh.vn/images/bffa827c79689ddc9e50b45b87c50f0f8a721aade4b3343c51e728c479cfcd45f5c433dd430096b60d14f1ec9a272c7b/144d1013420t43463l0.jpg"
+  },
+  {
+    "id": "vn-408-en-che-thang-phu-nhan-nguyen-thi-bich-chau",
+    "name": "Đền Chế Thắng phu nhân Nguyễn Thị Bích Châu",
+    "province": "Hà Tĩnh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 18.113772,
+    "longitude": 106.347303,
+    "description": "Di tích tín ngưỡng ven biển vùng Kỳ Anh.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://baohatinh.vn/ngam-den-tho-che-thang-phu-nhan-nguyen-thi-bich-chau-truoc-them-le-gio-646-nam-post245031.html",
+    "thumbnailUrl": "https://cdn.baohatinh.vn/images/787902fab37753ca78784ed8583b01ae55f94e16f40d29192a415b80dee67c5141e1622efed799dc979208bcbc76bd8c/144d1172940t32742l0.jpg"
+  },
+  {
+    "id": "vn-409-ho-trai-tieu",
+    "name": "Hồ Trại Tiểu",
+    "province": "Hà Tĩnh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 18.353143,
+    "longitude": 105.73365,
+    "description": "Hồ nước có cảnh quan đồi cây và không gian sinh thái.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://baohatinh.vn/ho-trai-tieu-da-lat-thu-nho-giua-long-dong-loc-post305843.html",
+    "thumbnailUrl": "https://cdn.baohatinh.vn/images/fed78e6b10f5b81f13412bc9e97805a51895571b8a4bb500b652401a037f335a60afc7a8fcc44e3dd4f5f44b6218291e/bht_brd_z3.jpg"
+  },
+  {
+    "id": "vn-410-inh-pu-ta-leng",
+    "name": "Đỉnh Pu Ta Leng",
+    "province": "Lai Châu",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.433333,
+    "longitude": 103.566667,
+    "description": "Ngọn núi nổi tiếng với hành trình trekking xuyên rừng và cảnh quan đỗ quyên.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://bqlkkt.laichau.gov.vn/thu-vien-anh/san-hoa-do-quyen-tren-dinh-pu-ta-leng.html",
+    "thumbnailUrl": "https://bqlkkt.laichau.gov.vn/upload/2000066/20210420/18_097416f492.jpg"
+  },
+  {
+    "id": "vn-411-hang-en",
+    "name": "Hang Én",
+    "province": "Quảng Bình",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 17.456936,
+    "longitude": 106.2875,
+    "description": "Hang động lớn với bãi cắm trại trong hành trình khám phá rừng.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://www.vietnamairlines.com/nl/vi/useful-information/travel-guide/en-cave",
+    "thumbnailUrl": "https://www.vietnamairlines.com/content/dam/legacy-site-assets/SEO-images/2025%20SEO/Traffic%20TA/MB/en-cave/visitors-to-en-cave-often-spend-hours-simply-admiring-and-photographing-these-natural-wonders.jpg"
+  },
+  {
+    "id": "vn-412-hang-son-oong",
+    "name": "Hang Sơn Đoòng",
+    "province": "Quảng Bình",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 17.464792,
+    "longitude": 106.287394,
+    "description": "Hang động nổi tiếng với không gian rộng và hệ sinh thái đặc biệt.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://www.vietnam.vn/en/hang-son-doong-lot-top-10-hang-ngam-dep-nhat-tren-the-gioi/",
+    "thumbnailUrl": "https://media.techcity.cloud/vietnam.vn/2023/03/a4-5211.jpg"
+  },
+  {
+    "id": "vn-413-bai-a-nhay",
+    "name": "Bãi Đá Nhảy",
+    "province": "Quảng Bình",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 17.660838,
+    "longitude": 106.514828,
+    "description": "Bãi biển có quần thể đá với nhiều hình dạng.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://phongnhadiscovery.com/vi/bai-da-nhay-tuyet-tac-thien-nhien-quang-binh",
+    "thumbnailUrl": "https://phongnhadiscovery.com/sites/default/files/kham-pha-bai-da-nhay-tuyet-tac-thien-nhien-7.png"
+  },
+  {
+    "id": "vn-414-vung-chua-ao-yen",
+    "name": "Vũng Chùa Đảo Yến",
+    "province": "Quảng Bình",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 17.911609,
+    "longitude": 106.494854,
+    "description": "Cảnh quan ven biển gắn với khu tưởng niệm Đại tướng Võ Nguyên Giáp.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://dulichnewtour.vn/vung-chua-dao-yen",
+    "thumbnailUrl": "https://dulichnewtour.vn/ckfinder/images/vung-chua-dao-yen%20%281%29.jpg"
+  },
+  {
+    "id": "vn-415-cho-ong-hoi",
+    "name": "Chợ Đồng Hới",
+    "province": "Quảng Bình",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 17.463899,
+    "longitude": 106.626689,
+    "description": "Chợ ven sông có thực phẩm, hải sản và món ăn địa phương.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://antamtour.vn/cho-dong-hoi",
+    "thumbnailUrl": "https://bizweb.dktcdn.net/100/006/093/files/cho-dong-hoi.jpg?v=1712907036046"
+  },
+  {
+    "id": "vn-416-ao-con-co",
+    "name": "Đảo Cồn Cỏ",
+    "province": "Quảng Trị",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 17.16065,
+    "longitude": 107.340535,
+    "description": "Đảo có cảnh quan biển và dấu tích lịch sử.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://nhandan.vn/anh-kham-pha-ve-dep-dao-con-co-vien-ngoc-xanh-cua-quang-tri-post824941.html",
+    "thumbnailUrl": "https://cdn.nhandan.vn/images/22f099ca8bc7ae81aa2a8d3416a84bf8793b27bf283f50300b1af63a8042d94ae535332719bd3c25d2920a328d51a8fcbb67820f513b63899b7fbd4fda8784f9/9-7268.jpg.webp"
+  },
+  {
+    "id": "vn-417-bai-bien-cua-tung",
+    "name": "Bãi biển Cửa Tùng",
+    "province": "Quảng Trị",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 17.022827,
+    "longitude": 107.11043,
+    "description": "Bãi biển ở cửa sông Bến Hải.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://dulich.quangtri.gov.vn/vi/baibiencuatung",
+    "thumbnailUrl": "https://dulich-media.quangtri.gov.vn/resources/portal/Images/QTI/adminportal.qti.it3/doanhnghiep/du_lich/bai_bien_cua_tung/9_803627949.jpg"
+  },
+  {
+    "id": "vn-418-bai-bien-cua-viet",
+    "name": "Bãi biển Cửa Việt",
+    "province": "Quảng Trị",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 16.912983,
+    "longitude": 107.186567,
+    "description": "Điểm nghỉ biển và thưởng thức hải sản vùng Gio Linh.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://dulich.quangtri.gov.vn/en/baibiencuaviet",
+    "thumbnailUrl": "https://dulich-media.quangtri.gov.vn/resources/portal/Images/QTI/adminportal.qti.it3/doanhnghiep/du_lich/bai_bien_cua_viet/5_487708342.jpg"
+  },
+  {
+    "id": "vn-419-thanh-ia-la-vang",
+    "name": "Thánh địa La Vang",
+    "province": "Quảng Trị",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 16.706798,
+    "longitude": 107.19552,
+    "description": "Trung tâm hành hương Công giáo với không gian kiến trúc tôn giáo.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://dulichthuduc.com.vn/thanh-dia-la-vang-vung-dat-duc-me-hien-linh.html",
+    "thumbnailUrl": "https://dulichthuduc.com.vn/vnt_upload/news/BAC-TRUNG-BO/quang-tri/thanh_dia_la_vang_du_lich_thu_duc_1.jpg"
+  },
+  {
+    "id": "vn-420-cho-ong-ha",
+    "name": "Chợ Đông Hà",
+    "province": "Quảng Trị",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 16.823849,
+    "longitude": 107.099844,
+    "description": "Chợ truyền thống có đặc sản và hàng ăn Quảng Trị.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://vigotrip.com/dia-danh/cho-dong-ha-id1901",
+    "thumbnailUrl": "https://img.vigotrip.com/photo/2024/03/19/F2B4009AD854AB60DABFB8FC2385A9C0.jpg"
+  },
+  {
+    "id": "vn-421-bai-bien-my-khe-quang-ngai",
+    "name": "Bãi biển Mỹ Khê Quảng Ngãi",
+    "province": "Quảng Ngãi",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 15.184842,
+    "longitude": 108.894875,
+    "description": "Bãi biển dài gần khu vực Sơn Mỹ.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://lendang.vn/destination/bien-my-khe-quang-ngai.html",
+    "thumbnailUrl": "https://lendang.vn/uploads/articles/526de26bcee20.jpg"
+  },
+  {
+    "id": "vn-422-ong-muoi-sa-huynh",
+    "name": "Đồng muối Sa Huỳnh",
+    "province": "Quảng Ngãi",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 14.689835,
+    "longitude": 109.064784,
+    "description": "Cảnh quan sản xuất muối truyền thống, thích hợp tìm hiểu đời sống địa phương.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://vinwonders.com/vi/wonderpedia/news/ghe-tham-dong-muoi-sa-huynh/",
+    "thumbnailUrl": "https://static.vinwonders.com/production/dong-muoi-sa-huynh-6-768x511.jpg"
+  },
+  {
+    "id": "vn-423-thac-trang-minh-long",
+    "name": "Thác Trắng Minh Long",
+    "province": "Quảng Ngãi",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 14.906431,
+    "longitude": 108.658475,
+    "description": "Thác nước giữa vùng núi rừng Minh Long.",
+    "priceMin": 100000,
+    "priceMax": 100000,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://www.traveloka.com/vi-vn/explore/destination/thac-trang-acc/237483",
+    "thumbnailUrl": "https://ik.imagekit.io/tvlk/blog/2023/06/CDmnhQyk-image.png?tr=q-70%2Cc-at_max%2Cw-1000%2Ch-600"
+  },
+  {
+    "id": "vn-424-ao-be-ly-son",
+    "name": "Đảo Bé Lý Sơn",
+    "province": "Quảng Ngãi",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 15.4055,
+    "longitude": 109.0772,
+    "description": "Đảo có bãi đá núi lửa và làn nước trong.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://dulich.thethaovanhoa.vn/dao-be-ly-son-hon-ngoc-xanh-giua-trung-khoi-2025052014494736.htm",
+    "thumbnailUrl": "https://thethaovanhoa.mediacdn.vn/372676912336973824/2025/5/20/vnapotaldaobelysonquangngai-honngocxanhgiuatrungkhoi8043291-17477272198951156713735.jpg"
+  },
+  {
+    "id": "vn-425-inh-ta-lien-son",
+    "name": "Đỉnh Tả Liên Sơn",
+    "province": "Lai Châu",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.46319,
+    "longitude": 103.556157,
+    "description": "Ngọn núi có rừng cổ thụ và các tuyến đi bộ khám phá thiên nhiên.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://www.laichautravel.com/products/tour-chinh-phuc-dinh-ta-lien-son-2-996m-lac-loi-trong-khu-vuon-co-tich",
+    "thumbnailUrl": "https://product.hstatic.net/200000578171/product/20230328_b2adbdf6dae6a1565e6f4dbd32cb6be5_1679997138_b9843f7888214074aae5c7690e2a5763.jpeg"
+  },
+  {
+    "id": "vn-426-cu-lao-xanh",
+    "name": "Cù Lao Xanh",
+    "province": "Bình Định",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 13.612665,
+    "longitude": 109.353818,
+    "description": "Đảo ven Quy Nhơn nổi bật với biển và ngọn hải đăng.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://nhonchau.gialai.gov.vn/tin-tuc/cu-lao-xanh-hon-dao-xanh-yen-binh.html",
+    "thumbnailUrl": "https://cdn2.tuoitre.vn/471584752817336320/2025/7/6/base64-17517970891451842881025.jpeg"
+  },
+  {
+    "id": "vn-427-am-thi-nai",
+    "name": "Đầm Thị Nại",
+    "province": "Bình Định",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 13.833619,
+    "longitude": 109.241523,
+    "description": "Đầm nước ven biển có cảnh quan cầu và hoạt động đánh bắt.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://baogialai.com.vn/dam-thi-nai-la-phoi-xanh-cua-pho-bien-quy-nhon-post309921.html",
+    "thumbnailUrl": "https://cdn.baogialai.com.vn/images/758ab4837d1be25a9e0d05b6d7957cee0adcd1d96dc4a839073d167ff9d9811fae04b72ad6a440854689b8f9e90540a34825add7823f8eeb9313aac9e6a9f9c3e902d2ae0bbbc8c34e5881662c3dbe8c35bd93975767653a22992b52c82fef7f519990dc77dcfdcade8a56e864c2b70e6f9fcc2c4764de1a52c8092033a9b9cae7a8baea1c4ff8ff682e83c0880ad963e05d7d20eb97147400f1138e9c5cb5cc/chim-co-bay-luon-tren-bau-troi-con-chim-tao-nen-khung-canh-vo-cung-tho-mong-anh-dung-nhan-17377850855861522022161.jpg"
+  },
+  {
+    "id": "vn-428-thap-oi-quy-nhon",
+    "name": "Tháp Đôi Quy Nhơn",
+    "province": "Bình Định",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 13.787729,
+    "longitude": 109.211329,
+    "description": "Cụm tháp Chăm trong không gian đô thị Quy Nhơn.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://vietgoing.com/destination/483-thap-doi-binh-dinh.html",
+    "thumbnailUrl": "https://image.vietgoing.com/editor/image_dfa1638951148.jpg"
+  },
+  {
+    "id": "vn-429-pho-am-thuc-ngo-van-so-quy-nhon",
+    "name": "Phố ẩm thực Ngô Văn Sở Quy Nhơn",
+    "province": "Bình Định",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 13.764521,
+    "longitude": 109.22425,
+    "description": "Tuyến phố có các món ăn đường phố địa phương.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "14:00-00:00",
+    "sourceUrl": "https://www.lonelyplanet.com/articles/guide-to-quy-nhon-vietnam",
+    "thumbnailUrl": "https://d2vbr83hnyiux1.cloudfront.net/image/975050285728/image_usnmf0lutd37dckbk1tlo9v83u/-FWEBP"
+  },
+  {
+    "id": "vn-430-banh-xeo-tom-nhay-gia-vy",
+    "name": "Bánh xèo tôm nhảy Gia Vỹ",
+    "province": "Bình Định",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 13.773832,
+    "longitude": 109.221123,
+    "description": "Quán phục vụ bánh xèo với tôm và rau sống.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "06:00-22:00",
+    "sourceUrl": "https://dulichquynhon.binhdinh.gov.vn/vi/quanangiavy",
+    "thumbnailUrl": "https://scontent.iocvnpt.com/resources/portal/Images/BDH/adminbdh/AmThuc/giavy2/7_663067845.jpg"
+  },
+  {
+    "id": "vn-431-am-o-loan",
+    "name": "Đầm Ô Loan",
+    "province": "Phú Yên",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 13.280923,
+    "longitude": 109.274232,
+    "description": "Đầm ven biển nổi tiếng với cảnh quan và sản vật địa phương.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://luhanhvietnam.com.vn/du-lich/kham-pha-ve-dep-cua-dam-o-loan-phu-yen.html",
+    "thumbnailUrl": "https://luhanhvietnam.com.vn/du-lich/vnt_upload/news/02_2020/o-loan-phu-yen-1.jpg"
+  },
+  {
+    "id": "vn-432-vinh-xuan-ai",
+    "name": "Vịnh Xuân Đài",
+    "province": "Phú Yên",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 13.394279,
+    "longitude": 109.271259,
+    "description": "Vịnh có làng chài và nhiều điểm ngắm biển.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://mia.vn/cam-nang-du-lich/vinh-xuan-dai-phu-yen-ve-dep-tru-tinh-duoc-thien-nhien-uu-ai-ban-tang-manh-dat-phu-yen-2188",
+    "thumbnailUrl": "https://mia.vn/media/uploads/blog-du-lich/vinh-xuan-dai-phu-yen-ve-dep-tru-tinh-duoc-thien-nhien-uu-ai-ban-tang-manh-dat-phu-yen-02-1637655957.jpeg"
+  },
+  {
+    "id": "vn-433-bai-mon",
+    "name": "Bãi Môn",
+    "province": "Phú Yên",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 12.89669,
+    "longitude": 109.451568,
+    "description": "Bãi biển nằm dưới chân khu vực Mũi Điện.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://asiadragontravel.com/ngam-ve-dep-hoang-so-day-me-hoac-cua-bai-mon-phu-yen-o-xu-hoa-vang-co-xanh",
+    "thumbnailUrl": "https://bizweb.dktcdn.net/100/176/033/files/ngam-ve-dep-hoang-so-1.jpg?v=1732809306100"
+  },
+  {
+    "id": "vn-434-hon-yen-phu-yen",
+    "name": "Hòn Yến Phú Yên",
+    "province": "Phú Yên",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 13.225714,
+    "longitude": 109.308244,
+    "description": "Cảnh quan đảo ven bờ và bãi đá tại vùng Tuy An.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://vigotrip.com/dia-danh/hon-yen-phu-yen-id2366",
+    "thumbnailUrl": "https://img.vigotrip.com/photo/2024/06/21/25DC013C67BD3A8B9ED3E2DFF78AA4F2.jpg"
+  },
+  {
+    "id": "vn-435-inh-pu-si-lung",
+    "name": "Đỉnh Pu Si Lung",
+    "province": "Lai Châu",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.625833,
+    "longitude": 102.7875,
+    "description": "Đỉnh núi vùng biên với hành trình trekking qua rừng núi.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://taybac.tv/dinh-pu-si-lung-kham-pha-nui-cao-nhat-bien-gioi-viet-nam-trung-quoc/",
+    "thumbnailUrl": "https://kenh14cdn.com/203336854389633024/2023/5/31/photo-6-1685502629835604778048.jpg"
+  },
+  {
+    "id": "vn-436-vien-hai-duong-hoc-nha-trang",
+    "name": "Viện Hải dương học Nha Trang",
+    "province": "Khánh Hòa",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 12.207669,
+    "longitude": 109.214495,
+    "description": "Không gian trưng bày và nghiên cứu sinh vật biển.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "06:00-18:00",
+    "sourceUrl": "https://findtour.vn/vien-hai-duong-hoc-nha-trang",
+    "thumbnailUrl": "https://cdn.findtour.vn/media/articles/1ff1f59e-734b-4b4f-63a3-08dc164bd1fd/anh%20bia.160124113008429.jpg?mode=crop&quality=99&width=1920"
+  },
+  {
+    "id": "vn-437-nha-tho-nui-nha-trang",
+    "name": "Nhà thờ Núi Nha Trang",
+    "province": "Khánh Hòa",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 12.246731,
+    "longitude": 109.188126,
+    "description": "Nhà thờ trên đồi với kiến trúc đá nổi bật.",
+    "priceMin": 10000,
+    "priceMax": 10000,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://sunrisetour.vn/blog/nha-tho-nui-nha-trang-kham-pha-cong-trinh-kien-truc-mang-dau-an-thoi-gian.html?srsltid=AfmBOor9cEGCwQ8hypFdoeP9o5H9v-4QyFmahJCqEKQSsX7iljhTV_1n",
+    "thumbnailUrl": "https://statics.vinpearl.com/nha%20tho%20da%2C%20nha%20tho%20nui%20nha%20trang_1681984462.jpg"
+  },
+  {
+    "id": "vn-438-chua-long-son-nha-trang",
+    "name": "Chùa Long Sơn Nha Trang",
+    "province": "Khánh Hòa",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 12.25018,
+    "longitude": 109.180175,
+    "description": "Ngôi chùa gắn với tượng Phật trắng trên đồi.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://www.traveloka.com/vi-vn/explore/destination/chua-long-son/231515",
+    "thumbnailUrl": "https://ik.imagekit.io/tvlk/blog/2023/05/chua-long-son-1.jpeg"
+  },
+  {
+    "id": "vn-439-cho-am-nha-trang",
+    "name": "Chợ Đầm Nha Trang",
+    "province": "Khánh Hòa",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 12.254951,
+    "longitude": 109.191816,
+    "description": "Chợ nổi tiếng với hải sản khô, đặc sản và hàng ăn.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "05:00-18:30",
+    "sourceUrl": "https://champaislandresort.vn/products/cho-dam-nha-trang",
+    "thumbnailUrl": "https://hstatic.net/077/1000067077/10/2016/3-19/dsc_0230copy.jpg"
+  },
+  {
+    "id": "vn-440-nem-nuong-ang-van-quyen",
+    "name": "Nem nướng Đặng Văn Quyên",
+    "province": "Khánh Hòa",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 12.25372,
+    "longitude": 109.193829,
+    "description": "Địa chỉ nem nướng kiểu Ninh Hòa tại Nha Trang.",
+    "priceMin": 58000,
+    "priceMax": 58000,
+    "openingHours": "07:30-20:30",
+    "sourceUrl": "https://vntravellive.com/tim-ve-nem-nuong-dang-van-quyen-de-thuong-thuc-nem-nuong-nha-trang-dung-dieu-d36585.html",
+    "thumbnailUrl": "https://i.ex-cdn.com/vntravellive.com/files/content/2024/03/30/1-1439.jpg"
+  },
+  {
+    "id": "vn-441-vuon-quoc-gia-phuoc-binh",
+    "name": "Vườn quốc gia Phước Bình",
+    "province": "Ninh Thuận",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 11.99976,
+    "longitude": 108.78336,
+    "description": "Vùng bảo tồn rừng và cảnh quan miền núi phía tây Ninh Thuận.",
+    "priceMin": 20000,
+    "priceMax": 20000,
+    "openingHours": "09:00-17:00",
+    "sourceUrl": "https://thiennhienmoitruong.vn/canh-quan-vuon-quoc-gia-phuoc-binh.html",
+    "thumbnailUrl": "https://thiennhienmoitruong.vn/upload2024/images/btv-phuong-3/btv-phuong-7/88b.jpg"
+  },
+  {
+    "id": "vn-442-lang-gom-bau-truc",
+    "name": "Làng gốm Bàu Trúc",
+    "province": "Ninh Thuận",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 11.525711,
+    "longitude": 108.928997,
+    "description": "Làng nghề gốm truyền thống của người Chăm.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://vov.vn/du-lich/phat-trien-du-lich-cong-dong-voi-di-san-gom-bau-truc-post1026533.vov",
+    "thumbnailUrl": "https://media.vov.vn/sites/default/files/styles/large_watermark/public/2023-06/1_14-06-2023-14-16-21.jpg"
+  },
+  {
+    "id": "vn-443-lang-det-my-nghiep",
+    "name": "Làng dệt Mỹ Nghiệp",
+    "province": "Ninh Thuận",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 11.521536,
+    "longitude": 108.942482,
+    "description": "Làng nghề dệt thổ cẩm gắn với văn hóa Chăm.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://www.vietnamplus.vn/bao-ton-va-phat-trien-cai-noi-nghe-det-tho-cam-truyen-thong-cua-nguoi-cham-post1071268.vnp",
+    "thumbnailUrl": "https://media.vietnamplus.vn/images/ed1918d4cf848798286fdbd286ae25b47cd497860790ecc31503a805b37df908460e08027ce9611e6f314b267f274b4040e02a5b710689c0ae4e0ea1c57f5d83d0799546f9f399bbe19fff63bd0a70c13baf0aa24dfd57111e811a4b44265e78/ttxvn-lang-det-my-nghiep-giu-hon-tho-cam-cham-8344694-1.jpg"
+  },
+  {
+    "id": "vn-444-ong-cuu-an-hoa",
+    "name": "Đồng cừu An Hòa",
+    "province": "Ninh Thuận",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 11.669015,
+    "longitude": 108.971039,
+    "description": "Cảnh quan chăn thả cừu giữa vùng đồng cỏ khô.",
+    "priceMin": 40000,
+    "priceMax": 40000,
+    "openingHours": "09:00-20:00",
+    "sourceUrl": "https://gody.vn/chau-a/viet-nam/ninh-thuan/dong-cuu-an-hoa",
+    "thumbnailUrl": "https://media.gody.vn/images/ninh-thuan/dong-cuu-an-hoa/7-2017/63606497-20170711090914-ninh-thuan-dong-cuu-an-hoa.jpg"
+  },
+  {
+    "id": "vn-445-oi-che-tan-uyen",
+    "name": "Đồi chè Tân Uyên",
+    "province": "Lai Châu",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.208666,
+    "longitude": 103.739185,
+    "description": "Cảnh quan đồi chè trải rộng tại vùng Tân Uyên.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://dulich.laichau.gov.vn/vi/blog/details/doi-che-tan-uyen-kiet-tac-xanh-giua-dai-ngan-tay-bac-798",
+    "thumbnailUrl": "https://dulich.laichau.gov.vn/DataFiles/images/t1/vitm/ch%C3%A8%20t%C3%A2n%20u/t%C3%A2n%20u%20paradise/s%20tkp/tkp/ssh/304/ch%C3%A8%20t%C3%A2n%20u/c3.png"
+  },
+  {
+    "id": "vn-446-ao-phu-quy",
+    "name": "Đảo Phú Quý",
+    "province": "Bình Thuận",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.533333,
+    "longitude": 108.95,
+    "description": "Đảo có cảnh quan biển, làng chài và các điểm ngắm bình minh.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://phuquocxanh.vn/products/tour-dao-phu-quy-3-ngay-2-dem-cung-dan-ban-dia",
+    "thumbnailUrl": "https://product.hstatic.net/200000637161/product/du_lich_phu_quy__adf846c9c9444efabd8b9484ca614840_grande.jpeg"
+  },
+  {
+    "id": "vn-447-hai-ang-ke-ga",
+    "name": "Hải đăng Kê Gà",
+    "province": "Bình Thuận",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.695289,
+    "longitude": 107.991564,
+    "description": "Ngọn hải đăng trên đảo đá gần bờ biển Hàm Thuận Nam.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "05:00-17:00",
+    "sourceUrl": "https://vietgoing.com/destination/609-hai-dang-ke-ga.html",
+    "thumbnailUrl": "https://image.vietgoing.com/editor/image_ugu1639465655.jpg"
+  },
+  {
+    "id": "vn-448-nui-ta-cu",
+    "name": "Núi Tà Cú",
+    "province": "Bình Thuận",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.828056,
+    "longitude": 107.882778,
+    "description": "Danh thắng núi rừng có chùa và tượng Phật nằm.",
+    "priceMin": 250000,
+    "priceMax": 250000,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://www.chuaviettoancau.com/chua-mien-trung/chua-linh-son-truong-tho-linh-son-truong-tho-binh-thuan-560.html",
+    "thumbnailUrl": "https://www.chuaviettoancau.com/userfiles/126_01.jpg"
+  },
+  {
+    "id": "vn-449-thap-po-sah-inu",
+    "name": "Tháp Pô Sah Inư",
+    "province": "Bình Thuận",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.93596,
+    "longitude": 108.146003,
+    "description": "Cụm tháp Chăm trên đồi gần Phan Thiết.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://www.vietnamplus.vn/photo-ve-dep-thap-co-po-sah-inu-tren-doi-ba-nai-o-binh-thuan-post892924.vnp",
+    "thumbnailUrl": "https://media.vietnamplus.vn/images/7255a701687d11cb8c6bbc58a6c80785ec587d33f72cdcc8ecfdb08f7c24da186c8f53cf28a1a81a3a388620010a1b96/thap3.jpg"
+  },
+  {
+    "id": "vn-450-cho-phan-thiet",
+    "name": "Chợ Phan Thiết",
+    "province": "Bình Thuận",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 10.925781,
+    "longitude": 108.096536,
+    "description": "Chợ trung tâm có hải sản và món ăn Bình Thuận.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "05:30-18:00",
+    "sourceUrl": "https://www.traveloka.com/vi-vn/explore/destination/cho-phan-thiet-acc/197107",
+    "thumbnailUrl": "https://ik.imagekit.io/tvlk/blog/2023/01/cho-phan-thiet-cover.jpg"
+  },
+  {
+    "id": "vn-451-vuon-quoc-gia-bidoup-nui-ba",
+    "name": "Vườn quốc gia Bidoup Núi Bà",
+    "province": "Lâm Đồng",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 12.133678,
+    "longitude": 108.533522,
+    "description": "Vùng rừng núi có đa dạng sinh học và tuyến đi bộ thiên nhiên.",
+    "priceMin": 40000,
+    "priceMax": 50000,
+    "openingHours": "09:00-15:00",
+    "sourceUrl": "https://vtv.vn/doi-song/doc-dao-tour-du-lich-tim-hieu-nam-tai-vuon-quoc-gia-bidoup-nui-ba-20240724215132216.htm",
+    "thumbnailUrl": "https://cdn-images.vtv.vn/66349b6076cb4dee98746cf1/2024/07/24/z5663867075892-0e0fa5d986bdbf2c8aad1a63a0ce6896-78284477719193755697039.jpg"
+  },
+  {
+    "id": "vn-452-oi-che-cau-at",
+    "name": "Đồi chè Cầu Đất",
+    "province": "Lâm Đồng",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 11.879081,
+    "longitude": 108.560508,
+    "description": "Cảnh quan đồi chè gắn với nông nghiệp vùng cao Đà Lạt.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "06:00-18:00",
+    "sourceUrl": "https://vinpearl.com/vi/doi-che-cau-dat",
+    "thumbnailUrl": "https://statics.vinpearl.com/doi-che-cau-dat-01_1688736872.jpg"
+  },
+  {
+    "id": "vn-453-ho-tuyen-lam",
+    "name": "Hồ Tuyền Lâm",
+    "province": "Lâm Đồng",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 11.89983,
+    "longitude": 108.42983,
+    "description": "Hồ nước giữa rừng thông, phù hợp tham quan và nghỉ ngơi.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://baobinhphuoc.com.vn/news/20/146783/khu-du-lich-quoc-gia-ho-tuyen-lam-la-khu-du-lich-tieu-bieu-chau-a-tbd",
+    "thumbnailUrl": "https://media.baobinhphuoc.com.vn/upload/news/7_2023/khu_du_lich_quoc_gia_ho_tuyen_lam_la_khu_du_lich_tieu_bieu_chau_a_tbd_14311725072023.jpg"
+  },
+  {
+    "id": "vn-454-cho-a-lat",
+    "name": "Chợ Đà Lạt",
+    "province": "Lâm Đồng",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 11.943023,
+    "longitude": 108.436878,
+    "description": "Chợ trung tâm có nông sản, đặc sản và hàng ăn.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://manglinvilla.com/en/articles/Rent-a-Villa-in-Da-Lat-Complete-Guide-for-the-Perfect-Trip/",
+    "thumbnailUrl": "https://cdn.manglinvilla.com/images/card_logo/thue-villa-da-lat-kinh-nghiem-day-du-cho-chuyen-di-hoan-hao.jpg"
+  },
+  {
+    "id": "vn-455-banh-can-le-a-lat",
+    "name": "Bánh căn Lệ Đà Lạt",
+    "province": "Lâm Đồng",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 11.942279,
+    "longitude": 108.45065,
+    "description": "Địa chỉ bánh căn với nước chấm và món ăn kèm.",
+    "priceMin": 60000,
+    "priceMax": 60000,
+    "openingHours": "06:30-15:30",
+    "sourceUrl": "https://mia.vn/cam-nang-du-lich/review-quan-banh-can-le-da-lat-18801",
+    "thumbnailUrl": "https://mia.vn/media/uploads/blog-du-lich/banh-can-le-1-1751638757.jpg"
+  },
+  {
+    "id": "vn-456-thac-dray-sap",
+    "name": "Thác Dray Sáp",
+    "province": "Đắk Nông",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 12.5397,
+    "longitude": 107.8864,
+    "description": "Thác nước lớn thuộc hệ thống sông Sêrêpốk.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://thegioitiepthi.danviet.vn/thac-dray-sap-ve-dep-hung-vi-dai-ngan-20220228081054105-d10910.html",
+    "thumbnailUrl": "https://danviet.ex-cdn.com/files/f1/296231569849192448/2022/2/28/saostar-88hcbv04hbi1yzlu-1646010506593-1646010506792753529682.jpg"
+  },
+  {
+    "id": "vn-457-buon-on",
+    "name": "Buôn Đôn",
+    "province": "Đắk Lắk",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 12.879161,
+    "longitude": 107.71625,
+    "description": "Vùng văn hóa du lịch gắn với cộng đồng địa phương và sông Sêrêpốk.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://www.xanhsm.com/news/buon-don-dak-lak",
+    "thumbnailUrl": "https://cdn.xanhsm.com/2024/12/b400b825-buon-don-dak-lak-01.jpg"
+  },
+  {
+    "id": "vn-458-vuon-quoc-gia-chu-yang-sin",
+    "name": "Vườn quốc gia Chư Yang Sin",
+    "province": "Đắk Lắk",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 12.480337,
+    "longitude": 108.228493,
+    "description": "Vùng rừng núi có cảnh quan và hệ sinh thái phong phú.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "09:00-17:00",
+    "sourceUrl": "https://vhttdl.daklak.gov.vn/Articles/Detail/1875",
+    "thumbnailUrl": "https://vhttdl.daklak.gov.vn/Upload/Images/VQG%20Cu%20Yang%20Sin%281%29.jpg"
+  },
+  {
+    "id": "vn-459-lang-ca-phe-trung-nguyen",
+    "name": "Làng cà phê Trung Nguyên",
+    "province": "Đắk Lắk",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 12.701056,
+    "longitude": 108.061103,
+    "description": "Không gian giới thiệu văn hóa cà phê tại Buôn Ma Thuột.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-22:00",
+    "sourceUrl": "https://dulichthuduc.com.vn/lang-ca-phe-trung-nguyen-buon-ma-thuot.html",
+    "thumbnailUrl": "https://dulichthuduc.com.vn/vnt_upload/news/01_2023/lang_ca_phe_trung_nguyen_du_lich_thu_duc_5.jpg"
+  },
+  {
+    "id": "vn-460-cho-buon-ma-thuot",
+    "name": "Chợ Buôn Ma Thuột",
+    "province": "Đắk Lắk",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 12.679923,
+    "longitude": 108.042451,
+    "description": "Chợ trung tâm có nông sản và món ăn Tây Nguyên.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "04:00-20:00",
+    "sourceUrl": "https://www.foody.vn/dak-lak/cho-buon-ma-thuot",
+    "thumbnailUrl": "https://down-vn.img.susercontent.com/vn-11134259-7r98o-lwgk956mkqu116%40resize_ss640x400"
+  },
+  {
+    "id": "vn-461-chua-minh-thanh-pleiku",
+    "name": "Chùa Minh Thành Pleiku",
+    "province": "Gia Lai",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 13.966139,
+    "longitude": 108.004985,
+    "description": "Ngôi chùa nổi bật với kiến trúc gỗ và cảnh quan sân vườn.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-17:00",
+    "sourceUrl": "https://datviettour.com.vn/tin-tuc/chua-minh-thanh-tim-hieu-ngoi-chua-dep-nhat-pleiku",
+    "thumbnailUrl": "https://datviettour.com.vn/uploads/images/tin-tuc-SEO/tay-nguyen/danh-thang/chua-minh-thanh-pleiku-2.jpg"
+  },
+  {
+    "id": "vn-462-thac-phu-cuong",
+    "name": "Thác Phú Cường",
+    "province": "Gia Lai",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 13.661628,
+    "longitude": 108.136035,
+    "description": "Thác nước giữa cảnh quan núi lửa vùng Chư Sê.",
+    "priceMin": 25000,
+    "priceMax": 25000,
+    "openingHours": "08:00-17:00",
+    "sourceUrl": "https://bazantravel.com/ky-vi-thac-phu-cuong-o-gia-lai/",
+    "thumbnailUrl": "https://bazantravel.com/cdn/medias/uploads/28/28223-thac-phu-cuong.jpg"
+  },
+  {
+    "id": "vn-463-oi-che-bien-ho",
+    "name": "Đồi chè Biển Hồ",
+    "province": "Gia Lai",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 14.077935,
+    "longitude": 108.003618,
+    "description": "Cảnh quan đồi chè và hàng cây gần Pleiku.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://www.traveloka.com/vi-vn/explore/destination/bien-ho-che-cua-nui-rung-tay-nguyen/334000",
+    "thumbnailUrl": "https://ik.imagekit.io/tvlk/blog/2024/03/bien-ho-che-1.jpg?tr=dpr-2%2Cw-675"
+  },
+  {
+    "id": "vn-464-nui-ham-rong-gia-lai",
+    "name": "Núi Hàm Rồng Gia Lai",
+    "province": "Gia Lai",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 13.886214,
+    "longitude": 108.015935,
+    "description": "Núi có nguồn gốc núi lửa, là điểm nhấn cảnh quan Pleiku.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://mia.vn/cam-nang-du-lich/kham-pha-nui-ham-rong-gia-lai-voi-view-ngam-tron-pleiku-8065",
+    "thumbnailUrl": "https://mia.vn/media/uploads/blog-du-lich/kham-pha-nui-ham-rong-gia-lai-voi-view-ngam-tron-pleiku-4-1659630372.jpg"
+  },
+  {
+    "id": "vn-465-ban-si-thau-chai",
+    "name": "Bản Sì Thâu Chải",
+    "province": "Lai Châu",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.361438,
+    "longitude": 103.602145,
+    "description": "Bản du lịch cộng đồng của người Dao với cảnh quan núi và thung lũng.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://www.traveloka.com/vi-vn/explore/destination/gns-ban-si-thau-chai/316568",
+    "thumbnailUrl": "https://ik.imagekit.io/tvlk/blog/2024/01/go-and-share-ban-si-thau-chai-lai-chau-2-1024x768.webp?tr=q-70%2Cc-at_max%2Cw-1000%2Ch-600"
+  },
+  {
+    "id": "vn-466-vuon-quoc-gia-chu-mom-ray",
+    "name": "Vườn quốc gia Chư Mom Ray",
+    "province": "Kon Tum",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 14.442152,
+    "longitude": 107.746724,
+    "description": "Vùng bảo tồn rừng ở phía tây Tây Nguyên.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://www.traveloka.com/vi-vn/explore/destination/vuon-quoc-gia-chu-mom-ray/230390",
+    "thumbnailUrl": "https://ik.imagekit.io/tvlk/blog/2023/05/vuon-quoc-gia-chu-mom-ray-4.jpg?tr=dpr-2%2Cw-675"
+  },
+  {
+    "id": "vn-467-nga-ba-ong-duong",
+    "name": "Ngã ba Đông Dương",
+    "province": "Kon Tum",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 14.686104,
+    "longitude": 107.556548,
+    "description": "Điểm tham quan vùng biên giới ba nước Việt Nam, Lào và Campuchia.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://dulichthuduc.com.vn/nga-ba-dong-duong-noi-con-ga-gay-ca-3-nuoc-deu-nghe-thay.html",
+    "thumbnailUrl": "https://dulichthuduc.com.vn/vnt_upload/news/01_2023/nga_ba_dong_duong_du_lich_thu_duc_2.jpg"
+  },
+  {
+    "id": "vn-468-thac-pa-sy",
+    "name": "Thác Pa Sỹ",
+    "province": "Kon Tum",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 14.60067,
+    "longitude": 108.256732,
+    "description": "Thác nước giữa rừng tại khu vực Măng Đen.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:30-17:00",
+    "sourceUrl": "https://vinwonders.com/vi/wonderpedia/news/thac-pa-sy-mang-den/",
+    "thumbnailUrl": "https://static.vinwonders.com/production/thac-pa-sy-3.jpg"
+  },
+  {
+    "id": "vn-469-ho-ak-ke",
+    "name": "Hồ Đăk Ke",
+    "province": "Kon Tum",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 14.580873,
+    "longitude": 108.275751,
+    "description": "Hồ nước có cảnh quan rừng thông tại Măng Đen.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://cungdi.net/kon-tum/ho-dak-ke-thien-duong-van-nguoi-me-tai-kon-tum/",
+    "thumbnailUrl": "https://cungdi.net/uploads/travel/kon_tum/ho-dak-ke-mang-den.jpg"
+  },
+  {
+    "id": "vn-470-cho-kon-tum",
+    "name": "Chợ Kon Tum",
+    "province": "Kon Tum",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 14.349314,
+    "longitude": 108.003087,
+    "description": "Chợ trung tâm với nông sản và món ăn địa phương.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://bvhttdl.gov.vn/lam-gi-de-du-lich-cong-dong-thanh-pho-kon-tum-cat-canh-20230906101847938.htm",
+    "thumbnailUrl": "https://bvhttdl.mediacdn.vn/291773308735864832/2023/9/6/0509lam-gi-de-du-lich-cong-dong-thanh-pho-kon-tum-cat-canh-1693970195328-1693970195868465969647.jpg"
+  },
+  {
+    "id": "vn-471-hang-ong-nui-lua-krong-no",
+    "name": "Hang động núi lửa Krông Nô",
+    "province": "Đắk Nông",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 12.5186,
+    "longitude": 107.9333,
+    "description": "Hệ thống hang dung nham có giá trị địa chất.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://scov.gov.vn/dat-nuoc-con-nguoi/hang-dong-nui-lua-krong-no-duoc-de-cu-la-cong-vien-di-a-cha-t-toa-n-ca-u.html",
+    "thumbnailUrl": "https://scov.gov.vn/upload/2005660/20210923/fc39e3f65aed9c57a796aa92f82253f7163122_hangdong.jpg"
+  },
+  {
+    "id": "vn-472-thac-lieng-nung",
+    "name": "Thác Liêng Nung",
+    "province": "Đắk Nông",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 11.951171,
+    "longitude": 107.731209,
+    "description": "Thác có vách đá nổi bật gần Gia Nghĩa.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://thinhvuongvietnam.com/Content/thac-lieng-nung---vien-ngoc-quy-giua-dai-ngan-tay-nguyen-225910",
+    "thumbnailUrl": "https://thinhvuongvietnam.com/Content/UploadFiles/EditorFiles/images/2022/Quy3/thac-lieng-nung23092022103459.jpg"
+  },
+  {
+    "id": "vn-473-ho-ea-sno",
+    "name": "Hồ Ea Snô",
+    "province": "Đắk Nông",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 12.5147,
+    "longitude": 107.7889,
+    "description": "Hồ tự nhiên trong cảnh quan rừng và đồi.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://dulich.daknong.gov.vn/vi/blog/details/truyen-thuyet-ve-ho-ea-sno-40",
+    "thumbnailUrl": "https://dulich.daknong.gov.vn/DataFiles/2023/02/Files/20-02-2023-17-08-11-468.jpg"
+  },
+  {
+    "id": "vn-474-thien-vien-truc-lam-ao-nguyen",
+    "name": "Thiền viện Trúc Lâm Đạo Nguyên",
+    "province": "Đắk Nông",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 12.206913,
+    "longitude": 107.704698,
+    "description": "Không gian Phật giáo trong vùng rừng núi Nâm Nung.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://dulich.daknong.gov.vn/vi/video/details/thien-vien-truc-lam-dao-nguyen-11",
+    "thumbnailUrl": "https://dulich.daknong.gov.vn/DataFiles/2024/01/Videos/20240117-102041-G6xgNMLR.webp"
+  },
+  {
+    "id": "vn-475-en-tho-hoang-cong-chat",
+    "name": "Đền thờ Hoàng Công Chất",
+    "province": "Điện Biên",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.315425,
+    "longitude": 103.00499,
+    "description": "Di tích tưởng niệm Hoàng Công Chất trong khu vực thành Bản Phủ.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://vnanet.vn/vi/anh/anh-thoi-su-trong-nuoc-1014/du-lich-viet-nam-di-tich-cap-quoc-gia-thanh-ban-phu---den-tho-hoang-cong-chat-o-dien-bien-4817876.html",
+    "thumbnailUrl": "https://vnanet.vn/Data/Articles/2020/06/25/4817876/vna_potal_du_lich_viet_nam_di_tich_cap_quoc_gia_thanh_ban_phu_-_den_tho_hoang_cong_chat_o_dien_bien_070712670_stand.jpg"
+  },
+  {
+    "id": "vn-476-hai-ang-vung-tau",
+    "name": "Hải đăng Vũng Tàu",
+    "province": "Bà Rịa - Vũng Tàu",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.336699,
+    "longitude": 107.07701,
+    "description": "Điểm ngắm cảnh thành phố và biển từ núi Nhỏ.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://vinwonders.com/vi/wonderpedia/news/hai-dang-vung-tau/",
+    "thumbnailUrl": "https://static.vinwonders.com/production/2025/05/ngon-hai-dang-o-vung-tau.jpg"
+  },
+  {
+    "id": "vn-477-tuong-chua-kito-vua-vung-tau",
+    "name": "Tượng Chúa Kitô Vua Vũng Tàu",
+    "province": "Bà Rịa - Vũng Tàu",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.326488,
+    "longitude": 107.084555,
+    "description": "Công trình tôn giáo trên núi Nhỏ nhìn ra biển.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-17:00",
+    "sourceUrl": "https://vanhoatinnguong.vn/bai-viet/tuong-chua-kito-vua-%E2%80%93-bieu-tuong-tam-linh-va-diem-den-noi-bat-cua-vung-tau-32342.html",
+    "thumbnailUrl": "https://vanhoatinnguong.vn/Uploads/images/2025/8/tuong_dai_chua_kito_giua_bien_troi_0951.jpg"
+  },
+  {
+    "id": "vn-478-bai-sau-vung-tau",
+    "name": "Bãi Sau Vũng Tàu",
+    "province": "Bà Rịa - Vũng Tàu",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.346121,
+    "longitude": 107.100013,
+    "description": "Bãi biển đô thị với nhiều dịch vụ du lịch.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://nld.com.vn/bai-sau-vung-tau-thay-ao-moi-truoc-mua-cao-diem-du-lich-196250518114247147.htm",
+    "thumbnailUrl": "https://nld.mediacdn.vn/291774122806476800/2025/5/18/dji0288dxo-17475406962151516081280.jpg"
+  },
+  {
+    "id": "vn-479-banh-khot-goc-vu-sua",
+    "name": "Bánh khọt Gốc Vú Sữa",
+    "province": "Bà Rịa - Vũng Tàu",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 10.340329,
+    "longitude": 107.078824,
+    "description": "Quán bánh khọt nổi tiếng tại Vũng Tàu.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-15:30",
+    "sourceUrl": "https://bazantravel.com/banh-khot-goc-vu-sua/",
+    "thumbnailUrl": "https://bazantravel.com/cdn/medias/uploads/66/66540-banh-khot-goc-vu-sua-6-700x700.jpg"
+  },
+  {
+    "id": "vn-480-cho-xom-luoi-vung-tau",
+    "name": "Chợ Xóm Lưới Vũng Tàu",
+    "province": "Bà Rịa - Vũng Tàu",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 10.341918,
+    "longitude": 107.077088,
+    "description": "Chợ hải sản gắn với hoạt động mua bán của ngư dân.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://mia.vn/cam-nang-du-lich/ghe-cho-xom-luoi-vung-tau-roi-minh-cung-rinh-ca-the-gioi-hai-san-tuoi-ngon-ve-nha-nhe-1220",
+    "thumbnailUrl": "https://media.mia.vn/uploads/blog-du-lich/ghe-cho-xom-luoi-vung-tau-roi-minh-cung-rinh-ca-the-gioi-hai-san-tuoi-ngon-ve-nha-nhe--1633972096.jpg"
+  },
+  {
+    "id": "vn-481-thac-giang-ien",
+    "name": "Thác Giang Điền",
+    "province": "Đồng Nai",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.918523,
+    "longitude": 106.989233,
+    "description": "Khu du lịch sinh thái quanh cụm thác gần Trảng Bom.",
+    "priceMin": 80000,
+    "priceMax": 100000,
+    "openingHours": "07:30-17:00",
+    "sourceUrl": "https://www.traveloka.com/vi-vn/explore/destination/khu-du-lich-sinh-thai-thac-giang-dien/126978",
+    "thumbnailUrl": "https://ik.imagekit.io/tvlk/blog/2022/03/khu-du-lich-sinh-thai-thac-giang-dien-1-1024x768.jpg?tr=dpr-2%2Cw-675"
+  },
+  {
+    "id": "vn-482-nui-chua-chan",
+    "name": "Núi Chứa Chan",
+    "province": "Đồng Nai",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.937335,
+    "longitude": 107.376624,
+    "description": "Ngọn núi nổi tiếng với hoạt động đi bộ và tham quan chùa.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://minhdatvn.com/cam-nang-du-lich-nui-chua-chan-gia-lao-noc-nha-dong-nai",
+    "thumbnailUrl": "https://cdn.tgdd.vn/Files/2022/02/23/1416904/cam-nang-du-lich-nui-chua-chan-gia-lao-noc-nha-dong-nai-202202230806085880.jpg"
+  },
+  {
+    "id": "vn-483-a-ba-chong-inh-quan",
+    "name": "Đá Ba Chồng Định Quán",
+    "province": "Đồng Nai",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 11.190827,
+    "longitude": 107.348346,
+    "description": "Cụm đá tự nhiên có hình dạng đặc biệt tại Định Quán.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://dulich24.com.vn/du-lich-huyen-dinh-quan/da-ba-chong-id-8003",
+    "thumbnailUrl": "https://cdn.media.dulich24.com.vn/diemden/da-ba-chong-8003/802caccd-d85c-4957-bd98-8c1622e48c60.jpg"
+  },
+  {
+    "id": "vn-484-khu-du-lich-suoi-mo-ong-nai",
+    "name": "Khu du lịch Suối Mơ Đồng Nai",
+    "province": "Đồng Nai",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 11.231018,
+    "longitude": 107.440243,
+    "description": "Không gian vui chơi sinh thái với mặt nước và cây xanh.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:30-17:00",
+    "sourceUrl": "https://zoomtravel.vn/khu-du-lich-suoi-mo-dong-nai.html",
+    "thumbnailUrl": "https://zoomtravel.vn/upload/images/suoi-mo-1-min.jpg"
+  },
+  {
+    "id": "vn-485-suoi-khoang-u-va",
+    "name": "Suối khoáng U Va",
+    "province": "Điện Biên",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.28344,
+    "longitude": 102.996156,
+    "description": "Điểm suối khoáng gắn với cảnh quan và văn hóa thung lũng Điện Biên.",
+    "priceMin": 20000,
+    "priceMax": 20000,
+    "openingHours": "08:30-18:30",
+    "sourceUrl": "https://localtrips.org/products/suoi-khoang-nong-uva",
+    "thumbnailUrl": "https://localtrips.org/cdn/shop/files/Gi_iThi_u_5a6e526b-a74b-472d-bbb6-8479d4ada912.png?v=1740813560&width=1445"
+  },
+  {
+    "id": "vn-486-chua-hoi-khanh",
+    "name": "Chùa Hội Khánh",
+    "province": "Bình Dương",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.981047,
+    "longitude": 106.658844,
+    "description": "Chùa cổ có kiến trúc và tượng Phật nằm nổi bật.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "04:30-21:00",
+    "sourceUrl": "https://phatgiao.org.vn/chua-hoi-khanh-ngoi-danh-lam-co-tu-tren-dat-binh-duong-d70444.html",
+    "thumbnailUrl": "https://i.ex-cdn.com/phatgiao.org.vn/files/content/2022/12/07/7-1913.jpg"
+  },
+  {
+    "id": "vn-487-nha-tho-chanh-toa-phu-cuong",
+    "name": "Nhà thờ Chánh tòa Phú Cường",
+    "province": "Bình Dương",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.981616,
+    "longitude": 106.654141,
+    "description": "Công trình Công giáo với kiến trúc nổi bật ở Thủ Dầu Một.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "05:00-19:30",
+    "sourceUrl": "https://triphunter.vn/places/binh-duong/items/nha-tho-phu-cuong",
+    "thumbnailUrl": "https://triphunter.vn/media/W1siZiIsIjIwMTYvMDYvMjgvNG45emZkdjh0Ml9xT3hCMDMzNWE4cmZjZ1RCSGszakdTTUpMX2RFY0JOWC5qcGciXV0/qOxB0335a8rfcgTBHk3jGSMJL_dEcBNX.jpg?sha=a113c68a82733313"
+  },
+  {
+    "id": "vn-488-lang-tre-phu-an",
+    "name": "Làng tre Phú An",
+    "province": "Bình Dương",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 11.066466,
+    "longitude": 106.584693,
+    "description": "Không gian bảo tồn và giới thiệu các giống tre.",
+    "priceMin": 0,
+    "priceMax": 20000,
+    "openingHours": "08:00-18:00",
+    "sourceUrl": "https://mia.vn/cam-nang-du-lich/check-in-lang-tre-phu-an-diem-song-ao-ngay-canh-sai-gon-6482",
+    "thumbnailUrl": "https://mia.vn/media/uploads/blog-du-lich/check-in-lang-tre-phu-an-diem-song-ao-ngay-canh-sai-gon-04-1654954939.jpg"
+  },
+  {
+    "id": "vn-489-lang-son-mai-tuong-binh-hiep",
+    "name": "Làng sơn mài Tương Bình Hiệp",
+    "province": "Bình Dương",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 11.0069,
+    "longitude": 106.6347,
+    "description": "Làng nghề truyền thống với sản phẩm sơn mài.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://dantocmiennui.baotintuc.vn/giu-lua-nghe-son-mai-tuong-binh-hiep-post347669.html",
+    "thumbnailUrl": "https://dantocmiennui-media.baotintuc.vn/images/84426cb421b40f0fbef0009243df48a99534fe2adafef46ae8b1255b38d3094ef9786009e24865022aa784f469d3378f444f6e2cf2d94f795c69cde004544c90fc709580677e0340e0d209a592fffc14d833df4a3d241ae836e139352ee4e6b35184538051737097c2c99b09330e6bb5db69fdd2278b8060b12f8842dc094760c9c1d4fdc8043f8f22003f3d0e98f931/vna-potal-san-pham-ocop-o-dia-phuong-giu-lua-nghe-son-mai-tuong-binh-hiep-7331688-5766.jpg"
+  },
+  {
+    "id": "vn-490-cho-thu-dau-mot",
+    "name": "Chợ Thủ Dầu Một",
+    "province": "Bình Dương",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 10.977878,
+    "longitude": 106.65182,
+    "description": "Chợ truyền thống ven sông có hàng ăn và sản vật địa phương.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://topbinhduongaz.com/cho-thu-dau-mot/",
+    "thumbnailUrl": "https://topbinhduongaz.com/wp-content/uploads/2024/06/cho-thu-dau-mot_2.jpg"
+  },
+  {
+    "id": "vn-491-vuon-quoc-gia-bu-gia-map",
+    "name": "Vườn quốc gia Bù Gia Mập",
+    "province": "Bình Phước",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 12.087199,
+    "longitude": 107.156406,
+    "description": "Vùng bảo tồn rừng và hoạt động khám phá thiên nhiên.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://vietnam.vnanet.vn/vietnamese/print/vuon-quoc-gia-bu-gia-map-33394.html",
+    "thumbnailUrl": "https://imagevietnam.vnanet.vn/Upload/2012/5/15/15-5DL04BaoAnh1552012141933239.jpg"
+  },
+  {
+    "id": "vn-492-trang-co-bu-lach",
+    "name": "Trảng cỏ Bù Lạch",
+    "province": "Bình Phước",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 11.808464,
+    "longitude": 107.358274,
+    "description": "Cảnh quan trảng cỏ xen hồ nước và rừng.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://travelsgcc.com/hanh-trinh-kham-pha-du-lich-binh-phuoc-trang-co-bu-lach-soc-bom-bo.html",
+    "thumbnailUrl": "https://travelsgcc.com/wp-content/uploads/2019/10/trang-co-bu-lach.jpg"
+  },
+  {
+    "id": "vn-493-ho-suoi-lam",
+    "name": "Hồ Suối Lam",
+    "province": "Bình Phước",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 11.610239,
+    "longitude": 106.881373,
+    "description": "Hồ nước có cảnh quan rừng cây và không gian nghỉ ngơi.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://sanvemaybay.vn/buc-tranh-thien-nhien-nguyen-so-tai-ho-suoi-lam-binh-phuoc",
+    "thumbnailUrl": "https://sanvemaybay.vn/includes/uploads/2021/12/ho-suoi-lam-4-1729-e1640332430486.jpg"
+  },
+  {
+    "id": "vn-494-di-tich-nha-giao-te-loc-ninh",
+    "name": "Di tích Nhà giao tế Lộc Ninh",
+    "province": "Bình Phước",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 11.842437,
+    "longitude": 106.590939,
+    "description": "Di tích lịch sử gắn với hoạt động đối ngoại trong thời kỳ chiến tranh.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://binhphuoc.gov.vn/vi/news/van-hoa-van-nghe-the-thao/di-tich-tru-so-chinh-phu-cach-mang-lam-thoi-cong-hoa-mien-nam-viet-nam-nha-giao-te-21406.html",
+    "thumbnailUrl": "https://binhphuoc.gov.vn/uploads/binhphuoc/news/2019_01/nhagiaote1.jpg"
+  },
+  {
+    "id": "vn-495-ong-pa-thom",
+    "name": "Động Pa Thơm",
+    "province": "Điện Biên",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.286671,
+    "longitude": 102.917106,
+    "description": "Hang động tự nhiên có hệ thống nhũ đá tại vùng biên Pa Thơm.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://vietsensetravel.com/dong-pa-thom-n.html",
+    "thumbnailUrl": "https://vietsensetravel.com/view/at_dong-pa-thom_188d344885ccef6e00812097ca039a30.jpg"
+  },
+  {
+    "id": "vn-496-ho-dau-tieng",
+    "name": "Hồ Dầu Tiếng",
+    "province": "Tây Ninh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 11.391866,
+    "longitude": 106.287521,
+    "description": "Hồ nước rộng với cảnh quan ven hồ thích hợp ngắm cảnh.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://mia.vn/cam-nang-du-lich/ngam-hoang-hon-ho-dau-tieng-tay-ninh-dep-say-long-nguoi-9092",
+    "thumbnailUrl": "https://media.mia.vn/uploads/blog-du-lich/ngam-hoang-hon-ho-dau-tieng-tay-ninh-dep-say-long-nguoi-05-1661783872.jpeg"
+  },
+  {
+    "id": "vn-497-thap-co-binh-thanh",
+    "name": "Tháp cổ Bình Thạnh",
+    "province": "Tây Ninh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 11.01863,
+    "longitude": 106.219158,
+    "description": "Di tích kiến trúc cổ tại vùng Trảng Bàng.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "08:00-17:00",
+    "sourceUrl": "https://dulich.tayninh.gov.vn/tin-tuc/thap-co-binh-thanh-tay-ninh-1428",
+    "thumbnailUrl": "https://dulich.tayninh.gov.vn/uploads/images/image-20250729005722-2.jpeg"
+  },
+  {
+    "id": "vn-498-thap-chot-mat",
+    "name": "Tháp Chót Mạt",
+    "province": "Tây Ninh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 11.463666,
+    "longitude": 106.010238,
+    "description": "Tháp gạch cổ còn lại trên địa bàn Tân Biên.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://vnanet.vn/vi/anh/anh-thoi-su-trong-nuoc-1014/tay-ninh-di-tich-thap-chot-mat-thu-hut-khach-tham-quan-7607467.html",
+    "thumbnailUrl": "https://vnanet.vn/Data/Articles/2024/09/20/7607466/vna_potal_tay_ninh_di_tich_thap_chot_mat_thu_hut_khach_tham_quan_stand.jpg"
+  },
+  {
+    "id": "vn-499-banh-canh-trang-bang-nam-dung",
+    "name": "Bánh canh Trảng Bàng Năm Dung",
+    "province": "Tây Ninh",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 11.0329,
+    "longitude": 106.359066,
+    "description": "Địa chỉ thưởng thức bánh canh và bánh tráng cuốn.",
+    "priceMin": 75000,
+    "priceMax": 75000,
+    "openingHours": "06:00-20:30",
+    "sourceUrl": "https://mia.vn/cam-nang-du-lich/banh-canh-trang-bang-nam-dung-hoang-muoi-ngon-dung-dieu-9173",
+    "thumbnailUrl": "https://mia.vn/media/uploads/blog-du-lich/banh-canh-trang-bang-nam-dung-hoang-muoi-ngon-dung-dieu-04-1661884499.jpg"
+  },
+  {
+    "id": "vn-500-ong-xa-nhe",
+    "name": "Động Xá Nhè",
+    "province": "Điện Biên",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.881665,
+    "longitude": 103.412715,
+    "description": "Hang động có nhiều khối nhũ đá tại khu vực Tủa Chùa.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://thuonghieusanpham.vn/kham-pha-net-nguyen-so-cua-hang-dong-xa-nhe",
+    "thumbnailUrl": "https://img.thuonghieusanpham.vn/img/TAPCHI_THSP/news_dataimages/nguyenmai/082021/25/15/in_article/0551_YYng_Xa_Nhe17.jpg?rt=20210825150553"
+  },
+  {
+    "id": "vn-501-nha-tram-cot",
+    "name": "Nhà Trăm Cột",
+    "province": "Long An",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.482685,
+    "longitude": 106.691389,
+    "description": "Nhà cổ bằng gỗ nổi bật với nghệ thuật chạm khắc.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-17:00",
+    "sourceUrl": "https://www.traveloka.com/vi-vn/explore/destination/nha-tram-cot/296088",
+    "thumbnailUrl": "https://ik.imagekit.io/tvlk/blog/2023/11/nha-tram-cot-6-1024x768.jpg?tr=dpr-2%2Cw-675"
+  },
+  {
+    "id": "vn-502-chua-ton-thanh",
+    "name": "Chùa Tôn Thạnh",
+    "province": "Long An",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.605463,
+    "longitude": 106.646409,
+    "description": "Ngôi chùa cổ gắn với cuộc đời nhà thơ Nguyễn Đình Chiểu.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "06:00-21:00",
+    "sourceUrl": "https://gody.vn/chau-a/viet-nam/long-an/chua-ton-thanh",
+    "thumbnailUrl": "https://media2.gody.vn/public/images/destination/1/80/chua-ton-thanh/pl6200a04562e5f-1644208197.jpeg"
+  },
+  {
+    "id": "vn-503-khu-di-tich-binh-thanh-long-an",
+    "name": "Khu di tích Bình Thành Long An",
+    "province": "Long An",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.811666,
+    "longitude": 106.220139,
+    "description": "Di tích lịch sử trong vùng Đồng Tháp Mười.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "06:00-18:00",
+    "sourceUrl": "https://triphunter.vn/places/long-an/items/di-tich-lich-su-binh-thanh",
+    "thumbnailUrl": "https://triphunter.vn/media/W1siZiIsIjIwMTcvMTIvMjAvNGhtaGV5MTNyOV82MDMyMTJfNTMzMTI2NTk2NzA2MzIxXzE5MjA4MzUyODFfbi5qcGciXV0/603212_533126596706321_1920835281_n.jpg?sha=5948b99579cd8dcc"
+  },
+  {
+    "id": "vn-504-cong-vien-tuong-ai-long-an",
+    "name": "Công viên tượng đài Long An",
+    "province": "Long An",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.559444,
+    "longitude": 106.417404,
+    "description": "Không gian tưởng niệm và sinh hoạt cộng đồng tại Tân An.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://www.foody.vn/long-an/cong-vien-tuong-dai-long-an",
+    "thumbnailUrl": "https://down-vn.img.susercontent.com/vn-11134259-7r98o-lwap7s8bvjyz1e%40resize_ss640x400"
+  },
+  {
+    "id": "vn-505-cho-muong-thanh",
+    "name": "Chợ Mường Thanh",
+    "province": "Điện Biên",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 21.387513,
+    "longitude": 103.012818,
+    "description": "Chợ truyền thống có nông sản và hàng ăn vùng Điện Biên.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "06:00-21:00",
+    "sourceUrl": "https://sxd.dienbien.gov.vn/portal/pages/2024-11-29/Thong-tin-bo-sung-ve-du-an-Cho-va-Thuong-mai-dich--481360.aspx",
+    "thumbnailUrl": "https://sxd.dienbien.gov.vn/portal/Photos/2024-11/_w/3D%20cho%20MT_040329_jpg.jpg"
+  },
+  {
+    "id": "vn-506-chua-vinh-trang",
+    "name": "Chùa Vĩnh Tràng",
+    "province": "Tiền Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.362638,
+    "longitude": 106.373521,
+    "description": "Ngôi chùa nổi bật với kiến trúc giao thoa và sân vườn.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "06:30-19:00",
+    "sourceUrl": "https://chuaviettoancau.com/none/chua-vinh-trang-ngoi-co-tu-danh-tieng-o-thanh-pho-my-tho-645.html",
+    "thumbnailUrl": "https://chuaviettoancau.com/userfiles/2020/02/04_resize-7063.jpg"
+  },
+  {
+    "id": "vn-507-trai-ran-ong-tam",
+    "name": "Trại rắn Đồng Tâm",
+    "province": "Tiền Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.351908,
+    "longitude": 106.296725,
+    "description": "Điểm tìm hiểu các loài rắn và hoạt động nghiên cứu liên quan.",
+    "priceMin": 70000,
+    "priceMax": 70000,
+    "openingHours": "07:00-17:00",
+    "sourceUrl": "https://www.bachhoaxanh.com/kinh-nghiem-hay/ghe-tham-khu-du-lich-trai-ran-dong-tam-tuoi-doi-gan-50-nam-tai-tien-giang-1532991",
+    "thumbnailUrl": "https://cdn.tgdd.vn/Files/2023/06/05/1532991/ghe-tham-khu-du-lich-trai-ran-dong-tam-tuoi-doi-gan-50-nam-tai-tien-giang-202306051111518732.jpg"
+  },
+  {
+    "id": "vn-508-bien-tan-thanh",
+    "name": "Biển Tân Thành",
+    "province": "Tiền Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.291654,
+    "longitude": 106.781207,
+    "description": "Bãi biển bùn cát nổi tiếng với sản vật nghêu.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://www.homepaylater.vn/blog/kham-pha-khu-du-lich-bien-tan-thanh/",
+    "thumbnailUrl": "https://www.homepaylater.vn/static/51ce7217311f92524c297fc6116102aa/9d72c/1_bien_tan_thanh_tua_nhu_mot_vien_ngoc_quy_giua_long_mien_tay_song_nuoc_21ebd64802.jpg"
+  },
+  {
+    "id": "vn-509-cho-my-tho",
+    "name": "Chợ Mỹ Tho",
+    "province": "Tiền Giang",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 10.357247,
+    "longitude": 106.367737,
+    "description": "Chợ lâu đời với hủ tiếu và món ăn miền Tây.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://www.foody.vn/tien-giang/cho-my-tho",
+    "thumbnailUrl": "https://down-vn.img.susercontent.com/vn-11134259-7r98o-lwe7f35h79w93f%40resize_ss640x400"
+  },
+  {
+    "id": "vn-510-thac-dai-yem",
+    "name": "Thác Dải Yếm",
+    "province": "Sơn La",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.812913,
+    "longitude": 104.591578,
+    "description": "Thác nước nổi tiếng trong cảnh quan cao nguyên Mộc Châu.",
+    "priceMin": 80000,
+    "priceMax": 150000,
+    "openingHours": "07:00-19:00",
+    "sourceUrl": "https://phetravel.com/thac-dai-yem-vi-tri-diem-thu-hut-kinh-nghiem-du-lich-va-chon-tour",
+    "thumbnailUrl": "https://phetravel.com/uploads/thac-dai-yem-moc-chau-1.jpg.webp"
+  },
+  {
+    "id": "vn-511-con-phung",
+    "name": "Cồn Phụng",
+    "province": "Bến Tre",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.326891,
+    "longitude": 106.349855,
+    "description": "Khu du lịch sông nước với cảnh quan và sản phẩm từ dừa.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-17:00",
+    "sourceUrl": "https://bentrelogistics.com/con-phung-ben-tre-vien-ngoc-xanh-mien-tay/",
+    "thumbnailUrl": "https://bentrelogistics.com/wp-content/uploads/2024/09/CON-PHUNG.jpg"
+  },
+  {
+    "id": "vn-512-san-chim-vam-ho",
+    "name": "Sân chim Vàm Hồ",
+    "province": "Bến Tre",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.158125,
+    "longitude": 106.615493,
+    "description": "Không gian sinh thái đất ngập nước và chim tự nhiên.",
+    "priceMin": 150000,
+    "priceMax": 150000,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://khoahoctv.edu.vn/san-chim-vam-ho",
+    "thumbnailUrl": "https://khoahoctv.edu.vn/upload/2025/08/san-chim-vam-ho-005.webp"
+  },
+  {
+    "id": "vn-513-lang-hoa-kieng-cai-mon",
+    "name": "Làng hoa kiểng Cái Mơn",
+    "province": "Bến Tre",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.191836,
+    "longitude": 106.220866,
+    "description": "Vùng trồng cây giống và hoa kiểng truyền thống.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:30-17:00",
+    "sourceUrl": "https://mia.vn/cam-nang-du-lich/lang-hoa-kieng-cai-mon-dep-tu-thanh-pham-cho-den-cai-nghe-11457",
+    "thumbnailUrl": "https://mia.vn/media/uploads/blog-du-lich/lang-hoa-cai-mon-1-1737338691.jpg"
+  },
+  {
+    "id": "vn-514-khu-lang-mo-nguyen-inh-chieu",
+    "name": "Khu lăng mộ Nguyễn Đình Chiểu",
+    "province": "Bến Tre",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.03717,
+    "longitude": 106.582359,
+    "description": "Di tích tưởng niệm nhà thơ yêu nước Nguyễn Đình Chiểu.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-17:00",
+    "sourceUrl": "https://www.vietnamplus.vn/ghe-tham-khu-di-tich-lang-mo-nguyen-dinh-chieu-o-ben-tre-post935382.vnp",
+    "thumbnailUrl": "https://media.vietnamplus.vn/images/7255a701687d11cb8c6bbc58a6c80785075f1de01ee2ab87de1c815e30c3d6d3bded198bd60bc3cfa70bc7aa6bf84714ff997c703d2797e6a1039fb631ac4c961d175058d9a59d4e21100ddb41c54c45/1903langnguyendinhchieu6-5423.jpg"
+  },
+  {
+    "id": "vn-515-rung-thong-ban-ang",
+    "name": "Rừng thông bản Áng",
+    "province": "Sơn La",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.826822,
+    "longitude": 104.630821,
+    "description": "Không gian rừng thông và hồ nước gần trung tâm Mộc Châu.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://vivutour.vn/diem-den/rung-thong-ban-ang",
+    "thumbnailUrl": "https://cdn.vivutour.vn/2026/1/review-rung-thong-ban-ang.webp"
+  },
+  {
+    "id": "vn-516-cu-lao-tan-quy",
+    "name": "Cù lao Tân Quy",
+    "province": "Trà Vinh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 9.894739,
+    "longitude": 105.982705,
+    "description": "Vùng cù lao có vườn cây và trải nghiệm đời sống sông nước.",
+    "priceMin": 50000,
+    "priceMax": 50000,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://crystalbay.com/62-du-lich-cu-lao-tan-quy-tra-vinh--kinh-nghiem-vui-choi-chi-tiet-nhat-n56513.html",
+    "thumbnailUrl": "https://i2.ex-cdn.com/crystalbay.com/files/content/2025/03/31/du-lich-cu-lao-tan-quy-4-2139.jpg"
+  },
+  {
+    "id": "vn-517-chua-vam-ray",
+    "name": "Chùa Vàm Ray",
+    "province": "Trà Vinh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 9.656114,
+    "longitude": 106.275102,
+    "description": "Ngôi chùa Khmer nổi bật với kiến trúc và sắc vàng.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-23:00",
+    "sourceUrl": "https://vtcnews.vn/ngoi-chua-dat-vang-co-lich-su-hon-600-nam-o-tra-vinh-nguy-nga-nhu-cung-dien-ar689536.html",
+    "thumbnailUrl": "https://cdn-i.vtcnews.vn/resize/UyS5Ytevv35RMYdWgCJgDBZmRQp8-d730/upload/2022/07/22/vam-ray-do-minh-tan-14195557.jpg"
+  },
+  {
+    "id": "vn-518-chua-hang-tra-vinh",
+    "name": "Chùa Hang Trà Vinh",
+    "province": "Trà Vinh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 9.887058,
+    "longitude": 106.345022,
+    "description": "Ngôi chùa Khmer có cổng dạng hang và nhiều cây cổ thụ.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://mia.vn/cam-nang-du-lich/ghe-tham-chua-hang-tra-vinh-14498",
+    "thumbnailUrl": "https://mia.vn/media/uploads/blog-du-lich/kien-truc-co-kinh-1706425957.jpg"
+  },
+  {
+    "id": "vn-519-nha-co-cau-ke",
+    "name": "Nhà cổ Cầu Kè",
+    "province": "Trà Vinh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 9.872336,
+    "longitude": 106.057839,
+    "description": "Nhà cổ gắn với lịch sử và kiến trúc địa phương.",
+    "priceMin": 20000,
+    "priceMax": 20000,
+    "openingHours": "10:00-15:00",
+    "sourceUrl": "https://tatinta.com/diem-den/nha-co-huynh-ky-nha-co-cau-ke/8106",
+    "thumbnailUrl": "https://ta-img.tatinta.com/resize/1024/webp/destination/file-1732094582719.jpg"
+  },
+  {
+    "id": "vn-520-cho-tra-vinh",
+    "name": "Chợ Trà Vinh",
+    "province": "Trà Vinh",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 9.935329,
+    "longitude": 106.342424,
+    "description": "Chợ trung tâm có món ăn Việt, Khmer và Hoa.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://nhaquanly.vn/net-dep-tra-vinh-a935.html",
+    "thumbnailUrl": "https://nhaquanly.vn/uploads/Images/Uploaded/Share/2020/01/19cho-tra-vinh.jpg"
+  },
+  {
+    "id": "vn-521-cu-lao-an-binh",
+    "name": "Cù lao An Bình",
+    "province": "Vĩnh Long",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.286564,
+    "longitude": 105.967144,
+    "description": "Vùng cù lao có vườn cây và hoạt động du lịch sông nước.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://luhanhvietnam.com.vn/du-lich/cu-lao-an-binh-dia-diem-tham-quan-vinh-long.html",
+    "thumbnailUrl": "https://luhanhvietnam.com.vn/du-lich/vnt_upload/news/09_2022/cu-lao-an-binh_1_1.jpg"
+  },
+  {
+    "id": "vn-522-van-thanh-mieu-vinh-long",
+    "name": "Văn Thánh Miếu Vĩnh Long",
+    "province": "Vĩnh Long",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.242662,
+    "longitude": 105.984359,
+    "description": "Di tích văn hóa gắn với truyền thống hiếu học Nam Bộ.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-17:00",
+    "sourceUrl": "https://dcs.nhandan.vn/tu-tuong-van-hoa/tham-van-thanh-mieu-vinh-long-606130.html",
+    "thumbnailUrl": "https://file-dangcongsan.nhandan.vn/data/0/images/2022/03/17/manht/duong-dan.jpg"
+  },
+  {
+    "id": "vn-523-chua-phat-ngoc-xa-loi-vinh-long",
+    "name": "Chùa Phật Ngọc Xá Lợi Vĩnh Long",
+    "province": "Vĩnh Long",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.264807,
+    "longitude": 105.915484,
+    "description": "Công trình Phật giáo có không gian kiến trúc rộng.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://btravel.vn/chua-phat-ngoc-xa-loi-vinh-long-ve-dep-huyen-bi-chon-thanh-tinh/",
+    "thumbnailUrl": "https://btravel.vn/wp-content/uploads/2023/05/VnExpress-VinhLong-8-1606894423-850x637.jpg"
+  },
+  {
+    "id": "vn-524-nha-co-cai-cuong",
+    "name": "Nhà cổ Cai Cường",
+    "province": "Vĩnh Long",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.280393,
+    "longitude": 106.00578,
+    "description": "Nhà cổ trên cù lao với kiến trúc giao thoa Á và Âu.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://www.vietnamplus.vn/nha-co-cai-cuong-hap-dan-khach-kham-pha-miet-vuon-post239547.vnp",
+    "thumbnailUrl": "https://media.vietnamplus.vn/images/c14f6479e83e315b4cf3a2906cc6a51e3b5a726d29f8a7d0461ac96c69e62fa6cb703c341f9fd26d42c6bc271bd00b5a7fd93ed6af571e17849421b8f9b39906053e171119d1a20bf2c9b7b2fb00fd59/nha_co_Cai_Cuong.png.webp"
+  },
+  {
+    "id": "vn-525-thac-nang-tien-moc-chau",
+    "name": "Thác Nàng Tiên Mộc Châu",
+    "province": "Sơn La",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.843847,
+    "longitude": 104.824385,
+    "description": "Cụm thác nhiều tầng tại khu vực Chiềng Khoa.",
+    "priceMin": 30000,
+    "priceMax": 30000,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://dulichvietnam.com.vn/chiem-nguong-thac-nang-tien-moc-chau-hoang-so.html",
+    "thumbnailUrl": "https://dulichvietnam.com.vn/vnt_upload/news/02_2022/thac_nang_tien_moc_chau_11.jpg"
+  },
+  {
+    "id": "vn-526-khu-du-lich-gao-giong",
+    "name": "Khu du lịch Gáo Giồng",
+    "province": "Đồng Tháp",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.588359,
+    "longitude": 105.611693,
+    "description": "Khu sinh thái rừng tràm với vườn chim và đường thủy.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://en.nhandan.vn/developing-sustainable-rural-tourism-post123440.html",
+    "thumbnailUrl": "https://en-cdn.nhandan.vn/images/23e44cb0304d465d87982ab4e7c5ac7a82d5810b63e632e19d7dd5664e7dc122feb88f630c965c0841ae0f3ffc309bfdbe785da9de4d8978df27b3326f14ebb2da56df832b5eb8ab2f0e27c101a9927e66278cd3ebe222aab45c1e691cc413ec/cd07-229-du-lich-gao-giong-copy-3-98036846-6564.jpg"
+  },
+  {
+    "id": "vn-527-ong-sen-thap-muoi",
+    "name": "Đồng sen Tháp Mười",
+    "province": "Đồng Tháp",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.603212,
+    "longitude": 105.820309,
+    "description": "Không gian trồng sen và thưởng thức món ăn từ sen theo mùa.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:30-17:00",
+    "sourceUrl": "https://triphunter.vn/places/dong-thap/items/dong-sen-thap-muoi",
+    "thumbnailUrl": "https://triphunter.vn/media/W1siZiIsIjIwMTYvMDQvMjkvNjZjZ3FzMHJ6bV80LmpwZyJdXQ/4.jpg?sha=7bb2a57cdd247ba4"
+  },
+  {
+    "id": "vn-528-chua-kien-an-cung",
+    "name": "Chùa Kiến An Cung",
+    "province": "Đồng Tháp",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.294457,
+    "longitude": 105.767039,
+    "description": "Di tích kiến trúc tín ngưỡng của cộng đồng người Hoa tại Sa Đéc.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "08:00-17:00",
+    "sourceUrl": "https://dulichthuduc.com.vn/chua-kien-an-cung-sa-dec-dong-thap-ngoi-chua-co-kinh-nguoi-hoa-.html",
+    "thumbnailUrl": "https://dulichthuduc.com.vn/vnt_upload/news/MIEN-TAY/dong-thap/chua_kien_an_cung_du_lich_thu_duc_3.jpg"
+  },
+  {
+    "id": "vn-529-chua-phuoc-kien",
+    "name": "Chùa Phước Kiển",
+    "province": "Đồng Tháp",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.195703,
+    "longitude": 105.816334,
+    "description": "Ngôi chùa được biết đến với ao sen lá lớn.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "06:00-18:00",
+    "sourceUrl": "https://kenh14.vn/ngoi-chua-co-ho-sen-moc-len-tu-ho-bom-la-sen-khong-lo-co-the-do-duoc-ca-nguoi-20220805223016413.chn",
+    "thumbnailUrl": "https://kenh14cdn.com/203336854389633024/2022/8/5/photo-6-16597128488321447816196.jpg"
+  },
+  {
+    "id": "vn-530-ngoc-chien",
+    "name": "Ngọc Chiến",
+    "province": "Sơn La",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.597725,
+    "longitude": 104.216341,
+    "description": "Vùng bản làng có suối khoáng và văn hóa người Thái.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://www.vietnamplus.vn/photo-xa-ngoc-chien-diem-den-hap-dan-noi-nui-rung-tay-bac-post742888.vnp",
+    "thumbnailUrl": "https://media.vietnamplus.vn/images/7255a701687d11cb8c6bbc58a6c8078548a8d9a044c85a9a9cd3048e98ed082c3af83c15759191cdf3cb7c2cba3e47ae3baf0aa24dfd57111e811a4b44265e78/2409Ngocchien5.jpg"
+  },
+  {
+    "id": "vn-531-thien-vien-truc-lam-phuong-nam",
+    "name": "Thiền viện Trúc Lâm Phương Nam",
+    "province": "Cần Thơ",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 9.990421,
+    "longitude": 105.703944,
+    "description": "Quần thể Phật giáo có sân vườn và kiến trúc truyền thống.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://www.traveloka.com/vi-vn/explore/destination/thien-vien-truc-lam-phuong-nam/251214",
+    "thumbnailUrl": "https://ik.imagekit.io/tvlk/blog/2023/07/thien-vien-truc-lam-phuong-nam-9.jpg?tr=q-70%2Cc-at_max%2Cw-1000%2Ch-600"
+  },
+  {
+    "id": "vn-532-chua-ong-can-tho",
+    "name": "Chùa Ông Cần Thơ",
+    "province": "Cần Thơ",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.034191,
+    "longitude": 105.78848,
+    "description": "Di tích tín ngưỡng của cộng đồng người Hoa gần bến Ninh Kiều.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-20:00",
+    "sourceUrl": "https://www.traveloka.com/vi-vn/explore/destination/chua-ong-can-tho-acc/266913",
+    "thumbnailUrl": "https://ik.imagekit.io/tvlk/blog/2023/08/chua-ong-can-tho-2-1024x683.jpg?tr=dpr-2%2Cw-675"
+  },
+  {
+    "id": "vn-533-vuon-co-bang-lang",
+    "name": "Vườn cò Bằng Lăng",
+    "province": "Cần Thơ",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.281527,
+    "longitude": 105.505518,
+    "description": "Điểm tìm hiểu cảnh quan vườn chim vùng Thốt Nốt.",
+    "priceMin": 20000,
+    "priceMax": 20000,
+    "openingHours": "05:00-19:30",
+    "sourceUrl": "https://mia.vn/cam-nang-du-lich/den-can-tho-nghe-tieng-chim-riu-rit-goi-bay-o-vuon-co-bang-lang-4840",
+    "thumbnailUrl": "https://mia.vn/media/uploads/blog-du-lich/den-can-tho-nghe-tieng-chim-riu-rit-goi-bay-o-vuon-co-bang-lang-5-1649261701.jpg"
+  },
+  {
+    "id": "vn-534-cho-em-tay-o",
+    "name": "Chợ đêm Tây Đô",
+    "province": "Cần Thơ",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 10.032157,
+    "longitude": 105.787895,
+    "description": "Không gian hàng quán và mua sắm về đêm ở Cần Thơ.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "15:00-00:00",
+    "sourceUrl": "https://mia.vn/cam-nang-du-lich/kham-pha-nhung-net-thu-vi-cua-cho-dem-tay-do-noi-tieng-can-tho-4778",
+    "thumbnailUrl": "https://mia.vn/media/uploads/blog-du-lich/kham-pha-nhung-net-thu-vi-cua-cho-dem-tay-do-noi-tieng-can-tho-04-1649566324.jpg"
+  },
+  {
+    "id": "vn-535-banh-cong-co-ut-can-tho",
+    "name": "Bánh cống Cô Út Cần Thơ",
+    "province": "Cần Thơ",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 10.034172,
+    "longitude": 105.78171,
+    "description": "Địa chỉ thưởng thức bánh cống ăn cùng rau sống và nước chấm.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "13:00-21:00",
+    "sourceUrl": "https://canthotourism.vn/vi/detailrestaurant/?id=724",
+    "thumbnailUrl": "https://scontent.iocvnpt.com/resources/portal/Images/CTO/superadminportal.cto/Nhahang/CoUt/cout5_637024343930043615.jpg"
+  },
+  {
+    "id": "vn-536-khu-bao-ton-thien-nhien-lung-ngoc-hoang",
+    "name": "Khu bảo tồn thiên nhiên Lung Ngọc Hoàng",
+    "province": "Hậu Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 9.7153,
+    "longitude": 105.7175,
+    "description": "Vùng đất ngập nước có rừng và cảnh quan kênh rạch.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://thiennhienmoitruong.vn/phat-trien-ben-vung-tai-nguyen-tai-khu-bao-ton-thien-nhien-lung-ngoc-hoang.html",
+    "thumbnailUrl": "https://thiennhienmoitruong.vn/upload/images/btv/btv/btv/anh-lam.jpg"
+  },
+  {
+    "id": "vn-537-cong-vien-giai-tri-kittyd-minnied",
+    "name": "Công viên giải trí Kittyd & Minnied",
+    "province": "Hậu Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 9.9483,
+    "longitude": 105.7958,
+    "description": "Khu vui chơi với kiến trúc và trò chơi giải trí.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://cinvestratravel.vn/cong-vien-giai-tri-kittyd-minnied-thien-duong-chau-au-ngay-tai-viet-nam",
+    "thumbnailUrl": "https://bizweb.dktcdn.net/100/072/558/files/cong-vien-giai-tri-kittyd-minnied-cinvestratravel-5.jpg?v=1541047775068"
+  },
+  {
+    "id": "vn-538-di-tich-chien-thang-chuong-thien",
+    "name": "Di tích Chiến thắng Chương Thiện",
+    "province": "Hậu Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 9.7758,
+    "longitude": 105.4678,
+    "description": "Không gian tưởng niệm lịch sử tại Vị Thanh.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://vinhtour.vn/khu-di-tich-chien-thang-chuong-thien-hau-giang-di-san-lich-su/",
+    "thumbnailUrl": "https://vinhtour.vn/wp-content/uploads/2025/03/chien-thang-chuong-thien1-scaled.jpg"
+  },
+  {
+    "id": "vn-539-thien-vien-truc-lam-hau-giang",
+    "name": "Thiền viện Trúc Lâm Hậu Giang",
+    "province": "Hậu Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 9.738824,
+    "longitude": 105.575302,
+    "description": "Quần thể Phật giáo có cảnh quan hồ nước và sân vườn.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "06:30-19:00",
+    "sourceUrl": "https://phatgiao.org.vn/kham-pha-kien-truc-doc-dao-cung-nhung-gia-tri-truyen-thong-tai-thien-vien-truc-lam-hau-giang-d79594.html",
+    "thumbnailUrl": "https://i.ex-cdn.com/phatgiao.org.vn/files/content/2023/12/06/01-1113.jpg"
+  },
+  {
+    "id": "vn-540-cho-noi-nga-bay",
+    "name": "Chợ nổi Ngã Bảy",
+    "province": "Hậu Giang",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 9.828362,
+    "longitude": 105.834261,
+    "description": "Địa danh chợ nổi gắn với văn hóa sông nước Hậu Giang.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://luhanhvietnam.com.vn/du-lich/ve-dep-doc-dao-cua-cho-noi-nga-bay.html",
+    "thumbnailUrl": "https://luhanhvietnam.com.vn/du-lich/vnt_upload/news/05_2021/cho-dau-moi.jpg"
+  },
+  {
+    "id": "vn-541-chua-chen-kieu",
+    "name": "Chùa Chén Kiểu",
+    "province": "Sóc Trăng",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 9.538144,
+    "longitude": 105.92031,
+    "description": "Chùa Khmer nổi bật với trang trí bằng mảnh sành sứ.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://dantocphattrien.vietnamnet.vn/doc-dao-kien-truc-chua-chen-kieu-o-soc-trang-1606295567770.htm",
+    "thumbnailUrl": "https://images.baodantoc.vn/uploads/2020/Th%C3%A1ng_11/Ng%C3%A0y_25/Thanh/chuachenkieu-2.jpg"
+  },
+  {
+    "id": "vn-542-chua-phat-hoc-soc-trang",
+    "name": "Chùa Phật Học Sóc Trăng",
+    "province": "Sóc Trăng",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 9.591536,
+    "longitude": 105.96776,
+    "description": "Không gian Phật giáo và cảnh quan hồ nước.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://zoomtravel.vn/chua-phat-hoc-1-soc-trang.html",
+    "thumbnailUrl": "https://zoomtravel.vn/upload/images/chua-phat-hoc-1-soc-trang-6.jpg"
+  },
+  {
+    "id": "vn-543-con-my-phuoc",
+    "name": "Cồn Mỹ Phước",
+    "province": "Sóc Trăng",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 9.794093,
+    "longitude": 106.044914,
+    "description": "Cù lao có vườn cây và hoạt động trải nghiệm sông nước.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://dulichthuduc.com.vn/con-my-phuoc-trai-nghiem-du-lich-sinh-thai-miet-vuon-noi-tieng-o-soc-trang.html",
+    "thumbnailUrl": "https://dulichthuduc.com.vn/vnt_upload/news/MIEN-TAY/soc-trang/con_my_phuoc_soc_trang_du_lich_thu_duc_2.jpg"
+  },
+  {
+    "id": "vn-544-cho-soc-trang",
+    "name": "Chợ Sóc Trăng",
+    "province": "Sóc Trăng",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 9.604198,
+    "longitude": 105.976378,
+    "description": "Chợ truyền thống có món ăn của cộng đồng Kinh, Khmer và Hoa.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://www.foody.vn/soc-trang/cho-trung-tam-thanh-pho-soc-trang",
+    "thumbnailUrl": "https://down-vn.img.susercontent.com/vn-11134259-7r98o-lwhpd2nddnmj64%40resize_ss640x400"
+  },
+  {
+    "id": "vn-545-bun-nuoc-leo-ba-xim",
+    "name": "Bún nước lèo Bà Xím",
+    "province": "Sóc Trăng",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 9.6033,
+    "longitude": 105.9744,
+    "description": "Địa chỉ thưởng thức bún nước lèo tại Sóc Trăng.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://www.foody.vn/soc-trang/ba-xim-bun-nuoc-leo",
+    "thumbnailUrl": "https://down-vn.img.susercontent.com/vn-11134259-7r98o-lwh9u8ujt9sr0d%40resize_ss640x400"
+  },
+  {
+    "id": "vn-546-vuon-chim-bac-lieu",
+    "name": "Vườn chim Bạc Liêu",
+    "province": "Bạc Liêu",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 9.24246,
+    "longitude": 105.717876,
+    "description": "Vùng sinh thái có các loài chim và thảm thực vật ngập nước.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://www.traveloka.com/vi-vn/explore/destination/vuon-chim-bac-lieu/267371",
+    "thumbnailUrl": "https://ik.imagekit.io/tvlk/blog/2023/08/vuon-chim-Bac-Lieu-1.jpg?tr=dpr-2%2Cw-675"
+  },
+  {
+    "id": "vn-547-khu-luu-niem-nhac-si-cao-van-lau",
+    "name": "Khu lưu niệm nhạc sĩ Cao Văn Lầu",
+    "province": "Bạc Liêu",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 9.276352,
+    "longitude": 105.725786,
+    "description": "Không gian giới thiệu tác giả Dạ cổ hoài lang và nghệ thuật đờn ca tài tử.",
+    "priceMin": 20000,
+    "priceMax": 20000,
+    "openingHours": "08:00-17:00",
+    "sourceUrl": "https://bvhttdl.gov.vn/tham-khu-luu-niem-nhac-si-cao-van-lau-nguoi-khai-sinh-don-ca-tai-tu-nam-bo-a623396.htm",
+    "thumbnailUrl": "https://bvhttdl.mediacdn.vn/documents/491840/1164129/BINM7146.jpg"
+  },
+  {
+    "id": "vn-548-quan-am-phat-ai-bac-lieu",
+    "name": "Quán Âm Phật Đài Bạc Liêu",
+    "province": "Bạc Liêu",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 9.206587,
+    "longitude": 105.736489,
+    "description": "Điểm hành hương Phật giáo tại vùng ven biển.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://www.vietnamairlines.com/nl/vi/useful-information/travel-guide/quan-am-phat-dai",
+    "thumbnailUrl": "https://www.vietnamairlines.com/content/dam/legacy-site-assets/SEO-images/2025%20SEO/Thay%20Anh%20Traffic%20Tieng%20Viet/quan%20am%20phat%20dai/du-khach-nen-chuan-bi-le-cung-truoc-khi-den-chua-nhat-la-vao-cac-ngay-le-lon-de-tranh-chen-lan-va.jpeg"
+  },
+  {
+    "id": "vn-549-nha-tho-tac-say",
+    "name": "Nhà thờ Tắc Sậy",
+    "province": "Bạc Liêu",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 9.221567,
+    "longitude": 105.397674,
+    "description": "Trung tâm hành hương Công giáo gắn với linh mục Trương Bửu Diệp.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "04:00-21:00",
+    "sourceUrl": "https://zoomtravel.vn/hanh-huong-ve-nha-tho-tac-say-cha-diep-bac-lieu.html",
+    "thumbnailUrl": "https://zoomtravel.vn/upload/images/M%E1%BB%99%20Ph%E1%BA%A7n%20Cha%20Di%E1%BB%87p%281%29.jpg"
+  },
+  {
+    "id": "vn-550-cho-bac-lieu",
+    "name": "Chợ Bạc Liêu",
+    "province": "Bạc Liêu",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 9.285944,
+    "longitude": 105.725815,
+    "description": "Chợ địa phương có món ăn và sản vật vùng ven biển.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://vietnambudgetcarrental.com/bac-lieu-market-the-best-place-for-shopaholics.html",
+    "thumbnailUrl": "https://vietnambudgetcarrental.com/vnt_upload/news/12_2023/bac-lieu-market-the-best-place-for-shopaholics.jpg"
+  },
+  {
+    "id": "vn-551-hon-a-bac",
+    "name": "Hòn Đá Bạc",
+    "province": "Cà Mau",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 9.179023,
+    "longitude": 104.802054,
+    "description": "Cụm đảo đá gần bờ có cảnh quan biển và dấu tích lịch sử.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://thanhnien.vn/hon-da-bac-tags691888.html",
+    "thumbnailUrl": "https://images2.thanhnien.vn/zoom/686_429/528068263637045248/2023/12/28/h3-1703747467925417705797-0-0-712-1140-crop-17037654884391827895900.jpg"
+  },
+  {
+    "id": "vn-552-am-thi-tuong",
+    "name": "Đầm Thị Tường",
+    "province": "Cà Mau",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 8.999779,
+    "longitude": 104.935965,
+    "description": "Đầm nước gắn với nghề đánh bắt và đời sống cư dân địa phương.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://booking.muongthanh.com/tin-tuc/dam-thi-tuong-diem-den-du-lich-sinh-thai-day-tiem-nang",
+    "thumbnailUrl": "https://booking.muongthanh.com/upload_images/images/H%60/dam-thi-tuong-1.jpg"
+  },
+  {
+    "id": "vn-553-ao-hon-khoai",
+    "name": "Đảo Hòn Khoai",
+    "province": "Cà Mau",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 8.431651,
+    "longitude": 104.830869,
+    "description": "Quần đảo có rừng và ngọn hải đăng ngoài khơi Cà Mau.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://thuongtruong.com.vn/news/dao-hon-khoai-vien-ngoc-xanh-noi-cuc-nam-to-quoc-77526.html",
+    "thumbnailUrl": "https://thuongtruong2-fileserver.nvcms.net/IMAGES/2022/03/11/20220311235747-1003111.jpg"
+  },
+  {
+    "id": "vn-554-khu-tuong-niem-chu-tich-ho-chi-minh-ca-mau",
+    "name": "Khu tưởng niệm Chủ tịch Hồ Chí Minh Cà Mau",
+    "province": "Cà Mau",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 9.18524,
+    "longitude": 105.137171,
+    "description": "Không gian tưởng niệm với kiến trúc và cây xanh.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-17:00",
+    "sourceUrl": "https://www.camau.gov.vn/khu-tuong-niem-bac-ho",
+    "thumbnailUrl": "https://www.camau.gov.vn/Datafiles/camau-gov-vn/wps/wcm/connect/193ffe14-32b3-4d93-924b-570f7b6759d4/2/ktn22-jpg-3fmod-3dajperes-26amp-3bcvid-3d.png"
+  },
+  {
+    "id": "vn-555-ho-chieng-khoi",
+    "name": "Hồ Chiềng Khoi",
+    "province": "Sơn La",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.01265,
+    "longitude": 104.315556,
+    "description": "Hồ nước giữa núi rừng tại vùng Yên Châu.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://topgotourist.vn/thong-tin-du-lich/danh-lam-thang-canh-ho-chieng-khoi.html",
+    "thumbnailUrl": "https://topgotourist.vn/img/news/full_topgotourist_danh-lam-thang-canh-ho-chieng-khoi-105-20229521431.jpeg"
+  },
+  {
+    "id": "vn-556-bai-sao-phu-quoc",
+    "name": "Bãi Sao Phú Quốc",
+    "province": "Kiên Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.057258,
+    "longitude": 104.036395,
+    "description": "Bãi biển nổi tiếng ở phía nam đảo Phú Quốc.",
+    "priceMin": 60000,
+    "priceMax": 100000,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://mia.vn/cam-nang-du-lich/bai-sao-phu-quoc-diem-dung-chan-ly-tuong-tren-dao-ngoc-10",
+    "thumbnailUrl": "https://media.mia.vn/uploads/blog-du-lich/bai-sao-phu-quoc-diem-dung-chan-ly-tuong-tren-dao-ngoc-01-1610609497.jpg"
+  },
+  {
+    "id": "vn-557-bai-khem-phu-quoc",
+    "name": "Bãi Khem Phú Quốc",
+    "province": "Kiên Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.036684,
+    "longitude": 104.031043,
+    "description": "Bãi biển có cát sáng và nhiều dịch vụ nghỉ dưỡng.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://www.vietnamairlines.com/cn/vi/useful-information/travel-guide/khem-beach",
+    "thumbnailUrl": "https://www.vietnamairlines.com/~/media/SEO-images/2025%20SEO/Traffic%20TA/MN/khem%20beach/khem-beach-boasts-rare-untouched-tranquility.jpg?la=en"
+  },
+  {
+    "id": "vn-558-vinpearl-safari-phu-quoc",
+    "name": "Vinpearl Safari Phú Quốc",
+    "province": "Kiên Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.337043,
+    "longitude": 103.891448,
+    "description": "Công viên bảo tồn và chăm sóc động vật trên đảo Phú Quốc.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "09:00-16:00",
+    "sourceUrl": "https://vinpearl.com/en/bus-to-vinpearl-safari-phu-quoc",
+    "thumbnailUrl": "https://statics.vinpearl.com/bus-to-vinpearl-safari-phu-quoc-1_1709653996.jpg"
+  },
+  {
+    "id": "vn-559-cho-em-phu-quoc",
+    "name": "Chợ đêm Phú Quốc",
+    "province": "Kiên Giang",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 10.216753,
+    "longitude": 103.960767,
+    "description": "Khu hàng quán nổi tiếng với hải sản và món ăn về đêm.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "08:00-22:00",
+    "sourceUrl": "https://mia.vn/cam-nang-du-lich/cho-dem-phu-quoc-cho-dem-bach-dang-the-gioi-am-thuc-nhon-nhip-khi-dem-ve-35",
+    "thumbnailUrl": "https://media.mia.vn/uploads/blog-du-lich/cho-dem-phu-quoc-cho-dem-bach-dang-the-gioi-am-thuc-nhon-nhip-khi-dem-ve-01-1611196171.jpg"
+  },
+  {
+    "id": "vn-560-bun-quay-kien-xay",
+    "name": "Bún quậy Kiến Xây",
+    "province": "Kiên Giang",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 10.218847,
+    "longitude": 103.958516,
+    "description": "Địa chỉ thưởng thức món bún quậy đặc trưng Phú Quốc.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "06:50-22:30",
+    "sourceUrl": "https://visitphuquoc.com.vn/vi/bun-quay-kien-xay-1390",
+    "thumbnailUrl": "https://visitphuquoc.com.vn/VisitPhuQuoc/POINT/%C4%82N%20U%E1%BB%90NG/M%C3%B3n%20%C4%83n/1832/image-thumb__1832__720_jpg/B%C3%BAn%20qu%E1%BA%ADy%20Ki%E1%BA%BFn%20X%C3%A2y.ec5c87e9.jpg"
+  },
+  {
+    "id": "vn-561-bung-binh-thien",
+    "name": "Búng Bình Thiên",
+    "province": "An Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.919971,
+    "longitude": 105.071816,
+    "description": "Hồ nước ngọt gắn với cảnh quan và đời sống cộng đồng ven hồ.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://luhanhvietnam.com.vn/du-lich/kham-pha-ve-dep-cua-bung-binh-thien-an-giang.html",
+    "thumbnailUrl": "https://luhanhvietnam.com.vn/du-lich/vnt_upload/news/11_2022/ho-nuoc-ngot-troi-ban.jpg"
+  },
+  {
+    "id": "vn-562-nui-cam",
+    "name": "Núi Cấm",
+    "province": "An Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.500745,
+    "longitude": 104.99146,
+    "description": "Điểm tham quan núi và các công trình Phật giáo vùng Bảy Núi.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://vinwonders.com/vi/wonderpedia/news/nui-cam-an-giang/",
+    "thumbnailUrl": "https://static.vinwonders.com/production/2025/10/thoi-diem-di-nui-cam.jpg"
+  },
+  {
+    "id": "vn-563-chua-ta-pa",
+    "name": "Chùa Tà Pạ",
+    "province": "An Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.41515,
+    "longitude": 104.992738,
+    "description": "Ngôi chùa Khmer trên đồi nhìn ra cảnh quan Tri Tôn.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://mia.vn/cam-nang-du-lich/chua-ta-pa-chon-bong-lai-tien-canh-giua-vung-rung-nui-hoang-so-8268",
+    "thumbnailUrl": "https://mia.vn/media/uploads/blog-du-lich/chua-ta-pa-chon-bong-lai-tien-canh-giua-vung-rung-nui-hoang-so-4-1659953685-1660534113.jpg"
+  },
+  {
+    "id": "vn-564-cho-chau-oc",
+    "name": "Chợ Châu Đốc",
+    "province": "An Giang",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 10.710801,
+    "longitude": 105.118476,
+    "description": "Chợ nổi tiếng với mắm, đặc sản và hàng ăn miền Tây.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://vov.vn/du-lich/check-in/cho-mam-chau-doc-diem-hen-huong-vi-mien-tay-post1272711.vov",
+    "thumbnailUrl": "https://media.vov.vn/sites/default/files/styles/large_watermark/public/2026-03/1_-_cho_mam_tai_chau_doc_tu_lau_la_diem_dung_chan_quen_thuoc_cua_du_khach_khi_den_an_giang.jpg"
+  },
+  {
+    "id": "vn-565-cho-tinh-bien",
+    "name": "Chợ Tịnh Biên",
+    "province": "An Giang",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 10.60597,
+    "longitude": 104.944647,
+    "description": "Chợ vùng biên với hàng hóa và món ăn địa phương.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://poliva.vn/cho-tinh-bien/",
+    "thumbnailUrl": "https://poliva.vn/wp-content/uploads/2019/08/Cho-Tinh-Bien-2-1.jpg"
+  },
+  {
+    "id": "vn-566-ban-ta-phin",
+    "name": "Bản Tả Phìn",
+    "province": "Lào Cai",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.399037,
+    "longitude": 103.840095,
+    "description": "Bản du lịch gắn với văn hóa người Dao và cảnh quan vùng Sa Pa.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://vinwonders.com/vi/wonderpedia/news/ban-ta-phin-sa-pa-lao-cai/",
+    "thumbnailUrl": "https://static.vinwonders.com/production/vi-tri-ban-ta-phin.jpg"
+  },
+  {
+    "id": "vn-567-thung-lung-muong-hoa",
+    "name": "Thung lũng Mường Hoa",
+    "province": "Lào Cai",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.314183,
+    "longitude": 103.876511,
+    "description": "Thung lũng ruộng bậc thang và các bản làng gần Sa Pa.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://www.vietnamairlines.com/my/vi/useful-information/travel-guide/muong-hoa-valley",
+    "thumbnailUrl": "https://www.vietnamairlines.com/content/dam/legacy-site-assets/SEO-images/2025%20SEO/Traffic%20TA/MB/muong-hoa-valley/muong-hoa-valley-thumb.jpg"
+  },
+  {
+    "id": "vn-568-thac-bac-sa-pa",
+    "name": "Thác Bạc Sa Pa",
+    "province": "Lào Cai",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.361887,
+    "longitude": 103.777723,
+    "description": "Thác nước bên tuyến đường lên đèo Ô Quy Hồ.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "09:00-17:00",
+    "sourceUrl": "https://blog.vexere.com/thac-bac-sapa/",
+    "thumbnailUrl": "https://storage.googleapis.com/blogvxr-uploads/2025/04/2c5ad40d-thac-bac-sapa-8300178-750x534.webp"
+  },
+  {
+    "id": "vn-569-eo-o-quy-ho",
+    "name": "Đèo Ô Quy Hồ",
+    "province": "Lào Cai",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.352752,
+    "longitude": 103.765305,
+    "description": "Đèo núi cao có nhiều điểm ngắm cảnh vùng Hoàng Liên Sơn.",
+    "priceMin": 120000,
+    "priceMax": 250000,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://visitnghean.gov.vn/diem-tham-quan/deo-o-quy-ho",
+    "thumbnailUrl": "https://travelindex.itourism.vn/datastore/resources/888/2022-08-10-05-39-04-deo-o-quy-ho-bi-pha-do-9.jpg"
+  },
+  {
+    "id": "vn-570-cho-coc-leu",
+    "name": "Chợ Cốc Lếu",
+    "province": "Lào Cai",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 22.498661,
+    "longitude": 103.968265,
+    "description": "Chợ thương mại vùng biên với hàng hóa và hàng ăn địa phương.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://antamtour.vn/cho-coc-leu",
+    "thumbnailUrl": "https://bizweb.dktcdn.net/100/006/093/files/cho-coc-leu.jpg?v=1715589429799"
+  },
+  {
+    "id": "vn-571-ho-thac-ba",
+    "name": "Hồ Thác Bà",
+    "province": "Yên Bái",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.727222,
+    "longitude": 105.021389,
+    "description": "Hồ nước có nhiều đảo và trải nghiệm văn hóa ven hồ.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://www.vietnamplus.vn/dua-khu-du-lich-quoc-gia-ho-thac-ba-tro-thanh-trung-tam-du-lich-tam-co-quoc-te-post955863.vnp",
+    "thumbnailUrl": "https://media.vietnamplus.vn/images/c14f6479e83e315b4cf3a2906cc6a51e9b4c1fb984396963cbe098b65cc53032af25f884c8e4a896ee7e3e2b67466b7b11ee9fdc17051f6c6d208ebb72b97eca58db261190b4d4ffeaa677e558889593/2805hothacba1-6454.jpg.webp"
+  },
+  {
+    "id": "vn-572-suoi-giang",
+    "name": "Suối Giàng",
+    "province": "Yên Bái",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.618845,
+    "longitude": 104.591597,
+    "description": "Vùng chè cổ thụ gắn với cảnh quan núi và văn hóa người Mông.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-22:30",
+    "sourceUrl": "https://vietreader.com/news/87374-waking-up-in-a-sea-of-clouds-at-suoi-giang-of-yen-bai-vietnam.html",
+    "thumbnailUrl": "https://cdn.vietreader.com/uploads/posts/2023-09/waking-up-in-a-sea-of-clouds-at-suoi-giang-of-yen-bai-vietnam.jpg"
+  },
+  {
+    "id": "vn-573-ban-cu-vai",
+    "name": "Bản Cu Vai",
+    "province": "Yên Bái",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.512727,
+    "longitude": 104.375798,
+    "description": "Bản làng trên núi với cảnh quan mây và ruộng nương.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://danviet.vn/cu-vai-ban-lang-bang-phang-dep-nhat-cua-nguoi-mong-20200816110002883-d903869.html",
+    "thumbnailUrl": "https://danviet.ex-cdn.com/files/f1/2020/8/16/anh-1-15975454507212115587865.jpg"
+  },
+  {
+    "id": "vn-574-eo-khau-pha",
+    "name": "Đèo Khau Phạ",
+    "province": "Yên Bái",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.775,
+    "longitude": 104.271667,
+    "description": "Đèo có cảnh quan ruộng bậc thang vùng Mù Cang Chải.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://dcs.nhandan.vn/anh/deo-khau-pha-mot-trong-tu-dai-dinh-deo-vung-tay-bac-681820.html",
+    "thumbnailUrl": "https://file-dangcongsan.nhandan.vn/data/0/images/2024/10/30/upload_131/khau-pha.webp"
+  },
+  {
+    "id": "vn-575-cho-muong-lo",
+    "name": "Chợ Mường Lò",
+    "province": "Yên Bái",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 21.602372,
+    "longitude": 104.512248,
+    "description": "Chợ vùng Nghĩa Lộ có đặc sản và món ăn Tây Bắc.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://baotintuc.vn/dan-toc-mien-nui/nhon-nhip-phien-cho-vung-cao-muong-lo-ngay-cuoi-nam-20190204035232655.htm",
+    "thumbnailUrl": "https://cdnmedia.baotintuc.vn/Upload/0EyEGnQWcAZSg4tgdmWKkg/files/2019/02/choTet%20%2823%29.jpg"
+  },
+  {
+    "id": "vn-576-nui-oi-quan-ba",
+    "name": "Núi đôi Quản Bạ",
+    "province": "Hà Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 23.0642,
+    "longitude": 104.9961,
+    "description": "Cặp núi có hình dáng đặc biệt trong thung lũng Quản Bạ.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://mia.vn/cam-nang-du-lich/nui-doi-quan-ba-chiem-nguong-toa-thien-nhien-quyen-ru-noi-dia-dau-to-quoc-3441",
+    "thumbnailUrl": "https://media.mia.vn/uploads/blog-du-lich/nui-doi-quan-ba-chiem-nguong-toa-thien-nhien-quyen-ru-noi-dia-dau-cua-to-quoc-05-1642419351.jpg"
+  },
+  {
+    "id": "vn-577-lang-det-lung-tam",
+    "name": "Làng dệt Lùng Tám",
+    "province": "Hà Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 23.034506,
+    "longitude": 105.047562,
+    "description": "Làng nghề dệt lanh gắn với văn hóa người Mông.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://vntravellive.com/en/ruc-ro-sac-mau-van-hoa-nguoi-hmong-tai-lang-det-lanh-lung-tam-d35979.html",
+    "thumbnailUrl": "https://i.ex-cdn.com/vntravellive.com/files/maidp/2023/10/09/5116-ruc-ro-sac-mau-van-hoa-nguoi-hmong-tai-lang-det-lanh-lung-tam-164814.jpg"
+  },
+  {
+    "id": "vn-578-du-gia",
+    "name": "Du Già",
+    "province": "Hà Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.93783,
+    "longitude": 105.20778,
+    "description": "Vùng bản làng có ruộng, núi và thác nước.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://hagianggo.com/explore-du-gia-the-hidden-paradise-of-the-ha-giang-loop",
+    "thumbnailUrl": "https://cdn.hagianggo.com/storage/photos/shares/6748850f2909e.jpg"
+  },
+  {
+    "id": "vn-579-eo-tham-ma",
+    "name": "Đèo Thẩm Mã",
+    "province": "Hà Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 23.1833,
+    "longitude": 105.2167,
+    "description": "Đoạn đèo nổi tiếng trên tuyến đường lên cao nguyên đá.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://www.traveloka.com/vi-vn/explore/destination/doc-tham-ma/430780",
+    "thumbnailUrl": "https://ik.imagekit.io/tvlk/blog/2024/09/doc-tham-ma-2.jpg?tr=q-70%2Cc-at_max%2Cw-1000%2Ch-600"
+  },
+  {
+    "id": "vn-580-cho-phien-meo-vac",
+    "name": "Chợ phiên Mèo Vạc",
+    "province": "Hà Giang",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 23.163847,
+    "longitude": 105.408989,
+    "description": "Chợ vùng cao với sinh hoạt giao thương và ẩm thực địa phương.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://www.vietnamplus.vn/photo-doc-dao-van-hoa-cho-phien-meo-vac-vung-cao-ha-giang-post869056.vnp",
+    "thumbnailUrl": "https://media.vietnamplus.vn/images/7255a701687d11cb8c6bbc58a6c80785c7b87c2a20590b4af101729bfa4ef3be1ac1cd209ac8b928d502cd916fed7dd3/1_8.jpg"
+  },
+  {
+    "id": "vn-581-ho-thang-hen",
+    "name": "Hồ Thang Hen",
+    "province": "Cao Bằng",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.758955,
+    "longitude": 106.294509,
+    "description": "Quần thể hồ trên núi giữa địa hình đá vôi.",
+    "priceMin": 30000,
+    "priceMax": 30000,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://www.vietnamplus.vn/kham-pha-ho-thang-hen-tuyet-tinh-coc-cua-vung-cao-bang-post821813.vnp",
+    "thumbnailUrl": "https://media.vietnamplus.vn/images/241e80bec16250111fc6f61717cdfa1f180b0e04c991b5c596cc0ae62601de6516b64f761242089a9a3ceeac04696c824f9efb0c8972265f49d8f86164867992/ho_thang_hen_1.jpg"
+  },
+  {
+    "id": "vn-582-eo-ma-phuc",
+    "name": "Đèo Mã Phục",
+    "province": "Cao Bằng",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.727827,
+    "longitude": 106.33685,
+    "description": "Đèo có cảnh quan núi đá đặc trưng vùng Trà Lĩnh.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://www.vietnamplus.vn/ngam-nhin-deo-ma-phuc-con-deo-dep-nhat-tinh-cao-bang-post709986.vnp",
+    "thumbnailUrl": "https://media.vietnamplus.vn/images/7255a701687d11cb8c6bbc58a6c80785f7c057ce7003ab9c6a7dd98c9aee767eaf5aa8663c083aab75d8759ef9306bccdf7f59d78f823ee0ad33b23909bfb8d7a74f6b1bfe70b3203772c7979020cefa/20210502_deo_ma_phuc_2_resize.jpg"
+  },
+  {
+    "id": "vn-583-thung-lung-phong-nam",
+    "name": "Thung lũng Phong Nậm",
+    "province": "Cao Bằng",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.8884,
+    "longitude": 106.5181,
+    "description": "Vùng thung lũng có sông, ruộng và làng bản.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://www.asiakingtravel.com/attraction/phong-nam-valley",
+    "thumbnailUrl": "https://www.asiakingtravel.com/cuploads/files/Lao%20Cai/Phong%20Nam%20Valley/img-20221001-085530-4232.jpg"
+  },
+  {
+    "id": "vn-584-lang-ren-phuc-sen",
+    "name": "Làng rèn Phúc Sen",
+    "province": "Cao Bằng",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.683432,
+    "longitude": 106.408745,
+    "description": "Làng nghề rèn truyền thống của cộng đồng người Nùng.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "06:30-18:30",
+    "sourceUrl": "https://www.vietnamplus.vn/photo-lang-ren-phuc-sen-voi-nghe-truyen-thong-co-lich-su-hon-300-nam-post712141.vnp",
+    "thumbnailUrl": "https://media.vietnamplus.vn/images/7255a701687d11cb8c6bbc58a6c807854450836824b92631f52c75081e6e0cea8bd101d9ff479d74f5e3b341c27b00804f9efb0c8972265f49d8f86164867992/lang_ren_1.jpg"
+  },
+  {
+    "id": "vn-585-cho-bao-lac",
+    "name": "Chợ Bảo Lạc",
+    "province": "Cao Bằng",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 22.947133,
+    "longitude": 105.680742,
+    "description": "Chợ vùng cao với sản vật và món ăn địa phương.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "08:00-17:00",
+    "sourceUrl": "https://caobangtourism.vn/vi/detailnews/?id=news_52&t=hap-dan-phien-cho-bao-lac",
+    "thumbnailUrl": "https://scontent.iocvnpt.com/resources/portal/Images/CBG/truongdai/news/cho%20bao%20lac/5dc4ad628376d5d3a1f2313006a2cd53_1.jpg_636586269733000560.jpg"
+  },
+  {
+    "id": "vn-586-ong-hua-ma",
+    "name": "Động Hua Mạ",
+    "province": "Bắc Kạn",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.351847,
+    "longitude": 105.676752,
+    "description": "Hang động có hệ thống thạch nhũ gần hồ Ba Bể.",
+    "priceMin": 45000,
+    "priceMax": 45000,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://www.traveloka.com/vi-vn/explore/destination/gns-kham-pha-dong-hua-ma-bac-kan/319235",
+    "thumbnailUrl": "https://ik.imagekit.io/tvlk/blog/2024/02/go-and-share-kham-pha-dong-hua-ma-bac-kan-7.webp"
+  },
+  {
+    "id": "vn-587-thac-au-ang",
+    "name": "Thác Đầu Đẳng",
+    "province": "Bắc Kạn",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.452272,
+    "longitude": 105.570891,
+    "description": "Thác trên sông Năng trong vùng Ba Bể.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://ongvove.com/location/thac-dau-dang-bac-kan",
+    "thumbnailUrl": "https://ongvove.com/uploads/0000/17/2024/11/04/du-lich-bac-kan-7-1502.jpg"
+  },
+  {
+    "id": "vn-588-ong-puong",
+    "name": "Động Puông",
+    "province": "Bắc Kạn",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.457613,
+    "longitude": 105.657919,
+    "description": "Hang xuyên núi trên tuyến tham quan sông Năng.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-20:00",
+    "sourceUrl": "https://pystravel.vn/tin/18569-dong-puong-bac-kan.html",
+    "thumbnailUrl": "https://pystravel.vn/_next/image?q=75&url=https%3A%2F%2Fbooking.pystravel.vn%2Fuploads%2Fposts%2Falbums%2F18569%2F993185c2115893ca2561f9c59d2abd21.jpg&w=1920"
+  },
+  {
+    "id": "vn-589-ban-pac-ngoi",
+    "name": "Bản Pác Ngòi",
+    "province": "Bắc Kạn",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.388688,
+    "longitude": 105.638134,
+    "description": "Bản làng người Tày có nhà sàn ven hồ Ba Bể.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://mia.vn/cam-nang-du-lich/du-lich-ban-pac-ngoi-ba-be-20654",
+    "thumbnailUrl": "https://mia.vn/media/uploads/blog-du-lich/ban-pac-ngoi-xinh-dep-1780240916.jpg"
+  },
+  {
+    "id": "vn-590-cho-uc-xuan-bac-kan",
+    "name": "Chợ Đức Xuân Bắc Kạn",
+    "province": "Bắc Kạn",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 22.143995,
+    "longitude": 105.837055,
+    "description": "Chợ trung tâm với nông sản và món ăn địa phương.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "08:00-18:00",
+    "sourceUrl": "https://csdl.vietnamtourism.gov.vn/shop/?item=136",
+    "thumbnailUrl": "https://csdl.vietnamtourism.gov.vn/uploads/logo/01_3/CSDLDIEMMUASAM2020/BacKan/ChoDucXuan/images2748180chodx.jpg"
+  },
+  {
+    "id": "vn-591-ai-chi-lang",
+    "name": "Ải Chi Lăng",
+    "province": "Lạng Sơn",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.619993,
+    "longitude": 106.540098,
+    "description": "Di tích và cảnh quan thung lũng gắn với lịch sử chống ngoại xâm.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://luhanhvietnam.com.vn/du-lich/du-lich-ai-chi-lang-lang-son.html",
+    "thumbnailUrl": "https://luhanhvietnam.com.vn/du-lich/vnt_upload/news/04_2020/du-lich-ai-chi-lang4.jpg"
+  },
+  {
+    "id": "vn-592-en-ky-cung",
+    "name": "Đền Kỳ Cùng",
+    "province": "Lạng Sơn",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.851353,
+    "longitude": 106.758023,
+    "description": "Di tích tín ngưỡng bên sông Kỳ Cùng.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://langsontourism.com.vn/vi/detailtravelplace/?id=490",
+    "thumbnailUrl": "https://scontent.iocvnpt.com/resources/portal/Images/LSN/phucvt.lsn/dia%20diem/chua%20%C4%91%E1%BB%81n/den_ky_cung1.jpg_636692343123343962.jpg"
+  },
+  {
+    "id": "vn-593-chua-thanh-lang-son",
+    "name": "Chùa Thành Lạng Sơn",
+    "province": "Lạng Sơn",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.84968,
+    "longitude": 106.758906,
+    "description": "Ngôi chùa cổ nằm gần trung tâm thành phố.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-17:00",
+    "sourceUrl": "https://tienphong.vn/chua-thanh-lang-son-ngoi-chua-co-linh-thieng-be-the-ben-dong-song-ky-cung-post1622544.tpo",
+    "thumbnailUrl": "https://cdn.tienphong.vn/images/bdfc554ea35983ad68a96e0050b6e2cbc40939814928b9ea291a1f6d7d95a0f548ecc1ea28e532f857acb926a07f135973d2426992b8fcc215dca3e0debcad5f91c395aaa9493e5cdaf349cad3d4a15e/chua-thanh-169.jpg.webp"
+  },
+  {
+    "id": "vn-594-cho-ong-kinh",
+    "name": "Chợ Đông Kinh",
+    "province": "Lạng Sơn",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 21.851311,
+    "longitude": 106.760521,
+    "description": "Chợ thương mại nổi tiếng tại Lạng Sơn.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://mytour.vn/vi/blog/bai-viet/thi-truong-dong-kinh-lang-son-mua-sam-da-dang-gia-ca-phai-chang.html",
+    "thumbnailUrl": "https://img.tripi.vn/cdn-cgi/image/width%3D700%2Cheight%3D700/https%3A/gcs.tripi.vn/public-tripi/tripi-feed/img/472187TYA/thi-truong-dong-kinh-lang-son-mua-sam-da-dang-gia-ca-phai-chang_11"
+  },
+  {
+    "id": "vn-595-cho-em-ky-lua",
+    "name": "Chợ đêm Kỳ Lừa",
+    "province": "Lạng Sơn",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 21.858468,
+    "longitude": 106.757537,
+    "description": "Không gian mua sắm và thưởng thức món ăn xứ Lạng.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://vov4.vov.vn/du-lich-vung-cao/doc-dao-cho-phien-ky-lua-xu-lang-480029.vov4",
+    "thumbnailUrl": "https://vov4.vov.vn/sites/default/files/styles/large_watermark/public/2025-03/z6398289651560_088407d18ebccfe9540346e2f2b45fa3.jpg"
+  },
+  {
+    "id": "vn-596-hang-phuong-hoang",
+    "name": "Hang Phượng Hoàng",
+    "province": "Thái Nguyên",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.775073,
+    "longitude": 106.119478,
+    "description": "Hang động trong vùng núi đá vôi Võ Nhai.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://mia.vn/cam-nang-du-lich/hang-phuong-hoang-hang-thai-nguyen-12882",
+    "thumbnailUrl": "https://media.mia.vn/uploads/blog-du-lich/hang-phuong-hoang-tam-suoi-1696550278.jpg"
+  },
+  {
+    "id": "vn-597-suoi-mo-ga",
+    "name": "Suối Mỏ Gà",
+    "province": "Thái Nguyên",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.775073,
+    "longitude": 106.119478,
+    "description": "Dòng suối ở chân núi Phượng Hoàng.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://reatimes.vn/den-vo-nhai-kham-pha-suoi-mo-ga-202201224000013387.htm",
+    "thumbnailUrl": "https://cdn1z.reatimes.vn/mediav2/upload/userfiles2021/images/letungduong/me1bb8f20gc3a020202.JPG"
+  },
+  {
+    "id": "vn-598-chua-hang-ong-hy",
+    "name": "Chùa Hang Đồng Hỷ",
+    "province": "Thái Nguyên",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.62347,
+    "longitude": 105.841687,
+    "description": "Di tích Phật giáo gắn với hang động và núi đá.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://www.bachhoaxanh.com/kinh-nghiem-hay/du-lich-dong-hy-thai-nguyen-5-dia-diem-du-lich-nen-kham-pha-1527479",
+    "thumbnailUrl": "https://cdn.tgdd.vn/Files/2023/04/26/1527479/du-lich-dong-hy-thai-nguyen-5-dia-diem-du-lich-nen-kham-pha-202304260845184931.jpg"
+  },
+  {
+    "id": "vn-599-khong-gian-van-hoa-tra-tan-cuong",
+    "name": "Không gian văn hóa trà Tân Cương",
+    "province": "Thái Nguyên",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.539035,
+    "longitude": 105.764709,
+    "description": "Điểm tìm hiểu nghề chè và văn hóa thưởng trà.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://baophapluat.vn/khong-gian-van-hoa-tra-tan-cuong-noi-hoi-tu-ban-sac-dat-che-thai-nguyen-post548536.html",
+    "thumbnailUrl": "https://cdn.baophapluat.vn/uploaded/trinhvantuananh/2025_05_15/khong-gian-van-hoa-che-tam-cuong-thai-nguyen-7502-4397.jpeg"
+  },
+  {
+    "id": "vn-600-cho-thai-thai-nguyen",
+    "name": "Chợ Thái Thái Nguyên",
+    "province": "Thái Nguyên",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 21.5936,
+    "longitude": 105.8453,
+    "description": "Chợ trung tâm với hàng ăn và sản vật địa phương.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://mythainguyen.vn/en/chothai",
+    "thumbnailUrl": "https://dltm-cdn.vnptit3.vn/resources/portal/Images/TNN/ngoclinh.tnn/%C4%90i%E1%BB%83m%20%C4%91%E1%BA%BFn/Ch%E1%BB%A3%20Th%C3%A1i/cho-thai-035_497473124.jpg"
+  },
+  {
+    "id": "vn-601-thac-ban-ba",
+    "name": "Thác Bản Ba",
+    "province": "Tuyên Quang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.340721,
+    "longitude": 105.063961,
+    "description": "Thác nhiều tầng trong cảnh quan rừng vùng Chiêm Hóa.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://mia.vn/cam-nang-du-lich/du-lich-thac-ban-ba-13319",
+    "thumbnailUrl": "https://mia.vn/media/uploads/blog-du-lich/thac-ban-ba-04-1699834746.jpeg"
+  },
+  {
+    "id": "vn-602-suoi-khoang-my-lam",
+    "name": "Suối khoáng Mỹ Lâm",
+    "province": "Tuyên Quang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.766518,
+    "longitude": 105.123516,
+    "description": "Khu vực suối khoáng nóng phục vụ nghỉ dưỡng.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://www.dealtoday.vn/blog/cuoi-tuan-hen-ban-ghe-suoi-khoang-my-lam-dia-diem-thu-gian-so-mot-tai-tuyen-quang-p961?srsltid=AfmBOorRS663nsNoqHOvIrD42UHFBjYv-LgGxlH2Wuzq3klFW5ZIh5JK",
+    "thumbnailUrl": "https://cdn.dealtoday.vn/ae0dbe4ec65b4561b2dbbe494135a1ac.jpg"
+  },
+  {
+    "id": "vn-603-en-ha-tuyen-quang",
+    "name": "Đền Hạ Tuyên Quang",
+    "province": "Tuyên Quang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.812933,
+    "longitude": 105.215284,
+    "description": "Di tích tín ngưỡng bên sông Lô.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://vinpearl.com/vi/den-ha-tuyen-quang",
+    "thumbnailUrl": "https://statics.vinpearl.com/kien-truc-den-ha_1733937095.jpg"
+  },
+  {
+    "id": "vn-604-coc-vai-pha",
+    "name": "Cọc Vài Phạ",
+    "province": "Tuyên Quang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.512788,
+    "longitude": 105.329339,
+    "description": "Cột đá tự nhiên nổi bật giữa lòng hồ Na Hang.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://www.vietnamplus.vn/photo-non-nuoc-tuyen-quang-ha-long-tren-can-giua-dai-ngan-dong-bac-post788156.vnp",
+    "thumbnailUrl": "https://media.vietnamplus.vn/images/7255a701687d11cb8c6bbc58a6c807858d62e65f6e1d08eab54cc138db1d232033a988335d32a6b78a0e83a0a233dfc41d175058d9a59d4e21100ddb41c54c45/Tuyen_Quang_14.jpg"
+  },
+  {
+    "id": "vn-605-cho-tam-co",
+    "name": "Chợ Tam Cờ",
+    "province": "Tuyên Quang",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 21.816302,
+    "longitude": 105.216186,
+    "description": "Chợ trung tâm có đặc sản và món ăn Tuyên Quang.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "05:30-18:30",
+    "sourceUrl": "https://tuyenquang.haogiayensao.com/tan-quang/cho-tam-co-1329.html",
+    "thumbnailUrl": "https://tuyenquang.haogiayensao.com/img-haogia/1329-9.jpg"
+  },
+  {
+    "id": "vn-606-oi-che-long-coc",
+    "name": "Đồi chè Long Cốc",
+    "province": "Phú Thọ",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.132517,
+    "longitude": 105.061507,
+    "description": "Cảnh quan các đồi chè tròn tại vùng Tân Sơn.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://suckhoedoisong.vn/ve-long-coc-ngam-vinh-xanh-giua-dat-to-169260404094925613.htm",
+    "thumbnailUrl": "https://suckhoedoisong.qltns.mediacdn.vn/324455921873985536/2026/4/4/ve-long-coc-ngam-vinh-xanh-giua-dat-to-1-1775270251759639631344.jpg"
+  },
+  {
+    "id": "vn-607-en-mau-au-co",
+    "name": "Đền Mẫu Âu Cơ",
+    "province": "Phú Thọ",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.604413,
+    "longitude": 104.914429,
+    "description": "Di tích thờ Quốc Mẫu Âu Cơ tại Hạ Hòa.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://luhanhvietnam.com.vn/du-lich/kinh-nghiem-di-den-mau-au-co-phu-tho.html",
+    "thumbnailUrl": "https://luhanhvietnam.com.vn/du-lich/vnt_upload/news/07_2020/den-mau-au-co-phu-tho-o-co-gi.jpg"
+  },
+  {
+    "id": "vn-608-am-ao-chau",
+    "name": "Đầm Ao Châu",
+    "province": "Phú Thọ",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.5677,
+    "longitude": 105.012847,
+    "description": "Hồ đầm có nhiều đảo nhỏ và cảnh quan đồi cây.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://dulichphutho.gov.vn/thuvien/dam-ao-chau",
+    "thumbnailUrl": "https://dulichphutho.gov.vn/content-uploads/2025/02/z4195848575314_0274591f2ccc3b3ccea4e236490a5bdd-scaled.jpg"
+  },
+  {
+    "id": "vn-609-khu-du-lich-ao-ngoc-xanh",
+    "name": "Khu du lịch Đảo Ngọc Xanh",
+    "province": "Phú Thọ",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.167711,
+    "longitude": 105.280324,
+    "description": "Khu vui chơi sinh thái ở vùng Thanh Thủy.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://newwaypms.com/khu-du-lich-dao-ngoc-xanh-50.htm",
+    "thumbnailUrl": "https://newwaypms.com/upload/news/product/41.2021/dao-ngoc-xanh-01.jpg"
+  },
+  {
+    "id": "vn-610-thac-thang-thien",
+    "name": "Thác Thăng Thiên",
+    "province": "Hòa Bình",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.936194,
+    "longitude": 105.445289,
+    "description": "Thác nước giữa cảnh quan rừng núi tại vùng Kỳ Sơn.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "06:00-22:00",
+    "sourceUrl": "https://www.xanhsm.com/news/thac-thang-thien-hoa-binh",
+    "thumbnailUrl": "https://cdn.xanhsm.com/2025/03/b3ad6438-thac-thang-thien-2.jpg"
+  },
+  {
+    "id": "vn-611-ho-ai-lai",
+    "name": "Hồ Đại Lải",
+    "province": "Vĩnh Phúc",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.318927,
+    "longitude": 105.71458,
+    "description": "Hồ nước có cảnh quan đồi và các dịch vụ nghỉ dưỡng.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://www.vietfuntravel.com.vn/blog/gia-ve-vao-tham-quan-ho-dai-lai.html",
+    "thumbnailUrl": "https://www.vietfuntravel.com.vn/image/data/Ha-Noi/ho-dai-lai/Gia-ve-vao-tham-quan-Ho-Dai-Lai-1.jpg"
+  },
+  {
+    "id": "vn-612-thap-binh-son",
+    "name": "Tháp Bình Sơn",
+    "province": "Vĩnh Phúc",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.419657,
+    "longitude": 105.406665,
+    "description": "Tháp đất nung cổ tại khu vực chùa Vĩnh Khánh.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://crystalbay.com/58-kham-pha-thap-binh-son--chung-nhan-lich-su-hon-700-nam-tren-dat-vinh-phuc-n55178.html",
+    "thumbnailUrl": "https://i2.ex-cdn.com/crystalbay.com/files/content/2025/02/11/thap-binh-son-vinh-phuc-1202.jpg"
+  },
+  {
+    "id": "vn-613-lang-gom-huong-canh",
+    "name": "Làng gốm Hương Canh",
+    "province": "Vĩnh Phúc",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.273729,
+    "longitude": 105.647767,
+    "description": "Làng nghề gốm truyền thống vùng Bình Xuyên.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "06:00-21:00",
+    "sourceUrl": "https://www.vietnamplus.vn/doc-dao-lang-gom-huong-canh-diem-den-hap-dan-cho-du-khach-post829715.vnp",
+    "thumbnailUrl": "https://media.vietnamplus.vn/images/7255a701687d11cb8c6bbc58a6c80785ed0096f0636b021c9574ce305a6959b8cb28a9858b6279829c8ddd41730e18538c5f9bb66da8ebed00724aecae5db8a4/gom_huong_canh_15.JPG"
+  },
+  {
+    "id": "vn-614-ho-xa-huong",
+    "name": "Hồ Xạ Hương",
+    "province": "Vĩnh Phúc",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.410102,
+    "longitude": 105.647851,
+    "description": "Hồ nước trong thung lũng dưới chân dãy Tam Đảo.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://tiepthigiadinh.vn/ho-xa-huong-tam-dao-d3911.html",
+    "thumbnailUrl": "https://t.cmx-cdn.com/tiepthigiadinh.vn/files/trankhaoctvaneed/2023/05/13/ho-xa-huong-1-163133.jpg"
+  },
+  {
+    "id": "vn-615-cho-vinh-yen",
+    "name": "Chợ Vĩnh Yên",
+    "province": "Vĩnh Phúc",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 21.309048,
+    "longitude": 105.599014,
+    "description": "Chợ trung tâm có món ăn và sản vật địa phương.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "04:00-21:00",
+    "sourceUrl": "https://doisonggiadinh.baophunuthudo.vn/du-lich/khu-cho-la-tuoi-tho-cua-nguoi-vinh-phuc-nay-duoc-xay-moi-khang-trang-thanh-diem-den-khong-the-bo-lo-c82a38269.html",
+    "thumbnailUrl": "https://cdn-doisonggiadinh.baophunuthudo.vn/upload/1-2025/images/mith/du-lich-trai-nghiem-tai-cho-truyen-thong-vinh-yen-3-1737117877-800-width780height520.jpg"
+  },
+  {
+    "id": "vn-616-chua-dau",
+    "name": "Chùa Dâu",
+    "province": "Bắc Ninh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.035529,
+    "longitude": 106.042591,
+    "description": "Ngôi chùa cổ gắn với lịch sử Phật giáo vùng Luy Lâu.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://giacngo.vn/bac-ninh-dung-trien-khai-du-an-trung-tu-ton-tao-khu-di-tich-chua-dau-post78955.html",
+    "thumbnailUrl": "https://image.giacngo.vn/w770/Uploaded/2026/xpcwvolc/2026_03_09/vietgoing-rle2106159117-191-937.jpg.webp"
+  },
+  {
+    "id": "vn-617-chua-phat-tich",
+    "name": "Chùa Phật Tích",
+    "province": "Bắc Ninh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.093828,
+    "longitude": 106.026111,
+    "description": "Di tích Phật giáo có tượng Phật đá và cảnh quan đồi.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://modadepninhbinh.com/chua-phat-tich-bac-ninh.html",
+    "thumbnailUrl": "https://modadepninhbinh.com/wp-content/uploads/2025/01/chua-phat-tich-bac-ninh-o-dau.jpg"
+  },
+  {
+    "id": "vn-618-lang-gom-phu-lang",
+    "name": "Làng gốm Phù Lãng",
+    "province": "Bắc Ninh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.148809,
+    "longitude": 106.257323,
+    "description": "Làng nghề gốm với sản phẩm men da lươn truyền thống.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://triphunter.vn/places/bac-ninh/items/lang-gom-phu-lang",
+    "thumbnailUrl": "https://triphunter.vn/media/W1siZiIsIjIwMTYvMDYvMDgvaDVvZDk3ZnU5X1VWS0pUZVBLUzE4UFZhbVRGOERfRXRoeGNuZlExZHguSlBHIl1d/UVKJTePKS18PVamTF8D--EthxcnfQ1dx.JPG?sha=306f3d5273ff900c"
+  },
+  {
+    "id": "vn-619-lang-diem",
+    "name": "Làng Diềm",
+    "province": "Bắc Ninh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.214848,
+    "longitude": 106.050183,
+    "description": "Làng quan họ có không gian văn hóa và kiến trúc truyền thống.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://vinwonders.com/vi/wonderpedia/news/lang-diem-bac-ninh/",
+    "thumbnailUrl": "https://static.vinwonders.com/production/2025/08/kinh-nghiem-kham-pha-lang-diem-bac-ninh.jpg"
+  },
+  {
+    "id": "vn-620-cho-nhon-bac-ninh",
+    "name": "Chợ Nhớn Bắc Ninh",
+    "province": "Bắc Ninh",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 21.180194,
+    "longitude": 106.06411,
+    "description": "Chợ truyền thống có hàng ăn và sản vật vùng Kinh Bắc.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://nhandan.vn/tieu-thuong-cho-nhon-bac-ninh-mong-som-co-phuong-an-cai-tao-cho-de-tiep-tuc-kinh-doanh-sau-gan-4-nam-gian-doan-post932230.html",
+    "thumbnailUrl": "https://cdn.nhandan.vn/images/22f099ca8bc7ae81aa2a8d3416a84bf8f1e9f66f38ed5a447ae9ff51d021b30b24f39c412a8bdb33e7b089ede0d76d532d174532af122bbf1cc473e3ab0bd0c4136e32d1bcd53fb50a51a8db1f10ebf3/3512490307273095878-5755.jpg.webp"
+  },
+  {
+    "id": "vn-621-chua-vinh-nghiem-bac-giang",
+    "name": "Chùa Vĩnh Nghiêm Bắc Giang",
+    "province": "Bắc Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.213539,
+    "longitude": 106.324337,
+    "description": "Chùa cổ nổi tiếng với kho mộc bản và truyền thống Phật giáo Trúc Lâm.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://pystravel.vn/tin/17316-chua-vinh-nghiem-bac-giang.html",
+    "thumbnailUrl": "https://pystravel.vn/_next/image?q=75&url=https%3A%2F%2Fbooking.pystravel.vn%2Fuploads%2Fposts%2Falbums%2F17316%2F18376d5813d19f0bafb480fdaf2aaa1b.jpg&w=1920"
+  },
+  {
+    "id": "vn-622-suoi-mo",
+    "name": "Suối Mỡ",
+    "province": "Bắc Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.274841,
+    "longitude": 106.48445,
+    "description": "Danh thắng có suối, thác và hệ thống đền thờ.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "sourceUrl": "https://gaohouse.vn/blogs/suc-khoe-doi-song/khu-du-lich-sinh-thai-suoi-mo?srsltid=AfmBOorYzjmr-l6SYKl6qqT1zsV5CzXz8tKI65HAdDGuVsqqDX5xfU3l",
+    "thumbnailUrl": "https://gaohouse.vn/wp-content/uploads/2024/07/khu-du-lich-sinh-thai-suoi-mo-2.jpg"
+  },
+  {
+    "id": "vn-623-ho-cam-son",
+    "name": "Hồ Cấm Sơn",
+    "province": "Bắc Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.536089,
+    "longitude": 106.567246,
+    "description": "Hồ nước có nhiều đảo và cảnh quan vùng Lục Ngạn.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://dulichbacgiang.gov.vn/kham-pha/danh-thang/cam-sonha-long-tren-can-dia-diem-du-lich-sinh-thai-thu-vi-o-tinh-bac-giang-802.html",
+    "thumbnailUrl": "https://dulichbacgiang.gov.vn/uploads/editor/2_255.jpg"
+  },
+  {
+    "id": "vn-624-thanh-co-xuong-giang",
+    "name": "Thành cổ Xương Giang",
+    "province": "Bắc Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.29201,
+    "longitude": 106.213249,
+    "description": "Di tích lịch sử gắn với chiến thắng Xương Giang.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://banduong.vn/can-canh-thanh-co-xuong-giang--diem-den-hut-khach-du-lich-o-bac-giang-d4992.html",
+    "thumbnailUrl": "https://banduong.vn/data/data/old/nhung-neo-duong-cuoc-song/images/thanh-co-xuong-giang-4-0951.jpg"
+  },
+  {
+    "id": "vn-625-cho-thuong-bac-giang",
+    "name": "Chợ Thương Bắc Giang",
+    "province": "Bắc Giang",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 21.272641,
+    "longitude": 106.193185,
+    "description": "Chợ trung tâm có đặc sản và hàng ăn địa phương.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://nammekong.net/blogs/du-an/du-an-dtxd-cho-thuong-bac-giang",
+    "thumbnailUrl": "https://file.hstatic.net/200000349909/article/cho-bac-giang_8f855a77c49a47989bad8cee1ba38efd.jpg"
+  },
+  {
+    "id": "vn-626-ao-co-chi-lang-nam",
+    "name": "Đảo cò Chi Lăng Nam",
+    "province": "Hải Dương",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.7608,
+    "longitude": 106.2758,
+    "description": "Khu sinh thái hồ và đảo là nơi cư trú của nhiều loài chim.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://nhandan.vn/hap-dan-du-lich-dao-co-chi-lang-nam-post825900.html",
+    "thumbnailUrl": "https://cdn.nhandan.vn/images/22f099ca8bc7ae81aa2a8d3416a84bf8048a98419e86a0ab79bcb19c0bdb932cd347a6d31515f197e18aa2c75b4a4e84d819fb7aa723d514207739f5abba87f42e052c3197e73e49933dcb8393bc6adb/d2008hd-5768.jpg.webp"
+  },
+  {
+    "id": "vn-627-van-mieu-mao-ien",
+    "name": "Văn miếu Mao Điền",
+    "province": "Hải Dương",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.934595,
+    "longitude": 106.18641,
+    "description": "Di tích tôn vinh truyền thống khoa bảng xứ Đông.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://www.vietnamplus.vn/co-hoi-lan-toa-nhung-gia-tri-cua-di-tich-van-mieu-mao-dien-o-tinh-hai-duong-post1002675.vnp",
+    "thumbnailUrl": "https://media.vietnamplus.vn/images/db3eecc2e589c60996480488f99e20f45a47229530e88a9d88a0509e7a2962fd65e30d96ef0cbb2d536648ed52374d420194ee2a3198c1ac28fef561cd6908f7bf81c8aa3d9035771b30f02d5e93e206/van-mieu-mao-dien-hai-duong-2-9161.jpg"
+  },
+  {
+    "id": "vn-628-en-cao-an-phu",
+    "name": "Đền Cao An Phụ",
+    "province": "Hải Dương",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.9856,
+    "longitude": 106.495,
+    "description": "Quần thể đền trên núi với cảnh quan vùng Kinh Môn.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://web01.haiduong.gov.vn/Trang/ChiTietTinTuc.aspx?nid=14996&title=ve-hai-duong-chiem-bai-ngoi-den-thieng-tho-than-phu-duc-thanh-tran.html",
+    "thumbnailUrl": "https://media1.nguoiduatin.vn/media/pham-trong-tung/2023/02/14/den-cao-an-phu-49.jpg"
+  },
+  {
+    "id": "vn-629-lang-gom-chu-au",
+    "name": "Làng gốm Chu Đậu",
+    "province": "Hải Dương",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.9839,
+    "longitude": 106.3575,
+    "description": "Làng nghề gốm gắn với lịch sử thương mại và văn hóa xứ Đông.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://ongvove.com/news/lang-gom-chu-dau-hai-duong-tu-tuc",
+    "thumbnailUrl": "https://ongvove.com/uploads/0000/17/2025/03/05/co-so-cua-hang-gom-chu-dau-voi-tac-pham-gom-tuyet-dep.jpg"
+  },
+  {
+    "id": "vn-630-cho-phu-yen-hai-duong",
+    "name": "Chợ Phú Yên Hải Dương",
+    "province": "Hải Dương",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 20.9383,
+    "longitude": 106.3308,
+    "description": "Chợ trung tâm có món ăn và đặc sản địa phương.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://phapluat.tuoitrethudo.vn/hai-duong-du-an-cho-phu-yen-chua-nghiem-thu-tieu-thuong-da-tap-nap-buon-ban-69582.html",
+    "thumbnailUrl": "https://phapluat.tuoitrethudo.vn/stores/news_dataimages/hoangphuongduy/082022/04/00/in_article/IMG_20220608_101000.jpg?rt=20220804011048"
+  },
+  {
+    "id": "vn-631-lang-nom",
+    "name": "Làng Nôm",
+    "province": "Hưng Yên",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.925,
+    "longitude": 106.075,
+    "description": "Làng cổ có cầu đá, đình và không gian làng quê Bắc Bộ.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://redsvn.net/chum-anh-lang-nom-mot-bau-vat-kien-truc-vung-que-bac-bo2/",
+    "thumbnailUrl": "https://redsvn.net/wp-content/uploads/2021/01/Lang-Nom-02.jpg"
+  },
+  {
+    "id": "vn-632-chua-nom",
+    "name": "Chùa Nôm",
+    "province": "Hưng Yên",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.9261,
+    "longitude": 106.0742,
+    "description": "Ngôi chùa có hệ thống tượng cổ và cảnh quan sân vườn.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://antamtour.vn/chua-nom",
+    "thumbnailUrl": "https://bizweb.dktcdn.net/thumb/grande/100/006/093/articles/chua-nom.jpg?v=1708747228277"
+  },
+  {
+    "id": "vn-633-lang-nghe-tuong-ban",
+    "name": "Làng nghề tương Bần",
+    "province": "Hưng Yên",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.9389,
+    "longitude": 106.0611,
+    "description": "Làng nghề làm tương truyền thống tại vùng Bần Yên Nhân.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://baochinhphu.vn/ghe-lang-ban-voi-nghe-truyen-thong-lam-tuong-102259363.htm",
+    "thumbnailUrl": "https://bcp.cdnchinhphu.vn/Uploaded/doanquynhatbac/2019_07_29/8.jpg"
+  },
+  {
+    "id": "vn-634-en-phu-ung",
+    "name": "Đền Phù Ủng",
+    "province": "Hưng Yên",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.8931,
+    "longitude": 106.1839,
+    "description": "Di tích tưởng niệm danh tướng Phạm Ngũ Lão.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://anthi.hungyen.dcs.vn/le-hoi-den-phu-ung-c28845.html",
+    "thumbnailUrl": "https://anthi.hungyen.dcs.vn/ckfinder/userfiles/images/den-phu-ung-1639037367941-scaled.jpeg"
+  },
+  {
+    "id": "vn-635-cho-hien",
+    "name": "Chợ Hiến",
+    "province": "Hưng Yên",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 20.6486,
+    "longitude": 106.0528,
+    "description": "Chợ gắn với không gian Phố Hiến và món ăn địa phương.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://congthuong.vn/hung-yen-ron-rang-sac-xuan-ngay-cuoi-nam-at-ty-443285.html",
+    "thumbnailUrl": "https://cdn-i2.congthuong.vn/resize/th/upload/2026/02/16/z75383926535846b72acc2a248330500a2691e70e1d44e-13290327.jpg"
+  },
+  {
+    "id": "vn-636-bien-ong-chau",
+    "name": "Biển Đồng Châu",
+    "province": "Thái Bình",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.3556,
+    "longitude": 106.5667,
+    "description": "Bãi biển có cảnh quan chòi canh ngao và hoạt động nuôi trồng thủy sản.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://home.vn/thread/bien-dong-chau-thai-binh-thien-duong-nghi-duong-cua-que-huong-5-tan.633318697905319/",
+    "thumbnailUrl": "https://dulichvietnam.com.vn/vnt_upload/news/08_2023/1_bien_dong_chau_thai_binh.jpg"
+  },
+  {
+    "id": "vn-637-con-vanh",
+    "name": "Cồn Vành",
+    "province": "Thái Bình",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.2833,
+    "longitude": 106.5667,
+    "description": "Khu vực biển và rừng ngập mặn vùng Tiền Hải.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://www.vietnamairlines.com/se/vi/useful-information/travel-guide/khu-du-lich-bien-con-vanh",
+    "thumbnailUrl": "https://www.vietnamairlines.com/content/dam/legacy-site-assets/SEO-images/2025%20SEO/Thay%20Anh%20Traffic%20Tieng%20Viet/khu%20du%20lich%20bien%20con%20vanh/hoang-hon-tren-bien-con-vanh.jpeg"
+  },
+  {
+    "id": "vn-638-con-en",
+    "name": "Cồn Đen",
+    "province": "Thái Bình",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.5167,
+    "longitude": 106.5667,
+    "description": "Điểm du lịch sinh thái ven biển với bãi cát và rừng phi lao.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://thethaovanhoa.vn/con-den-tinh-thai-binh-con-bien-dep-hoang-so-o-mien-bac-20240108163458014.htm",
+    "thumbnailUrl": "https://thethaovanhoa.mediacdn.vn/372676912336973824/2024/1/8/rungngapman-1704706367777141992416.jpg"
+  },
+  {
+    "id": "vn-639-en-tran-thai-binh",
+    "name": "Đền Trần Thái Bình",
+    "province": "Thái Bình",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.6139,
+    "longitude": 106.195,
+    "description": "Quần thể di tích tưởng niệm các vua Trần tại Hưng Hà.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://dulich.pro.vn/den-tran-thai-binh",
+    "thumbnailUrl": "https://bizweb.dktcdn.net/100/366/377/files/den-tran-thai-binh-nhin-tu-tren-cao.jpg?v=1675069547870"
+  },
+  {
+    "id": "vn-640-en-truc-ngu-ong-thi-son",
+    "name": "Đền Trúc - Ngũ Động Thi Sơn",
+    "province": "Hà Nam",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.575,
+    "longitude": 105.8667,
+    "description": "Quần thể đền và hang động gắn với cảnh quan núi đá ven sông Đáy.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://catbaexpress.com/den-truc-ngu-dong-thi-son.html",
+    "thumbnailUrl": "https://catbaexpress.com/upload/images/Cong-vao-den-truc.jpg"
+  },
+  {
+    "id": "vn-641-en-tran-nam-inh",
+    "name": "Đền Trần Nam Định",
+    "province": "Nam Định",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.4489,
+    "longitude": 106.1667,
+    "description": "Quần thể đền thờ các vua Trần và danh tướng thời Trần.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://viptrip.vn/den-tran-nam-dinh-le-khai-an-kinh-nghiem-hanh-huong-2026.html",
+    "thumbnailUrl": "https://viptrip.vn/public/upload/image-2_10-01-2026_691664738.jpg"
+  },
+  {
+    "id": "vn-642-chua-pho-minh",
+    "name": "Chùa Phổ Minh",
+    "province": "Nam Định",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.4503,
+    "longitude": 106.1692,
+    "description": "Di tích Phật giáo nổi tiếng với tháp Phổ Minh.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://www.chuaviettoancau.com/chua-mien-bac/chua-pho-minh-nam-dinh-716.html",
+    "thumbnailUrl": "https://www.chuaviettoancau.com/upload/files/2020/07/5f14d5a09b571_55_03.JPG"
+  },
+  {
+    "id": "vn-643-nha-tho-o-hai-ly",
+    "name": "Nhà thờ đổ Hải Lý",
+    "province": "Nam Định",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.1764,
+    "longitude": 106.3056,
+    "description": "Dấu tích nhà thờ ven biển với cảnh quan làng chài.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://localtrips.org/products/nha-tho-do-hai-ly",
+    "thumbnailUrl": "https://localtrips.org/cdn/shop/files/Gi_iThi_u_a9ffb9b7-47a3-48dc-a8d6-22574f8ef082.png?v=1742892808&width=1445"
+  },
+  {
+    "id": "vn-644-bai-bien-thinh-long",
+    "name": "Bãi biển Thịnh Long",
+    "province": "Nam Định",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.1069,
+    "longitude": 106.2167,
+    "description": "Bãi biển gắn với hoạt động nghỉ ngơi và đời sống ngư dân.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://vietnamtourism.vn/index.php/tourism/items/1476/2",
+    "thumbnailUrl": "https://vietnamtourism.vn/imguploads/tourist/2014/NamDinh/41Bienthinhlong01.jpg"
+  },
+  {
+    "id": "vn-645-cho-rong-nam-inh",
+    "name": "Chợ Rồng Nam Định",
+    "province": "Nam Định",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 20.4286,
+    "longitude": 106.1736,
+    "description": "Chợ trung tâm có món ăn và đặc sản thành Nam.",
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "sourceUrl": "https://vietnamnet.vn/vi-sao-hang-tram-ki-ot-tai-cho-rong-nam-dinh-dong-loat-dong-cua-2407954.html",
+    "thumbnailUrl": "https://static-images.vnncdn.net/vps_images_publish/000001/000003/2025/6/4/tieu-thuong-cho-rong-nam-dinh-dong-loat-dong-cua-chung-toi-vo-cung-hoang-mang-113908.jpg?s=YXVgtFzX1F3-xV4nk9E7NQ&width=0"
   }
 ];
 

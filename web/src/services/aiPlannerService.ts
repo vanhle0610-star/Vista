@@ -7,6 +7,16 @@ export interface AiItinerarySuggestionRequest {
   totalDays: number;
   budgetLevel: string;
   interests: string[];
+  startDate?: string;
+  peopleCount?: number;
+  travelWith?: string;
+  specialRequests?: string;
+  arrivalTime?: string;
+  departureTime?: string;
+  pace?: string;
+  travelMode?: string;
+  mustVisitPlaces?: string[];
+  avoidPlaces?: string[];
 }
 
 export interface AiSuggestedActivity {
@@ -16,6 +26,16 @@ export interface AiSuggestedActivity {
   estimatedCost: number;
   category: string;
   note: string;
+  rationale?: string;
+  timeSlotReason?: string;
+  whyVisitReason?: string;
+  startTime?: string;
+  endTime?: string;
+  visitDurationMinutes?: number;
+  travelDurationFromPreviousMinutes?: number;
+  bufferMinutes?: number;
+  costStatus?: 'FREE' | 'PAID' | 'ESTIMATED' | 'UNVERIFIED';
+  warning?: string;
 }
 
 export interface AiSuggestedDay {
@@ -34,6 +54,17 @@ export interface AiItinerarySuggestionResponse {
   provider: AiProvider;
   fallbackUsed: boolean;
   citations: AiCitation[];
+  weatherSummary?: string;
+  pacingSummary?: string;
+  localAdviceSummary?: string;
+  strategicRationale?: string;
+  companionFitRationale?: string;
+  budgetOptimizationRationale?: string;
+  totalSightseeingCost?: number;
+  totalDiningCost?: number;
+  totalTransitCost?: number;
+  isBudgetFeasible?: boolean;
+  unverifiedCostCount?: number;
 }
 
 export interface AiCitation {

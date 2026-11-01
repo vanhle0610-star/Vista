@@ -1,5 +1,5 @@
-// Standardized 350+ Real Destinations in Vietnam with GPS coordinates, pricing, descriptions
-// Seeded from Vietnam_300_dia_diem_CHUAN_HOA.csv for VISTA AI Planner
+// Standardized 600+ Real Destinations in Vietnam with GPS coordinates, pricing, descriptions
+// Seeded from VISTA verified tourism database for AI Planner and Map Integration
 
 export interface RealPlace {
   name: string;
@@ -25,7 +25,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00-23:59",
     "description": "Biểu tượng du lịch hiện đại của Đà Nẵng, phun lửa và nước vào tối thứ 7 và Chủ nhật.",
-    "image": "destinations/danang/cau-rong.jpg"
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/B%E1%BB%9D_%C4%91%C3%B4ng_c%E1%BA%A7u_R%E1%BB%93ng.jpg/960px-B%E1%BB%9D_%C4%91%C3%B4ng_c%E1%BA%A7u_R%E1%BB%93ng.jpg"
   },
   {
     "name": "Bà Nà Hills",
@@ -37,7 +37,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 1250000,
     "openingHours": "07:00-22:00",
     "description": "Quần thể du lịch trên đỉnh núi Chúa nổi tiếng với Cầu Vàng và làng Pháp cổ kính.",
-    "image": "destinations/danang/bana-hills.jpg"
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Golden_Bridge_Da_Nang_2019.jpg/800px-Golden_Bridge_Da_Nang_2019.jpg"
   },
   {
     "name": "Bán đảo Sơn Trà & Chùa Linh Ứng",
@@ -49,7 +49,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "06:00-18:00",
     "description": "Ngôi chùa linh thiêng với tượng Phật Bà Quan Âm cao 67m hướng ra biển Đông.",
-    "image": "destinations/danang/chua-linh-ung.jpg"
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fe/Son-Tra-Peninsula_Da-Nang_Vietnam_Linh-Ung-Pagoda-01.jpg/960px-Son-Tra-Peninsula_Da-Nang_Vietnam_Linh-Ung-Pagoda-01.jpg?utm_source=vi.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
   },
   {
     "name": "Bãi biển Mỹ Khê",
@@ -61,7 +61,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00-23:59",
     "description": "Một trong những bãi biển đẹp nhất hành tinh với bãi cát trắng mịn và sóng êm đềm.",
-    "image": "destinations/danang/my-khe.jpg"
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/My_Khe_Beach%2C_Da_Nang.jpg/800px-My_Khe_Beach%2C_Da_Nang.jpg"
   },
   {
     "name": "Danh thắng Ngũ Hành Sơn",
@@ -73,7 +73,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 100000,
     "openingHours": "07:00-17:30",
     "description": "Quần thể 5 ngọn núi đá vôi kỳ vĩ mang tên Kim, Mộc, Thủy, Hỏa, Thổ cùng nhiều hang động huyền bí.",
-    "image": "destinations/danang/ngu-hanh-son.jpg"
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Marble_Mountains_Da_Nang_Vietnam.jpg/800px-Marble_Mountains_Da_Nang_Vietnam.jpg"
   },
   {
     "name": "Bảo tàng Điêu khắc Chăm",
@@ -85,7 +85,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 60000,
     "openingHours": "07:30-17:00",
     "description": "Nơi lưu giữ bộ sưu tập hiện vật nghệ thuật điêu khắc Champa quy mô nhất thế giới.",
-    "image": "destinations/danang/bao-tang-cham.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Chợ Hàn Đà Nẵng",
@@ -97,7 +97,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "06:00-19:00",
     "description": "Khu chợ truyền thống sầm uất nổi tiếng với các đặc sản miền Trung, đồ lưu niệm và mắm.",
-    "image": "destinations/danang/cho-han.jpg"
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Ch%E1%BB%A3_H%C3%A0n%2C_%C4%90%C3%A0_N%E1%BA%B5ng.jpg/800px-Ch%E1%BB%A3_H%C3%A0n%2C_%C4%90%C3%A0_N%E1%BA%B5ng.jpg"
   },
   {
     "name": "Cầu Tình Yêu & Tượng Cá Chép Hóa Rồng",
@@ -109,7 +109,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00-23:59",
     "description": "Điểm check-in lãng mạn bên bờ sông Hàn với cây cầu treo khóa tình yêu và đèn lồng trái tim.",
-    "image": "destinations/danang/cau-tinh-yeu.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Suối khoáng nóng Núi Thần Tài",
@@ -121,7 +121,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 650000,
     "openingHours": "08:30-17:30",
     "description": "Khu bảo tồn khoáng nóng tự nhiên độc đáo giữa rừng nguyên sinh Bà Nà.",
-    "image": "destinations/danang/nui-than-tai.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Đèo Hải Vân",
@@ -133,7 +133,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00-23:59",
     "description": "Thiên hạ đệ nhất hùng quan nối liền Đà Nẵng và Thừa Thiên Huế với cung đường đèo tuyệt đẹp.",
-    "image": "destinations/danang/deo-hai-van.jpg"
+    "image": "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Đại Nội Huế (Hoàng Thành Huế)",
@@ -145,19 +145,19 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 200000,
     "openingHours": "07:00-17:30",
     "description": "Trung tâm quyền lực của triều Nguyễn, di sản văn hóa thế giới UNESCO với kiến trúc cung đình đồ sộ.",
-    "image": "destinations/hue/dai-noi.jpg"
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/C%E1%BB%95ng_Ng%E1%BB%8D_M%C3%B4n_Hu%E1%BA%BF.jpg/800px-C%E1%BB%95ng_Ng%E1%BB%8D_M%C3%B4n_Hu%E1%BA%BF.jpg"
   },
   {
     "name": "Chùa Thiên Mụ",
     "province": "Thừa Thiên Huế",
     "category": "Tâm linh & Cảnh quan",
-    "latitude": 16.4533,
-    "longitude": 107.5450,
+    "latitude": 16.4528,
+    "longitude": 107.5451,
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:00-18:00",
     "description": "Ngôi cổ tự hơn 400 năm tuổi soi bóng xuống dòng sông Hương thơ mộng, biểu tượng xứ Huế.",
-    "image": "destinations/hue/chua-thien-mu.jpg"
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Thien_Mu_Pagoda_Hue.jpg/800px-Thien_Mu_Pagoda_Hue.jpg"
   },
   {
     "name": "Lăng Khải Định",
@@ -169,7 +169,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 150000,
     "openingHours": "07:00-17:30",
     "description": "Công trình lăng tẩm kết hợp tinh hoa kiến trúc Đông - Tây với nghệ thuật khảm sành sứ độc nhất vô nhị.",
-    "image": "destinations/hue/lang-khai-dinh.jpg"
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Khai_Dinh_Tomb_Hue_Vietnam.jpg/800px-Khai_Dinh_Tomb_Hue_Vietnam.jpg"
   },
   {
     "name": "Lăng Tự Đức",
@@ -181,7 +181,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 150000,
     "openingHours": "07:00-17:30",
     "description": "Khu lăng tẩm thơ mộng mang phong cách hoa viên truyền thống, gắn liền với tâm hồn thi sĩ của vua Tự Đức.",
-    "image": "destinations/hue/lang-tu-duc.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Lăng Minh Mạng",
@@ -193,19 +193,19 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 150000,
     "openingHours": "07:00-17:30",
     "description": "Kiến trúc tôn nghiêm, đối xứng chuẩn mực giữa thiên nhiên hữu tình tại ngã ba dòng sông Hương.",
-    "image": "destinations/hue/lang-minh-mang.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Chợ Đông Ba",
     "province": "Thừa Thiên Huế",
     "category": "Ẩm thực & Mua sắm",
-    "latitude": 16.4703,
-    "longitude": 107.5888,
+    "latitude": 16.4678,
+    "longitude": 107.5898,
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "06:00-18:00",
     "description": "Chợ truyền thống lâu đời nhất đất Cố Đô, thiên đường của các món bún bò, bánh bèo, nậm, lọc.",
-    "image": "destinations/hue/cho-dong-ba.jpg"
+    "image": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Cầu Trường Tiền & Sông Hương",
@@ -217,7 +217,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00-23:59",
     "description": "Cây cầu 6 vài 12 nhịp duyên dáng bắc qua sông Hương, lung linh ánh sáng khi đêm về.",
-    "image": "destinations/hue/cau-truong-tien.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Đồi Vọng Cảnh",
@@ -229,7 +229,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "06:00-18:30",
     "description": "Điểm ngắm hoàng hôn và toàn cảnh khúc quanh đẹp nhất của dòng sông Hương giữa rừng thông.",
-    "image": "destinations/hue/doi-vong-canh.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Làng Hương Thủy Xuân",
@@ -241,7 +241,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "07:00-18:00",
     "description": "Làng nghề truyền thống rực rỡ sắc màu với những bó hương xòe hoa tỏa hương thơm ngát.",
-    "image": "destinations/hue/lang-huong.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Trường Quốc Học Huế",
@@ -253,7 +253,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "07:00-17:00",
     "description": "Ngôi trường trung học đầu tiên của miền Trung với phong cách kiến trúc Pháp cổ màu hồng nổi bật.",
-    "image": "destinations/hue/quoc-hoc.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Chùa Cầu Hội An",
@@ -265,7 +265,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:00-21:30",
     "description": "Biểu tượng văn hóa của đô thị cổ Hội An, minh chứng giao thoa kiến trúc Việt - Nhật - Hoa.",
-    "image": "destinations/hoian/chua-cau.jpg"
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Ch%C3%B9a_C%E1%BA%A7u_%28H%E1%BB%99i_An%29.jpg/800px-Ch%C3%B9a_C%E1%BA%A7u_%28H%E1%BB%99i_An%29.jpg"
   },
   {
     "name": "Phố cổ Hội An & Sông Hoài",
@@ -277,7 +277,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "00:00-23:59",
     "description": "Quần thể kiến trúc đô thị cổ được bảo tồn nguyên vẹn với đèn lồng lung linh và đi thuyền hoa đăng.",
-    "image": "destinations/hoian/pho-co.jpg"
+    "image": "https://upload.wikimedia.org/wikipedia/commons/f/f3/PhoCoHoiAn.jpg"
   },
   {
     "name": "Nhà cổ Tấn Ký",
@@ -289,7 +289,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "08:30-17:45",
     "description": "Ngôi nhà cổ hơn 200 năm tuổi của thương nhân gốc Hoa, mang đậm phong cách kiến trúc giao thoa 3 nền văn hóa.",
-    "image": "destinations/hoian/nha-co-tan-ky.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Hội quán Phúc Kiến",
@@ -301,7 +301,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:00-18:00",
     "description": "Hội quán lớn nhất Hội An thờ Thiên Hậu Thánh Mẫu, nổi tiếng với nhang vòng khổng lồ cầu an.",
-    "image": "destinations/hoian/hoi-quan-phuc-kien.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Rừng dừa Bảy Mẫu Cẩm Thanh",
@@ -313,7 +313,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 300000,
     "openingHours": "07:00-17:00",
     "description": "Trải nghiệm chèo thuyền thúng xoay vòng độc đáo trong khu rừng dừa nước bạt ngàn Tây Nam Bộ thu nhỏ.",
-    "image": "destinations/hoian/rung-dua.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Làng gốm Thanh Hà",
@@ -325,7 +325,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 35000,
     "openingHours": "08:00-17:30",
     "description": "Làng nghề làm gốm thủ công hơn 500 năm tuổi ven sông Thu Bồn và Công viên Đất Nung độc đáo.",
-    "image": "destinations/hoian/lang-gom.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Làng rau Trà Quế",
@@ -337,7 +337,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 35000,
     "openingHours": "07:00-18:00",
     "description": "Làng trồng rau hữu cơ truyền thống nổi tiếng với các loại rau thơm gia vị đặc trưng cho ẩm thực phố Hội.",
-    "image": "destinations/hoian/lang-rau.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bãi biển An Bàng",
@@ -349,7 +349,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00-23:59",
     "description": "Bãi biển thanh bình và hoang sơ nằm trong top 50 bãi biển đẹp nhất thế giới do CNN bình chọn.",
-    "image": "destinations/hoian/an-bang.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Chợ đêm Hội An",
@@ -361,7 +361,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "17:00-23:00",
     "description": "Khu chợ đêm sầm uất với hàng trăm gian hàng ẩm thực đường phố, đèn lồng và đồ thủ công mỹ nghệ.",
-    "image": "destinations/hoian/cho-dem.jpg"
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Lanterns_in_Hoi_An.jpg/800px-Lanterns_in_Hoi_An.jpg"
   },
   {
     "name": "Đảo Cù Lao Chàm",
@@ -373,7 +373,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 650000,
     "openingHours": "07:00-16:00",
     "description": "Khu dự trữ sinh quyển thế giới với làn nước trong xanh, rạn san hô nguyên sơ và hải sản tươi ngon.",
-    "image": "destinations/hoian/cu-lao-cham.jpg"
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/%C4%90%E1%BA%A3o_C%C3%B9_Lao_Ch%C3%A0m_g%C3%B3c_nh%C3%ACn_t%E1%BB%AB_Cano.jpg/960px-%C4%90%E1%BA%A3o_C%C3%B9_Lao_Ch%C3%A0m_g%C3%B3c_nh%C3%ACn_t%E1%BB%AB_Cano.jpg"
   },
   {
     "name": "Hồ Hoàn Kiếm & Đền Ngọc Sơn",
@@ -385,7 +385,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 30000,
     "openingHours": "07:00-18:00",
     "description": "Trái tim của thủ đô ngàn năm văn hiến gắn liền với truyền thuyết vua Lê Lợi trả gươm báu.",
-    "image": "destinations/hanoi/ho-hoan-kiem.jpg"
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Thap_Rua_Ho_Guom.jpg/800px-Thap_Rua_Ho_Guom.jpg"
   },
   {
     "name": "Văn Miếu - Quốc Tử Giám",
@@ -397,7 +397,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "08:00-17:00",
     "description": "Trường đại học đầu tiên của Việt Nam, nơi lưu giữ 82 bia tiến sĩ vinh danh hiền tài.",
-    "image": "destinations/hanoi/van-mieu.jpg"
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Khue_Van_Cac_Temple_of_Literature.jpg/800px-Khue_Van_Cac_Temple_of_Literature.jpg"
   },
   {
     "name": "Lăng Chủ tịch Hồ Chí Minh",
@@ -409,7 +409,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "closed",
     "description": "Nơi an nghỉ vĩnh hằng của Chủ tịch Hồ Chí Minh bên quảng trường Ba Đình lịch sử.",
-    "image": "destinations/hanoi/lang-bac.jpg"
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Ho_Chi_Minh_Mausoleum_2019.jpg/800px-Ho_Chi_Minh_Mausoleum_2019.jpg"
   },
   {
     "name": "Hoàng thành Thăng Long",
@@ -421,7 +421,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "08:00-17:00",
     "description": "Quần thể di sản văn hóa thế giới UNESCO minh chứng cho lịch sử 13 thế kỷ kinh đô Thăng Long.",
-    "image": "destinations/hanoi/hoang-thanh.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Chùa Một Cột",
@@ -433,7 +433,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "07:00-18:00",
     "description": "Ngôi chùa có kiến trúc đài sen độc đáo nhất châu Á khởi dựng từ thời vua Lý Thái Tông.",
-    "image": "destinations/hanoi/chua-mot-cot.jpg"
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Chua_Mot_Cot_Hanoi.jpg/800px-Chua_Mot_Cot_Hanoi.jpg"
   },
   {
     "name": "Phố Cổ Hà Nội (36 Phố Phường)",
@@ -445,7 +445,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00-23:59",
     "description": "Khu phố buôn bán truyền thống lưu giữ nét đẹp văn hóa và ẩm thực tinh tế của người Tràng An.",
-    "image": "destinations/hanoi/pho-co-hanoi.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Hồ Tây & Chùa Trấn Quốc",
@@ -457,7 +457,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "07:30-18:00",
     "description": "Ngôi chùa cổ nhất Thăng Long hơn 1500 năm tuổi tọa lạc trên hòn đảo xanh ngát giữa Hồ Tây.",
-    "image": "destinations/hanoi/chua-tran-quoc.jpg"
+    "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Nhà tù Hỏa Lò",
@@ -469,7 +469,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 50000,
     "openingHours": "08:00-17:00",
     "description": "Di tích lịch sử minh chứng cho tinh thần bất khuất của các chiến sĩ cách mạng Việt Nam.",
-    "image": "destinations/hanoi/hoa-lo.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Nhà hát Lớn Hà Nội",
@@ -481,7 +481,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "08:00-17:00",
     "description": "Công trình kiến trúc kiểu tân cổ điển Pháp tráng lệ tại quảng trường Cách mạng Tháng Tám.",
-    "image": "destinations/hanoi/nha-hat-lon.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Cầu Long Biên",
@@ -493,11 +493,11 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00-23:59",
     "description": "Cây cầu thép lịch sử vắt qua ba thế kỷ, nhân chứng hào hùng của thủ đô Hà Nội.",
-    "image": "destinations/hanoi/cau-long-bien.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Dinh Độc Lập",
-    "province": "Hồ Chí Minh",
+    "province": "TP. Hồ Chí Minh",
     "category": "Di tích & Lịch sử",
     "latitude": 10.777,
     "longitude": 106.6953,
@@ -505,11 +505,11 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 65000,
     "openingHours": "08:00-16:30",
     "description": "Biểu tượng lịch sử ghi dấu thời khắc đất nước thống nhất trọn vẹn ngày 30/4/1975.",
-    "image": "destinations/hcm/dinh-doc-lap.jpg"
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Reunification_Palace_Saigon.jpg/800px-Reunification_Palace_Saigon.jpg"
   },
   {
     "name": "Nhà thờ Đức Bà Sài Gòn",
-    "province": "Hồ Chí Minh",
+    "province": "TP. Hồ Chí Minh",
     "category": "Kiến trúc & Tôn giáo",
     "latitude": 10.7798,
     "longitude": 106.699,
@@ -517,11 +517,11 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "08:00-17:00",
     "description": "Kiệt tác kiến trúc Gothic cổ điển xây bằng gạch Marseille đỏ giữa trung tâm Sài Gòn.",
-    "image": "destinations/hcm/nha-tho-duc-ba.jpg"
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Notre-Dame_Cathedral_Basilica_of_Saigon.jpg/800px-Notre-Dame_Cathedral_Basilica_of_Saigon.jpg"
   },
   {
     "name": "Bưu điện Trung tâm Sài Gòn",
-    "province": "Hồ Chí Minh",
+    "province": "TP. Hồ Chí Minh",
     "category": "Kiến trúc & Lịch sử",
     "latitude": 10.78,
     "longitude": 106.6999,
@@ -529,11 +529,11 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "07:30-18:00",
     "description": "Tòa bưu điện mang phong cách kiến trúc Pháp cổ kính với mái vòm lộng lẫy và bản đồ lịch sử.",
-    "image": "destinations/hcm/buu-dien.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Chợ Bến Thành",
-    "province": "Hồ Chí Minh",
+    "province": "TP. Hồ Chí Minh",
     "category": "Ẩm thực & Mua sắm",
     "latitude": 10.7725,
     "longitude": 106.698,
@@ -541,11 +541,11 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "06:00-22:00",
     "description": "Biểu tượng thương mại lâu đời nhất của thành phố với tháp đồng hồ bốn mặt nổi tiếng.",
-    "image": "destinations/hcm/cho-ben-thanh.jpg"
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Ben_Thanh_Market_Saigon.jpg/800px-Ben_Thanh_Market_Saigon.jpg"
   },
   {
     "name": "Bảo tàng Chứng tích Chiến tranh",
-    "province": "Hồ Chí Minh",
+    "province": "TP. Hồ Chí Minh",
     "category": "Bảo tàng & Lịch sử",
     "latitude": 10.7794,
     "longitude": 106.6922,
@@ -553,11 +553,11 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 40000,
     "openingHours": "07:30-17:30",
     "description": "Bảo tàng thu hút đông đảo du khách quốc tế với các hiện vật sống động về khát vọng hòa bình.",
-    "image": "destinations/hcm/bao-tang-chien-tranh.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Phố đi bộ Nguyễn Huệ",
-    "province": "Hồ Chí Minh",
+    "province": "TP. Hồ Chí Minh",
     "category": "Cảnh quan & Văn hóa",
     "latitude": 10.7743,
     "longitude": 106.7032,
@@ -565,11 +565,11 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00-23:59",
     "description": "Con đường dạo bộ hiện đại sôi động bậc nhất TP.HCM với tượng đài Bác Hồ và nhạc nước.",
-    "image": "destinations/hcm/pho-di-bo-nguyen-hue.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Địa đạo Củ Chi (Bến Dược & Bến Đình)",
-    "province": "Hồ Chí Minh",
+    "province": "TP. Hồ Chí Minh",
     "category": "Di tích & Trải nghiệm",
     "latitude": 11.1432,
     "longitude": 106.4633,
@@ -577,11 +577,11 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 125000,
     "openingHours": "07:00-17:00",
     "description": "Mê cung ngầm lòng đất dài hơn 250km kỳ tích huyền thoại trong cuộc kháng chiến chống Mỹ.",
-    "image": "destinations/hcm/dia-dao-cu-chi.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Chùa Bửu Long",
-    "province": "Hồ Chí Minh",
+    "province": "TP. Hồ Chí Minh",
     "category": "Tâm linh & Kiến trúc",
     "latitude": 10.8711,
     "longitude": 106.8378,
@@ -589,11 +589,11 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "08:00-18:00",
     "description": "Ngôi chùa mang phong cách Phật giáo nguyên thủy lộng lẫy được báo chí Mỹ vinh danh đẹp nhất thế giới.",
-    "image": "destinations/hcm/chua-buu-long.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Tòa nhà Landmark 81 Skyview",
-    "province": "Hồ Chí Minh",
+    "province": "TP. Hồ Chí Minh",
     "category": "Hiện đại & Ngắm cảnh",
     "latitude": 10.7951,
     "longitude": 106.7218,
@@ -601,11 +601,11 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 500000,
     "openingHours": "09:30-22:00",
     "description": "Tòa nhà cao nhất Việt Nam với đài quan sát ngắm toàn cảnh Sài Gòn từ độ cao gần 400m.",
-    "image": "destinations/hcm/landmark-81.jpg"
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Landmark_81_December_2019.jpg/800px-Landmark_81_December_2019.jpg"
   },
   {
     "name": "Bến Nhà Rồng (Bảo tàng Hồ Chí Minh)",
-    "province": "Hồ Chí Minh",
+    "province": "TP. Hồ Chí Minh",
     "category": "Di tích & Lịch sử",
     "latitude": 10.7681,
     "longitude": 106.7067,
@@ -613,7 +613,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 30000,
     "openingHours": "closed",
     "description": "Nơi người thanh niên Nguyễn Tất Thành ra đi tìm đường cứu nước vào ngày 5/6/1911.",
-    "image": "destinations/hcm/ben-nha-rong.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Hồ Xuân Hương Đà Lạt",
@@ -625,7 +625,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00-23:59",
     "description": "Hồ nước hình trăng lưỡi liềm thơ mộng ví như viên ngọc bích giữa lòng thành phố ngàn hoa.",
-    "image": "destinations/lamdong/ho-xuan-huong.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Núi Langbiang",
@@ -637,7 +637,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 100000,
     "openingHours": "07:00-17:00",
     "description": "Nóc nhà của Đà Lạt gắn liền với thiên tình sử huyền thoại của chàng K'Lang và nàng H'Biang.",
-    "image": "destinations/lamdong/langbiang.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Chùa Linh Phước (Chùa Ve Chai)",
@@ -649,7 +649,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "07:30-17:30",
     "description": "Ngôi chùa nắm giữ nhiều kỷ lục với công trình rồng uốn lượn khảm từ hàng vạn mảnh sành sứ.",
-    "image": "destinations/lamdong/chua-linh-phuoc.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Thác Datanla",
@@ -661,7 +661,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 200000,
     "openingHours": "07:30-17:00",
     "description": "Thác nước hùng vĩ nổi tiếng với hệ thống máng trượt xuyên rừng dài nhất Đông Nam Á.",
-    "image": "destinations/lamdong/thac-datanla.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Ga xe lửa Đà Lạt",
@@ -673,7 +673,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 150000,
     "openingHours": "07:00-18:00",
     "description": "Nhà ga cổ kính nhất Đông Dương mang phong cách Art Deco kết hợp mái nhà rông Tây Nguyên.",
-    "image": "destinations/lamdong/ga-da-lat.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Vịnh Hạ Long",
@@ -685,7 +685,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 500000,
     "openingHours": "06:30-18:30",
     "description": "Kỳ quan thiên nhiên thế giới UNESCO với hàng nghìn đảo đá vôi kỳ vĩ trên vịnh biển ngọc bích.",
-    "image": "destinations/quangninh/vinh-ha-long.jpg"
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Ha_Long_Bay_Vietnam.jpg/800px-Ha_Long_Bay_Vietnam.jpg"
   },
   {
     "name": "Bảo tàng Quảng Ninh",
@@ -697,7 +697,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 40000,
     "openingHours": "closed",
     "description": "Tòa nhà phủ kính đen huyền bí lấy cảm hứng từ biểu tượng than đá vùng mỏ Quảng Ninh.",
-    "image": "destinations/quangninh/bao-tang-quang-ninh.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Danh thắng Yên Tử",
@@ -709,7 +709,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 350000,
     "openingHours": "06:00-18:00",
     "description": "Cái nôi của Thiền phái Trúc Lâm Yên Tử do Phật hoàng Trần Nhân Tông sáng lập trên đỉnh non thiêng.",
-    "image": "destinations/quangninh/yen-tu.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Đảo Tuần Châu",
@@ -721,7 +721,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 350000,
     "openingHours": "07:00-21:00",
     "description": "Cảng tàu khách quốc tế nhân tạo lớn nhất Việt Nam và khu phức hợp vui chơi giải trí cao cấp.",
-    "image": "destinations/quangninh/tuan-chau.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bán đảo Sun World Hạ Long Complex",
@@ -733,7 +733,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 750000,
     "openingHours": "09:00-19:00",
     "description": "Tổ hợp công viên giải trí hàng đầu Đông Nam Á với cáp treo Nữ Hoàng và Vòng quay Mặt Trời.",
-    "image": "destinations/quangninh/sunworld-halong.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Đài quan sát Lotte Center Hà Nội",
@@ -745,7 +745,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
     "description": "Đài ngắm cảnh trong Lotte Center, cho góc nhìn rộng ra hồ Tây, khu Ba Đình và đường phố Hà Nội. Điểm nhấn là quan sát thành phố từ trên cao và khu sàn kính. Trải nghiệm nổi bật: Ngắm đường chân trời Hà Nội Chụp ảnh thành phố qua khung kính.",
-    "image": "destinations/ha-noi/dai-quan-sat-lotte-center-ha-noi.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Cột cờ Hà Nội",
@@ -757,7 +757,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Kỳ đài còn lại của thành Hà Nội thời Nguyễn, nổi bật với thân tháp và lá cờ trên cao. Đây là điểm dừng gắn với lịch sử và cảnh quan khu Ba Đình. Trải nghiệm nổi bật: Quan sát kiến trúc kỳ đài Tìm hiểu dấu tích thành Hà Nội.",
-    "image": "destinations/ha-noi/cot-co-ha-noi.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bảo tàng Chiến thắng B-52",
@@ -769,7 +769,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Bảo tàng chuyên đề về cuộc chiến đấu bảo vệ Hà Nội cuối năm 1972. Xác máy bay và hiện vật quân sự giúp người xem hình dung sự kiện qua những chứng tích trực tiếp. Trải nghiệm nổi bật: Xem hiện vật máy bay Đọc trưng bày về chiến dịch phòng không.",
-    "image": "destinations/ha-noi/bao-tang-chien-thang-b-52.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bảo tàng gốm Bát Tràng",
@@ -781,7 +781,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Công trình trưng bày gốm tại Bát Tràng có hình khối gợi bàn xoay của người thợ. Không gian phù hợp tìm hiểu nghề gốm và kết hợp khám phá làng nghề xung quanh. Trải nghiệm nổi bật: Xem trưng bày gốm Khám phá kiến trúc mô phỏng bàn xoay.",
-    "image": "destinations/ha-noi/bao-tang-gom-bat-trang.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bảo tàng Hồ Chí Minh",
@@ -793,7 +793,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "00:00 - 23:59",
     "description": "Bảo tàng giới thiệu cuộc đời và hoạt động của Chủ tịch Hồ Chí Minh bằng hiện vật, tư liệu và không gian trưng bày mang tính biểu tượng. Có thể ghép với tuyến tham quan Ba Đình. Trải nghiệm nổi bật: Xem tư liệu về Hồ Chí Minh Tìm hiểu ngôn ngữ trưng bày biểu tượng.",
-    "image": "destinations/ha-noi/bao-tang-ho-chi-minh.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Văn Miếu – Quốc Tử Giám",
@@ -805,7 +805,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Quần thể Văn Miếu và Quốc Tử Giám gắn với truyền thống học tập của Đại Việt. Sân vườn, Khuê Văn Các và bia tiến sĩ tạo nên hành trình tham quan thiên về văn hóa, giáo dục. Trải nghiệm nổi bật: Tìm hiểu truyền thống khoa bảng Quan sát kiến trúc sân và cổng cổ.",
-    "image": "destinations/ha-noi/van-mieu-quoc-tu-giam.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Quần thể di tích Hồ Chí Minh tại Ba Đình",
@@ -817,7 +817,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "00:00 - 23:59",
     "description": "Cụm di tích tại Ba Đình tập hợp Lăng Chủ tịch Hồ Chí Minh, khu Phủ Chủ tịch, nhà sàn và các công trình lân cận. Các điểm trong cụm có quy trình tham quan khác nhau. Trải nghiệm nổi bật: Tham quan tuyến di tích Ba Đình Tìm hiểu không gian sống của Bác Hồ.",
-    "image": "destinations/ha-noi/quan-the-di-tich-ho-chi-minh-tai-ba-dinh.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Hồ Hoàn Kiếm và phố cổ Hà Nội",
@@ -829,7 +829,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
     "description": "Khu hồ Hoàn Kiếm kết nối với những phố nghề lâu đời của Hà Nội. Đi bộ quanh hồ rồi vào phố cổ giúp quan sát nhịp sống, kiến trúc và sinh hoạt đô thị. Trải nghiệm nổi bật: Dạo quanh hồ Hoàn Kiếm Khám phá phố nghề và hàng quán.",
-    "image": "destinations/ha-noi/ho-hoan-kiem-va-pho-co-ha-noi.jpg"
+    "image": "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Chùa Hương",
@@ -841,7 +841,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Quần thể Hương Sơn kết hợp hành hương, cảnh quan núi đá vôi và hành trình trên suối Yến. Các chùa và động nằm rải rác nên trải nghiệm có cả đi thuyền lẫn đi bộ. Trải nghiệm nổi bật: Đi thuyền trên suối Yến Tham quan tuyến chùa và động.",
-    "image": "destinations/ha-noi/chua-huong.jpg"
+    "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bãi biển Đồ Sơn",
@@ -853,7 +853,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
     "description": "Bãi biển trên bán đảo Đồ Sơn là điểm nghỉ ven biển quen thuộc của Hải Phòng. Có thể kết hợp dạo bờ biển, tìm hiểu lịch sử khu nghỉ và thưởng thức hải sản. Trải nghiệm nổi bật: Dạo bờ biển Đồ Sơn Kết hợp khám phá bán đảo.",
-    "image": "destinations/hai-phong/bai-bien-do-son.jpg"
+    "image": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Khu di tích Côn Sơn – Kiếp Bạc",
@@ -865,7 +865,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Quần thể Côn Sơn – Kiếp Bạc gắn với Nguyễn Trãi, Trần Hưng Đạo và lịch sử vùng Chí Linh. Không gian tham quan gồm đền chùa, đường núi và cảnh quan cây xanh. Trải nghiệm nổi bật: Tìm hiểu di sản Nguyễn Trãi Tham quan các điểm thờ Trần Hưng Đạo.",
-    "image": "destinations/hai-phong/khu-di-tich-con-son-kiep-bac.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Vịnh Lan Hạ",
@@ -877,7 +877,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
     "description": "Vịnh biển cạnh Cát Bà có những đảo đá vôi, vũng nước kín và bãi nhỏ. Trải nghiệm chủ yếu diễn ra trên thuyền, phù hợp ghép với hành trình khám phá quần đảo. Trải nghiệm nổi bật: Đi thuyền ngắm đảo đá Chèo kayak tại khu vực được phép.",
-    "image": "destinations/hai-phong/vinh-lan-ha.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Quần đảo Cát Bà",
@@ -889,7 +889,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
     "description": "Quần đảo Cát Bà kết hợp cảnh quan biển đảo với rừng trên núi đá vôi. Đây là một vùng du lịch rộng, cần chọn riêng tuyến vịnh, bãi biển hoặc khám phá thiên nhiên. Trải nghiệm nổi bật: Khám phá cảnh quan đảo Kết hợp tuyến rừng và biển.",
-    "image": "destinations/hai-phong/quan-dao-cat-ba.jpg"
+    "image": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Chùa Dư Hàng",
@@ -901,7 +901,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
     "description": "Chùa Dư Hàng, còn gọi Phúc Lâm Tự, là ngôi chùa cổ của Hải Phòng. Kiến trúc truyền thống và sân chùa tạo một điểm dừng văn hóa trong lịch trình khám phá thành phố. Trải nghiệm nổi bật: Quan sát kiến trúc chùa cổ Tìm hiểu đời sống tín ngưỡng đất Cảng.",
-    "image": "destinations/hai-phong/chua-du-hang.jpg"
+    "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Nhà hát Lớn Hải Phòng",
@@ -913,7 +913,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
     "description": "Nhà hát Lớn Hải Phòng là công trình kiến trúc thời Pháp ở trung tâm thành phố. Mặt đứng và quảng trường phía trước phù hợp quan sát cảnh quan đô thị hoặc ghép một buổi đi bộ. Trải nghiệm nổi bật: Ngắm mặt đứng nhà hát Dạo quảng trường trung tâm.",
-    "image": "destinations/hai-phong/nha-hat-lon-hai-phong.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bảo tàng Hải Phòng",
@@ -925,7 +925,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Bảo tàng Hải Phòng đặt trong một tòa nhà kiến trúc Pháp, giới thiệu lịch sử và văn hóa địa phương. Điểm đáng chú ý là sự kết hợp giữa công trình cũ và các bộ sưu tập. Trải nghiệm nổi bật: Khám phá lịch sử đất Cảng Quan sát kiến trúc tòa nhà bảo tàng.",
-    "image": "destinations/hai-phong/bao-tang-hai-phong.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Chùa và tháp Tường Long",
@@ -937,7 +937,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
     "description": "Quần thể chùa và tháp Tường Long nằm trên vùng đồi Đồ Sơn, gắn với dấu tích Phật giáo thời Lý. Cảnh quan trên cao bổ sung cho chuyến khám phá bán đảo. Trải nghiệm nổi bật: Tìm hiểu dấu tích tháp thời Lý Ngắm cảnh vùng Đồ Sơn.",
-    "image": "destinations/hai-phong/chua-va-thap-tuong-long.jpg"
+    "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Đỉnh Bạch Mộc Lương Tử (Ky Quan San)",
@@ -949,7 +949,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Ky Quan San, thường được gọi Bạch Mộc Lương Tử, là điểm trekking trên dãy núi giáp Lai Châu và Lào Cai. Hành trình nổi bật ở địa hình cao, rừng và góc nhìn biển mây. Trải nghiệm nổi bật: Trekking theo tuyến được hướng dẫn Quan sát cảnh núi và mây.",
-    "image": "destinations/lai-chau/dinh-bach-moc-luong-tu-ky-quan-san.jpg"
+    "image": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Cầu kính Rồng Mây",
@@ -961,7 +961,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
     "description": "Cầu kính Rồng Mây là điểm trải nghiệm trên cao ở khu vực đèo Ô Quy Hồ. Công trình kết hợp sàn kính với tầm nhìn ra sườn núi, phù hợp người thích cảm giác mạnh. Trải nghiệm nổi bật: Trải nghiệm cầu kính Ngắm cảnh khu vực Ô Quy Hồ.",
-    "image": "destinations/lai-chau/cau-kinh-rong-may.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Quần thể động Pu Sam Cáp",
@@ -973,7 +973,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Pu Sam Cáp là hệ thống hang đá vôi của Lai Châu với không gian nhũ đá và đường lên núi. Trải nghiệm thiên về đi bộ và quan sát cấu trúc hang. Trải nghiệm nổi bật: Khám phá nhũ đá Đi bộ theo tuyến tham quan hang.",
-    "image": "destinations/lai-chau/quan-the-dong-pu-sam-cap.jpg"
+    "image": "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Cao nguyên Sìn Hồ",
@@ -985,7 +985,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
     "description": "Cao nguyên Sìn Hồ có cảnh quan vùng cao, bản làng và sinh hoạt văn hóa của các cộng đồng địa phương. Đây là khu vực khám phá theo tuyến, phù hợp chuyến đi chậm. Trải nghiệm nổi bật: Khám phá bản làng vùng cao Quan sát cảnh núi và chợ địa phương.",
-    "image": "destinations/lai-chau/cao-nguyen-sin-ho.jpg"
+    "image": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bản Sin Suối Hồ",
@@ -997,7 +997,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
     "description": "Bản Sin Suối Hồ gắn với đời sống người Mông, nhà ở, vườn cây và cảnh quan núi Lai Châu. Du lịch cộng đồng là cách tiếp cận phù hợp để tìm hiểu nếp sống của bản. Trải nghiệm nổi bật: Dạo bản cùng người địa phương Tìm hiểu văn hóa người Mông.",
-    "image": "destinations/lai-chau/ban-sin-suoi-ho.jpg"
+    "image": "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Cánh đồng Mường Than",
@@ -1009,11 +1009,11 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Cánh đồng Mường Than là vùng canh tác lúa rộng giữa núi Than Uyên. Cảnh quan thay đổi theo mùa vụ, thích hợp quan sát đời sống nông nghiệp và chụp ảnh đường làng. Trải nghiệm nổi bật: Ngắm cảnh đồng lúa Tìm hiểu sinh hoạt nông nghiệp.",
-    "image": "destinations/lai-chau/canh-dong-muong-than.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Thung lũng Tú Lệ",
-    "province": "Lào Cai",
+    "province": "Yên Bái",
     "category": "Cảnh quan",
     "latitude": 22.2824,
     "longitude": 103.8078,
@@ -1021,43 +1021,43 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Thung lũng Tú Lệ nằm giữa các dãy núi của vùng Văn Chấn, nổi bật với ruộng lúa và bản làng. Điểm đến thường được ghép với hành trình qua Khau Phạ và Mù Cang Chải. Trải nghiệm nổi bật: Ngắm ruộng trong thung lũng Khám phá văn hóa và ẩm thực địa phương.",
-    "image": "destinations/lao-cai/thung-lung-tu-le.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Sa Pa",
     "province": "Lào Cai",
     "category": "Đô thị và phố cổ",
-    "latitude": 22.3004,
-    "longitude": 103.8078,
+    "latitude": 22.3364,
+    "longitude": 103.8438,
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
     "description": "Sa Pa là vùng du lịch trên sườn Hoàng Liên Sơn, kết nối đô thị nghỉ dưỡng với thung lũng và bản làng. Có nhiều lựa chọn từ dạo phố đến đi bộ khám phá văn hóa vùng cao. Trải nghiệm nổi bật: Khám phá các bản quanh Sa Pa Ngắm cảnh Hoàng Liên Sơn.",
-    "image": "destinations/lao-cai/sa-pa.jpg"
+    "image": "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Ruộng bậc thang Mù Cang Chải",
-    "province": "Lào Cai",
+    "province": "Yên Bái",
     "category": "Cảnh quan",
-    "latitude": 22.3184,
-    "longitude": 103.8078,
+    "latitude": 21.8489,
+    "longitude": 104.0867,
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Ruộng bậc thang Mù Cang Chải uốn theo sườn núi, phản ánh kỹ thuật canh tác của người Mông. Cảnh quan thay đổi giữa mùa làm đất, mùa lúa xanh và vụ gặt. Trải nghiệm nổi bật: Ngắm ruộng bậc thang Tìm hiểu canh tác vùng cao.",
-    "image": "destinations/lao-cai/ruong-bac-thang-mu-cang-chai.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Đỉnh Fansipan",
     "province": "Lào Cai",
     "category": "Núi và cao nguyên",
-    "latitude": 22.3364,
-    "longitude": 103.8078,
+    "latitude": 22.3033,
+    "longitude": 103.775,
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Fansipan là đỉnh cao nổi bật của dãy Hoàng Liên Sơn. Trải nghiệm lên đỉnh bằng hệ thống du lịch khác đáng kể với hành trình leo núi nhiều ngày qua rừng. Trải nghiệm nổi bật: Ngắm cảnh từ khu vực đỉnh Tìm hiểu không gian núi Hoàng Liên.",
-    "image": "destinations/lao-cai/dinh-fansipan.jpg"
+    "image": "https://upload.wikimedia.org/wikipedia/commons/d/de/C%C3%A1p-treo-fansipan-17.jpg?utm_source=vi.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
   },
   {
     "name": "Chợ phiên Bắc Hà",
@@ -1069,19 +1069,19 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "06:00 - 18:30",
     "description": "Chợ Bắc Hà là không gian trao đổi hàng hóa và gặp gỡ của cộng đồng vùng cao. Trang phục, nông sản và nhịp sinh hoạt chợ tạo nên trải nghiệm văn hóa đặc trưng. Trải nghiệm nổi bật: Quan sát sinh hoạt chợ phiên Khám phá nông sản và món ăn địa phương.",
-    "image": "destinations/lao-cai/cho-phien-bac-ha.jpg"
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1f/B%E1%BA%AFc_H%C3%A0_Sunday_market%2C_Vietnam_-_20131027-16.JPG/960px-B%E1%BA%AFc_H%C3%A0_Sunday_market%2C_Vietnam_-_20131027-16.JPG?utm_source=vi.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
   },
   {
     "name": "Bản Cát Cát",
     "province": "Lào Cai",
     "category": "Làng bản và văn hóa",
-    "latitude": 22.3724,
-    "longitude": 103.8078,
+    "latitude": 22.3292,
+    "longitude": 103.8317,
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
     "description": "Bản Cát Cát nằm trong thung lũng gần trung tâm Sa Pa, kết hợp cảnh quan suối với dấu ấn văn hóa Mông. Tuyến tham quan có nhiều đường dốc và điểm dịch vụ du lịch. Trải nghiệm nổi bật: Đi bộ qua cảnh quan bản Tìm hiểu nghề thủ công và nhà truyền thống.",
-    "image": "destinations/lao-cai/ban-cat-cat.jpg"
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/66/B%E1%BA%A3n_C%C3%A1t_C%C3%A1t.jpg/960px-B%E1%BA%A3n_C%C3%A1t_C%C3%A1t.jpg?utm_source=vi.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
   },
   {
     "name": "Tả Van Chư",
@@ -1093,7 +1093,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Tả Van Chư là vùng bản làng trên cao nguyên Bắc Hà, được biết đến với cảnh núi và những thời điểm có mây. Điểm đến phù hợp người muốn khám phá ngoài tuyến Sa Pa quen thuộc. Trải nghiệm nổi bật: Dạo cảnh quan cao nguyên Bắc Hà Chụp ảnh núi và bản làng.",
-    "image": "destinations/lao-cai/ta-van-chu.jpg"
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3f/Vietnam_location_map.svg/960px-Vietnam_location_map.svg.png?utm_source=vi.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
   },
   {
     "name": "Thác Tà Lâm",
@@ -1105,7 +1105,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Thác Tà Lâm ở vùng Mường Khương tạo nhiều tầng nước giữa cảnh quan núi rừng. Đây là điểm thiên nhiên có thể ghép vào hành trình khám phá khu vực biên giới Lào Cai. Trải nghiệm nổi bật: Quan sát các tầng thác Khám phá cảnh quan Mường Khương.",
-    "image": "destinations/lao-cai/thac-ta-lam.jpg"
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/37/Vietnam_relief_location_map.svg/960px-Vietnam_relief_location_map.svg.png?utm_source=vi.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
   },
   {
     "name": "Khu bảo tồn thiên nhiên Hoàng Liên – Văn Bàn",
@@ -1117,11 +1117,11 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Khu bảo tồn Hoàng Liên – Văn Bàn bảo vệ rừng và hệ sinh thái núi cao ở sườn Hoàng Liên Sơn. Đây là vùng bảo tồn, khác với một khu du lịch có thể tự do đi vào. Trải nghiệm nổi bật: Tìm hiểu sinh thái rừng núi Quan sát thiên nhiên theo tuyến được phép.",
-    "image": "destinations/lao-cai/khu-bao-ton-thien-nhien-hoang-lien-van-ban.jpg"
+    "image": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Đỉnh Tà Chì Nhù",
-    "province": "Lào Cai",
+    "province": "Yên Bái",
     "category": "Núi và cao nguyên",
     "latitude": 22.3184,
     "longitude": 103.8258,
@@ -1129,7 +1129,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Tà Chì Nhù là đỉnh núi của vùng Trạm Tấu, được người trekking lựa chọn để khám phá triền núi và biển mây. Hành trình cần thể lực và chuẩn bị nghỉ núi. Trải nghiệm nổi bật: Trekking theo đường núi Ngắm cảnh sống núi và mây.",
-    "image": "destinations/lao-cai/dinh-ta-chi-nhu.jpg"
+    "image": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Đèo Pha Đin",
@@ -1141,7 +1141,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
     "description": "Đèo Pha Đin nối vùng Sơn La và Điện Biên, có nhiều khúc cua và cảnh núi mở rộng. Đây là một tuyến cảnh quan gắn với cả giao thông và lịch sử Tây Bắc. Trải nghiệm nổi bật: Ngắm cảnh đường đèo Tìm hiểu vai trò tuyến đường Tây Bắc.",
-    "image": "destinations/dien-bien/deo-pha-din.jpg"
+    "image": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Sở chỉ huy Chiến dịch Điện Biên Phủ tại Mường Phăng",
@@ -1153,7 +1153,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Di tích Mường Phăng tái hiện nơi làm việc của Bộ Chỉ huy Chiến dịch Điện Biên Phủ. Đường tham quan qua rừng giúp người xem hình dung điều kiện chỉ huy trong chiến dịch. Trải nghiệm nổi bật: Tham quan các lán và hầm Tìm hiểu hoạt động Bộ Chỉ huy.",
-    "image": "destinations/dien-bien/so-chi-huy-chien-dich-dien-bien-phu-tai-muong-phang.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Quần thể di tích Chiến trường Điện Biên Phủ",
@@ -1165,7 +1165,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Quần thể chiến trường Điện Biên Phủ tập hợp nhiều điểm di tích trong thung lũng và các đồi lân cận. Muốn hiểu chiến dịch cần chọn tuyến có liên hệ, thay vì chỉ đến một địa chỉ. Trải nghiệm nổi bật: Khám phá các điểm chiến trường Liên kết di tích với diễn biến chiến dịch.",
-    "image": "destinations/dien-bien/quan-the-di-tich-chien-truong-dien-bien-phu.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bảo tàng Chiến thắng lịch sử Điện Biên Phủ",
@@ -1177,7 +1177,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Bảo tàng Chiến thắng Điện Biên Phủ giới thiệu chiến dịch qua tư liệu, hiện vật và các không gian tái hiện. Có thể ghép với đồi A1 và những di tích quanh khu trung tâm. Trải nghiệm nổi bật: Xem tư liệu chiến dịch Tìm hiểu hiện vật và tái hiện lịch sử.",
-    "image": "destinations/dien-bien/bao-tang-chien-thang-lich-su-dien-bien-phu.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "A Pa Chải",
@@ -1189,7 +1189,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "A Pa Chải là vùng cực Tây đất liền gắn với ngã ba biên giới Việt Nam, Lào và Trung Quốc. Hành trình kết hợp đường núi với trải nghiệm tìm hiểu cột mốc biên giới. Trải nghiệm nổi bật: Khám phá cảnh quan vùng cực Tây Tham quan mốc theo hướng dẫn.",
-    "image": "destinations/dien-bien/a-pa-chai.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Hồ Pá Khoang",
@@ -1201,7 +1201,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
     "description": "Hồ Pá Khoang nằm trong cảnh quan đồi rừng gần Mường Phăng. Mặt hồ và các đảo nhỏ tạo không gian nghỉ ngơi, có thể kết hợp tuyến lịch sử Điện Biên. Trải nghiệm nổi bật: Ngắm cảnh hồ và đồi rừng Kết hợp thăm Mường Phăng.",
-    "image": "destinations/dien-bien/ho-pa-khoang.jpg"
+    "image": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Di tích Nhà tù Sơn La",
@@ -1213,7 +1213,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Nhà tù Sơn La trên đồi Khau Cả lưu giữ dấu tích nơi giam giữ những người hoạt động cách mạng. Không gian còn lại giúp người xem tiếp cận lịch sử qua các hạng mục di tích. Trải nghiệm nổi bật: Xem dấu tích nhà tù Tìm hiểu lịch sử tù chính trị.",
-    "image": "destinations/son-la/di-tich-nha-tu-son-la.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Đồi chè trái tim Mộc Châu",
@@ -1225,19 +1225,19 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
     "description": "Những luống chè được tạo hình trái tim là cảnh quan nhận diện của vùng Mộc Châu. Tuyến tham quan kết hợp chụp ảnh đồi chè với tìm hiểu hoạt động sản xuất chè. Trải nghiệm nổi bật: Chụp cảnh luống chè tạo hình Tìm hiểu vùng trồng chè.",
-    "image": "destinations/son-la/doi-che-trai-tim-moc-chau.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Tà Xùa",
     "province": "Sơn La",
     "category": "Núi và cao nguyên",
-    "latitude": 21.3076,
-    "longitude": 103.8829,
+    "latitude": 21.3653,
+    "longitude": 104.4719,
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Tà Xùa ở vùng cao Bắc Yên có các triền núi và góc nhìn mây nổi bật. Khám phá cảnh quan quanh bản khác với trekking lên đỉnh núi cùng tên. Trải nghiệm nổi bật: Ngắm cảnh vùng cao Bắc Yên Săn mây khi điều kiện phù hợp.",
-    "image": "destinations/son-la/ta-xua.jpg"
+    "image": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Khu du lịch quốc gia Mộc Châu",
@@ -1249,7 +1249,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Vùng du lịch Mộc Châu gồm cao nguyên chè, nông trại và bản làng giữa cảnh quan đồi núi. Các điểm phân tán nên phù hợp lịch khám phá theo cụm hơn là một điểm check-in duy nhất. Trải nghiệm nổi bật: Khám phá cao nguyên và nông trại Tìm hiểu văn hóa bản làng.",
-    "image": "destinations/son-la/khu-du-lich-quoc-gia-moc-chau.jpg"
+    "image": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Cầu kính Bạch Long",
@@ -1261,7 +1261,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
     "description": "Cầu kính Bạch Long thuộc khu du lịch Mộc Châu Island, tạo trải nghiệm đi bộ trên kết cấu kính giữa cảnh quan núi. Đây là điểm vui chơi có quản lý, khác với tuyến trekking tự nhiên. Trải nghiệm nổi bật: Trải nghiệm lối đi kính Ngắm cảnh núi từ trên cao.",
-    "image": "destinations/son-la/cau-kinh-bach-long.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bản Hang Táu",
@@ -1273,7 +1273,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Hang Táu là bản người Mông trong thung lũng của Mộc Châu, nổi bật với không gian đồng cỏ và nhà ở truyền thống. Trải nghiệm phù hợp nhất khi tôn trọng nhịp sống của cộng đồng. Trải nghiệm nổi bật: Đi bộ khám phá thung lũng Tìm hiểu sinh hoạt bản Mông.",
-    "image": "destinations/son-la/ban-hang-tau.jpg"
+    "image": "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Vườn hoa cẩm tú cầu Mộc Châu",
@@ -1285,7 +1285,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
     "description": "Các vườn cẩm tú cầu ở Mộc Châu tạo cảnh quan hoa theo mùa trên cao nguyên. Đây là nhóm điểm chụp ảnh tại các cơ sở trồng hoa, không phải một địa chỉ duy nhất. Trải nghiệm nổi bật: Chụp ảnh vườn hoa Kết hợp khám phá cảnh quan cao nguyên.",
-    "image": "destinations/son-la/vuon-hoa-cam-tu-cau-moc-chau.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Hang Dơi Mộc Châu",
@@ -1297,43 +1297,43 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Hang Dơi, còn gọi động Sơn Mộc Hương, là hang đá vôi ở khu vực Mộc Châu. Không gian nhũ đá tạo một lựa chọn bổ sung bên cạnh các nông trại và đồi chè. Trải nghiệm nổi bật: Khám phá cấu trúc hang Quan sát nhũ đá trong tuyến tham quan.",
-    "image": "destinations/son-la/hang-doi-moc-chau.jpg"
+    "image": "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Động Ngườm Ngao",
     "province": "Cao Bằng",
     "category": "Hang động",
-    "latitude": 22.6127,
-    "longitude": 105.864,
+    "latitude": 22.845,
+    "longitude": 106.7083,
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Ngườm Ngao là hang đá vôi gần khu Bản Giốc, có hệ thống nhũ đá và không gian lòng hang đa dạng. Có thể ghép vào tuyến khám phá cảnh quan vùng Đàm Thủy. Trải nghiệm nổi bật: Tham quan nhũ đá Kết hợp tuyến Bản Giốc – Khuổi Ky.",
-    "image": "destinations/cao-bang/dong-nguom-ngao.jpg"
+    "image": "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Thác Bản Giốc",
     "province": "Cao Bằng",
     "category": "Thác nước",
-    "latitude": 22.6307,
-    "longitude": 105.864,
+    "latitude": 22.8542,
+    "longitude": 106.7236,
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Thác Bản Giốc đổ qua các bậc đá vôi trên sông Quây Sơn, bên biên giới Việt – Trung. Cảnh thác, dòng sông và bản làng xung quanh phù hợp một tuyến thiên nhiên của Cao Bằng. Trải nghiệm nổi bật: Ngắm thác từ các góc ven sông Ghép thăm Ngườm Ngao và Khuổi Ky.",
-    "image": "destinations/cao-bang/thac-ban-gioc.jpg"
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Bangioc9tam.jpg/800px-Bangioc9tam.jpg"
   },
   {
     "name": "Núi Mắt Thần",
     "province": "Cao Bằng",
     "category": "Núi và cao nguyên",
-    "latitude": 22.6487,
-    "longitude": 105.864,
+    "latitude": 22.7564,
+    "longitude": 106.3117,
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Núi Mắt Thần là khối núi đá có lỗ xuyên nổi bật trong thung lũng Cao Bằng. Cảnh đồng cỏ và mặt nước xung quanh biến đổi theo thời tiết, tạo nhiều góc nhìn khác nhau. Trải nghiệm nổi bật: Chụp ảnh khối núi có lỗ xuyên Dạo cảnh quan thung lũng.",
-    "image": "destinations/cao-bang/nui-mat-than.jpg"
+    "image": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Làng đá Khuổi Ky",
@@ -1345,19 +1345,19 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
     "description": "Khuổi Ky là làng của người Tày gần Bản Giốc, nổi bật với những ngôi nhà đá. Đi bộ trong làng và lưu trú cộng đồng giúp tìm hiểu văn hóa địa phương bên cạnh cảnh quan. Trải nghiệm nổi bật: Khám phá nhà sàn đá Tìm hiểu đời sống cộng đồng Tày.",
-    "image": "destinations/cao-bang/lang-da-khuoi-ky.jpg"
+    "image": "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Khu di tích Pác Bó",
     "province": "Cao Bằng",
     "category": "Di tích",
-    "latitude": 22.6847,
-    "longitude": 105.864,
+    "latitude": 22.9786,
+    "longitude": 106.0503,
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Pác Bó gắn với thời gian hoạt động cách mạng của Chủ tịch Hồ Chí Minh sau khi về nước. Cảnh quan núi, suối và hang kết hợp với tuyến di tích lịch sử. Trải nghiệm nổi bật: Tìm hiểu câu chuyện lịch sử Pác Bó Quan sát cảnh quan suối và núi.",
-    "image": "destinations/cao-bang/khu-di-tich-pac-bo.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Vườn quốc gia Phia Oắc – Phia Đén",
@@ -1369,19 +1369,19 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Vườn quốc gia Phia Oắc – Phia Đén bảo vệ cảnh quan rừng núi của vùng Nguyên Bình. Điểm đến phù hợp tìm hiểu sinh thái và khám phá núi cao theo những tuyến được cho phép. Trải nghiệm nổi bật: Tìm hiểu hệ sinh thái núi cao Quan sát cảnh rừng và sương.",
-    "image": "destinations/cao-bang/vuon-quoc-gia-phia-oac-phia-den.jpg"
+    "image": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Cửa khẩu Hữu Nghị",
     "province": "Lạng Sơn",
     "category": "Công trình và kiến trúc",
-    "latitude": 21.796,
-    "longitude": 106.714,
+    "latitude": 21.853851,
+    "longitude": 106.761189,
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Cửa khẩu Hữu Nghị là đầu mối giao thương trên biên giới Việt – Trung ở Lạng Sơn. Giá trị tham quan thiên về cảnh quan cửa khẩu và tìm hiểu hoạt động vùng biên. Trải nghiệm nổi bật: Tìm hiểu không gian giao thương Quan sát cảnh quan vùng cửa khẩu.",
-    "image": "destinations/lang-son/cua-khau-huu-nghi.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Thành nhà Mạc và núi Tô Thị",
@@ -1393,7 +1393,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Thành nhà Mạc và núi Tô Thị là hai dấu tích văn hóa nổi bật của Lạng Sơn. Cụm điểm kết hợp thành đá trên sườn núi với câu chuyện dân gian về nàng Tô Thị. Trải nghiệm nổi bật: Tìm hiểu dấu tích thành cổ Khám phá câu chuyện núi Tô Thị.",
-    "image": "destinations/lang-son/thanh-nha-mac-va-nui-to-thi.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Thung lũng Bắc Sơn",
@@ -1405,19 +1405,19 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Thung lũng Bắc Sơn có đồng lúa nằm giữa những dãy núi đá vôi. Trải nghiệm có thể là dạo làng dưới thung lũng hoặc lên điểm ngắm cảnh theo tuyến phù hợp. Trải nghiệm nổi bật: Ngắm ruộng giữa núi đá Khám phá bản làng Bắc Sơn.",
-    "image": "destinations/lang-son/thung-lung-bac-son.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Khu du lịch Mẫu Sơn",
     "province": "Lạng Sơn",
     "category": "Núi và cao nguyên",
-    "latitude": 21.85,
-    "longitude": 106.714,
+    "latitude": 21.853851,
+    "longitude": 106.761189,
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Mẫu Sơn là vùng núi của Lạng Sơn với cảnh quan sương mây và bản làng. Chuyến đi thiên về khám phá khí hậu vùng cao và văn hóa địa phương hơn là một công trình đơn lẻ. Trải nghiệm nổi bật: Ngắm cảnh vùng núi Mẫu Sơn Khám phá sinh hoạt cộng đồng.",
-    "image": "destinations/lang-son/khu-du-lich-mau-son.jpg"
+    "image": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Cụm danh thắng Tam Thanh – Nhị Thanh",
@@ -1429,19 +1429,19 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Tam Thanh – Nhị Thanh kết hợp hang động, chùa và dấu tích văn hóa giữa núi đá vôi Lạng Sơn. Các điểm trong cụm bổ sung cho một tuyến khám phá lịch sử và cảnh quan. Trải nghiệm nổi bật: Tham quan hang động Tìm hiểu kiến trúc và văn khắc.",
-    "image": "destinations/lang-son/cum-danh-thang-tam-thanh-nhi-thanh.jpg"
+    "image": "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Ruộng bậc thang Hoàng Su Phì",
-    "province": "Tuyên Quang",
+    "province": "Hà Giang",
     "category": "Cảnh quan",
-    "latitude": 21.7627,
-    "longitude": 105.1807,
+    "latitude": 22.7167,
+    "longitude": 104.6667,
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Ruộng bậc thang Hoàng Su Phì trải trên nhiều sườn núi và bản làng vùng cao. Cảnh quan thể hiện sự thích nghi của canh tác lúa với địa hình, thay đổi rõ theo mùa vụ. Trải nghiệm nổi bật: Khám phá các bản có ruộng bậc thang Chụp cảnh canh tác trên sườn núi.",
-    "image": "destinations/tuyen-quang/ruong-bac-thang-hoang-su-phi.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Khu du lịch sinh thái Na Hang – Lâm Bình",
@@ -1453,43 +1453,43 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
     "description": "Vùng hồ Na Hang – Lâm Bình kết hợp mặt nước, núi đá vôi và bản làng. Hành trình thường theo tuyến trên hồ, thích hợp khám phá cảnh quan và tìm hiểu văn hóa địa phương. Trải nghiệm nổi bật: Đi thuyền theo tuyến trên hồ Khám phá bản làng ven hồ.",
-    "image": "destinations/tuyen-quang/khu-du-lich-sinh-thai-na-hang-lam-binh.jpg"
+    "image": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Đèo Mã Pí Lèng",
-    "province": "Tuyên Quang",
+    "province": "Hà Giang",
     "category": "Núi và cao nguyên",
-    "latitude": 21.7987,
-    "longitude": 105.1807,
+    "latitude": 23.2408,
+    "longitude": 105.4109,
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
     "description": "Đèo Mã Pí Lèng chạy giữa cảnh quan núi đá của cao nguyên Đồng Văn, nhìn xuống thung lũng Nho Quế. Đây là tuyến đường ngắm cảnh, cần chọn điểm dừng an toàn. Trải nghiệm nổi bật: Ngắm thung lũng Nho Quế từ trên cao Khám phá cảnh quan cao nguyên đá.",
-    "image": "destinations/tuyen-quang/deo-ma-pi-leng.jpg"
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/%C4%90%C3%A8o_M%C3%A3_P%C3%AD_L%C3%A8ng_2022.jpg/960px-%C4%90%C3%A8o_M%C3%A3_P%C3%AD_L%C3%A8ng_2022.jpg"
   },
   {
     "name": "Sông Nho Quế",
-    "province": "Tuyên Quang",
+    "province": "Hà Giang",
     "category": "Sông và hồ",
-    "latitude": 21.8167,
-    "longitude": 105.1807,
+    "latitude": 23.2355,
+    "longitude": 105.4215,
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
     "description": "Sông Nho Quế chảy giữa vùng núi đá Đồng Văn và Mèo Vạc. Đi thuyền trên đoạn được tổ chức du lịch giúp tiếp cận cảnh quan hẻm núi từ mặt nước. Trải nghiệm nổi bật: Đi thuyền trên tuyến du lịch Ngắm vách núi từ lòng sông.",
-    "image": "destinations/tuyen-quang/song-nho-que.jpg"
+    "image": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Hẻm Tu Sản",
-    "province": "Tuyên Quang",
+    "province": "Hà Giang",
     "category": "Cảnh quan",
-    "latitude": 21.8347,
-    "longitude": 105.1807,
+    "latitude": 23.245,
+    "longitude": 105.418,
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Hẻm Tu Sản là khe núi cao dọc dòng Nho Quế dưới vùng Mã Pí Lèng. Cảnh quan vách đá dựng nổi bật khi quan sát từ tuyến thuyền được phép. Trải nghiệm nổi bật: Quan sát vách hẻm núi Kết hợp hành trình trên sông Nho Quế.",
-    "image": "destinations/tuyen-quang/hem-tu-san.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Khu di tích Tân Trào",
@@ -1501,47 +1501,47 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Tân Trào lưu giữ những địa điểm gắn với thời kỳ chuẩn bị Cách mạng Tháng Tám và kháng chiến. Các lán, đình và cảnh quan làng tạo tuyến tìm hiểu lịch sử trong không gian nông thôn. Trải nghiệm nổi bật: Tham quan tuyến di tích Tân Trào Tìm hiểu các sự kiện lịch sử.",
-    "image": "destinations/tuyen-quang/khu-di-tich-tan-trao.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Dinh thự họ Vương",
-    "province": "Tuyên Quang",
+    "province": "Hà Giang",
     "category": "Di tích",
-    "latitude": 21.8707,
-    "longitude": 105.1807,
+    "latitude": 23.2439,
+    "longitude": 105.2447,
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Dinh thự họ Vương ở vùng Sà Phìn thể hiện kiến trúc và lịch sử của một gia tộc trên cao nguyên đá. Không gian nhà, sân và tường đá là trọng tâm trải nghiệm. Trải nghiệm nổi bật: Khám phá kiến trúc dinh thự Tìm hiểu lịch sử gia tộc họ Vương.",
-    "image": "destinations/tuyen-quang/dinh-thu-ho-vuong.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Cột cờ Lũng Cú",
-    "province": "Tuyên Quang",
+    "province": "Hà Giang",
     "category": "Di tích",
-    "latitude": 21.7627,
-    "longitude": 105.1987,
+    "latitude": 23.3619,
+    "longitude": 105.3197,
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Cột cờ Lũng Cú nằm trên núi Rồng, nhìn ra vùng bản làng và cảnh quan biên giới. Điểm đến gắn với biểu tượng chủ quyền và hành trình khám phá cực Bắc. Trải nghiệm nổi bật: Tham quan khu cột cờ Ngắm cảnh bản làng phía dưới.",
-    "image": "destinations/tuyen-quang/cot-co-lung-cu.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Phố cổ Đồng Văn",
-    "province": "Tuyên Quang",
+    "province": "Hà Giang",
     "category": "Đô thị và phố cổ",
-    "latitude": 21.7807,
-    "longitude": 105.1987,
+    "latitude": 23.2783,
+    "longitude": 105.3622,
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
     "description": "Phố cổ Đồng Văn có những ngôi nhà truyền thống nằm giữa cảnh quan cao nguyên đá. Đây là điểm dừng phù hợp để dạo phố, tìm hiểu sinh hoạt địa phương và ghép các tuyến vùng cao. Trải nghiệm nổi bật: Dạo phố và quan sát nhà cổ Khám phá món ăn địa phương.",
-    "image": "destinations/tuyen-quang/pho-co-dong-van.jpg"
+    "image": "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Làng văn hóa du lịch Lũng Cẩm",
-    "province": "Tuyên Quang",
+    "province": "Hà Giang",
     "category": "Làng bản và văn hóa",
     "latitude": 21.7987,
     "longitude": 105.1987,
@@ -1549,7 +1549,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
     "description": "Lũng Cẩm là làng văn hóa của người Mông ở thung lũng Sủng Là. Nhà trình tường và nhịp sống của cộng đồng tạo trải nghiệm văn hóa trong tuyến cao nguyên đá. Trải nghiệm nổi bật: Khám phá nhà trình tường Tìm hiểu đời sống người Mông.",
-    "image": "destinations/tuyen-quang/lang-van-hoa-du-lich-lung-cam.jpg"
+    "image": "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Đồi chè Tân Cương",
@@ -1561,7 +1561,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
     "description": "Vùng chè Tân Cương là cảnh quan sản xuất nông nghiệp nổi bật của Thái Nguyên. Những đồi chè và cơ sở chế biến phù hợp kết hợp tham quan với tìm hiểu, thưởng thức trà. Trải nghiệm nổi bật: Ngắm đồi chè Tìm hiểu chế biến và thưởng trà.",
-    "image": "destinations/thai-nguyen/doi-che-tan-cuong.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Hồ Núi Cốc",
@@ -1573,19 +1573,19 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
     "description": "Hồ Núi Cốc là hồ nhân tạo giữa cảnh quan đồi rừng Thái Nguyên, có các khu dịch vụ tham quan quanh hồ. Có thể chọn nghỉ ngơi bên bờ hoặc tuyến khám phá mặt nước. Trải nghiệm nổi bật: Ngắm cảnh hồ và đảo Kết hợp tham quan dịch vụ quanh hồ.",
-    "image": "destinations/thai-nguyen/ho-nui-coc.jpg"
+    "image": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Hồ Ba Bể",
-    "province": "Thái Nguyên",
+    "province": "Bắc Kạn",
     "category": "Sông và hồ",
-    "latitude": 21.5653,
-    "longitude": 105.7973,
+    "latitude": 22.4167,
+    "longitude": 105.6167,
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
     "description": "Hồ Ba Bể nằm giữa rừng và núi đá vôi, gắn với những bản làng ven nước. Trải nghiệm thường kết hợp đi thuyền, khám phá cảnh quan và lưu trú cộng đồng. Trải nghiệm nổi bật: Đi thuyền khám phá hồ Tìm hiểu văn hóa bản ven hồ.",
-    "image": "destinations/thai-nguyen/ho-ba-be.jpg"
+    "image": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bảo tàng Văn hóa các dân tộc Việt Nam",
@@ -1597,7 +1597,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Bảo tàng Văn hóa các dân tộc Việt Nam giới thiệu đời sống và bản sắc của nhiều cộng đồng. Hiện vật, không gian trưng bày và kiến trúc ngoài trời bổ sung cho nhau khi tìm hiểu văn hóa. Trải nghiệm nổi bật: Khám phá văn hóa các dân tộc Quan sát hiện vật sinh hoạt.",
-    "image": "destinations/thai-nguyen/bao-tang-van-hoa-cac-dan-toc-viet-nam.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "ATK Định Hóa",
@@ -1609,7 +1609,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "ATK Định Hóa là hệ thống di tích gắn với căn cứ lãnh đạo kháng chiến ở Việt Bắc. Các điểm phân bố trong vùng đồi rừng, phù hợp một tuyến tham quan có thuyết minh. Trải nghiệm nổi bật: Tham quan các điểm ATK Tìm hiểu lịch sử căn cứ Việt Bắc.",
-    "image": "destinations/thai-nguyen/atk-dinh-hoa.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Khu di tích lịch sử Đền Hùng",
@@ -1621,7 +1621,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Đền Hùng là quần thể thờ các Vua Hùng trên núi Nghĩa Lĩnh, gắn với tín ngưỡng thờ cúng tổ tiên. Tuyến hành hương đi qua nhiều đền và bậc thang dưới tán cây. Trải nghiệm nổi bật: Tìm hiểu tín ngưỡng thờ Vua Hùng Đi bộ theo tuyến đền trên núi.",
-    "image": "destinations/phu-tho/khu-di-tich-lich-su-den-hung.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Vườn quốc gia Xuân Sơn",
@@ -1633,11 +1633,11 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Vườn quốc gia Xuân Sơn kết hợp rừng, núi đá vôi và bản làng của cộng đồng địa phương. Đây là điểm sinh thái phù hợp khám phá theo tuyến có hướng dẫn. Trải nghiệm nổi bật: Khám phá cảnh quan rừng núi Tìm hiểu văn hóa bản làng.",
-    "image": "destinations/phu-tho/vuon-quoc-gia-xuan-son.jpg"
+    "image": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Thiền viện Trúc Lâm Tây Thiên",
-    "province": "Phú Thọ",
+    "province": "Vĩnh Phúc",
     "category": "Tôn giáo và tâm linh",
     "latitude": 21.2987,
     "longitude": 105.1807,
@@ -1645,11 +1645,11 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Thiền viện Trúc Lâm Tây Thiên là không gian Phật giáo trên sườn núi Tam Đảo. Kiến trúc, sân chùa và cảnh quan xanh tạo trải nghiệm thiên về tĩnh tâm và tìm hiểu văn hóa. Trải nghiệm nổi bật: Quan sát kiến trúc thiền viện Dạo không gian sân và vườn.",
-    "image": "destinations/phu-tho/thien-vien-truc-lam-tay-thien.jpg"
+    "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Tam Đảo",
-    "province": "Phú Thọ",
+    "province": "Vĩnh Phúc",
     "category": "Núi và cao nguyên",
     "latitude": 21.3167,
     "longitude": 105.1807,
@@ -1657,11 +1657,11 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Tam Đảo là vùng nghỉ dưỡng núi với cảnh quan sườn dốc, nhà cửa và sương mây. Có thể kết hợp đi bộ trong khu trung tâm với những điểm thiên nhiên lân cận. Trải nghiệm nổi bật: Dạo khu nghỉ dưỡng trên núi Ngắm cảnh khi trời quang.",
-    "image": "destinations/phu-tho/tam-dao.jpg"
+    "image": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Thung lũng Mai Châu",
-    "province": "Phú Thọ",
+    "province": "Hòa Bình",
     "category": "Làng bản và văn hóa",
     "latitude": 21.3347,
     "longitude": 105.1807,
@@ -1669,7 +1669,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Mai Châu có cảnh quan đồng lúa, núi bao quanh và những bản nhà sàn của người Thái. Du lịch cộng đồng, đi bộ và khám phá đời sống địa phương là trọng tâm trải nghiệm. Trải nghiệm nổi bật: Dạo bản nhà sàn Khám phá cảnh quan thung lũng.",
-    "image": "destinations/phu-tho/thung-lung-mai-chau.jpg"
+    "image": "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Hồ Hòa Bình",
@@ -1681,7 +1681,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
     "description": "Hồ Hòa Bình trải giữa cảnh quan núi hai bên dòng Đà, với đảo và bản ven hồ. Đi thuyền và lưu trú tại các điểm cộng đồng là cách khám phá thường gặp. Trải nghiệm nổi bật: Đi thuyền ngắm hồ Khám phá bản ven hồ.",
-    "image": "destinations/phu-tho/ho-hoa-binh.jpg"
+    "image": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bảo tàng Hùng Vương",
@@ -1693,7 +1693,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Bảo tàng Hùng Vương giới thiệu lịch sử và văn hóa vùng đất Tổ qua hiện vật khảo cổ và đời sống địa phương. Có thể ghép với chuyến tham quan Việt Trì và Đền Hùng. Trải nghiệm nổi bật: Tìm hiểu văn hóa đất Tổ Xem bộ sưu tập khảo cổ.",
-    "image": "destinations/phu-tho/bao-tang-hung-vuong.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Đèo Thung Khe (Đèo Đá Trắng)",
@@ -1705,7 +1705,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
     "description": "Đèo Thung Khe nằm trên tuyến đường tới Mai Châu, nổi bật với sườn đá vôi trắng và tầm nhìn xuống vùng núi. Đây là điểm dừng cảnh quan bên một tuyến giao thông đang hoạt động. Trải nghiệm nổi bật: Ngắm sườn đá trắng Dừng chân khám phá cảnh quan Mai Châu.",
-    "image": "destinations/phu-tho/deo-thung-khe-deo-da-trang.jpg"
+    "image": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Đền Đô",
@@ -1717,7 +1717,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
     "description": "Đền Đô ở vùng Từ Sơn thờ các vua triều Lý, gắn với lịch sử đất Cổ Pháp. Kiến trúc đền và không gian lễ nghi phù hợp chuyến khám phá văn hóa Kinh Bắc. Trải nghiệm nổi bật: Tìm hiểu lịch sử triều Lý Quan sát kiến trúc đền.",
-    "image": "destinations/bac-ninh/den-do.jpg"
+    "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Làng tranh Đông Hồ",
@@ -1729,11 +1729,11 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
     "description": "Làng tranh Đông Hồ gắn với kỹ thuật in tranh dân gian và các chủ đề đời sống Việt. Thăm một cơ sở làm tranh giúp hiểu quá trình tạo hình, vật liệu và cách in. Trải nghiệm nổi bật: Tìm hiểu kỹ thuật in tranh Trao đổi với cơ sở làng nghề.",
-    "image": "destinations/bac-ninh/lang-tranh-dong-ho.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Khu du lịch Tây Yên Tử",
-    "province": "Bắc Ninh",
+    "province": "Bắc Giang",
     "category": "Tôn giáo và tâm linh",
     "latitude": 21.1653,
     "longitude": 106.0307,
@@ -1741,11 +1741,11 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Tây Yên Tử kết hợp công trình Phật giáo với cảnh quan sườn tây dãy Yên Tử. Tuyến tham quan có thể gồm đi bộ và phương tiện hỗ trợ tùy khu vực. Trải nghiệm nổi bật: Khám phá không gian Phật giáo Ngắm cảnh sườn tây Yên Tử.",
-    "image": "destinations/bac-ninh/khu-du-lich-tay-yen-tu.jpg"
+    "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Làng cổ Thổ Hà",
-    "province": "Bắc Ninh",
+    "province": "Bắc Giang",
     "category": "Làng bản và văn hóa",
     "latitude": 21.1833,
     "longitude": 106.0307,
@@ -1753,7 +1753,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
     "description": "Làng Thổ Hà nằm bên sông Cầu, được biết đến với đình, ngõ cổ và dấu ấn làng nghề. Đi bộ trong làng giúp quan sát kiến trúc và sinh hoạt nông thôn Kinh Bắc. Trải nghiệm nổi bật: Dạo ngõ làng cổ Tìm hiểu đình và nghề truyền thống.",
-    "image": "destinations/bac-ninh/lang-co-tho-ha.jpg"
+    "image": "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Chùa Bút Tháp",
@@ -1765,7 +1765,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
     "description": "Chùa Bút Tháp là quần thể chùa cổ ở vùng sông Đuống, nổi bật với nghệ thuật điêu khắc và kiến trúc truyền thống. Trải nghiệm phù hợp người quan tâm mỹ thuật Phật giáo. Trải nghiệm nổi bật: Quan sát điêu khắc Phật giáo Tìm hiểu kiến trúc chùa cổ.",
-    "image": "destinations/bac-ninh/chua-but-thap.jpg"
+    "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Đền Chử Đồng Tử",
@@ -1777,7 +1777,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
     "description": "Cụm đền Chử Đồng Tử gắn với truyền thuyết Chử Đồng Tử và Tiên Dung bên sông Hồng. Không gian thờ tự và lễ hội phản ánh tín ngưỡng của cư dân đồng bằng. Trải nghiệm nổi bật: Tìm hiểu truyền thuyết địa phương Tham quan cụm đền.",
-    "image": "destinations/hung-yen/den-chu-dong-tu.jpg"
+    "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Khu di tích Phố Hiến",
@@ -1789,11 +1789,11 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Phố Hiến lưu giữ những dấu tích của một thương cảng từng phát triển bên sông Hồng. Đền, chùa và hội quán tạo thành tuyến tìm hiểu giao lưu văn hóa của vùng Hưng Yên. Trải nghiệm nổi bật: Khám phá các di tích thương cảng Tìm hiểu giao lưu văn hóa Phố Hiến.",
-    "image": "destinations/hung-yen/khu-di-tich-pho-hien.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Chùa Keo",
-    "province": "Hưng Yên",
+    "province": "Thái Bình",
     "category": "Tôn giáo và tâm linh",
     "latitude": 20.632,
     "longitude": 106.014,
@@ -1801,11 +1801,11 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
     "description": "Chùa Keo ở vùng Thái Bình cũ nổi bật với kiến trúc gỗ và gác chuông truyền thống. Không gian chùa phản ánh nghệ thuật xây dựng và sinh hoạt tín ngưỡng đồng bằng Bắc Bộ. Trải nghiệm nổi bật: Quan sát gác chuông và kiến trúc gỗ Tìm hiểu sinh hoạt lễ hội.",
-    "image": "destinations/hung-yen/chua-keo.jpg"
+    "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Vườn quốc gia Xuân Thủy",
-    "province": "Ninh Bình",
+    "province": "Nam Định",
     "category": "Vườn quốc gia và bảo tồn",
     "latitude": 20.1966,
     "longitude": 105.9385,
@@ -1813,55 +1813,55 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Xuân Thủy bảo vệ vùng đất ngập nước cửa sông Hồng, với rừng ngập mặn và sinh cảnh của chim. Chuyến đi phù hợp quan sát thiên nhiên theo tuyến được tổ chức. Trải nghiệm nổi bật: Tìm hiểu hệ sinh thái cửa sông Quan sát chim từ vị trí phù hợp.",
-    "image": "destinations/ninh-binh/vuon-quoc-gia-xuan-thuy.jpg"
+    "image": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Quần thể danh thắng Tràng An",
     "province": "Ninh Bình",
     "category": "Cảnh quan",
-    "latitude": 20.2146,
-    "longitude": 105.9385,
+    "latitude": 20.2536,
+    "longitude": 105.9039,
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 18:00",
     "description": "Tràng An có những tuyến thuyền đi giữa núi đá vôi, hang nước và điểm di tích. Cảnh quan và văn hóa kết hợp trong hành trình theo tuyến, thay vì đi bộ tự do toàn khu. Trải nghiệm nổi bật: Đi thuyền qua cảnh quan karst Tìm hiểu các điểm di tích trên tuyến.",
-    "image": "destinations/ninh-binh/quan-the-danh-thang-trang-an.jpg"
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Trang_An_Ninh_Binh_Landscape.jpg/800px-Trang_An_Ninh_Binh_Landscape.jpg"
   },
   {
     "name": "Tam Cốc",
     "province": "Ninh Bình",
     "category": "Cảnh quan",
-    "latitude": 20.2326,
-    "longitude": 105.9385,
+    "latitude": 20.2197,
+    "longitude": 105.9328,
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Tam Cốc nổi bật với hành trình thuyền trên sông Ngô Đồng giữa đồng lúa và núi đá vôi. Cảnh ruộng hai bên sông là yếu tố thay đổi đáng kể theo mùa vụ. Trải nghiệm nổi bật: Đi thuyền trên sông Ngô Đồng Ngắm cảnh ruộng và núi đá.",
-    "image": "destinations/ninh-binh/tam-coc.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Chùa Bích Động",
     "province": "Ninh Bình",
     "category": "Tôn giáo và tâm linh",
-    "latitude": 20.2506,
-    "longitude": 105.9385,
+    "latitude": 20.2075,
+    "longitude": 105.9181,
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Chùa Bích Động dựa vào sườn núi đá vôi gần Tam Cốc, kết hợp các tầng chùa và hang. Đây là điểm văn hóa có thể ghép với chuyến khám phá vùng Hoa Lư. Trải nghiệm nổi bật: Tham quan các tầng chùa Quan sát kiến trúc hòa với núi đá.",
-    "image": "destinations/ninh-binh/chua-bich-dong.jpg"
+    "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Chùa Tam Chúc",
-    "province": "Ninh Bình",
+    "province": "Hà Nam",
     "category": "Tôn giáo và tâm linh",
-    "latitude": 20.2686,
-    "longitude": 105.9385,
+    "latitude": 20.5739,
+    "longitude": 105.8197,
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Tam Chúc là quần thể Phật giáo trong cảnh quan hồ và núi đá vôi. Các công trình và khoảng cách nội khu rộng khiến trải nghiệm cần được chọn tuyến phù hợp. Trải nghiệm nổi bật: Tham quan công trình Phật giáo Ngắm cảnh hồ và núi.",
-    "image": "destinations/ninh-binh/chua-tam-chuc.jpg"
+    "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Nhà thờ đá Phát Diệm",
@@ -1873,7 +1873,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
     "description": "Nhà thờ đá Phát Diệm kết hợp kiến trúc Công giáo với cách tổ chức không gian gợi đình chùa Việt. Công trình phù hợp người quan tâm văn hóa và nghệ thuật xây dựng. Trải nghiệm nổi bật: Quan sát kiến trúc giao thoa Khám phá các công trình trong quần thể.",
-    "image": "destinations/ninh-binh/nha-tho-da-phat-diem.jpg"
+    "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Cố đô Hoa Lư",
@@ -1885,7 +1885,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Hoa Lư là kinh đô gắn với các triều Đinh và Tiền Lê, nằm giữa vùng núi đá vôi. Tuyến di tích giúp tìm hiểu thời kỳ đầu của nhà nước phong kiến độc lập. Trải nghiệm nổi bật: Tìm hiểu lịch sử Đinh – Tiền Lê Tham quan các đền trong cố đô.",
-    "image": "destinations/ninh-binh/co-do-hoa-lu.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Hang Múa",
@@ -1897,7 +1897,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Hang Múa được biết đến với đường bậc đá lên điểm nhìn cao ra cảnh quan Tam Cốc. Trải nghiệm chính là leo lên sườn núi và ngắm thung lũng từ trên cao. Trải nghiệm nổi bật: Leo bậc đá tới điểm ngắm cảnh Chụp toàn cảnh thung lũng.",
-    "image": "destinations/ninh-binh/hang-mua.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Chùa Bái Đính",
@@ -1909,7 +1909,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Bái Đính gồm không gian chùa cổ và khu chùa mới trong cảnh quan núi Ninh Bình. Quy mô rộng phù hợp hành trình tìm hiểu Phật giáo khi có đủ thời gian di chuyển. Trải nghiệm nổi bật: Tham quan các công trình chùa Tìm hiểu không gian Phật giáo.",
-    "image": "destinations/ninh-binh/chua-bai-dinh.jpg"
+    "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Động Mã Tiên",
@@ -1921,7 +1921,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Động Mã Tiên nằm trong núi đá vôi gần vùng hồ Đồng Thái. Hang và cảnh quan xung quanh tạo một lựa chọn khám phá thiên nhiên ngoài các tuyến trung tâm đông khách. Trải nghiệm nổi bật: Khám phá không gian hang Kết hợp ngắm cảnh vùng Đồng Thái.",
-    "image": "destinations/ninh-binh/dong-ma-tien.jpg"
+    "image": "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Sun World Hạ Long",
@@ -1933,7 +1933,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 950000,
     "openingHours": "07:30 - 18:00",
     "description": "Sun World Hạ Long là tổ hợp vui chơi ở vùng Bãi Cháy, có các phân khu và trải nghiệm cáp treo. Mỗi khu có tính chất khác nhau, từ trò chơi đến ngắm cảnh. Trải nghiệm nổi bật: Chọn phân khu vui chơi phù hợp Ngắm cảnh trên tuyến cáp treo.",
-    "image": "destinations/quang-ninh/sun-world-ha-long.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Đảo Cô Tô",
@@ -1945,7 +1945,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
     "description": "Cô Tô là quần đảo ngoài khơi Quảng Ninh, phù hợp nghỉ biển và khám phá cảnh quan đảo. Hành trình cần kết hợp vận chuyển đường biển với việc di chuyển trên đảo. Trải nghiệm nổi bật: Khám phá bãi biển và bờ đá Dạo cảnh quan đảo.",
-    "image": "destinations/quang-ninh/dao-co-to.jpg"
+    "image": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Khu danh thắng Yên Tử",
@@ -1957,7 +1957,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Yên Tử là vùng núi gắn với Phật giáo Trúc Lâm, có hệ thống chùa và đường hành hương. Trải nghiệm kết hợp văn hóa tâm linh với việc di chuyển trên địa hình dốc. Trải nghiệm nổi bật: Tìm hiểu Phật giáo Trúc Lâm Khám phá tuyến chùa trên núi.",
-    "image": "destinations/quang-ninh/khu-danh-thang-yen-tu.jpg"
+    "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Vịnh Bái Tử Long",
@@ -1969,7 +1969,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
     "description": "Bái Tử Long nằm về phía đông bắc vùng Hạ Long, với đảo đá, làng ven biển và cảnh quan vịnh. Tuyến tham quan cần được chọn theo bến đi và phạm vi được tổ chức. Trải nghiệm nổi bật: Đi thuyền khám phá vịnh Quan sát cảnh quan đảo đá.",
-    "image": "destinations/quang-ninh/vinh-bai-tu-long.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bình Liêu",
@@ -1981,7 +1981,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Bình Liêu là vùng núi biên giới Quảng Ninh, nổi bật với các sống núi và đường lên cột mốc. Trải nghiệm phù hợp người thích đi bộ, cảnh quan và văn hóa vùng cao. Trải nghiệm nổi bật: Khám phá cảnh quan sống núi Tìm hiểu bản làng vùng biên.",
-    "image": "destinations/quang-ninh/binh-lieu.jpg"
+    "image": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Chùa Suối Tắm",
@@ -1993,7 +1993,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Chùa Suối Tắm là điểm Phật giáo trên tuyến hành hương vùng Yên Tử. Quy mô nhỏ phù hợp một chặng dừng tìm hiểu tích xưa và cảnh quan dưới chân núi. Trải nghiệm nổi bật: Tham quan chùa trên tuyến Yên Tử Tìm hiểu câu chuyện địa phương.",
-    "image": "destinations/quang-ninh/chua-suoi-tam.jpg"
+    "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Chùa Vạn Triều",
@@ -2005,7 +2005,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Chùa Vạn Triều nằm trên sườn núi Hoa Khai ở vùng Quảng Yên, hướng ra cảnh quan hồ và vùng vịnh. Điểm đến phù hợp kết hợp không gian thờ tự với ngắm cảnh. Trải nghiệm nổi bật: Dạo không gian chùa Ngắm cảnh từ sườn núi.",
-    "image": "destinations/quang-ninh/chua-van-trieu.jpg"
+    "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Đồi Vô Cực trên đảo Quan Lạn",
@@ -2017,7 +2017,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
     "description": "Đồi Vô Cực ở Quan Lạn là điểm nhìn ven biển với đường chân trời rộng. Trải nghiệm tập trung vào dạo cảnh quan và chụp ảnh, thường được ghép với các bãi biển trên đảo. Trải nghiệm nổi bật: Ngắm đường chân trời biển Chụp ảnh cảnh quan ven đảo.",
-    "image": "destinations/quang-ninh/doi-vo-cuc-tren-dao-quan-lan.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Đền Ba Cửa",
@@ -2029,7 +2029,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
     "description": "Đền Ba Cửa ở vùng Cẩm Phả là cơ sở tín ngưỡng dân gian của cộng đồng địa phương. Phù hợp làm một điểm dừng văn hóa ngắn khi khám phá khu vực Quang Hanh. Trải nghiệm nổi bật: Tìm hiểu tín ngưỡng địa phương Quan sát không gian đền.",
-    "image": "destinations/quang-ninh/den-ba-cua.jpg"
+    "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Suối cá thần Cẩm Lương",
@@ -2041,7 +2041,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
     "description": "Suối cá Cẩm Lương có đàn cá tập trung trong đoạn suối dưới chân núi, gắn với tín ngưỡng địa phương. Trải nghiệm thiên về quan sát tự nhiên và tìm hiểu câu chuyện dân gian. Trải nghiệm nổi bật: Quan sát đàn cá trong suối Tìm hiểu tín ngưỡng địa phương.",
-    "image": "destinations/thanh-hoa/suoi-ca-than-cam-luong.jpg"
+    "image": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Khu bảo tồn thiên nhiên Pù Luông",
@@ -2053,7 +2053,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Pù Luông bảo vệ cảnh quan rừng, núi và những thung lũng canh tác của vùng Thanh Hóa. Có thể kết hợp đi bộ, tìm hiểu đời sống bản làng và nghỉ tại cơ sở cộng đồng. Trải nghiệm nổi bật: Đi bộ khám phá thung lũng Tìm hiểu cảnh quan bản làng.",
-    "image": "destinations/thanh-hoa/khu-bao-ton-thien-nhien-pu-luong.jpg"
+    "image": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bản Kho Mường",
@@ -2065,7 +2065,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Kho Mường là bản trong thung lũng thuộc vùng Pù Luông, có cảnh quan ruộng và núi bao quanh. Trải nghiệm phù hợp đi bộ, nghỉ tại bản và tìm hiểu nếp sống địa phương. Trải nghiệm nổi bật: Dạo bản giữa thung lũng Khám phá cảnh quan ruộng và núi.",
-    "image": "destinations/thanh-hoa/ban-kho-muong.jpg"
+    "image": "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Khu di tích Lam Kinh",
@@ -2077,7 +2077,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Lam Kinh gắn với quê hương Lê Lợi và di sản của triều Hậu Lê. Khu di tích kết hợp nền kiến trúc, công trình thờ tự và cảnh quan cây xanh. Trải nghiệm nổi bật: Tìm hiểu lịch sử khởi nghĩa Lam Sơn Tham quan các hạng mục di tích.",
-    "image": "destinations/thanh-hoa/khu-di-tich-lam-kinh.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Thành nhà Hồ",
@@ -2089,7 +2089,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "00:00 - 23:59",
     "description": "Thành nhà Hồ nổi bật với những khối đá lớn và dấu tích tòa thành ở vùng Vĩnh Lộc. Không gian mở phù hợp tìm hiểu kỹ thuật xây dựng và lịch sử giai đoạn cuối Trần – Hồ. Trải nghiệm nổi bật: Quan sát cổng thành đá Tìm hiểu kỹ thuật xây thành.",
-    "image": "destinations/thanh-hoa/thanh-nha-ho.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bãi biển Sầm Sơn",
@@ -2101,7 +2101,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
     "description": "Sầm Sơn là vùng nghỉ biển quen thuộc của Thanh Hóa, có bãi tắm, dịch vụ lưu trú và hàng quán ven biển. Trải nghiệm phù hợp kết hợp tắm biển với nghỉ ngơi theo nhóm. Trải nghiệm nổi bật: Dạo bờ biển Kết hợp nghỉ dưỡng và thưởng thức hải sản.",
-    "image": "destinations/thanh-hoa/bai-bien-sam-son.jpg"
+    "image": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bãi biển Hải Tiến",
@@ -2113,7 +2113,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
     "description": "Hải Tiến là dải biển ở vùng Hoằng Hóa, có cơ sở nghỉ dưỡng và sinh hoạt làng biển xung quanh. Có thể chọn chuyến đi nghỉ biển kết hợp khám phá địa phương. Trải nghiệm nổi bật: Dạo bãi biển Hải Tiến Tìm hiểu đời sống làng biển.",
-    "image": "destinations/thanh-hoa/bai-bien-hai-tien.jpg"
+    "image": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bảo tàng tỉnh Thanh Hóa",
@@ -2125,7 +2125,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Bảo tàng Thanh Hóa giới thiệu lịch sử vùng đất, trong đó văn hóa Đông Sơn là chủ đề đáng chú ý. Hiện vật khảo cổ giúp bổ sung bối cảnh cho các tuyến di sản trong tỉnh. Trải nghiệm nổi bật: Tìm hiểu văn hóa Đông Sơn Xem hiện vật lịch sử địa phương.",
-    "image": "destinations/thanh-hoa/bao-tang-tinh-thanh-hoa.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Sun World Sầm Sơn",
@@ -2137,7 +2137,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 950000,
     "openingHours": "07:30 - 18:00",
     "description": "Sun World Sầm Sơn bổ sung trải nghiệm công viên nước cho hành trình nghỉ biển. Các trò chơi nước và khu vui chơi phù hợp được lựa chọn theo độ tuổi, thể lực và sở thích. Trải nghiệm nổi bật: Khám phá công viên nước Chọn trò chơi phù hợp nhóm đi.",
-    "image": "destinations/thanh-hoa/sun-world-sam-son.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Hang Dơi Kho Mường",
@@ -2149,7 +2149,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Hang Dơi Kho Mường nằm trong vùng núi đá của Pù Luông, gần bản Kho Mường. Cảnh hang bổ sung cho hành trình khám phá bản và thung lũng bằng đường bộ. Trải nghiệm nổi bật: Quan sát cửa hang đá vôi Kết hợp dạo bản Kho Mường.",
-    "image": "destinations/thanh-hoa/hang-doi-kho-muong.jpg"
+    "image": "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Đền Ông Hoàng Mười",
@@ -2161,7 +2161,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
     "description": "Đền Ông Hoàng Mười ở vùng Hưng Nguyên là điểm sinh hoạt tín ngưỡng thờ Mẫu. Trải nghiệm phù hợp người quan tâm văn hóa tâm linh và những câu chuyện gắn với địa phương. Trải nghiệm nổi bật: Tìm hiểu tín ngưỡng thờ Mẫu Tham quan không gian đền.",
-    "image": "destinations/nghe-an/den-ong-hoang-muoi.jpg"
+    "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Đồi chè Thanh Chương",
@@ -2173,7 +2173,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
     "description": "Đồi chè Thanh Chương có cảnh quan những đảo và sườn đồi trồng chè giữa mặt nước. Chuyến tham quan thường kết hợp ngắm cảnh nông nghiệp và tiếp cận bằng thuyền tại khu có dịch vụ. Trải nghiệm nổi bật: Ngắm đồi chè ven hồ Tìm hiểu sản xuất chè.",
-    "image": "destinations/nghe-an/doi-che-thanh-chuong.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Cổng trời Mường Lống",
@@ -2185,7 +2185,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Mường Lống là vùng cao của miền tây Nghệ An, được biết đến với cảnh núi và những thời điểm có mây. Trải nghiệm gắn với đường núi, bản làng và sinh hoạt địa phương. Trải nghiệm nổi bật: Ngắm cảnh vùng cao Khám phá bản làng Mường Lống.",
-    "image": "destinations/nghe-an/cong-troi-muong-long.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Vườn quốc gia Pù Mát",
@@ -2197,7 +2197,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Vườn quốc gia Pù Mát bảo vệ rừng của miền tây Nghệ An và hệ sinh thái Trường Sơn. Du lịch phù hợp theo tuyến được tổ chức, kết hợp tìm hiểu thiên nhiên và cộng đồng lân cận. Trải nghiệm nổi bật: Khám phá thiên nhiên theo tuyến Tìm hiểu hệ sinh thái rừng.",
-    "image": "destinations/nghe-an/vuon-quoc-gia-pu-mat.jpg"
+    "image": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Khu di tích Kim Liên – Làng Sen",
@@ -2209,7 +2209,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Khu di tích Kim Liên lưu giữ các địa điểm gắn với quê hương và tuổi thơ Chủ tịch Hồ Chí Minh. Không gian làng quê, nhà lưu niệm và tư liệu là nội dung chính của tuyến tham quan. Trải nghiệm nổi bật: Tìm hiểu quê hương Bác Hồ Tham quan các điểm lưu niệm.",
-    "image": "destinations/nghe-an/khu-di-tich-kim-lien-lang-sen.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bãi biển Cửa Lò",
@@ -2221,7 +2221,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
     "description": "Cửa Lò là vùng nghỉ biển của Nghệ An với bãi cát và nhiều dịch vụ lưu trú, ăn uống. Có thể ghép kỳ nghỉ biển với những tuyến văn hóa và lịch sử quanh Vinh. Trải nghiệm nổi bật: Dạo và nghỉ bên biển Kết hợp thưởng thức hải sản.",
-    "image": "destinations/nghe-an/bai-bien-cua-lo.jpg"
+    "image": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Đảo Lan Châu",
@@ -2233,7 +2233,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
     "description": "Đảo Lan Châu là điểm cảnh quan gần bờ ở Cửa Lò, có bờ đá và góc nhìn ra biển. Phù hợp một chặng dạo ngắn ghép với lịch nghỉ biển hơn là hành trình đảo xa. Trải nghiệm nổi bật: Ngắm bờ đá và cảnh biển Chụp ảnh cảnh quan gần bờ.",
-    "image": "destinations/nghe-an/dao-lan-chau.jpg"
+    "image": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Quảng trường Hồ Chí Minh tại Vinh",
@@ -2245,7 +2245,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
     "description": "Quảng trường Hồ Chí Minh là không gian công cộng gắn với tượng đài Bác Hồ ở Vinh. Điểm đến phù hợp dạo bộ và tìm hiểu một công trình biểu tượng của thành phố. Trải nghiệm nổi bật: Dạo quảng trường Quan sát tượng đài và không gian đô thị.",
-    "image": "destinations/nghe-an/quang-truong-ho-chi-minh-tai-vinh.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bảo tàng Xô viết Nghệ Tĩnh",
@@ -2257,7 +2257,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Bảo tàng Xô viết Nghệ Tĩnh giới thiệu phong trào cách mạng tại Nghệ An và Hà Tĩnh đầu thập niên 1930. Hiện vật và tư liệu phù hợp tuyến tìm hiểu lịch sử vùng Vinh. Trải nghiệm nổi bật: Tìm hiểu phong trào Xô viết Nghệ Tĩnh Xem tư liệu lịch sử địa phương.",
-    "image": "destinations/nghe-an/bao-tang-xo-viet-nghe-tinh.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Mường Thanh Safari Land Diễn Lâm",
@@ -2269,7 +2269,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 950000,
     "openingHours": "07:30 - 18:00",
     "description": "Mường Thanh Safari Land ở Diễn Lâm là khu tham quan động vật trong tổ hợp sinh thái. Chuyến đi phù hợp nhóm muốn kết hợp quan sát động vật và hoạt động vui chơi có tổ chức. Trải nghiệm nổi bật: Quan sát động vật trong khu tham quan Kết hợp hoạt động gia đình.",
-    "image": "destinations/nghe-an/muong-thanh-safari-land-dien-lam.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bãi biển Thiên Cầm",
@@ -2281,7 +2281,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
     "description": "Thiên Cầm là dải biển của Hà Tĩnh, có bãi cát và cảnh quan núi gần bờ. Trải nghiệm chủ yếu là nghỉ biển, đi dạo và khám phá hàng quán địa phương. Trải nghiệm nổi bật: Dạo bờ biển Thiên Cầm Kết hợp nghỉ ngơi và hải sản.",
-    "image": "destinations/ha-tinh/bai-bien-thien-cam.jpg"
+    "image": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Ngã ba Đồng Lộc",
@@ -2293,7 +2293,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Ngã ba Đồng Lộc là khu tưởng niệm gắn với tuyến vận tải thời chiến và sự hy sinh của thanh niên xung phong. Hành trình tham quan mang tính lịch sử và tri ân. Trải nghiệm nổi bật: Tìm hiểu câu chuyện thanh niên xung phong Tham quan khu tưởng niệm.",
-    "image": "destinations/ha-tinh/nga-ba-dong-loc.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Khu lưu niệm Nguyễn Du",
@@ -2305,7 +2305,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Khu lưu niệm Nguyễn Du ở Tiên Điền giới thiệu cuộc đời, gia đình và di sản văn chương của đại thi hào. Nhà thờ, tư liệu và không gian làng tạo trải nghiệm văn hóa. Trải nghiệm nổi bật: Tìm hiểu Nguyễn Du và Truyện Kiều Tham quan không gian lưu niệm.",
-    "image": "destinations/ha-tinh/khu-luu-niem-nguyen-du.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Hoành Sơn Quan và Đèo Ngang",
@@ -2317,7 +2317,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "00:00 - 23:59",
     "description": "Đèo Ngang và Hoành Sơn Quan nằm trên dãy Hoành Sơn giữa vùng Hà Tĩnh và Quảng Trị hiện nay. Cảnh quan đèo kết hợp dấu tích cửa ải và ký ức văn học. Trải nghiệm nổi bật: Khám phá dấu tích Hoành Sơn Quan Ngắm cảnh đường đèo.",
-    "image": "destinations/ha-tinh/hoanh-son-quan-va-deo-ngang.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Chùa Hương Tích",
@@ -2329,7 +2329,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Chùa Hương Tích nằm trong cảnh quan núi Hồng Lĩnh, kết hợp hành hương với việc di chuyển trên sườn núi. Đây là điểm thờ tự, không phải một tuyến nghỉ dưỡng bằng phẳng. Trải nghiệm nổi bật: Tham quan không gian chùa Ngắm cảnh vùng núi Hồng Lĩnh.",
-    "image": "destinations/ha-tinh/chua-huong-tich.jpg"
+    "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Đền Truông Bát",
@@ -2341,7 +2341,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
     "description": "Đền Truông Bát là cơ sở tín ngưỡng thờ Mẫu ở vùng Thạch Hà. Không gian đền gắn với sinh hoạt văn hóa của cộng đồng địa phương, phù hợp một chặng tham quan tâm linh. Trải nghiệm nổi bật: Tìm hiểu văn hóa thờ Mẫu Quan sát kiến trúc và sinh hoạt đền.",
-    "image": "destinations/ha-tinh/den-truong-bat.jpg"
+    "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bãi biển Xuân Hải",
@@ -2353,7 +2353,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
     "description": "Xuân Hải là bãi biển gắn với khu dân cư và sinh hoạt làng chài của Hà Tĩnh. Có thể đi dạo, ngắm cảnh ven bờ và dùng bữa tại cơ sở địa phương. Trải nghiệm nổi bật: Dạo cảnh quan bờ biển Tìm hiểu sinh hoạt làng chài.",
-    "image": "destinations/ha-tinh/bai-bien-xuan-hai.jpg"
+    "image": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Vườn quốc gia Vũ Quang",
@@ -2365,7 +2365,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
     "description": "Vườn quốc gia Vũ Quang bảo vệ vùng rừng Trường Sơn của Hà Tĩnh, có giá trị đa dạng sinh học. Trải nghiệm phù hợp tìm hiểu bảo tồn qua tuyến được đơn vị quản lý cho phép. Trải nghiệm nổi bật: Tìm hiểu bảo tồn rừng Trường Sơn Khám phá thiên nhiên có hướng dẫn.",
-    "image": "destinations/ha-tinh/vuon-quoc-gia-vu-quang.jpg"
+    "image": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Khu du lịch nước nóng Sơn Kim",
@@ -2377,7 +2377,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Sơn Kim là điểm du lịch gắn với nguồn nước nóng trong cảnh quan miền tây Hà Tĩnh. Có thể kết hợp nghỉ ngơi với khám phá khu vực Hương Sơn khi dịch vụ hoạt động. Trải nghiệm nổi bật: Tìm hiểu nguồn khoáng nóng Kết hợp nghỉ ngơi trong cảnh quan xanh.",
-    "image": "destinations/ha-tinh/khu-du-lich-nuoc-nong-son-kim.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Hồ Kẻ Gỗ",
@@ -2389,71 +2389,71 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
     "description": "Hồ Kẻ Gỗ là hồ thủy lợi giữa vùng đồi rừng Hà Tĩnh, gắn với ký ức văn hóa và đời sống địa phương. Cảnh quan phù hợp một chuyến ngắm hồ và tìm hiểu công trình thủy lợi. Trải nghiệm nổi bật: Ngắm mặt hồ và đồi rừng Tìm hiểu câu chuyện hồ Kẻ Gỗ.",
-    "image": "destinations/ha-tinh/ho-ke-go.jpg"
+    "image": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Động Phong Nha",
-    "province": "Quảng Trị",
+    "province": "Quảng Bình",
     "category": "Hang động",
-    "latitude": 16.7627,
-    "longitude": 107.064,
+    "latitude": 17.5897,
+    "longitude": 106.2828,
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Động Phong Nha là hang có sông ngầm trong vùng di sản Phong Nha – Kẻ Bàng. Hành trình tham quan phổ thông kết hợp đi thuyền với quan sát các cấu trúc đá trong hang. Trải nghiệm nổi bật: Đi thuyền vào tuyến hang Quan sát nhũ đá và sông ngầm.",
-    "image": "destinations/quang-tri/dong-phong-nha.jpg"
+    "image": "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Hang Tối (Dark Cave)",
-    "province": "Quảng Trị",
+    "province": "Quảng Bình",
     "category": "Hang động",
-    "latitude": 16.7807,
-    "longitude": 107.064,
+    "latitude": 17.5456,
+    "longitude": 106.2514,
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Hang Tối thuộc vùng Phong Nha, được biết đến với các hoạt động trải nghiệm gắn với nước và không gian hang. Nội dung tour phụ thuộc dịch vụ và điều kiện vận hành thực tế. Trải nghiệm nổi bật: Khám phá tuyến trải nghiệm hang Kết hợp hoạt động dưới nước được tổ chức.",
-    "image": "destinations/quang-tri/hang-toi-dark-cave.jpg"
+    "image": "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Suối Nước Moọc",
-    "province": "Quảng Trị",
+    "province": "Quảng Bình",
     "category": "Sông và hồ",
-    "latitude": 16.7987,
-    "longitude": 107.064,
+    "latitude": 17.5381,
+    "longitude": 106.2483,
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
     "description": "Suối Nước Moọc nằm giữa cảnh quan rừng và núi đá vùng Phong Nha. Trải nghiệm phù hợp nghỉ ngơi, ngắm suối và tham gia hoạt động nước ở phần được quản lý. Trải nghiệm nổi bật: Dạo cảnh quan ven suối Tham gia hoạt động nước được phép.",
-    "image": "destinations/quang-tri/suoi-nuoc-mooc.jpg"
+    "image": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Động Thiên Đường",
-    "province": "Quảng Trị",
+    "province": "Quảng Bình",
     "category": "Hang động",
-    "latitude": 16.8167,
-    "longitude": 107.064,
+    "latitude": 17.5186,
+    "longitude": 106.2236,
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Động Thiên Đường là hang khô trong vùng Phong Nha – Kẻ Bàng, nổi bật với lòng hang rộng và nhũ đá. Tuyến phổ thông chủ yếu đi bộ theo lối được bố trí. Trải nghiệm nổi bật: Đi bộ khám phá lòng hang Quan sát cấu trúc nhũ đá.",
-    "image": "destinations/quang-tri/dong-thien-duong.jpg"
+    "image": "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bãi biển Nhật Lệ",
-    "province": "Quảng Trị",
+    "province": "Quảng Bình",
     "category": "Biển và đảo",
-    "latitude": 16.8347,
-    "longitude": 107.064,
+    "latitude": 17.4889,
+    "longitude": 106.6319,
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
     "description": "Nhật Lệ là bãi biển gần khu đô thị Đồng Hới, thuận tiện ghép nghỉ biển với khám phá địa phương. Trải nghiệm chủ yếu là dạo bờ, tắm tại khu được phép và dùng hải sản. Trải nghiệm nổi bật: Dạo bãi biển Nhật Lệ Kết hợp khám phá khu Đồng Hới.",
-    "image": "destinations/quang-tri/bai-bien-nhat-le.jpg"
+    "image": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Đồi cát Quảng Phú",
-    "province": "Quảng Trị",
+    "province": "Quảng Bình",
     "category": "Cảnh quan",
     "latitude": 16.8527,
     "longitude": 107.064,
@@ -2461,7 +2461,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
     "description": "Đồi cát Quảng Phú là cảnh quan cát ven khu Đồng Hới, có bề mặt và đường gợn thay đổi theo gió. Điểm đến phù hợp chụp ảnh và trải nghiệm trên cát khi có dịch vụ. Trải nghiệm nổi bật: Chụp ảnh đồi cát Dạo quan sát đường gợn cát.",
-    "image": "destinations/quang-tri/doi-cat-quang-phu.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Địa đạo Vịnh Mốc",
@@ -2473,7 +2473,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Địa đạo Vịnh Mốc lưu giữ không gian sinh hoạt dưới lòng đất của cư dân thời chiến. Trải nghiệm giúp hình dung cuộc sống và khả năng thích nghi trong điều kiện chiến tranh. Trải nghiệm nổi bật: Tham quan tuyến địa đạo Tìm hiểu đời sống dưới lòng đất.",
-    "image": "destinations/quang-tri/dia-dao-vinh-moc.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Cầu Hiền Lương",
@@ -2485,7 +2485,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "00:00 - 23:59",
     "description": "Cầu Hiền Lương và khu di tích đôi bờ sông Bến Hải gắn với lịch sử chia cắt đất nước. Cảnh quan cầu, cột cờ và tư liệu tạo tuyến tham quan lịch sử. Trải nghiệm nổi bật: Tìm hiểu lịch sử đôi bờ Hiền Lương Quan sát cầu và khu trưng bày.",
-    "image": "destinations/quang-tri/cau-hien-luong.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Di tích Khe Sanh",
@@ -2497,7 +2497,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Khu di tích Khe Sanh gắn với chiến trường phía tây Quảng Trị, trong đó sân bay Tà Cơn là điểm tham quan quen thuộc. Hiện vật ngoài trời giúp hình dung bối cảnh chiến sự. Trải nghiệm nổi bật: Tìm hiểu lịch sử chiến trường Khe Sanh Quan sát hiện vật quân sự.",
-    "image": "destinations/quang-tri/di-tich-khe-sanh.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Thành cổ Quảng Trị",
@@ -2509,7 +2509,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Thành cổ Quảng Trị là không gian di tích và tưởng niệm gắn với chiến tranh. Cảnh quan trong thành và tư liệu phù hợp một chuyến tìm hiểu lịch sử, tri ân. Trải nghiệm nổi bật: Tìm hiểu câu chuyện Thành cổ Tham quan khu tưởng niệm.",
-    "image": "destinations/quang-tri/thanh-co-quang-tri.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bảo tàng Cổ vật Cung đình Huế",
@@ -2521,31 +2521,31 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Bảo tàng Cổ vật Cung đình Huế đặt trong điện Long An, kết hợp giá trị kiến trúc gỗ với hiện vật triều Nguyễn. Đây là điểm phù hợp người quan tâm mỹ thuật và đời sống cung đình. Trải nghiệm nổi bật: Quan sát kiến trúc điện Long An Tìm hiểu hiện vật cung đình.",
-    "image": "destinations/hue/bao-tang-co-vat-cung-dinh-hue.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Vịnh Lăng Cô",
     "province": "Thừa Thiên Huế",
     "category": "Vịnh và đầm phá",
-    "latitude": 15.964,
-    "longitude": 107.964,
+    "latitude": 16.2306,
+    "longitude": 108.0064,
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Lăng Cô là vùng vịnh ven biển dưới chân dãy Hải Vân, kết nối tuyến Huế và Đà Nẵng. Có thể ghép nghỉ biển với ngắm cảnh đầm và đường ven núi. Trải nghiệm nổi bật: Ngắm cảnh vịnh và bãi biển Kết hợp tuyến Hải Vân – Lập An.",
-    "image": "destinations/hue/vinh-lang-co.jpg"
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Lang_Co_Bay_Vietnam.jpg/800px-Lang_Co_Bay_Vietnam.jpg"
   },
   {
     "name": "Phá Tam Giang",
     "province": "Thừa Thiên Huế",
     "category": "Vịnh và đầm phá",
-    "latitude": 15.982,
-    "longitude": 107.964,
+    "latitude": 16.5833,
+    "longitude": 107.5167,
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
     "description": "Phá Tam Giang là cảnh quan đầm phá nước lợ của vùng Huế, gắn với nghề đánh bắt và làng ven nước. Trải nghiệm phù hợp quan sát đời sống đầm phá và ngắm cảnh. Trải nghiệm nổi bật: Khám phá cảnh quan đầm phá Tìm hiểu nghề đánh bắt địa phương.",
-    "image": "destinations/hue/pha-tam-giang.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Rừng ngập mặn Rú Chá",
@@ -2557,7 +2557,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Rú Chá là vùng rừng ngập mặn trong hệ cảnh quan đầm phá Huế, nổi bật với các lối nhìn qua tán cây. Đây là điểm thiên nhiên phù hợp một tuyến đi bộ ngắn. Trải nghiệm nổi bật: Dạo theo lối tham quan rừng Chụp cảnh tán cây và vùng nước.",
-    "image": "destinations/hue/rung-ngap-man-ru-cha.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Sông Hương",
@@ -2569,7 +2569,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
     "description": "Sông Hương đi qua cảnh quan đô thị và di sản Huế, kết nối nhiều tuyến tham quan ven bờ. Có thể chọn đi bộ, ngắm cảnh hoặc dịch vụ thuyền được tổ chức. Trải nghiệm nổi bật: Dạo tuyến ven sông Ngắm Huế từ hành trình trên nước.",
-    "image": "destinations/hue/song-huong.jpg"
+    "image": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Quần thể di tích Cố đô Huế",
@@ -2581,7 +2581,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Quần thể di tích Cố đô Huế gồm hệ thống cung điện, thành quách và công trình triều Nguyễn. Đây là vùng di sản rộng, cần chia thành các điểm và tuyến tham quan cụ thể. Trải nghiệm nổi bật: Khám phá kiến trúc cung đình Tìm hiểu lịch sử triều Nguyễn.",
-    "image": "destinations/hue/quan-the-di-tich-co-do-hue.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bãi biển Thuận An",
@@ -2593,7 +2593,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
     "description": "Thuận An là vùng biển gần Huế, gắn với sinh hoạt nghỉ biển của người địa phương. Có thể ghép dạo biển, bữa ăn hải sản và khám phá cảnh quan cửa biển. Trải nghiệm nổi bật: Dạo bãi biển Kết hợp khám phá cảnh quan cửa biển.",
-    "image": "destinations/hue/bai-bien-thuan-an.jpg"
+    "image": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Đầm Lập An",
@@ -2605,83 +2605,23 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "00:00 - 23:59",
     "description": "Đầm Lập An nằm trong cảnh quan Lăng Cô, có mặt nước phẳng và núi bao quanh. Trải nghiệm chủ yếu là ngắm cảnh, quan sát sinh hoạt nuôi trồng và chụp ảnh ven bờ. Trải nghiệm nổi bật: Ngắm mặt đầm và dãy núi Tìm hiểu cảnh quan nuôi trồng ven đầm.",
-    "image": "destinations/hue/dam-lap-an.jpg"
-  },
-  {
-    "name": "Ngũ Hành Sơn",
-    "province": "Đà Nẵng",
-    "category": "Núi và cao nguyên",
-    "latitude": 16.0004,
-    "longitude": 108.1662,
-    "priceMin": 40000,
-    "priceMax": 120000,
-    "openingHours": "07:30 - 18:00",
-    "description": "Ngũ Hành Sơn là cụm núi đá vôi có chùa, hang và điểm nhìn cao ở Đà Nẵng. Tuyến tham quan kết hợp cảnh quan địa chất với văn hóa Phật giáo. Trải nghiệm nổi bật: Khám phá hang và chùa Ngắm cảnh từ điểm cao.",
-    "image": "destinations/da-nang/ngu-hanh-son.jpg"
+    "image": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Thánh địa Mỹ Sơn",
-    "province": "Đà Nẵng",
+    "province": "Quảng Nam",
     "category": "Di tích",
-    "latitude": 16.0184,
-    "longitude": 108.1662,
+    "latitude": 15.7738,
+    "longitude": 108.1092,
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Mỹ Sơn lưu giữ quần thể đền tháp Chăm trong thung lũng, phản ánh đời sống tôn giáo và nghệ thuật kiến trúc Champa. Trải nghiệm thiên về di sản hơn là vui chơi. Trải nghiệm nổi bật: Quan sát kiến trúc đền tháp Tìm hiểu văn hóa Champa.",
-    "image": "destinations/da-nang/thanh-dia-my-son.jpg"
-  },
-  {
-    "name": "Phố cổ Hội An",
-    "province": "Đà Nẵng",
-    "category": "Đô thị và phố cổ",
-    "latitude": 16.0364,
-    "longitude": 108.1662,
-    "priceMin": 0,
-    "priceMax": 0,
-    "openingHours": "07:30 - 18:00",
-    "description": "Phố cổ Hội An lưu giữ cảnh quan đô thị thương cảng với nhà cổ, hội quán và những con phố ven sông. Phù hợp khám phá bằng đi bộ, tìm hiểu kiến trúc và đời sống địa phương. Trải nghiệm nổi bật: Dạo phố và quan sát nhà cổ Khám phá văn hóa thương cảng.",
-    "image": "destinations/da-nang/pho-co-hoi-an.jpg"
-  },
-  {
-    "name": "Cù Lao Chàm",
-    "province": "Đà Nẵng",
-    "category": "Biển và đảo",
-    "latitude": 16.0544,
-    "longitude": 108.1662,
-    "priceMin": 40000,
-    "priceMax": 120000,
-    "openingHours": "00:00 - 23:59",
-    "description": "Cù Lao Chàm là quần đảo gần Hội An, có cảnh biển, làng đảo và hệ sinh thái ven bờ. Chuyến đi thường kết hợp tàu biển với tham quan theo tuyến trên đảo. Trải nghiệm nổi bật: Khám phá cảnh quan đảo Tìm hiểu sinh hoạt làng biển.",
-    "image": "destinations/da-nang/cu-lao-cham.jpg"
-  },
-  {
-    "name": "Bán đảo Sơn Trà",
-    "province": "Đà Nẵng",
-    "category": "Sinh thái và nghỉ dưỡng",
-    "latitude": 16.0724,
-    "longitude": 108.1662,
-    "priceMin": 40000,
-    "priceMax": 120000,
-    "openingHours": "07:30 - 18:00",
-    "description": "Sơn Trà là bán đảo có rừng, đường ven núi và cảnh quan biển gần trung tâm Đà Nẵng. Các tuyến tham quan có phạm vi và điều kiện tiếp cận khác nhau. Trải nghiệm nổi bật: Ngắm cảnh bán đảo Tìm hiểu thiên nhiên và điểm văn hóa.",
-    "image": "destinations/da-nang/ban-dao-son-tra.jpg"
-  },
-  {
-    "name": "Bà Nà Hills và Cầu Vàng",
-    "province": "Đà Nẵng",
-    "category": "Giải trí và công viên",
-    "latitude": 16.0904,
-    "longitude": 108.1662,
-    "priceMin": 450000,
-    "priceMax": 950000,
-    "openingHours": "00:00 - 23:59",
-    "description": "Bà Nà Hills kết hợp công viên chủ đề trên núi với cảnh quan và Cầu Vàng. Trải nghiệm phụ thuộc việc sử dụng cáp treo, lựa chọn phân khu và điều kiện thời tiết trên cao. Trải nghiệm nổi bật: Tham quan Cầu Vàng Khám phá các phân khu trên núi.",
-    "image": "destinations/da-nang/ba-na-hills-va-cau-vang.jpg"
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/2024_-_M%E1%BB%B9_S%C6%A1n_Group_B%2C_C_and_D_-_img_23.jpg/960px-2024_-_M%E1%BB%B9_S%C6%A1n_Group_B%2C_C_and_D_-_img_23.jpg"
   },
   {
     "name": "Tháp Chăm Khương Mỹ",
-    "province": "Đà Nẵng",
+    "province": "Quảng Nam",
     "category": "Tôn giáo và tâm linh",
     "latitude": 16.1084,
     "longitude": 108.1662,
@@ -2689,7 +2629,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
     "description": "Khương Mỹ là cụm tháp Chăm bằng gạch ở vùng Quảng Nam cũ, nay thuộc Đà Nẵng. Điểm đến phù hợp quan sát kiến trúc và tìm hiểu di sản Champa ngoài tuyến Mỹ Sơn. Trải nghiệm nổi bật: Quan sát cụm tháp Chăm Tìm hiểu nghệ thuật kiến trúc gạch.",
-    "image": "destinations/da-nang/thap-cham-khuong-my.jpg"
+    "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Công viên nước Mikazuki 365",
@@ -2701,7 +2641,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
     "description": "Mikazuki 365 là công viên nước trong tổ hợp du lịch phong cách Nhật ở vùng biển Xuân Thiều. Trải nghiệm phù hợp nhóm muốn vui chơi nước và nghỉ ngơi có tổ chức. Trải nghiệm nổi bật: Khám phá trò chơi nước Trải nghiệm các khu được bao gồm trong vé.",
-    "image": "destinations/da-nang/cong-vien-nuoc-mikazuki-365.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Núi và chùa Thiên Ấn",
@@ -2713,19 +2653,19 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Núi Thiên Ấn và ngôi chùa trên núi là điểm văn hóa gắn với cảnh quan sông Trà Khúc. Có thể kết hợp tham quan chùa với ngắm cảnh vùng Quảng Ngãi. Trải nghiệm nổi bật: Thăm chùa Thiên Ấn Ngắm cảnh từ khu vực núi.",
-    "image": "destinations/quang-ngai/nui-va-chua-thien-an.jpg"
+    "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Măng Đen",
-    "province": "Quảng Ngãi",
+    "province": "Kon Tum",
     "category": "Núi và cao nguyên",
-    "latitude": 15.0854,
-    "longitude": 108.7688,
+    "latitude": 14.6,
+    "longitude": 108.2833,
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Măng Đen là vùng cao nguyên có rừng thông, hồ và các điểm du lịch phân tán. Trải nghiệm phù hợp nghỉ ngơi, khám phá cảnh quan và đời sống cộng đồng Tây Nguyên. Trải nghiệm nổi bật: Dạo cảnh quan cao nguyên Khám phá các điểm hồ và rừng.",
-    "image": "destinations/quang-ngai/mang-den.jpg"
+    "image": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Đảo Lý Sơn",
@@ -2737,47 +2677,47 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "00:00 - 23:59",
     "description": "Lý Sơn là quần đảo ngoài khơi Quảng Ngãi, gắn với cảnh quan núi lửa và văn hóa làng biển. Chuyến đi có thể kết hợp khám phá bờ đá, di tích và sinh hoạt nông nghiệp trên đảo. Trải nghiệm nổi bật: Khám phá cảnh quan núi lửa Tìm hiểu văn hóa làng đảo.",
-    "image": "destinations/quang-ngai/dao-ly-son.jpg"
+    "image": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Nhà thờ gỗ Kon Tum",
-    "province": "Quảng Ngãi",
+    "province": "Kon Tum",
     "category": "Tôn giáo và tâm linh",
-    "latitude": 15.1214,
-    "longitude": 108.7688,
+    "latitude": 14.3486,
+    "longitude": 108.0083,
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
     "description": "Nhà thờ gỗ Kon Tum kết hợp dấu ấn kiến trúc Công giáo với chất liệu và hình thức gắn với Tây Nguyên. Là điểm văn hóa trong tuyến khám phá khu trung tâm Kon Tum. Trải nghiệm nổi bật: Quan sát kiến trúc gỗ Tìm hiểu giao thoa văn hóa tôn giáo.",
-    "image": "destinations/quang-ngai/nha-tho-go-kon-tum.jpg"
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Nh%C3%A0_th%E1%BB%9D_g%E1%BB%97_Kon_Tum.jpg/800px-Nh%C3%A0_th%E1%BB%9D_g%E1%BB%97_Kon_Tum.jpg"
   },
   {
     "name": "Cầu treo Kon Klor",
-    "province": "Quảng Ngãi",
+    "province": "Kon Tum",
     "category": "Công trình và kiến trúc",
-    "latitude": 15.1394,
-    "longitude": 108.7688,
+    "latitude": 14.3444,
+    "longitude": 108.0264,
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
     "description": "Cầu treo Kon Klor bắc qua sông Đăk Bla, tạo cảnh quan nhận diện của vùng Kon Tum. Phù hợp ngắm sông và ghép với các làng văn hóa lân cận. Trải nghiệm nổi bật: Ngắm cầu và sông Đăk Bla Kết hợp khám phá làng gần cầu.",
-    "image": "destinations/quang-ngai/cau-treo-kon-klor.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Nhà tù Kon Tum",
-    "province": "Quảng Ngãi",
+    "province": "Kon Tum",
     "category": "Di tích",
-    "latitude": 15.1574,
-    "longitude": 108.7688,
+    "latitude": 14.3517,
+    "longitude": 107.9944,
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Nhà tù Kon Tum là địa điểm lịch sử gắn với việc giam giữ tù chính trị thời Pháp. Không gian di tích phù hợp tìm hiểu lịch sử địa phương và phong trào cách mạng. Trải nghiệm nổi bật: Tìm hiểu lịch sử nhà tù Tham quan khu tưởng niệm.",
-    "image": "destinations/quang-ngai/nha-tu-kon-tum.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Làng Kon K’Tu",
-    "province": "Quảng Ngãi",
+    "province": "Kon Tum",
     "category": "Làng bản và văn hóa",
     "latitude": 15.1754,
     "longitude": 108.7688,
@@ -2785,7 +2725,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
     "description": "Kon K’Tu là làng của cộng đồng Ba Na gần sông Đăk Bla. Nhà rông và sinh hoạt làng tạo trải nghiệm văn hóa khi được giới thiệu bởi người địa phương. Trải nghiệm nổi bật: Tìm hiểu kiến trúc nhà rông Khám phá sinh hoạt cộng đồng Ba Na.",
-    "image": "destinations/quang-ngai/lang-kon-k-tu.jpg"
+    "image": "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Khu chứng tích Sơn Mỹ",
@@ -2797,7 +2737,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Khu chứng tích Sơn Mỹ tưởng niệm những nạn nhân của vụ thảm sát năm 1968. Tư liệu và cảnh quan phục dựng giúp người xem tiếp cận lịch sử và hậu quả chiến tranh. Trải nghiệm nổi bật: Tìm hiểu sự kiện Sơn Mỹ Tham quan khu tưởng niệm và tư liệu.",
-    "image": "destinations/quang-ngai/khu-chung-tich-son-my.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bãi biển Sa Huỳnh",
@@ -2809,11 +2749,11 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
     "description": "Sa Huỳnh là vùng bờ biển gắn với làng chài, cảnh quan và dấu ấn văn hóa ven biển Quảng Ngãi. Có thể ghép nghỉ biển với khám phá làng và sinh hoạt địa phương. Trải nghiệm nổi bật: Dạo bãi biển Sa Huỳnh Khám phá văn hóa làng biển.",
-    "image": "destinations/quang-ngai/bai-bien-sa-huynh.jpg"
+    "image": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Nhà rông Kon Trang Long Loi",
-    "province": "Quảng Ngãi",
+    "province": "Kon Tum",
     "category": "Làng bản và văn hóa",
     "latitude": 15.1034,
     "longitude": 108.7868,
@@ -2821,11 +2761,11 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
     "description": "Nhà rông Kon Trang Long Loi là điểm sinh hoạt cộng đồng của làng Ba Na nhánh Rơ Ngao ở vùng Đăk Hà. Hình thức nhà rông phản ánh vai trò văn hóa của không gian chung. Trải nghiệm nổi bật: Quan sát kiến trúc nhà rông Tìm hiểu văn hóa cộng đồng.",
-    "image": "destinations/quang-ngai/nha-rong-kon-trang-long-loi.jpg"
+    "image": "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Trung tâm Khám phá Khoa học ExploraScience Quy Nhơn",
-    "province": "Gia Lai",
+    "province": "Bình Định",
     "category": "Bảo tàng",
     "latitude": 13.9293,
     "longitude": 107.964,
@@ -2833,107 +2773,107 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "ExploraScience Quy Nhơn giới thiệu khoa học bằng các không gian tương tác và trình diễn. Điểm đến phù hợp người muốn khám phá kiến thức thông qua hoạt động thay vì chỉ xem hiện vật. Trải nghiệm nổi bật: Trải nghiệm trưng bày tương tác Tìm hiểu khoa học qua hoạt động.",
-    "image": "destinations/gia-lai/trung-tam-kham-pha-khoa-hoc-explorascience-quy-nhon.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bảo tàng Quang Trung",
-    "province": "Gia Lai",
+    "province": "Bình Định",
     "category": "Bảo tàng",
-    "latitude": 13.9473,
-    "longitude": 107.964,
+    "latitude": 13.9333,
+    "longitude": 108.9167,
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Bảo tàng Quang Trung tại vùng Tây Sơn giới thiệu phong trào Tây Sơn và nhân vật Nguyễn Huệ. Có thể kết hợp xem tư liệu với tìm hiểu truyền thống võ và trống trận. Trải nghiệm nổi bật: Tìm hiểu lịch sử Tây Sơn Khám phá truyền thống võ và trống.",
-    "image": "destinations/gia-lai/bao-tang-quang-trung.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Tháp Bánh Ít",
-    "province": "Gia Lai",
+    "province": "Bình Định",
     "category": "Di tích",
-    "latitude": 13.9653,
-    "longitude": 107.964,
+    "latitude": 13.8861,
+    "longitude": 109.1333,
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Tháp Bánh Ít là cụm tháp Chăm bằng gạch trên đồi ở vùng Tuy Phước. Cảnh quan cao và kiến trúc tháp tạo trải nghiệm kết hợp di sản với ngắm vùng đồng bằng xung quanh. Trải nghiệm nổi bật: Quan sát kiến trúc tháp Chăm Ngắm cảnh từ đồi.",
-    "image": "destinations/gia-lai/thap-banh-it.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bãi biển Kỳ Co",
-    "province": "Gia Lai",
+    "province": "Bình Định",
     "category": "Biển và đảo",
-    "latitude": 13.9833,
-    "longitude": 107.964,
+    "latitude": 13.9167,
+    "longitude": 109.3,
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
     "description": "Kỳ Co là bãi biển của vùng Nhơn Lý, có cảnh quan cát và núi ven bờ. Trải nghiệm thường được ghép với các dịch vụ di chuyển và hoạt động biển của tuyến Quy Nhơn. Trải nghiệm nổi bật: Ngắm cảnh bãi biển Tham gia hoạt động biển được phép.",
-    "image": "destinations/gia-lai/bai-bien-ky-co.jpg"
+    "image": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Eo Gió",
-    "province": "Gia Lai",
+    "province": "Bình Định",
     "category": "Cảnh quan",
-    "latitude": 14.0013,
-    "longitude": 107.964,
+    "latitude": 13.9214,
+    "longitude": 109.3056,
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Eo Gió là đoạn bờ núi ôm biển ở vùng Nhơn Lý, nổi bật với đường dạo và góc nhìn ven vách đá. Trải nghiệm chủ yếu là đi bộ ngắm cảnh. Trải nghiệm nổi bật: Dạo đường ven biển Chụp cảnh bờ đá và sóng.",
-    "image": "destinations/gia-lai/eo-gio.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Hòn Khô",
-    "province": "Gia Lai",
+    "province": "Bình Định",
     "category": "Biển và đảo",
-    "latitude": 14.0193,
-    "longitude": 107.964,
+    "latitude": 13.7833,
+    "longitude": 109.3,
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
     "description": "Hòn Khô nằm ngoài vùng Nhơn Hải, có cảnh biển đảo và sinh hoạt làng chài lân cận. Chuyến khám phá thường kết hợp vận chuyển đường biển với hoạt động tại vùng nước được phép. Trải nghiệm nổi bật: Khám phá cảnh quan đảo Tìm hiểu sinh hoạt Nhơn Hải.",
-    "image": "destinations/gia-lai/hon-kho.jpg"
+    "image": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Khu du lịch Ghềnh Ráng – Tiên Sa",
-    "province": "Gia Lai",
+    "province": "Bình Định",
     "category": "Cảnh quan",
-    "latitude": 14.0373,
-    "longitude": 107.964,
+    "latitude": 13.766667,
+    "longitude": 109.233333,
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Ghềnh Ráng – Tiên Sa kết hợp cảnh quan ghềnh đá ven Quy Nhơn với không gian văn hóa tưởng niệm Hàn Mặc Tử. Phù hợp một tuyến dạo tìm hiểu cảnh quan và văn học. Trải nghiệm nổi bật: Ngắm cảnh ghềnh đá Tìm hiểu dấu ấn Hàn Mặc Tử.",
-    "image": "destinations/gia-lai/khu-du-lich-ghenh-rang-tien-sa.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Biển Hồ T’Nưng",
     "province": "Gia Lai",
     "category": "Sông và hồ",
-    "latitude": 13.9293,
-    "longitude": 107.982,
+    "latitude": 14.05,
+    "longitude": 108,
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
     "description": "Biển Hồ T’Nưng là hồ nước trong cảnh quan miệng núi lửa của vùng Pleiku. Mặt hồ và đường cây xanh phù hợp một điểm dừng ngắm cảnh và tìm hiểu địa chất. Trải nghiệm nổi bật: Ngắm cảnh hồ Tìm hiểu cảnh quan núi lửa.",
-    "image": "destinations/gia-lai/bien-ho-t-nung.jpg"
+    "image": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Núi lửa Chư Đăng Ya",
     "province": "Gia Lai",
     "category": "Núi và cao nguyên",
-    "latitude": 13.9473,
-    "longitude": 107.982,
+    "latitude": 14.1333,
+    "longitude": 108.0333,
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Chư Đăng Ya là núi lửa đã tắt giữa vùng canh tác của Gia Lai. Triền núi và cảnh nông nghiệp tạo điểm khám phá phù hợp người thích đi bộ, chụp phong cảnh. Trải nghiệm nổi bật: Quan sát cảnh quan núi lửa Khám phá triền núi và đồng ruộng.",
-    "image": "destinations/gia-lai/nui-lua-chu-dang-ya.jpg"
+    "image": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bảo tàng tổng hợp Bình Định",
-    "province": "Gia Lai",
+    "province": "Bình Định",
     "category": "Bảo tàng",
     "latitude": 13.9653,
     "longitude": 107.982,
@@ -2941,7 +2881,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Bảo tàng tổng hợp Bình Định ở Quy Nhơn giới thiệu lịch sử địa phương và bộ sưu tập văn hóa Champa. Phù hợp ghép với tuyến tháp Chăm để có thêm bối cảnh hiện vật. Trải nghiệm nổi bật: Xem hiện vật Champa Tìm hiểu lịch sử vùng Bình Định.",
-    "image": "destinations/gia-lai/bao-tang-tong-hop-binh-dinh.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Đảo Điệp Sơn",
@@ -2953,35 +2893,35 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
     "description": "Điệp Sơn là nhóm đảo trong vùng vịnh Vân Phong, được biết đến với bãi cạn nối đảo khi điều kiện nước phù hợp. Trải nghiệm phụ thuộc lịch tàu và thủy triều. Trải nghiệm nổi bật: Khám phá cảnh quan nhóm đảo Quan sát bãi cạn khi được phép.",
-    "image": "destinations/khanh-hoa/dao-diep-son.jpg"
+    "image": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Vịnh Vĩnh Hy",
-    "province": "Khánh Hòa",
+    "province": "Ninh Thuận",
     "category": "Vịnh và đầm phá",
-    "latitude": 12.2028,
-    "longitude": 109.1607,
+    "latitude": 12.65,
+    "longitude": 109.2,
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Vĩnh Hy là vịnh nhỏ trong cảnh quan núi và biển của vùng Ninh Thuận cũ. Có thể kết hợp ngắm vịnh, khám phá làng ven biển và các hoạt động trên nước được tổ chức. Trải nghiệm nổi bật: Ngắm cảnh vịnh từ bờ Khám phá tuyến biển được tổ chức.",
-    "image": "destinations/khanh-hoa/vinh-vinh-hy.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Hang Rái",
-    "province": "Khánh Hòa",
+    "province": "Ninh Thuận",
     "category": "Cảnh quan",
-    "latitude": 12.2208,
-    "longitude": 109.1607,
+    "latitude": 12.6167,
+    "longitude": 109.1833,
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Hang Rái là cảnh quan bờ đá ven biển trong vùng Núi Chúa, nổi bật với bề mặt đá và sóng. Điểm đến phù hợp quan sát, chụp cảnh hơn là tắm tự do. Trải nghiệm nổi bật: Quan sát địa hình bờ đá Chụp cảnh sóng ven biển.",
-    "image": "destinations/khanh-hoa/hang-rai.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Vườn quốc gia Núi Chúa",
-    "province": "Khánh Hòa",
+    "province": "Ninh Thuận",
     "category": "Vườn quốc gia và bảo tồn",
     "latitude": 12.2388,
     "longitude": 109.1607,
@@ -2989,19 +2929,19 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Vườn quốc gia Núi Chúa bảo vệ cảnh quan rừng khô hạn, núi và ven biển. Khám phá sinh thái ở đây cần chọn tuyến phù hợp với điều kiện nắng nóng và quy định bảo tồn. Trải nghiệm nổi bật: Tìm hiểu hệ sinh thái rừng khô Khám phá thiên nhiên có hướng dẫn.",
-    "image": "destinations/khanh-hoa/vuon-quoc-gia-nui-chua.jpg"
+    "image": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Tháp Po Klong Garai",
-    "province": "Khánh Hòa",
+    "province": "Ninh Thuận",
     "category": "Di tích",
-    "latitude": 12.2568,
-    "longitude": 109.1607,
+    "latitude": 13.9,
+    "longitude": 108.9,
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Po Klong Garai là cụm tháp Chăm trên đồi Trầu, gắn với tín ngưỡng của cộng đồng Chăm. Kiến trúc gạch và sinh hoạt lễ nghi là trọng tâm trải nghiệm. Trải nghiệm nổi bật: Quan sát kiến trúc tháp Tìm hiểu văn hóa Chăm.",
-    "image": "destinations/khanh-hoa/thap-po-klong-garai.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Tháp Bà Po Nagar",
@@ -3013,7 +2953,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Tháp Bà Po Nagar là quần thể tháp Chăm ở Nha Trang, gắn với tín ngưỡng thờ Mẹ Xứ Sở. Điểm đến kết hợp kiến trúc, lịch sử và sinh hoạt tâm linh đang tiếp diễn. Trải nghiệm nổi bật: Khám phá kiến trúc tháp Chăm Tìm hiểu tín ngưỡng Mẹ Xứ Sở.",
-    "image": "destinations/khanh-hoa/thap-ba-po-nagar.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Hòn Mun",
@@ -3025,7 +2965,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
     "description": "Hòn Mun là đảo trong vùng vịnh Nha Trang, gắn với hệ sinh thái biển và cảnh quan nước. Các hoạt động tham quan, lặn ngắm phải tuân thủ phạm vi được phép tại từng thời điểm. Trải nghiệm nổi bật: Khám phá cảnh quan đảo Tìm hiểu bảo tồn hệ sinh thái biển.",
-    "image": "destinations/khanh-hoa/hon-mun.jpg"
+    "image": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Mũi Dinh",
@@ -3037,7 +2977,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
     "description": "Mũi Dinh là điểm ven biển của vùng Thuận Nam, có bờ đá và cảnh quan cát khô. Phù hợp một tuyến khám phá ngoài trời khi có phương án di chuyển rõ ràng. Trải nghiệm nổi bật: Khám phá cảnh quan mũi biển Kết hợp ngắm bờ đá và cát.",
-    "image": "destinations/khanh-hoa/mui-dinh.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Đồi cát Nam Cương",
@@ -3049,7 +2989,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
     "description": "Đồi cát Nam Cương có những dải cát tạo hình theo gió, gần vùng sinh sống của cộng đồng Chăm. Điểm đến phù hợp chụp phong cảnh và dạo ngắn trên cát. Trải nghiệm nổi bật: Ngắm đường gợn cát Tìm hiểu cảnh quan vùng khô hạn.",
-    "image": "destinations/khanh-hoa/doi-cat-nam-cuong.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "VinWonders Nha Trang",
@@ -3061,7 +3001,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "VinWonders Nha Trang nằm trên đảo Hòn Tre, kết hợp nhiều phân khu giải trí. Chuyến đi cần tính cả việc qua đảo và sắp xếp những hoạt động phù hợp nhóm khách. Trải nghiệm nổi bật: Khám phá các phân khu chủ đề Chọn trò chơi và hoạt động biểu diễn.",
-    "image": "destinations/khanh-hoa/vinwonders-nha-trang.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bàu Trắng",
@@ -3073,7 +3013,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
     "description": "Bàu Trắng kết hợp đồi cát sáng màu với hồ nước giữa vùng Bình Thuận cũ. Cảnh quan phù hợp ngắm bình minh, chụp ảnh và trải nghiệm trên cát khi có dịch vụ. Trải nghiệm nổi bật: Ngắm đồi cát trắng Chụp cảnh hồ giữa vùng cát.",
-    "image": "destinations/lam-dong/bau-trang.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bàu Sen",
@@ -3085,7 +3025,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
     "description": "Bàu Sen là phần cảnh quan hồ nước trong vùng bàu cát ven Bình Thuận cũ. Không gian hồ tạo sự tương phản với đồi cát, phù hợp quan sát và chụp phong cảnh. Trải nghiệm nổi bật: Ngắm cảnh hồ bên đồi cát Quan sát cây cỏ ven nước.",
-    "image": "destinations/lam-dong/bau-sen.jpg"
+    "image": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Đồi cát đỏ Mũi Né",
@@ -3097,7 +3037,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
     "description": "Đồi cát đỏ Mũi Né có bề mặt cát biến đổi theo gió và màu sắc nổi bật dưới nắng. Trải nghiệm tập trung vào dạo cảnh quan, chụp ảnh và hoạt động trên cát được tổ chức. Trải nghiệm nổi bật: Chụp ảnh cảnh quan cát đỏ Trải nghiệm trượt cát khi có dịch vụ.",
-    "image": "destinations/lam-dong/doi-cat-do-mui-ne.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Hồ Tà Đùng",
@@ -3109,7 +3049,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
     "description": "Hồ Tà Đùng có mặt nước rộng và những đảo, đồi nổi giữa cảnh quan cao nguyên. Có thể ngắm toàn cảnh từ điểm được tổ chức hoặc khám phá theo tuyến thuyền hợp lệ. Trải nghiệm nổi bật: Ngắm cảnh hồ nhiều đảo Khám phá tuyến hồ được tổ chức.",
-    "image": "destinations/lam-dong/ho-ta-dung.jpg"
+    "image": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Thác Pongour",
@@ -3121,7 +3061,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Pongour là thác nước có các bậc đá trải rộng trong cảnh quan Lâm Đồng. Trải nghiệm phù hợp quan sát thác và đường dạo khi điều kiện nước, thời tiết cho phép. Trải nghiệm nổi bật: Ngắm các bậc thác Dạo cảnh quan khu tham quan.",
-    "image": "destinations/lam-dong/thac-pongour.jpg"
+    "image": "https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Chùa Linh Phước",
@@ -3133,7 +3073,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
     "description": "Chùa Linh Phước ở Trại Mát nổi bật với nghệ thuật trang trí bằng mảnh sành sứ và các công trình Phật giáo. Có thể ghép với tuyến khám phá phía đông Đà Lạt. Trải nghiệm nổi bật: Quan sát nghệ thuật ghép sành sứ Tìm hiểu kiến trúc chùa.",
-    "image": "destinations/lam-dong/chua-linh-phuoc.jpg"
+    "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Đà Lạt",
@@ -3145,7 +3085,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
     "description": "Đà Lạt là vùng đô thị cao nguyên gắn với hồ, rừng thông, vườn hoa và kiến trúc nghỉ dưỡng. Trải nghiệm đa dạng nhưng các điểm phân tán, cần chọn tuyến theo khu vực. Trải nghiệm nổi bật: Khám phá cảnh quan hồ và rừng thông Tìm hiểu kiến trúc và văn hóa địa phương.",
-    "image": "destinations/lam-dong/da-lat.jpg"
+    "image": "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Tuyệt tình cốc Bảo Lộc",
@@ -3157,7 +3097,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
     "description": "Tuyệt tình cốc Bảo Lộc là tên gọi du lịch của hồ hình thành ở vùng mỏ đá cũ. Điểm hấp dẫn là màu nước và vách đá, nhưng đây không phải hồ bơi được thiết kế cho du khách. Trải nghiệm nổi bật: Quan sát hồ từ vị trí an toàn Chụp cảnh vách đá và mặt nước.",
-    "image": "destinations/lam-dong/tuyet-tinh-coc-bao-loc.jpg"
+    "image": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Hòn Rơm",
@@ -3169,67 +3109,67 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
     "description": "Hòn Rơm là vùng biển ở khu Mũi Né, có cảnh quan cát và các cơ sở nghỉ biển. Có thể chọn dạo bờ, ngắm cảnh hoặc ghép nghỉ dưỡng theo nhóm. Trải nghiệm nổi bật: Dạo bờ biển Hòn Rơm Kết hợp khám phá cảnh quan Mũi Né.",
-    "image": "destinations/lam-dong/hon-rom.jpg"
+    "image": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Nhà thờ Mằng Lăng",
-    "province": "Đắk Lắk",
+    "province": "Phú Yên",
     "category": "Tôn giáo và tâm linh",
-    "latitude": 12.6127,
-    "longitude": 108.014,
+    "latitude": 13.2722,
+    "longitude": 109.2222,
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Nhà thờ Mằng Lăng là công trình Công giáo của vùng Tuy An, gắn với lịch sử văn hóa và chữ viết. Kiến trúc nhà thờ tạo một điểm dừng trong tuyến khám phá Phú Yên cũ. Trải nghiệm nổi bật: Quan sát kiến trúc nhà thờ Tìm hiểu di sản văn hóa chữ viết.",
-    "image": "destinations/dak-lak/nha-tho-mang-lang.jpg"
+    "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Tháp Nhạn",
-    "province": "Đắk Lắk",
+    "province": "Phú Yên",
     "category": "Di tích",
-    "latitude": 12.6307,
-    "longitude": 108.014,
+    "latitude": 13.0889,
+    "longitude": 109.3056,
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Tháp Nhạn là tháp Chăm trên núi Nhạn ở vùng Tuy Hòa, nhìn xuống cảnh quan đô thị và sông. Trải nghiệm kết hợp kiến trúc di sản với ngắm cảnh từ trên cao. Trải nghiệm nổi bật: Quan sát tháp Chăm Ngắm cảnh khu vực Tuy Hòa.",
-    "image": "destinations/dak-lak/thap-nhan.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Gành Đá Đĩa",
-    "province": "Đắk Lắk",
+    "province": "Phú Yên",
     "category": "Cảnh quan",
-    "latitude": 12.6487,
-    "longitude": 108.014,
+    "latitude": 13.3556,
+    "longitude": 109.2972,
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
     "description": "Gành Đá Đĩa có những cột đá dạng đa giác xếp nối nhau trên bờ biển Tuy An. Điểm đến phù hợp quan sát địa chất và cảnh quan sóng đánh vào các tầng đá. Trải nghiệm nổi bật: Quan sát cấu trúc cột đá Chụp cảnh bờ biển.",
-    "image": "destinations/dak-lak/ganh-da-dia.jpg"
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Ganh_Da_Dia_Phu_Yen.jpg/800px-Ganh_Da_Dia_Phu_Yen.jpg"
   },
   {
     "name": "Bãi Xép",
-    "province": "Đắk Lắk",
+    "province": "Phú Yên",
     "category": "Biển và đảo",
-    "latitude": 12.6667,
-    "longitude": 108.014,
+    "latitude": 13.2083,
+    "longitude": 109.2889,
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
     "description": "Bãi Xép là bãi biển và cảnh quan đồi ven bờ của vùng Tuy An, được nhiều người biết đến qua điện ảnh. Trải nghiệm thiên về dạo cảnh, chụp ảnh và nghỉ biển. Trải nghiệm nổi bật: Dạo bãi biển Ngắm cảnh từ đồi ven bờ.",
-    "image": "destinations/dak-lak/bai-xep.jpg"
+    "image": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Mũi Điện",
-    "province": "Đắk Lắk",
+    "province": "Phú Yên",
     "category": "Cảnh quan",
-    "latitude": 12.6847,
-    "longitude": 108.014,
+    "latitude": 12.8944,
+    "longitude": 109.4583,
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Mũi Điện là điểm mũi biển gắn với hải đăng ở vùng Đông Hòa, có góc nhìn rộng ra biển và núi. Hành trình cần đi bộ theo tuyến lên khu công trình. Trải nghiệm nổi bật: Khám phá tuyến lên hải đăng Ngắm cảnh mũi biển.",
-    "image": "destinations/dak-lak/mui-dien.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Vườn quốc gia Yok Đôn",
@@ -3241,7 +3181,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Yok Đôn bảo vệ hệ sinh thái rừng khộp của Tây Nguyên, khác với cảnh rừng thường xanh ở nhiều vùng khác. Khám phá phù hợp theo tuyến có hướng dẫn và nguyên tắc bảo tồn. Trải nghiệm nổi bật: Tìm hiểu rừng khộp Quan sát thiên nhiên theo tuyến được phép.",
-    "image": "destinations/dak-lak/vuon-quoc-gia-yok-don.jpg"
+    "image": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Thác Dray Nur",
@@ -3253,7 +3193,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Dray Nur là thác nước của vùng sông Sêrêpốk, có vách thác và cảnh quan đá ven dòng. Điểm đến phù hợp ngắm thác và khám phá khu vực theo đường tham quan. Trải nghiệm nổi bật: Ngắm vách thác Dray Nur Dạo cảnh quan ven thác.",
-    "image": "destinations/dak-lak/thac-dray-nur.jpg"
+    "image": "https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Hồ Lắk",
@@ -3265,7 +3205,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
     "description": "Hồ Lắk nằm giữa cảnh quan cao nguyên và các buôn của cộng đồng M’nông. Trải nghiệm có thể kết hợp ngắm hồ với tìm hiểu đời sống văn hóa ven nước. Trải nghiệm nổi bật: Ngắm cảnh hồ Khám phá văn hóa buôn ven hồ.",
-    "image": "destinations/dak-lak/ho-lak.jpg"
+    "image": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bảo tàng Thế giới Cà phê",
@@ -3277,7 +3217,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Bảo tàng Thế giới Cà phê tại Buôn Ma Thuột kết hợp trưng bày về cà phê với kiến trúc và không gian trải nghiệm. Phù hợp người quan tâm câu chuyện văn hóa của thức uống này. Trải nghiệm nổi bật: Tìm hiểu văn hóa cà phê Quan sát kiến trúc và trưng bày.",
-    "image": "destinations/dak-lak/bao-tang-the-gioi-ca-phe.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Buôn Ako Dhông",
@@ -3289,11 +3229,11 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
     "description": "Ako Dhông là buôn Ê Đê trong vùng Buôn Ma Thuột, có dấu ấn nhà dài và sinh hoạt cộng đồng. Có thể khám phá bằng đi bộ và tìm hiểu văn hóa qua người địa phương. Trải nghiệm nổi bật: Quan sát nhà dài Ê Đê Tìm hiểu sinh hoạt buôn.",
-    "image": "destinations/dak-lak/buon-ako-dhong.jpg"
+    "image": "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Khu du lịch Đại Nam",
-    "province": "Hồ Chí Minh",
+    "province": "Bình Dương",
     "category": "Giải trí và công viên",
     "latitude": 15.946,
     "longitude": 107.964,
@@ -3301,59 +3241,59 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Đại Nam là tổ hợp du lịch tại vùng Bình Dương cũ, kết hợp công trình văn hóa với các khu vui chơi. Phù hợp nhóm muốn dành thời gian cho hoạt động trong khuôn viên có quản lý. Trải nghiệm nổi bật: Tham quan công trình văn hóa Chọn phân khu vui chơi phù hợp.",
-    "image": "destinations/thanh-pho-ho-chi-minh/khu-du-lich-dai-nam.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bảo tàng Biệt động Sài Gòn – Gia Định",
-    "province": "Hồ Chí Minh",
+    "province": "TP. Hồ Chí Minh",
     "category": "Bảo tàng",
-    "latitude": 15.964,
-    "longitude": 107.964,
+    "latitude": 10.769444,
+    "longitude": 106.681944,
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Bảo tàng Biệt động Sài Gòn – Gia Định giới thiệu hoạt động của lực lượng biệt động qua nhà, tư liệu và hiện vật. Không gian phù hợp người muốn tìm hiểu lịch sử đô thị từ góc nhìn chuyên đề. Trải nghiệm nổi bật: Xem tư liệu về lực lượng biệt động Tìm hiểu câu chuyện căn nhà lịch sử.",
-    "image": "destinations/thanh-pho-ho-chi-minh/bao-tang-biet-dong-sai-gon-gia-dinh.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Đài quan sát Landmark 81 SkyView",
-    "province": "Hồ Chí Minh",
+    "province": "TP. Hồ Chí Minh",
     "category": "Cảnh quan",
-    "latitude": 15.982,
-    "longitude": 107.964,
+    "latitude": 10.795025,
+    "longitude": 106.721909,
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
     "description": "Landmark 81 SkyView là đài quan sát trên cao nhìn ra sông Sài Gòn và cảnh quan đô thị. Trải nghiệm tập trung vào tầm nhìn, chụp ảnh và dịch vụ trên đài. Trải nghiệm nổi bật: Ngắm toàn cảnh thành phố Chụp cảnh sông Sài Gòn từ trên cao.",
-    "image": "destinations/thanh-pho-ho-chi-minh/dai-quan-sat-landmark-81-skyview.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Thảo Cầm Viên Sài Gòn",
-    "province": "Hồ Chí Minh",
+    "province": "TP. Hồ Chí Minh",
     "category": "Giải trí và công viên",
-    "latitude": 16,
-    "longitude": 107.964,
+    "latitude": 10.769444,
+    "longitude": 106.681944,
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Thảo Cầm Viên kết hợp vườn thú với không gian cây xanh lâu năm trong trung tâm Sài Gòn. Phù hợp một buổi đi bộ tìm hiểu động vật và cảnh quan đô thị. Trải nghiệm nổi bật: Quan sát động vật Dạo vườn cây trong khuôn viên.",
-    "image": "destinations/thanh-pho-ho-chi-minh/thao-cam-vien-sai-gon.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Nhà tù Côn Đảo",
-    "province": "Hồ Chí Minh",
+    "province": "Bà Rịa - Vũng Tàu",
     "category": "Di tích",
-    "latitude": 16.018,
-    "longitude": 107.964,
+    "latitude": 8.6833,
+    "longitude": 106.6083,
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Hệ thống nhà tù Côn Đảo lưu giữ nhiều trại giam và không gian tưởng niệm từ các giai đoạn lịch sử. Cần chọn tuyến di tích cụ thể để hiểu câu chuyện nơi đây. Trải nghiệm nổi bật: Tham quan các trại giam mở cửa Tìm hiểu lịch sử Côn Đảo.",
-    "image": "destinations/thanh-pho-ho-chi-minh/nha-tu-con-dao.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bạch Dinh",
-    "province": "Hồ Chí Minh",
+    "province": "TP. Hồ Chí Minh",
     "category": "Di tích",
     "latitude": 16.036,
     "longitude": 107.964,
@@ -3361,11 +3301,11 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Bạch Dinh ở Vũng Tàu là biệt thự lịch sử trên sườn đồi, có cảnh quan cây xanh và góc nhìn ra biển. Phù hợp kết hợp kiến trúc, trưng bày và dạo khuôn viên. Trải nghiệm nổi bật: Quan sát kiến trúc biệt thự Ngắm cảnh từ sườn đồi.",
-    "image": "destinations/thanh-pho-ho-chi-minh/bach-dinh.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Địa đạo Củ Chi",
-    "province": "Hồ Chí Minh",
+    "province": "TP. Hồ Chí Minh",
     "category": "Di tích",
     "latitude": 16.054,
     "longitude": 107.964,
@@ -3373,11 +3313,11 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Địa đạo Củ Chi giới thiệu hệ thống đường hầm và đời sống thời chiến tại vùng ngoại thành Sài Gòn. Trải nghiệm có thể gồm thuyết minh, xem tái hiện và đi một đoạn hầm. Trải nghiệm nổi bật: Tìm hiểu hệ thống địa đạo Trải nghiệm đoạn hầm được mở.",
-    "image": "destinations/thanh-pho-ho-chi-minh/dia-dao-cu-chi.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Núi Bà Rá",
-    "province": "Đồng Nai",
+    "province": "Bình Phước",
     "category": "Núi và cao nguyên",
     "latitude": 10.9034,
     "longitude": 106.8067,
@@ -3385,11 +3325,11 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Núi Bà Rá nổi lên giữa cảnh quan vùng Phước Long, gắn với văn hóa và lịch sử địa phương. Hành trình có thể kết hợp đường lên núi với ngắm cảnh từ độ cao. Trải nghiệm nổi bật: Khám phá cảnh quan núi Tìm hiểu câu chuyện vùng Phước Long.",
-    "image": "destinations/dong-nai/nui-ba-ra.jpg"
+    "image": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Khu bảo tồn văn hóa S’tiêng Sóc Bom Bo",
-    "province": "Đồng Nai",
+    "province": "Bình Phước",
     "category": "Làng bản và văn hóa",
     "latitude": 10.9214,
     "longitude": 106.8067,
@@ -3397,7 +3337,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
     "description": "Sóc Bom Bo là điểm tìm hiểu văn hóa S’tiêng của vùng Bình Phước cũ, gắn với nhà cộng đồng và ký ức kháng chiến. Trải nghiệm có ý nghĩa hơn khi được cộng đồng giới thiệu. Trải nghiệm nổi bật: Tìm hiểu văn hóa S’tiêng Khám phá nhà và không gian cộng đồng.",
-    "image": "destinations/dong-nai/khu-bao-ton-van-hoa-s-tieng-soc-bom-bo.jpg"
+    "image": "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Văn Miếu Trấn Biên",
@@ -3409,7 +3349,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Văn Miếu Trấn Biên gắn với truyền thống học tập của vùng đất Biên Hòa và Nam Bộ. Kiến trúc, không gian thờ tự và cảnh quan vườn phù hợp một chuyến tìm hiểu văn hóa. Trải nghiệm nổi bật: Tìm hiểu truyền thống hiếu học Dạo cảnh quan Văn Miếu.",
-    "image": "destinations/dong-nai/van-mieu-tran-bien.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Khu du lịch Bửu Long",
@@ -3421,7 +3361,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Khu du lịch Bửu Long kết hợp hồ, núi đá và các hạng mục cảnh quan ở Biên Hòa. Phù hợp nhóm muốn dạo chơi, chụp ảnh và nghỉ ngắn gần đô thị. Trải nghiệm nổi bật: Dạo cảnh quan hồ và núi Khám phá các khu tham quan.",
-    "image": "destinations/dong-nai/khu-du-lich-buu-long.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Hồ Trị An",
@@ -3433,7 +3373,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
     "description": "Hồ Trị An là hồ chứa lớn của Đồng Nai, có nhiều đoạn bờ, đảo và điểm dịch vụ khác nhau. Thích hợp ngắm cảnh hoặc hoạt động ngoài trời khi chọn đúng vị trí được phép. Trải nghiệm nổi bật: Ngắm cảnh hồ Tham gia hoạt động ngoài trời có tổ chức.",
-    "image": "destinations/dong-nai/ho-tri-an.jpg"
+    "image": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Vườn quốc gia Cát Tiên",
@@ -3445,7 +3385,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Vườn quốc gia Cát Tiên bảo vệ hệ sinh thái rừng ở vùng Đồng Nai và Lâm Đồng. Có nhiều tuyến khám phá thiên nhiên, đòi hỏi mức chuẩn bị khác nhau tùy hành trình. Trải nghiệm nổi bật: Đi bộ tìm hiểu rừng Quan sát thiên nhiên theo chương trình.",
-    "image": "destinations/dong-nai/vuon-quoc-gia-cat-tien.jpg"
+    "image": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Hồ Bà Hào",
@@ -3457,7 +3397,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
     "description": "Hồ Bà Hào nằm trong cảnh quan rừng Mã Đà, thuộc vùng bảo tồn Đồng Nai. Không gian hồ phù hợp tìm hiểu thiên nhiên và hoạt động theo những tuyến được quản lý. Trải nghiệm nổi bật: Ngắm cảnh hồ trong rừng Tìm hiểu hệ sinh thái Mã Đà.",
-    "image": "destinations/dong-nai/ho-ba-hao.jpg"
+    "image": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Đảo Ó",
@@ -3469,7 +3409,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Đảo Ó nằm giữa hồ Trị An, có cảnh quan cây xanh và mặt nước bao quanh. Trải nghiệm thường gắn với phương tiện qua đảo và các dịch vụ nghỉ ngơi, dã ngoại. Trải nghiệm nổi bật: Dạo cảnh quan đảo Kết hợp nghỉ ngơi bên hồ.",
-    "image": "destinations/dong-nai/dao-o.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Thác Trời",
@@ -3481,7 +3421,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Thác Trời thuộc cảnh quan sông Đồng Nai trong vùng Cát Tiên, có các ghềnh đá và dòng nước. Đây là điểm thiên nhiên cần tiếp cận theo tuyến phù hợp trong vùng được quản lý. Trải nghiệm nổi bật: Quan sát ghềnh và thác Khám phá cảnh quan theo tuyến rừng.",
-    "image": "destinations/dong-nai/thac-troi.jpg"
+    "image": "https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Khu du lịch Vườn Xoài",
@@ -3493,7 +3433,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Khu du lịch Vườn Xoài ở vùng Biên Hòa kết hợp cảnh quan sinh thái với tham quan động vật và vui chơi. Có thể chọn hoạt động theo tuổi và sở thích của cả nhóm. Trải nghiệm nổi bật: Khám phá khu tham quan động vật Kết hợp hoạt động nghỉ ngơi gia đình.",
-    "image": "destinations/dong-nai/khu-du-lich-vuon-xoai.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Làng nổi Tân Lập",
@@ -3505,7 +3445,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Làng nổi Tân Lập nằm trong cảnh quan rừng tràm của vùng Đồng Tháp Mười. Trải nghiệm kết hợp đường đi trong rừng và các hoạt động trên nước khi được tổ chức. Trải nghiệm nổi bật: Đi bộ qua rừng tràm Khám phá cảnh quan mặt nước.",
-    "image": "destinations/tay-ninh/lang-noi-tan-lap.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Làng nghề bánh tráng phơi sương Trảng Bàng",
@@ -3517,7 +3457,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
     "description": "Nghề bánh tráng phơi sương Trảng Bàng gắn với kỹ thuật làm bánh và văn hóa ẩm thực Tây Ninh. Tham quan cơ sở sản xuất giúp hiểu công việc phía sau món ăn quen thuộc. Trải nghiệm nổi bật: Tìm hiểu quy trình làm bánh Khám phá ẩm thực Trảng Bàng.",
-    "image": "destinations/tay-ninh/lang-nghe-banh-trang-phoi-suong-trang-bang.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Vườn quốc gia Lò Gò – Xa Mát",
@@ -3529,31 +3469,31 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
     "description": "Lò Gò – Xa Mát bảo vệ cảnh quan rừng và sinh cảnh đất ngập nước vùng biên Tây Ninh. Thích hợp tìm hiểu thiên nhiên bằng những tuyến có tổ chức và hướng dẫn. Trải nghiệm nổi bật: Khám phá thiên nhiên theo tuyến Tìm hiểu bảo tồn vùng biên.",
-    "image": "destinations/tay-ninh/vuon-quoc-gia-lo-go-xa-mat.jpg"
+    "image": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Tòa Thánh Cao Đài Tây Ninh",
     "province": "Tây Ninh",
     "category": "Tôn giáo và tâm linh",
-    "latitude": 11.31,
-    "longitude": 106.0629,
+    "latitude": 11.3094,
+    "longitude": 106.1408,
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
     "description": "Tòa Thánh Tây Ninh là trung tâm tôn giáo Cao Đài, nổi bật với kiến trúc và hệ thống biểu tượng riêng. Tham quan cần tôn trọng nếp hành lễ của tín đồ. Trải nghiệm nổi bật: Quan sát kiến trúc và biểu tượng Tìm hiểu văn hóa Cao Đài.",
-    "image": "destinations/tay-ninh/toa-thanh-cao-dai-tay-ninh.jpg"
+    "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Núi Bà Đen",
     "province": "Tây Ninh",
     "category": "Núi và cao nguyên",
-    "latitude": 11.328,
-    "longitude": 106.0629,
+    "latitude": 11.3789,
+    "longitude": 106.1683,
     "priceMin": 450000,
     "priceMax": 950000,
     "openingHours": "07:30 - 18:00",
     "description": "Núi Bà Đen kết hợp cảnh quan núi cao với quần thể công trình Phật giáo và hệ thống dịch vụ du lịch. Tuyến lên bằng cáp treo khác với hành trình leo núi. Trải nghiệm nổi bật: Ngắm cảnh từ khu vực trên núi Tham quan công trình Phật giáo.",
-    "image": "destinations/tay-ninh/nui-ba-den.jpg"
+    "image": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Chùa Long Châu",
@@ -3565,7 +3505,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
     "description": "Chùa Long Châu ở vùng Tân An là ngôi chùa lâu đời gắn với sinh hoạt Phật giáo địa phương. Phù hợp một điểm dừng văn hóa ngắn khi khám phá khu vực. Trải nghiệm nổi bật: Quan sát kiến trúc chùa Tìm hiểu sinh hoạt Phật giáo địa phương.",
-    "image": "destinations/tay-ninh/chua-long-chau.jpg"
+    "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Khu du lịch Happyland",
@@ -3577,7 +3517,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Happyland là tổ hợp du lịch tại vùng Bến Lức, có định hướng cảnh quan và hoạt động giải trí. Tình trạng đón khách, hạng mục vận hành cần được xác nhận trước khi đưa vào lịch trình. Trải nghiệm nổi bật: Tìm hiểu cảnh quan của tổ hợp Chọn hoạt động đang được đơn vị xác nhận.",
-    "image": "destinations/tay-ninh/khu-du-lich-happyland.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Khu bảo tồn đất ngập nước Láng Sen",
@@ -3589,7 +3529,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Láng Sen bảo vệ vùng đất ngập nước Đồng Tháp Mười với rừng, đồng cỏ và sinh cảnh chim. Phù hợp tìm hiểu thiên nhiên có hướng dẫn hơn là tự do đi vào toàn khu. Trải nghiệm nổi bật: Quan sát hệ sinh thái ngập nước Tìm hiểu hoạt động bảo tồn.",
-    "image": "destinations/tay-ninh/khu-bao-ton-dat-ngap-nuoc-lang-sen.jpg"
+    "image": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Khu di tích Vàm Nhựt Tảo",
@@ -3601,7 +3541,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Di tích Vàm Nhựt Tảo gắn với chiến công của Nguyễn Trung Trực trên vùng sông nước Nam Bộ. Không gian tưởng niệm phù hợp tìm hiểu lịch sử và địa lý địa phương. Trải nghiệm nổi bật: Tìm hiểu chiến công Nguyễn Trung Trực Tham quan khu tưởng niệm.",
-    "image": "destinations/tay-ninh/khu-di-tich-vam-nhut-tao.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Khu du lịch Cánh đồng bất tận",
@@ -3613,35 +3553,35 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Cánh đồng bất tận là khu du lịch trong cảnh quan rừng tràm vùng Mộc Hóa. Trải nghiệm thiên về thiên nhiên và các hoạt động ngoài trời do cơ sở tổ chức. Trải nghiệm nổi bật: Khám phá rừng tràm Tham gia hoạt động sinh thái theo chương trình.",
-    "image": "destinations/tay-ninh/khu-du-lich-canh-dong-bat-tan.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Chùa Som Rong",
-    "province": "Cần Thơ",
+    "province": "Sóc Trăng",
     "category": "Tôn giáo và tâm linh",
-    "latitude": 9.9912,
-    "longitude": 105.7109,
+    "latitude": 9.6108,
+    "longitude": 105.9903,
     "priceMin": 0,
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
     "description": "Chùa Som Rong là ngôi chùa Khmer ở vùng Sóc Trăng, nổi bật với tượng Phật nằm và công trình trang trí. Phù hợp tìm hiểu kiến trúc, văn hóa Phật giáo Nam tông Khmer. Trải nghiệm nổi bật: Quan sát kiến trúc Khmer Tham quan khu tượng Phật.",
-    "image": "destinations/can-tho/chua-som-rong.jpg"
+    "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Chùa Dơi",
-    "province": "Cần Thơ",
+    "province": "Sóc Trăng",
     "category": "Tôn giáo và tâm linh",
-    "latitude": 10.0092,
-    "longitude": 105.7109,
+    "latitude": 9.5858,
+    "longitude": 105.9753,
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Chùa Dơi là ngôi chùa Khmer của Sóc Trăng, gắn với kiến trúc tôn giáo và sinh cảnh đàn dơi trong khuôn viên. Trải nghiệm cần tôn trọng cả cộng đồng tu tập lẫn động vật. Trải nghiệm nổi bật: Khám phá kiến trúc chùa Khmer Quan sát cảnh quan khuôn viên.",
-    "image": "destinations/can-tho/chua-doi.jpg"
+    "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Chùa Đất Sét",
-    "province": "Cần Thơ",
+    "province": "Sóc Trăng",
     "category": "Tôn giáo và tâm linh",
     "latitude": 10.0272,
     "longitude": 105.7109,
@@ -3649,11 +3589,11 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
     "description": "Chùa Đất Sét, còn gọi Bửu Sơn Tự, nổi bật với các tác phẩm tạo hình bằng đất sét. Đây là không gian tín ngưỡng có giá trị thủ công, phù hợp tham quan nhẹ nhàng. Trải nghiệm nổi bật: Quan sát nghệ thuật tạo hình đất sét Tìm hiểu không gian Bửu Sơn Tự.",
-    "image": "destinations/can-tho/chua-dat-set.jpg"
+    "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Chùa Khleang",
-    "province": "Cần Thơ",
+    "province": "Sóc Trăng",
     "category": "Tôn giáo và tâm linh",
     "latitude": 10.0452,
     "longitude": 105.7109,
@@ -3661,19 +3601,19 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
     "description": "Chùa Khleang là công trình Phật giáo Khmer lâu đời của Sóc Trăng. Hình thức mái, trang trí và không gian chánh điện phù hợp người quan tâm nghệ thuật tôn giáo Nam Bộ. Trải nghiệm nổi bật: Quan sát kiến trúc Khmer Tìm hiểu sinh hoạt Phật giáo Nam tông.",
-    "image": "destinations/can-tho/chua-khleang.jpg"
+    "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Nhà cổ Bình Thủy",
     "province": "Cần Thơ",
     "category": "Di tích",
-    "latitude": 10.0632,
-    "longitude": 105.7109,
+    "latitude": 10.0631,
+    "longitude": 105.7553,
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Nhà cổ Bình Thủy là ngôi nhà của dòng họ Dương, thể hiện sự kết hợp giữa ảnh hưởng kiến trúc phương Tây và không gian sống Nam Bộ. Phù hợp khám phá lịch sử gia đình và nghệ thuật trang trí. Trải nghiệm nổi bật: Quan sát kiến trúc nhà cổ Tìm hiểu câu chuyện gia tộc.",
-    "image": "destinations/can-tho/nha-co-binh-thuy.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Cồn Sơn",
@@ -3685,7 +3625,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Cồn Sơn giữa sông Hậu phát triển trải nghiệm du lịch cộng đồng gắn với vườn, nhà dân và sinh hoạt sông nước. Các hộ cung cấp hoạt động khác nhau nên cần chọn chương trình cụ thể. Trải nghiệm nổi bật: Khám phá miệt vườn Tìm hiểu sinh hoạt cộng đồng trên cồn.",
-    "image": "destinations/can-tho/con-son.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bến Ninh Kiều",
@@ -3697,19 +3637,19 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
     "description": "Bến Ninh Kiều là không gian ven sông gắn với cảnh quan đô thị Cần Thơ. Phù hợp dạo bộ, ngắm sông và kết nối các tuyến tham quan đường thủy. Trải nghiệm nổi bật: Dạo bờ sông Ngắm cảnh đô thị ven nước.",
-    "image": "destinations/can-tho/ben-ninh-kieu.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Chợ nổi Cái Răng",
     "province": "Cần Thơ",
     "category": "Chợ",
-    "latitude": 9.9912,
-    "longitude": 105.7289,
+    "latitude": 10.0031,
+    "longitude": 105.7481,
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "06:00 - 18:30",
     "description": "Chợ nổi Cái Răng gắn với hoạt động mua bán trên sông của vùng Cần Thơ. Trải nghiệm phù hợp quan sát sinh hoạt sông nước khi chọn đúng giờ và tuyến thuyền. Trải nghiệm nổi bật: Quan sát giao thương trên sông Tìm hiểu sinh hoạt chợ nổi.",
-    "image": "destinations/can-tho/cho-noi-cai-rang.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bảo tàng thành phố Cần Thơ",
@@ -3721,7 +3661,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Bảo tàng Cần Thơ giới thiệu lịch sử và văn hóa vùng sông nước, với các không gian về cộng đồng Kinh, Khmer và Hoa. Đây là lựa chọn bổ sung bối cảnh cho chuyến khám phá miền Tây. Trải nghiệm nổi bật: Tìm hiểu văn hóa các cộng đồng Xem trưng bày đời sống sông nước.",
-    "image": "destinations/can-tho/bao-tang-thanh-pho-can-tho.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Chợ Vị Thanh",
@@ -3733,11 +3673,11 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "06:00 - 18:30",
     "description": "Chợ Vị Thanh được biết đến với cách bày bán hàng hóa, nông sản gần mặt đất và nhịp chợ địa phương. Phù hợp quan sát đời sống thường ngày hơn là một khu giải trí du lịch. Trải nghiệm nổi bật: Quan sát sinh hoạt chợ Khám phá nông sản và món ăn địa phương.",
-    "image": "destinations/can-tho/cho-vi-thanh.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Kênh dừa Bến Tre",
-    "province": "Vĩnh Long",
+    "province": "Bến Tre",
     "category": "Sinh thái và nghỉ dưỡng",
     "latitude": 10.196,
     "longitude": 105.9307,
@@ -3745,11 +3685,11 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Các kênh dừa ở vùng Bến Tre tạo cảnh quan sông nước dưới tán cây, gắn với làng nghề và nhà vườn. Trải nghiệm cần chọn một tuyến có bến và đơn vị vận hành cụ thể. Trải nghiệm nổi bật: Đi xuồng theo tuyến kênh Tìm hiểu sinh hoạt vùng dừa.",
-    "image": "destinations/vinh-long/kenh-dua-ben-tre.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bãi biển Ba Động",
-    "province": "Vĩnh Long",
+    "province": "Trà Vinh",
     "category": "Biển và đảo",
     "latitude": 10.214,
     "longitude": 105.9307,
@@ -3757,11 +3697,11 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
     "description": "Ba Động là bãi biển của vùng Trà Vinh cũ, có cảnh quan bờ cát và sinh hoạt ven biển. Phù hợp dạo ngắm biển và kết hợp khám phá văn hóa Khmer lân cận. Trải nghiệm nổi bật: Dạo cảnh quan ven biển Kết hợp khám phá văn hóa địa phương.",
-    "image": "destinations/vinh-long/bai-bien-ba-dong.jpg"
+    "image": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Ao Bà Om",
-    "province": "Vĩnh Long",
+    "province": "Trà Vinh",
     "category": "Sông và hồ",
     "latitude": 10.232,
     "longitude": 105.9307,
@@ -3769,11 +3709,11 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "00:00 - 23:59",
     "description": "Ao Bà Om là thắng cảnh gắn với câu chuyện dân gian Khmer, có mặt nước và cây cổ thụ. Có thể ghép đi bộ thư giãn với thăm chùa Âng và bảo tàng gần đó. Trải nghiệm nổi bật: Dạo quanh ao Tìm hiểu câu chuyện văn hóa Khmer.",
-    "image": "destinations/vinh-long/ao-ba-om.jpg"
+    "image": "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Chùa Âng",
-    "province": "Vĩnh Long",
+    "province": "Trà Vinh",
     "category": "Tôn giáo và tâm linh",
     "latitude": 10.25,
     "longitude": 105.9307,
@@ -3781,7 +3721,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
     "description": "Chùa Âng nằm gần Ao Bà Om, thể hiện nghệ thuật kiến trúc Phật giáo Khmer. Không gian sân, mái và chánh điện giúp tìm hiểu văn hóa tâm linh của vùng Trà Vinh. Trải nghiệm nổi bật: Quan sát kiến trúc chùa Khmer Kết hợp tuyến văn hóa Ao Bà Om.",
-    "image": "destinations/vinh-long/chua-ang.jpg"
+    "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Làng nghề gạch gốm Mang Thít",
@@ -3793,7 +3733,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
     "description": "Vùng lò gạch gốm Mang Thít tạo cảnh quan sản xuất đặc trưng dọc sông và kênh. Trải nghiệm phù hợp tìm hiểu làng nghề, kỹ thuật làm gạch gốm và đời sống ven nước. Trải nghiệm nổi bật: Khám phá cảnh quan lò gạch Tìm hiểu nghề gạch gốm.",
-    "image": "destinations/vinh-long/lang-nghe-gach-gom-mang-thit.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Chợ nổi Trà Ôn",
@@ -3805,7 +3745,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "06:00 - 18:30",
     "description": "Chợ nổi Trà Ôn gắn với văn hóa trao đổi hàng hóa trên sông Hậu và vùng cửa sông Mang Thít. Hoạt động thực tế có thể khác ảnh tư liệu nên cần kiểm tra trước chuyến đi. Trải nghiệm nổi bật: Tìm hiểu văn hóa chợ nổi Khám phá cảnh quan sông nước Trà Ôn.",
-    "image": "destinations/vinh-long/cho-noi-tra-on.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bảo tàng Văn hóa dân tộc Khmer Trà Vinh",
@@ -3817,7 +3757,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Bảo tàng Văn hóa dân tộc Khmer tại vùng Trà Vinh giới thiệu hiện vật và đời sống của cộng đồng Khmer Nam Bộ. Có thể ghép cùng Ao Bà Om và chùa Âng thành tuyến văn hóa. Trải nghiệm nổi bật: Xem hiện vật văn hóa Khmer Tìm hiểu đời sống cộng đồng Nam Bộ.",
-    "image": "destinations/vinh-long/bao-tang-van-hoa-dan-toc-khmer-tra-vinh.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Cồn Bửng",
@@ -3829,7 +3769,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
     "description": "Cồn Bửng là vùng ven biển Thạnh Phú thuộc Bến Tre cũ, gắn với bãi bồi và sinh hoạt làng biển. Trải nghiệm phù hợp đi dạo, tìm hiểu địa phương và dùng bữa hải sản. Trải nghiệm nổi bật: Khám phá cảnh quan bãi bồi Tìm hiểu sinh hoạt ven biển.",
-    "image": "destinations/vinh-long/con-bung.jpg"
+    "image": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Khu du lịch Vinh Sang",
@@ -3841,7 +3781,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Vinh Sang là khu du lịch miệt vườn trên cù lao An Bình, gắn với cảnh quan vườn và sông Cổ Chiên. Phù hợp lựa chọn hoạt động nghỉ ngơi, trải nghiệm theo chương trình của cơ sở. Trải nghiệm nổi bật: Khám phá cảnh quan miệt vườn Chọn hoạt động nhóm được tổ chức.",
-    "image": "destinations/vinh-long/khu-du-lich-vinh-sang.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Thiền viện Trúc Lâm Trà Vinh",
@@ -3853,43 +3793,43 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
     "description": "Thiền viện Trúc Lâm Trà Vinh là không gian Phật giáo với chánh điện, sân và cảnh quan vườn. Phù hợp một điểm dừng văn hóa, tĩnh tâm trong tuyến khám phá địa phương. Trải nghiệm nổi bật: Quan sát kiến trúc thiền viện Dạo không gian sân vườn.",
-    "image": "destinations/vinh-long/thien-vien-truc-lam-tra-vinh.jpg"
+    "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Khu di tích Xẻo Quýt",
     "province": "Đồng Tháp",
     "category": "Di tích",
-    "latitude": 10.4127,
-    "longitude": 105.5973,
+    "latitude": 10.4333,
+    "longitude": 105.8167,
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Xẻo Quýt kết hợp cảnh quan rừng tràm ngập nước với dấu tích căn cứ thời kháng chiến. Có thể khám phá theo đường đi bộ hoặc tuyến nước khi điều kiện cho phép. Trải nghiệm nổi bật: Tìm hiểu di tích căn cứ Khám phá rừng tràm theo tuyến.",
-    "image": "destinations/dong-thap/khu-di-tich-xeo-quyt.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Vườn quốc gia Tràm Chim",
     "province": "Đồng Tháp",
     "category": "Vườn quốc gia và bảo tồn",
-    "latitude": 10.4307,
-    "longitude": 105.5973,
+    "latitude": 10.7,
+    "longitude": 105.5167,
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Tràm Chim bảo vệ vùng đất ngập nước tiêu biểu của Đồng Tháp Mười, với đồng cỏ, kênh và nhiều loài chim. Trải nghiệm tốt nhất theo tuyến quan sát thiên nhiên có quản lý. Trải nghiệm nổi bật: Đi theo tuyến sinh thái Quan sát chim trong sinh cảnh ngập nước.",
-    "image": "destinations/dong-thap/vuon-quoc-gia-tram-chim.jpg"
+    "image": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Làng hoa Sa Đéc",
     "province": "Đồng Tháp",
     "category": "Làng nghề",
-    "latitude": 10.4487,
-    "longitude": 105.5973,
+    "latitude": 10.3,
+    "longitude": 105.75,
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Làng hoa Sa Đéc là vùng trồng hoa kiểng, nơi hoạt động sản xuất tạo nên cảnh quan du lịch. Có thể khám phá vườn, tìm hiểu nghề và chụp ảnh theo mùa hoa. Trải nghiệm nổi bật: Khám phá vườn hoa kiểng Tìm hiểu nghề trồng hoa.",
-    "image": "destinations/dong-thap/lang-hoa-sa-dec.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Nhà cổ Huỳnh Thủy Lê",
@@ -3901,11 +3841,11 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Nhà cổ Huỳnh Thủy Lê tại Sa Đéc kết hợp ảnh hưởng kiến trúc Đông – Tây và câu chuyện gia đình gắn với văn học. Phù hợp một điểm dừng văn hóa trong tuyến đô thị ven sông. Trải nghiệm nổi bật: Quan sát kiến trúc nhà cổ Tìm hiểu câu chuyện Huỳnh Thủy Lê.",
-    "image": "destinations/dong-thap/nha-co-huynh-thuy-le.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Cồn Thới Sơn",
-    "province": "Đồng Tháp",
+    "province": "Tiền Giang",
     "category": "Sinh thái và nghỉ dưỡng",
     "latitude": 10.4847,
     "longitude": 105.5973,
@@ -3913,7 +3853,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Cồn Thới Sơn ở vùng sông Tiền là điểm du lịch gắn với vườn cây và sinh hoạt sông nước. Chương trình có thể gồm xuồng, đi vườn và tìm hiểu nghề địa phương. Trải nghiệm nổi bật: Khám phá cảnh quan cồn Trải nghiệm tuyến sông và nhà vườn.",
-    "image": "destinations/dong-thap/con-thoi-son.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Miệt vườn Cái Bè",
@@ -3925,7 +3865,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Miệt vườn Cái Bè gồm nhiều nhà vườn và tuyến dân cư ven sông Tiền. Trải nghiệm phù hợp khám phá trái cây, văn hóa nhà vườn và nhịp sống nông nghiệp. Trải nghiệm nổi bật: Tham quan vườn theo mùa Tìm hiểu đời sống nhà vườn.",
-    "image": "destinations/dong-thap/miet-vuon-cai-be.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Lăng Hoàng Gia",
@@ -3937,7 +3877,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Lăng Hoàng Gia ở vùng Gò Công là quần thể lăng mộ và đền thờ họ Phạm Đăng. Công trình gắn với lịch sử gia tộc và văn hóa kiến trúc Nam Bộ. Trải nghiệm nổi bật: Tìm hiểu lịch sử họ Phạm Đăng Quan sát kiến trúc lăng và đền.",
-    "image": "destinations/dong-thap/lang-hoang-gia.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Nhà cổ Lê Quang Xoát",
@@ -3949,7 +3889,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Nhà cổ Lê Quang Xoát thuộc làng Đông Hòa Hiệp, có không gian kiến trúc nhà ở Nam Bộ. Đây là điểm tham quan gắn với đời sống gia đình và di sản làng cổ. Trải nghiệm nổi bật: Quan sát kiến trúc nhà Nam Bộ Khám phá tuyến làng Đông Hòa Hiệp.",
-    "image": "destinations/dong-thap/nha-co-le-quang-xoat.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Di tích Rạch Gầm – Xoài Mút",
@@ -3961,7 +3901,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Di tích Rạch Gầm – Xoài Mút tưởng niệm chiến thắng trên sông Tiền gắn với Nguyễn Huệ. Trưng bày và cảnh quan ven sông giúp tìm hiểu địa hình của trận thủy chiến. Trải nghiệm nổi bật: Tìm hiểu trận Rạch Gầm – Xoài Mút Quan sát cảnh quan sông Tiền.",
-    "image": "destinations/dong-thap/di-tich-rach-gam-xoai-mut.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Khu di tích Nguyễn Sinh Sắc",
@@ -3973,31 +3913,31 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Khu di tích Nguyễn Sinh Sắc ở Cao Lãnh lưu giữ nơi an nghỉ và tư liệu về thân sinh Chủ tịch Hồ Chí Minh. Không gian tưởng niệm kết hợp cảnh quan văn hóa địa phương. Trải nghiệm nổi bật: Tìm hiểu cuộc đời Nguyễn Sinh Sắc Tham quan không gian tưởng niệm.",
-    "image": "destinations/dong-thap/khu-di-tich-nguyen-sinh-sac.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "VinWonders Phú Quốc",
-    "province": "An Giang",
+    "province": "Kiên Giang",
     "category": "Giải trí và công viên",
-    "latitude": 10.3219,
-    "longitude": 105.3825,
+    "latitude": 10.3347,
+    "longitude": 103.8569,
     "priceMin": 20000,
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
     "description": "VinWonders Phú Quốc là công viên chủ đề ở phía bắc đảo, có trò chơi, không gian biểu diễn và các khu tham quan. Trải nghiệm nên được chọn theo tuổi, sức đi bộ và sở thích. Trải nghiệm nổi bật: Khám phá phân khu chủ đề Chọn trò chơi và chương trình biểu diễn.",
-    "image": "destinations/an-giang/vinwonders-phu-quoc.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Rừng tràm Trà Sư",
     "province": "An Giang",
     "category": "Sinh thái và nghỉ dưỡng",
-    "latitude": 10.3399,
-    "longitude": 105.3825,
+    "latitude": 10.5167,
+    "longitude": 105.05,
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Rừng tràm Trà Sư là cảnh quan đất ngập nước với rừng và các tuyến tham quan mặt nước. Thích hợp khám phá sinh thái, quan sát chim và tìm hiểu vùng sông nước An Giang. Trải nghiệm nổi bật: Đi thuyền theo tuyến rừng tràm Quan sát cảnh quan ngập nước.",
-    "image": "destinations/an-giang/rung-tram-tra-su.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Ruộng lúa Tà Pạ",
@@ -4009,7 +3949,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Ruộng Tà Pạ nằm giữa cảnh quan Bảy Núi, có ô ruộng và núi làm phông nền. Điểm đến phù hợp quan sát mùa vụ và khám phá văn hóa nông nghiệp vùng Tri Tôn. Trải nghiệm nổi bật: Ngắm cảnh đồng ruộng Khám phá vùng chân núi.",
-    "image": "destinations/an-giang/ruong-lua-ta-pa.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Châu Đốc và Núi Sam",
@@ -4021,11 +3961,11 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Châu Đốc và Núi Sam kết hợp cảnh quan đô thị biên giới với các công trình tín ngưỡng. Trải nghiệm có thể thiên về đi lễ, tìm hiểu văn hóa hoặc khám phá khu vực. Trải nghiệm nổi bật: Tìm hiểu văn hóa tâm linh Núi Sam Khám phá cảnh quan Châu Đốc.",
-    "image": "destinations/an-giang/chau-doc-va-nui-sam.jpg"
+    "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Hà Tiên",
-    "province": "An Giang",
+    "province": "Kiên Giang",
     "category": "Đô thị và phố cổ",
     "latitude": 10.3939,
     "longitude": 105.3825,
@@ -4033,7 +3973,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 18:00",
     "description": "Hà Tiên có cảnh quan đô thị ven biển, núi đá và các điểm văn hóa vùng biên. Phù hợp khám phá theo cụm thay vì coi toàn vùng là một điểm tham quan duy nhất. Trải nghiệm nổi bật: Khám phá cảnh quan ven biển Tìm hiểu di tích và văn hóa địa phương.",
-    "image": "destinations/an-giang/ha-tien.jpg"
+    "image": "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Quần đảo Nam Du",
@@ -4045,7 +3985,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
     "description": "Nam Du là quần đảo ngoài khơi vùng Kiên Giang cũ, có làng đảo và các bãi biển. Hành trình thường kết hợp tàu từ đất liền với tuyến thuyền tham quan quanh đảo. Trải nghiệm nổi bật: Khám phá cảnh quan quần đảo Tìm hiểu đời sống làng biển.",
-    "image": "destinations/an-giang/quan-dao-nam-du.jpg"
+    "image": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Đảo Hòn Sơn",
@@ -4057,7 +3997,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
     "description": "Hòn Sơn là đảo ở vùng biển phía tây nam, có núi, bãi biển và khu dân cư ven bờ. Phù hợp kết hợp nghỉ biển với khám phá đường quanh đảo. Trải nghiệm nổi bật: Dạo các đoạn bờ biển Khám phá cảnh quan núi và làng đảo.",
-    "image": "destinations/an-giang/dao-hon-son.jpg"
+    "image": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Quần đảo An Thới",
@@ -4069,7 +4009,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "00:00 - 23:59",
     "description": "Quần đảo An Thới ở phía nam Phú Quốc có nhiều đảo nhỏ và vùng nước phục vụ các tuyến du lịch biển. Trải nghiệm phụ thuộc đảo ghé, dịch vụ và điều kiện thời tiết. Trải nghiệm nổi bật: Khám phá các đảo theo tuyến Tham gia hoạt động biển được phép.",
-    "image": "destinations/an-giang/quan-dao-an-thoi.jpg"
+    "image": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bảo tàng Cội Nguồn Phú Quốc",
@@ -4081,7 +4021,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Bảo tàng Cội Nguồn giới thiệu lịch sử, văn hóa và đời sống Phú Quốc qua bộ sưu tập của cơ sở. Là lựa chọn bổ sung bối cảnh văn hóa bên cạnh nghỉ biển và vui chơi. Trải nghiệm nổi bật: Tìm hiểu văn hóa Phú Quốc Xem hiện vật đời sống đảo.",
-    "image": "destinations/an-giang/bao-tang-coi-nguon-phu-quoc.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Thủy cung Cung điện Hải Vương",
@@ -4093,31 +4033,31 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
     "description": "Cung điện Hải Vương là thủy cung trong VinWonders Phú Quốc, có kiến trúc hình rùa và không gian quan sát sinh vật biển. Phù hợp nhóm muốn thêm trải nghiệm trong nhà. Trải nghiệm nổi bật: Quan sát sinh vật biển Khám phá kiến trúc thủy cung.",
-    "image": "destinations/an-giang/thuy-cung-cung-dien-hai-vuong.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Vườn quốc gia U Minh Hạ",
     "province": "Cà Mau",
     "category": "Vườn quốc gia và bảo tồn",
-    "latitude": 9.1229,
-    "longitude": 105.114,
+    "latitude": 9.25,
+    "longitude": 104.9833,
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "U Minh Hạ bảo vệ hệ sinh thái rừng tràm trên đất than bùn ở Cà Mau. Trải nghiệm thiên về tìm hiểu sinh thái, cảnh quan rừng và hoạt động quan sát theo tuyến được phép. Trải nghiệm nổi bật: Tìm hiểu rừng tràm đất than bùn Khám phá thiên nhiên có hướng dẫn.",
-    "image": "destinations/ca-mau/vuon-quoc-gia-u-minh-ha.jpg"
+    "image": "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Mũi Cà Mau",
     "province": "Cà Mau",
     "category": "Cảnh quan",
-    "latitude": 9.1409,
-    "longitude": 105.114,
+    "latitude": 8.6167,
+    "longitude": 104.7167,
     "priceMin": 40000,
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Mũi Cà Mau là vùng cảnh quan cực Nam đất liền, gắn với rừng ngập mặn và các công trình biểu tượng. Hành trình phù hợp kết hợp tìm hiểu địa lý, sinh thái và văn hóa vùng đất. Trải nghiệm nổi bật: Khám phá cảnh quan Đất Mũi Tìm hiểu dấu mốc địa lý và sinh thái.",
-    "image": "destinations/ca-mau/mui-ca-mau.jpg"
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Cot_moc_Mui_Ca_Mau.jpg/800px-Cot_moc_Mui_Ca_Mau.jpg"
   },
   {
     "name": "Rừng ngập mặn Năm Căn",
@@ -4129,7 +4069,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Rừng ngập mặn Năm Căn gắn với hệ thống sông rạch và sinh kế vùng ven biển Cà Mau. Khám phá phù hợp qua tuyến được tổ chức để tìm hiểu sinh thái và đời sống địa phương. Trải nghiệm nổi bật: Đi tuyến sông rạch có tổ chức Tìm hiểu hệ sinh thái ngập mặn.",
-    "image": "destinations/ca-mau/rung-ngap-man-nam-can.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Bãi biển Khai Long",
@@ -4141,19 +4081,19 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "00:00 - 23:59",
     "description": "Khai Long là vùng bờ biển gần Đất Mũi, có bãi bồi và cảnh quan cây ven nước. Phù hợp dạo cảnh, tìm hiểu môi trường ven biển và kết hợp tuyến khám phá Cà Mau. Trải nghiệm nổi bật: Dạo cảnh quan ven bờ Kết hợp tuyến Đất Mũi.",
-    "image": "destinations/ca-mau/bai-bien-khai-long.jpg"
+    "image": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Nhà Công tử Bạc Liêu",
-    "province": "Cà Mau",
+    "province": "Bạc Liêu",
     "category": "Di tích",
-    "latitude": 9.1949,
-    "longitude": 105.114,
+    "latitude": 9.2906,
+    "longitude": 105.7275,
     "priceMin": 30000,
     "priceMax": 70000,
     "openingHours": "07:30 - 17:00",
     "description": "Nhà Công tử Bạc Liêu là biệt thự lịch sử gắn với gia đình Trần Trinh và ký ức đời sống Nam Bộ. Trải nghiệm kết hợp kiến trúc, nội thất và câu chuyện văn hóa địa phương. Trải nghiệm nổi bật: Quan sát kiến trúc biệt thự Tìm hiểu câu chuyện gia đình Trần Trinh.",
-    "image": "destinations/ca-mau/nha-cong-tu-bac-lieu.jpg"
+    "image": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Chùa Xiêm Cán",
@@ -4165,7 +4105,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
     "description": "Chùa Xiêm Cán là công trình Phật giáo Khmer của vùng Bạc Liêu cũ, nổi bật với trang trí và bố cục chùa. Điểm đến phù hợp tìm hiểu nghệ thuật, văn hóa Nam tông Khmer. Trải nghiệm nổi bật: Quan sát kiến trúc và trang trí Khmer Tìm hiểu văn hóa tôn giáo địa phương.",
-    "image": "destinations/ca-mau/chua-xiem-can.jpg"
+    "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Cánh đồng điện gió Bạc Liêu",
@@ -4177,7 +4117,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Cánh đồng điện gió Bạc Liêu là công trình năng lượng ven biển, được nhiều người chọn để ngắm cảnh và chụp ảnh. Đây vẫn là khu vực có hoạt động kỹ thuật và phạm vi tiếp cận quản lý. Trải nghiệm nổi bật: Ngắm cảnh các trụ điện gió Tìm hiểu công trình năng lượng ven biển.",
-    "image": "destinations/ca-mau/canh-dong-dien-gio-bac-lieu.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Khu du lịch Hoa Rừng U Minh",
@@ -4189,7 +4129,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Hoa Rừng U Minh là cơ sở du lịch sinh thái trong vùng rừng tràm Cà Mau, có hoạt động theo chương trình của cơ sở. Điểm này cần được phân biệt với Vườn quốc gia U Minh Hạ. Trải nghiệm nổi bật: Khám phá cảnh quan rừng tràm Trải nghiệm hoạt động địa phương được tổ chức.",
-    "image": "destinations/ca-mau/khu-du-lich-hoa-rung-u-minh.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Vườn nhãn cổ Bạc Liêu",
@@ -4201,7 +4141,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
     "description": "Vùng nhãn cổ Bạc Liêu gắn với những vườn cây lâu năm trên giồng cát ven biển. Trải nghiệm phù hợp tìm hiểu nghề vườn và thưởng thức sản vật khi đúng mùa. Trải nghiệm nổi bật: Tìm hiểu vùng trồng nhãn Thăm vườn đón khách khi đúng mùa.",
-    "image": "destinations/ca-mau/vuon-nhan-co-bac-lieu.jpg"
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
   },
   {
     "name": "Chùa Hưng Thiện",
@@ -4213,25 +4153,3620 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "07:30 - 18:00",
     "description": "Chùa Hưng Thiện ở vùng Vĩnh Lợi được biết đến với tượng Quán Thế Âm lớn và không gian Phật giáo. Phù hợp một chặng tham quan tâm linh trong tuyến Bạc Liêu cũ. Trải nghiệm nổi bật: Tham quan khu tượng Quán Thế Âm Tìm hiểu không gian chùa.",
-    "image": "destinations/ca-mau/chua-hung-thien.jpg"
+    "image": "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    "name": "Chợ Đồng Xuân",
+    "province": "Hà Nội",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 21.038143,
+    "longitude": 105.850039,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Chợ truyền thống có khu hàng ăn và đặc sản phố cổ.",
+    "image": "https://cdn2.tuoitre.vn/tto/i/s626/2015/02/19/JBYqADY8.jpg"
+  },
+  {
+    "name": "Phố ẩm thực Tống Duy Tân",
+    "province": "Hà Nội",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 21.028731,
+    "longitude": 105.843935,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Tuyến phố tập trung hàng quán và món ăn Hà Nội.",
+    "image": "https://www.arttravel.com.vn/upload/news/pho-am-thuc-2-5499-1148.jpg"
+  },
+  {
+    "name": "Phở Bát Đàn",
+    "province": "Hà Nội",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 21.03351,
+    "longitude": 105.846259,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Địa chỉ phở bò truyền thống trên phố Bát Đàn.",
+    "image": "https://img.tripi.vn/cdn-cgi/image/width%3D700%2Cheight%3D700/https%3A/gcs.tripi.vn/public-tripi/tripi-feed/img/473903dSp/pho-bat-dan-1.jpg"
+  },
+  {
+    "name": "Bún chả Hương Liên",
+    "province": "Hà Nội",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 21.018137,
+    "longitude": 105.853893,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "08:00-20:00",
+    "description": "Quán bún chả với thịt nướng và nước chấm kiểu Hà Nội.",
+    "image": "https://photo.znews.vn/w660/Uploaded/qhj_pwqvdvicbu/2019_02_25/13_zing_12.jpg"
+  },
+  {
+    "name": "Cà phê Giảng",
+    "province": "Hà Nội",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 21.033466,
+    "longitude": 105.854518,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-22:30",
+    "description": "Quán cà phê gắn với món cà phê trứng Hà Nội.",
+    "image": "https://vstatic.vietnam.vn/vietnam/resource/IMAGE/2025/8/29/bfa1dbe13c0e4eaa9cf6de5ffdd36cfa"
+  },
+  {
+    "name": "Bảo tàng Dân tộc học Việt Nam",
+    "province": "Hà Nội",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.040342,
+    "longitude": 105.798735,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "08:30-17:30",
+    "description": "Không gian tìm hiểu văn hóa và nhà ở các dân tộc Việt Nam.",
+    "image": "https://luxtraveldmc.com/blog/wp-content/uploads/2025/02/The-Vietnam-Museum-of-Ethnology-Hanoi-1.jpg"
+  },
+  {
+    "name": "Bảo tàng Phụ nữ Việt Nam",
+    "province": "Hà Nội",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.023373,
+    "longitude": 105.851554,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "08:00-17:00",
+    "description": "Trưng bày về phụ nữ trong đời sống và lịch sử Việt Nam.",
+    "image": "https://vietnam.travel/sites/default/files/inline-images/war%20museum%20in%20vietnam.jpg"
+  },
+  {
+    "name": "Làng cổ Đường Lâm",
+    "province": "Hà Nội",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.157365,
+    "longitude": 105.472555,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "08:00-17:00",
+    "description": "Làng cổ nổi bật với nhà đá ong và không gian làng quê Bắc Bộ.",
+    "image": "https://img.tripi.vn/cdn-cgi/image/width%3D700%2Cheight%3D700/https%3A/gcs.tripi.vn/public-tripi/tripi-feed/img/478297LiT/anh-mo-ta.png"
+  },
+  {
+    "name": "Chùa Thầy",
+    "province": "Hà Nội",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.023018,
+    "longitude": 105.646283,
+    "priceMin": 10000,
+    "priceMax": 10000,
+    "openingHours": "07:00-18:00",
+    "description": "Quần thể chùa và cảnh quan núi đá tại vùng Quốc Oai.",
+    "image": "https://image-worker.mindtrip.ai/image-resize/format%3Dwebp%2Cw%3D720/https%3A/images.mindtrip.ai/attractions/2765/075f/b927/282c/5717/5bf6/26b4/9c47"
+  },
+  {
+    "name": "Chùa Tây Phương",
+    "province": "Hà Nội",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.025067,
+    "longitude": 105.587023,
+    "priceMin": 10000,
+    "priceMax": 10000,
+    "openingHours": "06:00-17:30",
+    "description": "Ngôi chùa nổi tiếng với hệ thống tượng gỗ và kiến trúc cổ.",
+    "image": "https://www.vietnamairlines.com/content/dam/legacy-site-assets/SEO-images/2025%20SEO/Thay%20Anh%20Traffic%20Tieng%20Viet/chua%20tay%20phuong%20ha%20noi/toan-canh-chua-tay-phuong-ha-noi-tu-tren-cao.jpeg"
+  },
+  {
+    "name": "Phố ẩm thực Vĩnh Khánh",
+    "province": "TP. Hồ Chí Minh",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 10.761858,
+    "longitude": 106.702236,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Tuyến phố nổi tiếng với các hàng ốc và món ăn đường phố.",
+    "image": "https://luhanhvietnam.com.vn/du-lich/vnt_upload/news/03_2026/0_pho_am_thuc_vinh_khanh_thum.jpg"
+  },
+  {
+    "name": "Chợ Hồ Thị Kỷ",
+    "province": "TP. Hồ Chí Minh",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 10.766326,
+    "longitude": 106.675996,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "05:00-22:00",
+    "description": "Khu chợ hoa có nhiều hàng ăn và món ăn vặt.",
+    "image": "https://blog.kakaocdn.net/dna/WmXpi/btsJH0uQ25y/AAAAAAAAAAAAAAAAAAAAAPCCi4lf-wopEpV80QE-jeTl7A83J7kThCqghKlbnbnu/img.jpg?allow_ip=&allow_referer=&credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1764514799&signature=KL4OgwJjlujywwyTofaiccgQgO8%3D"
+  },
+  {
+    "name": "Chợ Bình Tây",
+    "province": "TP. Hồ Chí Minh",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 10.749364,
+    "longitude": 106.651046,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Chợ lâu đời tại Chợ Lớn, kết hợp mua sắm và khám phá ẩm thực.",
+    "image": "https://cdn.getyourguide.com/image/format%3Dauto%2Cfit%3Dcrop%2Cgravity%3Dauto%2Cquality%3D60%2Cwidth%3D400%2Cheight%3D265%2Cdpr%3D2/tour_img/84b88b246aa366573bf53ed39a81be2fe162efa7a0b2f7c0baf698e6b325a3b9.png"
+  },
+  {
+    "name": "Cơm tấm Ba Ghiền",
+    "province": "TP. Hồ Chí Minh",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 10.794442,
+    "longitude": 106.66936,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "09:00-21:30",
+    "description": "Địa chỉ cơm tấm với sườn nướng và các món ăn kèm.",
+    "image": "https://d3h1lg3ksw6i6b.cloudfront.net/media/image/2023/07/25/4e57c8fb3c874daba7a2a238507e80fe_what-is-com-tam-com-tam-ba-ghien.jpg"
+  },
+  {
+    "name": "Bánh mì Huỳnh Hoa",
+    "province": "TP. Hồ Chí Minh",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 10.771523,
+    "longitude": 106.692397,
+    "priceMin": 48000,
+    "priceMax": 48000,
+    "openingHours": "06:00-22:00",
+    "description": "Tiệm bánh mì nổi tiếng với phần nhân thịt nguội phong phú.",
+    "image": "https://www.visitvietnam.app/images/3bd20eba-50b5-4076-adc8-79ec86c5189d"
+  },
+  {
+    "name": "Bảo tàng Mỹ thuật Thành phố Hồ Chí Minh",
+    "province": "TP. Hồ Chí Minh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.769947,
+    "longitude": 106.699216,
+    "priceMin": 30000,
+    "priceMax": 30000,
+    "openingHours": "08:00-17:00",
+    "description": "Không gian trưng bày mỹ thuật trong một công trình kiến trúc cổ.",
+    "image": "https://static.vinwonders.com/production/bao-tang-my-thuat-thanh-pho-ho-chi-minh.jpg"
+  },
+  {
+    "name": "Bảo tàng Lịch sử Thành phố Hồ Chí Minh",
+    "province": "TP. Hồ Chí Minh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.788075,
+    "longitude": 106.704729,
+    "priceMin": 30000,
+    "priceMax": 30000,
+    "openingHours": "08:00-11:30,13:00-17:00",
+    "description": "Bảo tàng giới thiệu lịch sử và cổ vật Việt Nam.",
+    "image": "https://www.baotanglichsutphcm.com.vn/Data/Sites/1/News/18/31745697473_6cea7254ff_o.jpg"
+  },
+  {
+    "name": "Chùa Ngọc Hoàng",
+    "province": "TP. Hồ Chí Minh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.791996,
+    "longitude": 106.698179,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Ngôi chùa nổi tiếng với kiến trúc và tượng thờ truyền thống.",
+    "image": "https://poliva.vn/wp-content/uploads/2019/07/chua-ngoc-hoang-2.jpg"
+  },
+  {
+    "name": "Chùa Bà Thiên Hậu Chợ Lớn",
+    "province": "TP. Hồ Chí Minh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.75325,
+    "longitude": 106.661173,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "06:00-17:30",
+    "description": "Di tích tín ngưỡng tiêu biểu của cộng đồng người Hoa.",
+    "image": "https://www.vietnamairlines.com/content/dam/legacy-site-assets/SEO-images/2025%20SEO/Traffic%20TA/MN/chinatown%20hcm/architecture-and-atmosphere-inside-thien-hau-temple.jpg?width=1920"
+  },
+  {
+    "name": "Rừng ngập mặn Cần Giờ",
+    "province": "TP. Hồ Chí Minh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.4114,
+    "longitude": 106.9538,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Không gian sinh thái rừng ngập mặn ven biển phía nam thành phố.",
+    "image": "https://static-images.vnncdn.net/vps_images_publish/000001/000003/2026/4/4/toan-canh-con-duong-xuyen-rung-ngap-man-truoc-de-xuat-mo-rong-hon-19-2155.jpg?s=hg569iymUB-ssLwNcx8H8g&width=1200"
+  },
+  {
+    "name": "Chợ Cồn",
+    "province": "Đà Nẵng",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 16.067793,
+    "longitude": 108.214483,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-19:00",
+    "description": "Chợ truyền thống nổi tiếng với khu hàng ăn và đặc sản miền Trung.",
+    "image": "https://www.vietnamairlines.com/th/vi/useful-information/travel-guide/~/media/SEO-images/2025%20SEO/Traffic%20TV/cho-con-da-nang/cho-con-noi-tieng-voi-cac-dac-san-kho-nhu-muc-rim-me-tom-kho.jpg?la=vi-VN"
+  },
+  {
+    "name": "Bánh xèo Bà Dưỡng",
+    "province": "Đà Nẵng",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 16.058877,
+    "longitude": 108.216166,
+    "priceMin": 90000,
+    "priceMax": 90000,
+    "openingHours": "09:30-21:30",
+    "description": "Quán bánh xèo ăn kèm rau sống và nước chấm đặc trưng.",
+    "image": "https://stc609765200636.cloud.edgevnpay.vn/website-vnpay-public/fill/2023/11/0t049f6cdk3f1700216385339.png"
+  },
+  {
+    "name": "Bún chả cá Bà Lữ",
+    "province": "Đà Nẵng",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 16.066592,
+    "longitude": 108.211144,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "description": "Địa chỉ thưởng thức bún chả cá kiểu Đà Nẵng.",
+    "image": "https://hotel84.com/hotel84-images/news/img1/bun-ba-lu-danang.jpg"
+  },
+  {
+    "name": "Mì Quảng Bà Mua",
+    "province": "Đà Nẵng",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 16.056575,
+    "longitude": 108.208438,
+    "priceMin": 70000,
+    "priceMax": 70000,
+    "openingHours": "06:00-21:30",
+    "description": "Quán phục vụ mì Quảng và món ăn miền Trung.",
+    "image": "https://adormusic.s3.us-east-2.amazonaws.com/wp-content/uploads/2023/07/22045644/mi-quang-ba-mua-5-1024x1024.jpeg"
+  },
+  {
+    "name": "Bảo tàng Đà Nẵng",
+    "province": "Đà Nẵng",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 16.074554,
+    "longitude": 108.223967,
+    "priceMin": 50000,
+    "priceMax": 50000,
+    "openingHours": "08:00-17:00",
+    "description": "Không gian tìm hiểu lịch sử, văn hóa và con người Đà Nẵng.",
+    "image": "https://ik.imagekit.io/tvlk/blog/2022/12/bao-tang-da-nang-10.jpg?tr=dpr-2%2Cw-675"
+  },
+  {
+    "name": "Bún bò Huế Bà Tuyết",
+    "province": "Thừa Thiên Huế",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 16.47127,
+    "longitude": 107.597561,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "06:00-12:30",
+    "description": "Địa chỉ thưởng thức bún bò theo phong vị Huế.",
+    "image": "https://media.mia.vn/uploads/blog-du-lich/kham-pha-quan-bun-bo-hue-ba-tuyet-moi-ngay-ban-5-noi-1637833796.jpg"
+  },
+  {
+    "name": "Cơm hến Hoa Đông",
+    "province": "Thừa Thiên Huế",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 16.479269,
+    "longitude": 107.593616,
+    "priceMin": 20000,
+    "priceMax": 20000,
+    "openingHours": "07:00-21:30",
+    "description": "Quán cơm hến và bún hến gắn với ẩm thực Cồn Hến.",
+    "image": "https://onedanang.vn/Content/UserUploads/Images/Locations/4/2221/medium_foody-quan-hoa-dong-183-636980429600567200.jpg"
+  },
+  {
+    "name": "Bánh Khoái Hồng Mai",
+    "province": "Thừa Thiên Huế",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 16.474619,
+    "longitude": 107.580572,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "10:30-20:30",
+    "description": "Quán bánh khoái Huế với rau sống và nước chấm.",
+    "image": "https://khamphahue.com.vn/Portals/0/ThiTNT/TongHop_6QuanBanhKhoaiHue/Khamphahue_banh-khoai-hong-mai-hue.jpg"
+  },
+  {
+    "name": "Chè Hẻm Huế",
+    "province": "Thừa Thiên Huế",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 16.465102,
+    "longitude": 107.593579,
+    "priceMin": 16000,
+    "priceMax": 16000,
+    "openingHours": "10:00-22:00",
+    "description": "Địa chỉ thưởng thức các loại chè mang phong vị Huế.",
+    "image": "https://khamphahue.com.vn/Portals/0/DuLich/DiemAnUong/QuanAnDacSan/CheHem/Che-Hue_ThanhToan.jpg?ver=2022-10-18-103733-150"
+  },
+  {
+    "name": "Lăng Gia Long",
+    "province": "Thừa Thiên Huế",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 16.362005,
+    "longitude": 107.596933,
+    "priceMin": 150000,
+    "priceMax": 150000,
+    "openingHours": "07:00-17:30",
+    "description": "Quần thể lăng tẩm giữa cảnh quan đồi núi và hồ nước.",
+    "image": "https://cdn.nhandan.vn/images/d233c8299c7755bbf317d96e7a85fcf78ef20824423c8bc8c971d292656d530534deb9a273fdc1f7d9a18fbd35c8846f9a897aea5e311c4720691637dcc102ee63a899dc0d598a8828a44264337440e8/13_lang_gia_long-1597133441199.jpg"
+  },
+  {
+    "name": "Bánh mì Phượng Hội An",
+    "province": "Quảng Nam",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 15.878499,
+    "longitude": 108.332049,
+    "priceMin": 25000,
+    "priceMax": 50000,
+    "openingHours": "06:30-21:00",
+    "description": "Tiệm bánh mì nổi tiếng với nhiều loại nhân và nước sốt.",
+    "image": "https://danang-holic.com/wp-content/uploads/2024/11/image-11-1024x682.jpg"
+  },
+  {
+    "name": "Bánh mì Madam Khánh",
+    "province": "Quảng Nam",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 15.880597,
+    "longitude": 108.327934,
+    "priceMin": 40000,
+    "priceMax": 40000,
+    "openingHours": "06:30-19:00",
+    "description": "Địa chỉ bánh mì được nhiều du khách tìm đến ở Hội An.",
+    "image": "https://kenh14cdn.com/203336854389633024/2022/10/28/photo-17-1666930071924143479511.jpg"
+  },
+  {
+    "name": "Cơm gà Bà Buội",
+    "province": "Quảng Nam",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 15.878507,
+    "longitude": 108.330419,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "10:30-14:00,16:30-19:00",
+    "description": "Quán cơm gà gắn với ẩm thực Hội An.",
+    "image": "https://mia.vn/media/uploads/blog-du-lich/com-ga-ba-buoi-5-1751907125.jpg"
+  },
+  {
+    "name": "Chợ Hội An",
+    "province": "Quảng Nam",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 15.877318,
+    "longitude": 108.331266,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Chợ truyền thống có khu thưởng thức cao lầu, mì Quảng và món địa phương.",
+    "image": "https://api.sovaba.travel/uploads/cho_hoi_an_nam_ngay_trung_tam_pho_co_hoi_an_4e49f5f9f5.jpg"
+  },
+  {
+    "name": "Làng bích họa Tam Thanh",
+    "province": "Quảng Nam",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 15.59726,
+    "longitude": 108.54773,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "description": "Làng ven biển với tranh tường trong không gian sinh hoạt cộng đồng.",
+    "image": "https://media.daidoanket.vn/w1200/uploaded/images/2025/09/08/b1a1077b-ede2-47ce-8f9e-2f0a2c75dc09.jpg"
+  },
+  {
+    "name": "Chợ Cát Bi",
+    "province": "Hải Phòng",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 20.824554,
+    "longitude": 106.711149,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "06:30-23:00",
+    "description": "Khu chợ có nhiều món ăn vặt và đặc sản Hải Phòng.",
+    "image": "https://sun-ecommerce-cdn.azureedge.net/ecommerce/service-sites/asset/SunParadiseLandCatBa/google-doc/post_id_13695/AD_4nXeDflQl0rKWLimuxGOovXLREhsnaQQH3fFZkemu21GYCiM4dZ5DkfgMmoydziAHqa--rosxTKBn3caV7la90uASmqprXg_L_vuDFgB2pt5MS64Ew1tP5gkIwUKq23IFQuNSCg0xwzWB1oS9wlncN9ZPc47Ohw.webp"
+  },
+  {
+    "name": "Chợ Cố Đạo",
+    "province": "Hải Phòng",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 20.855772,
+    "longitude": 106.683708,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Khu hàng ăn quen thuộc với các món đặc sản thành phố cảng.",
+    "image": "https://images2.thanhnien.vn/zoom/1200_630/Uploaded/vutho/2017_09_08/anhbai1-tranga_MYCG.jpg"
+  },
+  {
+    "name": "Bánh đa cua Bà Cụ",
+    "province": "Hải Phòng",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 20.852727,
+    "longitude": 106.685475,
+    "priceMin": 40000,
+    "priceMax": 40000,
+    "openingHours": "07:00-21:00",
+    "description": "Địa chỉ thưởng thức bánh đa cua Hải Phòng.",
+    "image": "https://adormusic.s3.us-east-2.amazonaws.com/wp-content/uploads/2023/08/03101014/Ba%CC%81nh-da-cua-Ba%CC%80-Cu%CC%A3-2-867x867.jpeg"
+  },
+  {
+    "name": "Bánh mì cay Bà Già",
+    "province": "Hải Phòng",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 20.858732,
+    "longitude": 106.693029,
+    "priceMin": 30000,
+    "priceMax": 30000,
+    "openingHours": "06:30-20:00",
+    "description": "Tiệm bánh mì cay với pa tê theo phong cách Hải Phòng.",
+    "image": "https://mia.vn/media/uploads/blog-du-lich/ngat-ngay-voi-banh-mi-cay-ba-gia-hai-phong-chi-tu-2000-dong-mot-o-12-1648438571.jpg"
+  },
+  {
+    "name": "Đảo Bạch Long Vĩ",
+    "province": "Hải Phòng",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.131144,
+    "longitude": 107.731053,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Đảo xa bờ có cảnh quan biển và đời sống ngư dân.",
+    "image": "https://mia.vn/media/uploads/blog-du-lich/kinh-nghiem-kham-pha-dao-bach-long-vi-duoc-menh-danh-la-xu-so-bao-ngu-05-1648574595.jpeg"
+  },
+  {
+    "name": "Chợ Hạ Long 1",
+    "province": "Quảng Ninh",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 20.949992,
+    "longitude": 107.082003,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "06:00-18:30",
+    "description": "Chợ trung tâm có hải sản và các món ăn địa phương.",
+    "image": "https://sinhthainongnghiep.net.vn/uploads/2021/11/Ha-Long-1.jpg"
+  },
+  {
+    "name": "Chợ đêm Hạ Long",
+    "province": "Quảng Ninh",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 20.950418,
+    "longitude": 107.042981,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "08:00-11:30,15:00-00:00",
+    "description": "Không gian mua sắm và ăn uống về đêm tại khu du lịch.",
+    "image": "https://tripday.vn/wp-content/uploads/2022/10/cho-dem-1.jpg"
+  },
+  {
+    "name": "Đảo Minh Châu",
+    "province": "Quảng Ninh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.92962,
+    "longitude": 107.553705,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Khu vực biển trên đảo Quan Lạn với bãi cát sáng màu.",
+    "image": "https://www.angsana.com/_next/image?q=75&url=https%3A%2F%2Fwww.angsana.com%2Fassets%2F2024-11%2Fimage6.jpg&w=828"
+  },
+  {
+    "name": "Bãi biển Trà Cổ",
+    "province": "Quảng Ninh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.474589,
+    "longitude": 108.01811,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "description": "Bãi biển dài gắn với cảnh quan vùng biên Móng Cái.",
+    "image": "https://nhadepthudo.com.vn/img/webroot/upload/images/images/du%20an/Tra-co-long-beach-luxury/Tra-co-long-beach-mong-cai-flycam.jpg"
+  },
+  {
+    "name": "Đảo Cái Chiên",
+    "province": "Quảng Ninh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.322996,
+    "longitude": 107.769347,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Đảo có bãi biển và không gian nghỉ ngơi gần thiên nhiên.",
+    "image": "https://statics.vinpearl.com/dao-cai-chien-1_1705816897.jpg"
+  },
+  {
+    "name": "Vườn quốc gia Cúc Phương",
+    "province": "Ninh Bình",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.316688,
+    "longitude": 105.608313,
+    "priceMin": 60000,
+    "priceMax": 60000,
+    "openingHours": "07:00-20:00",
+    "description": "Vườn quốc gia có rừng nhiệt đới, đường đi bộ và hoạt động giáo dục bảo tồn.",
+    "image": "https://vstatic.vietnam.vn/vietnam/resource/IMAGE/2025/7/30/56c95ece370a4e3fa707eb89c8f51ef3"
+  },
+  {
+    "name": "Đầm Vân Long",
+    "province": "Ninh Bình",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.372506,
+    "longitude": 105.88274,
+    "priceMin": 150000,
+    "priceMax": 150000,
+    "openingHours": "07:30-16:30",
+    "description": "Vùng đất ngập nước có núi đá vôi và hoạt động đi thuyền.",
+    "image": "https://cdn.kienthuc.net.vn/images/a8f820242e18bda2fea6bcdd552cdcf028094d16ec95c7f83d4bd42c84f452d9f083db89d2d38ff9ccb1aa568ff4ca99/dam-van-long.jpg"
+  },
+  {
+    "name": "Thung Nham",
+    "province": "Ninh Bình",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.218127,
+    "longitude": 105.893283,
+    "priceMin": 250000,
+    "priceMax": 250000,
+    "openingHours": "06:00-22:00",
+    "description": "Khu sinh thái với vườn chim và cảnh quan núi đá vôi.",
+    "image": "https://mediafr.vietnamplus.vn/images/10fac4d5117e637f42178a1f64ae232ed1c67f135b239fa439f03e6659cbdb98fd1fed40a7b1923d248793776d44cd46/ninh-binh-4-ava.jpg"
+  },
+  {
+    "name": "Động Am Tiên",
+    "province": "Ninh Bình",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.282708,
+    "longitude": 105.912215,
+    "priceMin": 50000,
+    "priceMax": 100000,
+    "openingHours": "07:00-18:00",
+    "description": "Danh thắng có hồ nước và núi đá bao quanh gần Hoa Lư.",
+    "image": "https://dulichvietnam.com.vn/vnt_upload/news/04_2023/dong_am_tien_ninh_binh_7.jpg"
+  },
+  {
+    "name": "Phố cổ Hoa Lư",
+    "province": "Ninh Bình",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 20.263384,
+    "longitude": 105.968168,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-23:00",
+    "description": "Không gian kiến trúc và hàng quán phục vụ tham quan, ăn uống buổi tối.",
+    "image": "https://bizweb.dktcdn.net/100/514/026/files/pho-co-hoa-lu-ninh-binh-4.jpg?v=1765479810915"
+  },
+  {
+    "name": "Bãi biển Hải Hòa",
+    "province": "Thanh Hóa",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 19.455297,
+    "longitude": 105.807565,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Bãi biển gắn với đời sống làng chài vùng Tĩnh Gia.",
+    "image": "https://flycorp-vn.s3.ap-southeast-1.amazonaws.com/blogs/1834509557157326.jpg"
+  },
+  {
+    "name": "Bãi Đông Nghi Sơn",
+    "province": "Thanh Hóa",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 19.326528,
+    "longitude": 105.824059,
+    "priceMin": 15000,
+    "priceMax": 15000,
+    "openingHours": "04:30-22:30",
+    "description": "Điểm ngắm biển và nghỉ ngơi tại khu vực Nghi Sơn.",
+    "image": "https://pttravel.vn/wp-content/uploads/2023/02/bai-bien-bai-dong-nghi-son.jpg"
+  },
+  {
+    "name": "Vườn quốc gia Bến En",
+    "province": "Thanh Hóa",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 19.619063,
+    "longitude": 105.541063,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-17:00",
+    "description": "Không gian rừng và hồ với các đảo nhỏ.",
+    "image": "https://cdn-images.vtv.vn/thumb_w/1200/66349b6076cb4dee98746cf1/2024/11/11/ben-en-43098583887738654834239-39274257406919769981209.png"
+  },
+  {
+    "name": "Đền Bà Triệu",
+    "province": "Thanh Hóa",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 19.930779,
+    "longitude": 105.818778,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Di tích tưởng niệm Bà Triệu dưới chân núi Gai.",
+    "image": "https://thanhhoa.travel/uploads/2025/10/slide/0/20251016114028_618.jpg"
+  },
+  {
+    "name": "Chợ Vườn Hoa Thanh Hóa",
+    "province": "Thanh Hóa",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 19.806701,
+    "longitude": 105.780968,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Chợ trung tâm có hàng ăn và đặc sản địa phương.",
+    "image": "https://storage.googleapis.com/hms_prod/hotel-content/img/458079Zzv/161749-1.jpg"
+  },
+  {
+    "name": "Đảo Hòn Ngư",
+    "province": "Nghệ An",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 18.800341,
+    "longitude": 105.775464,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Đảo ven biển Cửa Lò có cảnh quan đá và biển.",
+    "image": "https://gaohouse.vn/wp-content/uploads/2024/09/dao-hon-ngu-2.jpg"
+  },
+  {
+    "name": "Thác Khe Kèm",
+    "province": "Nghệ An",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 18.970443,
+    "longitude": 104.800714,
+    "priceMin": 30000,
+    "priceMax": 30000,
+    "openingHours": "00:00-23:59",
+    "description": "Thác nước nằm trong vùng rừng Pù Mát.",
+    "image": "https://hoabinhnahotel.com/wp-content/uploads/2024/08/PVST3966-1024x683.jpg"
+  },
+  {
+    "name": "Cánh đồng hoa hướng dương Nghĩa Đàn",
+    "province": "Nghệ An",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 19.426115,
+    "longitude": 105.414394,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "05:00-19:00",
+    "description": "Điểm ngắm hoa theo mùa tại vùng Nghĩa Đàn.",
+    "image": "https://thumb.canhdep.net/image/2016/05/choang-ngop-canh-dong-hoa-huong-duong-lon-nhat-viet-nam.jpg"
+  },
+  {
+    "name": "Đền Cuông",
+    "province": "Nghệ An",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 18.90458,
+    "longitude": 105.604883,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "description": "Di tích thờ An Dương Vương tại khu vực Diễn Châu.",
+    "image": "https://cdn.giaoducthoidai.vn/images/5ff2552195f776d2e1eb49d261d05ab8adaaf8bd7cf7f480e7a15b26252b8c6602349a15f4e1d9fed1d7b74fb0b110b82fb6eb8e144b5909af6587f275dc156f29339fdca8bf238dc4b54f96d9df52ee/ve-nui-mo-da-nghe-chuyen-an-duong-vuong-tuan-tiet-4.jpg"
+  },
+  {
+    "name": "Chợ Vinh",
+    "province": "Nghệ An",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 18.663657,
+    "longitude": 105.674042,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Chợ truyền thống lớn với hàng ăn và đặc sản xứ Nghệ.",
+    "image": "https://bna.1cdn.vn/2024/04/26/uploaded-quanganbna-2024_04_26-_bna-cho-vinh-6404.jpg"
+  },
+  {
+    "name": "Biển Thạch Hải",
+    "province": "Hà Tĩnh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 18.402481,
+    "longitude": 105.981374,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Bãi biển ven thành phố Hà Tĩnh với hoạt động nghỉ ngơi và ăn hải sản.",
+    "image": "https://cdn.baohatinh.vn/images/95001fd96cbfed4a6372e11012113e1286eadc5b6a1120375dc0d2b4270b4138686159c5fe3fb8fc097ee660c6b14278/bht_brd_22.jpg"
+  },
+  {
+    "name": "Thác Vũ Môn",
+    "province": "Hà Tĩnh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 18.130551,
+    "longitude": 105.522765,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "description": "Thác nước trong vùng núi rừng Hương Khê.",
+    "image": "https://cdn.baohatinh.vn/images/bffa827c79689ddc9e50b45b87c50f0f8a721aade4b3343c51e728c479cfcd45f5c433dd430096b60d14f1ec9a272c7b/144d1013420t43463l0.jpg"
+  },
+  {
+    "name": "Đền Chế Thắng phu nhân Nguyễn Thị Bích Châu",
+    "province": "Hà Tĩnh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 18.113772,
+    "longitude": 106.347303,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Di tích tín ngưỡng ven biển vùng Kỳ Anh.",
+    "image": "https://cdn.baohatinh.vn/images/787902fab37753ca78784ed8583b01ae55f94e16f40d29192a415b80dee67c5141e1622efed799dc979208bcbc76bd8c/144d1172940t32742l0.jpg"
+  },
+  {
+    "name": "Hồ Trại Tiểu",
+    "province": "Hà Tĩnh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 18.353143,
+    "longitude": 105.73365,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Hồ nước có cảnh quan đồi cây và không gian sinh thái.",
+    "image": "https://cdn.baohatinh.vn/images/fed78e6b10f5b81f13412bc9e97805a51895571b8a4bb500b652401a037f335a60afc7a8fcc44e3dd4f5f44b6218291e/bht_brd_z3.jpg"
+  },
+  {
+    "name": "Đỉnh Pu Ta Leng",
+    "province": "Lai Châu",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.433333,
+    "longitude": 103.566667,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Ngọn núi nổi tiếng với hành trình trekking xuyên rừng và cảnh quan đỗ quyên.",
+    "image": "https://bqlkkt.laichau.gov.vn/upload/2000066/20210420/18_097416f492.jpg"
+  },
+  {
+    "name": "Hang Én",
+    "province": "Quảng Bình",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 17.456936,
+    "longitude": 106.2875,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Hang động lớn với bãi cắm trại trong hành trình khám phá rừng.",
+    "image": "https://www.vietnamairlines.com/content/dam/legacy-site-assets/SEO-images/2025%20SEO/Traffic%20TA/MB/en-cave/visitors-to-en-cave-often-spend-hours-simply-admiring-and-photographing-these-natural-wonders.jpg"
+  },
+  {
+    "name": "Hang Sơn Đoòng",
+    "province": "Quảng Bình",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 17.464792,
+    "longitude": 106.287394,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Hang động nổi tiếng với không gian rộng và hệ sinh thái đặc biệt.",
+    "image": "https://media.techcity.cloud/vietnam.vn/2023/03/a4-5211.jpg"
+  },
+  {
+    "name": "Bãi Đá Nhảy",
+    "province": "Quảng Bình",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 17.660838,
+    "longitude": 106.514828,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "description": "Bãi biển có quần thể đá với nhiều hình dạng.",
+    "image": "https://phongnhadiscovery.com/sites/default/files/kham-pha-bai-da-nhay-tuyet-tac-thien-nhien-7.png"
+  },
+  {
+    "name": "Vũng Chùa Đảo Yến",
+    "province": "Quảng Bình",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 17.911609,
+    "longitude": 106.494854,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Cảnh quan ven biển gắn với khu tưởng niệm Đại tướng Võ Nguyên Giáp.",
+    "image": "https://dulichnewtour.vn/ckfinder/images/vung-chua-dao-yen%20%281%29.jpg"
+  },
+  {
+    "name": "Chợ Đồng Hới",
+    "province": "Quảng Bình",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 17.463899,
+    "longitude": 106.626689,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Chợ ven sông có thực phẩm, hải sản và món ăn địa phương.",
+    "image": "https://bizweb.dktcdn.net/100/006/093/files/cho-dong-hoi.jpg?v=1712907036046"
+  },
+  {
+    "name": "Đảo Cồn Cỏ",
+    "province": "Quảng Trị",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 17.16065,
+    "longitude": 107.340535,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Đảo có cảnh quan biển và dấu tích lịch sử.",
+    "image": "https://cdn.nhandan.vn/images/22f099ca8bc7ae81aa2a8d3416a84bf8793b27bf283f50300b1af63a8042d94ae535332719bd3c25d2920a328d51a8fcbb67820f513b63899b7fbd4fda8784f9/9-7268.jpg.webp"
+  },
+  {
+    "name": "Bãi biển Cửa Tùng",
+    "province": "Quảng Trị",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 17.022827,
+    "longitude": 107.11043,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Bãi biển ở cửa sông Bến Hải.",
+    "image": "https://dulich-media.quangtri.gov.vn/resources/portal/Images/QTI/adminportal.qti.it3/doanhnghiep/du_lich/bai_bien_cua_tung/9_803627949.jpg"
+  },
+  {
+    "name": "Bãi biển Cửa Việt",
+    "province": "Quảng Trị",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 16.912983,
+    "longitude": 107.186567,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Điểm nghỉ biển và thưởng thức hải sản vùng Gio Linh.",
+    "image": "https://dulich-media.quangtri.gov.vn/resources/portal/Images/QTI/adminportal.qti.it3/doanhnghiep/du_lich/bai_bien_cua_viet/5_487708342.jpg"
+  },
+  {
+    "name": "Thánh địa La Vang",
+    "province": "Quảng Trị",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 16.706798,
+    "longitude": 107.19552,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "description": "Trung tâm hành hương Công giáo với không gian kiến trúc tôn giáo.",
+    "image": "https://dulichthuduc.com.vn/vnt_upload/news/BAC-TRUNG-BO/quang-tri/thanh_dia_la_vang_du_lich_thu_duc_1.jpg"
+  },
+  {
+    "name": "Chợ Đông Hà",
+    "province": "Quảng Trị",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 16.823849,
+    "longitude": 107.099844,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Chợ truyền thống có đặc sản và hàng ăn Quảng Trị.",
+    "image": "https://img.vigotrip.com/photo/2024/03/19/F2B4009AD854AB60DABFB8FC2385A9C0.jpg"
+  },
+  {
+    "name": "Bãi biển Mỹ Khê Quảng Ngãi",
+    "province": "Quảng Ngãi",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 15.184842,
+    "longitude": 108.894875,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Bãi biển dài gần khu vực Sơn Mỹ.",
+    "image": "https://lendang.vn/uploads/articles/526de26bcee20.jpg"
+  },
+  {
+    "name": "Đồng muối Sa Huỳnh",
+    "province": "Quảng Ngãi",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 14.689835,
+    "longitude": 109.064784,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "description": "Cảnh quan sản xuất muối truyền thống, thích hợp tìm hiểu đời sống địa phương.",
+    "image": "https://static.vinwonders.com/production/dong-muoi-sa-huynh-6-768x511.jpg"
+  },
+  {
+    "name": "Thác Trắng Minh Long",
+    "province": "Quảng Ngãi",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 14.906431,
+    "longitude": 108.658475,
+    "priceMin": 100000,
+    "priceMax": 100000,
+    "openingHours": "00:00-23:59",
+    "description": "Thác nước giữa vùng núi rừng Minh Long.",
+    "image": "https://ik.imagekit.io/tvlk/blog/2023/06/CDmnhQyk-image.png?tr=q-70%2Cc-at_max%2Cw-1000%2Ch-600"
+  },
+  {
+    "name": "Đảo Bé Lý Sơn",
+    "province": "Quảng Ngãi",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 15.4055,
+    "longitude": 109.0772,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Đảo có bãi đá núi lửa và làn nước trong.",
+    "image": "https://thethaovanhoa.mediacdn.vn/372676912336973824/2025/5/20/vnapotaldaobelysonquangngai-honngocxanhgiuatrungkhoi8043291-17477272198951156713735.jpg"
+  },
+  {
+    "name": "Đỉnh Tả Liên Sơn",
+    "province": "Lai Châu",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.46319,
+    "longitude": 103.556157,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "description": "Ngọn núi có rừng cổ thụ và các tuyến đi bộ khám phá thiên nhiên.",
+    "image": "https://product.hstatic.net/200000578171/product/20230328_b2adbdf6dae6a1565e6f4dbd32cb6be5_1679997138_b9843f7888214074aae5c7690e2a5763.jpeg"
+  },
+  {
+    "name": "Cù Lao Xanh",
+    "province": "Bình Định",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 13.612665,
+    "longitude": 109.353818,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Đảo ven Quy Nhơn nổi bật với biển và ngọn hải đăng.",
+    "image": "https://cdn2.tuoitre.vn/471584752817336320/2025/7/6/base64-17517970891451842881025.jpeg"
+  },
+  {
+    "name": "Đầm Thị Nại",
+    "province": "Bình Định",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 13.833619,
+    "longitude": 109.241523,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Đầm nước ven biển có cảnh quan cầu và hoạt động đánh bắt.",
+    "image": "https://cdn.baogialai.com.vn/images/758ab4837d1be25a9e0d05b6d7957cee0adcd1d96dc4a839073d167ff9d9811fae04b72ad6a440854689b8f9e90540a34825add7823f8eeb9313aac9e6a9f9c3e902d2ae0bbbc8c34e5881662c3dbe8c35bd93975767653a22992b52c82fef7f519990dc77dcfdcade8a56e864c2b70e6f9fcc2c4764de1a52c8092033a9b9cae7a8baea1c4ff8ff682e83c0880ad963e05d7d20eb97147400f1138e9c5cb5cc/chim-co-bay-luon-tren-bau-troi-con-chim-tao-nen-khung-canh-vo-cung-tho-mong-anh-dung-nhan-17377850855861522022161.jpg"
+  },
+  {
+    "name": "Tháp Đôi Quy Nhơn",
+    "province": "Bình Định",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 13.787729,
+    "longitude": 109.211329,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Cụm tháp Chăm trong không gian đô thị Quy Nhơn.",
+    "image": "https://image.vietgoing.com/editor/image_dfa1638951148.jpg"
+  },
+  {
+    "name": "Phố ẩm thực Ngô Văn Sở Quy Nhơn",
+    "province": "Bình Định",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 13.764521,
+    "longitude": 109.22425,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "14:00-00:00",
+    "description": "Tuyến phố có các món ăn đường phố địa phương.",
+    "image": "https://d2vbr83hnyiux1.cloudfront.net/image/975050285728/image_usnmf0lutd37dckbk1tlo9v83u/-FWEBP"
+  },
+  {
+    "name": "Bánh xèo tôm nhảy Gia Vỹ",
+    "province": "Bình Định",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 13.773832,
+    "longitude": 109.221123,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "06:00-22:00",
+    "description": "Quán phục vụ bánh xèo với tôm và rau sống.",
+    "image": "https://scontent.iocvnpt.com/resources/portal/Images/BDH/adminbdh/AmThuc/giavy2/7_663067845.jpg"
+  },
+  {
+    "name": "Đầm Ô Loan",
+    "province": "Phú Yên",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 13.280923,
+    "longitude": 109.274232,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Đầm ven biển nổi tiếng với cảnh quan và sản vật địa phương.",
+    "image": "https://luhanhvietnam.com.vn/du-lich/vnt_upload/news/02_2020/o-loan-phu-yen-1.jpg"
+  },
+  {
+    "name": "Vịnh Xuân Đài",
+    "province": "Phú Yên",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 13.394279,
+    "longitude": 109.271259,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Vịnh có làng chài và nhiều điểm ngắm biển.",
+    "image": "https://mia.vn/media/uploads/blog-du-lich/vinh-xuan-dai-phu-yen-ve-dep-tru-tinh-duoc-thien-nhien-uu-ai-ban-tang-manh-dat-phu-yen-02-1637655957.jpeg"
+  },
+  {
+    "name": "Bãi Môn",
+    "province": "Phú Yên",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 12.89669,
+    "longitude": 109.451568,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Bãi biển nằm dưới chân khu vực Mũi Điện.",
+    "image": "https://bizweb.dktcdn.net/100/176/033/files/ngam-ve-dep-hoang-so-1.jpg?v=1732809306100"
+  },
+  {
+    "name": "Hòn Yến Phú Yên",
+    "province": "Phú Yên",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 13.225714,
+    "longitude": 109.308244,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Cảnh quan đảo ven bờ và bãi đá tại vùng Tuy An.",
+    "image": "https://img.vigotrip.com/photo/2024/06/21/25DC013C67BD3A8B9ED3E2DFF78AA4F2.jpg"
+  },
+  {
+    "name": "Đỉnh Pu Si Lung",
+    "province": "Lai Châu",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.625833,
+    "longitude": 102.7875,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Đỉnh núi vùng biên với hành trình trekking qua rừng núi.",
+    "image": "https://kenh14cdn.com/203336854389633024/2023/5/31/photo-6-1685502629835604778048.jpg"
+  },
+  {
+    "name": "Viện Hải dương học Nha Trang",
+    "province": "Khánh Hòa",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 12.207669,
+    "longitude": 109.214495,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "06:00-18:00",
+    "description": "Không gian trưng bày và nghiên cứu sinh vật biển.",
+    "image": "https://cdn.findtour.vn/media/articles/1ff1f59e-734b-4b4f-63a3-08dc164bd1fd/anh%20bia.160124113008429.jpg?mode=crop&quality=99&width=1920"
+  },
+  {
+    "name": "Nhà thờ Núi Nha Trang",
+    "province": "Khánh Hòa",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 12.246731,
+    "longitude": 109.188126,
+    "priceMin": 10000,
+    "priceMax": 10000,
+    "openingHours": "07:00-18:00",
+    "description": "Nhà thờ trên đồi với kiến trúc đá nổi bật.",
+    "image": "https://statics.vinpearl.com/nha%20tho%20da%2C%20nha%20tho%20nui%20nha%20trang_1681984462.jpg"
+  },
+  {
+    "name": "Chùa Long Sơn Nha Trang",
+    "province": "Khánh Hòa",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 12.25018,
+    "longitude": 109.180175,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "description": "Ngôi chùa gắn với tượng Phật trắng trên đồi.",
+    "image": "https://ik.imagekit.io/tvlk/blog/2023/05/chua-long-son-1.jpeg"
+  },
+  {
+    "name": "Chợ Đầm Nha Trang",
+    "province": "Khánh Hòa",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 12.254951,
+    "longitude": 109.191816,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "05:00-18:30",
+    "description": "Chợ nổi tiếng với hải sản khô, đặc sản và hàng ăn.",
+    "image": "https://hstatic.net/077/1000067077/10/2016/3-19/dsc_0230copy.jpg"
+  },
+  {
+    "name": "Nem nướng Đặng Văn Quyên",
+    "province": "Khánh Hòa",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 12.25372,
+    "longitude": 109.193829,
+    "priceMin": 58000,
+    "priceMax": 58000,
+    "openingHours": "07:30-20:30",
+    "description": "Địa chỉ nem nướng kiểu Ninh Hòa tại Nha Trang.",
+    "image": "https://i.ex-cdn.com/vntravellive.com/files/content/2024/03/30/1-1439.jpg"
+  },
+  {
+    "name": "Vườn quốc gia Phước Bình",
+    "province": "Ninh Thuận",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 11.99976,
+    "longitude": 108.78336,
+    "priceMin": 20000,
+    "priceMax": 20000,
+    "openingHours": "09:00-17:00",
+    "description": "Vùng bảo tồn rừng và cảnh quan miền núi phía tây Ninh Thuận.",
+    "image": "https://thiennhienmoitruong.vn/upload2024/images/btv-phuong-3/btv-phuong-7/88b.jpg"
+  },
+  {
+    "name": "Làng gốm Bàu Trúc",
+    "province": "Ninh Thuận",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 11.525711,
+    "longitude": 108.928997,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Làng nghề gốm truyền thống của người Chăm.",
+    "image": "https://media.vov.vn/sites/default/files/styles/large_watermark/public/2023-06/1_14-06-2023-14-16-21.jpg"
+  },
+  {
+    "name": "Làng dệt Mỹ Nghiệp",
+    "province": "Ninh Thuận",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 11.521536,
+    "longitude": 108.942482,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Làng nghề dệt thổ cẩm gắn với văn hóa Chăm.",
+    "image": "https://media.vietnamplus.vn/images/ed1918d4cf848798286fdbd286ae25b47cd497860790ecc31503a805b37df908460e08027ce9611e6f314b267f274b4040e02a5b710689c0ae4e0ea1c57f5d83d0799546f9f399bbe19fff63bd0a70c13baf0aa24dfd57111e811a4b44265e78/ttxvn-lang-det-my-nghiep-giu-hon-tho-cam-cham-8344694-1.jpg"
+  },
+  {
+    "name": "Đồng cừu An Hòa",
+    "province": "Ninh Thuận",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 11.669015,
+    "longitude": 108.971039,
+    "priceMin": 40000,
+    "priceMax": 40000,
+    "openingHours": "09:00-20:00",
+    "description": "Cảnh quan chăn thả cừu giữa vùng đồng cỏ khô.",
+    "image": "https://media.gody.vn/images/ninh-thuan/dong-cuu-an-hoa/7-2017/63606497-20170711090914-ninh-thuan-dong-cuu-an-hoa.jpg"
+  },
+  {
+    "name": "Đồi chè Tân Uyên",
+    "province": "Lai Châu",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.208666,
+    "longitude": 103.739185,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Cảnh quan đồi chè trải rộng tại vùng Tân Uyên.",
+    "image": "https://dulich.laichau.gov.vn/DataFiles/images/t1/vitm/ch%C3%A8%20t%C3%A2n%20u/t%C3%A2n%20u%20paradise/s%20tkp/tkp/ssh/304/ch%C3%A8%20t%C3%A2n%20u/c3.png"
+  },
+  {
+    "name": "Đảo Phú Quý",
+    "province": "Bình Thuận",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.533333,
+    "longitude": 108.95,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Đảo có cảnh quan biển, làng chài và các điểm ngắm bình minh.",
+    "image": "https://product.hstatic.net/200000637161/product/du_lich_phu_quy__adf846c9c9444efabd8b9484ca614840_grande.jpeg"
+  },
+  {
+    "name": "Hải đăng Kê Gà",
+    "province": "Bình Thuận",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.695289,
+    "longitude": 107.991564,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "05:00-17:00",
+    "description": "Ngọn hải đăng trên đảo đá gần bờ biển Hàm Thuận Nam.",
+    "image": "https://image.vietgoing.com/editor/image_ugu1639465655.jpg"
+  },
+  {
+    "name": "Núi Tà Cú",
+    "province": "Bình Thuận",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.828056,
+    "longitude": 107.882778,
+    "priceMin": 250000,
+    "priceMax": 250000,
+    "openingHours": "07:00-18:00",
+    "description": "Danh thắng núi rừng có chùa và tượng Phật nằm.",
+    "image": "https://www.chuaviettoancau.com/userfiles/126_01.jpg"
+  },
+  {
+    "name": "Tháp Pô Sah Inư",
+    "province": "Bình Thuận",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.93596,
+    "longitude": 108.146003,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Cụm tháp Chăm trên đồi gần Phan Thiết.",
+    "image": "https://media.vietnamplus.vn/images/7255a701687d11cb8c6bbc58a6c80785ec587d33f72cdcc8ecfdb08f7c24da186c8f53cf28a1a81a3a388620010a1b96/thap3.jpg"
+  },
+  {
+    "name": "Chợ Phan Thiết",
+    "province": "Bình Thuận",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 10.925781,
+    "longitude": 108.096536,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "05:30-18:00",
+    "description": "Chợ trung tâm có hải sản và món ăn Bình Thuận.",
+    "image": "https://ik.imagekit.io/tvlk/blog/2023/01/cho-phan-thiet-cover.jpg"
+  },
+  {
+    "name": "Vườn quốc gia Bidoup Núi Bà",
+    "province": "Lâm Đồng",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 12.133678,
+    "longitude": 108.533522,
+    "priceMin": 40000,
+    "priceMax": 50000,
+    "openingHours": "09:00-15:00",
+    "description": "Vùng rừng núi có đa dạng sinh học và tuyến đi bộ thiên nhiên.",
+    "image": "https://cdn-images.vtv.vn/66349b6076cb4dee98746cf1/2024/07/24/z5663867075892-0e0fa5d986bdbf2c8aad1a63a0ce6896-78284477719193755697039.jpg"
+  },
+  {
+    "name": "Đồi chè Cầu Đất",
+    "province": "Lâm Đồng",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 11.879081,
+    "longitude": 108.560508,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "06:00-18:00",
+    "description": "Cảnh quan đồi chè gắn với nông nghiệp vùng cao Đà Lạt.",
+    "image": "https://statics.vinpearl.com/doi-che-cau-dat-01_1688736872.jpg"
+  },
+  {
+    "name": "Hồ Tuyền Lâm",
+    "province": "Lâm Đồng",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 11.89983,
+    "longitude": 108.42983,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Hồ nước giữa rừng thông, phù hợp tham quan và nghỉ ngơi.",
+    "image": "https://media.baobinhphuoc.com.vn/upload/news/7_2023/khu_du_lich_quoc_gia_ho_tuyen_lam_la_khu_du_lich_tieu_bieu_chau_a_tbd_14311725072023.jpg"
+  },
+  {
+    "name": "Chợ Đà Lạt",
+    "province": "Lâm Đồng",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 11.943023,
+    "longitude": 108.436878,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Chợ trung tâm có nông sản, đặc sản và hàng ăn.",
+    "image": "https://cdn.manglinvilla.com/images/card_logo/thue-villa-da-lat-kinh-nghiem-day-du-cho-chuyen-di-hoan-hao.jpg"
+  },
+  {
+    "name": "Bánh căn Lệ Đà Lạt",
+    "province": "Lâm Đồng",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 11.942279,
+    "longitude": 108.45065,
+    "priceMin": 60000,
+    "priceMax": 60000,
+    "openingHours": "06:30-15:30",
+    "description": "Địa chỉ bánh căn với nước chấm và món ăn kèm.",
+    "image": "https://mia.vn/media/uploads/blog-du-lich/banh-can-le-1-1751638757.jpg"
+  },
+  {
+    "name": "Thác Dray Sáp",
+    "province": "Đắk Nông",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 12.5397,
+    "longitude": 107.8864,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Thác nước lớn thuộc hệ thống sông Sêrêpốk.",
+    "image": "https://danviet.ex-cdn.com/files/f1/296231569849192448/2022/2/28/saostar-88hcbv04hbi1yzlu-1646010506593-1646010506792753529682.jpg"
+  },
+  {
+    "name": "Buôn Đôn",
+    "province": "Đắk Lắk",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 12.879161,
+    "longitude": 107.71625,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Vùng văn hóa du lịch gắn với cộng đồng địa phương và sông Sêrêpốk.",
+    "image": "https://cdn.xanhsm.com/2024/12/b400b825-buon-don-dak-lak-01.jpg"
+  },
+  {
+    "name": "Vườn quốc gia Chư Yang Sin",
+    "province": "Đắk Lắk",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 12.480337,
+    "longitude": 108.228493,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "09:00-17:00",
+    "description": "Vùng rừng núi có cảnh quan và hệ sinh thái phong phú.",
+    "image": "https://vhttdl.daklak.gov.vn/Upload/Images/VQG%20Cu%20Yang%20Sin%281%29.jpg"
+  },
+  {
+    "name": "Làng cà phê Trung Nguyên",
+    "province": "Đắk Lắk",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 12.701056,
+    "longitude": 108.061103,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-22:00",
+    "description": "Không gian giới thiệu văn hóa cà phê tại Buôn Ma Thuột.",
+    "image": "https://dulichthuduc.com.vn/vnt_upload/news/01_2023/lang_ca_phe_trung_nguyen_du_lich_thu_duc_5.jpg"
+  },
+  {
+    "name": "Chợ Buôn Ma Thuột",
+    "province": "Đắk Lắk",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 12.679923,
+    "longitude": 108.042451,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "04:00-20:00",
+    "description": "Chợ trung tâm có nông sản và món ăn Tây Nguyên.",
+    "image": "https://down-vn.img.susercontent.com/vn-11134259-7r98o-lwgk956mkqu116%40resize_ss640x400"
+  },
+  {
+    "name": "Chùa Minh Thành Pleiku",
+    "province": "Gia Lai",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 13.966139,
+    "longitude": 108.004985,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-17:00",
+    "description": "Ngôi chùa nổi bật với kiến trúc gỗ và cảnh quan sân vườn.",
+    "image": "https://datviettour.com.vn/uploads/images/tin-tuc-SEO/tay-nguyen/danh-thang/chua-minh-thanh-pleiku-2.jpg"
+  },
+  {
+    "name": "Thác Phú Cường",
+    "province": "Gia Lai",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 13.661628,
+    "longitude": 108.136035,
+    "priceMin": 25000,
+    "priceMax": 25000,
+    "openingHours": "08:00-17:00",
+    "description": "Thác nước giữa cảnh quan núi lửa vùng Chư Sê.",
+    "image": "https://bazantravel.com/cdn/medias/uploads/28/28223-thac-phu-cuong.jpg"
+  },
+  {
+    "name": "Đồi chè Biển Hồ",
+    "province": "Gia Lai",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 14.077935,
+    "longitude": 108.003618,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Cảnh quan đồi chè và hàng cây gần Pleiku.",
+    "image": "https://ik.imagekit.io/tvlk/blog/2024/03/bien-ho-che-1.jpg?tr=dpr-2%2Cw-675"
+  },
+  {
+    "name": "Núi Hàm Rồng Gia Lai",
+    "province": "Gia Lai",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 13.886214,
+    "longitude": 108.015935,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Núi có nguồn gốc núi lửa, là điểm nhấn cảnh quan Pleiku.",
+    "image": "https://mia.vn/media/uploads/blog-du-lich/kham-pha-nui-ham-rong-gia-lai-voi-view-ngam-tron-pleiku-4-1659630372.jpg"
+  },
+  {
+    "name": "Bản Sì Thâu Chải",
+    "province": "Lai Châu",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.361438,
+    "longitude": 103.602145,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "description": "Bản du lịch cộng đồng của người Dao với cảnh quan núi và thung lũng.",
+    "image": "https://ik.imagekit.io/tvlk/blog/2024/01/go-and-share-ban-si-thau-chai-lai-chau-2-1024x768.webp?tr=q-70%2Cc-at_max%2Cw-1000%2Ch-600"
+  },
+  {
+    "name": "Vườn quốc gia Chư Mom Ray",
+    "province": "Kon Tum",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 14.442152,
+    "longitude": 107.746724,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "description": "Vùng bảo tồn rừng ở phía tây Tây Nguyên.",
+    "image": "https://ik.imagekit.io/tvlk/blog/2023/05/vuon-quoc-gia-chu-mom-ray-4.jpg?tr=dpr-2%2Cw-675"
+  },
+  {
+    "name": "Ngã ba Đông Dương",
+    "province": "Kon Tum",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 14.686104,
+    "longitude": 107.556548,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Điểm tham quan vùng biên giới ba nước Việt Nam, Lào và Campuchia.",
+    "image": "https://dulichthuduc.com.vn/vnt_upload/news/01_2023/nga_ba_dong_duong_du_lich_thu_duc_2.jpg"
+  },
+  {
+    "name": "Thác Pa Sỹ",
+    "province": "Kon Tum",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 14.60067,
+    "longitude": 108.256732,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:30-17:00",
+    "description": "Thác nước giữa rừng tại khu vực Măng Đen.",
+    "image": "https://static.vinwonders.com/production/thac-pa-sy-3.jpg"
+  },
+  {
+    "name": "Hồ Đăk Ke",
+    "province": "Kon Tum",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 14.580873,
+    "longitude": 108.275751,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Hồ nước có cảnh quan rừng thông tại Măng Đen.",
+    "image": "https://cungdi.net/uploads/travel/kon_tum/ho-dak-ke-mang-den.jpg"
+  },
+  {
+    "name": "Chợ Kon Tum",
+    "province": "Kon Tum",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 14.349314,
+    "longitude": 108.003087,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Chợ trung tâm với nông sản và món ăn địa phương.",
+    "image": "https://bvhttdl.mediacdn.vn/291773308735864832/2023/9/6/0509lam-gi-de-du-lich-cong-dong-thanh-pho-kon-tum-cat-canh-1693970195328-1693970195868465969647.jpg"
+  },
+  {
+    "name": "Hang động núi lửa Krông Nô",
+    "province": "Đắk Nông",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 12.5186,
+    "longitude": 107.9333,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Hệ thống hang dung nham có giá trị địa chất.",
+    "image": "https://scov.gov.vn/upload/2005660/20210923/fc39e3f65aed9c57a796aa92f82253f7163122_hangdong.jpg"
+  },
+  {
+    "name": "Thác Liêng Nung",
+    "province": "Đắk Nông",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 11.951171,
+    "longitude": 107.731209,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "description": "Thác có vách đá nổi bật gần Gia Nghĩa.",
+    "image": "https://thinhvuongvietnam.com/Content/UploadFiles/EditorFiles/images/2022/Quy3/thac-lieng-nung23092022103459.jpg"
+  },
+  {
+    "name": "Hồ Ea Snô",
+    "province": "Đắk Nông",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 12.5147,
+    "longitude": 107.7889,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Hồ tự nhiên trong cảnh quan rừng và đồi.",
+    "image": "https://dulich.daknong.gov.vn/DataFiles/2023/02/Files/20-02-2023-17-08-11-468.jpg"
+  },
+  {
+    "name": "Thiền viện Trúc Lâm Đạo Nguyên",
+    "province": "Đắk Nông",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 12.206913,
+    "longitude": 107.704698,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Không gian Phật giáo trong vùng rừng núi Nâm Nung.",
+    "image": "https://dulich.daknong.gov.vn/DataFiles/2024/01/Videos/20240117-102041-G6xgNMLR.webp"
+  },
+  {
+    "name": "Đền thờ Hoàng Công Chất",
+    "province": "Điện Biên",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.315425,
+    "longitude": 103.00499,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Di tích tưởng niệm Hoàng Công Chất trong khu vực thành Bản Phủ.",
+    "image": "https://vnanet.vn/Data/Articles/2020/06/25/4817876/vna_potal_du_lich_viet_nam_di_tich_cap_quoc_gia_thanh_ban_phu_-_den_tho_hoang_cong_chat_o_dien_bien_070712670_stand.jpg"
+  },
+  {
+    "name": "Hải đăng Vũng Tàu",
+    "province": "Bà Rịa - Vũng Tàu",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.336699,
+    "longitude": 107.07701,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Điểm ngắm cảnh thành phố và biển từ núi Nhỏ.",
+    "image": "https://static.vinwonders.com/production/2025/05/ngon-hai-dang-o-vung-tau.jpg"
+  },
+  {
+    "name": "Tượng Chúa Kitô Vua Vũng Tàu",
+    "province": "Bà Rịa - Vũng Tàu",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.326488,
+    "longitude": 107.084555,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-17:00",
+    "description": "Công trình tôn giáo trên núi Nhỏ nhìn ra biển.",
+    "image": "https://vanhoatinnguong.vn/Uploads/images/2025/8/tuong_dai_chua_kito_giua_bien_troi_0951.jpg"
+  },
+  {
+    "name": "Bãi Sau Vũng Tàu",
+    "province": "Bà Rịa - Vũng Tàu",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.346121,
+    "longitude": 107.100013,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Bãi biển đô thị với nhiều dịch vụ du lịch.",
+    "image": "https://nld.mediacdn.vn/291774122806476800/2025/5/18/dji0288dxo-17475406962151516081280.jpg"
+  },
+  {
+    "name": "Bánh khọt Gốc Vú Sữa",
+    "province": "Bà Rịa - Vũng Tàu",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 10.340329,
+    "longitude": 107.078824,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-15:30",
+    "description": "Quán bánh khọt nổi tiếng tại Vũng Tàu.",
+    "image": "https://bazantravel.com/cdn/medias/uploads/66/66540-banh-khot-goc-vu-sua-6-700x700.jpg"
+  },
+  {
+    "name": "Chợ Xóm Lưới Vũng Tàu",
+    "province": "Bà Rịa - Vũng Tàu",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 10.341918,
+    "longitude": 107.077088,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Chợ hải sản gắn với hoạt động mua bán của ngư dân.",
+    "image": "https://media.mia.vn/uploads/blog-du-lich/ghe-cho-xom-luoi-vung-tau-roi-minh-cung-rinh-ca-the-gioi-hai-san-tuoi-ngon-ve-nha-nhe--1633972096.jpg"
+  },
+  {
+    "name": "Thác Giang Điền",
+    "province": "Đồng Nai",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.918523,
+    "longitude": 106.989233,
+    "priceMin": 80000,
+    "priceMax": 100000,
+    "openingHours": "07:30-17:00",
+    "description": "Khu du lịch sinh thái quanh cụm thác gần Trảng Bom.",
+    "image": "https://ik.imagekit.io/tvlk/blog/2022/03/khu-du-lich-sinh-thai-thac-giang-dien-1-1024x768.jpg?tr=dpr-2%2Cw-675"
+  },
+  {
+    "name": "Núi Chứa Chan",
+    "province": "Đồng Nai",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.937335,
+    "longitude": 107.376624,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Ngọn núi nổi tiếng với hoạt động đi bộ và tham quan chùa.",
+    "image": "https://cdn.tgdd.vn/Files/2022/02/23/1416904/cam-nang-du-lich-nui-chua-chan-gia-lao-noc-nha-dong-nai-202202230806085880.jpg"
+  },
+  {
+    "name": "Đá Ba Chồng Định Quán",
+    "province": "Đồng Nai",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 11.190827,
+    "longitude": 107.348346,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Cụm đá tự nhiên có hình dạng đặc biệt tại Định Quán.",
+    "image": "https://cdn.media.dulich24.com.vn/diemden/da-ba-chong-8003/802caccd-d85c-4957-bd98-8c1622e48c60.jpg"
+  },
+  {
+    "name": "Khu du lịch Suối Mơ Đồng Nai",
+    "province": "Đồng Nai",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 11.231018,
+    "longitude": 107.440243,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:30-17:00",
+    "description": "Không gian vui chơi sinh thái với mặt nước và cây xanh.",
+    "image": "https://zoomtravel.vn/upload/images/suoi-mo-1-min.jpg"
+  },
+  {
+    "name": "Suối khoáng U Va",
+    "province": "Điện Biên",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.28344,
+    "longitude": 102.996156,
+    "priceMin": 20000,
+    "priceMax": 20000,
+    "openingHours": "08:30-18:30",
+    "description": "Điểm suối khoáng gắn với cảnh quan và văn hóa thung lũng Điện Biên.",
+    "image": "https://localtrips.org/cdn/shop/files/Gi_iThi_u_5a6e526b-a74b-472d-bbb6-8479d4ada912.png?v=1740813560&width=1445"
+  },
+  {
+    "name": "Chùa Hội Khánh",
+    "province": "Bình Dương",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.981047,
+    "longitude": 106.658844,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "04:30-21:00",
+    "description": "Chùa cổ có kiến trúc và tượng Phật nằm nổi bật.",
+    "image": "https://i.ex-cdn.com/phatgiao.org.vn/files/content/2022/12/07/7-1913.jpg"
+  },
+  {
+    "name": "Nhà thờ Chánh tòa Phú Cường",
+    "province": "Bình Dương",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.981616,
+    "longitude": 106.654141,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "05:00-19:30",
+    "description": "Công trình Công giáo với kiến trúc nổi bật ở Thủ Dầu Một.",
+    "image": "https://triphunter.vn/media/W1siZiIsIjIwMTYvMDYvMjgvNG45emZkdjh0Ml9xT3hCMDMzNWE4cmZjZ1RCSGszakdTTUpMX2RFY0JOWC5qcGciXV0/qOxB0335a8rfcgTBHk3jGSMJL_dEcBNX.jpg?sha=a113c68a82733313"
+  },
+  {
+    "name": "Làng tre Phú An",
+    "province": "Bình Dương",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 11.066466,
+    "longitude": 106.584693,
+    "priceMin": 0,
+    "priceMax": 20000,
+    "openingHours": "08:00-18:00",
+    "description": "Không gian bảo tồn và giới thiệu các giống tre.",
+    "image": "https://mia.vn/media/uploads/blog-du-lich/check-in-lang-tre-phu-an-diem-song-ao-ngay-canh-sai-gon-04-1654954939.jpg"
+  },
+  {
+    "name": "Làng sơn mài Tương Bình Hiệp",
+    "province": "Bình Dương",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 11.0069,
+    "longitude": 106.6347,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Làng nghề truyền thống với sản phẩm sơn mài.",
+    "image": "https://dantocmiennui-media.baotintuc.vn/images/84426cb421b40f0fbef0009243df48a99534fe2adafef46ae8b1255b38d3094ef9786009e24865022aa784f469d3378f444f6e2cf2d94f795c69cde004544c90fc709580677e0340e0d209a592fffc14d833df4a3d241ae836e139352ee4e6b35184538051737097c2c99b09330e6bb5db69fdd2278b8060b12f8842dc094760c9c1d4fdc8043f8f22003f3d0e98f931/vna-potal-san-pham-ocop-o-dia-phuong-giu-lua-nghe-son-mai-tuong-binh-hiep-7331688-5766.jpg"
+  },
+  {
+    "name": "Chợ Thủ Dầu Một",
+    "province": "Bình Dương",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 10.977878,
+    "longitude": 106.65182,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Chợ truyền thống ven sông có hàng ăn và sản vật địa phương.",
+    "image": "https://topbinhduongaz.com/wp-content/uploads/2024/06/cho-thu-dau-mot_2.jpg"
+  },
+  {
+    "name": "Vườn quốc gia Bù Gia Mập",
+    "province": "Bình Phước",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 12.087199,
+    "longitude": 107.156406,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "description": "Vùng bảo tồn rừng và hoạt động khám phá thiên nhiên.",
+    "image": "https://imagevietnam.vnanet.vn/Upload/2012/5/15/15-5DL04BaoAnh1552012141933239.jpg"
+  },
+  {
+    "name": "Trảng cỏ Bù Lạch",
+    "province": "Bình Phước",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 11.808464,
+    "longitude": 107.358274,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Cảnh quan trảng cỏ xen hồ nước và rừng.",
+    "image": "https://travelsgcc.com/wp-content/uploads/2019/10/trang-co-bu-lach.jpg"
+  },
+  {
+    "name": "Hồ Suối Lam",
+    "province": "Bình Phước",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 11.610239,
+    "longitude": 106.881373,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Hồ nước có cảnh quan rừng cây và không gian nghỉ ngơi.",
+    "image": "https://sanvemaybay.vn/includes/uploads/2021/12/ho-suoi-lam-4-1729-e1640332430486.jpg"
+  },
+  {
+    "name": "Di tích Nhà giao tế Lộc Ninh",
+    "province": "Bình Phước",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 11.842437,
+    "longitude": 106.590939,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "description": "Di tích lịch sử gắn với hoạt động đối ngoại trong thời kỳ chiến tranh.",
+    "image": "https://binhphuoc.gov.vn/uploads/binhphuoc/news/2019_01/nhagiaote1.jpg"
+  },
+  {
+    "name": "Động Pa Thơm",
+    "province": "Điện Biên",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.286671,
+    "longitude": 102.917106,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Hang động tự nhiên có hệ thống nhũ đá tại vùng biên Pa Thơm.",
+    "image": "https://vietsensetravel.com/view/at_dong-pa-thom_188d344885ccef6e00812097ca039a30.jpg"
+  },
+  {
+    "name": "Hồ Dầu Tiếng",
+    "province": "Tây Ninh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 11.391866,
+    "longitude": 106.287521,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Hồ nước rộng với cảnh quan ven hồ thích hợp ngắm cảnh.",
+    "image": "https://media.mia.vn/uploads/blog-du-lich/ngam-hoang-hon-ho-dau-tieng-tay-ninh-dep-say-long-nguoi-05-1661783872.jpeg"
+  },
+  {
+    "name": "Tháp cổ Bình Thạnh",
+    "province": "Tây Ninh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 11.01863,
+    "longitude": 106.219158,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "08:00-17:00",
+    "description": "Di tích kiến trúc cổ tại vùng Trảng Bàng.",
+    "image": "https://dulich.tayninh.gov.vn/uploads/images/image-20250729005722-2.jpeg"
+  },
+  {
+    "name": "Tháp Chót Mạt",
+    "province": "Tây Ninh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 11.463666,
+    "longitude": 106.010238,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Tháp gạch cổ còn lại trên địa bàn Tân Biên.",
+    "image": "https://vnanet.vn/Data/Articles/2024/09/20/7607466/vna_potal_tay_ninh_di_tich_thap_chot_mat_thu_hut_khach_tham_quan_stand.jpg"
+  },
+  {
+    "name": "Bánh canh Trảng Bàng Năm Dung",
+    "province": "Tây Ninh",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 11.0329,
+    "longitude": 106.359066,
+    "priceMin": 75000,
+    "priceMax": 75000,
+    "openingHours": "06:00-20:30",
+    "description": "Địa chỉ thưởng thức bánh canh và bánh tráng cuốn.",
+    "image": "https://mia.vn/media/uploads/blog-du-lich/banh-canh-trang-bang-nam-dung-hoang-muoi-ngon-dung-dieu-04-1661884499.jpg"
+  },
+  {
+    "name": "Động Xá Nhè",
+    "province": "Điện Biên",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.881665,
+    "longitude": 103.412715,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Hang động có nhiều khối nhũ đá tại khu vực Tủa Chùa.",
+    "image": "https://img.thuonghieusanpham.vn/img/TAPCHI_THSP/news_dataimages/nguyenmai/082021/25/15/in_article/0551_YYng_Xa_Nhe17.jpg?rt=20210825150553"
+  },
+  {
+    "name": "Nhà Trăm Cột",
+    "province": "Long An",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.482685,
+    "longitude": 106.691389,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-17:00",
+    "description": "Nhà cổ bằng gỗ nổi bật với nghệ thuật chạm khắc.",
+    "image": "https://ik.imagekit.io/tvlk/blog/2023/11/nha-tram-cot-6-1024x768.jpg?tr=dpr-2%2Cw-675"
+  },
+  {
+    "name": "Chùa Tôn Thạnh",
+    "province": "Long An",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.605463,
+    "longitude": 106.646409,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "06:00-21:00",
+    "description": "Ngôi chùa cổ gắn với cuộc đời nhà thơ Nguyễn Đình Chiểu.",
+    "image": "https://media2.gody.vn/public/images/destination/1/80/chua-ton-thanh/pl6200a04562e5f-1644208197.jpeg"
+  },
+  {
+    "name": "Khu di tích Bình Thành Long An",
+    "province": "Long An",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.811666,
+    "longitude": 106.220139,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "06:00-18:00",
+    "description": "Di tích lịch sử trong vùng Đồng Tháp Mười.",
+    "image": "https://triphunter.vn/media/W1siZiIsIjIwMTcvMTIvMjAvNGhtaGV5MTNyOV82MDMyMTJfNTMzMTI2NTk2NzA2MzIxXzE5MjA4MzUyODFfbi5qcGciXV0/603212_533126596706321_1920835281_n.jpg?sha=5948b99579cd8dcc"
+  },
+  {
+    "name": "Công viên tượng đài Long An",
+    "province": "Long An",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.559444,
+    "longitude": 106.417404,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "description": "Không gian tưởng niệm và sinh hoạt cộng đồng tại Tân An.",
+    "image": "https://down-vn.img.susercontent.com/vn-11134259-7r98o-lwap7s8bvjyz1e%40resize_ss640x400"
+  },
+  {
+    "name": "Chợ Mường Thanh",
+    "province": "Điện Biên",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 21.387513,
+    "longitude": 103.012818,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "06:00-21:00",
+    "description": "Chợ truyền thống có nông sản và hàng ăn vùng Điện Biên.",
+    "image": "https://sxd.dienbien.gov.vn/portal/Photos/2024-11/_w/3D%20cho%20MT_040329_jpg.jpg"
+  },
+  {
+    "name": "Chùa Vĩnh Tràng",
+    "province": "Tiền Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.362638,
+    "longitude": 106.373521,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "06:30-19:00",
+    "description": "Ngôi chùa nổi bật với kiến trúc giao thoa và sân vườn.",
+    "image": "https://chuaviettoancau.com/userfiles/2020/02/04_resize-7063.jpg"
+  },
+  {
+    "name": "Trại rắn Đồng Tâm",
+    "province": "Tiền Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.351908,
+    "longitude": 106.296725,
+    "priceMin": 70000,
+    "priceMax": 70000,
+    "openingHours": "07:00-17:00",
+    "description": "Điểm tìm hiểu các loài rắn và hoạt động nghiên cứu liên quan.",
+    "image": "https://cdn.tgdd.vn/Files/2023/06/05/1532991/ghe-tham-khu-du-lich-trai-ran-dong-tam-tuoi-doi-gan-50-nam-tai-tien-giang-202306051111518732.jpg"
+  },
+  {
+    "name": "Biển Tân Thành",
+    "province": "Tiền Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.291654,
+    "longitude": 106.781207,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "description": "Bãi biển bùn cát nổi tiếng với sản vật nghêu.",
+    "image": "https://www.homepaylater.vn/static/51ce7217311f92524c297fc6116102aa/9d72c/1_bien_tan_thanh_tua_nhu_mot_vien_ngoc_quy_giua_long_mien_tay_song_nuoc_21ebd64802.jpg"
+  },
+  {
+    "name": "Chợ Mỹ Tho",
+    "province": "Tiền Giang",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 10.357247,
+    "longitude": 106.367737,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "description": "Chợ lâu đời với hủ tiếu và món ăn miền Tây.",
+    "image": "https://down-vn.img.susercontent.com/vn-11134259-7r98o-lwe7f35h79w93f%40resize_ss640x400"
+  },
+  {
+    "name": "Thác Dải Yếm",
+    "province": "Sơn La",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.812913,
+    "longitude": 104.591578,
+    "priceMin": 80000,
+    "priceMax": 150000,
+    "openingHours": "07:00-19:00",
+    "description": "Thác nước nổi tiếng trong cảnh quan cao nguyên Mộc Châu.",
+    "image": "https://phetravel.com/uploads/thac-dai-yem-moc-chau-1.jpg.webp"
+  },
+  {
+    "name": "Cồn Phụng",
+    "province": "Bến Tre",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.326891,
+    "longitude": 106.349855,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-17:00",
+    "description": "Khu du lịch sông nước với cảnh quan và sản phẩm từ dừa.",
+    "image": "https://bentrelogistics.com/wp-content/uploads/2024/09/CON-PHUNG.jpg"
+  },
+  {
+    "name": "Sân chim Vàm Hồ",
+    "province": "Bến Tre",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.158125,
+    "longitude": 106.615493,
+    "priceMin": 150000,
+    "priceMax": 150000,
+    "openingHours": "00:00-23:59",
+    "description": "Không gian sinh thái đất ngập nước và chim tự nhiên.",
+    "image": "https://khoahoctv.edu.vn/upload/2025/08/san-chim-vam-ho-005.webp"
+  },
+  {
+    "name": "Làng hoa kiểng Cái Mơn",
+    "province": "Bến Tre",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.191836,
+    "longitude": 106.220866,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:30-17:00",
+    "description": "Vùng trồng cây giống và hoa kiểng truyền thống.",
+    "image": "https://mia.vn/media/uploads/blog-du-lich/lang-hoa-cai-mon-1-1737338691.jpg"
+  },
+  {
+    "name": "Khu lăng mộ Nguyễn Đình Chiểu",
+    "province": "Bến Tre",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.03717,
+    "longitude": 106.582359,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-17:00",
+    "description": "Di tích tưởng niệm nhà thơ yêu nước Nguyễn Đình Chiểu.",
+    "image": "https://media.vietnamplus.vn/images/7255a701687d11cb8c6bbc58a6c80785075f1de01ee2ab87de1c815e30c3d6d3bded198bd60bc3cfa70bc7aa6bf84714ff997c703d2797e6a1039fb631ac4c961d175058d9a59d4e21100ddb41c54c45/1903langnguyendinhchieu6-5423.jpg"
+  },
+  {
+    "name": "Rừng thông bản Áng",
+    "province": "Sơn La",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.826822,
+    "longitude": 104.630821,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Không gian rừng thông và hồ nước gần trung tâm Mộc Châu.",
+    "image": "https://cdn.vivutour.vn/2026/1/review-rung-thong-ban-ang.webp"
+  },
+  {
+    "name": "Cù lao Tân Quy",
+    "province": "Trà Vinh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 9.894739,
+    "longitude": 105.982705,
+    "priceMin": 50000,
+    "priceMax": 50000,
+    "openingHours": "07:00-18:00",
+    "description": "Vùng cù lao có vườn cây và trải nghiệm đời sống sông nước.",
+    "image": "https://i2.ex-cdn.com/crystalbay.com/files/content/2025/03/31/du-lich-cu-lao-tan-quy-4-2139.jpg"
+  },
+  {
+    "name": "Chùa Vàm Ray",
+    "province": "Trà Vinh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 9.656114,
+    "longitude": 106.275102,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-23:00",
+    "description": "Ngôi chùa Khmer nổi bật với kiến trúc và sắc vàng.",
+    "image": "https://cdn-i.vtcnews.vn/resize/UyS5Ytevv35RMYdWgCJgDBZmRQp8-d730/upload/2022/07/22/vam-ray-do-minh-tan-14195557.jpg"
+  },
+  {
+    "name": "Chùa Hang Trà Vinh",
+    "province": "Trà Vinh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 9.887058,
+    "longitude": 106.345022,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Ngôi chùa Khmer có cổng dạng hang và nhiều cây cổ thụ.",
+    "image": "https://mia.vn/media/uploads/blog-du-lich/kien-truc-co-kinh-1706425957.jpg"
+  },
+  {
+    "name": "Nhà cổ Cầu Kè",
+    "province": "Trà Vinh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 9.872336,
+    "longitude": 106.057839,
+    "priceMin": 20000,
+    "priceMax": 20000,
+    "openingHours": "10:00-15:00",
+    "description": "Nhà cổ gắn với lịch sử và kiến trúc địa phương.",
+    "image": "https://ta-img.tatinta.com/resize/1024/webp/destination/file-1732094582719.jpg"
+  },
+  {
+    "name": "Chợ Trà Vinh",
+    "province": "Trà Vinh",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 9.935329,
+    "longitude": 106.342424,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Chợ trung tâm có món ăn Việt, Khmer và Hoa.",
+    "image": "https://nhaquanly.vn/uploads/Images/Uploaded/Share/2020/01/19cho-tra-vinh.jpg"
+  },
+  {
+    "name": "Cù lao An Bình",
+    "province": "Vĩnh Long",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.286564,
+    "longitude": 105.967144,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Vùng cù lao có vườn cây và hoạt động du lịch sông nước.",
+    "image": "https://luhanhvietnam.com.vn/du-lich/vnt_upload/news/09_2022/cu-lao-an-binh_1_1.jpg"
+  },
+  {
+    "name": "Văn Thánh Miếu Vĩnh Long",
+    "province": "Vĩnh Long",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.242662,
+    "longitude": 105.984359,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-17:00",
+    "description": "Di tích văn hóa gắn với truyền thống hiếu học Nam Bộ.",
+    "image": "https://file-dangcongsan.nhandan.vn/data/0/images/2022/03/17/manht/duong-dan.jpg"
+  },
+  {
+    "name": "Chùa Phật Ngọc Xá Lợi Vĩnh Long",
+    "province": "Vĩnh Long",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.264807,
+    "longitude": 105.915484,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "description": "Công trình Phật giáo có không gian kiến trúc rộng.",
+    "image": "https://btravel.vn/wp-content/uploads/2023/05/VnExpress-VinhLong-8-1606894423-850x637.jpg"
+  },
+  {
+    "name": "Nhà cổ Cai Cường",
+    "province": "Vĩnh Long",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.280393,
+    "longitude": 106.00578,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Nhà cổ trên cù lao với kiến trúc giao thoa Á và Âu.",
+    "image": "https://media.vietnamplus.vn/images/c14f6479e83e315b4cf3a2906cc6a51e3b5a726d29f8a7d0461ac96c69e62fa6cb703c341f9fd26d42c6bc271bd00b5a7fd93ed6af571e17849421b8f9b39906053e171119d1a20bf2c9b7b2fb00fd59/nha_co_Cai_Cuong.png.webp"
+  },
+  {
+    "name": "Thác Nàng Tiên Mộc Châu",
+    "province": "Sơn La",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.843847,
+    "longitude": 104.824385,
+    "priceMin": 30000,
+    "priceMax": 30000,
+    "openingHours": "00:00-23:59",
+    "description": "Cụm thác nhiều tầng tại khu vực Chiềng Khoa.",
+    "image": "https://dulichvietnam.com.vn/vnt_upload/news/02_2022/thac_nang_tien_moc_chau_11.jpg"
+  },
+  {
+    "name": "Khu du lịch Gáo Giồng",
+    "province": "Đồng Tháp",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.588359,
+    "longitude": 105.611693,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Khu sinh thái rừng tràm với vườn chim và đường thủy.",
+    "image": "https://en-cdn.nhandan.vn/images/23e44cb0304d465d87982ab4e7c5ac7a82d5810b63e632e19d7dd5664e7dc122feb88f630c965c0841ae0f3ffc309bfdbe785da9de4d8978df27b3326f14ebb2da56df832b5eb8ab2f0e27c101a9927e66278cd3ebe222aab45c1e691cc413ec/cd07-229-du-lich-gao-giong-copy-3-98036846-6564.jpg"
+  },
+  {
+    "name": "Đồng sen Tháp Mười",
+    "province": "Đồng Tháp",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.603212,
+    "longitude": 105.820309,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:30-17:00",
+    "description": "Không gian trồng sen và thưởng thức món ăn từ sen theo mùa.",
+    "image": "https://triphunter.vn/media/W1siZiIsIjIwMTYvMDQvMjkvNjZjZ3FzMHJ6bV80LmpwZyJdXQ/4.jpg?sha=7bb2a57cdd247ba4"
+  },
+  {
+    "name": "Chùa Kiến An Cung",
+    "province": "Đồng Tháp",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.294457,
+    "longitude": 105.767039,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "08:00-17:00",
+    "description": "Di tích kiến trúc tín ngưỡng của cộng đồng người Hoa tại Sa Đéc.",
+    "image": "https://dulichthuduc.com.vn/vnt_upload/news/MIEN-TAY/dong-thap/chua_kien_an_cung_du_lich_thu_duc_3.jpg"
+  },
+  {
+    "name": "Chùa Phước Kiển",
+    "province": "Đồng Tháp",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.195703,
+    "longitude": 105.816334,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "06:00-18:00",
+    "description": "Ngôi chùa được biết đến với ao sen lá lớn.",
+    "image": "https://kenh14cdn.com/203336854389633024/2022/8/5/photo-6-16597128488321447816196.jpg"
+  },
+  {
+    "name": "Ngọc Chiến",
+    "province": "Sơn La",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.597725,
+    "longitude": 104.216341,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Vùng bản làng có suối khoáng và văn hóa người Thái.",
+    "image": "https://media.vietnamplus.vn/images/7255a701687d11cb8c6bbc58a6c8078548a8d9a044c85a9a9cd3048e98ed082c3af83c15759191cdf3cb7c2cba3e47ae3baf0aa24dfd57111e811a4b44265e78/2409Ngocchien5.jpg"
+  },
+  {
+    "name": "Thiền viện Trúc Lâm Phương Nam",
+    "province": "Cần Thơ",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 9.990421,
+    "longitude": 105.703944,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "description": "Quần thể Phật giáo có sân vườn và kiến trúc truyền thống.",
+    "image": "https://ik.imagekit.io/tvlk/blog/2023/07/thien-vien-truc-lam-phuong-nam-9.jpg?tr=q-70%2Cc-at_max%2Cw-1000%2Ch-600"
+  },
+  {
+    "name": "Chùa Ông Cần Thơ",
+    "province": "Cần Thơ",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.034191,
+    "longitude": 105.78848,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-20:00",
+    "description": "Di tích tín ngưỡng của cộng đồng người Hoa gần bến Ninh Kiều.",
+    "image": "https://ik.imagekit.io/tvlk/blog/2023/08/chua-ong-can-tho-2-1024x683.jpg?tr=dpr-2%2Cw-675"
+  },
+  {
+    "name": "Vườn cò Bằng Lăng",
+    "province": "Cần Thơ",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.281527,
+    "longitude": 105.505518,
+    "priceMin": 20000,
+    "priceMax": 20000,
+    "openingHours": "05:00-19:30",
+    "description": "Điểm tìm hiểu cảnh quan vườn chim vùng Thốt Nốt.",
+    "image": "https://mia.vn/media/uploads/blog-du-lich/den-can-tho-nghe-tieng-chim-riu-rit-goi-bay-o-vuon-co-bang-lang-5-1649261701.jpg"
+  },
+  {
+    "name": "Chợ đêm Tây Đô",
+    "province": "Cần Thơ",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 10.032157,
+    "longitude": 105.787895,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "15:00-00:00",
+    "description": "Không gian hàng quán và mua sắm về đêm ở Cần Thơ.",
+    "image": "https://mia.vn/media/uploads/blog-du-lich/kham-pha-nhung-net-thu-vi-cua-cho-dem-tay-do-noi-tieng-can-tho-04-1649566324.jpg"
+  },
+  {
+    "name": "Bánh cống Cô Út Cần Thơ",
+    "province": "Cần Thơ",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 10.034172,
+    "longitude": 105.78171,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "13:00-21:00",
+    "description": "Địa chỉ thưởng thức bánh cống ăn cùng rau sống và nước chấm.",
+    "image": "https://scontent.iocvnpt.com/resources/portal/Images/CTO/superadminportal.cto/Nhahang/CoUt/cout5_637024343930043615.jpg"
+  },
+  {
+    "name": "Khu bảo tồn thiên nhiên Lung Ngọc Hoàng",
+    "province": "Hậu Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 9.7153,
+    "longitude": 105.7175,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Vùng đất ngập nước có rừng và cảnh quan kênh rạch.",
+    "image": "https://thiennhienmoitruong.vn/upload/images/btv/btv/btv/anh-lam.jpg"
+  },
+  {
+    "name": "Công viên giải trí Kittyd & Minnied",
+    "province": "Hậu Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 9.9483,
+    "longitude": 105.7958,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Khu vui chơi với kiến trúc và trò chơi giải trí.",
+    "image": "https://bizweb.dktcdn.net/100/072/558/files/cong-vien-giai-tri-kittyd-minnied-cinvestratravel-5.jpg?v=1541047775068"
+  },
+  {
+    "name": "Di tích Chiến thắng Chương Thiện",
+    "province": "Hậu Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 9.7758,
+    "longitude": 105.4678,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Không gian tưởng niệm lịch sử tại Vị Thanh.",
+    "image": "https://vinhtour.vn/wp-content/uploads/2025/03/chien-thang-chuong-thien1-scaled.jpg"
+  },
+  {
+    "name": "Thiền viện Trúc Lâm Hậu Giang",
+    "province": "Hậu Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 9.738824,
+    "longitude": 105.575302,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "06:30-19:00",
+    "description": "Quần thể Phật giáo có cảnh quan hồ nước và sân vườn.",
+    "image": "https://i.ex-cdn.com/phatgiao.org.vn/files/content/2023/12/06/01-1113.jpg"
+  },
+  {
+    "name": "Chợ nổi Ngã Bảy",
+    "province": "Hậu Giang",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 9.828362,
+    "longitude": 105.834261,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "description": "Địa danh chợ nổi gắn với văn hóa sông nước Hậu Giang.",
+    "image": "https://luhanhvietnam.com.vn/du-lich/vnt_upload/news/05_2021/cho-dau-moi.jpg"
+  },
+  {
+    "name": "Chùa Chén Kiểu",
+    "province": "Sóc Trăng",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 9.538144,
+    "longitude": 105.92031,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "description": "Chùa Khmer nổi bật với trang trí bằng mảnh sành sứ.",
+    "image": "https://images.baodantoc.vn/uploads/2020/Th%C3%A1ng_11/Ng%C3%A0y_25/Thanh/chuachenkieu-2.jpg"
+  },
+  {
+    "name": "Chùa Phật Học Sóc Trăng",
+    "province": "Sóc Trăng",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 9.591536,
+    "longitude": 105.96776,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Không gian Phật giáo và cảnh quan hồ nước.",
+    "image": "https://zoomtravel.vn/upload/images/chua-phat-hoc-1-soc-trang-6.jpg"
+  },
+  {
+    "name": "Cồn Mỹ Phước",
+    "province": "Sóc Trăng",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 9.794093,
+    "longitude": 106.044914,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Cù lao có vườn cây và hoạt động trải nghiệm sông nước.",
+    "image": "https://dulichthuduc.com.vn/vnt_upload/news/MIEN-TAY/soc-trang/con_my_phuoc_soc_trang_du_lich_thu_duc_2.jpg"
+  },
+  {
+    "name": "Chợ Sóc Trăng",
+    "province": "Sóc Trăng",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 9.604198,
+    "longitude": 105.976378,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Chợ truyền thống có món ăn của cộng đồng Kinh, Khmer và Hoa.",
+    "image": "https://down-vn.img.susercontent.com/vn-11134259-7r98o-lwhpd2nddnmj64%40resize_ss640x400"
+  },
+  {
+    "name": "Bún nước lèo Bà Xím",
+    "province": "Sóc Trăng",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 9.6033,
+    "longitude": 105.9744,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Địa chỉ thưởng thức bún nước lèo tại Sóc Trăng.",
+    "image": "https://down-vn.img.susercontent.com/vn-11134259-7r98o-lwh9u8ujt9sr0d%40resize_ss640x400"
+  },
+  {
+    "name": "Vườn chim Bạc Liêu",
+    "province": "Bạc Liêu",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 9.24246,
+    "longitude": 105.717876,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Vùng sinh thái có các loài chim và thảm thực vật ngập nước.",
+    "image": "https://ik.imagekit.io/tvlk/blog/2023/08/vuon-chim-Bac-Lieu-1.jpg?tr=dpr-2%2Cw-675"
+  },
+  {
+    "name": "Khu lưu niệm nhạc sĩ Cao Văn Lầu",
+    "province": "Bạc Liêu",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 9.276352,
+    "longitude": 105.725786,
+    "priceMin": 20000,
+    "priceMax": 20000,
+    "openingHours": "08:00-17:00",
+    "description": "Không gian giới thiệu tác giả Dạ cổ hoài lang và nghệ thuật đờn ca tài tử.",
+    "image": "https://bvhttdl.mediacdn.vn/documents/491840/1164129/BINM7146.jpg"
+  },
+  {
+    "name": "Quán Âm Phật Đài Bạc Liêu",
+    "province": "Bạc Liêu",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 9.206587,
+    "longitude": 105.736489,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "description": "Điểm hành hương Phật giáo tại vùng ven biển.",
+    "image": "https://www.vietnamairlines.com/content/dam/legacy-site-assets/SEO-images/2025%20SEO/Thay%20Anh%20Traffic%20Tieng%20Viet/quan%20am%20phat%20dai/du-khach-nen-chuan-bi-le-cung-truoc-khi-den-chua-nhat-la-vao-cac-ngay-le-lon-de-tranh-chen-lan-va.jpeg"
+  },
+  {
+    "name": "Nhà thờ Tắc Sậy",
+    "province": "Bạc Liêu",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 9.221567,
+    "longitude": 105.397674,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "04:00-21:00",
+    "description": "Trung tâm hành hương Công giáo gắn với linh mục Trương Bửu Diệp.",
+    "image": "https://zoomtravel.vn/upload/images/M%E1%BB%99%20Ph%E1%BA%A7n%20Cha%20Di%E1%BB%87p%281%29.jpg"
+  },
+  {
+    "name": "Chợ Bạc Liêu",
+    "province": "Bạc Liêu",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 9.285944,
+    "longitude": 105.725815,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Chợ địa phương có món ăn và sản vật vùng ven biển.",
+    "image": "https://vietnambudgetcarrental.com/vnt_upload/news/12_2023/bac-lieu-market-the-best-place-for-shopaholics.jpg"
+  },
+  {
+    "name": "Hòn Đá Bạc",
+    "province": "Cà Mau",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 9.179023,
+    "longitude": 104.802054,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Cụm đảo đá gần bờ có cảnh quan biển và dấu tích lịch sử.",
+    "image": "https://images2.thanhnien.vn/zoom/686_429/528068263637045248/2023/12/28/h3-1703747467925417705797-0-0-712-1140-crop-17037654884391827895900.jpg"
+  },
+  {
+    "name": "Đầm Thị Tường",
+    "province": "Cà Mau",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 8.999779,
+    "longitude": 104.935965,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Đầm nước gắn với nghề đánh bắt và đời sống cư dân địa phương.",
+    "image": "https://booking.muongthanh.com/upload_images/images/H%60/dam-thi-tuong-1.jpg"
+  },
+  {
+    "name": "Đảo Hòn Khoai",
+    "province": "Cà Mau",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 8.431651,
+    "longitude": 104.830869,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Quần đảo có rừng và ngọn hải đăng ngoài khơi Cà Mau.",
+    "image": "https://thuongtruong2-fileserver.nvcms.net/IMAGES/2022/03/11/20220311235747-1003111.jpg"
+  },
+  {
+    "name": "Khu tưởng niệm Chủ tịch Hồ Chí Minh Cà Mau",
+    "province": "Cà Mau",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 9.18524,
+    "longitude": 105.137171,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-17:00",
+    "description": "Không gian tưởng niệm với kiến trúc và cây xanh.",
+    "image": "https://www.camau.gov.vn/Datafiles/camau-gov-vn/wps/wcm/connect/193ffe14-32b3-4d93-924b-570f7b6759d4/2/ktn22-jpg-3fmod-3dajperes-26amp-3bcvid-3d.png"
+  },
+  {
+    "name": "Hồ Chiềng Khoi",
+    "province": "Sơn La",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.01265,
+    "longitude": 104.315556,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Hồ nước giữa núi rừng tại vùng Yên Châu.",
+    "image": "https://topgotourist.vn/img/news/full_topgotourist_danh-lam-thang-canh-ho-chieng-khoi-105-20229521431.jpeg"
+  },
+  {
+    "name": "Bãi Sao Phú Quốc",
+    "province": "Kiên Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.057258,
+    "longitude": 104.036395,
+    "priceMin": 60000,
+    "priceMax": 100000,
+    "openingHours": "07:00-18:00",
+    "description": "Bãi biển nổi tiếng ở phía nam đảo Phú Quốc.",
+    "image": "https://media.mia.vn/uploads/blog-du-lich/bai-sao-phu-quoc-diem-dung-chan-ly-tuong-tren-dao-ngoc-01-1610609497.jpg"
+  },
+  {
+    "name": "Bãi Khem Phú Quốc",
+    "province": "Kiên Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.036684,
+    "longitude": 104.031043,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Bãi biển có cát sáng và nhiều dịch vụ nghỉ dưỡng.",
+    "image": "https://www.vietnamairlines.com/~/media/SEO-images/2025%20SEO/Traffic%20TA/MN/khem%20beach/khem-beach-boasts-rare-untouched-tranquility.jpg?la=en"
+  },
+  {
+    "name": "Vinpearl Safari Phú Quốc",
+    "province": "Kiên Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.337043,
+    "longitude": 103.891448,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "09:00-16:00",
+    "description": "Công viên bảo tồn và chăm sóc động vật trên đảo Phú Quốc.",
+    "image": "https://statics.vinpearl.com/bus-to-vinpearl-safari-phu-quoc-1_1709653996.jpg"
+  },
+  {
+    "name": "Chợ đêm Phú Quốc",
+    "province": "Kiên Giang",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 10.216753,
+    "longitude": 103.960767,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "08:00-22:00",
+    "description": "Khu hàng quán nổi tiếng với hải sản và món ăn về đêm.",
+    "image": "https://media.mia.vn/uploads/blog-du-lich/cho-dem-phu-quoc-cho-dem-bach-dang-the-gioi-am-thuc-nhon-nhip-khi-dem-ve-01-1611196171.jpg"
+  },
+  {
+    "name": "Bún quậy Kiến Xây",
+    "province": "Kiên Giang",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 10.218847,
+    "longitude": 103.958516,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "06:50-22:30",
+    "description": "Địa chỉ thưởng thức món bún quậy đặc trưng Phú Quốc.",
+    "image": "https://visitphuquoc.com.vn/VisitPhuQuoc/POINT/%C4%82N%20U%E1%BB%90NG/M%C3%B3n%20%C4%83n/1832/image-thumb__1832__720_jpg/B%C3%BAn%20qu%E1%BA%ADy%20Ki%E1%BA%BFn%20X%C3%A2y.ec5c87e9.jpg"
+  },
+  {
+    "name": "Búng Bình Thiên",
+    "province": "An Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.919971,
+    "longitude": 105.071816,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Hồ nước ngọt gắn với cảnh quan và đời sống cộng đồng ven hồ.",
+    "image": "https://luhanhvietnam.com.vn/du-lich/vnt_upload/news/11_2022/ho-nuoc-ngot-troi-ban.jpg"
+  },
+  {
+    "name": "Núi Cấm",
+    "province": "An Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.500745,
+    "longitude": 104.99146,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Điểm tham quan núi và các công trình Phật giáo vùng Bảy Núi.",
+    "image": "https://static.vinwonders.com/production/2025/10/thoi-diem-di-nui-cam.jpg"
+  },
+  {
+    "name": "Chùa Tà Pạ",
+    "province": "An Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 10.41515,
+    "longitude": 104.992738,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Ngôi chùa Khmer trên đồi nhìn ra cảnh quan Tri Tôn.",
+    "image": "https://mia.vn/media/uploads/blog-du-lich/chua-ta-pa-chon-bong-lai-tien-canh-giua-vung-rung-nui-hoang-so-4-1659953685-1660534113.jpg"
+  },
+  {
+    "name": "Chợ Châu Đốc",
+    "province": "An Giang",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 10.710801,
+    "longitude": 105.118476,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "description": "Chợ nổi tiếng với mắm, đặc sản và hàng ăn miền Tây.",
+    "image": "https://media.vov.vn/sites/default/files/styles/large_watermark/public/2026-03/1_-_cho_mam_tai_chau_doc_tu_lau_la_diem_dung_chan_quen_thuoc_cua_du_khach_khi_den_an_giang.jpg"
+  },
+  {
+    "name": "Chợ Tịnh Biên",
+    "province": "An Giang",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 10.60597,
+    "longitude": 104.944647,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "description": "Chợ vùng biên với hàng hóa và món ăn địa phương.",
+    "image": "https://poliva.vn/wp-content/uploads/2019/08/Cho-Tinh-Bien-2-1.jpg"
+  },
+  {
+    "name": "Bản Tả Phìn",
+    "province": "Lào Cai",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.399037,
+    "longitude": 103.840095,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "description": "Bản du lịch gắn với văn hóa người Dao và cảnh quan vùng Sa Pa.",
+    "image": "https://static.vinwonders.com/production/vi-tri-ban-ta-phin.jpg"
+  },
+  {
+    "name": "Thung lũng Mường Hoa",
+    "province": "Lào Cai",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.314183,
+    "longitude": 103.876511,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Thung lũng ruộng bậc thang và các bản làng gần Sa Pa.",
+    "image": "https://www.vietnamairlines.com/content/dam/legacy-site-assets/SEO-images/2025%20SEO/Traffic%20TA/MB/muong-hoa-valley/muong-hoa-valley-thumb.jpg"
+  },
+  {
+    "name": "Thác Bạc Sa Pa",
+    "province": "Lào Cai",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.361887,
+    "longitude": 103.777723,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "09:00-17:00",
+    "description": "Thác nước bên tuyến đường lên đèo Ô Quy Hồ.",
+    "image": "https://storage.googleapis.com/blogvxr-uploads/2025/04/2c5ad40d-thac-bac-sapa-8300178-750x534.webp"
+  },
+  {
+    "name": "Đèo Ô Quy Hồ",
+    "province": "Lào Cai",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.352752,
+    "longitude": 103.765305,
+    "priceMin": 120000,
+    "priceMax": 250000,
+    "openingHours": "00:00-23:59",
+    "description": "Đèo núi cao có nhiều điểm ngắm cảnh vùng Hoàng Liên Sơn.",
+    "image": "https://travelindex.itourism.vn/datastore/resources/888/2022-08-10-05-39-04-deo-o-quy-ho-bi-pha-do-9.jpg"
+  },
+  {
+    "name": "Chợ Cốc Lếu",
+    "province": "Lào Cai",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 22.498661,
+    "longitude": 103.968265,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Chợ thương mại vùng biên với hàng hóa và hàng ăn địa phương.",
+    "image": "https://bizweb.dktcdn.net/100/006/093/files/cho-coc-leu.jpg?v=1715589429799"
+  },
+  {
+    "name": "Hồ Thác Bà",
+    "province": "Yên Bái",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.727222,
+    "longitude": 105.021389,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Hồ nước có nhiều đảo và trải nghiệm văn hóa ven hồ.",
+    "image": "https://media.vietnamplus.vn/images/c14f6479e83e315b4cf3a2906cc6a51e9b4c1fb984396963cbe098b65cc53032af25f884c8e4a896ee7e3e2b67466b7b11ee9fdc17051f6c6d208ebb72b97eca58db261190b4d4ffeaa677e558889593/2805hothacba1-6454.jpg.webp"
+  },
+  {
+    "name": "Suối Giàng",
+    "province": "Yên Bái",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.618845,
+    "longitude": 104.591597,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-22:30",
+    "description": "Vùng chè cổ thụ gắn với cảnh quan núi và văn hóa người Mông.",
+    "image": "https://cdn.vietreader.com/uploads/posts/2023-09/waking-up-in-a-sea-of-clouds-at-suoi-giang-of-yen-bai-vietnam.jpg"
+  },
+  {
+    "name": "Bản Cu Vai",
+    "province": "Yên Bái",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.512727,
+    "longitude": 104.375798,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "description": "Bản làng trên núi với cảnh quan mây và ruộng nương.",
+    "image": "https://danviet.ex-cdn.com/files/f1/2020/8/16/anh-1-15975454507212115587865.jpg"
+  },
+  {
+    "name": "Đèo Khau Phạ",
+    "province": "Yên Bái",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.775,
+    "longitude": 104.271667,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Đèo có cảnh quan ruộng bậc thang vùng Mù Cang Chải.",
+    "image": "https://file-dangcongsan.nhandan.vn/data/0/images/2024/10/30/upload_131/khau-pha.webp"
+  },
+  {
+    "name": "Chợ Mường Lò",
+    "province": "Yên Bái",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 21.602372,
+    "longitude": 104.512248,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "description": "Chợ vùng Nghĩa Lộ có đặc sản và món ăn Tây Bắc.",
+    "image": "https://cdnmedia.baotintuc.vn/Upload/0EyEGnQWcAZSg4tgdmWKkg/files/2019/02/choTet%20%2823%29.jpg"
+  },
+  {
+    "name": "Núi đôi Quản Bạ",
+    "province": "Hà Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 23.0642,
+    "longitude": 104.9961,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Cặp núi có hình dáng đặc biệt trong thung lũng Quản Bạ.",
+    "image": "https://media.mia.vn/uploads/blog-du-lich/nui-doi-quan-ba-chiem-nguong-toa-thien-nhien-quyen-ru-noi-dia-dau-cua-to-quoc-05-1642419351.jpg"
+  },
+  {
+    "name": "Làng dệt Lùng Tám",
+    "province": "Hà Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 23.034506,
+    "longitude": 105.047562,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "description": "Làng nghề dệt lanh gắn với văn hóa người Mông.",
+    "image": "https://i.ex-cdn.com/vntravellive.com/files/maidp/2023/10/09/5116-ruc-ro-sac-mau-van-hoa-nguoi-hmong-tai-lang-det-lanh-lung-tam-164814.jpg"
+  },
+  {
+    "name": "Du Già",
+    "province": "Hà Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.93783,
+    "longitude": 105.20778,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Vùng bản làng có ruộng, núi và thác nước.",
+    "image": "https://cdn.hagianggo.com/storage/photos/shares/6748850f2909e.jpg"
+  },
+  {
+    "name": "Đèo Thẩm Mã",
+    "province": "Hà Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 23.1833,
+    "longitude": 105.2167,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Đoạn đèo nổi tiếng trên tuyến đường lên cao nguyên đá.",
+    "image": "https://ik.imagekit.io/tvlk/blog/2024/09/doc-tham-ma-2.jpg?tr=q-70%2Cc-at_max%2Cw-1000%2Ch-600"
+  },
+  {
+    "name": "Chợ phiên Mèo Vạc",
+    "province": "Hà Giang",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 23.163847,
+    "longitude": 105.408989,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "description": "Chợ vùng cao với sinh hoạt giao thương và ẩm thực địa phương.",
+    "image": "https://media.vietnamplus.vn/images/7255a701687d11cb8c6bbc58a6c80785c7b87c2a20590b4af101729bfa4ef3be1ac1cd209ac8b928d502cd916fed7dd3/1_8.jpg"
+  },
+  {
+    "name": "Hồ Thang Hen",
+    "province": "Cao Bằng",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.758955,
+    "longitude": 106.294509,
+    "priceMin": 30000,
+    "priceMax": 30000,
+    "openingHours": "07:00-18:00",
+    "description": "Quần thể hồ trên núi giữa địa hình đá vôi.",
+    "image": "https://media.vietnamplus.vn/images/241e80bec16250111fc6f61717cdfa1f180b0e04c991b5c596cc0ae62601de6516b64f761242089a9a3ceeac04696c824f9efb0c8972265f49d8f86164867992/ho_thang_hen_1.jpg"
+  },
+  {
+    "name": "Đèo Mã Phục",
+    "province": "Cao Bằng",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.727827,
+    "longitude": 106.33685,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Đèo có cảnh quan núi đá đặc trưng vùng Trà Lĩnh.",
+    "image": "https://media.vietnamplus.vn/images/7255a701687d11cb8c6bbc58a6c80785f7c057ce7003ab9c6a7dd98c9aee767eaf5aa8663c083aab75d8759ef9306bccdf7f59d78f823ee0ad33b23909bfb8d7a74f6b1bfe70b3203772c7979020cefa/20210502_deo_ma_phuc_2_resize.jpg"
+  },
+  {
+    "name": "Thung lũng Phong Nậm",
+    "province": "Cao Bằng",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.8884,
+    "longitude": 106.5181,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Vùng thung lũng có sông, ruộng và làng bản.",
+    "image": "https://www.asiakingtravel.com/cuploads/files/Lao%20Cai/Phong%20Nam%20Valley/img-20221001-085530-4232.jpg"
+  },
+  {
+    "name": "Làng rèn Phúc Sen",
+    "province": "Cao Bằng",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.683432,
+    "longitude": 106.408745,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "06:30-18:30",
+    "description": "Làng nghề rèn truyền thống của cộng đồng người Nùng.",
+    "image": "https://media.vietnamplus.vn/images/7255a701687d11cb8c6bbc58a6c807854450836824b92631f52c75081e6e0cea8bd101d9ff479d74f5e3b341c27b00804f9efb0c8972265f49d8f86164867992/lang_ren_1.jpg"
+  },
+  {
+    "name": "Chợ Bảo Lạc",
+    "province": "Cao Bằng",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 22.947133,
+    "longitude": 105.680742,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "08:00-17:00",
+    "description": "Chợ vùng cao với sản vật và món ăn địa phương.",
+    "image": "https://scontent.iocvnpt.com/resources/portal/Images/CBG/truongdai/news/cho%20bao%20lac/5dc4ad628376d5d3a1f2313006a2cd53_1.jpg_636586269733000560.jpg"
+  },
+  {
+    "name": "Động Hua Mạ",
+    "province": "Bắc Kạn",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.351847,
+    "longitude": 105.676752,
+    "priceMin": 45000,
+    "priceMax": 45000,
+    "openingHours": "07:00-18:00",
+    "description": "Hang động có hệ thống thạch nhũ gần hồ Ba Bể.",
+    "image": "https://ik.imagekit.io/tvlk/blog/2024/02/go-and-share-kham-pha-dong-hua-ma-bac-kan-7.webp"
+  },
+  {
+    "name": "Thác Đầu Đẳng",
+    "province": "Bắc Kạn",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.452272,
+    "longitude": 105.570891,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "description": "Thác trên sông Năng trong vùng Ba Bể.",
+    "image": "https://ongvove.com/uploads/0000/17/2024/11/04/du-lich-bac-kan-7-1502.jpg"
+  },
+  {
+    "name": "Động Puông",
+    "province": "Bắc Kạn",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.457613,
+    "longitude": 105.657919,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-20:00",
+    "description": "Hang xuyên núi trên tuyến tham quan sông Năng.",
+    "image": "https://pystravel.vn/_next/image?q=75&url=https%3A%2F%2Fbooking.pystravel.vn%2Fuploads%2Fposts%2Falbums%2F18569%2F993185c2115893ca2561f9c59d2abd21.jpg&w=1920"
+  },
+  {
+    "name": "Bản Pác Ngòi",
+    "province": "Bắc Kạn",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.388688,
+    "longitude": 105.638134,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Bản làng người Tày có nhà sàn ven hồ Ba Bể.",
+    "image": "https://mia.vn/media/uploads/blog-du-lich/ban-pac-ngoi-xinh-dep-1780240916.jpg"
+  },
+  {
+    "name": "Chợ Đức Xuân Bắc Kạn",
+    "province": "Bắc Kạn",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 22.143995,
+    "longitude": 105.837055,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "08:00-18:00",
+    "description": "Chợ trung tâm với nông sản và món ăn địa phương.",
+    "image": "https://csdl.vietnamtourism.gov.vn/uploads/logo/01_3/CSDLDIEMMUASAM2020/BacKan/ChoDucXuan/images2748180chodx.jpg"
+  },
+  {
+    "name": "Ải Chi Lăng",
+    "province": "Lạng Sơn",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.619993,
+    "longitude": 106.540098,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Di tích và cảnh quan thung lũng gắn với lịch sử chống ngoại xâm.",
+    "image": "https://luhanhvietnam.com.vn/du-lich/vnt_upload/news/04_2020/du-lich-ai-chi-lang4.jpg"
+  },
+  {
+    "name": "Đền Kỳ Cùng",
+    "province": "Lạng Sơn",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.851353,
+    "longitude": 106.758023,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Di tích tín ngưỡng bên sông Kỳ Cùng.",
+    "image": "https://scontent.iocvnpt.com/resources/portal/Images/LSN/phucvt.lsn/dia%20diem/chua%20%C4%91%E1%BB%81n/den_ky_cung1.jpg_636692343123343962.jpg"
+  },
+  {
+    "name": "Chùa Thành Lạng Sơn",
+    "province": "Lạng Sơn",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.84968,
+    "longitude": 106.758906,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-17:00",
+    "description": "Ngôi chùa cổ nằm gần trung tâm thành phố.",
+    "image": "https://cdn.tienphong.vn/images/bdfc554ea35983ad68a96e0050b6e2cbc40939814928b9ea291a1f6d7d95a0f548ecc1ea28e532f857acb926a07f135973d2426992b8fcc215dca3e0debcad5f91c395aaa9493e5cdaf349cad3d4a15e/chua-thanh-169.jpg.webp"
+  },
+  {
+    "name": "Chợ Đông Kinh",
+    "province": "Lạng Sơn",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 21.851311,
+    "longitude": 106.760521,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Chợ thương mại nổi tiếng tại Lạng Sơn.",
+    "image": "https://img.tripi.vn/cdn-cgi/image/width%3D700%2Cheight%3D700/https%3A/gcs.tripi.vn/public-tripi/tripi-feed/img/472187TYA/thi-truong-dong-kinh-lang-son-mua-sam-da-dang-gia-ca-phai-chang_11"
+  },
+  {
+    "name": "Chợ đêm Kỳ Lừa",
+    "province": "Lạng Sơn",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 21.858468,
+    "longitude": 106.757537,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Không gian mua sắm và thưởng thức món ăn xứ Lạng.",
+    "image": "https://vov4.vov.vn/sites/default/files/styles/large_watermark/public/2025-03/z6398289651560_088407d18ebccfe9540346e2f2b45fa3.jpg"
+  },
+  {
+    "name": "Hang Phượng Hoàng",
+    "province": "Thái Nguyên",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.775073,
+    "longitude": 106.119478,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Hang động trong vùng núi đá vôi Võ Nhai.",
+    "image": "https://media.mia.vn/uploads/blog-du-lich/hang-phuong-hoang-tam-suoi-1696550278.jpg"
+  },
+  {
+    "name": "Suối Mỏ Gà",
+    "province": "Thái Nguyên",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.775073,
+    "longitude": 106.119478,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Dòng suối ở chân núi Phượng Hoàng.",
+    "image": "https://cdn1z.reatimes.vn/mediav2/upload/userfiles2021/images/letungduong/me1bb8f20gc3a020202.JPG"
+  },
+  {
+    "name": "Chùa Hang Đồng Hỷ",
+    "province": "Thái Nguyên",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.62347,
+    "longitude": 105.841687,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Di tích Phật giáo gắn với hang động và núi đá.",
+    "image": "https://cdn.tgdd.vn/Files/2023/04/26/1527479/du-lich-dong-hy-thai-nguyen-5-dia-diem-du-lich-nen-kham-pha-202304260845184931.jpg"
+  },
+  {
+    "name": "Không gian văn hóa trà Tân Cương",
+    "province": "Thái Nguyên",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.539035,
+    "longitude": 105.764709,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "description": "Điểm tìm hiểu nghề chè và văn hóa thưởng trà.",
+    "image": "https://cdn.baophapluat.vn/uploaded/trinhvantuananh/2025_05_15/khong-gian-van-hoa-che-tam-cuong-thai-nguyen-7502-4397.jpeg"
+  },
+  {
+    "name": "Chợ Thái Thái Nguyên",
+    "province": "Thái Nguyên",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 21.5936,
+    "longitude": 105.8453,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Chợ trung tâm với hàng ăn và sản vật địa phương.",
+    "image": "https://dltm-cdn.vnptit3.vn/resources/portal/Images/TNN/ngoclinh.tnn/%C4%90i%E1%BB%83m%20%C4%91%E1%BA%BFn/Ch%E1%BB%A3%20Th%C3%A1i/cho-thai-035_497473124.jpg"
+  },
+  {
+    "name": "Thác Bản Ba",
+    "province": "Tuyên Quang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.340721,
+    "longitude": 105.063961,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Thác nhiều tầng trong cảnh quan rừng vùng Chiêm Hóa.",
+    "image": "https://mia.vn/media/uploads/blog-du-lich/thac-ban-ba-04-1699834746.jpeg"
+  },
+  {
+    "name": "Suối khoáng Mỹ Lâm",
+    "province": "Tuyên Quang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.766518,
+    "longitude": 105.123516,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Khu vực suối khoáng nóng phục vụ nghỉ dưỡng.",
+    "image": "https://cdn.dealtoday.vn/ae0dbe4ec65b4561b2dbbe494135a1ac.jpg"
+  },
+  {
+    "name": "Đền Hạ Tuyên Quang",
+    "province": "Tuyên Quang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.812933,
+    "longitude": 105.215284,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "description": "Di tích tín ngưỡng bên sông Lô.",
+    "image": "https://statics.vinpearl.com/kien-truc-den-ha_1733937095.jpg"
+  },
+  {
+    "name": "Cọc Vài Phạ",
+    "province": "Tuyên Quang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 22.512788,
+    "longitude": 105.329339,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Cột đá tự nhiên nổi bật giữa lòng hồ Na Hang.",
+    "image": "https://media.vietnamplus.vn/images/7255a701687d11cb8c6bbc58a6c807858d62e65f6e1d08eab54cc138db1d232033a988335d32a6b78a0e83a0a233dfc41d175058d9a59d4e21100ddb41c54c45/Tuyen_Quang_14.jpg"
+  },
+  {
+    "name": "Chợ Tam Cờ",
+    "province": "Tuyên Quang",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 21.816302,
+    "longitude": 105.216186,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "05:30-18:30",
+    "description": "Chợ trung tâm có đặc sản và món ăn Tuyên Quang.",
+    "image": "https://tuyenquang.haogiayensao.com/img-haogia/1329-9.jpg"
+  },
+  {
+    "name": "Đồi chè Long Cốc",
+    "province": "Phú Thọ",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.132517,
+    "longitude": 105.061507,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Cảnh quan các đồi chè tròn tại vùng Tân Sơn.",
+    "image": "https://suckhoedoisong.qltns.mediacdn.vn/324455921873985536/2026/4/4/ve-long-coc-ngam-vinh-xanh-giua-dat-to-1-1775270251759639631344.jpg"
+  },
+  {
+    "name": "Đền Mẫu Âu Cơ",
+    "province": "Phú Thọ",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.604413,
+    "longitude": 104.914429,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Di tích thờ Quốc Mẫu Âu Cơ tại Hạ Hòa.",
+    "image": "https://luhanhvietnam.com.vn/du-lich/vnt_upload/news/07_2020/den-mau-au-co-phu-tho-o-co-gi.jpg"
+  },
+  {
+    "name": "Đầm Ao Châu",
+    "province": "Phú Thọ",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.5677,
+    "longitude": 105.012847,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "description": "Hồ đầm có nhiều đảo nhỏ và cảnh quan đồi cây.",
+    "image": "https://dulichphutho.gov.vn/content-uploads/2025/02/z4195848575314_0274591f2ccc3b3ccea4e236490a5bdd-scaled.jpg"
+  },
+  {
+    "name": "Khu du lịch Đảo Ngọc Xanh",
+    "province": "Phú Thọ",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.167711,
+    "longitude": 105.280324,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Khu vui chơi sinh thái ở vùng Thanh Thủy.",
+    "image": "https://newwaypms.com/upload/news/product/41.2021/dao-ngoc-xanh-01.jpg"
+  },
+  {
+    "name": "Thác Thăng Thiên",
+    "province": "Hòa Bình",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.936194,
+    "longitude": 105.445289,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "06:00-22:00",
+    "description": "Thác nước giữa cảnh quan rừng núi tại vùng Kỳ Sơn.",
+    "image": "https://cdn.xanhsm.com/2025/03/b3ad6438-thac-thang-thien-2.jpg"
+  },
+  {
+    "name": "Hồ Đại Lải",
+    "province": "Vĩnh Phúc",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.318927,
+    "longitude": 105.71458,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Hồ nước có cảnh quan đồi và các dịch vụ nghỉ dưỡng.",
+    "image": "https://www.vietfuntravel.com.vn/image/data/Ha-Noi/ho-dai-lai/Gia-ve-vao-tham-quan-Ho-Dai-Lai-1.jpg"
+  },
+  {
+    "name": "Tháp Bình Sơn",
+    "province": "Vĩnh Phúc",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.419657,
+    "longitude": 105.406665,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Tháp đất nung cổ tại khu vực chùa Vĩnh Khánh.",
+    "image": "https://i2.ex-cdn.com/crystalbay.com/files/content/2025/02/11/thap-binh-son-vinh-phuc-1202.jpg"
+  },
+  {
+    "name": "Làng gốm Hương Canh",
+    "province": "Vĩnh Phúc",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.273729,
+    "longitude": 105.647767,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "06:00-21:00",
+    "description": "Làng nghề gốm truyền thống vùng Bình Xuyên.",
+    "image": "https://media.vietnamplus.vn/images/7255a701687d11cb8c6bbc58a6c80785ed0096f0636b021c9574ce305a6959b8cb28a9858b6279829c8ddd41730e18538c5f9bb66da8ebed00724aecae5db8a4/gom_huong_canh_15.JPG"
+  },
+  {
+    "name": "Hồ Xạ Hương",
+    "province": "Vĩnh Phúc",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.410102,
+    "longitude": 105.647851,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Hồ nước trong thung lũng dưới chân dãy Tam Đảo.",
+    "image": "https://t.cmx-cdn.com/tiepthigiadinh.vn/files/trankhaoctvaneed/2023/05/13/ho-xa-huong-1-163133.jpg"
+  },
+  {
+    "name": "Chợ Vĩnh Yên",
+    "province": "Vĩnh Phúc",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 21.309048,
+    "longitude": 105.599014,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "04:00-21:00",
+    "description": "Chợ trung tâm có món ăn và sản vật địa phương.",
+    "image": "https://cdn-doisonggiadinh.baophunuthudo.vn/upload/1-2025/images/mith/du-lich-trai-nghiem-tai-cho-truyen-thong-vinh-yen-3-1737117877-800-width780height520.jpg"
+  },
+  {
+    "name": "Chùa Dâu",
+    "province": "Bắc Ninh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.035529,
+    "longitude": 106.042591,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "description": "Ngôi chùa cổ gắn với lịch sử Phật giáo vùng Luy Lâu.",
+    "image": "https://image.giacngo.vn/w770/Uploaded/2026/xpcwvolc/2026_03_09/vietgoing-rle2106159117-191-937.jpg.webp"
+  },
+  {
+    "name": "Chùa Phật Tích",
+    "province": "Bắc Ninh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.093828,
+    "longitude": 106.026111,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "description": "Di tích Phật giáo có tượng Phật đá và cảnh quan đồi.",
+    "image": "https://modadepninhbinh.com/wp-content/uploads/2025/01/chua-phat-tich-bac-ninh-o-dau.jpg"
+  },
+  {
+    "name": "Làng gốm Phù Lãng",
+    "province": "Bắc Ninh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.148809,
+    "longitude": 106.257323,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "description": "Làng nghề gốm với sản phẩm men da lươn truyền thống.",
+    "image": "https://triphunter.vn/media/W1siZiIsIjIwMTYvMDYvMDgvaDVvZDk3ZnU5X1VWS0pUZVBLUzE4UFZhbVRGOERfRXRoeGNuZlExZHguSlBHIl1d/UVKJTePKS18PVamTF8D--EthxcnfQ1dx.JPG?sha=306f3d5273ff900c"
+  },
+  {
+    "name": "Làng Diềm",
+    "province": "Bắc Ninh",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.214848,
+    "longitude": 106.050183,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Làng quan họ có không gian văn hóa và kiến trúc truyền thống.",
+    "image": "https://static.vinwonders.com/production/2025/08/kinh-nghiem-kham-pha-lang-diem-bac-ninh.jpg"
+  },
+  {
+    "name": "Chợ Nhớn Bắc Ninh",
+    "province": "Bắc Ninh",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 21.180194,
+    "longitude": 106.06411,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Chợ truyền thống có hàng ăn và sản vật vùng Kinh Bắc.",
+    "image": "https://cdn.nhandan.vn/images/22f099ca8bc7ae81aa2a8d3416a84bf8f1e9f66f38ed5a447ae9ff51d021b30b24f39c412a8bdb33e7b089ede0d76d532d174532af122bbf1cc473e3ab0bd0c4136e32d1bcd53fb50a51a8db1f10ebf3/3512490307273095878-5755.jpg.webp"
+  },
+  {
+    "name": "Chùa Vĩnh Nghiêm Bắc Giang",
+    "province": "Bắc Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.213539,
+    "longitude": 106.324337,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Chùa cổ nổi tiếng với kho mộc bản và truyền thống Phật giáo Trúc Lâm.",
+    "image": "https://pystravel.vn/_next/image?q=75&url=https%3A%2F%2Fbooking.pystravel.vn%2Fuploads%2Fposts%2Falbums%2F17316%2F18376d5813d19f0bafb480fdaf2aaa1b.jpg&w=1920"
+  },
+  {
+    "name": "Suối Mỡ",
+    "province": "Bắc Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.274841,
+    "longitude": 106.48445,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "00:00-23:59",
+    "description": "Danh thắng có suối, thác và hệ thống đền thờ.",
+    "image": "https://gaohouse.vn/wp-content/uploads/2024/07/khu-du-lich-sinh-thai-suoi-mo-2.jpg"
+  },
+  {
+    "name": "Hồ Cấm Sơn",
+    "province": "Bắc Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.536089,
+    "longitude": 106.567246,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Hồ nước có nhiều đảo và cảnh quan vùng Lục Ngạn.",
+    "image": "https://dulichbacgiang.gov.vn/uploads/editor/2_255.jpg"
+  },
+  {
+    "name": "Thành cổ Xương Giang",
+    "province": "Bắc Giang",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 21.29201,
+    "longitude": 106.213249,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Di tích lịch sử gắn với chiến thắng Xương Giang.",
+    "image": "https://banduong.vn/data/data/old/nhung-neo-duong-cuoc-song/images/thanh-co-xuong-giang-4-0951.jpg"
+  },
+  {
+    "name": "Chợ Thương Bắc Giang",
+    "province": "Bắc Giang",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 21.272641,
+    "longitude": 106.193185,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Chợ trung tâm có đặc sản và hàng ăn địa phương.",
+    "image": "https://file.hstatic.net/200000349909/article/cho-bac-giang_8f855a77c49a47989bad8cee1ba38efd.jpg"
+  },
+  {
+    "name": "Đảo cò Chi Lăng Nam",
+    "province": "Hải Dương",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.7608,
+    "longitude": 106.2758,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Khu sinh thái hồ và đảo là nơi cư trú của nhiều loài chim.",
+    "image": "https://cdn.nhandan.vn/images/22f099ca8bc7ae81aa2a8d3416a84bf8048a98419e86a0ab79bcb19c0bdb932cd347a6d31515f197e18aa2c75b4a4e84d819fb7aa723d514207739f5abba87f42e052c3197e73e49933dcb8393bc6adb/d2008hd-5768.jpg.webp"
+  },
+  {
+    "name": "Văn miếu Mao Điền",
+    "province": "Hải Dương",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.934595,
+    "longitude": 106.18641,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Di tích tôn vinh truyền thống khoa bảng xứ Đông.",
+    "image": "https://media.vietnamplus.vn/images/db3eecc2e589c60996480488f99e20f45a47229530e88a9d88a0509e7a2962fd65e30d96ef0cbb2d536648ed52374d420194ee2a3198c1ac28fef561cd6908f7bf81c8aa3d9035771b30f02d5e93e206/van-mieu-mao-dien-hai-duong-2-9161.jpg"
+  },
+  {
+    "name": "Đền Cao An Phụ",
+    "province": "Hải Dương",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.9856,
+    "longitude": 106.495,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Quần thể đền trên núi với cảnh quan vùng Kinh Môn.",
+    "image": "https://media1.nguoiduatin.vn/media/pham-trong-tung/2023/02/14/den-cao-an-phu-49.jpg"
+  },
+  {
+    "name": "Làng gốm Chu Đậu",
+    "province": "Hải Dương",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.9839,
+    "longitude": 106.3575,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Làng nghề gốm gắn với lịch sử thương mại và văn hóa xứ Đông.",
+    "image": "https://ongvove.com/uploads/0000/17/2025/03/05/co-so-cua-hang-gom-chu-dau-voi-tac-pham-gom-tuyet-dep.jpg"
+  },
+  {
+    "name": "Chợ Phú Yên Hải Dương",
+    "province": "Hải Dương",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 20.9383,
+    "longitude": 106.3308,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Chợ trung tâm có món ăn và đặc sản địa phương.",
+    "image": "https://phapluat.tuoitrethudo.vn/stores/news_dataimages/hoangphuongduy/082022/04/00/in_article/IMG_20220608_101000.jpg?rt=20220804011048"
+  },
+  {
+    "name": "Làng Nôm",
+    "province": "Hưng Yên",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.925,
+    "longitude": 106.075,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Làng cổ có cầu đá, đình và không gian làng quê Bắc Bộ.",
+    "image": "https://redsvn.net/wp-content/uploads/2021/01/Lang-Nom-02.jpg"
+  },
+  {
+    "name": "Chùa Nôm",
+    "province": "Hưng Yên",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.9261,
+    "longitude": 106.0742,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Ngôi chùa có hệ thống tượng cổ và cảnh quan sân vườn.",
+    "image": "https://bizweb.dktcdn.net/thumb/grande/100/006/093/articles/chua-nom.jpg?v=1708747228277"
+  },
+  {
+    "name": "Làng nghề tương Bần",
+    "province": "Hưng Yên",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.9389,
+    "longitude": 106.0611,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Làng nghề làm tương truyền thống tại vùng Bần Yên Nhân.",
+    "image": "https://bcp.cdnchinhphu.vn/Uploaded/doanquynhatbac/2019_07_29/8.jpg"
+  },
+  {
+    "name": "Đền Phù Ủng",
+    "province": "Hưng Yên",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.8931,
+    "longitude": 106.1839,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Di tích tưởng niệm danh tướng Phạm Ngũ Lão.",
+    "image": "https://anthi.hungyen.dcs.vn/ckfinder/userfiles/images/den-phu-ung-1639037367941-scaled.jpeg"
+  },
+  {
+    "name": "Chợ Hiến",
+    "province": "Hưng Yên",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 20.6486,
+    "longitude": 106.0528,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Chợ gắn với không gian Phố Hiến và món ăn địa phương.",
+    "image": "https://cdn-i2.congthuong.vn/resize/th/upload/2026/02/16/z75383926535846b72acc2a248330500a2691e70e1d44e-13290327.jpg"
+  },
+  {
+    "name": "Biển Đồng Châu",
+    "province": "Thái Bình",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.3556,
+    "longitude": 106.5667,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Bãi biển có cảnh quan chòi canh ngao và hoạt động nuôi trồng thủy sản.",
+    "image": "https://dulichvietnam.com.vn/vnt_upload/news/08_2023/1_bien_dong_chau_thai_binh.jpg"
+  },
+  {
+    "name": "Cồn Vành",
+    "province": "Thái Bình",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.2833,
+    "longitude": 106.5667,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Khu vực biển và rừng ngập mặn vùng Tiền Hải.",
+    "image": "https://www.vietnamairlines.com/content/dam/legacy-site-assets/SEO-images/2025%20SEO/Thay%20Anh%20Traffic%20Tieng%20Viet/khu%20du%20lich%20bien%20con%20vanh/hoang-hon-tren-bien-con-vanh.jpeg"
+  },
+  {
+    "name": "Cồn Đen",
+    "province": "Thái Bình",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.5167,
+    "longitude": 106.5667,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Điểm du lịch sinh thái ven biển với bãi cát và rừng phi lao.",
+    "image": "https://thethaovanhoa.mediacdn.vn/372676912336973824/2024/1/8/rungngapman-1704706367777141992416.jpg"
+  },
+  {
+    "name": "Đền Trần Thái Bình",
+    "province": "Thái Bình",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.6139,
+    "longitude": 106.195,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Quần thể di tích tưởng niệm các vua Trần tại Hưng Hà.",
+    "image": "https://bizweb.dktcdn.net/100/366/377/files/den-tran-thai-binh-nhin-tu-tren-cao.jpg?v=1675069547870"
+  },
+  {
+    "name": "Đền Trúc - Ngũ Động Thi Sơn",
+    "province": "Hà Nam",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.575,
+    "longitude": 105.8667,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Quần thể đền và hang động gắn với cảnh quan núi đá ven sông Đáy.",
+    "image": "https://catbaexpress.com/upload/images/Cong-vao-den-truc.jpg"
+  },
+  {
+    "name": "Đền Trần Nam Định",
+    "province": "Nam Định",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.4489,
+    "longitude": 106.1667,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Quần thể đền thờ các vua Trần và danh tướng thời Trần.",
+    "image": "https://viptrip.vn/public/upload/image-2_10-01-2026_691664738.jpg"
+  },
+  {
+    "name": "Chùa Phổ Minh",
+    "province": "Nam Định",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.4503,
+    "longitude": 106.1692,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Di tích Phật giáo nổi tiếng với tháp Phổ Minh.",
+    "image": "https://www.chuaviettoancau.com/upload/files/2020/07/5f14d5a09b571_55_03.JPG"
+  },
+  {
+    "name": "Nhà thờ đổ Hải Lý",
+    "province": "Nam Định",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.1764,
+    "longitude": 106.3056,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Dấu tích nhà thờ ven biển với cảnh quan làng chài.",
+    "image": "https://localtrips.org/cdn/shop/files/Gi_iThi_u_a9ffb9b7-47a3-48dc-a8d6-22574f8ef082.png?v=1742892808&width=1445"
+  },
+  {
+    "name": "Bãi biển Thịnh Long",
+    "province": "Nam Định",
+    "category": "Tham quan & Văn hóa",
+    "latitude": 20.1069,
+    "longitude": 106.2167,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Bãi biển gắn với hoạt động nghỉ ngơi và đời sống ngư dân.",
+    "image": "https://vietnamtourism.vn/imguploads/tourist/2014/NamDinh/41Bienthinhlong01.jpg"
+  },
+  {
+    "name": "Chợ Rồng Nam Định",
+    "province": "Nam Định",
+    "category": "Ẩm thực & Mua sắm",
+    "latitude": 20.4286,
+    "longitude": 106.1736,
+    "priceMin": 0,
+    "priceMax": 0,
+    "openingHours": "07:00-18:00",
+    "description": "Chợ trung tâm có món ăn và đặc sản thành Nam.",
+    "image": "https://static-images.vnncdn.net/vps_images_publish/000001/000003/2025/6/4/tieu-thuong-cho-rong-nam-dinh-dong-loat-dong-cua-chung-toi-vo-cung-hoang-mang-113908.jpg?s=YXVgtFzX1F3-xV4nk9E7NQ&width=0"
   }
 ];
 
-/**
- * Normalizes province/destination queries (e.g. 'hue', 'Hội An', 'Đà Lạt')
- * and returns real places matching that province or city.
- */
 export function getRealPlacesByProvince(destQuery: string): RealPlace[] {
   if (!destQuery) return [];
   const q = destQuery.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
 
-  // Keyword alias mapping
   let targetProvKey = q;
   if (q.includes('hue')) targetProvKey = 'thua thien hue';
   else if (q.includes('da nang')) targetProvKey = 'da nang';
   else if (q.includes('hoi an') || q.includes('quang nam')) targetProvKey = 'quang nam';
   else if (q.includes('ha noi')) targetProvKey = 'ha noi';
-  else if (q.includes('sai gon') || q.includes('ho chi minh') || q.includes('tphcm')) targetProvKey = 'ho chi minh';
+  else if (q.includes('sai gon') || q.includes('ho chi minh') || q.includes('tphcm')) targetProvKey = 'tp. ho chi minh';
   else if (q.includes('da lat') || q.includes('lam dong')) targetProvKey = 'lam dong';
   else if (q.includes('nha trang') || q.includes('khanh hoa')) targetProvKey = 'khanh hoa';
   else if (q.includes('ha long') || q.includes('quang ninh')) targetProvKey = 'quang ninh';

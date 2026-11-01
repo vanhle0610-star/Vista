@@ -50,7 +50,7 @@ export async function apiRequest<T>(path: string, init?: RequestInit): Promise<T
   };
 
   if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('vista_token');
+    const token = localStorage.getItem('vista_token') || localStorage.getItem('vista_access_token');
     if (token && !headers['Authorization']) {
       headers['Authorization'] = `Bearer ${token}`;
     }
@@ -75,6 +75,20 @@ export async function apiRequest<T>(path: string, init?: RequestInit): Promise<T
     const newToken = await refreshPromise;
     if (newToken) {
       headers['Authorization'] = `Bearer ${newToken}`;
+      response = await fetch(`${baseUrl}${path}`, {
+        ...init,
+        credentials: init?.credentials ?? 'include',
+        headers,
+      });
+    } else if (headers['Authorization']) {
+      // Refresh failed -> clear session and retry unauthenticated fallback
+      localStorage.removeItem('vista_token');
+      localStorage.removeItem('vista_access_token');
+      localStorage.removeItem('vista_refresh_token');
+      localStorage.removeItem('vista_user');
+      document.cookie = 'vista_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
+      window.dispatchEvent(new Event('vista-auth-change'));
+      delete headers['Authorization'];
       response = await fetch(`${baseUrl}${path}`, {
         ...init,
         credentials: init?.credentials ?? 'include',

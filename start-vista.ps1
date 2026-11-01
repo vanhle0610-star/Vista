@@ -104,6 +104,24 @@ if (Test-Path $lockFile) {
     Log-Warn "Da xoa git index.lock bi treo"
 }
 
+# Giai phong port 8081 va 3000 neu bi treo
+function Free-Port {
+    param([int]$Port)
+    $lines = netstat -ano | findstr ":$Port" | findstr "LISTENING"
+    foreach ($line in $lines) {
+        $parts = $line.Trim() -split "\s+"
+        if ($parts.Length -gt 4) {
+            $pidToKill = $parts[-1]
+            if ($pidToKill -match '^\d+$' -and $pidToKill -ne "0") {
+                Log-Warn "Giai phong port $Port (Kill PID $pidToKill)"
+                Stop-Process -Id $pidToKill -Force -ErrorAction SilentlyContinue
+            }
+        }
+    }
+}
+Free-Port 8081
+Free-Port 3000
+
 # -------------------------------------------------------
 # KHOI DONG BACKEND
 # -------------------------------------------------------
@@ -111,12 +129,17 @@ Log-Title "Khoi dong Backend Spring Boot :8081"
 $backLog = Join-Path $ROOT "backend-run.log"
 if (Test-Path $backLog) { Remove-Item $backLog -Force }
 
-$backCmd = "cd '$BACK'; `$env:JAVA_HOME='$JAVA'; `$env:PATH='$JAVA\bin;' + `$env:PATH; .\gradlew.bat bootRun --no-daemon --console=plain 2>&1 | Tee-Object -FilePath '$backLog'"
-$backProc = Start-Process powershell.exe `
-    -ArgumentList "-NoProfile", "-NonInteractive", "-Command", $backCmd `
-    -PassThru -WindowStyle Normal
+$envLoader = "Get-Content '$BACK\.env' | ForEach-Object { `$l = `$_.Trim(); if (`$l -and -not `$l.StartsWith('#') -and `$l.Contains('=')) { `$p = `$l -split '=', 2; [System.Environment]::SetEnvironmentVariable(`$p[0].Trim(), `$p[1].Trim(), 'Process') } }; "
 
-Log-Ok "Backend dang khoi dong - PID=$($backProc.Id)"
+$jarPath = Join-Path $BACK "build\libs\vista-backend-0.0.1-SNAPSHOT.jar"
+if (Test-Path $jarPath) {
+    Log-Info "Phat hien ban build JAR, khoi dong truc tiep..."
+    $backCmd = "cd '$BACK'; $envLoader & '$JAVA\bin\java.exe' -jar '$jarPath' 2>&1 | Tee-Object -FilePath '$backLog'"
+} else {
+    $backCmd = "cd '$BACK'; `$env:JAVA_HOME='$JAVA'; `$env:PATH='$JAVA\bin;' + `$env:PATH; .\gradlew.bat bootRun --console=plain 2>&1 | Tee-Object -FilePath '$backLog'"
+}
+cmd.exe /c start "VISTA-Backend" powershell.exe -NoProfile -NoExit -Command "$backCmd"
+Log-Ok "Backend dang khoi dong..."
 Log-Info "Dang cho backend san sang (toi da 90s)..."
 
 $backReady = $false
@@ -154,11 +177,8 @@ $webLog = Join-Path $ROOT "web-run.log"
 if (Test-Path $webLog) { Remove-Item $webLog -Force }
 
 $webCmd = "cd '$WEB'; npm run dev 2>&1 | Tee-Object -FilePath '$webLog'"
-$webProc = Start-Process powershell.exe `
-    -ArgumentList "-NoProfile", "-NonInteractive", "-Command", $webCmd `
-    -PassThru -WindowStyle Normal
-
-Log-Ok "Frontend dang khoi dong - PID=$($webProc.Id)"
+cmd.exe /c start "VISTA-Frontend" powershell.exe -NoProfile -NoExit -Command "$webCmd"
+Log-Ok "Frontend dang khoi dong..."
 Log-Info "Dang cho frontend san sang (toi da 60s)..."
 
 $webReady = $false

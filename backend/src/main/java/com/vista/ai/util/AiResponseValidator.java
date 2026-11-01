@@ -139,13 +139,25 @@ public final class AiResponseValidator {
   }
 
   private static void validateActivity(JsonNode activity) {
+    String rawDestId = activity.path("destinationId").asText("").trim();
+    if (rawDestId.contains("|")) {
+      rawDestId = rawDestId.split("\\|")[0].trim();
+    }
     try {
-      UUID.fromString(activity.path("destinationId").asText());
+      UUID parsedUuid = UUID.fromString(rawDestId);
+      if (activity instanceof ObjectNode activityObj) {
+        activityObj.put("destinationId", parsedUuid.toString());
+      }
     } catch (IllegalArgumentException exception) {
       throw new IllegalArgumentException("Activity destinationId must be a valid UUID", exception);
     }
 
     String timeSlot = activity.path("timeSlot").asText("").trim().toUpperCase();
+    if ("NOON".equals(timeSlot) || "LUNCH".equals(timeSlot) || "MIDDAY".equals(timeSlot)) {
+      timeSlot = "AFTERNOON";
+    } else if ("NIGHT".equals(timeSlot)) {
+      timeSlot = "EVENING";
+    }
     if (!ALLOWED_TIME_SLOTS.contains(timeSlot)) {
       throw new IllegalArgumentException("Activity timeSlot is not supported: " + timeSlot);
     }
@@ -154,9 +166,11 @@ public final class AiResponseValidator {
     }
 
     JsonNode cost = activity.get("estimatedCostVnd");
-    if (cost != null && (!cost.isIntegralNumber() || cost.asLong() < 0)) {
-      throw new IllegalArgumentException(
-          "Activity estimatedCostVnd must be a non-negative integer");
+    if (cost != null && !cost.isNull()) {
+      if (!cost.isIntegralNumber() || cost.asLong() < 0) {
+        throw new IllegalArgumentException(
+            "Activity estimatedCostVnd must be a non-negative integer");
+      }
     }
   }
 

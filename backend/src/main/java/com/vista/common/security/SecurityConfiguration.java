@@ -31,20 +31,20 @@ public class SecurityConfiguration {
       @Autowired(required = false) JwtAuthenticationFilter jwtAuthenticationFilter)
       throws Exception {
     http.csrf(csrf -> csrf.disable())
-        .cors(cors -> {})
+        .cors(cors -> {
+        })
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .headers(
-            headers ->
-                headers
-                    .contentTypeOptions(content -> {})
-                    .frameOptions(frame -> frame.deny())
-                    .httpStrictTransportSecurity(
-                        hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31536000))
-                    .contentSecurityPolicy(
-                        csp ->
-                            csp.policyDirectives(
-                                "default-src 'self'; frame-ancestors 'none'; object-src 'none';")))
+            headers -> headers
+                .contentTypeOptions(content -> {
+                })
+                .frameOptions(frame -> frame.deny())
+                .httpStrictTransportSecurity(
+                    hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31536000))
+                .contentSecurityPolicy(
+                    csp -> csp.policyDirectives(
+                        "default-src 'self'; frame-ancestors 'none'; object-src 'none';")))
         .exceptionHandling(
             exceptions ->
                 exceptions
@@ -109,7 +109,8 @@ public class SecurityConfiguration {
                         "/api/v1/auth/google",
                         "/api/v1/auth/forgot-password",
                         "/api/v1/auth/reset-password",
-                        "/api/v1/ai/quick-plan")
+                        "/api/v1/ai/quick-plan",
+                        "/api/v1/ai/quick-plan/**")
                     .permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/v1/map/routes")
                     .permitAll()
