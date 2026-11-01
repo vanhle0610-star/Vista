@@ -8,6 +8,41 @@ export type Problem = {
 
 const baseUrl = (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8081/api/v1').replace(/\/+$/, '');
 
+let isRefreshing = false;
+let refreshPromise: Promise<string | null> | null = null;
+
+async function refreshAccessToken(): Promise<string | null> {
+  if (typeof window === 'undefined') return null;
+  const refreshToken = localStorage.getItem('vista_refresh_token');
+  if (!refreshToken) return null;
+
+  try {
+    const res = await fetch(`${baseUrl}/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ refreshToken }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data.accessToken) {
+        localStorage.setItem('vista_token', data.accessToken);
+        if (data.refreshToken) {
+          localStorage.setItem('vista_refresh_token', data.refreshToken);
+        }
+        document.cookie = `vista_token=${data.accessToken}; path=/; max-age=604800; SameSite=Lax`;
+        window.dispatchEvent(new Event('vista-auth-change'));
+        return data.accessToken;
+      }
+    }
+  } catch {
+    // Network or server error
+  }
+
+  return null;
+}
+
 export async function apiRequest<T>(path: string, init?: RequestInit): Promise<T> {
   const headers: Record<string, string> = {
     Accept: 'application/json',
@@ -21,10 +56,32 @@ export async function apiRequest<T>(path: string, init?: RequestInit): Promise<T
     }
   }
 
-  const response = await fetch(`${baseUrl}${path}`, {
+  let response = await fetch(`${baseUrl}${path}`, {
     ...init,
+    credentials: init?.credentials ?? 'include',
     headers,
   });
+
+  // If unauthorized and not an auth endpoint, attempt transparent token refresh
+  if (response.status === 401 && typeof window !== 'undefined' && !path.startsWith('/auth/')) {
+    if (!isRefreshing) {
+      isRefreshing = true;
+      refreshPromise = refreshAccessToken().finally(() => {
+        isRefreshing = false;
+        refreshPromise = null;
+      });
+    }
+
+    const newToken = await refreshPromise;
+    if (newToken) {
+      headers['Authorization'] = `Bearer ${newToken}`;
+      response = await fetch(`${baseUrl}${path}`, {
+        ...init,
+        credentials: init?.credentials ?? 'include',
+        headers,
+      });
+    }
+  }
 
   if (!response.ok) {
     const problem = (await response

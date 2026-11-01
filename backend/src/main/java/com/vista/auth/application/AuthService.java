@@ -144,12 +144,12 @@ public class AuthService {
         roles);
   }
 
-  @Transactional(readOnly = true)
+  @Transactional
   public AuthResponse login(LoginRequest request) {
     return login(request, "unknown_client");
   }
 
-  @Transactional(readOnly = true)
+  @Transactional
   public AuthResponse login(LoginRequest request, String clientIp) {
     var email = request.email().trim().toLowerCase();
 

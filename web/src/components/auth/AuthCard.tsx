@@ -110,20 +110,27 @@ export function AuthCard({ isNight, initialMode }: AuthCardProps) {
     }, 1000);
     return () => clearInterval(timer);
   }, [resendCountdown]);
+  const [alreadyLoggedInUser, setAlreadyLoggedInUser] = useState<{
+    id?: string;
+    email?: string;
+    displayName?: string;
+    roles?: string[];
+  } | null>(null);
+
   useEffect(() => {
     try {
       const token = localStorage.getItem('vista_token');
       const userStr = localStorage.getItem('vista_user');
       if (token && userStr) {
-        // Đảm bảo Cookie luôn được đồng bộ với LocalStorage với thời hạn 7 ngày
+        setAlreadyLoggedInUser(JSON.parse(userStr));
         document.cookie = `vista_token=${token}; path=/; max-age=604800; SameSite=Lax`;
-        // Nếu đã đăng nhập, tự động chuyển ngay về trang đích (hoặc trang chủ), không hiện thẻ chặn
-        const dest = getSafeReturnUrl(returnUrlParam);
-        const targetUrl = dest && dest !== '/login' ? dest : '/';
-        window.location.replace(targetUrl);
+      } else {
+        setAlreadyLoggedInUser(null);
       }
-    } catch {}
-  }, [returnUrlParam]);
+    } catch {
+      setAlreadyLoggedInUser(null);
+    }
+  }, []);
 
   // International Country Dial Code State
   const [selectedDialCode, setSelectedDialCode] = useState<CountryDialCode>(() => {
@@ -194,7 +201,8 @@ export function AuthCard({ isNight, initialMode }: AuthCardProps) {
 
   const navigateToDestination = useCallback(() => {
     const destination = getSafeReturnUrl(returnUrlParam);
-    window.location.href = destination;
+    const target = destination && destination !== '/login' ? destination : '/';
+    window.location.href = target;
   }, [returnUrlParam]);
 
   const handleGoogleCredentialResponse = useCallback(
@@ -756,6 +764,72 @@ export function AuthCard({ isNight, initialMode }: AuthCardProps) {
               : `Nhập mã xác thực OTP gửi đến ${email || 'email của bạn'}`}
           </p>
         </div>
+
+        {/* Already Logged In Session Pill */}
+        {alreadyLoggedInUser && (
+          <div
+            style={{
+              background: isNight ? 'rgba(2, 132, 199, 0.15)' : '#F0F9FF',
+              border: '1px solid #BAE6FD',
+              borderRadius: '12px',
+              padding: '12px 14px',
+              marginBottom: '16px',
+              fontSize: '13px',
+              textAlign: 'left',
+            }}
+          >
+            <div style={{ fontWeight: 700, color: isNight ? '#7DD3FC' : '#0369A1', marginBottom: '3px' }}>
+              ✓ Đang có phiên: <span>{alreadyLoggedInUser.displayName || alreadyLoggedInUser.email}</span>
+            </div>
+            <div style={{ fontSize: '11.5px', color: isNight ? '#94A3B8' : '#64748B', marginBottom: '8px' }}>
+              {alreadyLoggedInUser.email}
+            </div>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  const dest = getSafeReturnUrl(returnUrlParam);
+                  const target = dest && dest !== '/login' ? dest : '/';
+                  window.location.href = target;
+                }}
+                style={{
+                  background: '#0284C7',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '5px 12px',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
+              >
+                Tiếp tục phiên →
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  localStorage.removeItem('vista_token');
+                  localStorage.removeItem('vista_user');
+                  document.cookie = 'vista_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
+                  window.dispatchEvent(new Event('vista-auth-change'));
+                  setAlreadyLoggedInUser(null);
+                }}
+                style={{
+                  background: 'transparent',
+                  color: '#EF4444',
+                  border: '1px solid #FECACA',
+                  borderRadius: '8px',
+                  padding: '5px 12px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Đăng xuất / Dùng tài khoản khác
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Tab Switcher */}
         {(mode === 'login' || mode === 'register') && (

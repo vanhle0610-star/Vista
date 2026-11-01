@@ -36,10 +36,6 @@ export function Navbar({
   const router = useRouter();
   const pathname = usePathname();
 
-  // Hide Navbar completely on auth pages and admin dashboard
-  if (pathname && HIDDEN_NAVBAR_ROUTES.some((route) => pathname.startsWith(route))) {
-    return null;
-  }
   const [currentUser, setCurrentUser] = useState<VistaUser | null>(null);
   const [mounted, setMounted] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
@@ -128,7 +124,18 @@ export function Navbar({
 
   const handleLogout = () => {
     try {
+      const apiBase = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081/api/v1').replace(/\/+$/, '');
+      const refreshToken = localStorage.getItem('vista_refresh_token');
+      if (refreshToken) {
+        fetch(`${apiBase}/auth/logout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ refreshToken }),
+        }).catch(() => {});
+      }
       localStorage.removeItem('vista_token');
+      localStorage.removeItem('vista_refresh_token');
       localStorage.removeItem('vista_user');
       document.cookie = 'vista_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
       window.dispatchEvent(new Event('vista-auth-change'));
@@ -227,12 +234,17 @@ export function Navbar({
     },
   ];
 
+  // Hide Navbar completely on auth pages and admin dashboard (after all React hooks have run)
+  if (pathname && HIDDEN_NAVBAR_ROUTES.some((route) => pathname.startsWith(route))) {
+    return null;
+  }
+
   return (
-    <header className={styles.navbarWrapper}>
-      <div className={styles.navbarContainer}>
+    <header className={styles.navbarWrapper} suppressHydrationWarning>
+      <div className={styles.navbarContainer} suppressHydrationWarning>
         {/* ─── BRAND LOGO ─── */}
         <Link href="/" className={styles.brandLogo} title="VISTA — Nền tảng Du lịch Thông minh Việt Nam">
-          <div className={styles.brandIconWrapper}>
+          <div className={styles.brandIconWrapper} suppressHydrationWarning>
             <svg
               width="24"
               height="24"
@@ -287,7 +299,7 @@ export function Navbar({
         </nav>
 
         {/* ─── RIGHT ACTIONS ─── */}
-        <div className={styles.navActions}>
+        <div className={styles.navActions} suppressHydrationWarning>
           {/* Language Switcher */}
           <button
             type="button"
@@ -308,9 +320,9 @@ export function Navbar({
 
           {/* User Profile Dropdown or Login Link */}
           {!mounted ? (
-            <div style={{ width: '92px', height: '36px' }} />
+            <div style={{ width: '92px', height: '36px' }} suppressHydrationWarning />
           ) : currentUser ? (
-            <div className={styles.profileContainer} ref={dropdownRef}>
+            <div className={styles.profileContainer} ref={dropdownRef} suppressHydrationWarning>
               <button
                 type="button"
                 className={styles.userProfileBtn}
@@ -434,7 +446,7 @@ export function Navbar({
               )}
             </div>
           ) : (
-            <Link href="/login" className={styles.btnLogin} id="nav-btn-login">
+            <Link href="/login" className={styles.btnLogin} id="nav-btn-login" suppressHydrationWarning>
               <svg
                 width="16"
                 height="16"
