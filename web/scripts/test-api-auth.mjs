@@ -67,6 +67,40 @@ test('image upload retry preserves multipart body and browser-generated content 
   assert.equal(h.calls[2].headers.has('Content-Type'), false);
 });
 
+test('stored refresh token is sent and replaced after rotation', async () => {
+  const h = harness((_call, index) => [
+    json(401),
+    json(200, { accessToken: 'new-token', refreshToken: 'new-refresh-token' }),
+    json(200, { ok: true }),
+  ][index - 1]);
+  h.storage.set('vista_refresh_token', 'old-refresh-token');
+  assert.equal((await h.request('/posts')).ok, true);
+  assert.deepEqual(JSON.parse(h.calls[1].body), { refreshToken: 'old-refresh-token' });
+  assert.equal(h.calls[1].headers.get('Content-Type'), 'application/json');
+  assert.equal(h.storage.get('vista_refresh_token'), 'new-refresh-token');
+});
+
+test('alternate access token storage can refresh and retries with the new token', async () => {
+  const h = harness((_call, index) => [
+    json(401), json(200, { accessToken: 'new-token' }), json(200, { ok: true }),
+  ][index - 1], null);
+  h.storage.set('vista_access_token', 'alternate-token');
+  assert.equal((await h.request('/posts')).ok, true);
+  assert.equal(h.calls[0].headers.get('Authorization'), 'Bearer alternate-token');
+  assert.equal(h.calls[2].headers.get('Authorization'), 'Bearer new-token');
+  assert.equal(h.storage.get('vista_token'), 'new-token');
+  assert.equal(h.storage.has('vista_access_token'), false);
+});
+
+test('rejected refresh removes both token storage formats and the stored refresh token', async () => {
+  const h = harness(() => json(401));
+  h.storage.set('vista_access_token', 'expired-token');
+  h.storage.set('vista_refresh_token', 'rejected-refresh-token');
+  await assert.rejects(h.request('/posts'), error => error.status === 401);
+  assert.equal(h.storage.size, 0);
+  assert.equal(h.calls.length, 2);
+});
+
 test('concurrent 401 responses share one refresh token rotation', async () => {
   let releaseRefresh;
   const refresh = new Promise(resolve => { releaseRefresh = resolve; });

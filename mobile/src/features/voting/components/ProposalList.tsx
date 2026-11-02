@@ -10,6 +10,8 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import { router } from 'expo-router';
+import { authStorage } from '@/services/auth/authStorage';
 import { ProposalDto, collaborationApi } from '../../../services/api/collaborationApi';
 
 interface ProposalListProps {
@@ -31,6 +33,16 @@ export function ProposalList({
   const [votingId, setVotingId] = useState<string | null>(null);
 
   const handleCreateProposal = async () => {
+    const token = await authStorage.getAccessToken();
+    if (!token) {
+      setIsAddModalOpen(false);
+      Alert.alert('Yêu cầu đăng nhập', 'Bạn cần đăng nhập tài khoản thành viên để đề xuất địa điểm.', [
+        { text: 'Hủy', style: 'cancel' },
+        { text: 'Đăng nhập', onPress: () => router.push('/(auth)/login') },
+      ]);
+      return;
+    }
+
     if (!title.trim()) {
       Alert.alert('Thiếu thông tin', 'Vui lòng nhập tên địa điểm muốn đề xuất');
       return;
@@ -53,6 +65,15 @@ export function ProposalList({
   };
 
   const handleVote = async (proposalId: string, voteType: 'UP' | 'DOWN') => {
+    const token = await authStorage.getAccessToken();
+    if (!token) {
+      Alert.alert('Yêu cầu đăng nhập', 'Bạn cần đăng nhập tài khoản thành viên để tham gia biểu quyết.', [
+        { text: 'Hủy', style: 'cancel' },
+        { text: 'Đăng nhập', onPress: () => router.push('/(auth)/login') },
+      ]);
+      return;
+    }
+
     setVotingId(proposalId);
     try {
       await collaborationApi.castVote(proposalId, voteType);

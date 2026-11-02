@@ -3,7 +3,6 @@
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Navbar } from '@/components/common/Navbar';
 import {
   CompassIcon,
   MapPinIcon,
@@ -45,6 +44,7 @@ import {
   FALLBACK_DESTINATIONS_WEATHER,
 } from '@/services/weatherService';
 import { VIETNAM_REAL_MAP_PATH, VIETNAM_MAP_PINS, MapPin } from './vietnamMapData';
+import { SkeletonWeatherBar } from '@/components/common/Skeleton';
 import styles from './home.module.css';
 
 // ─── DATA DEFINITIONS ────────────────────────────────────────────────────────
@@ -442,6 +442,7 @@ export default function HomePage() {
 
   // Weather State
   const [weatherData, setWeatherData] = useState<Record<string, RealtimeWeather>>(FALLBACK_DESTINATIONS_WEATHER);
+  const [isWeatherLoading, setIsWeatherLoading] = useState<boolean>(true);
   const [weatherFilter, setWeatherFilter] = useState<'all' | 'north' | 'central' | 'south_highlands'>('all');
 
   // Swipe & Drag State for Weather Carousel Track
@@ -452,11 +453,20 @@ export default function HomePage() {
 
   React.useEffect(() => {
     let mounted = true;
-    fetchAllDestinationsWeather().then((data) => {
-      if (mounted && Object.keys(data).length > 0) {
-        setWeatherData(data);
-      }
-    });
+    fetchAllDestinationsWeather()
+      .then((data) => {
+        if (mounted && Object.keys(data).length > 0) {
+          setWeatherData(data);
+        }
+      })
+      .catch(() => {
+        // Fallback is already loaded
+      })
+      .finally(() => {
+        if (mounted) {
+          setIsWeatherLoading(false);
+        }
+      });
     return () => {
       mounted = false;
     };
@@ -549,9 +559,6 @@ export default function HomePage() {
           );
         })}
       </aside>
-
-      {/* ─── 1. TOP GLOBAL NAVBAR ────────────────────────────────────────── */}
-      <Navbar activeModule="explore" />
 
       {/* ─── 2. HERO SECTION CINEMATIC ───────────────────────────────────── */}
       <section className={styles.heroWrapper} id="hero" aria-label="Giới thiệu VISTA">
@@ -1111,76 +1118,80 @@ export default function HomePage() {
           </div>
 
           {/* Swipeable Draggable Weather Track */}
-          <div className={styles.weatherTrackWrapper}>
-            <div
-              ref={weatherTrackRef}
-              className={styles.weatherTrack}
-              onMouseDown={handleMouseDown}
-              onMouseLeave={handleMouseLeave}
-              onMouseUp={handleMouseUp}
-              onMouseMove={handleMouseMove}
-            >
-              {filteredWeatherCities.map(({ key, meta, weather }) => (
-                <div key={key} className={styles.weatherCard}>
-                  <div>
-                    {/* Card Top */}
-                    <div className={styles.weatherCardTop}>
-                      <div>
-                        <h3 className={styles.weatherCityName}>{meta.nameVi}</h3>
-                        <span className={styles.weatherRegionBadge}>{meta.region}</span>
+          {isWeatherLoading ? (
+            <SkeletonWeatherBar count={4} />
+          ) : (
+            <div className={styles.weatherTrackWrapper}>
+              <div
+                ref={weatherTrackRef}
+                className={styles.weatherTrack}
+                onMouseDown={handleMouseDown}
+                onMouseLeave={handleMouseLeave}
+                onMouseUp={handleMouseUp}
+                onMouseMove={handleMouseMove}
+              >
+                {filteredWeatherCities.map(({ key, meta, weather }) => (
+                  <div key={key} className={styles.weatherCard}>
+                    <div>
+                      {/* Card Top */}
+                      <div className={styles.weatherCardTop}>
+                        <div>
+                          <h3 className={styles.weatherCityName}>{meta.nameVi}</h3>
+                          <span className={styles.weatherRegionBadge}>{meta.region}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11px', color: '#10B981', fontWeight: 700 }}>
+                          <span className={styles.livePulseDot} />
+                          <span>LIVE</span>
+                        </div>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11px', color: '#10B981', fontWeight: 700 }}>
-                        <span className={styles.livePulseDot} />
-                        <span>LIVE</span>
+
+                      {/* Temp & Icon */}
+                      <div className={styles.weatherTempRow}>
+                        <div className={styles.weatherTempGroup}>
+                          <span className={styles.weatherDegrees}>{weather?.tempFormatted || `${weather?.temp || 26}°C`}</span>
+                          <span className={styles.weatherApparent}>Cảm nhận {weather?.apparentTemp || 28}°C</span>
+                        </div>
+                        <div className={styles.weatherIconWrapper}>
+                          {renderWeatherIcon(weather?.weatherCode ?? 1, weather?.isDay ?? true)}
+                        </div>
+                      </div>
+
+                      {/* Status */}
+                      <div className={styles.weatherStatusText}>
+                        {weather?.statusVi || 'Nắng ấm chan hòa, trời đẹp'}
+                      </div>
+
+                      {/* Metrics */}
+                      <div className={styles.weatherMetricsList}>
+                        <div className={styles.weatherMetric}>
+                          <DropletsIcon size={14} color="#0284C7" />
+                          <span>Độ ẩm: {weather?.humidity || 70}%</span>
+                        </div>
+                        <div className={styles.weatherMetric}>
+                          <WindIcon size={14} color="#0284C7" />
+                          <span>Gió: {weather?.windSpeed || 10} km/h</span>
+                        </div>
+                      </div>
+
+                      {/* Advisory */}
+                      <div className={styles.weatherTipBox}>
+                        {weather?.adviceVi || 'Thời tiết tuyệt vời cho các hoạt động tham quan ngoài trời.'}
                       </div>
                     </div>
 
-                    {/* Temp & Icon */}
-                    <div className={styles.weatherTempRow}>
-                      <div className={styles.weatherTempGroup}>
-                        <span className={styles.weatherDegrees}>{weather?.tempFormatted || `${weather?.temp || 26}°C`}</span>
-                        <span className={styles.weatherApparent}>Cảm nhận {weather?.apparentTemp || 28}°C</span>
-                      </div>
-                      <div className={styles.weatherIconWrapper}>
-                        {renderWeatherIcon(weather?.weatherCode ?? 1, weather?.isDay ?? true)}
-                      </div>
-                    </div>
-
-                    {/* Status */}
-                    <div className={styles.weatherStatusText}>
-                      {weather?.statusVi || 'Nắng ấm chan hòa, trời đẹp'}
-                    </div>
-
-                    {/* Metrics */}
-                    <div className={styles.weatherMetricsList}>
-                      <div className={styles.weatherMetric}>
-                        <DropletsIcon size={14} color="#0284C7" />
-                        <span>Độ ẩm: {weather?.humidity || 70}%</span>
-                      </div>
-                      <div className={styles.weatherMetric}>
-                        <WindIcon size={14} color="#0284C7" />
-                        <span>Gió: {weather?.windSpeed || 10} km/h</span>
-                      </div>
-                    </div>
-
-                    {/* Advisory */}
-                    <div className={styles.weatherTipBox}>
-                      {weather?.adviceVi || 'Thời tiết tuyệt vời cho các hoạt động tham quan ngoài trời.'}
-                    </div>
+                    {/* Quick Action */}
+                    <Link
+                      href={`/planner?dest=${encodeURIComponent(meta.nameVi)}`}
+                      className={styles.weatherCardAction}
+                    >
+                      <span>Lên lịch đi {meta.nameVi}</span>
+                      <ArrowRightIcon size={13} />
+                    </Link>
                   </div>
-
-                  {/* Quick Action */}
-                  <Link
-                    href={`/planner?dest=${encodeURIComponent(meta.nameVi)}`}
-                    className={styles.weatherCardAction}
-                  >
-                    <span>Lên lịch đi {meta.nameVi}</span>
-                    <ArrowRightIcon size={13} />
-                  </Link>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </section>
 

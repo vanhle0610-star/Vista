@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -86,5 +87,15 @@ public class UserController {
     UUID currentUserId = currentUserProvider.getCurrentUserId();
     return ResponseEntity.ok(
         tripService != null ? tripService.getMyTrips(currentUserId) : List.of());
+  }
+
+  @DeleteMapping("/me")
+  @Operation(
+      summary = "Xóa mềm tài khoản người dùng hiện tại (FR-AUTH-05)",
+      security = @SecurityRequirement(name = "bearerAuth"))
+  public ResponseEntity<Map<String, String>> deleteAccount() {
+    UUID currentUserId = currentUserProvider.getCurrentUserId();
+    userService.deleteAccount(currentUserId);
+    return ResponseEntity.ok(Map.of("message", "Tài khoản đã được xóa mềm thành công"));
   }
 }

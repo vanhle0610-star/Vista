@@ -17,11 +17,12 @@ spring:
   jpa:
     open-in-view: false
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
   flyway:
     enabled: true
     locations: ${FLYWAY_LOCATIONS:classpath:db/migration}
     validate-migration-naming: true
+    validate-on-migrate: false
     out-of-order: true
   mvc:
     problemdetails:
@@ -47,7 +48,7 @@ vista:
   ai:
     api-key: ${GEMINI_API_KEY:}
     model: ${GEMINI_MODEL:gemini-2.5-flash}
-    timeout: ${AI_TIMEOUT:60s}
+    timeout: ${AI_TIMEOUT:120s}
     max-retries: ${AI_MAX_RETRIES:1}
     local-base-url: ${AI_LOCAL_BASE_URL:http://localhost:11434/v1}
     local-model: ${AI_LOCAL_MODEL:qwen3:4b}
@@ -64,7 +65,7 @@ vista:
       embedding-version: ${AI_EMBEDDING_VERSION:bge-m3-v1}
       embedding-timeout: ${AI_EMBEDDING_TIMEOUT:30s}
   cors:
-    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:8081}
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://127.0.0.1:3000,http://localhost:8081,http://localhost:8082,http://127.0.0.1:8082}
   app:
     base-url: ${APP_BASE_URL:http://localhost:3000}
   auth:

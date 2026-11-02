@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -10,13 +10,14 @@ import {
   ActivityIndicator,
   ScrollView,
 } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { tripApi, TripDto } from '../../services/api/tripApi';
 import { collaborationApi } from '../../services/api/collaborationApi';
 import { ItineraryTimeline } from '../../features/itinerary/components/ItineraryTimeline';
 import { ProposalList } from '../../features/voting/components/ProposalList';
 import { CalendarIcon, WalletIcon } from '../../components/icons/StitchIcons';
+import { authStorage } from '@/services/auth/authStorage';
 
 type TabKey = 'ITINERARY' | 'VOTING' | 'MEMBERS';
 
@@ -24,6 +25,26 @@ export default function TripDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabKey>('ITINERARY');
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+
+  const checkAuth = useCallback(async () => {
+    const token = await authStorage.getAccessToken();
+    setIsAuthenticated(!!token);
+    if (!token) {
+      router.replace('/(tabs)/discover');
+    }
+  }, [router]);
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  // Auth Guard: Redirect to Home if not authenticated
+  useFocusEffect(
+    useCallback(() => {
+      checkAuth();
+    }, [checkAuth])
+  );
 
   // 1. Fetch Trip details
   const {
@@ -33,7 +54,7 @@ export default function TripDetailScreen() {
   } = useQuery({
     queryKey: ['trip', id],
     queryFn: () => tripApi.fetchTrip(id as string),
-    enabled: !!id,
+    enabled: !!id && isAuthenticated === true,
   });
 
   // 2. Fetch Itinerary days
@@ -44,7 +65,7 @@ export default function TripDetailScreen() {
   } = useQuery({
     queryKey: ['itineraryDays', id],
     queryFn: () => collaborationApi.fetchItineraryDays(id as string),
-    enabled: !!id,
+    enabled: !!id && isAuthenticated === true,
   });
 
   // 3. Fetch Proposals
@@ -65,12 +86,14 @@ export default function TripDetailScreen() {
     Alert.alert('Đã sao chép liên kết mời', `Liên kết: ${link}\nMã mời: ${inviteCode}`);
   };
 
-  if (isTripLoading) {
+  if (isAuthenticated === null || isAuthenticated === false || isTripLoading) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.centerLoading}>
           <ActivityIndicator size="large" color="#005ea5" />
-          <Text style={styles.loadingText}>Đang tải chi tiết chuyến đi...</Text>
+          <Text style={styles.loadingText}>
+            {isAuthenticated === false ? 'Đang chuyển hướng về Khám phá...' : 'Đang tải chi tiết chuyến đi...'}
+          </Text>
         </View>
       </SafeAreaView>
     );

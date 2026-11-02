@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import styles from './Navbar.module.css';
 
 export interface NavbarProps {
@@ -19,16 +19,53 @@ interface VistaUser {
   avatarUrl?: string;
 }
 
+const HIDDEN_NAVBAR_ROUTES = [
+  '/login',
+  '/forgot-password',
+  '/dashboard',
+  '/moderation',
+  '/destinations',
+  '/users',
+];
+
 export function Navbar({
-  activeModule = 'explore',
+  activeModule: propActiveModule,
   lang: propLang,
   onLangChange,
 }: NavbarProps) {
   const router = useRouter();
+  const pathname = usePathname();
+
   const [currentUser, setCurrentUser] = useState<VistaUser | null>(null);
+  const [mounted, setMounted] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [treasuryHref, setTreasuryHref] = useState<string>('/trips');
+  const [optimisticModule, setOptimisticModule] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setOptimisticModule(null);
+  }, [pathname]);
+
+  const activeModule = optimisticModule || propActiveModule || (
+    pathname?.startsWith('/map') ? 'map' :
+    pathname?.startsWith('/planner') ? 'planner' :
+    pathname?.includes('/treasury') ? 'treasury' :
+    pathname?.startsWith('/trips') ? 'trips' :
+    pathname?.startsWith('/community') ? 'community' :
+    pathname === '/' ? 'explore' : undefined
+  );
+
+  const handleNavClick = (moduleId: string, href: string) => {
+    setOptimisticModule(moduleId);
+    if (typeof window !== 'undefined') {
+      (window as any).__VISTA_TARGET_ROUTE__ = href;
+      try {
+        sessionStorage.setItem('vista_target_route', href);
+      } catch {}
+      window.dispatchEvent(new CustomEvent('vista-nav-change', { detail: href }));
+    }
+  };
 
   useEffect(() => {
     const resolveTreasuryLink = () => {
@@ -54,6 +91,9 @@ export function Navbar({
         const userStr = localStorage.getItem('vista_user');
         if (token && userStr) {
           setCurrentUser(JSON.parse(userStr));
+          if (!document.cookie.includes('vista_token=')) {
+            document.cookie = `vista_token=${token}; path=/; max-age=604800; SameSite=Lax`;
+          }
         } else {
           setCurrentUser(null);
         }
@@ -62,6 +102,7 @@ export function Navbar({
       }
     };
 
+    setMounted(true);
     loadUser();
 
     window.addEventListener('vista-auth-change', loadUser);
@@ -83,7 +124,18 @@ export function Navbar({
 
   const handleLogout = () => {
     try {
+      const apiBase = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081/api/v1').replace(/\/+$/, '');
+      const refreshToken = localStorage.getItem('vista_refresh_token');
+      if (refreshToken) {
+        fetch(`${apiBase}/auth/logout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ refreshToken }),
+        }).catch(() => {});
+      }
       localStorage.removeItem('vista_token');
+      localStorage.removeItem('vista_refresh_token');
       localStorage.removeItem('vista_user');
       document.cookie = 'vista_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
       window.dispatchEvent(new Event('vista-auth-change'));
@@ -182,12 +234,17 @@ export function Navbar({
     },
   ];
 
+  // Hide Navbar completely on auth pages and admin dashboard (after all React hooks have run)
+  if (pathname && HIDDEN_NAVBAR_ROUTES.some((route) => pathname.startsWith(route))) {
+    return null;
+  }
+
   return (
-    <header className={styles.navbarWrapper}>
-      <div className={styles.navbarContainer}>
+    <header className={styles.navbarWrapper} suppressHydrationWarning>
+      <div className={styles.navbarContainer} suppressHydrationWarning>
         {/* ─── BRAND LOGO ─── */}
         <Link href="/" className={styles.brandLogo} title="VISTA — Nền tảng Du lịch Thông minh Việt Nam">
-          <div className={styles.brandIconWrapper}>
+          <div className={styles.brandIconWrapper} suppressHydrationWarning>
             <svg
               width="24"
               height="24"
@@ -218,11 +275,14 @@ export function Navbar({
         {/* Main navigation */}
         <nav className={styles.navMenu} aria-label="Menu chức năng chính">
           {navItems.map((item) => {
-            const isActive = activeModule === item.id;
+            const activeId = optimisticModule || activeModule;
+            const isActive = activeId === item.id;
             return (
               <Link
                 key={item.id}
                 href={item.href}
+                prefetch={true}
+                onClick={() => handleNavClick(item.id, item.href)}
                 className={`${styles.navLink} ${isActive ? styles.navLinkActive : ''}`}
                 id={`nav-${item.id}`}
               >
@@ -239,7 +299,7 @@ export function Navbar({
         </nav>
 
         {/* ─── RIGHT ACTIONS ─── */}
-        <div className={styles.navActions}>
+        <div className={styles.navActions} suppressHydrationWarning>
           {/* Language Switcher */}
           <button
             type="button"
@@ -259,8 +319,10 @@ export function Navbar({
           </button>
 
           {/* User Profile Dropdown or Login Link */}
-          {currentUser ? (
-            <div className={styles.profileContainer} ref={dropdownRef}>
+          {!mounted ? (
+            <div style={{ width: '92px', height: '36px' }} suppressHydrationWarning />
+          ) : currentUser ? (
+            <div className={styles.profileContainer} ref={dropdownRef} suppressHydrationWarning>
               <button
                 type="button"
                 className={styles.userProfileBtn}
@@ -384,7 +446,7 @@ export function Navbar({
               )}
             </div>
           ) : (
-            <Link href="/login" className={styles.btnLogin} id="nav-btn-login">
+            <Link href="/login" className={styles.btnLogin} id="nav-btn-login" suppressHydrationWarning>
               <svg
                 width="16"
                 height="16"
@@ -447,13 +509,18 @@ export function Navbar({
         <div className={styles.mobileDrawerOverlay} onClick={() => setMobileMenuOpen(false)}>
           <div className={styles.mobileDrawer} onClick={(e) => e.stopPropagation()}>
             {navItems.map((item) => {
-              const isActive = activeModule === item.id;
+              const activeId = optimisticModule || activeModule;
+              const isActive = activeId === item.id;
               return (
                 <Link
                   key={item.id}
                   href={item.href}
+                  prefetch={true}
                   className={`${styles.navLink} ${isActive ? styles.navLinkActive : ''}`}
-                  onClick={() => setMobileMenuOpen(false)}
+                  onClick={() => {
+                    handleNavClick(item.id, item.href);
+                    setMobileMenuOpen(false);
+                  }}
                 >
                   <span style={{ flex: 1 }}>{currentLang === 'vi' ? item.labelVi : item.labelEn}</span>
                   {item.badge && item.badgeType === 'ai' && (
@@ -467,7 +534,9 @@ export function Navbar({
             })}
 
             <div className={styles.mobileDrawerActions}>
-              {currentUser ? (
+              {!mounted ? (
+                <div style={{ height: '48px' }} />
+              ) : currentUser ? (
                 <Link
                   href="/profile"
                   className={styles.mobileUserCard}

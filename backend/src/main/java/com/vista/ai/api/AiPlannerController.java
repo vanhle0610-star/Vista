@@ -3,7 +3,6 @@ package com.vista.ai.api;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.vista.ai.api.dto.AiItinerarySuggestionRequest;
 import com.vista.ai.api.dto.AiItinerarySuggestionResponse;
-import com.vista.ai.api.dto.AiItinerarySuggestionResponse.SuggestedActivityResponse;
 import com.vista.ai.api.dto.AiItinerarySuggestionResponse.SuggestedDayResponse;
 import com.vista.ai.api.dto.RouteOptimizationRequest;
 import com.vista.ai.api.dto.RouteOptimizationResponse;
@@ -11,6 +10,8 @@ import com.vista.ai.config.AiRateLimiter;
 import com.vista.ai.provider.AiProviderRouter;
 import com.vista.ai.rag.RagRetrievalService;
 import com.vista.ai.rag.RagRetrievalService.RagHit;
+import com.vista.ai.scheduler.SemanticIntentExtractor;
+import com.vista.ai.scheduler.TravelScheduler;
 import com.vista.ai.util.AiResponseValidator;
 import com.vista.ai.util.PromptBuilder;
 import com.vista.budget.util.RouteOptimizer;
@@ -77,8 +78,7 @@ public class AiPlannerController {
   @PostMapping("/itinerary-suggestions")
   @Operation(
       summary =
-          "Yêu cầu AI gợi ý lịch trình và ước tính chi phí chuyến đi (Google Gemini LLM /"
-              + " Fallback)")
+          "Yêu cầu AI gợi ý lịch trình và ước tính chi phí chuyến đi (Google Gemini LLM / Fallback)")
   public ResponseEntity<AiItinerarySuggestionResponse> getItinerarySuggestions(
       @PathVariable UUID tripId, @Valid @RequestBody AiItinerarySuggestionRequest request) {
     UUID currentUserId = currentUserProvider.getCurrentUserId();
@@ -111,7 +111,7 @@ public class AiPlannerController {
       try {
         publishedDestinations =
             destinationQueryService.searchPublished(
-                null, request.destinationProvince(), null, budgetVnd, 12);
+                null, request.destinationProvince(), null, budgetVnd, 30);
       } catch (Exception e) {
         log.warn("Could not query published destinations: {}", e.getClass().getSimpleName());
       }
@@ -127,7 +127,7 @@ public class AiPlannerController {
             : ragRetrievalService.search(
                 String.join(" ", request.interests() == null ? List.of() : request.interests()),
                 request.destinationProvince(),
-                12);
+                15);
     if (!ragHits.isEmpty()) {
       List<UUID> ragDestinationIds = ragHits.stream().map(RagHit::sourceId).distinct().toList();
       Map<UUID, DestinationSummary> merged = new LinkedHashMap<>();
@@ -143,19 +143,35 @@ public class AiPlannerController {
     List<String> groundedCatalogue =
         publishedDestinations.stream().map(this::toPromptCatalogueLine).toList();
 
+    SemanticIntentExtractor.TravelIntent intent = SemanticIntentExtractor.extractIntent(request);
+
     // 5. Gọi provider đã được chọn rõ ràng; không tự ý gửi dữ liệu sang Gemini.
     if (aiProviderRouter != null && aiProviderRouter.isAvailable()) {
       try {
+        int members =
+            request.peopleCount() != null && request.peopleCount() > 0
+                ? request.peopleCount()
+                : membersCount;
+        String travelWith = request.travelWith() != null ? request.travelWith() : "Nhóm bạn";
+
         PromptBuilder.PlanRequest planRequest =
             new PromptBuilder.PlanRequest(
                 request.destinationProvince(),
                 daysCount,
                 budgetVnd,
-                membersCount,
+                members,
                 request.interests() != null
                     ? request.interests()
                     : List.of("Khám phá", "Ẩm thực", "Văn hóa"),
-                groundedCatalogue);
+                groundedCatalogue,
+                request.startDate(),
+                travelWith,
+                request.specialRequests(),
+                intent.arrivalTimeFormatted(),
+                intent.departureTimeFormatted(),
+                intent.effectivePace(),
+                intent.effectiveTravelMode(),
+                intent.avoidKeywords());
 
         String prompt = PromptBuilder.buildUserPrompt(planRequest);
         Optional<AiProviderRouter.AiProviderResponse> providerResponse =
@@ -165,8 +181,16 @@ public class AiPlannerController {
           JsonNode parsed =
               AiResponseValidator.validateAndParseItineraryWithLocalRepair(
                   providerResponse.get().content());
-          List<SuggestedDayResponse> days = parseSuggestedDays(parsed, allowedDestinations);
-          if (days.size() != daysCount) {
+          List<SuggestedDayResponse> days =
+              AiQuickPlanController.parseSuggestedDays(
+                  parsed,
+                  allowedDestinations,
+                  daysCount,
+                  publishedDestinations,
+                  request.interests(),
+                  intent.arrivalTime(),
+                  intent.departureTime());
+          if (days.isEmpty()) {
             throw new IllegalArgumentException(
                 "AI response does not contain a complete grounded itinerary");
           }
@@ -175,6 +199,43 @@ public class AiPlannerController {
               parsed.has("estimatedTotalVnd") && parsed.get("estimatedTotalVnd").isNumber()
                   ? BigDecimal.valueOf(parsed.get("estimatedTotalVnd").asLong())
                   : budgetVnd;
+
+          String weatherSummary =
+              parsed.has("weatherSummary") && !parsed.get("weatherSummary").asText("").isBlank()
+                  ? parsed.get("weatherSummary").asText()
+                  : AiQuickPlanController.generateSeasonalWeatherInsight(
+                      request.destinationProvince(), request.startDate());
+          String pacingSummary =
+              parsed.has("pacingSummary") && !parsed.get("pacingSummary").asText("").isBlank()
+                  ? parsed.get("pacingSummary").asText()
+                  : AiQuickPlanController.generatePacingInsight(daysCount, request.interests());
+          String localAdviceSummary =
+              parsed.has("localAdviceSummary")
+                      && !parsed.get("localAdviceSummary").asText("").isBlank()
+                  ? parsed.get("localAdviceSummary").asText()
+                  : AiQuickPlanController.generateLocalAdviceInsight(
+                      request.destinationProvince(), request.budgetLevel(), request.interests());
+
+          String strategicRationale =
+              parsed.has("strategicRationale")
+                      && !parsed.get("strategicRationale").asText("").isBlank()
+                  ? parsed.get("strategicRationale").asText()
+                  : AiQuickPlanController.generateStrategicRationale(
+                      request.destinationProvince(), daysCount, travelWith, request.interests());
+
+          String companionFitRationale =
+              parsed.has("companionFitRationale")
+                      && !parsed.get("companionFitRationale").asText("").isBlank()
+                  ? parsed.get("companionFitRationale").asText()
+                  : AiQuickPlanController.generateCompanionFitRationale(
+                      members, travelWith, request.interests());
+
+          String budgetOptimizationRationale =
+              parsed.has("budgetOptimizationRationale")
+                      && !parsed.get("budgetOptimizationRationale").asText("").isBlank()
+                  ? parsed.get("budgetOptimizationRationale").asText()
+                  : AiQuickPlanController.generateBudgetRationale(
+                      request.budgetLevel(), budgetVnd, members);
 
           log.info(
               "Generated grounded itinerary provider={} fallbackUsed={} tripId={}",
@@ -187,7 +248,7 @@ public class AiPlannerController {
                   daysCount,
                   request.budgetLevel(),
                   estimatedTotal,
-                  false, // Dữ liệu thật từ Live AI
+                  false,
                   days,
                   providerResponse.get().provider(),
                   providerResponse.get().fallbackUsed(),
@@ -201,7 +262,13 @@ public class AiPlannerController {
                                   hit.chunkId(),
                                   "HYBRID",
                                   hit.score()))
-                      .toList()));
+                      .toList(),
+                  weatherSummary,
+                  pacingSummary,
+                  localAdviceSummary,
+                  strategicRationale,
+                  companionFitRationale,
+                  budgetOptimizationRationale));
         }
       } catch (Exception ex) {
         log.warn("AI response rejected by validation: {}", ex.getClass().getSimpleName());
@@ -239,57 +306,8 @@ public class AiPlannerController {
     return switch (budgetLevel.trim().toUpperCase()) {
       case "BUDGET", "TIET_KIEM", "LOW" -> BigDecimal.valueOf(600000L * daysCount);
       case "LUXURY", "SANG_TRONG", "HIGH" -> BigDecimal.valueOf(3000000L * daysCount);
-      default -> BigDecimal.valueOf(1400000L * daysCount); // MEDIUM / TIÊU CHUẨN
+      default -> BigDecimal.valueOf(1400000L * daysCount);
     };
-  }
-
-  private List<SuggestedDayResponse> parseSuggestedDays(
-      JsonNode root, Map<UUID, DestinationSummary> allowedDestinations) {
-    List<SuggestedDayResponse> days = new ArrayList<>();
-    JsonNode daysNode = root.get("days");
-    if (daysNode != null && daysNode.isArray()) {
-      for (JsonNode dayNode : daysNode) {
-        int dayNum =
-            dayNode.has("dayNumber") ? dayNode.get("dayNumber").asInt() : (days.size() + 1);
-        String title = dayNode.has("title") ? dayNode.get("title").asText() : ("Ngày " + dayNum);
-        List<SuggestedActivityResponse> activities = new ArrayList<>();
-
-        JsonNode activitiesNode = dayNode.get("activities");
-        if (activitiesNode != null && activitiesNode.isArray()) {
-          for (JsonNode actNode : activitiesNode) {
-            String timeSlot =
-                actNode.has("timeSlot") ? actNode.get("timeSlot").asText() : "MORNING";
-            UUID destinationId;
-            try {
-              destinationId = UUID.fromString(actNode.path("destinationId").asText());
-            } catch (IllegalArgumentException exception) {
-              continue;
-            }
-            DestinationSummary destination = allowedDestinations.get(destinationId);
-            if (destination == null) continue;
-            String note =
-                actNode.has("activityDescription")
-                    ? actNode.get("activityDescription").asText()
-                    : "";
-            BigDecimal cost =
-                destination.priceMin() != null ? destination.priceMin() : BigDecimal.ZERO;
-
-            activities.add(
-                new SuggestedActivityResponse(
-                    destination.id(),
-                    timeSlot,
-                    destination.name(),
-                    cost,
-                    destination.categoryName(),
-                    note));
-          }
-        }
-        if (!activities.isEmpty()) {
-          days.add(new SuggestedDayResponse(dayNum, title, activities));
-        }
-      }
-    }
-    return days;
   }
 
   private String toPromptCatalogueLine(DestinationSummary item) {
@@ -307,36 +325,30 @@ public class AiPlannerController {
       int daysCount,
       BigDecimal budgetVnd,
       List<DestinationSummary> destinations) {
-    List<SuggestedDayResponse> suggestedDays = new ArrayList<>();
-
-    for (int day = 1; day <= daysCount; day++) {
-      List<SuggestedActivityResponse> activities = new ArrayList<>();
-      String[] slots = {"MORNING", "AFTERNOON", "EVENING"};
-      for (int slot = 0; slot < slots.length; slot++) {
-        DestinationSummary destination =
-            destinations.get(((day - 1) * slots.length + slot) % destinations.size());
-        activities.add(
-            new SuggestedActivityResponse(
-                destination.id(),
-                slots[slot],
-                destination.name(),
-                destination.priceMin() != null ? destination.priceMin() : BigDecimal.ZERO,
-                destination.categoryName(),
-                "Phương án an toàn từ dữ liệu PUBLISHED; cần xác nhận trước khi lưu."));
-      }
-
-      suggestedDays.add(
-          new SuggestedDayResponse(day, "Ngày " + day + " — Phương án đã kiểm chứng", activities));
-    }
+    TravelScheduler.ScheduledPlanResult plan =
+        TravelScheduler.buildDeterministicPlan(request, daysCount, budgetVnd, destinations);
 
     return new AiItinerarySuggestionResponse(
         request.destinationProvince(),
         daysCount,
         request.budgetLevel(),
-        budgetVnd,
-        true, // Đánh dấu là fallback template
-        suggestedDays,
+        plan.grandTotalCost(),
+        true,
+        plan.days(),
         "deterministic",
-        true);
+        true,
+        List.of(),
+        AiQuickPlanController.generateSeasonalWeatherInsight(
+            request.destinationProvince(), request.startDate()),
+        plan.pacingSummary(),
+        plan.localAdviceSummary(),
+        plan.strategicRationale(),
+        plan.companionFitRationale(),
+        plan.budgetOptimizationRationale(),
+        plan.totalSightseeingCost(),
+        plan.totalDiningCost(),
+        plan.totalTransitCost(),
+        plan.isBudgetFeasible(),
+        plan.unverifiedCostCount());
   }
 }

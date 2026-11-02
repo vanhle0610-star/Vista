@@ -10,8 +10,14 @@ const baseUrl = (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8081/api/v
 const sessionExpired = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại để tiếp tục.';
 let refreshInFlight: Promise<string | null> | null = null;
 
+function currentAccessToken(): string | null {
+  return localStorage.getItem('vista_token') || localStorage.getItem('vista_access_token');
+}
+
 function clearSession() {
   localStorage.removeItem('vista_token');
+  localStorage.removeItem('vista_access_token');
+  localStorage.removeItem('vista_refresh_token');
   localStorage.removeItem('vista_user');
   document.cookie = 'vista_token=; path=/; max-age=0; SameSite=Lax';
   window.dispatchEvent(new Event('vista-auth-change'));
@@ -29,24 +35,31 @@ function refreshAccessToken(previousToken: string): Promise<string | null> {
   if (!refreshInFlight) {
     // Share one refresh because the backend rotates and revokes the old refresh token.
     refreshInFlight = (async () => {
+      const refreshToken = localStorage.getItem('vista_refresh_token');
       const response = await fetch(`${baseUrl}/auth/refresh`, {
         method: 'POST',
         credentials: 'include',
-        headers: { Accept: 'application/json' },
+        headers: {
+          Accept: 'application/json',
+          ...(refreshToken ? { 'Content-Type': 'application/json' } : {}),
+        },
+        ...(refreshToken ? { body: JSON.stringify({ refreshToken }) } : {}),
       });
       if (response.status === 401 || response.status === 403) {
-        if (localStorage.getItem('vista_token') === previousToken) clearSession();
+        if (currentAccessToken() === previousToken) clearSession();
         return null;
       }
       if (!response.ok) throw await responseError(response);
-      const data = (await response.json()) as { accessToken: string };
+      const data = (await response.json()) as { accessToken: string; refreshToken?: string };
       if (!data.accessToken) throw new Error('Không thể làm mới phiên đăng nhập. Vui lòng thử lại.');
       // A logout or a new login while refreshing must take precedence.
-      if (localStorage.getItem('vista_token') !== previousToken) {
-        return localStorage.getItem('vista_token');
+      if (currentAccessToken() !== previousToken) {
+        return currentAccessToken();
       }
       localStorage.setItem('vista_token', data.accessToken);
-      document.cookie = `vista_token=${data.accessToken}; path=/; SameSite=Lax`;
+      localStorage.removeItem('vista_access_token');
+      if (data.refreshToken) localStorage.setItem('vista_refresh_token', data.refreshToken);
+      document.cookie = `vista_token=${data.accessToken}; path=/; max-age=604800; SameSite=Lax`;
       window.dispatchEvent(new Event('vista-auth-change'));
       return data.accessToken;
     })().finally(() => { refreshInFlight = null; });
@@ -60,7 +73,7 @@ export async function apiRequest<T>(path: string, init?: RequestInit): Promise<T
   let sessionToken: string | null = null;
 
   if (typeof window !== 'undefined' && !headers.has('Authorization')) {
-    const token = localStorage.getItem('vista_token');
+    const token = currentAccessToken();
     if (token) {
       sessionToken = token;
       headers.set('Authorization', `Bearer ${token}`);
@@ -68,8 +81,8 @@ export async function apiRequest<T>(path: string, init?: RequestInit): Promise<T
   }
 
   const request = () => fetch(`${baseUrl}${path}`, {
-    credentials: 'include',
     ...init,
+    credentials: init?.credentials ?? 'include',
     headers,
   });
   let response = await request();
@@ -77,14 +90,14 @@ export async function apiRequest<T>(path: string, init?: RequestInit): Promise<T
   const isAuthAction = /^\/auth\/(?:login|register|google|refresh(?:-token)?|logout)(?:[/?]|$)/.test(path);
   if (response.status === 401 && sessionToken && !isAuthAction) {
     // A parallel request may already have refreshed the token.
-    const currentToken = localStorage.getItem('vista_token');
+    const currentToken = currentAccessToken();
     const token = currentToken === sessionToken
       ? await refreshAccessToken(sessionToken)
       : currentToken;
     if (token) {
       headers.set('Authorization', `Bearer ${token}`);
       response = await request();
-      if (response.status === 401 && localStorage.getItem('vista_token') === token) clearSession();
+      if (response.status === 401 && currentAccessToken() === token) clearSession();
     }
   }
 

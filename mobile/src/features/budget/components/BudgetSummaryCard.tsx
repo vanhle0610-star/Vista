@@ -28,7 +28,7 @@ export function BudgetSummaryCard({
   return (
     <View style={styles.outerContainer}>
       <LinearGradient
-        colors={['#005ea5', '#0077ce', '#0060a9']}
+        colors={['#0284C7', '#0369A1', '#075985']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.card}
@@ -110,7 +110,9 @@ export function BudgetSummaryCard({
               colors={
                 isOverBudget
                   ? ['#F87171', '#EF4444']
-                  : ['#ffffff', '#93c5fd']
+                  : isNearLimit
+                  ? ['#FCD34D', '#F59E0B']
+                  : ['#BAE6FD', '#38BDF8']
               }
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
@@ -147,7 +149,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginVertical: 10,
     borderRadius: 24,
-    shadowColor: '#005ea5',
+    shadowColor: tokens.colors.primary,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.25,
     shadowRadius: 18,
@@ -225,7 +227,7 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#5af9f3',
+    backgroundColor: tokens.colors.success,
     marginRight: 5,
   },
   statusDotDanger: {

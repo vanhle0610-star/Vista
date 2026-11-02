@@ -33,24 +33,36 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     if (jwtTokenService != null) {
       var token = resolveToken(request);
 
-      if (token != null && jwtTokenService.validateAccessToken(token)) {
-        try {
-          var claims = jwtTokenService.extractClaims(token);
-          var userId = UUID.fromString(claims.getSubject());
-          var email = claims.get("email", String.class);
-          var roles = jwtTokenService.extractRoles(token);
+      if (token != null) {
+        var validationResult = jwtTokenService.validateAccessTokenDetailed(token);
+        boolean isValid = (validationResult == JwtTokenService.JwtValidationResult.VALID)
+            || jwtTokenService.validateAccessToken(token);
 
-          var authorities =
-              roles.stream()
-                  .map(role -> role.startsWith("ROLE_") ? role : "ROLE_" + role)
-                  .map(SimpleGrantedAuthority::new)
-                  .toList();
+        if (isValid) {
+          try {
+            var claims = jwtTokenService.extractClaims(token);
+            var userId = UUID.fromString(claims.getSubject());
+            var email = claims.get("email", String.class);
+            var roles = jwtTokenService.extractRoles(token);
 
-          var userPrincipal = new UserPrincipal(userId, email, new HashSet<>(roles), authorities);
-          var authentication =
-              new UsernamePasswordAuthenticationToken(userPrincipal, null, authorities);
-          SecurityContextHolder.getContext().setAuthentication(authentication);
-        } catch (Exception e) {
+            var authorities =
+                roles.stream()
+                    .map(role -> role.startsWith("ROLE_") ? role : "ROLE_" + role)
+                    .map(SimpleGrantedAuthority::new)
+                    .toList();
+
+            var userPrincipal = new UserPrincipal(userId, email, new HashSet<>(roles), authorities);
+            var authentication =
+                new UsernamePasswordAuthenticationToken(userPrincipal, null, authorities);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+          } catch (Exception e) {
+            SecurityContextHolder.clearContext();
+          }
+        } else if (validationResult == JwtTokenService.JwtValidationResult.EXPIRED) {
+          request.setAttribute("X-AUTH-ERROR", "TOKEN_EXPIRED");
+          SecurityContextHolder.clearContext();
+        } else {
+          request.setAttribute("X-AUTH-ERROR", "TOKEN_INVALID");
           SecurityContextHolder.clearContext();
         }
       }

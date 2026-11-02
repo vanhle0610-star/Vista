@@ -8,7 +8,7 @@ import {
   CreateCheckInPayload,
 } from '../types';
 
-const API_BASE = '/api/v1';
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8081/api/v1').replace(/\/+$/, '');
 
 export class ApiProblemError extends Error {
   status: number;
@@ -57,6 +57,8 @@ async function handleResponse<T>(res: Response, defaultMessage: string): Promise
 
   if (res.status === 401) {
     if (typeof window !== 'undefined') {
+      localStorage.removeItem('vista_token');
+      localStorage.removeItem('vista_access_token');
       window.dispatchEvent(new CustomEvent('vista_auth_expired'));
     }
     throw new ApiProblemError(

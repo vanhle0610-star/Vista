@@ -402,7 +402,7 @@ export function AddExpenseModal({
                 activeOpacity={0.85}
               >
                 <LinearGradient
-                  colors={['#005ea5', '#0284c7']}
+                  colors={['#0284C7', '#0284c7']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                   style={styles.submitBtnGradient}
@@ -472,7 +472,7 @@ const styles = StyleSheet.create({
   eyebrow: {
     fontSize: 11,
     fontWeight: '800',
-    color: '#005ea5',
+    color: '#0284C7',
     letterSpacing: 1.2,
     marginBottom: 2,
   },
@@ -518,7 +518,7 @@ const styles = StyleSheet.create({
   amountHeroValue: {
     fontSize: 32,
     fontWeight: '800',
-    color: '#005ea5',
+    color: '#0284C7',
     letterSpacing: -0.5,
   },
   amountCurrency: {
@@ -543,7 +543,7 @@ const styles = StyleSheet.create({
   quickChipText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#005ea5',
+    color: '#0284C7',
   },
   resetChip: {
     backgroundColor: '#f1f5f9',
@@ -590,9 +590,9 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   categoryChipSelected: {
-    backgroundColor: '#005ea5',
-    borderColor: '#005ea5',
-    shadowColor: '#005ea5',
+    backgroundColor: '#0284C7',
+    borderColor: '#0284C7',
+    shadowColor: '#0284C7',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 6,
@@ -634,8 +634,8 @@ const styles = StyleSheet.create({
   },
   payerCardSelected: {
     backgroundColor: '#eef2ff',
-    borderColor: '#005ea5',
-    shadowColor: '#005ea5',
+    borderColor: '#0284C7',
+    shadowColor: '#0284C7',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 6,
@@ -650,7 +650,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   payerAvatarSelected: {
-    backgroundColor: '#005ea5',
+    backgroundColor: '#0284C7',
   },
   payerAvatarText: {
     fontSize: 10,
@@ -667,7 +667,7 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   payerNameSelected: {
-    color: '#005ea5',
+    color: '#0284C7',
   },
   splitHeaderRow: {
     flexDirection: 'row',
@@ -689,7 +689,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   toggleBtnActive: {
-    backgroundColor: '#005ea5',
+    backgroundColor: '#0284C7',
   },
   toggleBtnText: {
     fontSize: 9,
@@ -732,8 +732,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   checkboxActive: {
-    backgroundColor: '#005ea5',
-    borderColor: '#005ea5',
+    backgroundColor: '#0284C7',
+    borderColor: '#0284C7',
   },
   participantName: {
     fontSize: 13,
@@ -750,14 +750,14 @@ const styles = StyleSheet.create({
     color: '#94a3b8',
   },
   participantShareActive: {
-    color: '#005ea5',
+    color: '#0284C7',
     fontWeight: '700',
   },
   submitBtn: {
     marginTop: 8,
     borderRadius: 24,
     overflow: 'hidden',
-    shadowColor: '#005ea5',
+    shadowColor: '#0284C7',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 10,

@@ -14,6 +14,7 @@ import { router } from 'expo-router';
 import { tokens } from '../../../theme/tokens';
 import { expenseApi, AiItineraryResponse } from '../../../services/api/expenseApi';
 import { tripApi } from '../../../services/api/tripApi';
+import { authStorage } from '@/services/auth/authStorage';
 import {
   SunIcon,
   PersonIcon,
@@ -154,6 +155,23 @@ export function AiPlannerScreen({ tripId = '11111111-1111-1111-1111-111111111111
 
   const handleSaveItinerary = async () => {
     if (!itineraryData) return;
+
+    const token = await authStorage.getAccessToken();
+    if (!token) {
+      Alert.alert(
+        'Yêu cầu đăng nhập',
+        'Bạn cần đăng nhập tài khoản VISTA để lưu lịch trình do AI gợi ý vào danh sách chuyến đi của mình.',
+        [
+          { text: 'Để sau', style: 'cancel' },
+          {
+            text: 'Đăng nhập ngay',
+            onPress: () => router.push('/(auth)/login'),
+          },
+        ]
+      );
+      return;
+    }
+
     setIsSaving(true);
     try {
       const today = new Date();
@@ -318,7 +336,7 @@ export function AiPlannerScreen({ tripId = '11111111-1111-1111-1111-111111111111
                 key: 'SOLO',
                 label: 'Một mình',
                 renderIcon: (sel: boolean) => (
-                  <PersonIcon size={22} color={sel ? '#005ea5' : '#707784'} />
+                  <PersonIcon size={22} color={sel ? '#006C75' : '#707784'} />
                 ),
               },
               {
@@ -332,7 +350,7 @@ export function AiPlannerScreen({ tripId = '11111111-1111-1111-1111-111111111111
                 key: 'FRIENDS',
                 label: 'Bạn bè',
                 renderIcon: (sel: boolean) => (
-                  <GroupIcon size={22} color={sel ? '#005ea5' : '#707784'} />
+                  <GroupIcon size={22} color={sel ? '#006C75' : '#707784'} />
                 ),
               },
               {
@@ -569,13 +587,13 @@ export function AiPlannerScreen({ tripId = '11111111-1111-1111-1111-111111111111
             <View style={styles.budgetDistCard}>
               <Text style={styles.budgetDistTitle}>Phân bổ chi phí ước tính</Text>
               <View style={styles.distBarTrack}>
-                <View style={[styles.distBarPart, { flex: 45, backgroundColor: '#005ea5' }]} />
+                <View style={[styles.distBarPart, { flex: 45, backgroundColor: '#006C75' }]} />
                 <View style={[styles.distBarPart, { flex: 35, backgroundColor: '#006a67' }]} />
                 <View style={[styles.distBarPart, { flex: 20, backgroundColor: '#6b38d4' }]} />
               </View>
               <View style={styles.distLegendRow}>
                 <View style={styles.distLegendItem}>
-                  <View style={[styles.distDot, { backgroundColor: '#005ea5' }]} />
+                  <View style={[styles.distDot, { backgroundColor: '#006C75' }]} />
                   <Text style={styles.distLegendText}>Khách sạn & Vé (45%)</Text>
                 </View>
                 <View style={styles.distLegendItem}>
@@ -609,7 +627,7 @@ export function AiPlannerScreen({ tripId = '11111111-1111-1111-1111-111111111111
                 onPress={() => router.push('/(tabs)/treasury')}
                 activeOpacity={0.85}
               >
-                <WalletIcon size={18} color="#005ea5" style={{ marginRight: 6 }} />
+                <WalletIcon size={18} color="#006C75" style={{ marginRight: 6 }} />
                 <Text style={styles.treasuryActionBtnText}>Mở chuyến đi & bật thủ quỹ</Text>
               </TouchableOpacity>
             </View>
@@ -636,12 +654,12 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   banner: {
-    backgroundColor: '#005ea5',
+    backgroundColor: '#006C75',
     padding: 18,
     marginHorizontal: 16,
     marginTop: 12,
     borderRadius: 20,
-    shadowColor: '#005ea5',
+    shadowColor: '#006C75',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 10,
@@ -725,7 +743,7 @@ const styles = StyleSheet.create({
   weatherMonthText: {
     fontSize: 10,
     fontWeight: '600',
-    color: '#005ea5',
+    color: '#006C75',
   },
   weatherDesc: {
     fontSize: 11,
@@ -748,7 +766,7 @@ const styles = StyleSheet.create({
   fieldLabel: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#005ea5',
+    color: '#006C75',
     letterSpacing: 0.8,
     marginTop: 12,
     marginBottom: 6,
@@ -775,7 +793,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   destChipActive: {
-    backgroundColor: '#005ea5',
+    backgroundColor: '#006C75',
   },
   destChipText: {
     fontSize: 12,
@@ -798,7 +816,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   durationChipActive: {
-    backgroundColor: '#005ea5',
+    backgroundColor: '#006C75',
   },
   durationChipText: {
     fontSize: 12,
@@ -823,7 +841,7 @@ const styles = StyleSheet.create({
   companionCardActive: {
     backgroundColor: '#d3e4ff',
     borderWidth: 1.5,
-    borderColor: '#005ea5',
+    borderColor: '#006C75',
   },
   companionIcon: {
     marginBottom: 4,
@@ -836,7 +854,7 @@ const styles = StyleSheet.create({
     color: '#404752',
   },
   companionLabelActive: {
-    color: '#005ea5',
+    color: '#006C75',
     fontWeight: '700',
   },
   headcountBox: {
@@ -879,12 +897,12 @@ const styles = StyleSheet.create({
   stepBtnText: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#005ea5',
+    color: '#006C75',
   },
   stepValueText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#005ea5',
+    color: '#006C75',
     minWidth: 20,
     textAlign: 'center',
   },
@@ -900,7 +918,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   budgetChipActive: {
-    backgroundColor: '#005ea5',
+    backgroundColor: '#006C75',
   },
   budgetChipText: {
     fontSize: 12,
@@ -922,7 +940,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f2f3ff',
   },
   styleChipActive: {
-    backgroundColor: '#005ea5',
+    backgroundColor: '#006C75',
   },
   styleChipText: {
     fontSize: 12,
@@ -937,10 +955,10 @@ const styles = StyleSheet.create({
     marginTop: 18,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#005ea5',
+    backgroundColor: '#006C75',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#005ea5',
+    shadowColor: '#006C75',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,
@@ -995,7 +1013,7 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#005ea5',
+    backgroundColor: '#006C75',
   },
   badgeDotLive: {
     backgroundColor: '#6b38d4',
@@ -1003,7 +1021,7 @@ const styles = StyleSheet.create({
   badgeText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#005ea5',
+    color: '#006C75',
   },
   badgeTextLive: {
     color: '#6b38d4',
@@ -1011,7 +1029,7 @@ const styles = StyleSheet.create({
   previewCost: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#005ea5',
+    color: '#006C75',
   },
   treasuryGroupCard: {
     flexDirection: 'row',
@@ -1038,7 +1056,7 @@ const styles = StyleSheet.create({
   treasuryGroupAmount: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#005ea5',
+    color: '#006C75',
     marginTop: 2,
   },
   treasuryBadgePill: {
@@ -1050,7 +1068,7 @@ const styles = StyleSheet.create({
   treasuryBadgeText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#005ea5',
+    color: '#006C75',
   },
   dayTabsScroll: {
     gap: 8,
@@ -1065,8 +1083,8 @@ const styles = StyleSheet.create({
     borderColor: '#e2e8f0',
   },
   dayTabChipActive: {
-    backgroundColor: '#005ea5',
-    borderColor: '#005ea5',
+    backgroundColor: '#006C75',
+    borderColor: '#006C75',
   },
   dayTabChipText: {
     fontSize: 12,
@@ -1111,7 +1129,7 @@ const styles = StyleSheet.create({
   activityCountText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#005ea5',
+    color: '#006C75',
   },
   timelineBlock: {
     marginBottom: 8,
@@ -1138,7 +1156,7 @@ const styles = StyleSheet.create({
   activityTimeText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#005ea5',
+    color: '#006C75',
   },
   activityCatBadge: {
     backgroundColor: '#e9ddff',
@@ -1240,10 +1258,10 @@ const styles = StyleSheet.create({
   saveItineraryBtn: {
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#005ea5',
+    backgroundColor: '#006C75',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#005ea5',
+    shadowColor: '#006C75',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,
@@ -1267,6 +1285,6 @@ const styles = StyleSheet.create({
   treasuryActionBtnText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#005ea5',
+    color: '#006C75',
   },
 });

@@ -1,10 +1,13 @@
 package com.vista.auth.api;
 
 import com.vista.auth.api.dto.AuthResponse;
+import com.vista.auth.api.dto.ForgotPasswordRequest;
 import com.vista.auth.api.dto.GoogleLoginRequest;
 import com.vista.auth.api.dto.LoginRequest;
+import com.vista.auth.api.dto.PasswordResetResponse;
 import com.vista.auth.api.dto.RefreshTokenRequest;
 import com.vista.auth.api.dto.RegisterRequest;
+import com.vista.auth.api.dto.ResetPasswordRequest;
 import com.vista.auth.api.dto.UserResponse;
 import com.vista.auth.application.AuthService;
 import com.vista.common.security.CurrentUserProvider;
@@ -178,4 +181,21 @@ public class AuthController {
             .build();
     response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
   }
+
+  @PostMapping("/forgot-password")
+  @Operation(summary = "Yêu cầu mã xác thực OTP khôi phục mật khẩu")
+  public ResponseEntity<PasswordResetResponse> forgotPassword(
+      @Valid @RequestBody ForgotPasswordRequest request) {
+    var response = authService.forgotPassword(request);
+    return ResponseEntity.ok(response);
+  }
+
+  @PostMapping("/reset-password")
+  @Operation(summary = "Xác nhận mã OTP và đặt lại mật khẩu mới")
+  public ResponseEntity<PasswordResetResponse> resetPassword(
+      @Valid @RequestBody ResetPasswordRequest request) {
+    var response = authService.resetPassword(request);
+    return ResponseEntity.ok(response);
+  }
+
 }

@@ -3,6 +3,7 @@ package com.vista.auth.application;
 import com.vista.auth.config.JwtProperties;
 import com.vista.user.domain.UserEntity;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -27,6 +28,12 @@ public class JwtTokenService {
   public static final String TYPE_ACCESS = "access";
   public static final String TYPE_REFRESH = "refresh";
 
+  public enum JwtValidationResult {
+    VALID,
+    EXPIRED,
+    INVALID
+  }
+
   private final JwtProperties properties;
   private final SecretKey key;
 
@@ -45,6 +52,7 @@ public class JwtTokenService {
             .toList();
 
     return Jwts.builder()
+        .id(UUID.randomUUID().toString())
         .subject(userId)
         .claim(CLAIM_TYPE, TYPE_ACCESS)
         .claim("email", user.getEmail())
@@ -62,6 +70,7 @@ public class JwtTokenService {
     var userId = user.getId() != null ? user.getId().toString() : UUID.randomUUID().toString();
 
     return Jwts.builder()
+        .id(UUID.randomUUID().toString())
         .subject(userId)
         .claim(CLAIM_TYPE, TYPE_REFRESH)
         .issuedAt(Date.from(now))
@@ -104,21 +113,33 @@ public class JwtTokenService {
   }
 
   /**
-   * Validate that the token is mathematically valid, not expired, AND strictly of type 'access'.
-   * Refresh tokens will be rejected.
+   * Validate access token with detailed result (VALID, EXPIRED, INVALID).
    */
-  public boolean validateAccessToken(String token) {
+  public JwtValidationResult validateAccessTokenDetailed(String token) {
     if (token == null || token.isBlank()) {
-      return false;
+      return JwtValidationResult.INVALID;
     }
     try {
       var claims = extractClaims(token);
       var type = claims.get(CLAIM_TYPE, String.class);
-      return TYPE_ACCESS.equalsIgnoreCase(type);
+      return TYPE_ACCESS.equalsIgnoreCase(type)
+          ? JwtValidationResult.VALID
+          : JwtValidationResult.INVALID;
+    } catch (ExpiredJwtException e) {
+      log.debug("Expired JWT access token: {}", e.getMessage());
+      return JwtValidationResult.EXPIRED;
     } catch (JwtException | IllegalArgumentException e) {
       log.warn("Invalid JWT access token: {}", e.getMessage());
-      return false;
+      return JwtValidationResult.INVALID;
     }
+  }
+
+  /**
+   * Validate that the token is mathematically valid, not expired, AND strictly of type 'access'.
+   * Refresh tokens will be rejected.
+   */
+  public boolean validateAccessToken(String token) {
+    return validateAccessTokenDetailed(token) == JwtValidationResult.VALID;
   }
 
   /**

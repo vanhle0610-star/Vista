@@ -33,7 +33,6 @@ import {
 } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
 import type { components } from '@/types/api.generated';
-import { Navbar } from '@/components/common/Navbar';
 import { CommunityComments } from '@/features/community/CommunityComments';
 import { FeelingPicker, PlacePicker, PublicAvatar } from '@/features/community/CommunityTools';
 import { feelingText, type FeelingCode, type Place } from '@/features/community/model';
@@ -306,9 +305,6 @@ export default function CommunityPage() {
 
   return (
     <div className={styles.pageRoot}>
-      {/* ── Top Navbar ── */}
-      <Navbar activeModule="community" />
-
       {/* ── 3-Column Layout Container ── */}
       <div className={styles.container3Col}>
         {/* ══════════════════════════════════════════════════════════════════

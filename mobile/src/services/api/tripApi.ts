@@ -31,6 +31,7 @@ export interface CreateTripPayload {
   destinationSummary?: string;
   budgetTotal?: number;
   currency?: string;
+  visibility?: 'PUBLIC' | 'FRIENDS' | 'PRIVATE' | string;
 }
 
 export interface InvitationPreviewDto {

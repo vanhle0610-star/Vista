@@ -9,8 +9,13 @@ export function middleware(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
   // Protected paths requiring active administrator session
-  const protectedPaths = ['/dashboard', '/destinations', '/users', '/moderation'];
-  const isProtected = protectedPaths.some((prefix) => pathname.startsWith(prefix));
+  const protectedPaths = [
+    '/dashboard',
+    '/destinations',
+    '/users',
+    '/moderation',
+  ];
+  const isProtected = protectedPaths.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 
   if (isProtected) {
     const token =

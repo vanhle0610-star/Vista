@@ -42,4 +42,9 @@ public interface TripAccessService {
   default int getActiveMemberCount(UUID tripId) {
     return 1;
   }
+
+  /** Checks whether the specified user is currently the owner of any active trip. */
+  default boolean isOwnerOfAnyActiveTrip(UUID userId) {
+    return false;
+  }
 }

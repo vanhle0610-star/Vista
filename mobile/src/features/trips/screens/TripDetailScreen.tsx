@@ -8,7 +8,8 @@ import {
   TouchableOpacity,
   Modal,
 } from 'react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
+import { authStorage } from '@/services/auth/authStorage';
 import { AppText } from '@/components/ui/AppText';
 import { AppInput } from '@/components/ui/AppInput';
 import { AppButton } from '@/components/ui/AppButton';
@@ -17,6 +18,24 @@ import { tokens } from '@/theme/tokens';
 import { tripApi, TripItem, TripMember } from '../services/tripApi';
 
 export function TripDetailScreen({ tripId }: { tripId: string }) {
+  const checkAuth = useCallback(async () => {
+    const token = await authStorage.getAccessToken();
+    if (!token) {
+      router.replace('/(tabs)/discover');
+    }
+  }, []);
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  // Auth Guard: Redirect to Home if not authenticated
+  useFocusEffect(
+    useCallback(() => {
+      checkAuth();
+    }, [checkAuth])
+  );
+
   const [trip, setTrip] = useState<TripItem | null>(null);
   const [members, setMembers] = useState<TripMember[]>([]);
   const [loading, setLoading] = useState(true);

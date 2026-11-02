@@ -1,7 +1,25 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react-native';
+import { render, screen, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TripsHubScreen } from '../components/TripsHubScreen';
+import { authStorage } from '@/services/auth/authStorage';
+
+jest.mock('expo-router', () => ({
+  router: {
+    push: jest.fn(),
+    replace: jest.fn(),
+  },
+  useFocusEffect: (callback: () => void) => {
+    callback();
+  },
+}));
+
+jest.mock('@/services/auth/authStorage', () => ({
+  authStorage: {
+    getAccessToken: jest.fn().mockResolvedValue('mock-access-token-123'),
+    getUser: jest.fn().mockResolvedValue({ id: 'user-1', email: 'va@vista.vn' }),
+  },
+}));
 
 jest.mock('../../../services/api/tripApi', () => ({
   tripApi: {
@@ -47,6 +65,8 @@ describe('TripsHubScreen', () => {
   let queryClient: QueryClient;
 
   beforeEach(() => {
+    jest.clearAllMocks();
+    (authStorage.getAccessToken as jest.Mock).mockResolvedValue('mock-access-token-123');
     queryClient = new QueryClient({
       defaultOptions: {
         queries: { retry: false, gcTime: 0 },
@@ -58,21 +78,39 @@ describe('TripsHubScreen', () => {
     queryClient.clear();
   });
 
-  it('renders header, filter tabs, primary CTA buttons, and invite section', async () => {
+  it('renders header, filter tabs, primary CTA buttons, and invite section when authenticated', async () => {
     await render(
       <QueryClientProvider client={queryClient}>
         <TripsHubScreen />
       </QueryClientProvider>
     );
 
-    expect(screen.getByText('Chuyến đi của bạn')).toBeTruthy();
-    expect(screen.getByText('Mã mời')).toBeTruthy();
-    expect(screen.getByText('Tất cả')).toBeTruthy();
-    expect(screen.getByText('Đang lên kế hoạch')).toBeTruthy();
-    expect(screen.getByText('Đang diễn ra')).toBeTruthy();
-    expect(screen.getByText('Đã hoàn thành')).toBeTruthy();
-    expect(screen.getByText('+ Tạo chuyến đi mới')).toBeTruthy();
-    expect(screen.getByText('Thử AI lập lịch trình')).toBeTruthy();
-    expect(screen.getByText('Được bạn bè mời tham gia?')).toBeTruthy();
+    await waitFor(() => {
+      expect(screen.getByText('Chuyến đi của bạn')).toBeTruthy();
+      expect(screen.getByText('Mã mời')).toBeTruthy();
+      expect(screen.getByText('Tất cả')).toBeTruthy();
+      expect(screen.getByText('Đang lên kế hoạch')).toBeTruthy();
+      expect(screen.getAllByText('Đang diễn ra').length).toBeGreaterThanOrEqual(1);
+      expect(screen.getByText('Đã hoàn thành')).toBeTruthy();
+      expect(screen.getByText('+ Tạo chuyến đi mới')).toBeTruthy();
+      expect(screen.getByText('Thử AI lập lịch trình')).toBeTruthy();
+      expect(screen.getByText('Được bạn bè mời tham gia?')).toBeTruthy();
+    });
+  });
+
+  it('renders AuthGatekeeperCard when user is guest (not authenticated)', async () => {
+    (authStorage.getAccessToken as jest.Mock).mockResolvedValue(null);
+
+    await render(
+      <QueryClientProvider client={queryClient}>
+        <TripsHubScreen />
+      </QueryClientProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Chuyến đi của bạn')).toBeTruthy();
+      expect(screen.getByText('Lên kế hoạch cho hành trình của bạn')).toBeTruthy();
+      expect(screen.getByText('Đăng nhập / Đăng ký')).toBeTruthy();
+    });
   });
 });

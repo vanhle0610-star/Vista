@@ -35,6 +35,14 @@ public class AiProviderRouter {
     this(properties, local, gemini, claude, null);
   }
 
+  public AiProviderRouter(
+      AiProperties properties,
+      OpenAiCompatibleProvider local,
+      GeminiProvider gemini,
+      ObjectProvider<MeterRegistry> meterRegistryProvider) {
+    this(properties, local, gemini, null, meterRegistryProvider);
+  }
+
   @Autowired
   public AiProviderRouter(
       AiProperties properties,
