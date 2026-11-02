@@ -54,7 +54,8 @@ class DeviceTokenControllerTest {
 
   @Test
   @WithMockUser
-  @DisplayName("User cannot unregister another user's device token (404 Not Found - IDOR prevention)")
+  @DisplayName(
+      "User cannot unregister another user's device token (404 Not Found - IDOR prevention)")
   void unregisterOtherUserTokenReturnsNotFound() throws Exception {
     String token = "victim-device-token-999";
     when(deviceTokenRepository.deactivateByUserAndToken(currentUserId, token)).thenReturn(0);
@@ -66,4 +67,3 @@ class DeviceTokenControllerTest {
     verify(deviceTokenRepository).deactivateByUserAndToken(currentUserId, token);
   }
 }
-

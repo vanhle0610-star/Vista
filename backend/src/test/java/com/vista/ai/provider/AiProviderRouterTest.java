@@ -23,7 +23,8 @@ class AiProviderRouterTest {
     GeminiProvider gemini = Mockito.mock(GeminiProvider.class);
     when(local.isAvailable()).thenReturn(false);
 
-    AiProviderRouter router = new AiProviderRouter(properties(FallbackMode.LOCAL_ONLY), local, gemini);
+    AiProviderRouter router =
+        new AiProviderRouter(properties(FallbackMode.LOCAL_ONLY), local, gemini);
 
     assertThat(router.generate("system", "user")).isEmpty();
     verify(gemini, never()).generate("system", "user");
@@ -39,8 +40,9 @@ class AiProviderRouterTest {
     when(gemini.name()).thenReturn("gemini");
     when(gemini.generate("system", "user")).thenReturn(Optional.of("{}"));
 
-    AiProviderRouter router = new AiProviderRouter(
-        properties(FallbackMode.LOCAL_WITH_APPROVED_GEMINI_FALLBACK), local, gemini);
+    AiProviderRouter router =
+        new AiProviderRouter(
+            properties(FallbackMode.LOCAL_WITH_APPROVED_GEMINI_FALLBACK), local, gemini);
 
     assertThat(router.generate("system", "user"))
         .hasValueSatisfying(
@@ -67,18 +69,18 @@ class AiProviderRouterTest {
 
     assertThat(router.generate("system", "user")).isPresent();
     assertThat(
-        registry
-            .get("vista.ai.provider.requests")
-            .tags("provider", "local", "outcome", "success", "fallback", "false")
-            .counter()
-            .count())
+            registry
+                .get("vista.ai.provider.requests")
+                .tags("provider", "local", "outcome", "success", "fallback", "false")
+                .counter()
+                .count())
         .isEqualTo(1.0);
     assertThat(
-        registry
-            .get("vista.ai.provider.latency")
-            .tags("provider", "local", "outcome", "success")
-            .timer()
-            .count())
+            registry
+                .get("vista.ai.provider.latency")
+                .tags("provider", "local", "outcome", "success")
+                .timer()
+                .count())
         .isEqualTo(1L);
   }
 

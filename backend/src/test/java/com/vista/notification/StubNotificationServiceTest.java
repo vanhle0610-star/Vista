@@ -10,9 +10,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-/**
- * W1-TV3-05: Test stub NotificationService và enum NotificationType.
- */
+/** W1-TV3-05: Test stub NotificationService và enum NotificationType. */
 class StubNotificationServiceTest {
 
   private final NotificationService notificationService = new StubNotificationService();
@@ -44,4 +42,3 @@ class StubNotificationServiceTest {
         .doesNotThrowAnyException();
   }
 }
-

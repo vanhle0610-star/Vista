@@ -38,8 +38,8 @@ export const REGIONS_PROVINCES = [
   {
     region: 'Miền Trung & Tây Nguyên',
     provinces: [
-      'Thừa Thiên Huế',
       'Đà Nẵng',
+      'Thừa Thiên Huế',
       'Quảng Nam',
       'Khánh Hòa',
       'Lâm Đồng',
@@ -74,19 +74,6 @@ export const REGIONS_PROVINCES = [
       'Tiền Giang',
     ],
   },
-];
-
-export const HOTSPOT_PROVINCES = [
-  { id: 'Đà Nẵng', label: 'Đà Nẵng' },
-  { id: 'all', label: 'Toàn quốc' },
-  { id: 'Quảng Nam', label: 'Hội An' },
-  { id: 'Thừa Thiên Huế', label: 'Huế' },
-  { id: 'Hà Nội', label: 'Hà Nội' },
-  { id: 'Lâm Đồng', label: 'Đà Lạt' },
-  { id: 'Khánh Hòa', label: 'Nha Trang' },
-  { id: 'Quảng Ninh', label: 'Hạ Long' },
-  { id: 'TP. Hồ Chí Minh', label: 'TP.HCM' },
-  { id: 'Kiên Giang', label: 'Phú Quốc' },
 ];
 
 export function filterDestinations(
@@ -147,8 +134,10 @@ interface Props {
   onProvinceChange?: (prov: string) => void;
   onNearbyRadiusChange?: (radius: number | null) => void;
   onDirections?: (d: DestinationMarker) => void;
+  onAddStop?: (d: DestinationMarker) => void;
   directionsOpen?: boolean;
   onToggleDirections?: () => void;
+  onCollapseSidebar?: () => void;
 }
 
 export function DestinationList({
@@ -166,20 +155,30 @@ export function DestinationList({
   onProvinceChange,
   onNearbyRadiusChange,
   onDirections,
+  onAddStop,
   directionsOpen,
   onToggleDirections,
+  onCollapseSidebar,
 }: Props) {
   const listRef = useRef<HTMLDivElement>(null);
   const [sortBy, setSortBy] = useState<'best' | 'nearest' | 'rating' | 'name'>('best');
   const [favorites, setFavorites] = useState<string[]>([]);
 
   useEffect(() => {
+    let alive = true;
     try {
       const saved = localStorage.getItem('vista_favorites');
-      if (saved) setFavorites(JSON.parse(saved));
+      if (saved) {
+        const parsed: unknown = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          const favorites = parsed.filter((id): id is string => typeof id === 'string');
+          queueMicrotask(() => { if (alive) setFavorites(favorites); });
+        }
+      }
     } catch {
       // ignore
     }
+    return () => { alive = false; };
   }, []);
 
   const toggleFavorite = (id: string) => {
@@ -239,135 +238,150 @@ export function DestinationList({
 
   return (
     <div className={styles.root}>
-      {/* ─── CONTROLS: ROUTE MODE vs EXPLORE MODE ─── */}
-      {directionsOpen ? (
-        <div className={styles.routeHeader}>
-          <div className={styles.routeHeaderInfo}>
-            <span className={styles.routeHeaderTitle}>Điểm tham quan gợi ý</span>
-            <span className={styles.routeHeaderSubtitle}>
-              {selectedProvince !== 'all' ? selectedProvince : 'Toàn quốc'} · {sortedList.length} địa điểm
-            </span>
-          </div>
+      {/* ─── HEADER ─── */}
+      <div className={styles.header}>
+        <div className={styles.headerText}>
+          <h2 className={styles.title}>Khám phá quanh bạn</h2>
+          <p className={styles.subtitle}>
+            {selectedProvince !== 'all' ? selectedProvince : 'Đà Nẵng'} có gì thú vị?
+          </p>
         </div>
-      ) : (
-        <div className={styles.controlsBar}>
-          {/* Row 1: Search Input + Route Toggle Button */}
-          <div className={styles.searchRow}>
-            <div className={styles.searchBar}>
-              <IconSearch size={14} className={styles.searchIconSvg} />
-              <input
-                className={styles.searchInput}
-                aria-label="Tìm kiếm địa điểm"
-                placeholder={
-                  selectedProvince !== 'all'
-                    ? `Tìm tại ${selectedProvince}…`
-                    : 'Tìm địa danh, thành phố, bãi biển…'
-                }
-                value={search}
-                onChange={(e) => onSearch(e.target.value)}
-              />
-              {search && (
-                <button
-                  type="button"
-                  className={styles.btnClearSearch}
-                  onClick={() => onSearch('')}
-                  title="Xóa tìm kiếm"
-                >
-                  <IconClose size={9} />
-                </button>
-              )}
-            </div>
 
-            {onToggleDirections && (
+        <div className={styles.headerActions}>
+          {onCollapseSidebar && (
+            <button
+              type="button"
+              className={styles.btnCollapse}
+              onClick={onCollapseSidebar}
+              title="Thu gọn bảng điều khiển"
+              aria-label="Thu gọn sidebar"
+            >
+              ❮
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* ─── CONTROLS: SEARCH & FILTERS ─── */}
+      <div className={styles.controlsBar}>
+        {/* Row 1: Search Input + Route Toggle */}
+        <div className={styles.searchRow}>
+          <div className={styles.searchBar}>
+            <IconSearch size={15} className={styles.searchIconSvg} />
+            <input
+              className={styles.searchInput}
+              aria-label="Tìm kiếm địa điểm"
+              placeholder={
+                selectedProvince !== 'all'
+                  ? `Tìm tại ${selectedProvince}…`
+                  : 'Tìm địa danh, thành phố, trải nghiệm…'
+              }
+              value={search}
+              onChange={(e) => onSearch(e.target.value)}
+            />
+            {search && (
               <button
                 type="button"
-                className={styles.btnRouteToggle}
-                onClick={onToggleDirections}
-                title="Mở bảng lập tuyến đường"
+                className={styles.btnClearSearch}
+                onClick={() => onSearch('')}
+                title="Xóa tìm kiếm"
+                aria-label="Xóa tìm kiếm"
               >
-                <IconRoute size={13} />
-                <span>Lộ trình</span>
+                <IconClose size={14} aria-hidden="true" />
               </button>
             )}
           </div>
 
-          {/* Row 2: Compact Filters Strip (3 balanced selects: City, Category, Sort) */}
-          <div className={styles.filterStrip}>
-            {/* City Selector */}
-            <select
-              className={`${styles.compactSelect} ${selectedProvince !== 'all' ? styles.compactSelectActive : ''}`}
-              value={selectedProvince}
-              onChange={(e) => onProvinceChange?.(e.target.value)}
-              aria-label="Khoanh vùng theo thành phố"
+          {onToggleDirections && (
+            <button
+              type="button"
+              className={`${styles.btnRouteToggle} ${directionsOpen ? styles.btnRouteToggleActive : ''}`}
+              onClick={onToggleDirections}
+              title={directionsOpen ? 'Đang mở chế độ Lộ trình' : 'Chuyển sang chế độ Lập lộ trình'}
             >
-              <option value="all">Toàn quốc</option>
-              {REGIONS_PROVINCES.map((reg) => (
-                <optgroup key={reg.region} label={reg.region}>
-                  {reg.provinces.map((prov) => {
-                    const count = provinceCounts[prov] || 0;
-                    if (count === 0) return null;
-                    return (
-                      <option key={prov} value={prov}>
-                        {prov}
-                      </option>
-                    );
-                  })}
-                </optgroup>
-              ))}
-            </select>
-
-            {/* Category Dropdown */}
-            <select
-              className={`${styles.compactSelect} ${category !== 'all' ? styles.compactSelectActive : ''}`}
-              value={category}
-              onChange={(e) => onCategory(e.target.value)}
-              aria-label="Lọc theo Danh mục"
-            >
-              <option value="all">Danh mục</option>
-              {categories.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-
-            {/* Sort Dropdown */}
-            <select
-              className={styles.compactSelect}
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
-              aria-label="Sắp xếp kết quả"
-            >
-              <option value="best">Phù hợp</option>
-              {userCoords && <option value="nearest">Gần tôi</option>}
-              <option value="rating">Đánh giá cao</option>
-              <option value="name">Tên A-Z</option>
-            </select>
-
-            {/* Reset button when any filter active */}
-            {(search || selectedProvince !== 'all' || category !== 'all' || nearbyRadiusKm !== null) && (
-              <button
-                type="button"
-                className={styles.btnResetIcon}
-                onClick={() => {
-                  onSearch('');
-                  onProvinceChange?.('all');
-                  onCategory('all');
-                  onNearbyRadiusChange?.(null);
-                }}
-                title="Đặt lại bộ lọc"
-              >
-                <IconClose size={10} />
-              </button>
-            )}
-          </div>
+              <IconRoute size={14} />
+              <span>Lộ trình</span>
+            </button>
+          )}
         </div>
-      )}
 
-      {/* ─── DESTINATION CARDS LIST ─── */}
+        {/* Row 2: 3 Balanced Dropdown Filters */}
+        <div className={styles.filterStrip}>
+          {/* City / Province Selector */}
+          <select
+            className={`${styles.compactSelect} ${selectedProvince !== 'all' ? styles.compactSelectActive : ''}`}
+            value={selectedProvince}
+            onChange={(e) => onProvinceChange?.(e.target.value)}
+            aria-label="Khoanh vùng theo thành phố"
+          >
+            <option value="all">Toàn quốc</option>
+            {REGIONS_PROVINCES.map((reg) => (
+              <optgroup key={reg.region} label={reg.region}>
+                {reg.provinces.map((prov) => {
+                  const count = provinceCounts[prov] || 0;
+                  if (count === 0) return null;
+                  return (
+                    <option key={prov} value={prov}>
+                      {prov} ({count})
+                    </option>
+                  );
+                })}
+              </optgroup>
+            ))}
+          </select>
+
+          {/* Category Dropdown */}
+          <select
+            className={`${styles.compactSelect} ${category !== 'all' ? styles.compactSelectActive : ''}`}
+            value={category}
+            onChange={(e) => onCategory(e.target.value)}
+            aria-label="Lọc theo Danh mục"
+          >
+            <option value="all">Danh mục</option>
+            {categories.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+
+          {/* Sort Dropdown */}
+          <select
+            className={styles.compactSelect}
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+            aria-label="Sắp xếp kết quả"
+          >
+            <option value="best">Phù hợp</option>
+            {userCoords && <option value="nearest">Gần tôi</option>}
+            <option value="rating">Đánh giá cao</option>
+            <option value="name">Tên A-Z</option>
+          </select>
+
+          {/* Reset button if active */}
+          {(search || selectedProvince !== 'all' || category !== 'all' || nearbyRadiusKm !== null) && (
+            <button
+              type="button"
+              className={styles.btnResetIcon}
+              onClick={() => {
+                onSearch('');
+                onProvinceChange?.('all');
+                onCategory('all');
+                onNearbyRadiusChange?.(null);
+              }}
+              title="Đặt lại bộ lọc"
+              aria-label="Đặt lại bộ lọc"
+            >
+              <IconClose size={16} aria-hidden="true" />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* ─── SINGLE SMOOTH SCROLLABLE LIST ─── */}
       <div className={styles.list} ref={listRef}>
         {sortedList.length ? (
-          sortedList.map((d, index) => {
+          sortedList.map((d) => {
             const isSelected = d.id === selectedId;
             const dist = userCoords
               ? getDistanceKm(userCoords.latitude, userCoords.longitude, d.latitude, d.longitude)
@@ -387,33 +401,27 @@ export function DestinationList({
                 aria-pressed={isSelected}
                 aria-label={`Chọn ${d.name}`}
               >
-                {/* Top Row: Thumbnail (with TOP badge) + Main Meta */}
+                {/* Header: Thumbnail + Meta */}
                 <div className={styles.cardHeader}>
                   <div className={styles.thumbWrapper}>
                     <DestinationThumbnail destination={d} className={styles.thumbnail} />
-                    {index < 3 && selectedProvince === 'Đà Nẵng' && (
-                      <span className={styles.topBadge}>TOP {index + 1}</span>
-                    )}
-                    {index < 3 && selectedProvince === 'all' && (
-                      <span className={styles.topBadge}>TOP {index + 1}</span>
-                    )}
+                    <button
+                      type="button"
+                      className={`${styles.btnFavInside} ${isFavorite ? styles.btnFavInsideActive : ''}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleFavorite(d.id);
+                      }}
+                      title={isFavorite ? 'Bỏ lưu yêu thích' : 'Lưu vào yêu thích'}
+                      aria-label="Yêu thích"
+                    >
+                      <IconHeart size={13} active={isFavorite} />
+                    </button>
                   </div>
 
                   <div className={styles.cardMeta}>
                     <div className={styles.titleRow}>
                       <h3 className={styles.cardTitle} title={d.name}>{d.name}</h3>
-                      <button
-                        type="button"
-                        className={`${styles.btnFav} ${isFavorite ? styles.btnFavActive : ''}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleFavorite(d.id);
-                        }}
-                        title={isFavorite ? 'Bỏ lưu yêu thích' : 'Lưu vào danh sách yêu thích'}
-                        aria-label="Yêu thích"
-                      >
-                        <IconHeart size={14} active={isFavorite} />
-                      </button>
                     </div>
 
                     <div className={styles.categoryDistRow}>
@@ -433,41 +441,64 @@ export function DestinationList({
                   </div>
                 </div>
 
-                {/* Middle: 2-line Description */}
+                {/* Description */}
                 <p className={styles.cardDescription}>{d.description}</p>
 
-                {/* Bottom Row: Map Status & Direct Directions */}
+                {/* Footer Actions */}
                 <div className={styles.cardFooter}>
-                  <span className={styles.mapStatus}>
-                    <IconPin size={12} className={styles.statusPinSvg} />
-                    <span>{isSelected ? 'Đang xem trên bản đồ' : 'Xem trên bản đồ'}</span>
-                  </span>
-
                   <button
                     type="button"
-                    className={styles.btnRoute}
+                    className={`${styles.btnMapStatus} ${isSelected ? styles.btnMapStatusActive : ''}`}
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (onDirections) {
-                        onDirections(d);
-                      } else {
-                        onSelect(d);
-                      }
+                      onSelect(d);
                     }}
-                    title="Chỉ đường đến điểm này"
                   >
-                    <span>Chỉ đường</span>
-                    <IconArrowRight size={11} />
+                    <IconPin size={12} className={styles.statusPinSvg} />
+                    <span>{isSelected ? 'Đang chọn trên bản đồ' : 'Xem trên bản đồ'}</span>
                   </button>
+
+                  <div className={styles.footerActions}>
+                    {directionsOpen && onAddStop && (
+                      <button
+                        type="button"
+                        className={styles.btnAddWaypoint}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onAddStop(d);
+                        }}
+                        title="Thêm địa điểm này vào danh sách điểm dừng trước điểm đến cuối"
+                      >
+                        + Thêm điểm dừng
+                      </button>
+                    )}
+
+                    <button
+                      type="button"
+                      className={styles.btnRoute}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (onDirections) {
+                          onDirections(d);
+                        } else {
+                          onSelect(d);
+                        }
+                      }}
+                      title="Chỉ đường đến địa điểm này"
+                    >
+                      <span>Chỉ đường</span>
+                      <IconArrowRight size={11} />
+                    </button>
+                  </div>
                 </div>
               </div>
             );
           })
         ) : (
           <div className={styles.empty}>
-            <IconSearch size={28} className={styles.emptyIcon} />
+            <IconSearch size={32} className={styles.emptyIcon} />
             <strong>Không tìm thấy địa điểm phù hợp</strong>
-            <p>Thử tìm kiếm với từ khóa khác hoặc đặt lại bộ lọc.</p>
+            <p>Hãy thử tìm kiếm với từ khóa khác hoặc đặt lại bộ lọc.</p>
             <button
               type="button"
               className={styles.btnResetAll}

@@ -255,9 +255,9 @@ public class GlobalExceptionHandler {
       org.springframework.web.server.ResponseStatusException exception,
       HttpServletRequest request) {
     var problem =
-        ProblemDetail.forStatusAndDetail(
-            exception.getStatusCode(), exception.getReason());
-    problem.setType(URI.create("https://vista.example/errors/" + exception.getStatusCode().value()));
+        ProblemDetail.forStatusAndDetail(exception.getStatusCode(), exception.getReason());
+    problem.setType(
+        URI.create("https://vista.example/errors/" + exception.getStatusCode().value()));
     problem.setTitle(exception.getStatusCode().toString());
     problem.setInstance(URI.create(request.getRequestURI()));
     problem.setProperty("code", exception.getStatusCode().toString());

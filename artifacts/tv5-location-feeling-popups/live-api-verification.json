@@ -1,0 +1,12 @@
+{
+  "source": "Actual TV1 HTTP controller/service + configured PostgreSQL, read-only sessions, migrations/seeder disabled",
+  "total": 368,
+  "received": 20,
+  "pageSize": 20,
+  "publicOnly": true,
+  "searchByReturnedName": true,
+  "secondPage": true,
+  "communityFeedStatus": 500,
+  "communityFeedReadable": false,
+  "blockedBy": "Existing V202611111200__community_threads_feelings.sql has not been applied: column comments.root_id is missing. Shared DB migration awaits user approval."
+}

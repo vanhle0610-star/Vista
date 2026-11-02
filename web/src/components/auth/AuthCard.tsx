@@ -228,6 +228,7 @@ export function AuthCard({ isNight, initialMode }: AuthCardProps) {
       try {
         const res = await fetch(`${API_URL}/auth/google`, {
           method: 'POST',
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ idToken: response.credential }),
         });
@@ -602,6 +603,7 @@ export function AuthCard({ isNight, initialMode }: AuthCardProps) {
     try {
       const res = await fetch(`${API_URL}${endpoint}`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });

@@ -27,60 +27,55 @@ export function DestinationCard({
 
   return (
     <article className={styles.card} aria-label={`Chi tiết ${destination.name}`}>
-      {/* ─── Landscape Cover Image with Floating Chips ─── */}
-      <div className={styles.coverWrapper}>
+      {/* ─── Left: Square Thumbnail with Category Chip ─── */}
+      <div className={styles.thumbWrapper}>
         <DestinationThumbnail
           key={destination.id}
           destination={destination}
-          className={styles.coverImage}
+          className={styles.thumbImage}
         />
-        {/* Category Badge Pill on Bottom-Left of Image */}
-        <span className={styles.categoryBadge}>{destination.category}</span>
-
-        {/* Circular Dark Close Button on Top-Right */}
-        {onClose && (
-          <button
-            type="button"
-            className={styles.closeBtn}
-            onClick={onClose}
-            aria-label="Đóng chi tiết"
-          >
-            <IconClose size={10} />
-          </button>
-        )}
+        <span className={styles.categoryChip}>{destination.category}</span>
       </div>
 
-      {/* ─── Card Body ─── */}
-      <div className={styles.body}>
-        {/* Row 1: Title & Rating Badge */}
-        <div className={styles.titleRow}>
-          <h2 className={styles.title}>{destination.name}</h2>
-          <span className={styles.ratingBadge}>
-            <IconStar size={11} />
-            <span>{stats.rating}</span>
-          </span>
-        </div>
-
-        {/* Row 2: Location */}
-        <div className={styles.locationRow}>
-          <IconPin size={12} className={styles.pinIcon} />
-          <span>{stats.district}, {destination.province}</span>
-        </div>
-
-        {/* Row 3: Rating count & Distance */}
-        <div className={styles.metaRow}>
-          <IconStar size={11} fill="#f59e0b" stroke="#f59e0b" />
-          <span className={styles.starText}>{stats.rating}</span>
-          <span className={styles.reviewText}>({stats.reviewCount}+ đánh giá)</span>
-          {dist !== null && (
-            <span className={styles.distText}>
-              · Cách bạn {dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist} km`}
-            </span>
+      {/* ─── Right: Content & Action ─── */}
+      <div className={styles.cardBody}>
+        {/* Row 1: Title + Close Button */}
+        <div className={styles.topRow}>
+          <h2 className={styles.title} title={destination.name}>
+            {destination.name}
+          </h2>
+          {onClose && (
+            <button
+              type="button"
+              className={styles.closeBtn}
+              onClick={onClose}
+              aria-label="Đóng chi tiết"
+              title="Đóng"
+            >
+              <IconClose size={16} aria-hidden="true" />
+            </button>
           )}
         </div>
 
-        {/* Row 4: Action Buttons */}
-        <div className={styles.actionsRow}>
+        {/* Row 2: Star Rating */}
+        <div className={styles.ratingRow}>
+          <IconStar size={12} className={styles.starIcon} />
+          <strong className={styles.ratingScore}>{stats.rating}</strong>
+          <span className={styles.reviewCount}>({stats.reviewCount} đánh giá)</span>
+        </div>
+
+        {/* Row 3: Distance or District */}
+        <div className={styles.distanceRow}>
+          <IconPin size={12} className={styles.pinIcon} />
+          <span>
+            {dist !== null
+              ? `Cách ${dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist} km`}`
+              : `${stats.district}, ${destination.province}`}
+          </span>
+        </div>
+
+        {/* Row 4: Primary Action Buttons */}
+        <div className={styles.actionRow}>
           <Link href={`/destination/${destination.id}`} className={styles.btnDetails}>
             Xem chi tiết
           </Link>
@@ -90,6 +85,7 @@ export function DestinationCard({
               type="button"
               className={styles.btnDirections}
               onClick={onDirections}
+              title="Chỉ đường đến địa điểm này"
             >
               <IconRoute size={12} />
               <span>Chỉ đường</span>
@@ -99,11 +95,11 @@ export function DestinationCard({
           {onAddToTrip && (
             <button
               type="button"
-              className={styles.btnTripAdd}
+              className={styles.btnTrip}
               onClick={onAddToTrip}
               title="Thêm vào chuyến đi"
             >
-              + Chuyến đi
+              +
             </button>
           )}
         </div>

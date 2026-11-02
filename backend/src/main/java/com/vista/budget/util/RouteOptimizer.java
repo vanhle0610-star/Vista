@@ -141,12 +141,20 @@ public final class RouteOptimizer {
     DestinationPoint pk = route.get(k);
     DestinationPoint next = (k == route.size() - 1) ? null : route.get(k + 1);
 
-    double oldDist = calculateHaversineDistanceKm(prev.latitude(), prev.longitude(), pi.latitude(), pi.longitude());
-    double newDist = calculateHaversineDistanceKm(prev.latitude(), prev.longitude(), pk.latitude(), pk.longitude());
+    double oldDist =
+        calculateHaversineDistanceKm(
+            prev.latitude(), prev.longitude(), pi.latitude(), pi.longitude());
+    double newDist =
+        calculateHaversineDistanceKm(
+            prev.latitude(), prev.longitude(), pk.latitude(), pk.longitude());
 
     if (next != null) {
-      oldDist += calculateHaversineDistanceKm(pk.latitude(), pk.longitude(), next.latitude(), next.longitude());
-      newDist += calculateHaversineDistanceKm(pi.latitude(), pi.longitude(), next.latitude(), next.longitude());
+      oldDist +=
+          calculateHaversineDistanceKm(
+              pk.latitude(), pk.longitude(), next.latitude(), next.longitude());
+      newDist +=
+          calculateHaversineDistanceKm(
+              pi.latitude(), pi.longitude(), next.latitude(), next.longitude());
     }
 
     return newDist - oldDist;
@@ -158,8 +166,9 @@ public final class RouteOptimizer {
     double total = 0.0;
     DestinationPoint current = startPoint;
     for (DestinationPoint point : route) {
-      total += calculateHaversineDistanceKm(
-          current.latitude(), current.longitude(), point.latitude(), point.longitude());
+      total +=
+          calculateHaversineDistanceKm(
+              current.latitude(), current.longitude(), point.latitude(), point.longitude());
       current = point;
     }
     return total;

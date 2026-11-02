@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  AppState,
   Alert,
   FlatList,
   Image,
   KeyboardAvoidingView,
   Modal,
   Platform,
-  ScrollView,
   StyleSheet,
   TextInput,
   View,
@@ -23,9 +23,11 @@ import { tokens } from '@/theme/tokens';
 import { api, apiErrorMessage } from '@/services/api/client';
 import { authStorage } from '@/services/auth/authStorage';
 import type { components } from '@/types/api.generated';
+import { CommunityComments } from './CommunityComments';
+import { FeelingPicker, PlacePicker, PublicAvatar, SelectionChip } from './CommunityTools';
+import { feelingText, type FeelingCode, type Place } from './model';
 
 type Post = components['schemas']['Post'];
-type Comment = components['schemas']['Comment'];
 type Payload = components['schemas']['PostCreate'];
 type Photo = { asset: ImagePicker.ImagePickerAsset; uploadId?: string };
 const date = (value: string) => new Date(value).toLocaleString('vi-VN');
@@ -35,7 +37,13 @@ const mediaUrl = (path: string) =>
 export function CommunityScreen() {
   const focused = useIsFocused();
   const [userId, setUserId] = useState<string | null>(null);
+  const [viewer, setViewer] = useState<{ displayName?: string; avatarUrl?: string | null } | null>(null);
+  const [feeling, setFeeling] = useState<FeelingCode | null>(null);
+  const [place, setPlace] = useState<Place | null>(null);
+  const [showFeelings, setShowFeelings] = useState(false);
+  const [showPlaces, setShowPlaces] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
+  const [feedRevision, setFeedRevision] = useState(0);
   const [page, setPage] = useState(-1);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -47,6 +55,15 @@ export function CommunityScreen() {
   const [sendError, setSendError] = useState('');
   const loadLock = useRef(false);
   const sendLock = useRef(false);
+  const refreshProfile = useCallback(async () => {
+    const [user, token] = await Promise.all([authStorage.getUser<{ id: string; displayName?: string; avatarUrl?: string }>(), authStorage.getAccessToken()]);
+    setUserId(token ? user?.id ?? null : null); setViewer(token ? user : null);
+    if (token) {
+      try { const { data } = await api.get<{ id: string; displayName?: string; avatarUrl?: string }>('/users/me');
+        if ((await authStorage.getUser<{id:string}>())?.id === data.id) { setViewer(data); setUserId(data.id); }
+      } catch { /* Keep the account's own cached display profile while offline. */ }
+    }
+  }, []);
   const load = useCallback(async (next: number) => {
     if (loadLock.current) return;
     loadLock.current = true;
@@ -68,6 +85,7 @@ export function CommunityScreen() {
       );
       setPage(next);
       setTotal(data.total);
+      setFeedRevision(n => n + 1);
     } catch (reason) {
       setError(apiErrorMessage(reason));
     } finally {
@@ -78,19 +96,15 @@ export function CommunityScreen() {
   useEffect(() => {
     if (!focused) return;
     let alive = true;
-    void Promise.all([
-      authStorage.getUser<{ id: string }>(),
-      authStorage.getAccessToken(),
-    ]).then(([user, token]) => {
-      if (alive) setUserId(token ? (user?.id ?? null) : null);
-    });
+    const appState = AppState.addEventListener('change', state => { if (state === 'active') { void refreshProfile(); void load(0); } });
     queueMicrotask(() => {
-      if (alive) void load(0);
+      if (alive) { void refreshProfile(); void load(0); }
     });
     return () => {
       alive = false;
+      appState.remove();
     };
-  }, [focused, load]);
+  }, [focused, load, refreshProfile]);
   const pick = async () => {
     if (photos.length >= 4 || sending || pending) return;
     setSendError('');
@@ -173,6 +187,8 @@ export function CommunityScreen() {
         }
         payload = {
           body,
+          destinationId: place?.id,
+          feeling,
           uploadIds: ids,
           clientRequestId: Crypto.randomUUID(),
         };
@@ -180,6 +196,7 @@ export function CommunityScreen() {
       }
       await api.post<Post>('/posts', payload, { timeout: 30000 });
       setBody('');
+      setPlace(null); setFeeling(null);
       setPhotos([]);
       setPending(null);
       await load(0);
@@ -213,6 +230,7 @@ export function CommunityScreen() {
           keyboardShouldPersistTaps="handled"
           refreshing={loading}
           onRefresh={() => {
+            void refreshProfile();
             void load(0);
           }}
           ListHeaderComponent={
@@ -223,6 +241,7 @@ export function CommunityScreen() {
                 <AppText style={styles.subtitle}>Chia sẻ trải nghiệm</AppText>
                 {userId ? (
                   <>
+                    <View style={styles.photoRow}><PublicAvatar author={viewer} /><AppText>{viewer?.displayName || 'Người dùng VISTA'}</AppText></View>
                     <TextInput
                       multiline
                       value={body}
@@ -254,6 +273,12 @@ export function CommunityScreen() {
                       ))}
                     </View>
                     <AppText>JPEG/PNG · tối đa 4 ảnh · 5 MiB mỗi ảnh</AppText>
+                    {feeling && <SelectionChip label={feelingText(feeling)} kind="cảm xúc" disabled={sending || !!pending} onEdit={() => { setShowPlaces(false); setShowFeelings(true); }} onRemove={() => setFeeling(null)} />}
+                    {place && <SelectionChip label={"📍 " + place.name} kind="địa điểm" disabled={sending || !!pending} onEdit={() => { setShowFeelings(false); setShowPlaces(true); }} onRemove={() => setPlace(null)} />}
+                    <AppButton label="Cảm xúc" variant="secondary" disabled={sending || !!pending} onPress={() => { setShowPlaces(false); setShowFeelings(true); }} />
+                    <AppButton label="Gắn địa điểm" variant="secondary" disabled={sending || !!pending} onPress={() => { setShowFeelings(false); setShowPlaces(true); }} />
+                    {showFeelings && <FeelingPicker value={feeling} onChange={setFeeling} onClose={() => setShowFeelings(false)} />}
+                    {showPlaces && <PlacePicker value={place?.id} onSelect={setPlace} onClose={() => setShowPlaces(false)} />}
                     <AppButton
                       label="Chọn ảnh"
                       variant="secondary"
@@ -315,8 +340,11 @@ export function CommunityScreen() {
           }
           renderItem={({ item }) => (
             <PostCard
+              key={`${item.id}:${userId ?? 'guest'}`}
               post={item}
               userId={userId}
+              viewer={viewer}
+              revision={feedRevision}
               onUpdate={(post) =>
                 setPosts((old) => old.map((p) => (p.id === post.id ? post : p)))
               }
@@ -353,20 +381,31 @@ export function CommunityScreen() {
 function PostCard({
   post,
   userId,
+  viewer,
+  revision,
   onUpdate,
   onDelete,
 }: {
   post: Post;
   userId: string | null;
+  viewer: { displayName?: string; avatarUrl?: string | null } | null;
+  revision: number;
   onUpdate: (post: Post) => void;
   onDelete: () => void;
 }) {
+  const [editPlace, setEditPlace] = useState<Place | null>(post.destination ?? null);
+  const [editFeeling, setEditFeeling] = useState<FeelingCode | null>(post.feeling ?? null);
+  const [placeChanged, setPlaceChanged] = useState(false);
+  const [feelingChanged, setFeelingChanged] = useState(false);
+  const [editPicker, setEditPicker] = useState<'place' | 'feeling' | null>(null);
   const [editing, setEditing] = useState(false),
     [body, setBody] = useState(post.body),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(''),
     [comments, setComments] = useState(false);
   const lock = useRef(false);
+  const [commentCount, setCommentCount] = useState(post.commentCount);
+  useEffect(() => { queueMicrotask(() => setCommentCount(post.commentCount)); }, [post.commentCount]);
   const mutate = async (remove: boolean) => {
     if (lock.current) return;
     lock.current = true;
@@ -380,6 +419,8 @@ function PostCard({
         const { data } = await api.patch<Post>(`/posts/${post.id}`, {
           body,
           version: post.version,
+          ...(placeChanged ? { destinationId: editPlace?.id ?? null } : {}),
+          ...(feelingChanged ? { feeling: editFeeling } : {}),
         });
         onUpdate(data);
         setEditing(false);
@@ -393,8 +434,9 @@ function PostCard({
   };
   return (
     <View style={styles.card}>
+      <PublicAvatar author={post.author} />
       <AppText style={styles.subtitle}>{post.author.displayName}</AppText>
-      <AppText style={styles.time}>{date(post.createdAt)}</AppText>
+      <AppText style={styles.time}>{date(post.createdAt)}{feelingText(post.feeling) ? ` · đang cảm thấy ${feelingText(post.feeling)}` : ''}</AppText>
       {editing ? (
         <>
           <TextInput
@@ -405,6 +447,12 @@ function PostCard({
             style={styles.input}
             accessibilityLabel="Sửa bài đăng"
           />
+          {(editPlace || (post.destinationId && !placeChanged)) && <SelectionChip label={'📍 ' + (editPlace?.name || 'Địa điểm không còn công khai')} kind="địa điểm" disabled={busy} onEdit={() => setEditPicker('place')} onRemove={() => { setEditPlace(null); setPlaceChanged(true); }} />}
+          {editFeeling && <SelectionChip label={feelingText(editFeeling)} kind="cảm xúc" disabled={busy} onEdit={() => setEditPicker('feeling')} onRemove={() => { setEditFeeling(null); setFeelingChanged(true); }} />}
+          <AppButton label="Đổi địa điểm" variant="secondary" disabled={busy} onPress={() => setEditPicker('place')} />
+          <AppButton label="Đổi cảm xúc" variant="secondary" disabled={busy} onPress={() => setEditPicker('feeling')} />
+          {editPicker === 'place' && <PlacePicker value={editPlace?.id} onSelect={value => { setEditPlace(value); setPlaceChanged(true); }} onClose={() => setEditPicker(null)} />}
+          {editPicker === 'feeling' && <FeelingPicker value={editFeeling} onChange={value => { setEditFeeling(value); setFeelingChanged(true); }} onClose={() => setEditPicker(null)} />}
           <AppButton
             label="Lưu thay đổi"
             disabled={busy || !body.trim()}
@@ -432,9 +480,9 @@ function PostCard({
           />
         ))}
       </View>
-      {post.destinationId && (
+      {post.destination && (
         <AppButton
-          label="Xem địa điểm"
+          label={post.destination?.name || 'Xem địa điểm'}
           variant="secondary"
           onPress={() =>
             router.push({
@@ -445,7 +493,7 @@ function PostCard({
         />
       )}
       <AppButton
-        label="Xem bình luận"
+        label={typeof commentCount === 'number' ? `Xem bình luận · ${commentCount} bình luận` : 'Xem bình luận'}
         variant="secondary"
         onPress={() => setComments(true)}
       />
@@ -457,6 +505,8 @@ function PostCard({
             disabled={busy}
             onPress={() => {
               setBody(post.body);
+              setEditPlace(post.destination ?? null); setEditFeeling(post.feeling ?? null);
+              setPlaceChanged(false); setFeelingChanged(false); setEditPicker(null);
               setEditing(true);
             }}
           />
@@ -487,221 +537,17 @@ function PostCard({
         onRequestClose={() => setComments(false)}
         animationType="slide"
       >
-        <Comments
+        <CommunityComments
           postId={post.id}
           userId={userId}
+          viewer={viewer}
+          revision={revision}
+          onCountChange={setCommentCount}
           onClose={() => setComments(false)}
           active={comments}
         />
       </Modal>
     </View>
-  );
-}
-function Comments({
-  postId,
-  userId,
-  onClose,
-  active,
-}: {
-  postId: string;
-  userId: string | null;
-  onClose: () => void;
-  active: boolean;
-}) {
-  const [loading, setLoading] = useState(true);
-  const [items, setItems] = useState<Comment[]>([]),
-    [page, setPage] = useState(-1),
-    [total, setTotal] = useState(0),
-    [body, setBody] = useState(''),
-    [edit, setEdit] = useState<Comment | null>(null),
-    [busy, setBusy] = useState(false),
-    [error, setError] = useState('');
-  const lock = useRef(false);
-  const load = useCallback(
-    async (next: number) => {
-      setLoading(true);
-      try {
-        const { data } = await api.get<components['schemas']['CommentPage']>(
-          `/posts/${postId}/comments`,
-          { params: { page: next, size: 10 } },
-        );
-        setItems((old) =>
-          next === 0
-            ? data.items
-            : [
-                ...new Map(
-                  [...old, ...data.items].map((c) => [c.id, c]),
-                ).values(),
-              ],
-        );
-        setTotal(data.total);
-        setPage(next);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [postId],
-  );
-  useEffect(() => {
-    if (active)
-      queueMicrotask(() => {
-        void load(0).catch((reason) => setError(apiErrorMessage(reason)));
-      });
-  }, [active, load]);
-  const run = async (work: () => Promise<unknown>) => {
-    if (lock.current) return;
-    lock.current = true;
-    setBusy(true);
-    setError('');
-    try {
-      await work();
-    } catch (reason) {
-      setError(apiErrorMessage(reason));
-    } finally {
-      lock.current = false;
-      setBusy(false);
-    }
-  };
-  return (
-    <SafeAreaView style={styles.screen}>
-      <KeyboardAvoidingView
-        style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <ScrollView
-          contentContainerStyle={styles.list}
-          keyboardShouldPersistTaps="handled"
-        >
-          <AppButton
-            label="Đóng bình luận"
-            variant="secondary"
-            onPress={onClose}
-          />
-          <AppText style={styles.title}>Bình luận</AppText>
-          {error ? (
-            <AppText accessibilityLiveRegion="polite">{error}</AppText>
-          ) : null}
-          <AppButton
-            label="Tải lại bình luận"
-            disabled={busy}
-            variant="secondary"
-            onPress={() => {
-              void run(() => load(0));
-            }}
-          />
-          {loading && (
-            <ActivityIndicator accessibilityLabel="Đang tải bình luận" />
-          )}
-          {!loading && !items.length && !error && (
-            <AppText>Chưa có bình luận.</AppText>
-          )}
-          {items.map((comment) => (
-            <View style={styles.card} key={comment.id}>
-              <AppText style={styles.subtitle}>
-                {comment.author.displayName}
-              </AppText>
-              <AppText style={styles.time}>{date(comment.createdAt)}</AppText>
-              <AppText>{comment.body}</AppText>
-              {comment.author.id === userId && (
-                <>
-                  <AppButton
-                    label="Sửa bình luận"
-                    variant="secondary"
-                    disabled={busy}
-                    onPress={() => {
-                      setEdit(comment);
-                      setBody(comment.body);
-                    }}
-                  />
-                  <AppButton
-                    label="Xóa bình luận"
-                    variant="secondary"
-                    disabled={busy}
-                    onPress={() =>
-                      Alert.alert('Xóa bình luận?', '', [
-                        { text: 'Hủy', style: 'cancel' },
-                        {
-                          text: 'Xóa',
-                          style: 'destructive',
-                          onPress: () => {
-                            void run(async () => {
-                              await api.delete(
-                                `/posts/${postId}/comments/${comment.id}`,
-                              );
-                              await load(0);
-                            });
-                          },
-                        },
-                      ])
-                    }
-                  />
-                </>
-              )}
-            </View>
-          ))}
-          {items.length < total && (
-            <AppButton
-              label="Tải thêm bình luận"
-              disabled={busy}
-              onPress={() => {
-                void run(() => load(page + 1));
-              }}
-            />
-          )}
-          {userId ? (
-            <View style={styles.card}>
-              <AppText>{edit ? 'Sửa bình luận' : 'Viết bình luận'}</AppText>
-              <TextInput
-                multiline
-                value={body}
-                onChangeText={setBody}
-                maxLength={2000}
-                editable={!busy}
-                placeholderTextColor={tokens.colors.muted}
-                style={styles.input}
-                accessibilityLabel="Nội dung bình luận"
-              />
-              <AppButton
-                label={busy ? 'Đang gửi…' : 'Lưu bình luận'}
-                disabled={busy || !body.trim()}
-                onPress={() => {
-                  void run(async () => {
-                    if (edit)
-                      await api.patch(`/posts/${postId}/comments/${edit.id}`, {
-                        body,
-                        version: edit.version,
-                      });
-                    else await api.post(`/posts/${postId}/comments`, { body });
-                    setBody('');
-                    setEdit(null);
-                    await load(0);
-                  });
-                }}
-              />
-              {edit && (
-                <AppButton
-                  label="Hủy sửa"
-                  disabled={busy}
-                  variant="secondary"
-                  onPress={() => {
-                    setEdit(null);
-                    setBody('');
-                  }}
-                />
-              )}
-            </View>
-          ) : (
-            <AppButton
-              label="Đăng nhập để bình luận"
-              onPress={() => {
-                onClose();
-                router.push('/(auth)/login');
-              }}
-            />
-          )}
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
   );
 }
 const styles = StyleSheet.create({

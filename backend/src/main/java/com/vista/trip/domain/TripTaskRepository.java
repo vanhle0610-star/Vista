@@ -13,4 +13,3 @@ public interface TripTaskRepository extends JpaRepository<TripTaskEntity, UUID> 
 
   Optional<TripTaskEntity> findByIdAndTripId(UUID id, UUID tripId);
 }
-

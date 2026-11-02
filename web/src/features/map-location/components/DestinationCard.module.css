@@ -1,13 +1,15 @@
 .card {
-  width: 340px;
+  width: 360px;
   max-width: calc(100vw - 32px);
   background: #ffffff;
   border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18), 0 2px 8px rgba(0, 0, 0, 0.06);
-  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.16), 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(226, 232, 240, 0.95);
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: stretch;
+  padding: 12px;
+  gap: 12px;
   animation: cardFadeUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -22,143 +24,138 @@
   }
 }
 
-/* ─── Landscape Cover Image ─── */
-.coverWrapper {
+/* ─── Square Thumbnail ─── */
+.thumbWrapper {
   position: relative;
-  width: 100%;
-  height: 135px;
-  background: #0f172a;
+  width: 96px;
+  height: 96px;
+  min-width: 96px;
+  border-radius: 12px;
   overflow: hidden;
+  background: #f1f5f9;
+  flex-shrink: 0;
 }
 
-.coverImage {
+.thumbImage {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
 
-.categoryBadge {
+.categoryChip {
   position: absolute;
-  bottom: 8px;
-  left: 10px;
-  background: #0284c7;
-  color: #ffffff;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 3px 10px;
-  border-radius: 9999px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
-  letter-spacing: 0.01em;
-}
-
-.closeBtn {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: rgba(15, 23, 42, 0.65);
-  color: #ffffff;
-  border: none;
-  font-size: 12px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.15s ease;
+  bottom: 4px;
+  left: 4px;
+  right: 4px;
+  background: rgba(15, 23, 42, 0.75);
   backdrop-filter: blur(2px);
+  color: #ffffff;
+  font-size: 9.5px;
+  font-weight: 650;
+  padding: 2px 4px;
+  border-radius: 4px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.closeBtn:hover {
-  background: rgba(15, 23, 42, 0.9);
-  transform: scale(1.08);
-}
-
-/* ─── Body ─── */
-.body {
-  padding: 12px 14px 14px;
+/* ─── Card Body ─── */
+.cardBody {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  background: #ffffff;
+  justify-content: space-between;
+  gap: 4px;
 }
 
-.titleRow {
+.topRow {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
 }
 
 .title {
   margin: 0;
-  font-size: 16.5px;
+  font-size: 14.5px;
   font-weight: 750;
   color: #0f172a;
-  line-height: 1.25;
+  line-height: 1.3;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.ratingBadge {
-  background: #fef3c7;
-  color: #b45309;
-  font-size: 11.5px;
-  font-weight: 800;
-  padding: 2px 7px;
-  border-radius: 6px;
-  white-space: nowrap;
+.closeBtn {
+  width: 32px;
+  height: 32px;
+  min-height: 32px;
+  padding: 0;
+  border-radius: 50%;
+  background: #f8fafc;
+  color: #64748b;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
-.locationRow {
+.closeBtn svg { display: block; flex-shrink: 0; }
+.closeBtn:focus-visible { outline: 2px solid #0284c7; outline-offset: 2px; }
+
+.closeBtn:hover {
+  background: #edf2f7;
+  color: #0f172a;
+}
+
+.ratingRow {
   display: flex;
   align-items: center;
   gap: 4px;
+  font-size: 11.5px;
+}
+
+.starIcon {
+  color: #f59e0b;
+}
+
+.ratingScore {
+  color: #0f172a;
+  font-weight: 750;
+}
+
+.reviewCount {
   color: #64748b;
-  font-size: 12px;
-  font-weight: 500;
+}
+
+.distanceRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11.5px;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .pinIcon {
-  font-size: 12px;
-}
-
-.metaRow {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 11.5px;
-  color: #64748b;
-  margin-top: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.starText {
-  color: #f59e0b;
-  font-weight: 750;
-}
-
-.reviewText {
-  color: #64748b;
-}
-
-.distText {
   color: #0284c7;
-  font-weight: 600;
+  flex-shrink: 0;
 }
 
-/* ─── Actions Row ─── */
-.actionsRow {
+/* ─── Action Row ─── */
+.actionRow {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 8px;
+  gap: 6px;
+  margin-top: 4px;
 }
 
 .btnDetails {
@@ -166,66 +163,62 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 7px 12px;
-  background: #ffffff;
-  border: 1.5px solid #cbd5e1;
-  border-radius: 10px;
-  color: #334155;
-  font-size: 12px;
-  font-weight: 650;
+  padding: 6px 12px;
+  background: #0284c7;
+  border: none;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 11.5px;
+  font-weight: 700;
   text-decoration: none;
   transition: all 0.15s ease;
   white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
 }
 
 .btnDetails:hover {
-  background: #f8fafc;
-  border-color: #94a3b8;
-  color: #0f172a;
+  background: #0369a1;
+  transform: translateY(-1px);
 }
 
 .btnDirections {
-  flex: 1.3;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  padding: 7px 14px;
-  background: #0284c7;
-  border: none;
-  border-radius: 10px;
-  color: #ffffff;
-  font-size: 12px;
+  gap: 4px;
+  padding: 6px 10px;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  color: #0284c7;
+  font-size: 11px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.15s ease;
   white-space: nowrap;
-  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
 }
 
 .btnDirections:hover {
-  background: #0369a1;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(2, 132, 199, 0.4);
+  background: #e0f2fe;
 }
 
-.btnTripAdd {
+.btnTrip {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 7px 9px;
-  background: #fff7ed;
-  border: 1px solid #fdba74;
-  border-radius: 10px;
-  color: #ea580c;
-  font-size: 11.5px;
+  width: 28px;
+  height: 28px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  color: #475569;
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
-  white-space: nowrap;
   transition: all 0.15s ease;
 }
 
-.btnTripAdd:hover {
-  background: #ffedd5;
-  border-color: #f97316;
+.btnTrip:hover {
+  background: #f1f5f9;
+  color: #0f172a;
 }

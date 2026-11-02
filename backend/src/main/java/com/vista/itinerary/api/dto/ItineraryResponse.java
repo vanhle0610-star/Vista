@@ -25,4 +25,3 @@ public record ItineraryResponse(UUID tripId, List<ItineraryDayResponse> days) {
       String source,
       Long version) {}
 }
-

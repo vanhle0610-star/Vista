@@ -238,12 +238,12 @@ public class DestinationService implements DestinationQueryService {
         // 3. Unaccented matching on slug (e.g. "da nang" -> "da-nang", "chua cau" -> "chua-cau")
         keywordPredicates.add(cb.like(root.get("slug"), tokenPattern));
         keywordPredicates.add(cb.like(root.get("slug"), "%" + slugKeyword + "%"));
-        // 4. Also match province or category slug if keyword names a location or category
+        // 4. Category has a name, not a slug; only Province exposes a slug.
         if (root.get("province") != null) {
           keywordPredicates.add(cb.like(root.get("province").get("slug"), tokenPattern));
         }
         if (root.get("category") != null) {
-          keywordPredicates.add(cb.like(root.get("category").get("slug"), tokenPattern));
+          keywordPredicates.add(cb.like(cb.lower(root.get("category").get("name")), rawPattern));
         }
 
         predicates.add(cb.or(keywordPredicates.toArray(new Predicate[0])));

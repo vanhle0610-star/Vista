@@ -48,7 +48,8 @@ export interface RouteStop {
   latitude: number;
   longitude: number;
   label: string;
-  tag: string; // 'A', 'B', 'C', 'D'...
+  id: string;
+  role: string;
   type?: 'origin' | 'waypoint' | 'destination';
 }
 
@@ -61,10 +62,16 @@ export interface MapViewAdapterProps {
   routeStops?: RouteStop[];
   onDirections?: (destination: DestinationMarker) => void;
   onRequestUserLocation?: () => void;
+  gpsStatus?: GeolocationStatus;
+  gpsError?: string | null;
   initialCenter?: { latitude: number; longitude: number; zoom?: number };
   onStatusChange?: (status: 'loading' | 'ready' | 'error') => void;
   className?: string;
   showSelectedCard?: boolean;
   cameraTarget?: { latitude: number; longitude: number; zoom?: number } | null;
   onAddToTrip?: (destination: DestinationMarker) => void;
+  route?: import('./routing/routes').RouteResult | null;
+  currentCityName?: string;
+  onOpenRouteDetail?: () => void;
+  sidebarCollapsed?: boolean;
 }

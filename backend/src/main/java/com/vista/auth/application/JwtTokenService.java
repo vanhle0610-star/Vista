@@ -112,9 +112,7 @@ public class JwtTokenService {
     }
   }
 
-  /**
-   * Validate access token with detailed result (VALID, EXPIRED, INVALID).
-   */
+  /** Validate access token with detailed result (VALID, EXPIRED, INVALID). */
   public JwtValidationResult validateAccessTokenDetailed(String token) {
     if (token == null || token.isBlank()) {
       return JwtValidationResult.INVALID;

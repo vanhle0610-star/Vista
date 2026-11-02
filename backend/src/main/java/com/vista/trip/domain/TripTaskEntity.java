@@ -92,4 +92,3 @@ public class TripTaskEntity {
     return createdAt;
   }
 }
-

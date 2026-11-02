@@ -21,8 +21,7 @@ public class RagAdminController {
   }
 
   @PostMapping("/reindex")
-  public IngestionResult reindex(
-      @RequestParam(defaultValue = "500") @Min(1) @Max(1000) int limit) {
+  public IngestionResult reindex(@RequestParam(defaultValue = "500") @Min(1) @Max(1000) int limit) {
     return ingestionService.ingestPublishedDestinations(limit);
   }
 }

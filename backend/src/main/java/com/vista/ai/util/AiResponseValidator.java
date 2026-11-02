@@ -81,7 +81,8 @@ public final class AiResponseValidator {
     if (expectedTotalDays < 1 || expectedTotalDays > MAX_DAYS) {
       expectedTotalDays = actualDaysSize;
     }
-    // Dung sai cho model nhỏ: nếu totalDays lệch với kích thước mảng days thật, tự đồng bộ theo kích thước mảng days
+    // Dung sai cho model nhỏ: nếu totalDays lệch với kích thước mảng days thật, tự đồng bộ theo
+    // kích thước mảng days
     if (rootNode instanceof ObjectNode objectNode) {
       objectNode.put("totalDays", actualDaysSize);
     }
@@ -178,10 +179,14 @@ public final class AiResponseValidator {
       JsonNode node, String targetField, List<String> aliases, String defaultValue) {
     if (node instanceof ObjectNode objectNode) {
       JsonNode current = objectNode.get(targetField);
-      if (current == null || current.isNull() || (current.isTextual() && current.asText().isBlank())) {
+      if (current == null
+          || current.isNull()
+          || (current.isTextual() && current.asText().isBlank())) {
         for (String alias : aliases) {
           JsonNode aliasNode = objectNode.get(alias);
-          if (aliasNode != null && !aliasNode.isNull() && (!aliasNode.isTextual() || !aliasNode.asText().isBlank())) {
+          if (aliasNode != null
+              && !aliasNode.isNull()
+              && (!aliasNode.isTextual() || !aliasNode.asText().isBlank())) {
             objectNode.set(targetField, aliasNode);
             return;
           }

@@ -72,7 +72,9 @@ public class KnowledgeIngestionService {
             title=EXCLUDED.title, content_hash=EXCLUDED.content_hash, status='PUBLISHED',
             source_revision=ai_knowledge_documents.source_revision + 1, updated_at=CURRENT_TIMESTAMP
           """,
-          destination.id(), destination.name(), contentHash);
+          destination.id(),
+          destination.name(),
+          contentHash);
       jdbcTemplate.update(
           """
           INSERT INTO ai_knowledge_chunks(document_id, chunk_index, content, metadata_json, embedding, embedding_model, embedding_version)
@@ -91,7 +93,8 @@ public class KnowledgeIngestionService {
           destination.id());
       indexed++;
     }
-    // Đồng bộ trạng thái UNPUBLISHED cho các documents không còn trong danh sách PUBLISHED của hệ thống
+    // Đồng bộ trạng thái UNPUBLISHED cho các documents không còn trong danh sách PUBLISHED của hệ
+    // thống
     jdbcTemplate.update(
         """
         UPDATE ai_knowledge_documents
@@ -104,9 +107,18 @@ public class KnowledgeIngestionService {
   }
 
   private String toContent(DestinationSummary item) {
-    return "Tên: " + item.name() + "\nTỉnh: " + item.provinceName() + "\nDanh mục: "
-        + item.categoryName() + "\nGiá: " + item.priceMin() + " - " + item.priceMax()
-        + " VND\nGiờ mở cửa: " + item.openingHours();
+    return "Tên: "
+        + item.name()
+        + "\nTỉnh: "
+        + item.provinceName()
+        + "\nDanh mục: "
+        + item.categoryName()
+        + "\nGiá: "
+        + item.priceMin()
+        + " - "
+        + item.priceMax()
+        + " VND\nGiờ mở cửa: "
+        + item.openingHours();
   }
 
   private String toMetadata(DestinationSummary item) {
@@ -122,8 +134,9 @@ public class KnowledgeIngestionService {
 
   private String sha256(String value) {
     try {
-      return HexFormat.of().formatHex(
-          MessageDigest.getInstance("SHA-256").digest(value.getBytes(StandardCharsets.UTF_8)));
+      return HexFormat.of()
+          .formatHex(
+              MessageDigest.getInstance("SHA-256").digest(value.getBytes(StandardCharsets.UTF_8)));
     } catch (NoSuchAlgorithmException exception) {
       throw new IllegalStateException("SHA-256 unavailable", exception);
     }

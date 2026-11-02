@@ -64,9 +64,7 @@ public class OpenAiCompatibleProvider implements AiProvider {
     try {
       String modelName = properties.localModel() != null ? properties.localModel().trim() : "";
       String effectiveUserPrompt =
-          modelName.toLowerCase().startsWith("qwen3")
-              ? userPrompt + "\n/no_think"
-              : userPrompt;
+          modelName.toLowerCase().startsWith("qwen3") ? userPrompt + "\n/no_think" : userPrompt;
 
       Map<String, Object> payload = new LinkedHashMap<>();
       payload.put("model", modelName);

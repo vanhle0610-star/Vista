@@ -35,8 +35,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
       if (token != null) {
         var validationResult = jwtTokenService.validateAccessTokenDetailed(token);
-        boolean isValid = (validationResult == JwtTokenService.JwtValidationResult.VALID)
-            || jwtTokenService.validateAccessToken(token);
+        boolean isValid =
+            (validationResult == JwtTokenService.JwtValidationResult.VALID)
+                || jwtTokenService.validateAccessToken(token);
 
         if (isValid) {
           try {
