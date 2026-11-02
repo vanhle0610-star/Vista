@@ -11,3 +11,4 @@ set JWT_SECRET=vista-local-dev-super-secure-key-2026-minimum-256-bits-random!
 set GOOGLE_CLIENT_ID=577926332144-23qceg2o944n9hg5iv7nai2vr0s9u2d1.apps.googleusercontent.com
 
 call .\gradlew.bat bootRun
+ -
