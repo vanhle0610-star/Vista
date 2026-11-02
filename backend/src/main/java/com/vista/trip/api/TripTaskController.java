@@ -61,8 +61,7 @@ public class TripTaskController {
 
   @DeleteMapping("/{taskId}")
   @Operation(summary = "Xóa nhiệm vụ (Chỉ dành cho Trưởng nhóm / Owner)")
-  public ResponseEntity<Void> deleteTask(
-      @PathVariable UUID tripId, @PathVariable UUID taskId) {
+  public ResponseEntity<Void> deleteTask(@PathVariable UUID tripId, @PathVariable UUID taskId) {
     UUID currentUserId = currentUserProvider.getCurrentUserId();
     tripAccessService.requireOwner(tripId, currentUserId);
     tripTaskService.deleteTask(tripId, taskId);
@@ -78,4 +77,3 @@ public class TripTaskController {
     return ResponseEntity.ok(tripTaskService.toggleTaskStatus(tripId, taskId));
   }
 }
-

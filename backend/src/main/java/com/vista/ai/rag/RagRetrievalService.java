@@ -5,9 +5,9 @@ import io.micrometer.core.instrument.Timer;
 import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -140,4 +140,3 @@ public class RagRetrievalService {
 
   public record RagHit(UUID chunkId, UUID sourceId, String title, String content, double score) {}
 }
-

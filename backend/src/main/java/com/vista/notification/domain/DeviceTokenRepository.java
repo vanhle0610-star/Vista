@@ -24,7 +24,8 @@ public interface DeviceTokenRepository extends JpaRepository<DeviceTokenEntity, 
 
   /** Vô hiệu hóa token chỉ khi nó thuộc về user hiện tại (chống IDOR). */
   @Modifying
-  @Query("UPDATE DeviceTokenEntity d SET d.active = false WHERE d.userId = :userId AND d.token = :token")
+  @Query(
+      "UPDATE DeviceTokenEntity d SET d.active = false WHERE d.userId = :userId AND d.token = :token")
   int deactivateByUserAndToken(@Param("userId") UUID userId, @Param("token") String token);
 
   /** Vô hiệu hóa toàn bộ token của user (logout all devices). */

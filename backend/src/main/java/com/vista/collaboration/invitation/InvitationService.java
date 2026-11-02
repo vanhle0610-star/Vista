@@ -11,7 +11,6 @@ import com.vista.trip.domain.TripMemberRepository;
 import com.vista.trip.domain.TripMemberRole;
 import com.vista.trip.domain.TripMemberStatus;
 import com.vista.trip.domain.TripRepository;
-import com.vista.user.domain.UserEntity;
 import com.vista.user.infrastructure.UserRepository;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;

@@ -55,4 +55,3 @@ public class TripTaskService {
     return TaskResponse.from(saved);
   }
 }
-

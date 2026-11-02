@@ -5,13 +5,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 public record TaskResponse(
-    UUID id,
-    UUID tripId,
-    String title,
-    UUID assigneeId,
-    boolean isCompleted,
-    Instant createdAt
-) {
+    UUID id, UUID tripId, String title, UUID assigneeId, boolean isCompleted, Instant createdAt) {
   public static TaskResponse from(TripTaskEntity entity) {
     return new TaskResponse(
         entity.getId(),
@@ -19,8 +13,6 @@ public record TaskResponse(
         entity.getTitle(),
         entity.getAssigneeId(),
         entity.isCompleted(),
-        entity.getCreatedAt()
-    );
+        entity.getCreatedAt());
   }
 }
-

@@ -6,8 +6,8 @@ import java.time.LocalTime;
 import java.util.UUID;
 
 /**
- * W5-TV3-04: DTO tiếp nhận gợi ý AI từ TV4 để thêm vào lịch trình.
- * Yêu cầu cờ xác nhận 'confirmed = true' mới được lưu vào DB.
+ * W5-TV3-04: DTO tiếp nhận gợi ý AI từ TV4 để thêm vào lịch trình. Yêu cầu cờ xác nhận 'confirmed =
+ * true' mới được lưu vào DB.
  */
 public class CreateAiItineraryItemRequest {
 
@@ -45,8 +45,7 @@ public class CreateAiItineraryItemRequest {
     this.confirmed = confirmed;
   }
 
-  @AssertTrue(message = "Phải cung cấp destinationId hoặc customStopName")
-  public boolean isDestinationOrCustomStop() {
+  @AssertTrue(message = "Phải cung cấp destinationId hoặc customStopName") public boolean isDestinationOrCustomStop() {
     return destinationId != null || (customStopName != null && !customStopName.isBlank());
   }
 
@@ -114,4 +113,3 @@ public class CreateAiItineraryItemRequest {
     this.confirmed = confirmed;
   }
 }
-

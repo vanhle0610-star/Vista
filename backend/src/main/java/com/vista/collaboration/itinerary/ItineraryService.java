@@ -65,15 +65,14 @@ public class ItineraryService {
 
     if (dayRepository.existsByTripIdAndDayNumber(tripId, request.getDayNumber())) {
       throw new ConflictException(
-          "Ngày số "
-              + request.getDayNumber()
-              + " đã tồn tại trong lịch trình chuyến đi");
+          "Ngày số " + request.getDayNumber() + " đã tồn tại trong lịch trình chuyến đi");
     }
 
     ItineraryDay day = new ItineraryDay(tripId, request.getDayNumber(), request.getTripDate());
     ItineraryDay saved = dayRepository.save(day);
 
-    notifyTripMembers(tripId, "Lịch trình đã thay đổi", "Một ngày mới đã được thêm vào lịch trình", userId);
+    notifyTripMembers(
+        tripId, "Lịch trình đã thay đổi", "Một ngày mới đã được thêm vào lịch trình", userId);
     return ItineraryDayResponse.from(saved);
   }
 
@@ -177,12 +176,9 @@ public class ItineraryService {
           itemRepository
               .findById(itemId)
               .orElseThrow(
-                  () ->
-                      new ResourceNotFoundException(
-                          "Không tìm thấy điểm dừng: " + itemId));
+                  () -> new ResourceNotFoundException("Không tìm thấy điểm dừng: " + itemId));
       if (!item.getDay().getId().equals(dayId)) {
-        throw new ConflictException(
-            "Điểm dừng " + itemId + " không thuộc ngày " + dayId);
+        throw new ConflictException("Điểm dừng " + itemId + " không thuộc ngày " + dayId);
       }
       item.setSortOrder(i);
       item.setUpdatedBy(userId);
@@ -205,7 +201,8 @@ public class ItineraryService {
 
   public ItineraryItemResponse createAiItem(
       UUID tripId, UUID userId, CreateAiItineraryItemRequest request, boolean confirmedParam) {
-    boolean isConfirmed = confirmedParam || (request.getConfirmed() != null && request.getConfirmed());
+    boolean isConfirmed =
+        confirmedParam || (request.getConfirmed() != null && request.getConfirmed());
     if (!isConfirmed) {
       throw new IllegalArgumentException(
           "Chưa xác nhận gợi ý AI - yêu cầu confirmed = true để lưu vào lịch trình");
@@ -214,7 +211,8 @@ public class ItineraryService {
     tripAccessService.requireMember(tripId, userId);
     ItineraryDay day = findDayOrThrow(request.getDayId());
     if (!day.getTripId().equals(tripId)) {
-      throw new ConflictException("Ngày lịch trình " + request.getDayId() + " không thuộc chuyến đi " + tripId);
+      throw new ConflictException(
+          "Ngày lịch trình " + request.getDayId() + " không thuộc chuyến đi " + tripId);
     }
 
     if (request.getStartTime() != null
@@ -256,9 +254,7 @@ public class ItineraryService {
         tripRepository
             .findById(tripId)
             .orElseThrow(
-                () ->
-                    new ResourceNotFoundException(
-                        "Không tìm thấy chuyến đi: " + tripId));
+                () -> new ResourceNotFoundException("Không tìm thấy chuyến đi: " + tripId));
 
     List<ItineraryDay> days = dayRepository.findByTripIdOrderByDayNumberAsc(tripId);
     List<ItineraryValidationWarning> warnings = new ArrayList<>();
@@ -443,20 +439,13 @@ public class ItineraryService {
     return dayRepository
         .findById(dayId)
         .orElseThrow(
-            () ->
-                new ResourceNotFoundException(
-                    "Không tìm thấy ngày lịch trình với ID: "
-                        + dayId));
+            () -> new ResourceNotFoundException("Không tìm thấy ngày lịch trình với ID: " + dayId));
   }
 
   private ItineraryItem findItemOrThrow(UUID itemId) {
     return itemRepository
         .findById(itemId)
         .orElseThrow(
-            () ->
-                new ResourceNotFoundException(
-                    "Không tìm thấy mục lịch trình với ID: "
-                        + itemId));
+            () -> new ResourceNotFoundException("Không tìm thấy mục lịch trình với ID: " + itemId));
   }
 }
-

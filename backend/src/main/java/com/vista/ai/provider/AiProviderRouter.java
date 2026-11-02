@@ -11,7 +11,9 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-/** Explicit provider routing supporting Local (Ollama/vLLM), Google Gemini, and Anthropic Claude. */
+/**
+ * Explicit provider routing supporting Local (Ollama/vLLM), Google Gemini, and Anthropic Claude.
+ */
 @Component
 public class AiProviderRouter {
   private static final Logger log = LoggerFactory.getLogger(AiProviderRouter.class);

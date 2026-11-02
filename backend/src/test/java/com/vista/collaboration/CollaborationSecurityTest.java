@@ -13,9 +13,7 @@ import com.vista.collaboration.invitation.InvitationPreviewResponse;
 import com.vista.collaboration.invitation.InvitationRepository;
 import com.vista.collaboration.invitation.InvitationService;
 import com.vista.collaboration.itinerary.CreateItineraryDayRequest;
-import com.vista.collaboration.itinerary.ItineraryDay;
 import com.vista.collaboration.itinerary.ItineraryDayRepository;
-import com.vista.collaboration.itinerary.ItineraryItem;
 import com.vista.collaboration.itinerary.ItineraryItemRepository;
 import com.vista.collaboration.itinerary.ItineraryService;
 import com.vista.collaboration.proposal.CreateProposalRequest;
@@ -28,7 +26,6 @@ import com.vista.trip.domain.TripEntity;
 import com.vista.trip.domain.TripRepository;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,11 +38,11 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
- * W7-TV3-02: Kiểm thử phân quyền & bảo mật IDOR (E2E-09 phần TV3).
- * - Người ngoài chuyến (User C) gọi API lịch trình, lời mời, đề xuất của Trip 1 → bị chặn 403 Forbidden.
- * - Thành viên thường (MEMBER) thực hiện hành động chỉ dành cho OWNER (thu hồi lời mời, duyệt đề xuất) → bị chặn 403.
- * - ID tài nguyên không tồn tại → 404 Not Found.
- * - Public Preview không làm rò rỉ token bí mật và không yêu cầu đăng nhập.
+ * W7-TV3-02: Kiểm thử phân quyền & bảo mật IDOR (E2E-09 phần TV3). - Người ngoài chuyến (User C)
+ * gọi API lịch trình, lời mời, đề xuất của Trip 1 → bị chặn 403 Forbidden. - Thành viên thường
+ * (MEMBER) thực hiện hành động chỉ dành cho OWNER (thu hồi lời mời, duyệt đề xuất) → bị chặn 403. -
+ * ID tài nguyên không tồn tại → 404 Not Found. - Public Preview không làm rò rỉ token bí mật và
+ * không yêu cầu đăng nhập.
  */
 @ExtendWith(MockitoExtension.class)
 class CollaborationSecurityTest {
@@ -89,11 +86,7 @@ class CollaborationSecurityTest {
             notificationService,
             null);
     proposalService =
-        new ProposalService(
-            proposalRepository,
-            null,
-            tripAccessService,
-            notificationService);
+        new ProposalService(proposalRepository, null, tripAccessService, notificationService);
 
     trip =
         new TripEntity(
@@ -116,7 +109,8 @@ class CollaborationSecurityTest {
   }
 
   @Test
-  @DisplayName("W7-02 Outsider thêm ngày vào lịch trình chuyến khác → bị chặn 403 AccessDeniedException")
+  @DisplayName(
+      "W7-02 Outsider thêm ngày vào lịch trình chuyến khác → bị chặn 403 AccessDeniedException")
   void outsiderCreateDay_throwsAccessDenied() {
     doThrow(new AccessDeniedException("Bạn không phải thành viên"))
         .when(tripAccessService)
@@ -156,11 +150,13 @@ class CollaborationSecurityTest {
   // ── 3. MEMBER thực hiện quyền OWNER → 403 ──────────────────────────────────
 
   @Test
-  @DisplayName("W7-02 MEMBER thu hồi lời mời (chỉ OWNER mới được) → bị chặn 403 AccessDeniedException")
+  @DisplayName(
+      "W7-02 MEMBER thu hồi lời mời (chỉ OWNER mới được) → bị chặn 403 AccessDeniedException")
   void memberRevokeInvitation_throwsAccessDenied() {
     UUID invId = UUID.randomUUID();
     Invitation inv =
-        new Invitation(TRIP_ID, OWNER_ID, "invitee@example.com", "hash_tok", Instant.now().plusSeconds(3600));
+        new Invitation(
+            TRIP_ID, OWNER_ID, "invitee@example.com", "hash_tok", Instant.now().plusSeconds(3600));
     ReflectionTestUtils.setField(inv, "id", invId);
 
     when(invitationRepository.findById(invId)).thenReturn(Optional.of(inv));
@@ -174,7 +170,8 @@ class CollaborationSecurityTest {
   }
 
   @Test
-  @DisplayName("W7-02 MEMBER duyệt đề xuất (chỉ OWNER mới được) → bị chặn 403 AccessDeniedException")
+  @DisplayName(
+      "W7-02 MEMBER duyệt đề xuất (chỉ OWNER mới được) → bị chặn 403 AccessDeniedException")
   void memberApproveProposal_throwsAccessDenied() {
     UUID propId = UUID.randomUUID();
     Proposal proposal = new Proposal(TRIP_ID, MEMBER_ID, UUID.randomUUID(), "Ăn trưa");
@@ -192,10 +189,12 @@ class CollaborationSecurityTest {
   // ── 4. Xem trước lời mời công khai (Preview) an toàn ───────────────────────
 
   @Test
-  @DisplayName("W7-02 Preview lời mời qua link token hoạt động an toàn, không rò rỉ dữ liệu nhạy cảm")
+  @DisplayName(
+      "W7-02 Preview lời mời qua link token hoạt động an toàn, không rò rỉ dữ liệu nhạy cảm")
   void previewInvitation_returnsPublicMetadataSafely() {
     Invitation inv =
-        new Invitation(TRIP_ID, OWNER_ID, "guest@gmail.com", "hash_abc123", Instant.now().plusSeconds(3600));
+        new Invitation(
+            TRIP_ID, OWNER_ID, "guest@gmail.com", "hash_abc123", Instant.now().plusSeconds(3600));
     ReflectionTestUtils.setField(inv, "id", UUID.randomUUID());
     ReflectionTestUtils.setField(inv, "createdAt", Instant.now());
 
@@ -223,4 +222,3 @@ class CollaborationSecurityTest {
         .hasMessageContaining("Không tìm thấy chuyến đi");
   }
 }
-

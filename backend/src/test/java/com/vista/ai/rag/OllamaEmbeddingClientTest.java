@@ -11,4 +11,3 @@ class OllamaEmbeddingClientTest {
         .isEqualTo("[0.25,-1.5,2.0]");
   }
 }
-

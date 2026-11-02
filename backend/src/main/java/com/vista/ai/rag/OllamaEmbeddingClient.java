@@ -60,7 +60,8 @@ public class OllamaEmbeddingClient {
       JsonNode values = objectMapper.readTree(response.body()).path("embeddings").path(0);
       if (!values.isArray() || values.size() != 1024) return Optional.empty();
       float[] result = new float[values.size()];
-      for (int index = 0; index < values.size(); index++) result[index] = values.get(index).floatValue();
+      for (int index = 0; index < values.size(); index++)
+        result[index] = values.get(index).floatValue();
       return Optional.of(result);
     } catch (InterruptedException exception) {
       Thread.currentThread().interrupt();
@@ -79,4 +80,3 @@ public class OllamaEmbeddingClient {
     return value.append(']').toString();
   }
 }
-

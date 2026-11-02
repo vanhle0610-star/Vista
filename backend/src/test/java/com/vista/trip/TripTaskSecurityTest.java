@@ -68,7 +68,8 @@ class TripTaskSecurityTest {
     when(tripTaskService.getTasksByTrip(tripId))
         .thenReturn(
             List.of(
-                new TaskResponse(taskId, tripId, "Chuẩn bị lều trại", actorId, false, Instant.now())));
+                new TaskResponse(
+                    taskId, tripId, "Chuẩn bị lều trại", actorId, false, Instant.now())));
 
     mockMvc
         .perform(get("/api/v1/trips/{tripId}/tasks", tripId))
@@ -86,9 +87,7 @@ class TripTaskSecurityTest {
         .when(tripAccessService)
         .requireMember(tripId, actorId);
 
-    mockMvc
-        .perform(get("/api/v1/trips/{tripId}/tasks", tripId))
-        .andExpect(status().isForbidden());
+    mockMvc.perform(get("/api/v1/trips/{tripId}/tasks", tripId)).andExpect(status().isForbidden());
   }
 
   @Test
@@ -98,7 +97,8 @@ class TripTaskSecurityTest {
     doNothing().when(tripAccessService).requireOwner(tripId, actorId);
     var request = new CreateTaskRequest("Mua vé máy bay", actorId);
     when(tripTaskService.createTask(eq(tripId), any(CreateTaskRequest.class)))
-        .thenReturn(new TaskResponse(taskId, tripId, "Mua vé máy bay", actorId, false, Instant.now()));
+        .thenReturn(
+            new TaskResponse(taskId, tripId, "Mua vé máy bay", actorId, false, Instant.now()));
 
     mockMvc
         .perform(
@@ -161,7 +161,8 @@ class TripTaskSecurityTest {
   void memberCanToggleTask() throws Exception {
     doNothing().when(tripAccessService).requireMember(tripId, actorId);
     when(tripTaskService.toggleTaskStatus(tripId, taskId))
-        .thenReturn(new TaskResponse(taskId, tripId, "Chuẩn bị lều trại", actorId, true, Instant.now()));
+        .thenReturn(
+            new TaskResponse(taskId, tripId, "Chuẩn bị lều trại", actorId, true, Instant.now()));
 
     mockMvc
         .perform(patch("/api/v1/trips/{tripId}/tasks/{taskId}/toggle", tripId, taskId))
@@ -171,4 +172,3 @@ class TripTaskSecurityTest {
     verify(tripAccessService).requireMember(tripId, actorId);
   }
 }
-

@@ -11,11 +11,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Tiện ích phân tích và kiểm định giờ mở cửa (Opening Hours) thực tế của địa điểm du lịch.
- * Đảm bảo:
- * 1. Không mặc định mở cửa 24/7 khi thiếu dữ liệu (đánh dấu UNVERIFIED).
- * 2. Kiểm tra ngày trong tuần (Mon-Sun), phát hiện ngày đóng cửa định kỳ.
- * 3. Kiểm định khung giờ hoạt động thực tế [openTime, closeTime] kèm giờ nhận khách cuối (last entry).
+ * Tiện ích phân tích và kiểm định giờ mở cửa (Opening Hours) thực tế của địa điểm du lịch. Đảm bảo:
+ * 1. Không mặc định mở cửa 24/7 khi thiếu dữ liệu (đánh dấu UNVERIFIED). 2. Kiểm tra ngày trong
+ * tuần (Mon-Sun), phát hiện ngày đóng cửa định kỳ. 3. Kiểm định khung giờ hoạt động thực tế
+ * [openTime, closeTime] kèm giờ nhận khách cuối (last entry).
  */
 public final class OpeningHoursHelper {
 
@@ -25,11 +24,7 @@ public final class OpeningHoursHelper {
       Pattern.compile("(\\d{1,2}:\\d{2})\\s*-\\s*(\\d{1,2}:\\d{2})");
 
   public record ScheduleWindow(
-      boolean isVerified,
-      boolean isOpen,
-      LocalTime openTime,
-      LocalTime closeTime,
-      String rawText) {
+      boolean isVerified, boolean isOpen, LocalTime openTime, LocalTime closeTime, String rawText) {
 
     public boolean canAccommodate(LocalTime startTime, LocalTime endTime) {
       if (!isVerified) {
@@ -84,7 +79,10 @@ public final class OpeningHoursHelper {
       rawValue = openingHoursJson.trim();
     }
 
-    if (rawValue == null || rawValue.isBlank() || "-".equals(rawValue) || "unknown".equalsIgnoreCase(rawValue)) {
+    if (rawValue == null
+        || rawValue.isBlank()
+        || "-".equals(rawValue)
+        || "unknown".equalsIgnoreCase(rawValue)) {
       if (isJsonSchedule) {
         return new ScheduleWindow(true, false, null, null, "Đóng cửa vào " + dayKey);
       }
@@ -92,7 +90,10 @@ public final class OpeningHoursHelper {
     }
 
     String lower = rawValue.toLowerCase(Locale.ROOT);
-    if (lower.contains("đóng") || lower.contains("close") || lower.contains("nghỉ") || lower.contains("off")) {
+    if (lower.contains("đóng")
+        || lower.contains("close")
+        || lower.contains("nghỉ")
+        || lower.contains("off")) {
       return new ScheduleWindow(true, false, null, null, "Đóng cửa vào " + dayKey);
     }
 

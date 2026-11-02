@@ -197,5 +197,4 @@ public class AuthController {
     var response = authService.resetPassword(request);
     return ResponseEntity.ok(response);
   }
-
 }
