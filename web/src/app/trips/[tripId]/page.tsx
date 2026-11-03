@@ -9,6 +9,13 @@ import {
   getSampleProposals,
 } from '@/data/sampleItineraries';
 import {
+  validateAndParseTripDates,
+  getTripDayMeta,
+  getThemeForDay,
+  resolveTripStatusDetails,
+  TripStatusResult,
+} from '@/utils/tripDateUtils';
+import {
   ArrowLeft,
   Calendar,
   MapPin,
@@ -531,6 +538,18 @@ export default function TripDetailPage() {
   const [proposals, setProposals] = useState(() => getSampleProposals(''));
 
   // ─── TUẦN 3 & TUẦN 4 STATES ───────────────────────────────────────────────
+  const [currentDateTick, setCurrentDateTick] = useState<number>(() => Date.now());
+
+  useEffect(() => {
+    const handleSyncDate = () => setCurrentDateTick(Date.now());
+    window.addEventListener('visibilitychange', handleSyncDate);
+    window.addEventListener('focus', handleSyncDate);
+    return () => {
+      window.removeEventListener('visibilitychange', handleSyncDate);
+      window.removeEventListener('focus', handleSyncDate);
+    };
+  }, []);
+
   // Optimistic locking (W4-TV3-01)
   const [optimisticConflictAlert, setOptimisticConflictAlert] = useState<string | null>(null);
 
@@ -821,13 +840,25 @@ export default function TripDetailPage() {
       image: 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=800&q=80',
     };
 
-    const days = (trip.itineraryDays || []).map((d) => {
-      if (d.dayNumber === newStopDay) {
-        return { ...d, activities: [...d.activities, newAct] };
-      }
-      return d;
-    });
-    const updated = { ...trip, itineraryDays: days };
+    const currentDays = [...(trip.itineraryDays || [])];
+    const targetDayIdx = currentDays.findIndex((d) => d.dayNumber === newStopDay);
+
+    if (targetDayIdx >= 0) {
+      currentDays[targetDayIdx] = {
+        ...currentDays[targetDayIdx],
+        activities: [...(currentDays[targetDayIdx].activities || []), newAct],
+      };
+    } else {
+      const dayMeta = getTripDayMeta(trip.startDate, trip.endDate, newStopDay);
+      currentDays.push({
+        dayNumber: newStopDay,
+        title: `Ngày ${newStopDay} — Lộ trình tự do`,
+        dateStr: dayMeta.fullDateStr || `Ngày ${newStopDay}`,
+        activities: [newAct],
+      });
+      currentDays.sort((a, b) => a.dayNumber - b.dayNumber);
+    }
+    const updated = { ...trip, itineraryDays: currentDays };
     persistTrip(updated);
     setShowAddStopModal(false);
     setNewStopTitle('');
@@ -1057,49 +1088,43 @@ export default function TripDetailPage() {
     return getDestinationHeroImage(trip?.destination || '');
   }, [trip]);
 
+  const dateValidation = useMemo(() => {
+    return validateAndParseTripDates(trip?.startDate, trip?.endDate);
+  }, [trip?.startDate, trip?.endDate]);
+
+  const tripStatusResult = useMemo(() => {
+    return resolveTripStatusDetails(trip?.startDate, trip?.endDate, trip?.status, new Date(currentDateTick));
+  }, [trip?.startDate, trip?.endDate, trip?.status, currentDateTick]);
+
+  const tripDurationDays = useMemo(() => {
+    if (dateValidation.isValid && typeof dateValidation.totalDays === 'number') {
+      return dateValidation.totalDays;
+    }
+    return Math.max(1, trip?.itineraryDays?.length || 1);
+  }, [dateValidation, trip?.itineraryDays]);
+
+  const totalDays = tripDurationDays;
+
   const displayDateText = useMemo(() => {
-    if (!trip) return '24/11 – 26/11/2026';
+    if (!trip) return 'Chưa định ngày';
     const s = trip.startDate?.trim();
     const e = trip.endDate?.trim();
 
-    const parseDateObj = (str?: string) => {
-      if (!str) return null;
-      if (str.includes('-')) {
-        const parts = str.split('-');
-        if (parts[0].length === 4) {
-          return { y: parseInt(parts[0], 10), m: parseInt(parts[1], 10), d: parseInt(parts[2], 10) };
-        }
-      }
-      if (str.includes('/')) {
-        const parts = str.split('/');
-        if (parts[2]?.length === 4) {
-          return { y: parseInt(parts[2], 10), m: parseInt(parts[1], 10), d: parseInt(parts[0], 10) };
-        }
-        if (parts[0]?.length === 4) {
-          return { y: parseInt(parts[0], 10), m: parseInt(parts[1], 10), d: parseInt(parts[2], 10) };
-        }
-      }
-      return null;
-    };
-
-    const d1 = parseDateObj(s);
-    let d2 = parseDateObj(e);
-
-    // If d2 is invalid or before d1, default to d1 + 2 days
-    if (d1 && (!d2 || d2.d < d1.d)) {
-      d2 = { y: d1.y, m: d1.m, d: d1.d + 2 };
+    if (!s && !e) return 'Chưa định ngày';
+    if (!dateValidation.isValid || !dateValidation.startDate || !dateValidation.endDate) {
+      return s && e ? `${s} – ${e}` : (s || e || 'Chưa định ngày');
     }
 
-    if (d1 && d2) {
-      const pad = (n: number) => String(n).padStart(2, '0');
-      if (d1.m === d2.m && d1.y === d2.y) {
-        return `${pad(d1.d)} – ${pad(d2.d)}/${pad(d1.m)}/${d1.y}`;
-      }
-      return `${pad(d1.d)}/${pad(d1.m)} – ${pad(d2.d)}/${pad(d2.m)}/${d2.y}`;
+    const d1 = dateValidation.startDate;
+    const d2 = dateValidation.endDate;
+    const pad = (n: number) => String(n).padStart(2, '0');
+
+    if (d1.getTime() === d2.getTime()) {
+      return `${pad(d1.getDate())}/${pad(d1.getMonth() + 1)}/${d1.getFullYear()}`;
     }
 
-    return s && e ? `${s} – ${e}` : '24/11 – 26/11/2026';
-  }, [trip?.startDate, trip?.endDate, trip]);
+    return `${pad(d1.getDate())}/${pad(d1.getMonth() + 1)} – ${pad(d2.getDate())}/${pad(d2.getMonth() + 1)}/${d2.getFullYear()}`;
+  }, [trip?.startDate, trip?.endDate, trip, dateValidation]);
 
   const getGmailComposeUrl = (recipientEmail: string, token: string) => {
     const tripTitle = trip?.title || 'Khám phá Đà Nẵng - Hội An 4N3Đ';
@@ -1122,14 +1147,42 @@ export default function TripDetailPage() {
     return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(recipientEmail)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
-  // Calculate stats
-  const totalDays = trip?.itineraryDays?.length || 3;
   const totalActivities = trip?.itineraryDays
     ? trip.itineraryDays.reduce((acc, d) => acc + (d.activities?.length || 0), 0)
-    : 8;
+    : 0;
+
+  // Unified calendar days array for the tickets row & day selection
+  const displayCalendarDays = useMemo(() => {
+    const maxExistingDay = (trip?.itineraryDays || []).reduce((max, d) => Math.max(max, d.dayNumber), 0);
+    const dayCount = Math.max(tripDurationDays, maxExistingDay, 1);
+
+    const result = [];
+    for (let dayNum = 1; dayNum <= dayCount; dayNum++) {
+      const meta = getTripDayMeta(trip?.startDate, trip?.endDate, dayNum);
+      const theme = getThemeForDay(dayNum);
+      const existingPlan = (trip?.itineraryDays || []).find((d) => d.dayNumber === dayNum);
+      const hasActivities = Boolean(existingPlan && existingPlan.activities && existingPlan.activities.length > 0);
+
+      result.push({
+        dayNumber: dayNum,
+        meta,
+        theme,
+        plan: existingPlan || {
+          dayNumber: dayNum,
+          title: `Ngày ${dayNum} — Lộ trình tự do`,
+          dateStr: meta.fullDateStr || `Ngày ${dayNum}`,
+          activities: [],
+        },
+        hasActivities,
+      });
+    }
+    return result;
+  }, [trip?.startDate, trip?.endDate, trip?.itineraryDays, tripDurationDays]);
 
   // Determine which days to display in the flowchart
-  const daysList = useMemo(() => trip?.itineraryDays || [], [trip?.itineraryDays]);
+  const daysList = useMemo(() => {
+    return displayCalendarDays.map((cd) => cd.plan);
+  }, [displayCalendarDays]);
 
   const activeDayPlans = useMemo(() => {
     if (daysList.length === 0) return [];
@@ -1371,19 +1424,35 @@ export default function TripDetailPage() {
             <div className={styles.headerTitleInfo}>
               <div className={styles.headerTitleRow}>
                 <h1 className={styles.headerTitleText}>{trip.title}</h1>
-                {trip.status === 'ACTIVE' && (
+                {tripStatusResult.status === 'ACTIVE' && (
                   <span className={styles.statusPillActive}>
                     <span className={styles.pulseDot} /> Đang diễn ra
                   </span>
                 )}
-                {trip.status === 'PLANNING' && (
+                {tripStatusResult.status === 'PLANNING' && (
                   <span className={styles.statusPillPlanning}>
                     <Sparkles size={12} /> Đang lên kế hoạch
                   </span>
                 )}
-                {trip.status === 'COMPLETED' && (
+                {tripStatusResult.status === 'COMPLETED' && (
                   <span className={styles.statusPillCompleted}>
                     <CheckCircle2 size={12} /> Đã hoàn thành
+                  </span>
+                )}
+                {!tripStatusResult.isValidDate && (
+                  <span
+                    style={{
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      color: '#DC2626',
+                      background: '#FEE2E2',
+                      padding: '3px 8px',
+                      borderRadius: '6px',
+                      border: '1px solid #FCA5A5',
+                    }}
+                    title={tripStatusResult.dateError || 'Ngày chuyến đi không hợp lệ'}
+                  >
+                    Ngày không hợp lệ
                   </span>
                 )}
 
@@ -1522,6 +1591,30 @@ export default function TripDetailPage() {
               <Users size={14} />
               <span>Tham gia chuyến đi này</span>
             </button>
+          </div>
+        )}
+
+        {/* Cảnh báo ngày không hợp lệ (nếu có) */}
+        {dateValidation && !dateValidation.isValid && (
+          <div
+            style={{
+              margin: '0 0 16px',
+              padding: '12px 18px',
+              background: '#FFFBEB',
+              border: '1px solid #FCD34D',
+              borderRadius: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              color: '#92400E',
+              fontSize: '13.5px',
+              fontWeight: 500,
+            }}
+          >
+            <span style={{ fontSize: '20px', flexShrink: 0 }}>⚠️</span>
+            <span>
+              <strong>Cảnh báo thời gian:</strong> {dateValidation.message || 'Khoảng ngày của chuyến đi không hợp lệ.'} Vui lòng kiểm tra lại thiết lập ngày bắt đầu ({trip.startDate || 'Chưa định'}) và ngày kết thúc ({trip.endDate || 'Chưa định'}).
+            </span>
           </div>
         )}
 
@@ -1735,43 +1828,49 @@ export default function TripDetailPage() {
                 <div className={styles.flowchartCol}>
                   {/* Cute Travel Calendar Tickets Row */}
                   <div className={styles.cuteCalendarRow}>
-                    {daysList.map((d) => {
-                      const isSelected = selectedDayNumber === d.dayNumber;
-                      const dayOfWeek = d.dayNumber === 1 ? 'THỨ BA' : d.dayNumber === 2 ? 'THỨ TƯ' : 'THỨ NĂM';
-                      const dayDate = d.dayNumber === 1 ? '24' : d.dayNumber === 2 ? '25' : '26';
-                      const cuteTheme = d.dayNumber === 1
-                        ? { headerBg: '#EEF2FF', headerColor: '#4F46E5', icon: '🏮' }
-                        : d.dayNumber === 2
-                        ? { headerBg: '#ECFDF5', headerColor: '#059669', icon: '🌅' }
-                        : { headerBg: '#FFF1F2', headerColor: '#E11D48', icon: '🏺' };
-
-                      const activeClass = d.dayNumber === 2
-                        ? styles.cuteCalendarCardActiveDay2
-                        : d.dayNumber === 3
-                        ? styles.cuteCalendarCardActiveDay3
-                        : styles.cuteCalendarCardActive;
+                    {displayCalendarDays.map((calDay) => {
+                      const isSelected = selectedDayNumber === calDay.dayNumber;
+                      const theme = calDay.theme;
+                      const dayOfWeek = calDay.meta.dayOfWeek || `NGÀY ${calDay.dayNumber}`;
+                      const dayDate = calDay.meta.dayDate || String(calDay.dayNumber).padStart(2, '0');
+                      const monthText = calDay.meta.monthText || '';
 
                       return (
                         <button
-                          key={d.dayNumber}
+                          key={calDay.dayNumber}
                           type="button"
-                          className={`${styles.cuteCalendarCard} ${isSelected ? activeClass : ''}`}
-                          onClick={() => setSelectedDayNumber(d.dayNumber)}
+                          className={`${styles.cuteCalendarCard} ${isSelected ? styles.cuteCalendarCardActive : ''}`}
+                          style={
+                            isSelected
+                              ? {
+                                  borderColor: theme.borderColor,
+                                  boxShadow: `0 8px 24px ${theme.borderColor}33`,
+                                }
+                              : undefined
+                          }
+                          onClick={() => setSelectedDayNumber(calDay.dayNumber)}
                         >
                           <div
                             className={styles.calendarHeader}
                             style={{
-                              background: cuteTheme.headerBg,
-                              color: cuteTheme.headerColor,
+                              background: theme.headerBg,
+                              color: theme.headerColor,
                             }}
                           >
                             <span>{dayOfWeek}</span>
-                            <span>{cuteTheme.icon}</span>
+                            <span>{theme.icon}</span>
                           </div>
                           <div className={styles.calendarBody}>
                             <span className={styles.calendarDayNum}>{dayDate}</span>
-                            <span className={styles.calendarMonth}>Tháng 11</span>
-                            <span className={styles.calendarDayTitle}>Ngày {d.dayNumber}</span>
+                            {monthText && <span className={styles.calendarMonth}>{monthText}</span>}
+                            <span className={styles.calendarDayTitle}>
+                              Ngày {calDay.dayNumber}
+                              {!calDay.hasActivities && (
+                                <span style={{ fontSize: '10px', color: '#94A3B8', display: 'block', fontWeight: 500 }}>
+                                  (Trống)
+                                </span>
+                              )}
+                            </span>
                           </div>
                         </button>
                       );
@@ -1785,7 +1884,7 @@ export default function TripDetailPage() {
                     >
                       <div className={styles.calendarAllIcon}>📖</div>
                       <span style={{ fontWeight: 800, fontSize: '13px' }}>Toàn bộ</span>
-                      <span style={{ fontSize: '11px', opacity: 0.85 }}>{daysList.length} ngày</span>
+                      <span style={{ fontSize: '11px', opacity: 0.85 }}>{totalDays} ngày</span>
                     </button>
                   </div>
 
@@ -1842,10 +1941,53 @@ export default function TripDetailPage() {
                         </div>
                       )}
 
-                      <div className={styles.flowchartTrack}>
-                        <div className={styles.flowchartSpine} />
+                      {!dayPlan.activities || dayPlan.activities.length === 0 ? (
+                        <div
+                          style={{
+                            padding: '48px 24px',
+                            textAlign: 'center',
+                            background: '#F8FAFC',
+                            borderRadius: '16px',
+                            border: '1.5px dashed #CBD5E1',
+                            margin: '20px 0',
+                          }}
+                        >
+                          <div style={{ fontSize: '38px', marginBottom: '12px' }}>🗺️</div>
+                          <h4 style={{ fontSize: '16px', fontWeight: 700, color: '#1E293B', marginBottom: '6px' }}>
+                            Chưa có điểm dừng nào cho Ngày {dayPlan.dayNumber}
+                          </h4>
+                          <p style={{ fontSize: '13.5px', color: '#64748B', maxWidth: '440px', margin: '0 auto 18px', lineHeight: '1.5' }}>
+                            Ngày này hiện chưa có hoạt động nào được lên lịch. Bạn có thể nhấn nút bên dưới để thêm điểm dừng tham quan, ăn uống hoặc check-in đầu tiên cho ngày này!
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setNewStopDay(dayPlan.dayNumber);
+                              setShowAddStopModal(true);
+                            }}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              padding: '9px 20px',
+                              background: '#0284C7',
+                              color: '#FFFFFF',
+                              borderRadius: '10px',
+                              border: 'none',
+                              fontWeight: 700,
+                              fontSize: '13.5px',
+                              cursor: 'pointer',
+                              boxShadow: '0 4px 14px rgba(2, 132, 199, 0.25)',
+                            }}
+                          >
+                            <span>+ Thêm điểm dừng vào Ngày {dayPlan.dayNumber}</span>
+                          </button>
+                        </div>
+                      ) : (
+                        <div className={styles.flowchartTrack}>
+                          <div className={styles.flowchartSpine} />
 
-                        {(dayPlan.activities || []).map((act, actIdx) => {
+                          {(dayPlan.activities || []).map((act, actIdx) => {
                           const slotCfg = getSlotConfig(act.timeSlot || act.timeRange, actIdx);
                           const isDone = !!checkedActivities[act.id];
                           const isHighlighted = highlightedActId === act.id;
@@ -2042,8 +2184,9 @@ export default function TripDetailPage() {
                           );
                         })}
                       </div>
-                    </div>
-                  ))}
+                    )}
+                  </div>
+                ))}
                 </div>
               </div>
             ) : (
@@ -3016,26 +3159,33 @@ export default function TripDetailPage() {
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
                   Chọn ngày dừng chân
                 </label>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  {[1, 2, 3].map((d) => (
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {displayCalendarDays.map((calDay) => (
                     <button
-                      key={d}
+                      key={calDay.dayNumber}
                       type="button"
-                      onClick={() => setNewStopDay(d)}
+                      onClick={() => setNewStopDay(calDay.dayNumber)}
                       style={{
-                        flex: 1,
-                        padding: '8px',
+                        flex: displayCalendarDays.length <= 4 ? 1 : '0 0 calc(25% - 6px)',
+                        minWidth: '70px',
+                        padding: '8px 10px',
                         borderRadius: '8px',
                         border: '1px solid',
-                        borderColor: newStopDay === d ? '#0284C7' : '#CBD5E1',
-                        background: newStopDay === d ? '#E0F2FE' : '#FFFFFF',
-                        color: newStopDay === d ? '#0369A1' : '#475569',
+                        borderColor: newStopDay === calDay.dayNumber ? '#0284C7' : '#CBD5E1',
+                        background: newStopDay === calDay.dayNumber ? '#E0F2FE' : '#FFFFFF',
+                        color: newStopDay === calDay.dayNumber ? '#0369A1' : '#475569',
                         fontWeight: 700,
                         fontSize: '13px',
                         cursor: 'pointer',
+                        textAlign: 'center',
                       }}
                     >
-                      Ngày {d}
+                      <span>Ngày {calDay.dayNumber}</span>
+                      {calDay.meta.dayDate && (
+                        <span style={{ display: 'block', fontSize: '10.5px', fontWeight: 500, opacity: 0.85 }}>
+                          {calDay.meta.dayDate}/{calDay.meta.monthText.replace('Tháng ', '')}
+                        </span>
+                      )}
                     </button>
                   ))}
                 </div>
