@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -43,6 +43,7 @@ import {
   getSampleItineraryForDestination,
   getDestinationHeroImage,
 } from '@/data/sampleItineraries';
+import { resolveTripStatus } from '@/utils/tripDateUtils';
 import styles from './trips.module.css';
 
 interface TripMember {
@@ -273,15 +274,16 @@ const DATE_FILTER_OPTIONS: Array<{ key: DateFilterType; label: string; desc?: st
   { key: 'past', label: 'Đã hoàn thành', desc: 'Các chuyến đi đã kết thúc' },
 ];
 
-function matchesDateFilter(trip: TripItem, filter: DateFilterType): boolean {
+function matchesDateFilter(trip: TripItem, filter: DateFilterType, now: Date = new Date()): boolean {
   if (filter === 'all') return true;
   const text = `${trip.startDate || ''} ${trip.endDate || ''}`.toLowerCase();
+  const effectiveStatus = resolveTripStatus(trip.startDate, trip.endDate, trip.status, now);
 
   if (filter === 'upcoming') {
-    return trip.status === 'PLANNING' || trip.status === 'ACTIVE';
+    return effectiveStatus === 'PLANNING' || effectiveStatus === 'ACTIVE';
   }
   if (filter === 'past') {
-    return trip.status === 'COMPLETED' || text.includes('2025');
+    return effectiveStatus === 'COMPLETED' || text.includes('2025');
   }
   if (filter === 'month-10') {
     return text.includes('/10') || text.includes('-10-') || text.includes('10/2026') || text.includes('10/26');
@@ -393,6 +395,17 @@ export default function TripsPage() {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [currentUser, setCurrentUser] = useState<StoredUser | null>(null);
+  const [currentDateTick, setCurrentDateTick] = useState<number>(() => Date.now());
+
+  useEffect(() => {
+    const handleSyncDate = () => setCurrentDateTick(Date.now());
+    window.addEventListener('visibilitychange', handleSyncDate);
+    window.addEventListener('focus', handleSyncDate);
+    return () => {
+      window.removeEventListener('visibilitychange', handleSyncDate);
+      window.removeEventListener('focus', handleSyncDate);
+    };
+  }, []);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -996,20 +1009,23 @@ export default function TripsPage() {
   };
 
   // isUserTrip defined above
+  const currentDate = useMemo(() => new Date(currentDateTick), [currentDateTick]);
+
   const myTripsList = tripsList.filter(isUserTrip);
   const myCount = myTripsList.length;
   const totalCount = tripsList.length;
-  const planningCount = tripsList.filter((t) => t.status === 'PLANNING').length;
-  const activeCount = tripsList.filter((t) => t.status === 'ACTIVE').length;
-  const completedCount = tripsList.filter((t) => t.status === 'COMPLETED').length;
+  const planningCount = tripsList.filter((t) => resolveTripStatus(t.startDate, t.endDate, t.status, currentDate) === 'PLANNING').length;
+  const activeCount = tripsList.filter((t) => resolveTripStatus(t.startDate, t.endDate, t.status, currentDate) === 'ACTIVE').length;
+  const completedCount = tripsList.filter((t) => resolveTripStatus(t.startDate, t.endDate, t.status, currentDate) === 'COMPLETED').length;
 
   const filteredTrips = tripsList.filter((trip) => {
+    const effectiveStatus = resolveTripStatus(trip.startDate, trip.endDate, trip.status, currentDate);
     if (activeTab === 'mine' && !isUserTrip(trip)) return false;
-    if (activeTab === 'planning' && trip.status !== 'PLANNING') return false;
-    if (activeTab === 'active' && trip.status !== 'ACTIVE') return false;
-    if (activeTab === 'completed' && trip.status !== 'COMPLETED') return false;
+    if (activeTab === 'planning' && effectiveStatus !== 'PLANNING') return false;
+    if (activeTab === 'active' && effectiveStatus !== 'ACTIVE') return false;
+    if (activeTab === 'completed' && effectiveStatus !== 'COMPLETED') return false;
 
-    if (!matchesDateFilter(trip, dateFilter)) return false;
+    if (!matchesDateFilter(trip, dateFilter, currentDate)) return false;
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -1052,7 +1068,7 @@ export default function TripsPage() {
 
     const startParts = newStartDate.split('-');
     const endParts = newEndDate.split('-');
-    const formattedStartDate = startParts.length === 3 ? `${startParts[2]}/${startParts[1]}` : newStartDate;
+    const formattedStartDate = startParts.length === 3 ? `${startParts[2]}/${startParts[1]}/${startParts[0]}` : newStartDate;
     const formattedEndDate = endParts.length === 3 ? `${endParts[2]}/${endParts[1]}/${endParts[0]}` : newEndDate;
 
     const tripId = `trip-${Date.now()}`;
@@ -1651,6 +1667,8 @@ export default function TripsPage() {
                   { label: 'Ghi chú', actionType: 'NOTE' },
                 ];
 
+            const tripStatus = resolveTripStatus(trip.startDate, trip.endDate, trip.status, currentDate);
+
             return (
               <div key={trip.id} className={styles.tripCard} id={`trip-card-${trip.id}`}>
                 {/* Media Image Banner */}
@@ -1665,13 +1683,13 @@ export default function TripsPage() {
                   <div className={styles.tripMediaOverlay}>
                     {/* Top Row: Status badge + 3-dots menu */}
                     <div className={styles.mediaTopRow}>
-                      {trip.status === 'ACTIVE' && (
+                      {tripStatus === 'ACTIVE' && (
                         <span className={styles.statusPillActive}>
                           <span className={styles.liveGreenDot} />
                           <span>Đang diễn ra</span>
                         </span>
                       )}
-                      {trip.status === 'PLANNING' && (
+                      {tripStatus === 'PLANNING' && (
                         <span className={styles.statusPillPlanning}>
                           <span
                             style={{
@@ -1684,7 +1702,7 @@ export default function TripsPage() {
                           <span>Đang lên kế hoạch</span>
                         </span>
                       )}
-                      {trip.status === 'COMPLETED' && (
+                      {tripStatus === 'COMPLETED' && (
                         <span className={styles.statusPillCompleted}>
                           <Check size={12} strokeWidth={3} />
                           <span>Đã hoàn thành</span>
@@ -1808,7 +1826,7 @@ export default function TripsPage() {
 
                   {/* Row 5: Progress Bar / Budget */}
                   <div className={styles.cardProgressGroup}>
-                    {trip.status === 'COMPLETED' ? (
+                    {tripStatus === 'COMPLETED' ? (
                       <div className={styles.progressLabelRow}>
                         <span>Tổng chi tiêu hoàn tất</span>
                         <span className={styles.progressValueBold}>
@@ -1836,7 +1854,7 @@ export default function TripsPage() {
                       </>
                     )}
 
-                    {trip.status === 'COMPLETED' && (
+                    {tripStatus === 'COMPLETED' && (
                       <div className={styles.progressBarTrack}>
                         <div
                           className={styles.progressBarFillNavy}
@@ -1850,13 +1868,13 @@ export default function TripsPage() {
                   <Link
                     href={`/trips/${trip.id}`}
                     className={
-                      trip.status === 'ACTIVE'
+                      tripStatus === 'ACTIVE'
                         ? styles.btnCardMainPrimary
                         : styles.btnCardMainSoft
                     }
                     id={`btn-cta-${trip.id}`}
                   >
-                    {trip.status === 'COMPLETED' ? 'Xem lại hành trình' : 'Xem chi tiết'}
+                    {tripStatus === 'COMPLETED' ? 'Xem lại hành trình' : 'Xem chi tiết'}
                   </Link>
 
                   {/* Row 7: Secondary Action Pills */}
