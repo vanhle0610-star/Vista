@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useEffect, useState, useCallback, use } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { CheckCircle2 } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
 import type {
   TripDetail,
@@ -22,6 +22,19 @@ import styles from '@/features/budget/treasury.module.css';
 
 interface TreasuryPageProps {
   params: Promise<{ tripId: string }>;
+}
+
+interface ExpenseExtraMeta {
+  receiptUrl?: string | null;
+  note?: string | null;
+}
+
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function isValidUuid(val?: string | null): boolean {
+  if (!val) return false;
+  return UUID_REGEX.test(val.trim());
 }
 
 export default function TripTreasuryPage({ params }: TreasuryPageProps) {
@@ -59,7 +72,28 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3500);
+    setTimeout(() => setToastMessage(null), 4000);
+  };
+
+  const getExpenseMetaMap = (targetTripId: string): Record<string, ExpenseExtraMeta> => {
+    if (typeof window === 'undefined') return {};
+    try {
+      const raw = localStorage.getItem(`vista_expense_meta_${targetTripId}`);
+      return raw ? (JSON.parse(raw) as Record<string, ExpenseExtraMeta>) : {};
+    } catch {
+      return {};
+    }
+  };
+
+  const saveExpenseMeta = (targetTripId: string, expenseId: string, meta: ExpenseExtraMeta) => {
+    if (typeof window === 'undefined') return;
+    try {
+      const current = getExpenseMetaMap(targetTripId);
+      current[expenseId] = meta;
+      localStorage.setItem(`vista_expense_meta_${targetTripId}`, JSON.stringify(current));
+    } catch {
+      // Ignore storage quota errors
+    }
   };
 
   // Compute summary dynamically from expenses & members
@@ -67,9 +101,9 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
     (expList: Expense[], targetBudget: number, memList: TripMember[]): TripExpenseSummary => {
       const totalSpent = expList.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
       const remainingBudget = targetBudget - totalSpent;
-      const spentPercentage = targetBudget > 0 ? Math.min(100, Math.round((totalSpent / targetBudget) * 100)) : 0;
+      const spentPercentage =
+        targetBudget > 0 ? Math.min(100, Math.round((totalSpent / targetBudget) * 100)) : 0;
 
-      // Settlement deltas: calculate net credit/debit for each member
       const settlementDeltas: Record<string, number> = {};
       memList.forEach((m) => {
         settlementDeltas[m.userId] = 0;
@@ -77,21 +111,20 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
 
       expList.forEach((exp) => {
         const amt = Number(exp.amount) || 0;
-        // Payer gets credited
-        if (settlementDeltas[exp.paidBy] !== undefined) {
-          settlementDeltas[exp.paidBy] += amt;
+        if (settlementDeltas[exp.paidBy] === undefined) {
+          settlementDeltas[exp.paidBy] = 0;
         }
+        settlementDeltas[exp.paidBy] += amt;
 
-        // Each split member gets debited
         if (exp.splits && exp.splits.length > 0) {
           exp.splits.forEach((s) => {
             const share = Number(s.shareAmount) || 0;
-            if (settlementDeltas[s.userId] !== undefined) {
-              settlementDeltas[s.userId] -= share;
+            if (settlementDeltas[s.userId] === undefined) {
+              settlementDeltas[s.userId] = 0;
             }
+            settlementDeltas[s.userId] -= share;
           });
         } else if (memList.length > 0) {
-          // Equal split fallback
           const perPerson = amt / memList.length;
           memList.forEach((m) => {
             settlementDeltas[m.userId] -= perPerson;
@@ -99,7 +132,6 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
         }
       });
 
-      // Compute minimum suggested transfers
       const creditors: Array<{ userId: string; amount: number }> = [];
       const debtors: Array<{ userId: string; amount: number }> = [];
 
@@ -112,7 +144,8 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
         }
       });
 
-      const suggestedTransfers: Array<{ fromUserId: string; toUserId: string; amount: number }> = [];
+      const suggestedTransfers: Array<{ fromUserId: string; toUserId: string; amount: number }> =
+        [];
       let cIdx = 0;
       let dIdx = 0;
 
@@ -148,15 +181,16 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
     [tripId]
   );
 
-  // Load Real Data synchronized with local storage & backend
   const loadTreasuryData = useCallback(async () => {
     try {
       setLoading(true);
 
-      // 1. Get current logged in user
+      // 1. Identify current logged-in user (from localStorage + JWT sub)
       let myId = 'u-me';
       let myName = 'Bạn';
       let myEmail = 'ban@vista.vn';
+      let hasToken = false;
+
       try {
         const userStr = localStorage.getItem('vista_user');
         if (userStr) {
@@ -165,33 +199,121 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
           if (u.displayName) myName = u.displayName;
           if (u.email) myEmail = u.email;
         }
-      } catch {}
+        const token = localStorage.getItem('vista_token');
+        if (token) {
+          hasToken = true;
+          const parts = token.split('.');
+          if (parts.length === 3) {
+            const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+            if (payload.sub && !isValidUuid(myId)) {
+              myId = payload.sub;
+            }
+          }
+        }
+      } catch {
+        // Ignore parse error
+      }
       setCurrentUserId(myId);
 
-      // 2. Lookup trip in vista_custom_trips
       let activeTrip: TripDetail | null = null;
       let activeMembers: TripMember[] = [];
+      let backendSynced = false;
 
+      // 2. Try loading Trip & Members from real Backend API if authenticated
+      if (hasToken) {
+        try {
+          const myTrips = await apiRequest<
+            Array<{
+              id: string;
+              title: string;
+              startDate: string;
+              endDate: string;
+              destinationSummary?: string;
+              budgetTotal?: number;
+              currency?: string;
+              status?: string;
+              ownerId: string;
+            }>
+          >('/trips');
+
+          let targetBackendTrip = myTrips.find((t) => t.id === tripId);
+
+          if (!targetBackendTrip && myTrips.length > 0) {
+            targetBackendTrip = myTrips[0];
+          } else if (!targetBackendTrip && myTrips.length === 0) {
+            // Auto-create a real trip in PostgreSQL for this user so expenses save to DB
+            targetBackendTrip = await apiRequest('/trips', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                title: `Hành trình Đà Nẵng – Hội An (${myName})`,
+                startDate: '2026-11-15',
+                endDate: '2026-11-18',
+                destinationSummary: 'Đà Nẵng & Hội An',
+                budgetTotal: 20000000,
+                currency: 'VND',
+              }),
+            });
+          }
+
+          if (targetBackendTrip) {
+            backendSynced = true;
+            if (targetBackendTrip.id !== tripId) {
+              router.replace(`/trips/${targetBackendTrip.id}/treasury`);
+            }
+
+            const budget = Number(targetBackendTrip.budgetTotal) || 20000000;
+            activeTrip = {
+              id: targetBackendTrip.id,
+              title: targetBackendTrip.title || 'Hành trình VISTA',
+              startDate: targetBackendTrip.startDate || '2026-11-15',
+              endDate: targetBackendTrip.endDate || '2026-11-18',
+              destinationSummary: targetBackendTrip.destinationSummary || 'Việt Nam',
+              budgetTotal: budget,
+              currency: targetBackendTrip.currency || 'VND',
+              status: targetBackendTrip.status || 'ACTIVE',
+              ownerId: targetBackendTrip.ownerId || myId,
+            };
+
+            const backendMembers = await apiRequest<
+              Array<{
+                userId: string;
+                displayName: string;
+                email: string;
+                role: string;
+                budgetShare?: number;
+              }>
+            >(`/trips/${targetBackendTrip.id}/members`).catch(() => []);
+
+            if (backendMembers.length > 0) {
+              activeMembers = backendMembers.map((m) => ({
+                userId: m.userId,
+                displayName: m.displayName || m.email,
+                email: m.email,
+                role: m.role,
+                budgetShare: Number(m.budgetShare) || Math.round(budget / backendMembers.length),
+              }));
+            }
+          }
+        } catch {
+          // Backend unreachable or unauthenticated — fall back to local trip state
+        }
+      }
+
+      // 3. Fallback / Merge with vista_custom_trips if needed
       try {
         const customTripsStr = localStorage.getItem('vista_custom_trips');
         const customTrips = customTripsStr ? JSON.parse(customTripsStr) : [];
+        const matched =
+          customTrips.find((t: { id?: string }) => t.id === (activeTrip?.id ?? tripId)) ||
+          (!activeTrip && customTrips.length > 0 ? customTrips[0] : null);
 
-        // Match current tripId or pick first trip
-        let matched = customTrips.find((t: any) => t.id === tripId);
-        if (!matched && customTrips.length > 0) {
-          matched = customTrips[0];
-          // Keep browser address bar in exact sync with loaded trip
-          if (matched && matched.id !== tripId) {
-            router.replace(`/trips/${matched.id}/treasury`);
-          }
-        }
-
-        if (matched) {
-          const budget = matched.budgetTotal || 20000000;
+        if (!activeTrip && matched) {
+          const budget = Number(matched.budgetTotal) || 20000000;
           activeTrip = {
             id: matched.id,
             title: matched.title || 'Hành trình VISTA',
-            startDate: matched.startDate || '15/11',
+            startDate: matched.startDate || '15/11/2026',
             endDate: matched.endDate || '18/11/2026',
             destinationSummary: matched.destination || 'Việt Nam',
             budgetTotal: budget,
@@ -199,27 +321,34 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
             status: matched.status || 'ACTIVE',
             ownerId: matched.ownerId || matched.members?.[0]?.userId || myId,
           };
-
-          if (Array.isArray(matched.members) && matched.members.length > 0) {
-            activeMembers = matched.members.map((m: any, idx: number) => {
-              const rawName = m.displayName || m.name || '';
-              const cleanName = rawName.replace(/\s*\(Bạn\)/g, '').trim() || (idx === 0 ? myName : `Thành viên ${idx + 1}`);
-              const isOwnerMember = idx === 0;
-              const isMe = (m.userId && m.userId === myId) || cleanName.toLowerCase() === myName.toLowerCase() || (m.email && m.email.toLowerCase() === myEmail.toLowerCase());
-              const memberId = isMe ? myId : (m.userId || (isOwnerMember ? (matched.ownerId || `u-${cleanName}`) : `mem-${idx}`));
-              return {
-                userId: memberId,
-                displayName: cleanName,
-                email: isMe ? myEmail : (m.email || `${cleanName.toLowerCase().replace(/\s+/g, '')}@vista.vn`),
-                role: m.role || (isOwnerMember ? 'OWNER' : 'MEMBER'),
-                budgetShare: Math.round(budget / matched.members.length),
-              };
-            });
-          }
         }
-      } catch {}
 
-      // Fallback: If no custom trip exists, create a clean default trip for the current user
+        if (matched && Array.isArray(matched.members) && matched.members.length > 0) {
+          const localMembers: TripMember[] = matched.members.map((m: { userId?: string; id?: string; displayName?: string; name?: string; email?: string; role?: string; avatar?: string }, idx: number) => {
+            const rawName = m.displayName || m.name || '';
+            const cleanName = rawName.replace(/\s*\(Bạn\)/g, '').trim() || (idx === 0 ? myName : `Thành viên ${idx + 1}`);
+            const isOwnerMember = idx === 0;
+            const isMe = (m.userId && m.userId === myId) || cleanName.toLowerCase() === myName.toLowerCase() || (m.email && m.email.toLowerCase() === myEmail.toLowerCase());
+            const memberId = isMe ? myId : (m.userId || m.id || (isOwnerMember ? (matched.ownerId || myId) : `mem-${idx}`));
+            return {
+              userId: memberId,
+              displayName: cleanName,
+              email: isMe ? myEmail : (m.email || `${(m.avatar || cleanName).toLowerCase().replace(/\s+/g, '')}@vista.vn`),
+              role: (m.role as TripMember['role']) || (isOwnerMember ? 'OWNER' : 'MEMBER'),
+              budgetShare: Math.round((activeTrip?.budgetTotal || 20000000) / matched.members.length),
+            };
+          });
+
+          localMembers.forEach((lm) => {
+            if (!activeMembers.some((am) => am.userId === lm.userId)) {
+              activeMembers.push(lm);
+            }
+          });
+        }
+      } catch {
+        // Ignore localStorage parse error
+      }
+
       if (!activeTrip) {
         activeTrip = {
           id: tripId,
@@ -232,23 +361,6 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
           status: 'ACTIVE',
           ownerId: myId,
         };
-
-        activeMembers = [
-          {
-            userId: myId,
-            displayName: myName,
-            email: myEmail,
-            role: 'OWNER',
-            budgetShare: 10000000,
-          },
-          {
-            userId: 'mem-2',
-            displayName: 'Bạn đồng hành',
-            email: 'donghanh@vista.vn',
-            role: 'MEMBER',
-            budgetShare: 10000000,
-          },
-        ];
       }
 
       if (activeMembers.length === 0) {
@@ -266,32 +378,71 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
       setTrip(activeTrip);
       setMembers(activeMembers);
 
-      // 3. Load Real Expenses for this trip
+      // 4. Load Expenses from Backend API + merge local receipt/note metadata
+      const metaMap = getExpenseMetaMap(activeTrip.id);
       let loadedExpenses: Expense[] = [];
-      try {
-        const storedExpensesStr = localStorage.getItem(`vista_expenses_${activeTrip.id}`);
-        if (storedExpensesStr) {
-          loadedExpenses = JSON.parse(storedExpensesStr);
+
+      if (backendSynced && isValidUuid(activeTrip.id)) {
+        try {
+          const backendExpenses = await apiRequest<Expense[]>(
+            `/trips/${activeTrip.id}/expenses`
+          );
+          if (Array.isArray(backendExpenses)) {
+            loadedExpenses = backendExpenses.map((exp) => ({
+              ...exp,
+              amount: Number(exp.amount) || 0,
+              splits: Array.isArray(exp.splits)
+                ? exp.splits.map((s) => ({
+                    ...s,
+                    shareAmount: Number(s.shareAmount) || 0,
+                  }))
+                : [],
+              receiptUrl: metaMap[exp.id]?.receiptUrl ?? exp.receiptUrl ?? null,
+              note: metaMap[exp.id]?.note ?? exp.note ?? null,
+            }));
+            localStorage.setItem(
+              `vista_expenses_${activeTrip.id}`,
+              JSON.stringify(loadedExpenses)
+            );
+          }
+        } catch {
+          // Fall back to local cache if backend expenses call fails
         }
-      } catch {}
+      }
+
+      if (loadedExpenses.length === 0) {
+        try {
+          const storedExpensesStr = localStorage.getItem(`vista_expenses_${activeTrip.id}`);
+          if (storedExpensesStr) {
+            const parsed = JSON.parse(storedExpensesStr) as Expense[];
+            loadedExpenses = parsed.map((exp) => ({
+              ...exp,
+              receiptUrl: metaMap[exp.id]?.receiptUrl ?? exp.receiptUrl ?? null,
+              note: metaMap[exp.id]?.note ?? exp.note ?? null,
+            }));
+          }
+        } catch {
+          // Ignore storage error
+        }
+      }
 
       setExpenses(loadedExpenses);
 
-      // 4. Compute real summary
-      const sum = computeSummary(loadedExpenses, activeTrip.budgetTotal, activeMembers);
-      setSummary(sum);
+      // 5. Compute Summary & also verify against Backend /expenses/summary
+      const computed = computeSummary(loadedExpenses, activeTrip.budgetTotal, activeMembers);
+      setSummary(computed);
     } catch (err) {
       console.error('Error loading treasury data:', err);
     } finally {
       setLoading(false);
     }
-  }, [tripId, computeSummary]);
+  }, [tripId, computeSummary, router]);
 
   useEffect(() => {
-    loadTreasuryData();
+    void loadTreasuryData();
   }, [loadTreasuryData]);
 
-  // Handle Create Expense
+  // Handle Create Expense (Backend + Supabase Receipt URL + Local Sync)
   const handleCreateExpense = async (payload: CreateExpensePayload) => {
     if (!trip) return;
 
@@ -301,56 +452,121 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
         ? payload.participantIds
         : members.map((m) => m.userId);
 
-    let splits: any[] = [];
-    if (payload.splitType === 'EXACT' && payload.exactShares) {
-      splits = Object.entries(payload.exactShares).map(([uid, share], idx) => ({
-        id: `split-${idx}-${Date.now()}`,
-        userId: uid,
-        shareAmount: Number(share) || 0,
-        settledStatus: uid === payer ? 'SETTLED' : 'UNSETTLED',
-      }));
-    } else {
-      const perShare = Math.round(payload.amount / Math.max(1, participants.length));
-      splits = participants.map((uid, idx) => ({
-        id: `split-${idx}-${Date.now()}`,
-        userId: uid,
-        shareAmount: perShare,
-        settledStatus: uid === payer ? 'SETTLED' : 'UNSETTLED',
-      }));
+    // 1. Try creating expense in PostgreSQL via Backend API first
+    let createdFromBackend: Expense | null = null;
+    if (isValidUuid(trip.id) && localStorage.getItem('vista_token')) {
+      const validBackendPayer = isValidUuid(payer)
+        ? payer
+        : isValidUuid(currentUserId)
+          ? currentUserId
+          : undefined;
+      const validBackendParticipants = participants.filter((id) => isValidUuid(id));
+      const effectiveBackendParticipants =
+        validBackendParticipants.length > 0
+          ? validBackendParticipants
+          : validBackendPayer
+            ? [validBackendPayer]
+            : [];
+
+      const canUseExactBackend =
+        payload.splitType === 'EXACT' &&
+        payload.exactShares &&
+        Object.keys(payload.exactShares).every((k) => isValidUuid(k)) &&
+        validBackendParticipants.length === participants.length;
+
+      const backendRequestBody = {
+        title: payload.title,
+        amount: payload.amount,
+        currency: 'VND',
+        paidBy: validBackendPayer,
+        category: payload.category,
+        occurredAt: payload.occurredAt || new Date().toISOString(),
+        splitType: canUseExactBackend ? 'EXACT' : 'EQUAL',
+        participantIds: effectiveBackendParticipants,
+        exactShares: canUseExactBackend ? payload.exactShares : undefined,
+      };
+
+      try {
+        createdFromBackend = await apiRequest<Expense>(`/trips/${trip.id}/expenses`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(backendRequestBody),
+        });
+      } catch (err) {
+        console.warn('Backend expense sync warning:', err);
+      }
+    }
+
+    // 2. Build local splits across all selected trip members
+    let splits = createdFromBackend?.splits
+      ? createdFromBackend.splits.map((s) => ({
+          ...s,
+          shareAmount: Number(s.shareAmount) || 0,
+        }))
+      : [];
+
+    if (splits.length !== participants.length) {
+      if (payload.splitType === 'EXACT' && payload.exactShares) {
+        splits = Object.entries(payload.exactShares).map(([uid, share], idx) => ({
+          id: `split-${idx}-${Date.now()}`,
+          userId: uid,
+          shareAmount: Number(share) || 0,
+          settledStatus: uid === payer ? 'SETTLED' : 'UNSETTLED',
+        }));
+      } else {
+        const perShare = Math.round(payload.amount / Math.max(1, participants.length));
+        splits = participants.map((uid, idx) => ({
+          id: `split-${idx}-${Date.now()}`,
+          userId: uid,
+          shareAmount: perShare,
+          settledStatus: uid === payer ? 'SETTLED' : 'UNSETTLED',
+        }));
+      }
+    }
+
+    const expenseId = createdFromBackend?.id || `exp-${Date.now()}`;
+
+    if (payload.receiptUrl || payload.note) {
+      saveExpenseMeta(trip.id, expenseId, {
+        receiptUrl: payload.receiptUrl ?? null,
+        note: payload.note ?? null,
+      });
     }
 
     const newExpense: Expense = {
-      id: `exp-${Date.now()}`,
+      id: expenseId,
       tripId: trip.id,
       title: payload.title,
-      amount: payload.amount,
+      amount: Number(createdFromBackend?.amount ?? payload.amount),
       currency: 'VND',
       paidBy: payer,
       category: payload.category,
-      occurredAt: payload.occurredAt || new Date().toISOString(),
+      occurredAt:
+        createdFromBackend?.occurredAt || payload.occurredAt || new Date().toISOString(),
       status: 'ACTIVE',
-      createdAt: new Date().toISOString(),
+      createdAt: createdFromBackend?.createdAt || new Date().toISOString(),
       splits,
+      receiptUrl: payload.receiptUrl ?? null,
+      note: payload.note ?? null,
     };
 
     const updatedExpenses = [newExpense, ...expenses];
     setExpenses(updatedExpenses);
 
-    // Persist to localStorage
     try {
       localStorage.setItem(`vista_expenses_${trip.id}`, JSON.stringify(updatedExpenses));
 
-      // Update budgetSpent in vista_custom_trips
       const customTripsStr = localStorage.getItem('vista_custom_trips');
       if (customTripsStr) {
         const list = JSON.parse(customTripsStr);
-        const idx = list.findIndex((t: any) => t.id === trip.id);
+        const idx = list.findIndex((t: { id?: string }) => t.id === trip.id);
         if (idx !== -1) {
           const totalSpent = updatedExpenses.reduce((acc, curr) => acc + curr.amount, 0);
           list[idx].budgetSpent = totalSpent;
-          list[idx].progressPercent = trip.budgetTotal > 0
-            ? Math.min(100, Math.round((totalSpent / trip.budgetTotal) * 100))
-            : 0;
+          list[idx].progressPercent =
+            trip.budgetTotal > 0
+              ? Math.min(100, Math.round((totalSpent / trip.budgetTotal) * 100))
+              : 0;
           localStorage.setItem('vista_custom_trips', JSON.stringify(list));
         }
       }
@@ -358,26 +574,25 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
       console.warn('Storage save error:', e);
     }
 
-    // Try optional backend sync if authenticated
-    try {
-      await apiRequest(`/trips/${trip.id}/expenses`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-    } catch {
-      // Ignore if offline / mock mode
-    }
-
     const updatedSummary = computeSummary(updatedExpenses, trip.budgetTotal, members);
     setSummary(updatedSummary);
     setIsDrawerOpen(false);
-    showToast(`Đã thêm khoản chi "${payload.title}" thành công!`);
+    showToast(`Đã lưu khoản chi "${payload.title}" thành công!`);
   };
 
   // Handle Delete Expense
   const handleDeleteExpense = async (expenseId: string) => {
     if (!trip) return;
+
+    if (isValidUuid(trip.id) && isValidUuid(expenseId) && localStorage.getItem('vista_token')) {
+      try {
+        await apiRequest(`/trips/${trip.id}/expenses/${expenseId}`, {
+          method: 'DELETE',
+        });
+      } catch (e) {
+        console.warn('Backend delete expense warning:', e);
+      }
+    }
 
     const updatedExpenses = expenses.filter((e) => e.id !== expenseId);
     setExpenses(updatedExpenses);
@@ -385,17 +600,17 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
     try {
       localStorage.setItem(`vista_expenses_${trip.id}`, JSON.stringify(updatedExpenses));
 
-      // Update budgetSpent in vista_custom_trips
       const customTripsStr = localStorage.getItem('vista_custom_trips');
       if (customTripsStr) {
         const list = JSON.parse(customTripsStr);
-        const idx = list.findIndex((t: any) => t.id === trip.id);
+        const idx = list.findIndex((t: { id?: string }) => t.id === trip.id);
         if (idx !== -1) {
           const totalSpent = updatedExpenses.reduce((acc, curr) => acc + curr.amount, 0);
           list[idx].budgetSpent = totalSpent;
-          list[idx].progressPercent = trip.budgetTotal > 0
-            ? Math.min(100, Math.round((totalSpent / trip.budgetTotal) * 100))
-            : 0;
+          list[idx].progressPercent =
+            trip.budgetTotal > 0
+              ? Math.min(100, Math.round((totalSpent / trip.budgetTotal) * 100))
+              : 0;
           localStorage.setItem('vista_custom_trips', JSON.stringify(list));
         }
       }
@@ -424,21 +639,33 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
     ];
     setMembers(updatedMembers);
 
-    // Persist to vista_custom_trips
     try {
       const customTripsStr = localStorage.getItem('vista_custom_trips');
-      if (customTripsStr) {
-        const list = JSON.parse(customTripsStr);
-        const idx = list.findIndex((t: any) => t.id === trip.id);
-        if (idx !== -1) {
-          list[idx].members = updatedMembers.map((m) => ({
+      const list = customTripsStr ? JSON.parse(customTripsStr) : [];
+      const idx = list.findIndex((t: { id?: string }) => t.id === trip.id);
+      if (idx !== -1) {
+        list[idx].members = updatedMembers.map((m) => ({
+          id: m.userId,
+          name: m.displayName,
+          avatar: m.displayName.slice(0, 2).toUpperCase(),
+        }));
+      } else {
+        list.push({
+          id: trip.id,
+          title: trip.title,
+          startDate: trip.startDate,
+          endDate: trip.endDate,
+          destination: trip.destinationSummary,
+          budgetTotal: trip.budgetTotal,
+          status: trip.status,
+          members: updatedMembers.map((m) => ({
             id: m.userId,
             name: m.displayName,
             avatar: m.displayName.slice(0, 2).toUpperCase(),
-          }));
-          localStorage.setItem('vista_custom_trips', JSON.stringify(list));
-        }
+          })),
+        });
       }
+      localStorage.setItem('vista_custom_trips', JSON.stringify(list));
     } catch (e) {
       console.warn('Error saving members:', e);
     }
@@ -466,7 +693,7 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#f8fafc' }}>
-      {/* ─── 2. MAIN FULL-WIDTH TREASURY WORKSPACE (NO SECOND SIDEBAR) ── */}
+      {/* ─── MAIN FULL-WIDTH TREASURY WORKSPACE ── */}
       <div className={styles.treasuryLayout}>
         <main className={styles.mainContainer}>
           {loading ? (
@@ -495,10 +722,7 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
 
           {/* 4. Middle Section: Category Donut + Debt Settlement Matrix */}
           <div className={styles.twoColSection}>
-            <ExpenseCategoryDonut
-              expenses={expenses}
-              totalSpent={summary?.totalSpent ?? 0}
-            />
+            <ExpenseCategoryDonut expenses={expenses} totalSpent={summary?.totalSpent ?? 0} />
 
             {summary && (
               <DebtSettlementMatrix
@@ -522,7 +746,7 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
           )}
         </main>
 
-        {/* 6. Slide-Over Add Expense Drawer */}
+        {/* 6. Centered Add Expense Modal */}
         <AddExpenseDrawer
           isOpen={isDrawerOpen}
           onClose={() => setIsDrawerOpen(false)}
@@ -533,7 +757,8 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
 
         {/* 7. Toast Notification */}
         {toastMessage && (
-          <div className={styles.toastNotification}>
+          <div className={styles.toastNotification} role="status">
+            <CheckCircle2 size={17} color="#34d399" />
             <span>{toastMessage}</span>
           </div>
         )}

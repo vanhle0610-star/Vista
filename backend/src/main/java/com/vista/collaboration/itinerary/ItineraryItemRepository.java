@@ -9,4 +9,6 @@ import org.springframework.stereotype.Repository;
 public interface ItineraryItemRepository extends JpaRepository<ItineraryItem, UUID> {
 
   List<ItineraryItem> findByDayIdOrderBySortOrderAsc(UUID dayId);
+
+  boolean existsByDestinationId(UUID destinationId);
 }

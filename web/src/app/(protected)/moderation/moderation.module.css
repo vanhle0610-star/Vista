@@ -760,7 +760,7 @@
   margin-bottom: 28px;
 }
 
-.statCard {
+.reportHubContainer .statCard {
   background: rgba(15, 23, 42, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 18px;
@@ -769,7 +769,7 @@
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
-.statLabel {
+.reportHubContainer .statLabel {
   font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
@@ -778,7 +778,7 @@
   margin-bottom: 8px;
 }
 
-.statValue {
+.reportHubContainer .statValue {
   font-size: 28px;
   font-weight: 800;
   color: #f8fafc;
@@ -800,7 +800,7 @@
   padding-bottom: 12px;
 }
 
-.tabBtn {
+.reportHubContainer .tabBtn {
   padding: 8px 18px;
   border-radius: 999px;
   font-size: 13px;
@@ -812,12 +812,12 @@
   transition: all 0.2s ease;
 }
 
-.tabBtn:hover {
+.reportHubContainer .tabBtn:hover {
   color: #ffffff;
   background: rgba(255, 255, 255, 0.08);
 }
 
-.tabBtnActive {
+.reportHubContainer .tabBtnActive {
   color: #0f172a !important;
   background: #38bdf8 !important;
   border-color: #38bdf8 !important;

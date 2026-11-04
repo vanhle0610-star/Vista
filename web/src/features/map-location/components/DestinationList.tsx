@@ -228,7 +228,9 @@ export function DestinationList({
       list.sort((a, b) => {
         const statsA = getDestinationStats(a);
         const statsB = getDestinationStats(b);
-        return parseFloat(statsB.rating) - parseFloat(statsA.rating);
+        const rA = statsA.rating ? parseFloat(statsA.rating) : 0;
+        const rB = statsB.rating ? parseFloat(statsB.rating) : 0;
+        return rB - rA;
       });
     } else if (sortBy === 'name') {
       list.sort((a, b) => a.name.localeCompare(b.name, 'vi'));
@@ -434,9 +436,15 @@ export function DestinationList({
                     </div>
 
                     <div className={styles.ratingRow}>
-                      <IconStar size={12} className={styles.starIconSvg} />
-                      <strong className={styles.ratingScore}>{stats.rating}</strong>
-                      <span className={styles.reviewCount}>({stats.reviewCount} đánh giá)</span>
+                      {stats.hasReviews && stats.rating ? (
+                        <>
+                          <IconStar size={12} className={styles.starIconSvg} />
+                          <strong className={styles.ratingScore}>{stats.rating}</strong>
+                          <span className={styles.reviewCount}>({stats.reviewCount} đánh giá)</span>
+                        </>
+                      ) : (
+                        <span className={styles.noRatingText}>Chưa có đánh giá</span>
+                      )}
                     </div>
                   </div>
                 </div>

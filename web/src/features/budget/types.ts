@@ -14,7 +14,7 @@ export interface TripMember {
   userId: string;
   displayName: string;
   email: string;
-  role: 'OWNER' | 'MEMBER';
+  role: 'OWNER' | 'EDITOR' | 'MEMBER' | 'VIEWER' | string;
   budgetShare?: number;
 }
 
@@ -37,6 +37,8 @@ export interface Expense {
   status: string;
   createdAt: string;
   splits: ExpenseSplit[];
+  receiptUrl?: string | null;
+  note?: string | null;
   version?: number;
 }
 
@@ -67,4 +69,6 @@ export interface CreateExpensePayload {
   splitType: 'EQUAL' | 'EXACT';
   participantIds?: string[];
   exactShares?: Record<string, number>;
+  receiptUrl?: string | null;
+  note?: string | null;
 }

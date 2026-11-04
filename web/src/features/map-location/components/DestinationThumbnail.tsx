@@ -15,17 +15,8 @@ export function DestinationThumbnail({
 }) {
   const [failed, setFailed] = useState(false);
 
-  const rawUrl = destination.thumbnailUrl;
-  let finalUrl = '';
-  if (rawUrl) {
-    if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
-      finalUrl = rawUrl;
-    } else if (rawUrl.startsWith('/')) {
-      finalUrl = rawUrl;
-    } else {
-      finalUrl = getCloudImageUrl(rawUrl);
-    }
-  }
+  const rawUrl = destination.imageUrl || destination.thumbnailUrl;
+  const finalUrl = rawUrl ? getCloudImageUrl(rawUrl) : '';
 
   return (
     <span className={`${styles.frame} ${className}`}>

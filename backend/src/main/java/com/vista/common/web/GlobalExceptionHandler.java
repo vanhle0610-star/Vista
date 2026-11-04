@@ -206,6 +206,20 @@ public class GlobalExceptionHandler {
     return problem;
   }
 
+  @ExceptionHandler(com.vista.destination.service.DestinationInUseException.class)
+  ProblemDetail destinationInUse(
+      com.vista.destination.service.DestinationInUseException exception,
+      HttpServletRequest request) {
+    var problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, exception.getMessage());
+    problem.setType(URI.create("https://vista.example/errors/conflict"));
+    problem.setTitle("Destination In Use");
+    problem.setInstance(URI.create(request.getRequestURI()));
+    problem.setProperty("code", "DESTINATION_ARCHIVED");
+    problem.setProperty("destinationStatus", "ARCHIVED");
+    problem.setProperty("requestId", MDC.get("requestId"));
+    return problem;
+  }
+
   /** W4-TV3-01: Xung đột optimistic locking từ JPA @Version → 409 */
   @ExceptionHandler({
     ObjectOptimisticLockingFailureException.class,

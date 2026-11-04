@@ -89,6 +89,32 @@
   text-overflow: ellipsis;
 }
 
+.ratingBadge {
+  background: #fef3c7;
+  color: #b45309;
+  font-size: 11.5px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.noRatingBadge {
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.noRatingText {
+  color: #64748b;
+  font-style: italic;
+  font-size: 11px;
+}
+
 .closeBtn {
   width: 32px;
   height: 32px;

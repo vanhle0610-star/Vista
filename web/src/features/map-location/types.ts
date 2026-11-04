@@ -40,6 +40,9 @@ export interface DestinationMarker {
   openingHours?: string;
   sourceUrl?: string;
   thumbnailUrl?: string;
+  imageUrl?: string;
+  rating?: number | null;
+  reviewCount?: number;
 }
 
 export type Destination = DestinationMarker;

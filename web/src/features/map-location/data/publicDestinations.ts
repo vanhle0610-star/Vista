@@ -57,7 +57,14 @@ export async function fetchMapDestinations(
           continue;
         }
 
-        if (ids.has(item.id)) continue;
+        if (ids.has(item.id)) {
+          const existing = destinations.find((d) => d.id === item.id);
+          if (existing && item.imageUrl) {
+            existing.imageUrl = item.imageUrl;
+            existing.thumbnailUrl = item.imageUrl;
+          }
+          continue;
+        }
         ids.add(item.id);
 
         if (
@@ -72,6 +79,7 @@ export async function fetchMapDestinations(
           continue;
         }
 
+        const imgUrl = item.imageUrl || (item as any).thumbnailUrl || '';
         destinations.push({
           id: item.id,
           name: item.name,
@@ -82,6 +90,10 @@ export async function fetchMapDestinations(
           description: (item as any).description || '',
           priceMin: item.priceMin,
           priceMax: item.priceMax,
+          imageUrl: imgUrl,
+          thumbnailUrl: imgUrl,
+          rating: (item as any).rating ?? null,
+          reviewCount: (item as any).reviewCount ?? 0,
         });
         added++;
       }
