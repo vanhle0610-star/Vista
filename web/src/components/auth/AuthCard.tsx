@@ -122,7 +122,8 @@ export function AuthCard({ isNight, initialMode }: AuthCardProps) {
       const token = localStorage.getItem('vista_token');
       const userStr = localStorage.getItem('vista_user');
       if (token && userStr) {
-        setAlreadyLoggedInUser(JSON.parse(userStr));
+        const parsed = JSON.parse(userStr);
+        setAlreadyLoggedInUser(parsed);
         document.cookie = `vista_token=${token}; path=/; max-age=604800; SameSite=Lax`;
       } else {
         setAlreadyLoggedInUser(null);

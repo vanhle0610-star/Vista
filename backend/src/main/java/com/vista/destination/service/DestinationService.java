@@ -2,16 +2,20 @@ package com.vista.destination.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vista.collaboration.itinerary.ItineraryItemRepository;
+import com.vista.collaboration.proposal.ProposalRepository;
 import com.vista.common.audit.AuditLogService;
 import com.vista.destination.api.dto.CreateDestinationRequest;
 import com.vista.destination.api.dto.DestinationDetailDto;
 import com.vista.destination.api.dto.DestinationPageDto;
 import com.vista.destination.api.dto.DestinationSummaryDto;
+import com.vista.destination.api.dto.UpdateDestinationRequest;
 import com.vista.destination.application.DestinationQueryService;
 import com.vista.destination.application.DestinationSummary;
 import com.vista.destination.domain.Destination;
 import com.vista.destination.domain.DestinationCategory;
 import com.vista.destination.domain.DestinationHistory;
+import com.vista.destination.domain.DestinationImage;
 import com.vista.destination.domain.Favorite;
 import com.vista.destination.domain.Province;
 import com.vista.destination.repository.DestinationCategoryRepository;
@@ -25,6 +29,8 @@ import java.text.Normalizer;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -32,6 +38,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
@@ -39,6 +46,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,6 +58,7 @@ public class DestinationService implements DestinationQueryService {
   public static final String STATUS_DRAFT = "DRAFT";
   public static final String STATUS_PUBLISHED = "PUBLISHED";
   public static final String STATUS_REJECTED = "REJECTED";
+  public static final String STATUS_ARCHIVED = "ARCHIVED";
 
   private final DestinationRepository destinationRepository;
   private final FavoriteRepository favoriteRepository;
@@ -60,6 +69,31 @@ public class DestinationService implements DestinationQueryService {
 
   @Autowired(required = false)
   private AuditLogService auditLogService;
+
+  @Autowired(required = false)
+  private JdbcTemplate jdbcTemplate;
+
+  @Autowired(required = false)
+  private ItineraryItemRepository itineraryItemRepository;
+
+  @Autowired(required = false)
+  private ProposalRepository proposalRepository;
+
+  public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
+    this.jdbcTemplate = jdbcTemplate;
+  }
+
+  public void setItineraryItemRepository(ItineraryItemRepository itineraryItemRepository) {
+    this.itineraryItemRepository = itineraryItemRepository;
+  }
+
+  public void setProposalRepository(ProposalRepository proposalRepository) {
+    this.proposalRepository = proposalRepository;
+  }
+
+  public record DestinationReviewStats(Double rating, Integer reviewCount) {
+    public static final DestinationReviewStats EMPTY = new DestinationReviewStats(null, 0);
+  }
 
   public DestinationService(
       DestinationRepository destinationRepository,
@@ -146,23 +180,311 @@ public class DestinationService implements DestinationQueryService {
     dest.setSourceUrl(request.sourceUrl());
     dest.setStatus(
         request.status() != null && !request.status().isBlank()
-            ? request.status().trim().toUpperCase()
+            ? request.status().trim().toUpperCase(Locale.ROOT)
             : STATUS_PUBLISHED);
     dest.setVerifiedAt(Instant.now());
 
+    List<String> urlsToSave = new ArrayList<>();
+    if (request.imageUrls() != null && !request.imageUrls().isEmpty()) {
+      for (String u : request.imageUrls()) {
+        if (u != null && !u.isBlank() && !urlsToSave.contains(u.trim())) {
+          urlsToSave.add(u.trim());
+        }
+      }
+    }
     if (request.imageUrl() != null && !request.imageUrl().isBlank()) {
-      dest.addImage(request.imageUrl().trim(), name, 0);
+      String primary = request.imageUrl().trim();
+      urlsToSave.remove(primary);
+      urlsToSave.add(0, primary);
+    }
+    for (int i = 0; i < urlsToSave.size(); i++) {
+      dest.addImage(urlsToSave.get(i), name, i);
     }
 
     Destination saved = destinationRepository.save(dest);
-    return toDetailDto(saved, false);
+    if (auditLogService != null && saved.getId() != null) {
+      auditLogService.logAction(
+          null,
+          "CREATE_DESTINATION",
+          "DESTINATION",
+          saved.getId().toString(),
+          "Tạo mới điểm đến: " + name);
+    }
+    return toDetailDto(saved, false, DestinationReviewStats.EMPTY);
   }
 
   @Transactional
-  public void deleteDestination(UUID id) {
-    if (id != null && destinationRepository.existsById(id)) {
-      destinationRepository.deleteById(id);
+  public DestinationDetailDto updateDestination(UUID id, UpdateDestinationRequest request) {
+    return updateDestination(id, request, null);
+  }
+
+  @Transactional
+  public DestinationDetailDto updateDestination(
+      UUID id, UpdateDestinationRequest request, UUID actorId) {
+    if (id == null) {
+      throw new IllegalArgumentException("Mã điểm đến không được để trống");
     }
+    if (request == null || request.name() == null || request.name().isBlank()) {
+      throw new IllegalArgumentException("Tên điểm đến không được để trống");
+    }
+    if (request.priceMin() != null && request.priceMin().compareTo(BigDecimal.ZERO) < 0) {
+      throw new IllegalArgumentException("Giá vé tối thiểu không được âm");
+    }
+    if (request.priceMax() != null && request.priceMax().compareTo(BigDecimal.ZERO) < 0) {
+      throw new IllegalArgumentException("Giá vé tối đa không được âm");
+    }
+    if (request.priceMin() != null
+        && request.priceMax() != null
+        && request.priceMax().compareTo(request.priceMin()) < 0) {
+      throw new IllegalArgumentException("Giá vé tối đa phải lớn hơn hoặc bằng giá vé tối thiểu");
+    }
+
+    Destination dest =
+        destinationRepository
+            .findById(id)
+            .orElseThrow(
+                () ->
+                    new DestinationNotFoundException(
+                        "Không tìm thấy địa điểm du lịch với mã: " + id));
+
+    String trimmedName = request.name().trim();
+    if (!trimmedName.equals(dest.getName()) || dest.getSlug() == null || dest.getSlug().isBlank()) {
+      String baseSlug = toSlug(trimmedName);
+      String candidateSlug = baseSlug;
+      int suffix = 1;
+      while (destinationRepository.existsBySlug(candidateSlug)
+          && !candidateSlug.equals(dest.getSlug())) {
+        candidateSlug = baseSlug + "-" + (suffix++);
+      }
+      dest.setName(trimmedName);
+      dest.setSlug(candidateSlug);
+    }
+
+    if (request.provinceId() != null) {
+      if (provinceRepository != null) {
+        Province p =
+            provinceRepository
+                .findById(request.provinceId())
+                .orElseThrow(
+                    () ->
+                        new IllegalArgumentException(
+                            "Không tìm thấy tỉnh thành với mã: " + request.provinceId()));
+        dest.setProvince(p);
+      }
+    } else if (request.province() != null && !request.province().isBlank()) {
+      String provName = request.province().trim();
+      if (provinceRepository != null) {
+        Province p =
+            provinceRepository
+                .findByName(provName)
+                .orElseGet(
+                    () ->
+                        provinceRepository.save(
+                            new Province(provName, toSlug(provName), "VN-REGION")));
+        dest.setProvince(p);
+      } else {
+        dest.setProvince(new Province(provName, toSlug(provName), "VN-REGION"));
+      }
+    }
+
+    if (request.categoryId() != null) {
+      if (categoryRepository != null) {
+        DestinationCategory c =
+            categoryRepository
+                .findById(request.categoryId())
+                .orElseThrow(
+                    () ->
+                        new IllegalArgumentException(
+                            "Không tìm thấy danh mục với mã: " + request.categoryId()));
+        dest.setCategory(c);
+      }
+    } else if (request.category() != null && !request.category().isBlank()) {
+      String catName = request.category().trim();
+      if (categoryRepository != null) {
+        DestinationCategory c =
+            categoryRepository
+                .findByName(catName)
+                .orElseGet(
+                    () ->
+                        categoryRepository.save(
+                            new DestinationCategory(catName, "category-default")));
+        dest.setCategory(c);
+      } else {
+        dest.setCategory(new DestinationCategory(catName, "category-default"));
+      }
+    }
+
+    if (request.description() != null) {
+      dest.setDescription(request.description().trim());
+    }
+    if (request.latitude() != null) {
+      dest.setLatitude(request.latitude());
+    }
+    if (request.longitude() != null) {
+      dest.setLongitude(request.longitude());
+    }
+    if (request.priceMin() != null) {
+      dest.setPriceMin(request.priceMin());
+    }
+    if (request.priceMax() != null) {
+      dest.setPriceMax(request.priceMax());
+    }
+    if (request.sourceUrl() != null) {
+      dest.setSourceUrl(request.sourceUrl().isBlank() ? null : request.sourceUrl().trim());
+    }
+
+    if (request.openingHours() != null) {
+      String raw = "";
+      if (request.openingHours() instanceof String s) {
+        raw = s.trim();
+      } else {
+        try {
+          raw = objectMapper.writeValueAsString(request.openingHours());
+        } catch (Exception ignored) {
+          raw = request.openingHours().toString().trim();
+        }
+      }
+      if (!raw.isBlank()) {
+        String existingReason = extractRejectionReasonFromOpeningHours(dest.getOpeningHours());
+        String openingHoursJson;
+        if (raw.startsWith("{") && raw.endsWith("}")) {
+          openingHoursJson = raw;
+        } else {
+          openingHoursJson = "{\"all\":\"" + raw.replace("\"", "\\\"") + "\"}";
+        }
+        if (existingReason != null && STATUS_REJECTED.equals(dest.getStatus())) {
+          openingHoursJson =
+              injectRejectionReasonIntoOpeningHours(openingHoursJson, existingReason);
+        }
+        dest.setOpeningHours(openingHoursJson);
+      }
+    }
+
+    if (request.imageUrls() != null) {
+      List<String> validUrls =
+          request.imageUrls().stream()
+              .filter(u -> u != null && !u.isBlank())
+              .map(String::trim)
+              .distinct()
+              .collect(Collectors.toCollection(ArrayList::new));
+      if (request.imageUrl() != null && !request.imageUrl().isBlank()) {
+        String primary = request.imageUrl().trim();
+        validUrls.remove(primary);
+        validUrls.add(0, primary);
+      }
+      dest.getImages().clear();
+      for (int i = 0; i < validUrls.size(); i++) {
+        dest.addImage(validUrls.get(i), dest.getName(), i);
+      }
+    } else if (request.imageUrl() != null && !request.imageUrl().isBlank()) {
+      dest.getImages().clear();
+      dest.addImage(request.imageUrl().trim(), dest.getName(), 0);
+    }
+
+    // Nếu status hiện tại là REJECTED, giữ nguyên status; không tự thay đổi
+    if (!STATUS_REJECTED.equals(dest.getStatus())
+        && request.status() != null
+        && !request.status().isBlank()) {
+      dest.setStatus(request.status().trim().toUpperCase(Locale.ROOT));
+    }
+
+    dest.setUpdatedAt(Instant.now());
+    Destination saved = destinationRepository.save(dest);
+
+    if (auditLogService != null) {
+      auditLogService.logAction(
+          actorId,
+          "UPDATE_DESTINATION",
+          "DESTINATION",
+          id.toString(),
+          "Cập nhật thông tin điểm đến: " + dest.getName());
+    }
+
+    return toDetailDto(saved, false);
+  }
+
+  @Transactional(noRollbackFor = DestinationInUseException.class)
+  public void deleteDestination(UUID id) {
+    deleteDestination(id, null);
+  }
+
+  @Transactional(noRollbackFor = DestinationInUseException.class)
+  public void deleteDestination(UUID id, UUID actorId) {
+    if (id == null) {
+      throw new IllegalArgumentException("Mã điểm đến không được để trống");
+    }
+
+    Optional<Destination> optDest = destinationRepository.findById(id);
+    if (optDest.isEmpty() && !destinationRepository.existsById(id)) {
+      throw new DestinationNotFoundException("Không tìm thấy địa điểm du lịch với mã: " + id);
+    }
+
+    Destination dest = optDest.orElse(null);
+    String destName = dest != null ? dest.getName() : id.toString();
+
+    if (hasForeignKeyReferences(id)) {
+      if (dest != null) {
+        dest.setStatus(STATUS_ARCHIVED);
+        dest.setUpdatedAt(Instant.now());
+        destinationRepository.save(dest);
+      }
+      if (auditLogService != null) {
+        auditLogService.logAction(
+            actorId,
+            "ARCHIVE_DESTINATION",
+            "DESTINATION",
+            id.toString(),
+            "Chuyển điểm đến sang trạng thái Lưu trữ (ARCHIVED) do đang được tham chiếu: "
+                + destName);
+      }
+      throw new DestinationInUseException(
+          "Địa điểm đang được tham chiếu, đã chuyển sang trạng thái Lưu trữ (Archived)");
+    }
+
+    destinationRepository.deleteById(id);
+    if (auditLogService != null) {
+      auditLogService.logAction(
+          actorId,
+          "DELETE_DESTINATION",
+          "DESTINATION",
+          id.toString(),
+          "Xóa điểm đến khỏi hệ thống: " + destName);
+    }
+  }
+
+  public boolean hasForeignKeyReferences(UUID destinationId) {
+    if (destinationId == null) {
+      return false;
+    }
+    if (itineraryItemRepository != null
+        && itineraryItemRepository.existsByDestinationId(destinationId)) {
+      return true;
+    }
+    if (proposalRepository != null && proposalRepository.existsByDestinationId(destinationId)) {
+      return true;
+    }
+    if (jdbcTemplate != null) {
+      try {
+        Integer refCount =
+            jdbcTemplate.queryForObject(
+                "SELECT "
+                    + "(SELECT COUNT(*) FROM reviews WHERE destination_id = ?) + "
+                    + "(SELECT COUNT(*) FROM itinerary_items WHERE destination_id = ?) + "
+                    + "(SELECT COUNT(*) FROM posts WHERE destination_id = ?) + "
+                    + "(SELECT COUNT(*) FROM destination_proposals WHERE destination_id = ?)",
+                Integer.class,
+                destinationId,
+                destinationId,
+                destinationId,
+                destinationId);
+        if (refCount != null && refCount > 0) {
+          return true;
+        }
+      } catch (Exception ignored) {
+        // Fallback if jdbcTemplate query cannot execute in mock/unit environment
+      }
+    }
+    return false;
   }
 
   public static String stripAccents(String input) {
@@ -203,8 +525,16 @@ public class DestinationService implements DestinationQueryService {
         PageRequest.of(validPage, validSize, Sort.by(Sort.Direction.DESC, "createdAt"));
     Page<Destination> pageResult = destinationRepository.findAll(spec, pageRequest);
 
+    List<Destination> content = pageResult.getContent();
+    List<UUID> ids = content.stream().map(Destination::getId).toList();
+    Map<UUID, DestinationReviewStats> statsMap = getReviewStatsBatch(ids);
+
     List<DestinationSummaryDto> items =
-        pageResult.getContent().stream().map(this::toSummaryDto).toList();
+        content.stream()
+            .map(
+                d ->
+                    toSummaryDto(d, statsMap.getOrDefault(d.getId(), DestinationReviewStats.EMPTY)))
+            .toList();
 
     return new DestinationPageDto(
         items, pageResult.getNumber(), pageResult.getSize(), pageResult.getTotalElements());
@@ -269,10 +599,7 @@ public class DestinationService implements DestinationQueryService {
         String[] catTokens = catSlug.split("-+");
         String catTokenPattern = "%" + String.join("%", catTokens) + "%";
 
-        predicates.add(
-            cb.or(
-                cb.like(cb.lower(root.get("category").get("name")), catPattern),
-                cb.like(root.get("category").get("slug"), catTokenPattern)));
+        predicates.add(cb.like(cb.lower(root.get("category").get("name")), catPattern));
       }
 
       if (priceMax != null) {
@@ -460,7 +787,7 @@ public class DestinationService implements DestinationQueryService {
                     cb.like(cb.lower(root.get("description")), rawPattern),
                     cb.like(root.get("slug"), tokenPattern),
                     cb.like(root.get("province").get("slug"), tokenPattern),
-                    cb.like(root.get("category").get("slug"), tokenPattern)));
+                    cb.like(cb.lower(root.get("category").get("name")), rawPattern)));
           }
 
           if (province != null && !province.isBlank()) {
@@ -483,10 +810,7 @@ public class DestinationService implements DestinationQueryService {
             String[] catTokens = catSlug.split("-+");
             String catTokenPattern = "%" + String.join("%", catTokens) + "%";
 
-            predicates.add(
-                cb.or(
-                    cb.like(cb.lower(root.get("category").get("name")), catPattern),
-                    cb.like(root.get("category").get("slug"), catTokenPattern)));
+            predicates.add(cb.like(cb.lower(root.get("category").get("name")), catPattern));
           }
 
           return cb.and(predicates.toArray(new Predicate[0]));
@@ -496,8 +820,16 @@ public class DestinationService implements DestinationQueryService {
         PageRequest.of(validPage, validSize, Sort.by(Sort.Direction.DESC, "createdAt"));
     Page<Destination> pageResult = destinationRepository.findAll(spec, pageRequest);
 
+    List<Destination> content = pageResult.getContent();
+    List<UUID> ids = content.stream().map(Destination::getId).toList();
+    Map<UUID, DestinationReviewStats> statsMap = getReviewStatsBatch(ids);
+
     List<DestinationSummaryDto> items =
-        pageResult.getContent().stream().map(this::toSummaryDto).toList();
+        content.stream()
+            .map(
+                d ->
+                    toSummaryDto(d, statsMap.getOrDefault(d.getId(), DestinationReviewStats.EMPTY)))
+            .toList();
 
     return new DestinationPageDto(
         items, pageResult.getNumber(), pageResult.getSize(), pageResult.getTotalElements());
@@ -523,11 +855,12 @@ public class DestinationService implements DestinationQueryService {
     String normalizedStatus = targetStatus.trim().toUpperCase(Locale.ROOT);
     if (!STATUS_PUBLISHED.equals(normalizedStatus)
         && !STATUS_REJECTED.equals(normalizedStatus)
-        && !STATUS_DRAFT.equals(normalizedStatus)) {
+        && !STATUS_DRAFT.equals(normalizedStatus)
+        && !STATUS_ARCHIVED.equals(normalizedStatus)) {
       throw new IllegalArgumentException(
           "Trạng thái không hợp lệ: "
               + targetStatus
-              + ". Chỉ chấp nhận: PUBLISHED, REJECTED, DRAFT");
+              + ". Chỉ chấp nhận: PUBLISHED, REJECTED, DRAFT, ARCHIVED");
     }
 
     Destination dest =
@@ -542,6 +875,14 @@ public class DestinationService implements DestinationQueryService {
     dest.setUpdatedAt(Instant.now());
     if (STATUS_PUBLISHED.equals(normalizedStatus)) {
       dest.setVerifiedAt(Instant.now());
+      dest.setRejectionReason(null);
+      dest.setOpeningHours(removeRejectionReasonFromOpeningHours(dest.getOpeningHours()));
+    } else if (STATUS_REJECTED.equals(normalizedStatus)) {
+      String effectiveReason =
+          (note != null && !note.isBlank()) ? note.trim() : "Từ chối kiểm duyệt điểm đến";
+      dest.setRejectionReason(effectiveReason);
+      dest.setOpeningHours(
+          injectRejectionReasonIntoOpeningHours(dest.getOpeningHours(), effectiveReason));
     }
 
     Destination saved = destinationRepository.save(dest);
@@ -574,7 +915,82 @@ public class DestinationService implements DestinationQueryService {
     stats.put("draft", destinationRepository.countByStatus(STATUS_DRAFT));
     stats.put("published", destinationRepository.countByStatus(STATUS_PUBLISHED));
     stats.put("rejected", destinationRepository.countByStatus(STATUS_REJECTED));
+    stats.put("archived", destinationRepository.countByStatus(STATUS_ARCHIVED));
     return stats;
+  }
+
+  public Map<String, Long> getStatsByProvince() {
+    Map<String, Long> counts = new HashMap<>();
+    for (Destination d : destinationRepository.findAll()) {
+      String prov =
+          d.getProvince() != null && d.getProvince().getName() != null
+              ? d.getProvince().getName()
+              : "Khác";
+      counts.merge(prov, 1L, Long::sum);
+    }
+    return counts.entrySet().stream()
+        .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+        .collect(
+            Collectors.toMap(
+                Map.Entry::getKey, Map.Entry::getValue, (a, b) -> a, LinkedHashMap::new));
+  }
+
+  public Map<String, Long> getStatsByCategory() {
+    Map<String, Long> counts = new HashMap<>();
+    for (Destination d : destinationRepository.findAll()) {
+      String cat =
+          d.getCategory() != null && d.getCategory().getName() != null
+              ? d.getCategory().getName()
+              : "Khác";
+      counts.merge(cat, 1L, Long::sum);
+    }
+    return counts.entrySet().stream()
+        .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+        .collect(
+            Collectors.toMap(
+                Map.Entry::getKey, Map.Entry::getValue, (a, b) -> a, LinkedHashMap::new));
+  }
+
+  private String extractRejectionReasonFromOpeningHours(String openingHoursJson) {
+    if (openingHoursJson == null || openingHoursJson.isBlank()) {
+      return null;
+    }
+    try {
+      Map<String, Object> map = objectMapper.readValue(openingHoursJson, new TypeReference<>() {});
+      Object reason = map.get("_rejectionReason");
+      return reason != null ? reason.toString() : null;
+    } catch (Exception ignored) {
+      return null;
+    }
+  }
+
+  private String injectRejectionReasonIntoOpeningHours(String openingHoursJson, String reason) {
+    try {
+      Map<String, Object> map = new LinkedHashMap<>();
+      if (openingHoursJson != null && !openingHoursJson.isBlank()) {
+        map.putAll(objectMapper.readValue(openingHoursJson, new TypeReference<>() {}));
+      }
+      if (reason != null && !reason.isBlank()) {
+        map.put("_rejectionReason", reason);
+      }
+      return objectMapper.writeValueAsString(map);
+    } catch (Exception ignored) {
+      return openingHoursJson;
+    }
+  }
+
+  private String removeRejectionReasonFromOpeningHours(String openingHoursJson) {
+    if (openingHoursJson == null || openingHoursJson.isBlank()) {
+      return openingHoursJson;
+    }
+    try {
+      Map<String, Object> map =
+          new LinkedHashMap<>(objectMapper.readValue(openingHoursJson, new TypeReference<>() {}));
+      map.remove("_rejectionReason");
+      return objectMapper.writeValueAsString(map);
+    } catch (Exception ignored) {
+      return openingHoursJson;
+    }
   }
 
   // --- HELPER MAPPERS ---
@@ -598,7 +1014,71 @@ public class DestinationService implements DestinationQueryService {
         d.getOpeningHours());
   }
 
+  public DestinationReviewStats getReviewStats(UUID destinationId) {
+    if (jdbcTemplate == null || destinationId == null) {
+      return DestinationReviewStats.EMPTY;
+    }
+    try {
+      return jdbcTemplate.query(
+          "SELECT AVG(rating) as avg_rating, COUNT(id) as review_count FROM reviews WHERE destination_id = ? AND status = 'VISIBLE'",
+          rs -> {
+            if (rs.next()) {
+              int count = rs.getInt("review_count");
+              if (count > 0) {
+                double avg = rs.getDouble("avg_rating");
+                double rounded = Math.round(avg * 10.0) / 10.0;
+                return new DestinationReviewStats(rounded, count);
+              }
+            }
+            return DestinationReviewStats.EMPTY;
+          },
+          destinationId);
+    } catch (Exception e) {
+      return DestinationReviewStats.EMPTY;
+    }
+  }
+
+  public Map<UUID, DestinationReviewStats> getReviewStatsBatch(List<UUID> destinationIds) {
+    if (jdbcTemplate == null || destinationIds == null || destinationIds.isEmpty()) {
+      return Collections.emptyMap();
+    }
+    try {
+      String inSql = String.join(",", Collections.nCopies(destinationIds.size(), "?"));
+      String sql =
+          "SELECT destination_id, AVG(rating) as avg_rating, COUNT(id) as review_count "
+              + "FROM reviews "
+              + "WHERE destination_id IN ("
+              + inSql
+              + ") AND status = 'VISIBLE' "
+              + "GROUP BY destination_id";
+
+      Object[] params = destinationIds.toArray();
+      return jdbcTemplate.query(
+          sql,
+          rs -> {
+            Map<UUID, DestinationReviewStats> map = new HashMap<>();
+            while (rs.next()) {
+              UUID destId = (UUID) rs.getObject("destination_id");
+              int count = rs.getInt("review_count");
+              if (count > 0) {
+                double avg = rs.getDouble("avg_rating");
+                double rounded = Math.round(avg * 10.0) / 10.0;
+                map.put(destId, new DestinationReviewStats(rounded, count));
+              }
+            }
+            return map;
+          },
+          params);
+    } catch (Exception e) {
+      return Collections.emptyMap();
+    }
+  }
+
   private DestinationSummaryDto toSummaryDto(Destination dest) {
+    return toSummaryDto(dest, getReviewStats(dest.getId()));
+  }
+
+  private DestinationSummaryDto toSummaryDto(Destination dest, DestinationReviewStats stats) {
     String imageUrl = null;
     if (dest.getImages() != null && !dest.getImages().isEmpty()) {
       imageUrl = dest.getImages().get(0).getStoragePath();
@@ -614,23 +1094,49 @@ public class DestinationService implements DestinationQueryService {
         dest.getPriceMax(),
         dest.getLatitude() != null ? dest.getLatitude().doubleValue() : null,
         dest.getLongitude() != null ? dest.getLongitude().doubleValue() : null,
-        dest.getStatus());
+        dest.getStatus(),
+        stats != null ? stats.rating() : null,
+        stats != null ? stats.reviewCount() : 0);
   }
 
   private DestinationDetailDto toDetailDto(Destination dest, boolean isFavorite) {
-    String imageUrl = null;
+    return toDetailDto(dest, isFavorite, getReviewStats(dest.getId()));
+  }
+
+  private DestinationDetailDto toDetailDto(
+      Destination dest, boolean isFavorite, DestinationReviewStats stats) {
+    List<String> imageUrls = List.of();
     if (dest.getImages() != null && !dest.getImages().isEmpty()) {
-      imageUrl = dest.getImages().get(0).getStoragePath();
+      imageUrls =
+          dest.getImages().stream()
+              .sorted(
+                  Comparator.comparingInt(
+                      img -> img.getSortOrder() != null ? img.getSortOrder() : 0))
+              .map(DestinationImage::getStoragePath)
+              .filter(p -> p != null && !p.isBlank())
+              .toList();
     }
+    String imageUrl = !imageUrls.isEmpty() ? imageUrls.get(0) : null;
 
     Map<String, Object> openingHoursMap = Collections.emptyMap();
+    String extractedRejectionReason = null;
     if (dest.getOpeningHours() != null && !dest.getOpeningHours().isBlank()) {
       try {
-        openingHoursMap = objectMapper.readValue(dest.getOpeningHours(), new TypeReference<>() {});
+        Map<String, Object> parsed =
+            new LinkedHashMap<>(
+                objectMapper.readValue(dest.getOpeningHours(), new TypeReference<>() {}));
+        Object reasonObj = parsed.remove("_rejectionReason");
+        if (reasonObj != null) {
+          extractedRejectionReason = reasonObj.toString();
+        }
+        openingHoursMap = parsed;
       } catch (Exception ignored) {
         // Fallback gracefully if parsing fails
       }
     }
+
+    String rejectionReason =
+        dest.getRejectionReason() != null ? dest.getRejectionReason() : extractedRejectionReason;
 
     return new DestinationDetailDto(
         dest.getId(),
@@ -638,6 +1144,7 @@ public class DestinationService implements DestinationQueryService {
         dest.getProvince() != null ? dest.getProvince().getName() : "",
         dest.getCategory() != null ? dest.getCategory().getName() : "",
         imageUrl,
+        imageUrls,
         dest.getPriceMin(),
         dest.getPriceMax(),
         dest.getLatitude() != null ? dest.getLatitude().doubleValue() : null,
@@ -647,6 +1154,9 @@ public class DestinationService implements DestinationQueryService {
         openingHoursMap,
         dest.getSourceUrl(),
         dest.getVerifiedAt(),
-        isFavorite);
+        isFavorite,
+        stats != null ? stats.rating() : null,
+        stats != null ? stats.reviewCount() : 0,
+        rejectionReason);
   }
 }

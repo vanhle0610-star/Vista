@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   description: 'Khám phá điểm đến Việt Nam, lập lịch trình AI thông minh, quản lý chuyến đi nhóm và thủ quỹ chi phí minh bạch.',
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="vi" suppressHydrationWarning>
       <head>

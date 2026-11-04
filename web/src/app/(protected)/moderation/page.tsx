@@ -15,10 +15,13 @@ import {
   ShieldCheck,
   Inbox,
   AlertCircle,
+  Clock,
+  Layers,
   X,
   MessageSquareWarning,
 } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
+import { PaginationBar } from '@/components/PaginationBar';
 import { CrownModeratorIcon } from '@/components/common/LuxeIcons';
 import styles from './moderation.module.css';
 
@@ -39,10 +42,12 @@ interface DestinationSummary {
 }
 
 interface DestinationDetail extends DestinationSummary {
+  imageUrls?: string[];
   description?: string;
   openingHours?: Record<string, string>;
   sourceUrl?: string;
   verifiedAt?: string;
+  rejectionReason?: string | null;
 }
 
 interface ModerationStats {
@@ -50,6 +55,7 @@ interface ModerationStats {
   draft: number;
   published: number;
   rejected: number;
+  archived?: number;
 }
 
 const PROVINCE_OPTIONS = [
@@ -63,28 +69,163 @@ const PROVINCE_OPTIONS = [
   'Khánh Hòa',
   'Kiên Giang',
   'Lào Cai',
-];
-
-const CATEGORY_OPTIONS = [
-  'Di tích',
-  'Danh lam',
-  'Bảo tàng',
-  'Tâm linh',
-  'Bãi biển',
-  'Sinh thái',
-  'Ẩm thực',
-  'Vui chơi',
+  'Quảng Bình',
+  'Hải Phòng',
+  'Cần Thơ',
 ];
 
 const DAY_LABELS: Record<string, string> = {
-  monday: 'Thứ 2',
-  tuesday: 'Thứ 3',
-  wednesday: 'Thứ 4',
-  thursday: 'Thứ 5',
-  friday: 'Thứ 6',
-  saturday: 'Thứ 7',
-  sunday: 'Chủ nhật',
+  mon: 'Thứ Hai',
+  tue: 'Thứ Ba',
+  wed: 'Thứ Tư',
+  thu: 'Thứ Năm',
+  fri: 'Thứ Sáu',
+  sat: 'Thứ Bảy',
+  sun: 'Chủ Nhật',
 };
+
+interface RejectReasonModalProps {
+  destinationName: string;
+  onClose: () => void;
+  onConfirm: (reason: string) => Promise<void>;
+}
+
+function RejectReasonModal({ destinationName, onClose, onConfirm }: RejectReasonModalProps) {
+  const [reason, setReason] = useState<string>('');
+  const [submitting, setSubmitting] = useState<boolean>(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  const trimmedLen = reason.trim().length;
+  const isValid = trimmedLen >= 10 && trimmedLen <= 500;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (trimmedLen < 10) {
+      setValidationError('Lý do từ chối phải có tối thiểu 10 ký tự.');
+      return;
+    }
+    if (trimmedLen > 500) {
+      setValidationError('Lý do từ chối không được vượt quá 500 ký tự.');
+      return;
+    }
+    setValidationError(null);
+    try {
+      setSubmitting(true);
+      await onConfirm(reason.trim());
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className={styles.modalOverlay} onClick={() => !submitting && onClose()}>
+      <div
+        className={styles.modalContent}
+        style={{ maxWidth: '520px' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className={styles.modalHeader}>
+          <div className={styles.modalTitle} style={{ color: '#dc2626', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <XCircle size={20} color="#dc2626" />
+            Từ chối phê duyệt điểm đến
+          </div>
+          <button
+            type="button"
+            className={styles.btnCloseModal}
+            onClick={() => !submitting && onClose()}
+            disabled={submitting}
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          <div className={styles.modalBody}>
+            <p style={{ margin: 0, fontSize: '0.92rem', color: '#334155', lineHeight: 1.5 }}>
+              Vui lòng nhập lý do từ chối kiểm duyệt cho địa điểm{' '}
+              <strong style={{ color: '#0f172a' }}>{destinationName}</strong>:
+            </p>
+
+            <div>
+              <textarea
+                rows={4}
+                required
+                minLength={10}
+                maxLength={500}
+                placeholder="Ví dụ: Hình ảnh minh họa chưa rõ nét, thiếu thông tin mô tả chi tiết và tọa độ GPS chưa chính xác..."
+                value={reason}
+                onChange={(e) => {
+                  setReason(e.target.value);
+                  if (validationError) setValidationError(null);
+                }}
+                disabled={submitting}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 0.9rem',
+                  borderRadius: '10px',
+                  border: validationError ? '1px solid #ef4444' : '1px solid #cbd5e1',
+                  fontSize: '0.9rem',
+                  color: '#0f172a',
+                  outline: 'none',
+                  resize: 'vertical',
+                  boxSizing: 'border-box',
+                }}
+              />
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  marginTop: '0.35rem',
+                  fontSize: '0.78rem',
+                  color: trimmedLen > 0 && trimmedLen < 10 ? '#dc2626' : '#64748b',
+                }}
+              >
+                <span>Bắt buộc từ 10 đến 500 ký tự</span>
+                <span>{trimmedLen} / 500 ký tự</span>
+              </div>
+              {validationError && (
+                <p style={{ color: '#dc2626', fontSize: '0.82rem', fontWeight: 600, margin: '0.4rem 0 0 0' }}>
+                  {validationError}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className={styles.modalFooter}>
+            <button
+              type="button"
+              className={styles.btnSecondary}
+              onClick={onClose}
+              disabled={submitting}
+            >
+              Hủy bỏ
+            </button>
+            <button
+              type="submit"
+              disabled={submitting || !isValid}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                background: isValid ? '#dc2626' : '#fca5a5',
+                color: '#ffffff',
+                border: 'none',
+                padding: '0.6rem 1.15rem',
+                borderRadius: '10px',
+                fontSize: '0.88rem',
+                fontWeight: 700,
+                cursor: submitting || !isValid ? 'not-allowed' : 'pointer',
+              }}
+            >
+              <XCircle size={16} />
+              {submitting ? 'Đang gửi...' : 'Xác nhận từ chối'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPES: COMMUNITY REPORTS MODERATION (TV4)
@@ -144,131 +285,241 @@ export default function ModerationPage() {
   const [hubTab, setHubTab] = useState<'DESTINATIONS' | 'REPORTS'>('DESTINATIONS');
 
   // ─────────────────────────────────────────────────────────────────────────
-  // STATE: DESTINATIONS
+  // STATE: DESTINATIONS (TV1)
   // ─────────────────────────────────────────────────────────────────────────
-  const [destinations, setDestinations] = useState<DestinationSummary[]>([]);
-  const [stats, setStats] = useState<ModerationStats>({ total: 0, draft: 0, published: 0, rejected: 0 });
-  const [loadingDest, setLoadingDest] = useState(true);
-  const [errorDest, setErrorDest] = useState<string | null>(null);
+  const [items, setItems] = useState<DestinationSummary[]>([]);
+  const [totalCount, setTotalCount] = useState<number>(0);
+  const [page, setPage] = useState<number>(0);
+  const [size, setSize] = useState<number>(20);
+  const [stats, setStats] = useState<ModerationStats>({
+    total: 0,
+    draft: 0,
+    published: 0,
+    rejected: 0,
+  });
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const [selectedStatus, setSelectedStatus] = useState<string>('DRAFT');
-  const [selectedProvince, setSelectedProvince] = useState<string>('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  // Filters
+  const [statusFilter, setStatusFilter] = useState<'DRAFT' | 'PUBLISHED' | 'REJECTED' | 'ALL'>('DRAFT');
   const [searchKeyword, setSearchKeyword] = useState<string>('');
+  const [selectedProvince, setSelectedProvince] = useState<string>('');
 
+  // Selected Detail Modal
   const [selectedDest, setSelectedDest] = useState<DestinationDetail | null>(null);
-  const [isActioning, setIsActioning] = useState(false);
-  const [destToast, setDestToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [detailLoading, setDetailLoading] = useState<boolean>(false);
+  const [actionInProgressId, setActionInProgressId] = useState<string | null>(null);
 
-  const showDestToast = (message: string, type: 'success' | 'error' = 'success') => {
-    setDestToast({ message, type });
-    setTimeout(() => setDestToast(null), 3500);
+  // Reject Reason Modal Target (P1-4)
+  const [rejectTarget, setRejectTarget] = useState<{ id: string; name: string } | null>(null);
+
+  // Toast
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => {
+      setToast(null);
+    }, 4000);
   };
 
-  const fetchDestinations = useCallback(async () => {
-    setLoadingDest(true);
-    setErrorDest(null);
-    try {
-      const params = new URLSearchParams();
-      if (selectedStatus) params.append('status', selectedStatus);
-      if (selectedProvince) params.append('province', selectedProvince);
-      if (selectedCategory) params.append('category', selectedCategory);
-      if (searchKeyword.trim()) params.append('keyword', searchKeyword.trim());
+  const totalPages = Math.max(1, Math.ceil(totalCount / size));
 
-      const data = await apiRequest<DestinationSummary[]>(
-        `/admin/destinations/moderation-queue?${params.toString()}`
-      );
-      setDestinations(data || []);
+  const getApiBase = () => {
+    return (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081/api/v1').replace(/\/+$/, '');
+  };
 
-      if (!selectedProvince && !selectedCategory && !searchKeyword.trim()) {
-        const dCount = (data || []).filter((d) => d.status === 'DRAFT').length;
-        const pCount = (data || []).filter((d) => d.status === 'PUBLISHED').length;
-        const rCount = (data || []).filter((d) => d.status === 'REJECTED').length;
-        setStats({
-          total: (data || []).length,
-          draft: dCount,
-          published: pCount,
-          rejected: rCount,
-        });
+  const getAuthHeaders = (): HeadersInit => {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('vista_token');
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
       }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Không thể tải danh sách kiểm duyệt';
-      setErrorDest(msg);
-    } finally {
-      setLoadingDest(false);
     }
-  }, [selectedStatus, selectedProvince, selectedCategory, searchKeyword]);
+    return headers;
+  };
+
+  // 1. Fetch Stats
+  const fetchStats = useCallback(async () => {
+    try {
+      const apiBase = getApiBase();
+      const res = await fetch(`${apiBase}/admin/destinations/stats`, {
+        headers: getAuthHeaders(),
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setStats(data);
+      }
+    } catch {
+      // Ignore background stats fetch errors
+    }
+  }, []);
+
+  // 2. Fetch Moderation Queue
+  const fetchQueue = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const apiBase = getApiBase();
+      const params = new URLSearchParams({
+        status: statusFilter,
+        page: String(page),
+        size: String(size),
+      });
+      if (searchKeyword.trim()) {
+        params.set('keyword', searchKeyword.trim());
+        params.set('q', searchKeyword.trim());
+      }
+      if (selectedProvince) params.set('province', selectedProvince);
+
+      const res = await fetch(`${apiBase}/admin/destinations?${params.toString()}`, {
+        headers: getAuthHeaders(),
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        if (res.status === 403 || res.status === 401) {
+          throw new Error(
+            'Bạn không có quyền truy cập hàng đợi kiểm duyệt (yêu cầu vai trò ADMIN hoặc MODERATOR)'
+          );
+        }
+        throw new Error(`Lỗi tải dữ liệu: HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+      setItems(data.items || []);
+      setTotalCount(data.total !== undefined ? data.total : data.items ? data.items.length : 0);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Không thể kết nối đến máy chủ';
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  }, [statusFilter, page, size, searchKeyword, selectedProvince]);
 
   useEffect(() => {
     if (hubTab === 'DESTINATIONS') {
-      void fetchDestinations();
+      fetchQueue();
+      fetchStats();
     }
-  }, [hubTab, fetchDestinations]);
+  }, [hubTab, fetchQueue, fetchStats]);
 
-  const handleApprove = async (id: string, name: string) => {
-    if (!confirm(`Xác nhận phê duyệt và xuất bản địa điểm "${name}"?`)) return;
-    setIsActioning(true);
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPage(0);
+    fetchQueue();
+  };
+
+  // 3. View Detail
+  const handleOpenDetail = async (id: string) => {
     try {
-      await apiRequest(`/admin/destinations/${id}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'PUBLISHED' }),
+      setDetailLoading(true);
+      const apiBase = getApiBase();
+      const res = await fetch(`${apiBase}/admin/destinations/${id}`, {
+        headers: getAuthHeaders(),
+        credentials: 'include',
       });
-      showDestToast(`Đã xuất bản địa điểm "${name}" thành công!`);
-      if (selectedDest?.id === id) {
-        setSelectedDest((prev) => (prev ? { ...prev, status: 'PUBLISHED' } : null));
+      if (res.ok) {
+        const data = await res.json();
+        setSelectedDest(data);
+      } else {
+        showToast('Không thể tải thông tin chi tiết điểm đến', 'error');
       }
-      void fetchDestinations();
+    } catch {
+      showToast('Lỗi mạng khi tải chi tiết', 'error');
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
+  // 4. Approve Action
+  const handleApprove = async (id: string, name: string) => {
+    try {
+      setActionInProgressId(id);
+      const apiBase = getApiBase();
+      const res = await fetch(`${apiBase}/admin/destinations/${id}/approve`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        credentials: 'include',
+        body: JSON.stringify({ note: `Đã duyệt xuất bản điểm đến ${name}` }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Phê duyệt thất bại: HTTP ${res.status}`);
+      }
+
+      showToast(`Đã duyệt và xuất bản thành công: "${name}"`, 'success');
+      if (selectedDest && selectedDest.id === id) {
+        setSelectedDest(null);
+      }
+      fetchQueue();
+      fetchStats();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Lỗi khi phê duyệt';
-      showDestToast(msg, 'error');
+      showToast(msg, 'error');
     } finally {
-      setIsActioning(false);
+      setActionInProgressId(null);
     }
   };
 
-  const handleReject = async (id: string, name: string) => {
-    const reason = prompt(`Lý do từ chối điểm đến "${name}":`, 'Thông tin chưa đầy đủ hoặc không chính xác');
-    if (reason === null) return;
-    setIsActioning(true);
+  // 5. Reject Action with Reason (P1-4)
+  const handleConfirmRejectWithReason = async (reason: string) => {
+    if (!rejectTarget) return;
+    const { id, name } = rejectTarget;
     try {
-      await apiRequest(`/admin/destinations/${id}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'REJECTED', reason }),
+      setActionInProgressId(id);
+      const apiBase = getApiBase();
+      const res = await fetch(`${apiBase}/admin/destinations/${id}/reject`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        credentials: 'include',
+        body: JSON.stringify({ note: reason }),
       });
-      showDestToast(`Đã từ chối địa điểm "${name}".`, 'error');
-      if (selectedDest?.id === id) {
-        setSelectedDest((prev) => (prev ? { ...prev, status: 'REJECTED' } : null));
+
+      if (!res.ok) {
+        throw new Error(`Từ chối thất bại: HTTP ${res.status}`);
       }
-      void fetchDestinations();
+
+      const updatedDetail: DestinationDetail = await res.json().catch(() => null);
+
+      showToast(`Đã từ chối kiểm duyệt điểm đến: "${name}"`, 'success');
+      setRejectTarget(null);
+      if (selectedDest && selectedDest.id === id) {
+        if (updatedDetail) {
+          setSelectedDest(updatedDetail);
+        } else {
+          setSelectedDest(null);
+        }
+      }
+      fetchQueue();
+      fetchStats();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Lỗi khi từ chối';
-      showDestToast(msg, 'error');
+      showToast(msg, 'error');
     } finally {
-      setIsActioning(false);
-    }
-  };
-
-  const handleViewDetail = async (id: string) => {
-    try {
-      const detail = await apiRequest<DestinationDetail>(`/admin/destinations/${id}`);
-      setSelectedDest(detail);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Không tải được chi tiết điểm đến';
-      showDestToast(msg, 'error');
+      setActionInProgressId(null);
     }
   };
 
   const formatPrice = (min?: number | null, max?: number | null) => {
-    if (min == null && max == null) return 'Chưa cập nhật';
-    if (min === 0 && max === 0) return 'Miễn phí';
-    if (min === max) return `${min?.toLocaleString('vi-VN')} đ`;
-    return `${min?.toLocaleString('vi-VN')} – ${max?.toLocaleString('vi-VN')} đ`;
+    if (min === null || min === undefined || max === null || max === undefined) {
+      return 'Chưa rõ giá vé';
+    }
+    if (min === 0 && max === 0) {
+      return 'Miễn phí';
+    }
+    if (min === max) {
+      return `${min.toLocaleString('vi-VN')} đ`;
+    }
+    return `${min.toLocaleString('vi-VN')} – ${max.toLocaleString('vi-VN')} đ`;
   };
 
   // ─────────────────────────────────────────────────────────────────────────
-  // STATE: COMMUNITY REPORTS
+  // STATE: COMMUNITY REPORTS (TV4)
   // ─────────────────────────────────────────────────────────────────────────
   const [reports, setReports] = useState<ReportItem[]>([]);
   const [statusTab, setStatusTab] = useState<'OPEN' | 'RESOLVED' | 'DISMISSED'>('OPEN');
@@ -398,19 +649,20 @@ export default function ModerationPage() {
         </button>
       </nav>
 
-      {/* ════════ VIEW 1: DESTINATIONS MODERATION ════════ */}
+      {/* ════════ VIEW 1: DESTINATIONS MODERATION (TV1) ════════ */}
       {hubTab === 'DESTINATIONS' && (
         <>
-          {/* Header */}
+          {/* 1. Header Section */}
           <div className={styles.headerRow}>
             <div className={styles.titleArea}>
               <div className={styles.cloudPill}>
                 <span className={styles.cloudDot} />
                 Hàng đợi kiểm duyệt (FR-ADM-03)
               </div>
-              <h1>Kiểm duyệt Điểm đến Du lịch {destinations.length > 0 ? `(${destinations.length})` : ''}</h1>
+              <h1>Kiểm duyệt Điểm đến Du lịch {totalCount > 0 ? `(${totalCount})` : ''}</h1>
               <p className={styles.subtitle}>
-                Thẩm định thông tin địa danh, xác minh giờ mở cửa, giá vé và kiểm duyệt chất lượng nội dung trước khi xuất bản rộng rãi cho cộng đồng du lịch.
+                Thẩm định thông tin địa danh, xác minh giờ mở cửa, giá vé và kiểm duyệt chất lượng nội
+                dung trước khi xuất bản rộng rãi cho cộng đồng du lịch.
               </p>
             </div>
 
@@ -418,81 +670,145 @@ export default function ModerationPage() {
               <button
                 type="button"
                 className={styles.btnSecondary}
-                onClick={() => void fetchDestinations()}
-                disabled={loadingDest}
+                onClick={() => {
+                  fetchQueue();
+                  fetchStats();
+                }}
               >
-                <RefreshCw size={16} className={loadingDest ? styles.spin : ''} />
-                Làm mới danh sách
+                <RefreshCw size={16} />
+                Làm mới
               </button>
-              <Link href="/destinations" className={styles.btnPrimary}>
-                Xem kho điểm đến
+              <Link href="/destinations" className={styles.btnSecondary}>
+                Quản lý kho địa điểm →
               </Link>
             </div>
           </div>
 
-          {/* Stats Cards */}
-          <div className={styles.statsContainer}>
-            <div
-              className={`${styles.statBox} ${selectedStatus === '' ? styles.statBoxActive : ''}`}
-              onClick={() => setSelectedStatus('')}
-            >
-              <div className={styles.statLabel}>Tất cả điểm đến</div>
-              <div className={styles.statNumber}>{stats.total}</div>
+          {/* 2. Stats Row */}
+          <div className={styles.statsRow}>
+            <div className={styles.statCard}>
+              <div className={styles.statIconBox} style={{ background: '#fef3c7', color: '#d97706' }}>
+                <Inbox size={24} />
+              </div>
+              <div>
+                <div className={styles.statValue}>{stats.draft}</div>
+                <div className={styles.statLabel}>Chờ phê duyệt (DRAFT)</div>
+              </div>
             </div>
 
-            <div
-              className={`${styles.statBox} ${selectedStatus === 'DRAFT' ? styles.statBoxActive : ''}`}
-              onClick={() => setSelectedStatus('DRAFT')}
-            >
-              <div className={styles.statLabel}>
-                <span className={`${styles.statusDot} ${styles.statusDotDraft}`} />
-                Chờ duyệt (Draft)
+            <div className={styles.statCard}>
+              <div className={styles.statIconBox} style={{ background: '#dcfce7', color: '#16a34a' }}>
+                <ShieldCheck size={24} />
               </div>
-              <div className={`${styles.statNumber} ${styles.statNumberDraft}`}>{stats.draft}</div>
+              <div>
+                <div className={styles.statValue}>{stats.published}</div>
+                <div className={styles.statLabel}>Đã xuất bản (PUBLISHED)</div>
+              </div>
             </div>
 
-            <div
-              className={`${styles.statBox} ${selectedStatus === 'PUBLISHED' ? styles.statBoxActive : ''}`}
-              onClick={() => setSelectedStatus('PUBLISHED')}
-            >
-              <div className={styles.statLabel}>
-                <span className={`${styles.statusDot} ${styles.statusDotPublished}`} />
-                Đã xuất bản
+            <div className={styles.statCard}>
+              <div className={styles.statIconBox} style={{ background: '#fee2e2', color: '#dc2626' }}>
+                <ShieldAlert size={24} />
               </div>
-              <div className={`${styles.statNumber} ${styles.statNumberPublished}`}>{stats.published}</div>
+              <div>
+                <div className={styles.statValue}>{stats.rejected}</div>
+                <div className={styles.statLabel}>Từ chối duyệt (REJECTED)</div>
+              </div>
             </div>
 
-            <div
-              className={`${styles.statBox} ${selectedStatus === 'REJECTED' ? styles.statBoxActive : ''}`}
-              onClick={() => setSelectedStatus('REJECTED')}
-            >
-              <div className={styles.statLabel}>
-                <span className={`${styles.statusDot} ${styles.statusDotRejected}`} />
-                Đã từ chối
+            <div className={styles.statCard}>
+              <div className={styles.statIconBox} style={{ background: '#e0f2fe', color: '#0284c7' }}>
+                <Tag size={24} />
               </div>
-              <div className={`${styles.statNumber} ${styles.statNumberRejected}`}>{stats.rejected}</div>
+              <div>
+                <div className={styles.statValue}>{stats.total}</div>
+                <div className={styles.statLabel}>Tổng số địa điểm</div>
+              </div>
             </div>
           </div>
 
-          {/* Filters Bar */}
-          <div className={styles.filtersCard}>
-            <div className={styles.searchBox}>
-              <Search size={18} className={styles.searchIcon} />
-              <input
-                type="text"
-                placeholder="Tìm tên địa danh, danh lam, khu di tích..."
-                value={searchKeyword}
-                onChange={(e) => setSearchKeyword(e.target.value)}
-              />
+          {/* 3. Filter Bar */}
+          <div className={styles.filterBar}>
+            <div className={styles.tabsRow}>
+              <button
+                type="button"
+                className={`${styles.tabBtn} ${statusFilter === 'DRAFT' ? styles.tabBtnActive : ''}`}
+                onClick={() => {
+                  setStatusFilter('DRAFT');
+                  setPage(0);
+                }}
+              >
+                <Clock size={15} />
+                Chờ duyệt
+                <span className={styles.tabBadge}>{stats.draft}</span>
+              </button>
+
+              <button
+                type="button"
+                className={`${styles.tabBtn} ${
+                  statusFilter === 'PUBLISHED' ? styles.tabBtnActive : ''
+                }`}
+                onClick={() => {
+                  setStatusFilter('PUBLISHED');
+                  setPage(0);
+                }}
+              >
+                <CheckCircle2 size={15} />
+                Đã xuất bản
+                <span className={styles.tabBadge}>{stats.published}</span>
+              </button>
+
+              <button
+                type="button"
+                className={`${styles.tabBtn} ${statusFilter === 'REJECTED' ? styles.tabBtnActive : ''}`}
+                onClick={() => {
+                  setStatusFilter('REJECTED');
+                  setPage(0);
+                }}
+              >
+                <XCircle size={15} />
+                Đã từ chối
+                <span className={styles.tabBadge}>{stats.rejected}</span>
+              </button>
+
+              <button
+                type="button"
+                className={`${styles.tabBtn} ${statusFilter === 'ALL' ? styles.tabBtnActive : ''}`}
+                onClick={() => {
+                  setStatusFilter('ALL');
+                  setPage(0);
+                }}
+              >
+                <Layers size={15} />
+                Tất cả
+                <span className={styles.tabBadge}>{stats.total}</span>
+              </button>
             </div>
 
-            <div className={styles.filterGroup}>
+            <form onSubmit={handleSearchSubmit} className={styles.searchInputsRow}>
+              <div className={styles.searchInputWrapper}>
+                <Search size={18} className={styles.searchIcon} />
+                <input
+                  type="text"
+                  placeholder="Tìm kiếm theo tên điểm đến, di tích, bãi biển..."
+                  value={searchKeyword}
+                  onChange={(e) => {
+                    setSearchKeyword(e.target.value);
+                    setPage(0);
+                  }}
+                  className={styles.searchInput}
+                />
+              </div>
+
               <select
                 value={selectedProvince}
-                onChange={(e) => setSelectedProvince(e.target.value)}
-                className={styles.filterSelect}
+                onChange={(e) => {
+                  setSelectedProvince(e.target.value);
+                  setPage(0);
+                }}
+                className={styles.selectInput}
               >
-                <option value="">Tất cả tỉnh / thành</option>
+                <option value="">Tất cả tỉnh thành</option>
                 {PROVINCE_OPTIONS.map((p) => (
                   <option key={p} value={p}>
                     {p}
@@ -500,181 +816,205 @@ export default function ModerationPage() {
                 ))}
               </select>
 
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className={styles.filterSelect}
-              >
-                <option value="">Tất cả danh mục</option>
-                {CATEGORY_OPTIONS.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
-
-              {(searchKeyword || selectedProvince || selectedCategory) && (
-                <button
-                  type="button"
-                  className={styles.btnClearFilter}
-                  onClick={() => {
-                    setSearchKeyword('');
-                    setSelectedProvince('');
-                    setSelectedCategory('');
-                  }}
-                >
-                  Xóa lọc
-                </button>
-              )}
-            </div>
+              <button type="submit" className={styles.btnSecondary}>
+                Lọc kết quả
+              </button>
+            </form>
           </div>
 
-          {/* Table Content */}
+          {/* 4. Table / Content Area */}
           <div className={styles.tableCard}>
-            {loadingDest ? (
-              <div className={styles.loadingContainer}>
+            {loading ? (
+              <div className={styles.feedbackContainer}>
                 <div className={styles.spinner} />
-                <p>Đang tải danh sách điểm đến...</p>
+                <p style={{ color: '#64748b', fontWeight: 600 }}>Đang tải danh sách kiểm duyệt...</p>
               </div>
-            ) : errorDest ? (
-              <div className={styles.errorContainer}>
-                <AlertCircle size={32} />
-                <p>{errorDest}</p>
-                <button type="button" onClick={() => void fetchDestinations()}>
+            ) : error ? (
+              <div className={styles.feedbackContainer}>
+                <AlertCircle size={48} color="#ef4444" />
+                <div className={styles.emptyTitle}>Lỗi truy cập hàng đợi</div>
+                <p className={styles.emptyDesc}>{error}</p>
+                <button type="button" className={styles.btnSecondary} onClick={fetchQueue}>
                   Thử lại
                 </button>
               </div>
-            ) : destinations.length === 0 ? (
-              <div className={styles.emptyContainer}>
-                <Inbox size={48} className={styles.emptyIcon} />
-                <h3>Không tìm thấy điểm đến nào</h3>
-                <p>Không có địa danh nào phù hợp với bộ lọc hiện tại.</p>
+            ) : items.length === 0 ? (
+              <div className={styles.feedbackContainer}>
+                <Inbox size={40} color="#64748b" strokeWidth={1.75} />
+                <div className={styles.emptyTitle}>
+                  {statusFilter === 'DRAFT'
+                    ? 'Hàng đợi kiểm duyệt trống'
+                    : 'Không có điểm đến nào phù hợp'}
+                </div>
+                <p className={styles.emptyDesc}>
+                  {statusFilter === 'DRAFT'
+                    ? 'Tuyệt vời! Tất cả các điểm đến mới đã được xử lý xong.'
+                    : 'Hãy thử thay đổi từ khóa hoặc bộ lọc tỉnh thành để xem thêm dữ liệu.'}
+                </p>
               </div>
             ) : (
-              <div className={styles.tableResponsive}>
-                <table className={styles.destTable}>
-                  <thead>
-                    <tr>
-                      <th>Điểm đến</th>
-                      <th>Tỉnh / Thành</th>
-                      <th>Danh mục</th>
-                      <th>Khoảng giá</th>
-                      <th>Tọa độ GPS</th>
-                      <th>Trạng thái</th>
-                      <th style={{ textAlign: 'right' }}>Thao tác</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {destinations.map((item) => (
-                      <tr key={item.id} className={styles.tableRow}>
-                        <td>
-                          <div className={styles.destMeta}>
-                            {item.imageUrl ? (
-                              /* eslint-disable-next-line @next/next/no-img-element */
-                              <img
-                                src={item.imageUrl}
-                                alt={item.name}
-                                className={styles.thumbImage}
-                                onError={(e) => {
-                                  (e.target as HTMLElement).style.display = 'none';
-                                }}
-                              />
-                            ) : (
-                              <div className={styles.thumbFallback}>
-                                <MapPin size={18} />
-                              </div>
-                            )}
-                            <div>
-                              <div className={styles.destName}>{item.name}</div>
-                              <div className={styles.destId}>ID: {item.id.slice(0, 8)}...</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td>
-                          <span className={styles.provinceTag}>
-                            <MapPin size={12} />
-                            {item.province}
-                          </span>
-                        </td>
-                        <td>
-                          <span className={styles.categoryTag}>
-                            <Tag size={12} />
-                            {item.category}
-                          </span>
-                        </td>
-                        <td className={styles.priceCol}>{formatPrice(item.priceMin, item.priceMax)}</td>
-                        <td className={styles.gpsCol}>
-                          {item.latitude && item.longitude ? (
-                            <span>
-                              {item.latitude.toFixed(2)}, {item.longitude.toFixed(2)}
-                            </span>
-                          ) : (
-                            <span style={{ color: '#94a3b8' }}>Chưa có</span>
-                          )}
-                        </td>
-                        <td>
-                          {item.status === 'DRAFT' && (
-                            <span className={`${styles.statusBadge} ${styles.statusDraft}`}>⏳ Chờ duyệt</span>
-                          )}
-                          {item.status === 'PUBLISHED' && (
-                            <span className={`${styles.statusBadge} ${styles.statusPublished}`}>
-                              <CheckCircle2 size={13} /> Đã xuất bản
-                            </span>
-                          )}
-                          {item.status === 'REJECTED' && (
-                            <span className={`${styles.statusBadge} ${styles.statusRejected}`}>
-                              <XCircle size={13} /> Từ chối
-                            </span>
-                          )}
-                        </td>
-                        <td style={{ textAlign: 'right' }}>
-                          <div className={styles.actionButtons}>
-                            <button
-                              type="button"
-                              className={styles.btnActionView}
-                              onClick={() => void handleViewDetail(item.id)}
-                              title="Thẩm định chi tiết"
-                            >
-                              <Eye size={15} />
-                              Xem
-                            </button>
-
-                            {item.status !== 'PUBLISHED' && (
-                              <button
-                                type="button"
-                                className={styles.btnActionApprove}
-                                onClick={() => handleApprove(item.id, item.name)}
-                                disabled={isActioning}
-                                title="Phê duyệt xuất bản"
-                              >
-                                <CheckCircle2 size={15} />
-                                Duyệt
-                              </button>
-                            )}
-
-                            {item.status !== 'REJECTED' && (
-                              <button
-                                type="button"
-                                className={styles.btnActionReject}
-                                onClick={() => handleReject(item.id, item.name)}
-                                disabled={isActioning}
-                                title="Từ chối nội dung"
-                              >
-                                <XCircle size={15} />
-                                Từ chối
-                              </button>
-                            )}
-                          </div>
-                        </td>
+              <>
+                <div className={styles.tableWrapper}>
+                  <table className={styles.moderationTable}>
+                    <thead>
+                      <tr>
+                        <th>Điểm đến</th>
+                        <th>Tỉnh / Thành</th>
+                        <th>Danh mục</th>
+                        <th>Giá vé tham khảo</th>
+                        <th>Trạng thái</th>
+                        <th style={{ textAlign: 'right' }}>Thao tác kiểm duyệt</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {items.map((item) => {
+                        const isActioning = actionInProgressId === item.id;
+                        const isDraft = item.status === 'DRAFT';
+                        const isPublished = item.status === 'PUBLISHED';
+                        const isRejected = item.status === 'REJECTED';
+
+                        return (
+                          <tr key={item.id}>
+                            <td>
+                              <div className={styles.destinationCell}>
+                                <div className={styles.thumbnailBox}>
+                                  {item.imageUrl ? (
+                                    /* eslint-disable-next-line @next/next/no-img-element */
+                                    <img
+                                      src={item.imageUrl}
+                                      alt={item.name}
+                                      className={styles.thumbnailImg}
+                                      onError={(e) => {
+                                        (e.target as HTMLElement).style.display = 'none';
+                                      }}
+                                    />
+                                  ) : (
+                                    <div
+                                      style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        height: '100%',
+                                        color: '#94a3b8',
+                                      }}
+                                    >
+                                      <MapPin size={20} strokeWidth={1.75} />
+                                    </div>
+                                  )}
+                                </div>
+                                <div>
+                                  <div className={styles.destName}>{item.name}</div>
+                                  <div className={styles.destMeta}>
+                                    <MapPin size={13} />
+                                    {item.province}
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+
+                            <td>
+                              <span style={{ fontWeight: 600, color: '#334155' }}>{item.province}</span>
+                            </td>
+
+                            <td>
+                              <span className={styles.categoryTag}>{item.category}</span>
+                            </td>
+
+                            <td>
+                              <span
+                                className={item.priceMin === 0 ? styles.freePrice : styles.priceText}
+                              >
+                                {formatPrice(item.priceMin, item.priceMax)}
+                              </span>
+                            </td>
+
+                            <td>
+                              {isDraft && (
+                                <span className={`${styles.statusBadge} ${styles.statusDraft}`}>
+                                  <Clock size={13} />
+                                  Chờ duyệt
+                                </span>
+                              )}
+                              {isPublished && (
+                                <span className={`${styles.statusBadge} ${styles.statusPublished}`}>
+                                  <CheckCircle2 size={13} />
+                                  Đã xuất bản
+                                </span>
+                              )}
+                              {isRejected && (
+                                <span className={`${styles.statusBadge} ${styles.statusRejected}`}>
+                                  <XCircle size={13} />
+                                  Từ chối
+                                </span>
+                              )}
+                              {!isDraft && !isPublished && !isRejected && (
+                                <span className={styles.statusBadge}>{item.status}</span>
+                              )}
+                            </td>
+
+                            <td style={{ textAlign: 'right' }}>
+                              <div className={styles.actionGroup} style={{ justifyContent: 'flex-end' }}>
+                                <button
+                                  type="button"
+                                  className={styles.btnDetail}
+                                  onClick={() => handleOpenDetail(item.id)}
+                                  disabled={detailLoading}
+                                  title="Xem chi tiết nội dung"
+                                >
+                                  <Eye size={15} />
+                                  {detailLoading ? 'Đang mở...' : 'Xem'}
+                                </button>
+
+                                {item.status !== 'PUBLISHED' && (
+                                  <button
+                                    type="button"
+                                    className={styles.btnApprove}
+                                    onClick={() => handleApprove(item.id, item.name)}
+                                    disabled={isActioning}
+                                    title="Phê duyệt xuất bản ngay"
+                                  >
+                                    <CheckCircle2 size={15} />
+                                    Duyệt
+                                  </button>
+                                )}
+
+                                {item.status !== 'REJECTED' && (
+                                  <button
+                                    type="button"
+                                    className={styles.btnReject}
+                                    onClick={() => setRejectTarget({ id: item.id, name: item.name })}
+                                    disabled={isActioning}
+                                    title="Từ chối nội dung kèm lý do"
+                                  >
+                                    <XCircle size={15} />
+                                    Từ chối
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                <PaginationBar
+                  page={page}
+                  totalPages={totalPages}
+                  size={size}
+                  total={totalCount}
+                  onPageChange={(newPage) => setPage(newPage)}
+                  onSizeChange={(newSize) => {
+                    setSize(newSize);
+                    setPage(0);
+                  }}
+                />
+              </>
             )}
           </div>
 
-          {/* Modal Inspection */}
+          {/* 5. Detail Inspection Modal */}
           {selectedDest && (
             <div className={styles.modalOverlay} onClick={() => setSelectedDest(null)}>
               <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
@@ -702,12 +1042,33 @@ export default function ModerationPage() {
                     />
                   )}
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                    }}
+                  >
                     <div>
-                      <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0f172a', margin: '0 0 0.35rem 0' }}>
+                      <h2
+                        style={{
+                          fontSize: '1.4rem',
+                          fontWeight: 800,
+                          color: '#0f172a',
+                          margin: '0 0 0.35rem 0',
+                        }}
+                      >
                         {selectedDest.name}
                       </h2>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#64748b', fontSize: '0.85rem' }}>
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.75rem',
+                          color: '#64748b',
+                          fontSize: '0.85rem',
+                        }}
+                      >
                         <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                           <MapPin size={14} />
                           {selectedDest.province}
@@ -719,7 +1080,9 @@ export default function ModerationPage() {
 
                     <div>
                       {selectedDest.status === 'DRAFT' && (
-                        <span className={`${styles.statusBadge} ${styles.statusDraft}`}>⏳ Chờ duyệt</span>
+                        <span className={`${styles.statusBadge} ${styles.statusDraft}`}>
+                          <Clock size={13} /> Chờ duyệt
+                        </span>
                       )}
                       {selectedDest.status === 'PUBLISHED' && (
                         <span className={`${styles.statusBadge} ${styles.statusPublished}`}>
@@ -734,6 +1097,34 @@ export default function ModerationPage() {
                     </div>
                   </div>
 
+                  {/* Display Rejection Reason if present (P1-4) */}
+                  {selectedDest.rejectionReason && (
+                    <div
+                      style={{
+                        padding: '0.85rem 1rem',
+                        borderRadius: '12px',
+                        background: '#fef2f2',
+                        border: '1px solid #fecaca',
+                        color: '#991b1b',
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: '0.8rem',
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          marginBottom: '0.25rem',
+                        }}
+                      >
+                        Lý do từ chối kiểm duyệt:
+                      </div>
+                      <div style={{ fontSize: '0.9rem', lineHeight: 1.5 }}>
+                        {selectedDest.rejectionReason}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Info Grid */}
                   <div className={styles.infoGrid}>
                     <div className={styles.infoBox}>
                       <div className={styles.infoLabel}>Khoảng giá vé:</div>
@@ -752,6 +1143,7 @@ export default function ModerationPage() {
                     </div>
                   </div>
 
+                  {/* Description */}
                   <div>
                     <div className={styles.detailSectionTitle}>Giới thiệu chi tiết:</div>
                     <div className={styles.detailDescription}>
@@ -759,6 +1151,7 @@ export default function ModerationPage() {
                     </div>
                   </div>
 
+                  {/* 7-day Opening Hours */}
                   <div>
                     <div className={styles.detailSectionTitle}>Lịch mở cửa trong tuần:</div>
                     {selectedDest.openingHours && Object.keys(selectedDest.openingHours).length > 0 ? (
@@ -780,6 +1173,7 @@ export default function ModerationPage() {
                     )}
                   </div>
 
+                  {/* External Source Link */}
                   {selectedDest.sourceUrl && (
                     <div style={{ marginTop: '0.5rem' }}>
                       <a
@@ -816,7 +1210,9 @@ export default function ModerationPage() {
                     <button
                       type="button"
                       className={styles.btnReject}
-                      onClick={() => handleReject(selectedDest.id, selectedDest.name)}
+                      onClick={() =>
+                        setRejectTarget({ id: selectedDest.id, name: selectedDest.name })
+                      }
                     >
                       <XCircle size={16} />
                       Từ chối duyệt
@@ -838,20 +1234,30 @@ export default function ModerationPage() {
             </div>
           )}
 
-          {destToast && (
+          {/* 6. Reject Reason Modal (P1-4) */}
+          {rejectTarget && (
+            <RejectReasonModal
+              destinationName={rejectTarget.name}
+              onClose={() => setRejectTarget(null)}
+              onConfirm={handleConfirmRejectWithReason}
+            />
+          )}
+
+          {/* 7. Toast Notification */}
+          {toast && (
             <div
               className={`${styles.toast} ${
-                destToast.type === 'success' ? styles.toastSuccess : styles.toastError
+                toast.type === 'success' ? styles.toastSuccess : styles.toastError
               }`}
             >
-              {destToast.type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
-              <span>{destToast.message}</span>
+              {toast.type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
+              <span>{toast.message}</span>
             </div>
           )}
         </>
       )}
 
-      {/* ════════ VIEW 2: COMMUNITY REPORTS MODERATION ════════ */}
+      {/* ════════ VIEW 2: COMMUNITY REPORTS MODERATION (TV4) ════════ */}
       {hubTab === 'REPORTS' && (
         <div className={styles.reportHubContainer}>
           <header className={styles.reportHeader}>
