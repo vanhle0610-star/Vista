@@ -24,6 +24,7 @@ export default function InvitationAcceptPage() {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [invitationData, setInvitationData] = useState<{
+    tripId?: string;
     tripTitle?: string;
     destination?: string;
     inviterName?: string;
@@ -109,31 +110,33 @@ export default function InvitationAcceptPage() {
       email: currentUser.email || '',
     };
 
+    const targetTripId = invitationData?.tripId || 'trip-1794386330666';
+    const targetTripTitle = invitationData?.tripTitle || 'Khám phá chuyến đi VISTA';
+    const targetDest = invitationData?.destination || 'Việt Nam';
+    const targetStartDate = invitationData?.startDate || '11/11/2026';
+    const targetEndDate = invitationData?.endDate || '15/11/2026';
+
     // Success: Add real logged in user to local storage trip data
     try {
       const stored = localStorage.getItem('vista_custom_trips');
       let trips = stored ? JSON.parse(stored) : [];
-      let trip = trips.find((t: any) => t.id === 'trip-danang-2026');
+      let trip = trips.find((t: any) => t.id === targetTripId);
 
       if (!trip) {
         trip = {
-          id: 'trip-danang-2026',
-          title: 'Khám phá Đà Nẵng - Hội An 4N3Đ',
-          destination: 'Đà Nẵng & Quảng Nam',
-          startDate: '15/11/2026',
-          endDate: '18/11/2026',
+          id: targetTripId,
+          title: targetTripTitle,
+          destination: targetDest,
+          startDate: targetStartDate,
+          endDate: targetEndDate,
           members: [
-            { name: 'Lê Vân Anh (Trưởng nhóm)', avatar: 'VA', color: '#0284c7', role: 'Trưởng nhóm' },
-            { name: 'Trần Minh Tuấn', avatar: 'MT', color: '#10b981', role: 'Thành viên' },
-            { name: 'Nguyễn Hoàng Nam', avatar: 'HN', color: '#f59e0b', role: 'Thành viên' },
+            { name: invitationData?.inviterName || 'Trưởng nhóm', avatar: 'TN', color: '#0284c7', role: 'Trưởng nhóm' },
             newMember,
           ],
         };
         trips.push(trip);
       } else {
         if (!trip.members) trip.members = [];
-        // Clean up any fake dummy member previously inserted
-        trip.members = trip.members.filter((m: any) => !m?.name?.includes('Nguyễn Văn B'));
         const alreadyIn = trip.members.some(
           (m: any) =>
             (m.userId && m.userId === newMember.userId) ||
@@ -145,6 +148,8 @@ export default function InvitationAcceptPage() {
         }
       }
       localStorage.setItem('vista_custom_trips', JSON.stringify(trips));
+      window.dispatchEvent(new CustomEvent('vista-trips-change'));
+      window.dispatchEvent(new Event('storage'));
     } catch {
       // ignore
     }
@@ -163,7 +168,7 @@ export default function InvitationAcceptPage() {
     setStatusMessage(`🎉 Chúc mừng ${cleanName}! Bạn đã chấp nhận lời mời và trở thành thành viên chính thức của chuyến đi.`);
 
     setTimeout(() => {
-      router.push('/trips/trip-danang-2026?tab=members');
+      router.push(`/trips/${targetTripId}?tab=members`);
     }, 1800);
   };
 
@@ -232,16 +237,8 @@ export default function InvitationAcceptPage() {
                   <span>{invitationData?.startDate && invitationData?.endDate ? `${invitationData.startDate} – ${invitationData.endDate}` : '15 – 18/11/2026'}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <MapPin size={15} style={{ color: '#0EA5E9' }} />
-                  <span>Đà Nẵng & Hội An</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Calendar size={15} style={{ color: '#6366F1' }} />
-                  <span>15 – 18/11/2026</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <Users size={15} style={{ color: '#F59E0B' }} />
-                  <span>3 thành viên đang chờ</span>
+                  <span>Thành viên đang chờ</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <ShieldCheck size={15} style={{ color: '#10B981' }} />
@@ -318,7 +315,7 @@ export default function InvitationAcceptPage() {
             {isSuccess && (
               <div style={{ textAlign: 'center' }}>
                 <Link
-                  href="/trips/trip-danang-2026?tab=members"
+                  href={`/trips/${invitationData?.tripId || 'demo-danang-2026'}?tab=members`}
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',

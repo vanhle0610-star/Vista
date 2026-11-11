@@ -74,9 +74,23 @@ export async function GET(request: Request) {
 
   const list = readStore();
 
-  // Find by token
+  // Find by token (case-insensitive and tolerant of 0 vs O ambiguity)
   if (token) {
-    const found = list.find((it) => it.token.toUpperCase() === token.trim().toUpperCase());
+    const clean = token.trim().toUpperCase();
+    const cleanNo0 = clean.replace(/0/g, 'O');
+    const cleanNoO = clean.replace(/O/g, '0');
+    const found = list.find((it) => {
+      const itToken = (it.token || '').trim().toUpperCase();
+      const itNo0 = itToken.replace(/0/g, 'O');
+      const itNoO = itToken.replace(/O/g, '0');
+      return (
+        itToken === clean ||
+        itToken === cleanNo0 ||
+        itToken === cleanNoO ||
+        itNo0 === cleanNo0 ||
+        itNoO === cleanNoO
+      );
+    });
     if (!found) {
       return NextResponse.json({ message: 'Không tìm thấy lời mời', token }, { status: 404 });
     }

@@ -1194,13 +1194,25 @@ export default function TripDetailPage() {
       return;
     }
 
+    const currentInviterName = currentUser?.displayName || currentUser?.email || 'Trưởng nhóm';
+    const cleanInviterName = currentInviterName.replace(/\s*\(Bạn.*?\)/gi, '').trim() || 'Trưởng nhóm';
+
     const token = `VISTA-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
     const newInv = {
       id: `inv-${Date.now()}`,
+      tripId: tripId || trip?.id || 'demo-trip',
+      tripTitle: trip?.title || 'Khám phá chuyến đi VISTA',
+      destination: trip?.destination || 'Việt Nam',
+      startDate: trip?.startDate || 'Sắp tới',
+      endDate: trip?.endDate || '2026',
+      inviterName: cleanInviterName,
+      inviterEmail: currentUser?.email || '',
+      inviteeEmail: email,
       email: email,
       token: token,
       status: 'PENDING' as const,
       expiresAt: 'Trong 7 ngày tới',
+      createdAt: new Date().toISOString(),
     };
     const updated = [newInv, ...invitationsList];
     setInvitationsList(updated);
