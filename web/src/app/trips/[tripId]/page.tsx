@@ -610,24 +610,9 @@ export default function TripDetailPage() {
     )
   );
 
-  const hasAcceptedInvite = Boolean(
-    currentUser &&
-    invitationsList?.some((inv: any) =>
-      (inv.status === 'ACCEPTED' || inv.action === 'ACCEPT') &&
-      (
-        (currentUser.email && (
-          (inv.email && inv.email.toLowerCase() === currentUser.email.toLowerCase()) ||
-          (inv.inviteeEmail && inv.inviteeEmail.toLowerCase() === currentUser.email.toLowerCase())
-        )) ||
-        (currentUser.displayName && inv.acceptedBy?.name && inv.acceptedBy.name.trim().toLowerCase() === currentUser.displayName.trim().toLowerCase())
-      )
-    )
-  );
-
   const isTripMember = Boolean(
     currentUser && trip && (
       isTripOwner ||
-      hasAcceptedInvite ||
       trip.members?.some((m) =>
         (m.userId && (m.userId === currentUser.id || (currentUser.email && m.userId === currentUser.email))) ||
         (m.email && currentUser.email && m.email.toLowerCase() === currentUser.email.toLowerCase()) ||
@@ -968,15 +953,37 @@ export default function TripDetailPage() {
             setTrip((prev) => {
               const formattedMembers = formatMembersForCurrentUser(serverTrip.members);
 
+              const isUserMember = formattedMembers.some(
+                (m: any) =>
+                  (m.userId && currentUser?.id && m.userId === currentUser.id) ||
+                  (m.email && currentUser?.email && m.email.toLowerCase() === currentUser.email.toLowerCase()) ||
+                  (currentUser?.displayName && m.name && m.name.trim().toLowerCase() === currentUser.displayName.trim().toLowerCase())
+              );
+              const isUserOwner = Boolean(
+                currentUser && (
+                  (serverTrip.ownerId && (serverTrip.ownerId === currentUser.id || serverTrip.ownerId === currentUser.email)) ||
+                  (formattedMembers[0] && (
+                    (formattedMembers[0].userId && formattedMembers[0].userId === currentUser.id) ||
+                    (formattedMembers[0].email && currentUser.email && formattedMembers[0].email.toLowerCase() === currentUser.email.toLowerCase())
+                  ))
+                )
+              );
+
               // Keep local storage in sync for offline and fast reloads
               try {
                 const stored = localStorage.getItem('vista_custom_trips');
                 if (stored) {
                   const list = JSON.parse(stored);
-                  const idx = list.findIndex((t: any) => t.id === tripId);
-                  if (idx >= 0) {
-                    list[idx].members = formattedMembers;
-                    localStorage.setItem('vista_custom_trips', JSON.stringify(list));
+                  if (!isUserMember && !isUserOwner) {
+                    const filtered = list.filter((t: any) => t.id !== tripId);
+                    localStorage.setItem('vista_custom_trips', JSON.stringify(filtered));
+                  } else {
+                    const idx = list.findIndex((t: any) => t.id === tripId);
+                    if (idx >= 0) {
+                      list[idx].members = formattedMembers;
+                      list[idx].ownerId = serverTrip.ownerId || list[idx].ownerId;
+                      localStorage.setItem('vista_custom_trips', JSON.stringify(list));
+                    }
                   }
                 }
               } catch {}
