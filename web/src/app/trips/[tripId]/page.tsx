@@ -1236,8 +1236,9 @@ export default function TripDetailPage() {
       showToast('⚠️ Quyền hạn không đủ! Chỉ Trưởng nhóm (Owner) mới có quyền thu hồi lời mời.');
       return;
     }
-    setInvitationsList((prev) =>
-      prev.map((inv) => (inv.id === id ? { ...inv, status: 'REVOKED' } : inv))
+    const target = invitationsList.find((i) => i.id === id);
+    const updated = invitationsList.map((inv) =>
+      inv.id === id ? { ...inv, status: 'REVOKED' as const } : inv
     );
     setInvitationsList(updated);
     if (typeof window !== 'undefined' && tripId) {
@@ -1706,7 +1707,6 @@ export default function TripDetailPage() {
   if (trip && currentUser && !isTripMember) {
     return (
       <div className={styles.tripDetailPage}>
-        <Navbar activeModule="trips" />
         <div style={{ maxWidth: '640px', margin: '80px auto', textAlign: 'center', padding: '48px 24px', background: '#FFFFFF', borderRadius: '24px', border: '1px solid #E2E8F0', boxShadow: '0 10px 30px rgba(0,0,0,0.06)' }}>
           <div style={{ fontSize: '56px', marginBottom: '16px' }}>🔒</div>
           <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#0F172A', marginBottom: '10px' }}>
