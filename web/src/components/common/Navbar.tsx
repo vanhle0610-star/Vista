@@ -603,10 +603,8 @@ export function Navbar({
             </div>
           )}
 
-          {/* User Profile Dropdown or Login Link */}
-          {!mounted ? (
-            <div style={{ width: '92px', height: '36px' }} suppressHydrationWarning />
-          ) : currentUser ? (
+          {/* User Profile Dropdown or Login / Register Links */}
+          {currentUser ? (
             <div className={styles.profileContainer} ref={dropdownRef} suppressHydrationWarning>
               <button
                 type="button"
@@ -731,22 +729,27 @@ export function Navbar({
               )}
             </div>
           ) : (
-            <Link href="/login" className={styles.btnLogin} id="nav-btn-login" suppressHydrationWarning>
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
-              <span>{currentLang === 'vi' ? 'Đăng nhập' : 'Sign in'}</span>
-            </Link>
+            <div className={styles.authButtonsGroup} suppressHydrationWarning>
+              <Link href="/login" className={styles.btnLogin} id="nav-btn-login" suppressHydrationWarning>
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+                <span>{currentLang === 'vi' ? 'Đăng nhập' : 'Sign in'}</span>
+              </Link>
+              <Link href="/register" className={styles.btnRegister} id="nav-btn-register" suppressHydrationWarning>
+                <span>{currentLang === 'vi' ? 'Đăng ký' : 'Sign up'}</span>
+              </Link>
+            </div>
           )}
 
           {/* Primary CTA: Create Trip */}
@@ -819,9 +822,7 @@ export function Navbar({
             })}
 
             <div className={styles.mobileDrawerActions}>
-              {!mounted ? (
-                <div style={{ height: '48px' }} />
-              ) : currentUser ? (
+              {currentUser ? (
                 <Link
                   href="/profile"
                   className={styles.mobileUserCard}
@@ -844,9 +845,14 @@ export function Navbar({
                   </span>
                 </Link>
               ) : (
-                <Link href="/login" className={styles.btnLogin} onClick={() => setMobileMenuOpen(false)}>
-                  {currentLang === 'vi' ? 'Đăng nhập tài khoản' : 'Sign in'}
-                </Link>
+                <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
+                  <Link href="/login" className={styles.btnLogin} onClick={() => setMobileMenuOpen(false)}>
+                    {currentLang === 'vi' ? 'Đăng nhập' : 'Sign in'}
+                  </Link>
+                  <Link href="/register" className={styles.btnRegister} onClick={() => setMobileMenuOpen(false)}>
+                    {currentLang === 'vi' ? 'Đăng ký' : 'Sign up'}
+                  </Link>
+                </div>
               )}
               <Link href="/trips" className={styles.btnCreateTrip} onClick={() => setMobileMenuOpen(false)}>
                 {currentLang === 'vi' ? '+ Tạo chuyến đi nhóm mới' : '+ Plan New Trip'}
