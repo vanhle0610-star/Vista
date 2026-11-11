@@ -159,12 +159,28 @@ export default function InvitationAcceptPage() {
       // ignore
     }
 
-    // Notify server about ACCEPT in background
+    // Notify server about ACCEPT and update trips store synchronously
     try {
       fetch('/api/invitations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'ACCEPT', token }),
+        body: JSON.stringify({
+          action: 'ACCEPT',
+          status: 'ACCEPTED',
+          token,
+          user: newMember,
+          tripId: targetTripId,
+          email: currentUser.email || (invitationData as any)?.inviteeEmail || '',
+        }),
+      }).catch(() => {});
+
+      fetch('/api/trips', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: targetTripId,
+          members: [newMember],
+        }),
       }).catch(() => {});
     } catch {}
 

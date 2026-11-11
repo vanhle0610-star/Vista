@@ -576,6 +576,29 @@ export default function TripDetailPage() {
   const [checkedActivities, setCheckedActivities] = useState<Record<string, boolean>>({});
   const [highlightedActId, setHighlightedActId] = useState<string | null>(null);
 
+  const [invitationsList, setInvitationsList] = useState<Array<{
+    id: string;
+    email: string;
+    token: string;
+    status: 'PENDING' | 'ACCEPTED' | 'REVOKED' | 'EXPIRED';
+    expiresAt: string;
+  }>>([
+    {
+      id: 'inv-1',
+      email: 'nguyenvanb@gmail.com',
+      token: 'VISTA-NG2026',
+      status: 'PENDING',
+      expiresAt: '22/11/2026 (Còn 6 ngày)',
+    },
+    {
+      id: 'inv-2',
+      email: 'nguoithuhoi@gmail.com',
+      token: 'VISTA-REVOKED',
+      status: 'REVOKED',
+      expiresAt: 'Đã thu hồi bởi Owner',
+    },
+  ]);
+
   const isTripOwner = Boolean(
     currentUser && trip && (
       (trip.ownerId && (trip.ownerId === currentUser.id || (currentUser.email && trip.ownerId === currentUser.email))) ||
@@ -587,9 +610,24 @@ export default function TripDetailPage() {
     )
   );
 
+  const hasAcceptedInvite = Boolean(
+    currentUser &&
+    invitationsList?.some((inv: any) =>
+      (inv.status === 'ACCEPTED' || inv.action === 'ACCEPT') &&
+      (
+        (currentUser.email && (
+          (inv.email && inv.email.toLowerCase() === currentUser.email.toLowerCase()) ||
+          (inv.inviteeEmail && inv.inviteeEmail.toLowerCase() === currentUser.email.toLowerCase())
+        )) ||
+        (currentUser.displayName && inv.acceptedBy?.name && inv.acceptedBy.name.trim().toLowerCase() === currentUser.displayName.trim().toLowerCase())
+      )
+    )
+  );
+
   const isTripMember = Boolean(
     currentUser && trip && (
       isTripOwner ||
+      hasAcceptedInvite ||
       trip.members?.some((m) =>
         (m.userId && (m.userId === currentUser.id || (currentUser.email && m.userId === currentUser.email))) ||
         (m.email && currentUser.email && m.email.toLowerCase() === currentUser.email.toLowerCase()) ||
@@ -836,28 +874,6 @@ export default function TripDetailPage() {
     link: string;
   } | null>(null);
   const [manualCodeInput, setManualCodeInput] = useState('');
-  const [invitationsList, setInvitationsList] = useState<Array<{
-    id: string;
-    email: string;
-    token: string;
-    status: 'PENDING' | 'ACCEPTED' | 'REVOKED' | 'EXPIRED';
-    expiresAt: string;
-  }>>([
-    {
-      id: 'inv-1',
-      email: 'nguyenvanb@gmail.com',
-      token: 'VISTA-NG2026',
-      status: 'PENDING',
-      expiresAt: '22/11/2026 (Còn 6 ngày)',
-    },
-    {
-      id: 'inv-2',
-      email: 'nguoithuhoi@gmail.com',
-      token: 'VISTA-REVOKED',
-      status: 'REVOKED',
-      expiresAt: 'Đã thu hồi bởi Owner',
-    },
-  ]);
 
   // Proposals & Voting (W4-TV3-02)
   const [isVotingClosed, setIsVotingClosed] = useState(false);
@@ -924,8 +940,22 @@ export default function TripDetailPage() {
         .then((serverTrip) => {
           if (serverTrip && Array.isArray(serverTrip.members) && serverTrip.members.length > 0) {
             setTrip((prev) => {
-              if (!prev) return serverTrip;
               const formattedMembers = formatMembersForCurrentUser(serverTrip.members);
+
+              // Keep local storage in sync for offline and fast reloads
+              try {
+                const stored = localStorage.getItem('vista_custom_trips');
+                if (stored) {
+                  const list = JSON.parse(stored);
+                  const idx = list.findIndex((t: any) => t.id === tripId);
+                  if (idx >= 0) {
+                    list[idx].members = formattedMembers;
+                    localStorage.setItem('vista_custom_trips', JSON.stringify(list));
+                  }
+                }
+              } catch {}
+
+              if (!prev) return { ...serverTrip, members: formattedMembers };
               return {
                 ...prev,
                 ...serverTrip,

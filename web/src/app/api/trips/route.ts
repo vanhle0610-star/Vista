@@ -3,8 +3,77 @@ import fs from 'fs';
 import path from 'path';
 
 const STORE_PATH = path.join(process.cwd(), '.trips_store.json');
+const INVITATIONS_STORE_PATH = path.join(process.cwd(), '.invitations_store.json');
 
 let memoryTrips: any[] = [];
+
+function syncAcceptedInvitationsToTrips(trips: any[]): boolean {
+  try {
+    if (!fs.existsSync(INVITATIONS_STORE_PATH)) return false;
+    const invData = fs.readFileSync(INVITATIONS_STORE_PATH, 'utf-8');
+    const invitations = JSON.parse(invData);
+    if (!Array.isArray(invitations) || invitations.length === 0) return false;
+
+    let modified = false;
+
+    for (const trip of trips) {
+      if (!trip || !trip.id) continue;
+      const acceptedInvs = invitations.filter(
+        (inv) =>
+          inv.tripId === trip.id &&
+          (inv.status === 'ACCEPTED' || inv.action === 'ACCEPT')
+      );
+
+      if (acceptedInvs.length === 0) continue;
+      if (!Array.isArray(trip.members)) trip.members = [];
+
+      for (const inv of acceptedInvs) {
+        const invEmail = (inv.email || inv.inviteeEmail || '').toLowerCase().trim();
+        const invUserId = inv.acceptedBy?.userId || inv.acceptedBy?.id || '';
+        const invRawName =
+          inv.acceptedBy?.name ||
+          inv.acceptedBy?.displayName ||
+          inv.inviteeName ||
+          (invEmail ? (invEmail.startsWith('quy192005') ? 'deki' : invEmail.split('@')[0]) : 'Thành viên mới');
+        const invName = invRawName.replace(/\s*\([^)]*\)/g, '').trim();
+
+        // Check if member already in trip.members
+        const alreadyIn = trip.members.some((m: any) => {
+          const mEmail = (m.email || '').toLowerCase().trim();
+          const mUserId = (m.userId || m.id || '').trim();
+          const mName = (m.name || m.displayName || '').replace(/\s*\([^)]*\)/g, '').trim().toLowerCase();
+
+          if (invUserId && mUserId && invUserId === mUserId) return true;
+          if (invEmail && mEmail && invEmail === mEmail) return true;
+          if (invName && mName && invName.toLowerCase() === mName) return true;
+          return false;
+        });
+
+        if (!alreadyIn) {
+          const initials = (invName.length >= 2 ? invName.slice(0, 2) : 'TV').toUpperCase();
+          trip.members.push({
+            name: invName,
+            avatar: inv.acceptedBy?.avatar || initials,
+            color: '#10b981',
+            email: invEmail || undefined,
+            userId: invUserId || `u-${inv.token}`,
+            role: 'Thành viên',
+          });
+          modified = true;
+        }
+      }
+
+      if (modified) {
+        trip.members = deduplicateTripMembers(trip.members, trip.ownerId);
+      }
+    }
+
+    return modified;
+  } catch (e) {
+    console.error('Error syncing accepted invitations to trips:', e);
+    return false;
+  }
+}
 
 function normalizeString(str?: string) {
   return (str || '')
@@ -111,11 +180,19 @@ function readStore(): any[] {
       const parsed = JSON.parse(data);
       if (Array.isArray(parsed)) {
         memoryTrips = parsed.map(cleanTripItem);
+        const hasSync = syncAcceptedInvitationsToTrips(memoryTrips);
+        if (hasSync) {
+          writeStore(memoryTrips);
+        }
         return memoryTrips;
       }
     }
   } catch (err) {
     console.error('Error reading trips store:', err);
+  }
+  const hasSync = syncAcceptedInvitationsToTrips(memoryTrips);
+  if (hasSync) {
+    writeStore(memoryTrips);
   }
   return memoryTrips.map(cleanTripItem);
 }
