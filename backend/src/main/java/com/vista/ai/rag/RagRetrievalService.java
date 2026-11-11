@@ -5,9 +5,9 @@ import io.micrometer.core.instrument.Timer;
 import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -41,11 +41,13 @@ public class RagRetrievalService {
   public List<RagHit> search(String query, String province, int limit) {
     if (!enabled) return List.of();
     long startedAt = System.nanoTime();
+    int safeLimit = Math.max(1, Math.min(limit, 20));
     List<RagHit> hits =
         embeddingClient
-        .embed(query)
-        .map(vector -> searchHybrid(query, province, Math.max(1, Math.min(limit, 20)), vector))
-        .orElseGet(List::of);
+            .embed(query)
+            .map(vector -> searchHybrid(query, province, safeLimit, vector))
+            .filter(list -> !list.isEmpty())
+            .orElseGet(() -> searchLexical(query, province, safeLimit));
     recordRetrieval(hits.size(), System.nanoTime() - startedAt);
     return hits;
   }
@@ -102,6 +104,39 @@ public class RagRetrievalService {
     }
   }
 
+  private List<RagHit> searchLexical(String query, String province, int limit) {
+    String sql =
+        """
+        SELECT c.id, d.source_id, d.title, c.content,
+               (1.0 / (60 + row_number() OVER (
+                 ORDER BY ts_rank_cd(to_tsvector('simple', c.content), plainto_tsquery('simple', ?)) DESC
+               ))) AS score
+        FROM ai_knowledge_chunks c
+        JOIN ai_knowledge_documents d ON d.id = c.document_id
+        WHERE d.status = 'PUBLISHED'
+          AND (? = '' OR lower(coalesce(c.metadata_json->>'province', '')) = lower(?))
+        ORDER BY score DESC
+        LIMIT ?
+        """;
+    try {
+      String normalizedProvince = province == null ? "" : province.trim();
+      return jdbcTemplate.query(
+          sql,
+          (resultSet, rowNumber) ->
+              new RagHit(
+                  resultSet.getObject("id", UUID.class),
+                  resultSet.getObject("source_id", UUID.class),
+                  resultSet.getString("title"),
+                  resultSet.getString("content"),
+                  resultSet.getDouble("score")),
+          query == null ? "" : query,
+          normalizedProvince,
+          normalizedProvince,
+          limit);
+    } catch (RuntimeException exception) {
+      return List.of();
+    }
+  }
+
   public record RagHit(UUID chunkId, UUID sourceId, String title, String content, double score) {}
 }
-

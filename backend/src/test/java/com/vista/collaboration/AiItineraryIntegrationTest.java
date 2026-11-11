@@ -32,10 +32,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
- * W5-TV3-04 & W6-TV3-05: Điểm tích hợp cho TV4 lưu gợi ý AI vào lịch trình.
- * - Chỉ thực thi khi có cờ confirmed=true.
- * - Chưa xác nhận → không lưu gì cả.
- * - Đã xác nhận → lưu điểm dừng với source AI_SUGGESTED và thông báo ITINERARY_CHANGED cho các thành viên.
+ * W5-TV3-04 & W6-TV3-05: Điểm tích hợp cho TV4 lưu gợi ý AI vào lịch trình. - Chỉ thực thi khi có
+ * cờ confirmed=true. - Chưa xác nhận → không lưu gì cả. - Đã xác nhận → lưu điểm dừng với source
+ * AI_SUGGESTED và thông báo ITINERARY_CHANGED cho các thành viên.
  */
 @ExtendWith(MockitoExtension.class)
 class AiItineraryIntegrationTest {
@@ -81,7 +80,8 @@ class AiItineraryIntegrationTest {
   }
 
   @Test
-  @DisplayName("W5-04 Gọi khi đã xác nhận (confirmed=true) → lưu điểm dừng AI_SUGGESTED và phát thông báo")
+  @DisplayName(
+      "W5-04 Gọi khi đã xác nhận (confirmed=true) → lưu điểm dừng AI_SUGGESTED và phát thông báo")
   void createAiItem_confirmed_savesItemAndNotifiesMembers() {
     CreateAiItineraryItemRequest request =
         new CreateAiItineraryItemRequest(
@@ -104,8 +104,7 @@ class AiItineraryIntegrationTest {
               return item;
             });
 
-    ItineraryItemResponse response =
-        itineraryService.createAiItem(TRIP_ID, USER_ID, request, true);
+    ItineraryItemResponse response = itineraryService.createAiItem(TRIP_ID, USER_ID, request, true);
 
     assertThat(response).isNotNull();
     assertThat(response.customStopName()).isEqualTo("Gợi ý AI: Bảo tàng Điêu khắc Chăm");
@@ -117,11 +116,7 @@ class AiItineraryIntegrationTest {
     // W6-TV3-05: Kiểm tra phát thông báo ITINERARY_CHANGED tới các thành viên
     verify(notificationService)
         .notifyTripMembers(
-            eq(TRIP_ID),
-            eq("Lịch trình đã thay đổi"),
-            any(),
-            eq("ITINERARY_CHANGED"),
-            eq(USER_ID));
+            eq(TRIP_ID), eq("Lịch trình đã thay đổi"), any(), eq("ITINERARY_CHANGED"), eq(USER_ID));
   }
 
   @Test
@@ -147,4 +142,3 @@ class AiItineraryIntegrationTest {
     verify(itemRepository, never()).save(any());
   }
 }
-

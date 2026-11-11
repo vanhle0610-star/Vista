@@ -38,7 +38,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ResponseStatusException;
 
 /**
- * W6-TV3-01, W6-TV3-02, W6-TV3-03: Kiểm thử toàn diện trải nghiệm thành viên, rời nhóm, và vòng đời lời mời.
+ * W6-TV3-01, W6-TV3-02, W6-TV3-03: Kiểm thử toàn diện trải nghiệm thành viên, rời nhóm, và vòng đời
+ * lời mời.
  */
 @ExtendWith(MockitoExtension.class)
 class TripMembershipLifecycleTest {
@@ -60,9 +61,7 @@ class TripMembershipLifecycleTest {
 
   @BeforeEach
   void setUp() {
-    tripService =
-        new TripService(
-            tripRepository, tripMemberRepository, tripAccessService);
+    tripService = new TripService(tripRepository, tripMemberRepository, tripAccessService);
     invitationService =
         new InvitationService(
             invitationRepository,
@@ -114,7 +113,8 @@ class TripMembershipLifecycleTest {
   // ── W6-TV3-03: Vòng đời Lời mời (EXPIRED / REVOKED) ────────────────────────
 
   @Test
-  @DisplayName("W6-03 Lời mời đã hết hạn → accept bị từ chối với mã 409 và trạng thái thành EXPIRED")
+  @DisplayName(
+      "W6-03 Lời mời đã hết hạn → accept bị từ chối với mã 409 và trạng thái thành EXPIRED")
   void acceptInvitation_expired_throwsConflictAndUpdatesStatus() {
     // Lời mời hết hạn từ 1 tiếng trước
     Instant expiredTime = Instant.now().minus(1, ChronoUnit.HOURS);
@@ -177,4 +177,3 @@ class TripMembershipLifecycleTest {
     verify(invitationRepository).save(invExpired);
   }
 }
-

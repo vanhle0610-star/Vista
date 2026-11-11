@@ -34,7 +34,8 @@ class AiResponseValidatorTest {
 
     JsonNode parsed = AiResponseValidator.validateAndParseItineraryWithLocalRepair(response);
 
-    assertThat(parsed.path("days").path(0).path("activities").path(0).path("destinationId").asText())
+    assertThat(
+            parsed.path("days").path(0).path("activities").path(0).path("destinationId").asText())
         .isEqualTo(destinationId);
   }
 
@@ -47,8 +48,7 @@ class AiResponseValidatorTest {
         }]}
         """;
 
-    assertThatThrownBy(
-            () -> AiResponseValidator.validateAndParseItineraryWithLocalRepair(response))
+    assertThatThrownBy(() -> AiResponseValidator.validateAndParseItineraryWithLocalRepair(response))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("timeSlot");
   }

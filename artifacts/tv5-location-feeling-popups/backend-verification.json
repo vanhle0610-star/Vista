@@ -1,0 +1,7 @@
+{
+  "tests": 60,
+  "passed": 55,
+  "skipped": 5,
+  "failed": 0,
+  "scope": "Community, SecurityAuthorizationTest, DestinationServiceTest. PostgreSQL schema per persistence test, rollback. No mobile execution."
+}

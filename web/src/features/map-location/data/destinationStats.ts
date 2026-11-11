@@ -13,21 +13,26 @@ export function getDistanceKm(lat1: number, lon1: number, lat2: number, lon2: nu
   return Math.round(R * c * 10) / 10;
 }
 
-export function getDestinationStats(d: { id: string; name: string; province: string; category?: string }) {
-  // Deterministic hash based on id
-  let hash = 0;
-  for (let i = 0; i < d.id.length; i++) {
-    hash = (hash << 5) - hash + d.id.charCodeAt(i);
-    hash |= 0;
-  }
-  const abs = Math.abs(hash);
+export interface DestinationStatsResult {
+  hasReviews: boolean;
+  rating: string | null;
+  reviewCount: string;
+  rawReviewCount: number;
+  district: string;
+}
 
-  // Ratings between 4.6 and 4.9
-  const rating = (4.6 + (abs % 4) * 0.1).toFixed(1);
-
-  // Review counts from 1,200 to 4,500
-  const countRaw = (abs % 3300) + 1200;
-  const reviewCount = countRaw.toLocaleString('vi-VN');
+export function getDestinationStats(d: {
+  id: string;
+  name: string;
+  province: string;
+  category?: string;
+  rating?: number | null;
+  reviewCount?: number;
+}): DestinationStatsResult {
+  const hasReviews = typeof d.reviewCount === 'number' && d.reviewCount > 0 && typeof d.rating === 'number' && d.rating > 0;
+  const rating = hasReviews ? d.rating!.toFixed(1) : null;
+  const rawReviewCount = hasReviews ? d.reviewCount! : 0;
+  const reviewCount = rawReviewCount.toLocaleString('vi-VN');
 
   // Realistic district mapping for popular areas
   let district = '';
@@ -47,5 +52,5 @@ export function getDestinationStats(d: { id: string; name: string; province: str
   else if (p.includes('đà nẵng')) district = 'TP. Đà Nẵng';
   else district = d.province.startsWith('TP.') ? d.province : `Tỉnh ${d.province}`;
 
-  return { rating, reviewCount, district };
+  return { hasReviews, rating, reviewCount, rawReviewCount, district };
 }

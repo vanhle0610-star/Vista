@@ -2,7 +2,9 @@ export const SUPABASE_URL =
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://cyqvqehhjpvwovdzscxm.supabase.co';
 
 export const SUPABASE_ANON_KEY =
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_UmSu3JB2FOLYWxLB3EB14Q_D2Sg29u9';
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  'sb_publishable_UmSu3JB2FOLYWxLB3EB14Q_D2Sg29u9';
 
 export const STORAGE_BUCKET =
   process.env.NEXT_PUBLIC_STORAGE_BUCKET || 'vista-media';
@@ -23,8 +25,15 @@ export function getCloudImageUrl(path?: string | null): string {
   if (path.startsWith('http://') || path.startsWith('https://')) {
     return path;
   }
-  const clean = path.replace(/^\/?images\//, '').replace(/^\//, '');
-  return `${CLOUD_IMAGE_BASE}/${clean}`;
+  if (path.startsWith('data:')) {
+    return path;
+  }
+  const clean = path.replace(/^\//, '');
+  if (clean.startsWith('destinations/') || clean.startsWith('avatars/') || clean.startsWith('trips/')) {
+    return `${SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${clean}`;
+  }
+  const cleanImage = clean.replace(/^images\//, '');
+  return `${CLOUD_IMAGE_BASE}/${cleanImage}`;
 }
 
 /**

@@ -16,7 +16,12 @@ public class RoutingController {
     }
   }
 
-  public record Input(Point origin, Point destination, String mode, boolean fromGps) {
+  public record Input(
+      Point origin, Point destination, String mode, boolean fromGps, List<Point> waypoints) {
+    public Input(Point origin, Point destination, String mode, boolean fromGps) {
+      this(origin, destination, mode, fromGps, List.of());
+    }
+
     @Override
     public String toString() {
       return "RouteInput[redacted]";
@@ -25,11 +30,14 @@ public class RoutingController {
 
   public record PathPoint(double lat, double lng) {}
 
+  public record Leg(String fromLabel, String toLabel, double distanceMeters, long durationMillis) {}
+
   public record Result(
       Input input,
       List<PathPoint> path,
       double distanceMeters,
       long durationMillis,
+      List<Leg> legs,
       List<String> warnings,
       String attribution) {
     @Override

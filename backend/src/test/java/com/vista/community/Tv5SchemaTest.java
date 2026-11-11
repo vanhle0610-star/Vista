@@ -3,6 +3,7 @@ package com.vista.community;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.vista.support.SupabaseStorageFixture;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -29,6 +30,8 @@ class Tv5SchemaTest {
 
   @BeforeAll
   static void migrate() {
+    SupabaseStorageFixture.initialize(
+        POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword());
     Flyway.configure()
         .dataSource(POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword())
         .load()

@@ -10,15 +10,18 @@ spring:
     username: ${DB_USERNAME:vista}
     password: ${DB_PASSWORD:}
     hikari:
-      maximum-pool-size: 5
-      minimum-idle: 1
-      idle-timeout: 30000
+      maximum-pool-size: ${DB_POOL_SIZE:5}
+      minimum-idle: ${DB_MIN_IDLE:1}
+      connection-timeout: 30000
+      idle-timeout: 300000
       max-lifetime: 60000
-      connection-timeout: 20000
   jpa:
     open-in-view: false
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
+    properties:
+      hibernate:
+        default_batch_fetch_size: 50
   flyway:
     enabled: true
     locations: ${FLYWAY_LOCATIONS:classpath:db/migration}
@@ -50,7 +53,7 @@ vista:
   ai:
     api-key: ${GEMINI_API_KEY:}
     model: ${GEMINI_MODEL:gemini-2.5-flash}
-    timeout: ${AI_TIMEOUT:60s}
+    timeout: ${AI_TIMEOUT:120s}
     max-retries: ${AI_MAX_RETRIES:1}
     local-base-url: ${AI_LOCAL_BASE_URL:http://localhost:11434/v1}
     local-model: ${AI_LOCAL_MODEL:qwen3:4b}
@@ -67,7 +70,7 @@ vista:
       embedding-version: ${AI_EMBEDDING_VERSION:bge-m3-v1}
       embedding-timeout: ${AI_EMBEDDING_TIMEOUT:30s}
   cors:
-    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:8081,http://localhost:8082,http://127.0.0.1:8082}
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://127.0.0.1:3000,http://localhost:8081,http://localhost:8082,http://127.0.0.1:8082}
   app:
     base-url: ${APP_BASE_URL:http://localhost:3000}
   auth:
@@ -75,7 +78,7 @@ vista:
       client-id: ${GOOGLE_CLIENT_ID:}
   jwt:
     secret: ${JWT_SECRET:vista-local-dev-super-secure-key-2026-minimum-256-bits-random!}
-    access-token-expiration-ms: ${JWT_ACCESS_EXPIRATION_MS:900000}
+    access-token-expiration-ms: ${JWT_ACCESS_EXPIRATION_MS:604800000}
     refresh-token-expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:604800000}
 logging:
   pattern:

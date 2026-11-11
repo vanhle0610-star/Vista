@@ -12,8 +12,7 @@ class RagRetrievalServiceTest {
   void disabledRagDoesNotCallEmbeddingOrDatabase() {
     JdbcTemplate jdbcTemplate = mock(JdbcTemplate.class);
     OllamaEmbeddingClient embeddingClient = mock(OllamaEmbeddingClient.class);
-    RagRetrievalService service =
-        new RagRetrievalService(jdbcTemplate, embeddingClient, false);
+    RagRetrievalService service = new RagRetrievalService(jdbcTemplate, embeddingClient, false);
 
     assertThat(service.search("ẩm thực biển", "Đà Nẵng", 10)).isEmpty();
     verifyNoInteractions(embeddingClient, jdbcTemplate);

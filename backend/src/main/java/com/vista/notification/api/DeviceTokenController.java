@@ -19,10 +19,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
-/**
- * W6-TV3-04: API đăng ký và hủy token thiết bị phục vụ thông báo đẩy (FCM / APNs).
- */
+/** W6-TV3-04: API đăng ký và hủy token thiết bị phục vụ thông báo đẩy (FCM / APNs). */
 @RestController
 @RequestMapping("/api/v1/devices/tokens")
 @Tag(name = "Device Tokens", description = "Đăng ký và hủy token thiết bị cho push notifications")
@@ -77,7 +76,12 @@ public class DeviceTokenController {
   @Operation(summary = "Hủy / vô hiệu hóa token thiết bị (khi đăng xuất)")
   @Transactional
   public ResponseEntity<Void> unregisterToken(@PathVariable String token) {
-    deviceTokenRepository.deactivateByToken(token);
+    UUID currentUserId = currentUserProvider.getCurrentUserId();
+    int updated = deviceTokenRepository.deactivateByUserAndToken(currentUserId, token);
+    if (updated == 0) {
+      throw new ResponseStatusException(
+          HttpStatus.NOT_FOUND, "Không tìm thấy token thuộc người dùng hiện tại");
+    }
     return ResponseEntity.noContent().build();
   }
 

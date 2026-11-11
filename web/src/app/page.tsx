@@ -3,7 +3,6 @@
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Navbar } from '@/components/common/Navbar';
 import {
   CompassIcon,
   MapPinIcon,
@@ -45,6 +44,8 @@ import {
   FALLBACK_DESTINATIONS_WEATHER,
 } from '@/services/weatherService';
 import { VIETNAM_REAL_MAP_PATH, VIETNAM_MAP_PINS, MapPin } from './vietnamMapData';
+import { getCloudImageUrl } from '@/utils/cloudImage';
+import { SkeletonWeatherBar } from '@/components/common/Skeleton';
 import styles from './home.module.css';
 
 // ─── DATA DEFINITIONS ────────────────────────────────────────────────────────
@@ -104,10 +105,10 @@ interface DestinationShowcase {
   name: string;
   province: string;
   category: string;
-  rating: number;
-  reviews: string;
+  rating?: number | null;
+  reviews?: string;
   priceEstimate: string;
-  season: string;
+  season?: string;
   image: string;
   description: string;
 }
@@ -302,6 +303,68 @@ export default function HomePage() {
   const [destFilterRegion, setDestFilterRegion] = useState<string>('all');
   const searchConsoleRef = React.useRef<HTMLDivElement>(null);
 
+  // Live destinations from backend
+  const [liveDestinations, setLiveDestinations] = useState<DestinationShowcase[]>([]);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    const fetchLive = async () => {
+      try {
+        const base = (process.env.NEXT_PUBLIC_API_URL ?? '/api/v1').replace(/\/+$/, '');
+        const res = await fetch(`${base}/destinations?page=0&size=10`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!data || !Array.isArray(data.items)) return;
+        if (cancelled) return;
+
+        const mapped: DestinationShowcase[] = data.items
+          .filter((item: any) => item && item.id && item.status === 'PUBLISHED')
+          .map((item: any) => {
+            const rawImg = item.imageUrl || '';
+            const cloudImg = rawImg ? getCloudImageUrl(rawImg) : '';
+            const priceText =
+              item.priceMin === 0 && item.priceMax === 0
+                ? 'Miễn phí'
+                : item.priceMin
+                ? `${item.priceMin.toLocaleString('vi-VN')}đ / người`
+                : 'Đang cập nhật';
+
+            return {
+              id: item.id,
+              name: item.name,
+              province: item.province || 'Việt Nam',
+              category: item.category || 'Cảnh quan',
+              rating: typeof item.rating === 'number' && item.rating > 0 ? Number(item.rating.toFixed(1)) : null,
+              reviews: item.reviewCount ? `${item.reviewCount}` : '0',
+              priceEstimate: priceText,
+              season: 'Quanh năm',
+              image: cloudImg || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80',
+              description: item.description || `Khám phá vẻ đẹp tuyệt vời của ${item.name} tại ${item.province}.`,
+            };
+          });
+
+        if (mapped.length > 0 && !cancelled) {
+          setLiveDestinations(mapped);
+        }
+      } catch {
+        // Fallback to static showcase destinations
+      }
+    };
+    fetchLive();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const destinationsToShow = useMemo(() => {
+    if (liveDestinations.length === 0) {
+      return SHOWCASE_DESTINATIONS;
+    }
+    const existingNames = new Set(liveDestinations.map((d) => d.name.toLowerCase().trim()));
+    const extra = SHOWCASE_DESTINATIONS.filter((d) => !existingNames.has(d.name.toLowerCase().trim()));
+    return [...liveDestinations, ...extra].slice(0, 8);
+  }, [liveDestinations]);
+
   const [activeHotspotId, setActiveHotspotId] = useState<string>('hoangsa');
 
   const currentHotspot = useMemo(() => {
@@ -442,6 +505,7 @@ export default function HomePage() {
 
   // Weather State
   const [weatherData, setWeatherData] = useState<Record<string, RealtimeWeather>>(FALLBACK_DESTINATIONS_WEATHER);
+  const [isWeatherLoading, setIsWeatherLoading] = useState<boolean>(true);
   const [weatherFilter, setWeatherFilter] = useState<'all' | 'north' | 'central' | 'south_highlands'>('all');
 
   // Swipe & Drag State for Weather Carousel Track
@@ -452,11 +516,20 @@ export default function HomePage() {
 
   React.useEffect(() => {
     let mounted = true;
-    fetchAllDestinationsWeather().then((data) => {
-      if (mounted && Object.keys(data).length > 0) {
-        setWeatherData(data);
-      }
-    });
+    fetchAllDestinationsWeather()
+      .then((data) => {
+        if (mounted && Object.keys(data).length > 0) {
+          setWeatherData(data);
+        }
+      })
+      .catch(() => {
+        // Fallback is already loaded
+      })
+      .finally(() => {
+        if (mounted) {
+          setIsWeatherLoading(false);
+        }
+      });
     return () => {
       mounted = false;
     };
@@ -549,9 +622,6 @@ export default function HomePage() {
           );
         })}
       </aside>
-
-      {/* ─── 1. TOP GLOBAL NAVBAR ────────────────────────────────────────── */}
-      <Navbar activeModule="explore" />
 
       {/* ─── 2. HERO SECTION CINEMATIC ───────────────────────────────────── */}
       <section className={styles.heroWrapper} id="hero" aria-label="Giới thiệu VISTA">
@@ -1111,76 +1181,80 @@ export default function HomePage() {
           </div>
 
           {/* Swipeable Draggable Weather Track */}
-          <div className={styles.weatherTrackWrapper}>
-            <div
-              ref={weatherTrackRef}
-              className={styles.weatherTrack}
-              onMouseDown={handleMouseDown}
-              onMouseLeave={handleMouseLeave}
-              onMouseUp={handleMouseUp}
-              onMouseMove={handleMouseMove}
-            >
-              {filteredWeatherCities.map(({ key, meta, weather }) => (
-                <div key={key} className={styles.weatherCard}>
-                  <div>
-                    {/* Card Top */}
-                    <div className={styles.weatherCardTop}>
-                      <div>
-                        <h3 className={styles.weatherCityName}>{meta.nameVi}</h3>
-                        <span className={styles.weatherRegionBadge}>{meta.region}</span>
+          {isWeatherLoading ? (
+            <SkeletonWeatherBar count={4} />
+          ) : (
+            <div className={styles.weatherTrackWrapper}>
+              <div
+                ref={weatherTrackRef}
+                className={styles.weatherTrack}
+                onMouseDown={handleMouseDown}
+                onMouseLeave={handleMouseLeave}
+                onMouseUp={handleMouseUp}
+                onMouseMove={handleMouseMove}
+              >
+                {filteredWeatherCities.map(({ key, meta, weather }) => (
+                  <div key={key} className={styles.weatherCard}>
+                    <div>
+                      {/* Card Top */}
+                      <div className={styles.weatherCardTop}>
+                        <div>
+                          <h3 className={styles.weatherCityName}>{meta.nameVi}</h3>
+                          <span className={styles.weatherRegionBadge}>{meta.region}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11px', color: '#10B981', fontWeight: 700 }}>
+                          <span className={styles.livePulseDot} />
+                          <span>LIVE</span>
+                        </div>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11px', color: '#10B981', fontWeight: 700 }}>
-                        <span className={styles.livePulseDot} />
-                        <span>LIVE</span>
+
+                      {/* Temp & Icon */}
+                      <div className={styles.weatherTempRow}>
+                        <div className={styles.weatherTempGroup}>
+                          <span className={styles.weatherDegrees}>{weather?.tempFormatted || `${weather?.temp || 26}°C`}</span>
+                          <span className={styles.weatherApparent}>Cảm nhận {weather?.apparentTemp || 28}°C</span>
+                        </div>
+                        <div className={styles.weatherIconWrapper}>
+                          {renderWeatherIcon(weather?.weatherCode ?? 1, weather?.isDay ?? true)}
+                        </div>
+                      </div>
+
+                      {/* Status */}
+                      <div className={styles.weatherStatusText}>
+                        {weather?.statusVi || 'Nắng ấm chan hòa, trời đẹp'}
+                      </div>
+
+                      {/* Metrics */}
+                      <div className={styles.weatherMetricsList}>
+                        <div className={styles.weatherMetric}>
+                          <DropletsIcon size={14} color="#0284C7" />
+                          <span>Độ ẩm: {weather?.humidity || 70}%</span>
+                        </div>
+                        <div className={styles.weatherMetric}>
+                          <WindIcon size={14} color="#0284C7" />
+                          <span>Gió: {weather?.windSpeed || 10} km/h</span>
+                        </div>
+                      </div>
+
+                      {/* Advisory */}
+                      <div className={styles.weatherTipBox}>
+                        {weather?.adviceVi || 'Thời tiết tuyệt vời cho các hoạt động tham quan ngoài trời.'}
                       </div>
                     </div>
 
-                    {/* Temp & Icon */}
-                    <div className={styles.weatherTempRow}>
-                      <div className={styles.weatherTempGroup}>
-                        <span className={styles.weatherDegrees}>{weather?.tempFormatted || `${weather?.temp || 26}°C`}</span>
-                        <span className={styles.weatherApparent}>Cảm nhận {weather?.apparentTemp || 28}°C</span>
-                      </div>
-                      <div className={styles.weatherIconWrapper}>
-                        {renderWeatherIcon(weather?.weatherCode ?? 1, weather?.isDay ?? true)}
-                      </div>
-                    </div>
-
-                    {/* Status */}
-                    <div className={styles.weatherStatusText}>
-                      {weather?.statusVi || 'Nắng ấm chan hòa, trời đẹp'}
-                    </div>
-
-                    {/* Metrics */}
-                    <div className={styles.weatherMetricsList}>
-                      <div className={styles.weatherMetric}>
-                        <DropletsIcon size={14} color="#0284C7" />
-                        <span>Độ ẩm: {weather?.humidity || 70}%</span>
-                      </div>
-                      <div className={styles.weatherMetric}>
-                        <WindIcon size={14} color="#0284C7" />
-                        <span>Gió: {weather?.windSpeed || 10} km/h</span>
-                      </div>
-                    </div>
-
-                    {/* Advisory */}
-                    <div className={styles.weatherTipBox}>
-                      {weather?.adviceVi || 'Thời tiết tuyệt vời cho các hoạt động tham quan ngoài trời.'}
-                    </div>
+                    {/* Quick Action */}
+                    <Link
+                      href={`/planner?dest=${encodeURIComponent(meta.nameVi)}`}
+                      className={styles.weatherCardAction}
+                    >
+                      <span>Lên lịch đi {meta.nameVi}</span>
+                      <ArrowRightIcon size={13} />
+                    </Link>
                   </div>
-
-                  {/* Quick Action */}
-                  <Link
-                    href={`/planner?dest=${encodeURIComponent(meta.nameVi)}`}
-                    className={styles.weatherCardAction}
-                  >
-                    <span>Lên lịch đi {meta.nameVi}</span>
-                    <ArrowRightIcon size={13} />
-                  </Link>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </section>
 
@@ -1727,13 +1801,21 @@ export default function HomePage() {
           </div>
 
           <div className={styles.destinationsGrid}>
-            {SHOWCASE_DESTINATIONS.map((dest) => (
+            {destinationsToShow.map((dest) => (
               <div key={dest.id} className={styles.destCard}>
                 <div className={styles.destMediaWrapper}>
-                  <img src={dest.image} alt={dest.name} className={styles.destMedia} />
+                  <img
+                    src={dest.image}
+                    alt={dest.name}
+                    className={styles.destMedia}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src =
+                        'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80';
+                    }}
+                  />
                   <div className={styles.destSeasonBadge}>
                     <CalendarIcon size={12} color="#475569" />
-                    <span>{dest.season}</span>
+                    <span>{dest.season || 'Quanh năm'}</span>
                   </div>
                   <button
                     type="button"
@@ -1748,10 +1830,14 @@ export default function HomePage() {
                 <div className={styles.destContent}>
                   <div className={styles.destHeaderRow}>
                     <h3 className={styles.destTitle}>{dest.name}</h3>
-                    <div className={styles.destRating}>
-                      <StarIcon size={13} />
-                      <span>{dest.rating}</span>
-                    </div>
+                    {dest.rating ? (
+                      <div className={styles.destRating}>
+                        <StarIcon size={13} />
+                        <span>{dest.rating}</span>
+                      </div>
+                    ) : (
+                      <span className={styles.destNoRating}>Chưa có đánh giá</span>
+                    )}
                   </div>
 
                   <div className={styles.destLocationRow}>

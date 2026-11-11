@@ -107,6 +107,14 @@
           },
           "fromGps": {
             "type": "boolean"
+          },
+          "waypoints": {
+            "type": "array",
+            "maxItems": 4,
+            "description": "Intermediate stops in the selected order. VISTA supports at most 6 points including origin and destination.",
+            "items": {
+              "$ref": "#/components/schemas/RoutePoint"
+            }
           }
         }
       },
@@ -156,6 +164,39 @@
           },
           "attribution": {
             "type": "string"
+          },
+          "legs": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 5,
+            "items": {
+              "$ref": "#/components/schemas/RouteLeg"
+            }
+          }
+        }
+      },
+      "RouteLeg": {
+        "type": "object",
+        "required": [
+          "fromLabel",
+          "toLabel",
+          "distanceMeters",
+          "durationMillis"
+        ],
+        "properties": {
+          "fromLabel": {
+            "type": "string"
+          },
+          "toLabel": {
+            "type": "string"
+          },
+          "distanceMeters": {
+            "type": "number",
+            "minimum": 0
+          },
+          "durationMillis": {
+            "type": "number",
+            "minimum": 0
           }
         }
       }

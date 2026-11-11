@@ -1,8 +1,8 @@
 package com.vista.notification.domain;
 
 /**
- * Các loại thông báo trong module Collaboration và Notification (TV3).
- * W1-TV3-05: Enum loại thông báo được quy định trong thiết kế.
+ * Các loại thông báo trong module Collaboration và Notification (TV3). W1-TV3-05: Enum loại thông
+ * báo được quy định trong thiết kế.
  */
 public enum NotificationType {
   INVITE_RECEIVED,
@@ -12,4 +12,3 @@ public enum NotificationType {
   VOTE_CLOSED,
   OWNERSHIP_TRANSFERRED
 }
-

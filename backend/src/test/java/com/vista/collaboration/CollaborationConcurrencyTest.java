@@ -34,7 +34,6 @@ import java.time.LocalTime;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -45,10 +44,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
- * W7-TV3-01: Kiểm thử đồng thời (Concurrency) cho Module Group Collaboration.
- * - Sửa đồng thời điểm dừng lịch trình: Khóa lạc quan (version / expectedUpdatedAt) chặn sửa đè.
- * - Bỏ phiếu đồng thời: Đảm bảo không trùng phiếu và xử lý an toàn đa luồng.
- * - Tạo lời mời đồng thời cho cùng một email: Chặn bản ghi PENDING trùng lặp.
+ * W7-TV3-01: Kiểm thử đồng thời (Concurrency) cho Module Group Collaboration. - Sửa đồng thời điểm
+ * dừng lịch trình: Khóa lạc quan (version / expectedUpdatedAt) chặn sửa đè. - Bỏ phiếu đồng thời:
+ * Đảm bảo không trùng phiếu và xử lý an toàn đa luồng. - Tạo lời mời đồng thời cho cùng một email:
+ * Chặn bản ghi PENDING trùng lặp.
  */
 @ExtendWith(MockitoExtension.class)
 class CollaborationConcurrencyTest {
@@ -90,10 +89,7 @@ class CollaborationConcurrencyTest {
             null);
     proposalService =
         new ProposalService(
-            proposalRepository,
-            voteRepository,
-            tripAccessService,
-            notificationService);
+            proposalRepository, voteRepository, tripAccessService, notificationService);
   }
 
   // ── 1. Sửa lịch trình đồng thời: Khóa lạc quan ──────────────────────────────
@@ -108,7 +104,8 @@ class CollaborationConcurrencyTest {
     Instant initialUpdatedAt = Instant.parse("2026-11-10T08:00:00Z");
 
     ItineraryItem item =
-        new ItineraryItem(day, null, "Cầu Sông Hàn", LocalTime.of(8, 0), LocalTime.of(10, 0), 0, null, USER_A);
+        new ItineraryItem(
+            day, null, "Cầu Sông Hàn", LocalTime.of(8, 0), LocalTime.of(10, 0), 0, null, USER_A);
     ReflectionTestUtils.setField(item, "id", itemId);
     ReflectionTestUtils.setField(item, "updatedAt", initialUpdatedAt);
 
@@ -194,7 +191,8 @@ class CollaborationConcurrencyTest {
   // ── 3. Bỏ phiếu đồng thời trên Proposal ────────────────────────────────────
 
   @Test
-  @DisplayName("W7-01 Thành viên cập nhật vote liên tiếp → phiếu được cập nhật chính xác, không mất dữ liệu")
+  @DisplayName(
+      "W7-01 Thành viên cập nhật vote liên tiếp → phiếu được cập nhật chính xác, không mất dữ liệu")
   void concurrentVote_updatesSafely() {
     UUID proposalId = UUID.randomUUID();
     Proposal proposal = new Proposal(TRIP_ID, USER_A, UUID.randomUUID(), "Ăn tối hải sản");
@@ -215,4 +213,3 @@ class CollaborationConcurrencyTest {
     assertThat(existingVote.getVote()).isEqualTo("DOWN");
   }
 }
-

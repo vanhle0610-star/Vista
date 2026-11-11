@@ -26,7 +26,7 @@ public class OllamaEmbeddingClient {
       @Value("${vista.ai.rag.embedding-base-url:http://localhost:11434}") String baseUrl,
       @Value("${vista.ai.rag.embedding-model:bge-m3}") String model,
       @Value("${vista.ai.rag.enabled:false}") boolean enabled,
-      @Value("${vista.ai.rag.embedding-timeout:30s}") Duration timeout) {
+      @Value("${vista.ai.rag.embedding-timeout:5s}") Duration timeout) {
     this.objectMapper = objectMapper;
     this.baseUrl = baseUrl.replaceAll("/+$", "");
     this.model = model;
@@ -60,7 +60,8 @@ public class OllamaEmbeddingClient {
       JsonNode values = objectMapper.readTree(response.body()).path("embeddings").path(0);
       if (!values.isArray() || values.size() != 1024) return Optional.empty();
       float[] result = new float[values.size()];
-      for (int index = 0; index < values.size(); index++) result[index] = values.get(index).floatValue();
+      for (int index = 0; index < values.size(); index++)
+        result[index] = values.get(index).floatValue();
       return Optional.of(result);
     } catch (InterruptedException exception) {
       Thread.currentThread().interrupt();
@@ -79,4 +80,3 @@ public class OllamaEmbeddingClient {
     return value.append(']').toString();
   }
 }
-

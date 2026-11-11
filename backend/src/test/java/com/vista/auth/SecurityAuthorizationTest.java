@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -22,6 +23,7 @@ import com.vista.common.web.GlobalExceptionHandler;
 import com.vista.common.web.HealthController;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -62,6 +64,8 @@ class SecurityAuthorizationTest {
     mockMvc
         .perform(get("/api/v1/auth/me"))
         .andExpect(status().isUnauthorized())
+        .andExpect(content().encoding(StandardCharsets.UTF_8))
+        .andExpect(jsonPath("$.detail").value("Yêu cầu cần có Access Token hợp lệ để truy cập"))
         .andExpect(jsonPath("$.code").value("UNAUTHORIZED"))
         .andExpect(jsonPath("$.status").value(401));
   }
@@ -75,6 +79,19 @@ class SecurityAuthorizationTest {
         .perform(get("/api/v1/auth/me").header("Authorization", "Bearer " + refreshToken))
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.code").value("UNAUTHORIZED"))
+        .andExpect(jsonPath("$.status").value(401));
+  }
+
+  @Test
+  void expiredAccessTokenReturnsTokenExpiredCodeForSilentRefresh() throws Exception {
+    String expiredToken = "expired.jwt.token";
+    when(jwtTokenService.validateAccessTokenDetailed(expiredToken))
+        .thenReturn(JwtTokenService.JwtValidationResult.EXPIRED);
+
+    mockMvc
+        .perform(get("/api/v1/auth/me").header("Authorization", "Bearer " + expiredToken))
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.code").value("TOKEN_EXPIRED"))
         .andExpect(jsonPath("$.status").value(401));
   }
 
@@ -121,6 +138,8 @@ class SecurityAuthorizationTest {
         .perform(
             get("/api/v1/admin/overview").header("X-Is-Admin", "true").header("X-Role", "ADMIN"))
         .andExpect(status().isForbidden())
+        .andExpect(content().encoding(StandardCharsets.UTF_8))
+        .andExpect(jsonPath("$.detail").value("Bạn không có quyền truy cập tài nguyên này"))
         .andExpect(jsonPath("$.code").value("FORBIDDEN"))
         .andExpect(jsonPath("$.status").value(403));
   }

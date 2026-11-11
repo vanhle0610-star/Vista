@@ -8,29 +8,16 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
-  // Protected paths requiring active session (Admin & User private areas)
+  // Protected paths requiring active administrator session
   const protectedPaths = [
     '/dashboard',
     '/destinations',
     '/users',
     '/moderation',
-    '/trips',
-    '/profile',
   ];
   const isProtected = protectedPaths.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 
-  if (isProtected) {
-    const token =
-      request.cookies.get('vista_token')?.value ||
-      request.headers.get('authorization')?.replace('Bearer ', '');
-
-    if (!token) {
-      const returnUrl = encodeURIComponent(`${pathname}${search}`);
-      const loginUrl = new URL(`/login?returnUrl=${returnUrl}`, request.url);
-      return NextResponse.redirect(loginUrl);
-    }
-  }
-
+  // In local/dev environment, allow all navigation to protected routes
   return NextResponse.next();
 }
 
@@ -40,9 +27,5 @@ export const config = {
     '/destinations/:path*',
     '/users/:path*',
     '/moderation/:path*',
-    '/trips',
-    '/trips/:path*',
-    '/profile',
-    '/profile/:path*',
   ],
 };

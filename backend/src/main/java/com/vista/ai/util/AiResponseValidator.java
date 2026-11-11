@@ -81,7 +81,8 @@ public final class AiResponseValidator {
     if (expectedTotalDays < 1 || expectedTotalDays > MAX_DAYS) {
       expectedTotalDays = actualDaysSize;
     }
-    // Dung sai cho model nhỏ: nếu totalDays lệch với kích thước mảng days thật, tự đồng bộ theo kích thước mảng days
+    // Dung sai cho model nhỏ: nếu totalDays lệch với kích thước mảng days thật, tự đồng bộ theo
+    // kích thước mảng days
     if (rootNode instanceof ObjectNode objectNode) {
       objectNode.put("totalDays", actualDaysSize);
     }
@@ -139,13 +140,25 @@ public final class AiResponseValidator {
   }
 
   private static void validateActivity(JsonNode activity) {
+    String rawDestId = activity.path("destinationId").asText("").trim();
+    if (rawDestId.contains("|")) {
+      rawDestId = rawDestId.split("\\|")[0].trim();
+    }
     try {
-      UUID.fromString(activity.path("destinationId").asText());
+      UUID parsedUuid = UUID.fromString(rawDestId);
+      if (activity instanceof ObjectNode activityObj) {
+        activityObj.put("destinationId", parsedUuid.toString());
+      }
     } catch (IllegalArgumentException exception) {
       throw new IllegalArgumentException("Activity destinationId must be a valid UUID", exception);
     }
 
     String timeSlot = activity.path("timeSlot").asText("").trim().toUpperCase();
+    if ("NOON".equals(timeSlot) || "LUNCH".equals(timeSlot) || "MIDDAY".equals(timeSlot)) {
+      timeSlot = "AFTERNOON";
+    } else if ("NIGHT".equals(timeSlot)) {
+      timeSlot = "EVENING";
+    }
     if (!ALLOWED_TIME_SLOTS.contains(timeSlot)) {
       throw new IllegalArgumentException("Activity timeSlot is not supported: " + timeSlot);
     }
@@ -154,9 +167,11 @@ public final class AiResponseValidator {
     }
 
     JsonNode cost = activity.get("estimatedCostVnd");
-    if (cost != null && (!cost.isIntegralNumber() || cost.asLong() < 0)) {
-      throw new IllegalArgumentException(
-          "Activity estimatedCostVnd must be a non-negative integer");
+    if (cost != null && !cost.isNull()) {
+      if (!cost.isIntegralNumber() || cost.asLong() < 0) {
+        throw new IllegalArgumentException(
+            "Activity estimatedCostVnd must be a non-negative integer");
+      }
     }
   }
 
@@ -164,10 +179,14 @@ public final class AiResponseValidator {
       JsonNode node, String targetField, List<String> aliases, String defaultValue) {
     if (node instanceof ObjectNode objectNode) {
       JsonNode current = objectNode.get(targetField);
-      if (current == null || current.isNull() || (current.isTextual() && current.asText().isBlank())) {
+      if (current == null
+          || current.isNull()
+          || (current.isTextual() && current.asText().isBlank())) {
         for (String alias : aliases) {
           JsonNode aliasNode = objectNode.get(alias);
-          if (aliasNode != null && !aliasNode.isNull() && (!aliasNode.isTextual() || !aliasNode.asText().isBlank())) {
+          if (aliasNode != null
+              && !aliasNode.isNull()
+              && (!aliasNode.isTextual() || !aliasNode.asText().isBlank())) {
             objectNode.set(targetField, aliasNode);
             return;
           }

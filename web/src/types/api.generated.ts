@@ -418,11 +418,57 @@ export interface paths {
             };
             cookie?: never;
         };
-        /** tv5ListPostComments */
+        /**
+         * tv5ListPostComments
+         * @description Paginated root comments, including deleted root placeholders with surviving visible replies. total counts root rows; commentCount counts live visible content across the post.
+         */
         get: operations["tv5ListPostComments"];
         put?: never;
         /** tv5CreatePostComment */
         post: operations["tv5CreatePostComment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/posts/{postId}/like": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postId: string;
+            };
+            cookie?: never;
+        };
+        /** Get this account's like and the total likes for a public post */
+        get: operations["getCommunityPostLike"];
+        /** Like a public post; repeating this request does not add another like */
+        put: operations["likeCommunityPost"];
+        post?: never;
+        /** Remove this account's like; repeating this request is safe */
+        delete: operations["unlikeCommunityPost"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/posts/{postId}/comments/{rootId}/replies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postId: string;
+            };
+            cookie?: never;
+        };
+        /**
+         * Paginate replies in one root thread
+         * @description Two-level thread: replies to replies retain rootId and replyToId. A deleted root remains a placeholder while replies survive.
+         */
+        get: operations["tv5ListCommentReplies"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -629,6 +675,13 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        PostLike: {
+            /** Format: uuid */
+            postId: string;
+            liked: boolean;
+            /** Format: int64 */
+            likeCount: number;
+        };
         HealthResponse: {
             /** @constant */
             status: "UP";
@@ -996,6 +1049,14 @@ export interface components {
             /** @enum {string} */
             mode: "DRIVING" | "WALKING";
             fromGps: boolean;
+            /** @description Intermediate stops in the selected order. VISTA supports at most 6 points including origin and destination. */
+            waypoints?: components["schemas"]["RoutePoint"][];
+        };
+        RouteLeg: {
+            fromLabel: string;
+            toLabel: string;
+            distanceMeters: number;
+            durationMillis: number;
         };
         RouteResult: {
             input: components["schemas"]["RouteInput"];
@@ -1007,6 +1068,7 @@ export interface components {
             durationMillis: number;
             warnings: string[];
             attribution: string;
+            legs?: components["schemas"]["RouteLeg"][];
         };
         Coordinates: {
             latitude: number;
@@ -1031,11 +1093,23 @@ export interface components {
             /** Format: uuid */
             id: string;
             displayName: string;
+            avatarUrl?: string | null;
         };
         Media: {
             /** Format: uuid */
             id: string;
             path: string;
+        };
+        /** @enum {string|null} */
+        Feeling: null | "HAPPY" | "DELIGHTED" | "EXCITED" | "RELAXED" | "GRATEFUL" | "CONFIDENT" | "SAD" | "TIRED";
+        CommunityPlace: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            area: string | null;
+            imageUrl?: string | null;
+            latitude?: number | null;
+            longitude?: number | null;
         };
         Post: {
             /** Format: uuid */
@@ -1050,6 +1124,9 @@ export interface components {
             /** Format: uuid */
             destinationId?: string | null;
             media: components["schemas"]["Media"][];
+            feeling?: components["schemas"]["Feeling"];
+            commentCount: number;
+            destination?: components["schemas"]["CommunityPlace"] | null;
         };
         PostPage: {
             items: components["schemas"]["Post"][];
@@ -1064,10 +1141,18 @@ export interface components {
             /** Format: uuid */
             destinationId?: string | null;
             uploadIds?: string[];
+            feeling?: components["schemas"]["Feeling"];
         };
         PostUpdate: {
             body: string;
             version: number;
+            /**
+             * Format: uuid
+             * @description Omit to preserve the current destination; null removes it. Non-null IDs must be PUBLISHED.
+             */
+            destinationId?: string | null;
+            /** @description Omit to preserve the current feeling; null removes it. */
+            feeling?: components["schemas"]["Feeling"];
         };
         Comment: {
             /** Format: uuid */
@@ -1081,16 +1166,33 @@ export interface components {
             /** Format: uuid */
             postId: string;
             author: components["schemas"]["Author"];
+            /** Format: uuid */
+            rootId?: string | null;
+            /** Format: uuid */
+            replyToId?: string | null;
+            replyToAuthor?: components["schemas"]["Author"] | null;
+            replyCount?: number;
+            deleted?: boolean;
         };
         CommentPage: {
             items: components["schemas"]["Comment"][];
             total: number;
             page: number;
             size: number;
+            /** @description All visible, nondeleted roots plus replies for this post, independent of pagination. */
+            commentCount?: number;
         };
+        /** @description New clients always send clientRequestId and retain it across retries. Legacy root-only writes may omit it. Replies require it. */
         CommentWrite: {
             body: string;
-        };
+            /** Format: uuid */
+            replyToId?: string | null;
+            /**
+             * Format: uuid
+             * @description Retain the same ID and payload across network retries. Optional for legacy clients.
+             */
+            clientRequestId?: string;
+        } & unknown;
         CommentUpdate: {
             body: string;
             version: number;
@@ -1168,6 +1270,15 @@ export interface components {
         };
     };
     responses: {
+        /** @description Persisted like state for the authenticated account */
+        PostLikeState: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["PostLike"];
+            };
+        };
         /** @description Chi tiết lỗi chuẩn Problem Details theo RFC 9457 */
         Problem: {
             headers: {
@@ -2427,6 +2538,136 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Comment"];
+                };
+            };
+            /** @description RFC 9457 ProblemDetail */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description RFC 9457 ProblemDetail */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getCommunityPostLike: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["PostLikeState"];
+            401: components["responses"]["Problem"];
+            404: components["responses"]["Problem"];
+        };
+    };
+    likeCommunityPost: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["PostLikeState"];
+            401: components["responses"]["Problem"];
+            404: components["responses"]["Problem"];
+        };
+    };
+    unlikeCommunityPost: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["PostLikeState"];
+            401: components["responses"]["Problem"];
+            404: components["responses"]["Problem"];
+        };
+    };
+    tv5ListCommentReplies: {
+        parameters: {
+            query?: {
+                page?: number;
+                size?: number;
+            };
+            header?: never;
+            path: {
+                postId: string;
+                rootId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommentPage"];
                 };
             };
             /** @description RFC 9457 ProblemDetail */

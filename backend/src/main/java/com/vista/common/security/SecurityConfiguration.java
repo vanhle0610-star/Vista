@@ -2,6 +2,7 @@ package com.vista.common.security;
 
 import com.vista.common.config.VistaProperties;
 import jakarta.servlet.http.HttpServletResponse;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -52,23 +53,40 @@ public class SecurityConfiguration {
                         (request, response, authException) -> {
                           response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                           response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);
+                          response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+
+                          String authError = (String) request.getAttribute("X-AUTH-ERROR");
+                          boolean isExpired = "TOKEN_EXPIRED".equals(authError);
+                          String errorCode = isExpired ? "TOKEN_EXPIRED" : "UNAUTHORIZED";
+                          String errorTitle = isExpired ? "Token Expired" : "Unauthorized";
+                          String errorDetail =
+                              isExpired
+                                  ? "Phiên làm việc đã hết hạn. Vui lòng làm mới token."
+                                  : "Yêu cầu cần có Access Token hợp lệ để truy cập";
+
                           response
                               .getWriter()
                               .write(
-                                  """
-                                  {
-                                    "type": "https://vista.example/errors/unauthorized",
-                                    "title": "Unauthorized",
-                                    "status": 401,
-                                    "detail": "Yêu cầu cần có Access Token hợp lệ để truy cập",
-                                    "code": "UNAUTHORIZED"
-                                  }
-                                  """);
+                                  String.format(
+                                      """
+                                      {
+                                        "type": "https://vista.example/errors/%s",
+                                        "title": "%s",
+                                        "status": 401,
+                                        "detail": "%s",
+                                        "code": "%s"
+                                      }
+                                      """,
+                                      isExpired ? "token-expired" : "unauthorized",
+                                      errorTitle,
+                                      errorDetail,
+                                      errorCode));
                         })
                     .accessDeniedHandler(
                         (request, response, accessDeniedException) -> {
                           response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                           response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);
+                          response.setCharacterEncoding(StandardCharsets.UTF_8.name());
                           response
                               .getWriter()
                               .write(
@@ -94,10 +112,13 @@ public class SecurityConfiguration {
                         "/api/v1/auth/google",
                         "/api/v1/auth/forgot-password",
                         "/api/v1/auth/reset-password",
-                        "/api/v1/ai/quick-plan")
+                        "/api/v1/ai/quick-plan",
+                        "/api/v1/ai/quick-plan/**")
                     .permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/v1/map/routes")
                     .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/v1/posts/*/like")
+                    .authenticated()
                     .requestMatchers(
                         HttpMethod.GET,
                         "/api/v1/health",
