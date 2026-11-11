@@ -19,6 +19,22 @@ interface VistaUser {
   avatarUrl?: string;
 }
 
+export interface IncomingInvitation {
+  id: string;
+  tripId: string;
+  tripTitle?: string;
+  destination?: string;
+  startDate?: string;
+  endDate?: string;
+  inviterEmail?: string;
+  inviterName?: string;
+  inviteeEmail: string;
+  token: string;
+  status: 'PENDING' | 'ACCEPTED' | 'REVOKED' | 'EXPIRED';
+  expiresAt?: string;
+  createdAt?: string;
+}
+
 export function Navbar({
   activeModule = 'explore',
   lang: propLang,
@@ -27,8 +43,14 @@ export function Navbar({
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<VistaUser | null>(null);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [incomingInvitations, setIncomingInvitations] = useState<IncomingInvitation[]>([]);
+  const [activeToast, setActiveToast] = useState<IncomingInvitation | null>(null);
+  const [isProcessingAction, setIsProcessingAction] = useState<string | null>(null);
   const [treasuryHref, setTreasuryHref] = useState<string>('/trips');
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const notificationRef = useRef<HTMLDivElement>(null);
+  const knownTokensRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     const resolveTreasuryLink = () => {
@@ -71,6 +93,9 @@ export function Navbar({
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setProfileDropdownOpen(false);
       }
+      if (notificationRef.current && !notificationRef.current.contains(e.target as Node)) {
+        setNotificationsOpen(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
 
@@ -80,6 +105,152 @@ export function Navbar({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  // Poll and listen for incoming invitations for currentUser in real-time
+  useEffect(() => {
+    if (!currentUser?.email) {
+      setIncomingInvitations([]);
+      return;
+    }
+    const email = currentUser.email.trim().toLowerCase();
+
+    const fetchInvites = async () => {
+      try {
+        const res = await fetch(`/api/invitations?email=${encodeURIComponent(email)}`);
+        if (!res.ok) return;
+        const list = await res.json();
+        if (Array.isArray(list)) {
+          const pending = list.filter(
+            (inv: IncomingInvitation) =>
+              inv.inviteeEmail &&
+              inv.inviteeEmail.toLowerCase() === email &&
+              inv.status === 'PENDING'
+          );
+
+          // If a new invitation arrives that wasn't previously known, trigger toast
+          pending.forEach((p) => {
+            if (!knownTokensRef.current.has(p.token)) {
+              knownTokensRef.current.add(p.token);
+              setActiveToast(p);
+              setTimeout(() => {
+                setActiveToast((curr) => (curr?.token === p.token ? null : curr));
+              }, 7000);
+            }
+          });
+
+          setIncomingInvitations(pending);
+        }
+      } catch {
+        // silent
+      }
+    };
+
+    fetchInvites();
+    const interval = setInterval(fetchInvites, 3500);
+
+    const onCustomChange = () => fetchInvites();
+    window.addEventListener('vista-invitations-change', onCustomChange);
+    window.addEventListener('storage', onCustomChange);
+    window.addEventListener('focus', onCustomChange);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('vista-invitations-change', onCustomChange);
+      window.removeEventListener('storage', onCustomChange);
+      window.removeEventListener('focus', onCustomChange);
+    };
+  }, [currentUser?.email]);
+
+  const handleAcceptInvite = async (inv: IncomingInvitation) => {
+    setIsProcessingAction(inv.token);
+    try {
+      await fetch('/api/invitations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: inv.token, status: 'ACCEPTED' }),
+      });
+
+      const currentUserMember = {
+        name: currentUser?.displayName || currentUser?.email?.split('@')[0] || 'Thành viên',
+        avatar: (currentUser?.displayName || currentUser?.email || 'TV').slice(0, 2).toUpperCase(),
+        color: '#10B981',
+        role: 'Thành viên',
+        userId: currentUser?.id || 'member-stub',
+      };
+
+      const newJoinedTrip = {
+        id: inv.tripId || `trip-joined-${Date.now()}`,
+        title: inv.tripTitle || 'Chuyến đi tham gia qua lời mời',
+        destination: inv.destination || 'Việt Nam',
+        durationBadge: '4 ngày',
+        startDate: inv.startDate || 'Sắp tới',
+        endDate: inv.endDate || '2026',
+        status: 'PLANNING',
+        role: 'MEMBER',
+        budgetTotal: 15000000,
+        budgetSpent: 0,
+        progressPercent: 20,
+        members: [
+          {
+            name: inv.inviterName || 'Trưởng nhóm',
+            avatar: (inv.inviterName || 'TN').slice(0, 2).toUpperCase(),
+            color: '#0070BA',
+            role: 'Trưởng nhóm',
+            userId: 'owner-stub',
+          },
+          currentUserMember,
+        ],
+        image: 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=1200&q=80',
+        treasuryPath: `/trips/${inv.tripId || 'demo-danang-2026'}/treasury`,
+        alertType: 'BLUE',
+        alertText: `Bạn đã tham gia qua lời mời từ ${inv.inviterName || 'Trưởng nhóm'}`,
+        quickActions: [
+          { label: 'Lịch trình', actionType: 'PLAN' },
+          { label: 'Thành viên', actionType: 'MEMBERS' },
+        ],
+      };
+
+      try {
+        const stored = localStorage.getItem('vista_custom_trips');
+        const list = stored ? JSON.parse(stored) : [];
+        if (!list.some((t: any) => t.id === newJoinedTrip.id)) {
+          list.unshift(newJoinedTrip);
+          localStorage.setItem('vista_custom_trips', JSON.stringify(list));
+        }
+      } catch {}
+
+      setIncomingInvitations((prev) => prev.filter((i) => i.token !== inv.token));
+      setNotificationsOpen(false);
+      setActiveToast(null);
+
+      window.dispatchEvent(new CustomEvent('vista-invitations-change'));
+      window.dispatchEvent(new Event('storage'));
+
+      router.push(`/trips/${newJoinedTrip.id}`);
+    } catch (err) {
+      console.error('Accept invite error:', err);
+    } finally {
+      setIsProcessingAction(null);
+    }
+  };
+
+  const handleDeclineInvite = async (inv: IncomingInvitation) => {
+    setIsProcessingAction(inv.token);
+    try {
+      await fetch('/api/invitations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: inv.token, status: 'REVOKED' }),
+      });
+      setIncomingInvitations((prev) => prev.filter((i) => i.token !== inv.token));
+      setActiveToast(null);
+      window.dispatchEvent(new CustomEvent('vista-invitations-change'));
+    } catch (err) {
+      console.error('Decline invite error:', err);
+    } finally {
+      setIsProcessingAction(null);
+    }
+  };
 
   const handleLogout = () => {
     try {
@@ -257,6 +428,120 @@ export function Navbar({
               <polyline points="6 9 12 15 18 9" />
             </svg>
           </button>
+
+          {/* Notification Bell (Hiện khi đã đăng nhập) */}
+          {currentUser && (
+            <div className={styles.notificationContainer} ref={notificationRef}>
+              <button
+                type="button"
+                className={`${styles.notificationBellBtn} ${
+                  notificationsOpen ? styles.notificationBellBtnActive : ''
+                } ${incomingInvitations.length > 0 ? styles.bellHasUnread : ''}`}
+                onClick={() => setNotificationsOpen((prev) => !prev)}
+                aria-label={`Thông báo (${incomingInvitations.length} lời mời mới)`}
+                title="Thông báo lời mời tham gia nhóm"
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                </svg>
+                {incomingInvitations.length > 0 && (
+                  <span className={styles.notificationBadge}>
+                    {incomingInvitations.length}
+                  </span>
+                )}
+              </button>
+
+              {notificationsOpen && (
+                <div className={styles.notificationDropdown}>
+                  <div className={styles.notificationHeader}>
+                    <div className={styles.notificationTitleGroup}>
+                      <span className={styles.notificationHeaderTitle}>Lời mời chuyến đi</span>
+                      {incomingInvitations.length > 0 && (
+                        <span className={styles.notificationPill}>{incomingInvitations.length} mới</span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className={styles.notificationList}>
+                    {incomingInvitations.length === 0 ? (
+                      <div className={styles.notificationEmpty}>
+                        <div className={styles.notificationEmptyIcon}>🏝️</div>
+                        <div className={styles.notificationEmptyText}>Không có lời mời nào đang chờ</div>
+                        <div className={styles.notificationEmptySub}>Khi bạn bè mời bạn vào chuyến đi, thông báo sẽ xuất hiện tại đây</div>
+                      </div>
+                    ) : (
+                      incomingInvitations.map((inv) => (
+                        <div key={inv.token} className={styles.notificationItem}>
+                          <div className={styles.notificationItemHeader}>
+                            <div className={styles.notificationTripIcon}>✈️</div>
+                            <div className={styles.notificationTripInfo}>
+                              <div className={styles.notificationTripTitle}>
+                                {inv.tripTitle || 'Khám phá chuyến đi Vista'}
+                              </div>
+                              <div className={styles.notificationInviter}>
+                                Người mời: <strong style={{ color: '#0284C7' }}>{inv.inviterName || inv.inviterEmail || 'Trưởng nhóm'}</strong>
+                              </div>
+                              <div className={styles.notificationMeta}>
+                                <span>📍 {inv.destination || 'Việt Nam'}</span>
+                                <span>•</span>
+                                <span>⏳ {inv.expiresAt || 'Trong 7 ngày'}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className={styles.notificationActions}>
+                            <button
+                              type="button"
+                              className={styles.btnAcceptInvite}
+                              disabled={isProcessingAction === inv.token}
+                              onClick={() => handleAcceptInvite(inv)}
+                            >
+                              <span>{isProcessingAction === inv.token ? 'Đang vào nhóm...' : '✓ Chấp nhận'}</span>
+                            </button>
+                            <button
+                              type="button"
+                              className={styles.btnDeclineInvite}
+                              disabled={isProcessingAction === inv.token}
+                              onClick={() => handleDeclineInvite(inv)}
+                            >
+                              Từ chối
+                            </button>
+                            <Link
+                              href={`/invitations/${inv.token}`}
+                              onClick={() => setNotificationsOpen(false)}
+                              style={{
+                                fontSize: '11.5px',
+                                color: '#0284C7',
+                                fontWeight: 700,
+                                textDecoration: 'none',
+                                padding: '6px 8px',
+                              }}
+                            >
+                              Chi tiết ↗
+                            </Link>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  <div className={styles.notificationFooter}>
+                    Tự động đồng bộ thời gian thực qua hệ thống VISTA
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* User Profile Dropdown or Login Link */}
           {currentUser ? (
@@ -498,6 +783,46 @@ export function Navbar({
                 {currentLang === 'vi' ? '+ Tạo chuyến đi nhóm mới' : '+ Plan New Trip'}
               </Link>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── REALTIME FLOATING TOAST KHI CÓ LỜI MỜI MỚI ─── */}
+      {activeToast && (
+        <div className={styles.realtimeToast}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '20px' }}>🎉</span>
+              <strong style={{ fontSize: '13.5px', color: '#0F172A' }}>Lời mời chuyến đi mới!</strong>
+            </div>
+            <button
+              type="button"
+              onClick={() => setActiveToast(null)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', color: '#94A3B8' }}
+              aria-label="Đóng"
+            >
+              ✕
+            </button>
+          </div>
+          <p style={{ margin: '0 0 12px', fontSize: '12.5px', color: '#475569', lineHeight: '1.45' }}>
+            <strong>{activeToast.inviterName || activeToast.inviterEmail || 'Trưởng nhóm'}</strong> vừa mời bạn tham gia <strong>"{activeToast.tripTitle || 'Khám phá chuyến đi'}"</strong> ({activeToast.destination || 'Việt Nam'}).
+          </p>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              type="button"
+              className={styles.btnAcceptInvite}
+              onClick={() => handleAcceptInvite(activeToast)}
+              style={{ padding: '8px 14px' }}
+            >
+              ✓ Chấp nhận ngay
+            </button>
+            <button
+              type="button"
+              className={styles.btnDeclineInvite}
+              onClick={() => setActiveToast(null)}
+            >
+              Để sau
+            </button>
           </div>
         </div>
       )}

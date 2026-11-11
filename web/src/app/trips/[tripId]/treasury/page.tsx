@@ -198,20 +198,28 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
           };
 
           if (Array.isArray(matched.members) && matched.members.length > 0) {
-            activeMembers = matched.members.map((m: any, idx: number) => {
+            const seen = new Map<string, any>();
+            matched.members.forEach((m: any, idx: number) => {
               const rawName = m.displayName || m.name || '';
-              const cleanName = rawName.replace(/\s*\(Bạn\)/g, '').trim() || (idx === 0 ? myName : `Thành viên ${idx + 1}`);
-              const isOwnerMember = idx === 0;
-              const isMe = (m.userId && m.userId === myId) || cleanName.toLowerCase() === myName.toLowerCase() || (m.email && m.email.toLowerCase() === myEmail.toLowerCase());
-              const memberId = isMe ? myId : (m.userId || (isOwnerMember ? (matched.ownerId || `u-${cleanName}`) : `mem-${idx}`));
-              return {
-                userId: memberId,
-                displayName: cleanName,
-                email: isMe ? myEmail : (m.email || `${cleanName.toLowerCase().replace(/\s+/g, '')}@vista.vn`),
-                role: m.role || (isOwnerMember ? 'OWNER' : 'MEMBER'),
-                budgetShare: Math.round(budget / matched.members.length),
-              };
+              const cleanName = rawName.replace(/\s*\(Bạn\)/gi, '').trim() || (idx === 0 ? myName : `Thành viên ${idx + 1}`);
+              const normName = cleanName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+              const isOwnerMember = idx === 0 || m.role === 'OWNER' || m.role === 'Trưởng nhóm';
+              const isMe = (m.userId && m.userId === myId) || normName === myName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') || (m.email && m.email.toLowerCase() === myEmail.toLowerCase());
+              const memberId = isMe ? myId : (m.userId || `mem-${idx}`);
+              const memberEmail = isMe ? myEmail : (m.email && !m.email.includes('@vista.vn') ? m.email : '');
+              const key = isMe ? 'me' : (memberId || memberEmail || normName);
+
+              if (!seen.has(key)) {
+                seen.set(key, {
+                  userId: memberId,
+                  displayName: cleanName,
+                  email: memberEmail,
+                  role: m.role || (isOwnerMember ? 'OWNER' : 'MEMBER'),
+                  budgetShare: Math.round(budget / Math.max(1, matched.members.length)),
+                });
+              }
             });
+            activeMembers = Array.from(seen.values());
           }
         }
       } catch {}

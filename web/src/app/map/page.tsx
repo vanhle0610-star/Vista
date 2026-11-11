@@ -7,7 +7,7 @@ import { DestinationList, filterDestinations, REGIONS_PROVINCES } from '@/featur
 import { DirectionsPanel } from '@/features/map-location/components/DirectionsPanel';
 import { GPSPermissionBar } from '@/features/map-location/components/GPSPermissionBar';
 import { fetchMapDestinations, validPoint } from '@/features/map-location/data/publicDestinations';
-import { VIETNAM_300_DESTINATIONS } from '@/features/map-location/data/vietnam300Destinations';
+import { VIETNAM_1000_DESTINATIONS } from '@/features/map-location/data/vietnam1000Destinations';
 import { rememberDestination, viewedDestination } from '@/features/map-location/data/viewedDestinations';
 import { apiRequest } from '@/lib/api';
 import type { components } from '@/types/api.generated';
@@ -18,18 +18,71 @@ import type { TravelMode } from '@/features/map-location/routing/routes';
 import { IconRoute } from '@/features/map-location/components/MapIcons';
 import styles from './map-page.module.css';
 
-// Coordinates for flyTo camera to center of famous provinces
+// Coordinates for flyTo camera to center of 63 Vietnam provinces
 const PROVINCE_CENTERS: Record<string, { latitude: number; longitude: number; zoom: number }> = {
-  'Đà Nẵng': { latitude: 16.0611, longitude: 108.2272, zoom: 12 },
+  'Đà Nẵng': { latitude: 16.0544, longitude: 108.2022, zoom: 12 },
   'Thừa Thiên Huế': { latitude: 16.4637, longitude: 107.5843, zoom: 12 },
   'Quảng Nam': { latitude: 15.8778, longitude: 108.3283, zoom: 12 },
   'Hà Nội': { latitude: 21.0285, longitude: 105.8542, zoom: 12 },
   'TP. Hồ Chí Minh': { latitude: 10.7769, longitude: 106.7009, zoom: 12 },
   'Lâm Đồng': { latitude: 11.9404, longitude: 108.4583, zoom: 12 },
-  'Kiên Giang': { latitude: 10.2167, longitude: 103.9667, zoom: 11 },
-  'Khánh Hòa': { latitude: 12.2388, longitude: 109.1967, zoom: 12 },
+  'Kiên Giang': { latitude: 10.2289, longitude: 103.9572, zoom: 11 },
+  'Khánh Hòa': { latitude: 12.2471, longitude: 109.1899, zoom: 12 },
   'Ninh Bình': { latitude: 20.2506, longitude: 105.9744, zoom: 12 },
   'Quảng Ninh': { latitude: 20.9505, longitude: 107.0734, zoom: 11.5 },
+  'Hải Phòng': { latitude: 20.8449, longitude: 106.6881, zoom: 12 },
+  'Cần Thơ': { latitude: 10.0452, longitude: 105.7469, zoom: 12 },
+  'Lào Cai': { latitude: 22.3364, longitude: 103.8438, zoom: 12 },
+  'Sơn La': { latitude: 20.8711, longitude: 104.6292, zoom: 12 },
+  'Hà Giang': { latitude: 22.8233, longitude: 104.9836, zoom: 12 },
+  'Cao Bằng': { latitude: 22.6657, longitude: 106.2575, zoom: 12 },
+  'Bắc Kạn': { latitude: 22.1470, longitude: 105.8348, zoom: 12 },
+  'Phú Thọ': { latitude: 21.3228, longitude: 105.4019, zoom: 12 },
+  'Hòa Bình': { latitude: 20.8172, longitude: 105.3376, zoom: 12 },
+  'Điện Biên': { latitude: 21.3860, longitude: 103.0233, zoom: 12 },
+  'Vĩnh Phúc': { latitude: 21.3089, longitude: 105.6049, zoom: 12 },
+  'Hà Nam': { latitude: 20.5453, longitude: 105.9123, zoom: 12 },
+  'Thanh Hóa': { latitude: 19.8067, longitude: 105.7852, zoom: 12 },
+  'Nghệ An': { latitude: 18.6734, longitude: 105.6813, zoom: 12 },
+  'Hà Tĩnh': { latitude: 18.3433, longitude: 105.9058, zoom: 12 },
+  'Quảng Bình': { latitude: 17.4690, longitude: 106.6224, zoom: 12 },
+  'Quảng Trị': { latitude: 16.8163, longitude: 107.1004, zoom: 12 },
+  'Quảng Ngãi': { latitude: 15.1205, longitude: 108.7923, zoom: 12 },
+  'Bình Định': { latitude: 13.7830, longitude: 109.2197, zoom: 12 },
+  'Phú Yên': { latitude: 13.0882, longitude: 109.3144, zoom: 12 },
+  'Ninh Thuận': { latitude: 11.5681, longitude: 108.9868, zoom: 12 },
+  'Bình Thuận': { latitude: 10.9333, longitude: 108.1000, zoom: 12 },
+  'Kon Tum': { latitude: 14.3497, longitude: 108.0005, zoom: 12 },
+  'Gia Lai': { latitude: 13.9833, longitude: 108.0000, zoom: 12 },
+  'Đắk Lắk': { latitude: 12.6667, longitude: 108.0500, zoom: 12 },
+  'Đắk Nông': { latitude: 12.0042, longitude: 107.6875, zoom: 12 },
+  'Bà Rịa - Vũng Tàu': { latitude: 10.4114, longitude: 107.1362, zoom: 12 },
+  'Tây Ninh': { latitude: 11.3100, longitude: 106.0983, zoom: 12 },
+  'Bình Dương': { latitude: 10.9805, longitude: 106.6519, zoom: 12 },
+  'Đồng Nai': { latitude: 10.9575, longitude: 106.8427, zoom: 12 },
+  'Long An': { latitude: 10.5360, longitude: 106.4134, zoom: 12 },
+  'Tiền Giang': { latitude: 10.3600, longitude: 106.3600, zoom: 12 },
+  'Bến Tre': { latitude: 10.2415, longitude: 106.3759, zoom: 12 },
+  'Vĩnh Long': { latitude: 10.2537, longitude: 105.9722, zoom: 12 },
+  'Đồng Tháp': { latitude: 10.4573, longitude: 105.6328, zoom: 12 },
+  'An Giang': { latitude: 10.3831, longitude: 105.4358, zoom: 12 },
+  'Bắc Giang': { latitude: 21.2731, longitude: 106.1946, zoom: 12 },
+  'Bắc Ninh': { latitude: 21.1861, longitude: 106.0763, zoom: 12 },
+  'Hưng Yên': { latitude: 20.6464, longitude: 106.0511, zoom: 12 },
+  'Hải Dương': { latitude: 20.9373, longitude: 106.3146, zoom: 12 },
+  'Thái Bình': { latitude: 20.4464, longitude: 106.3366, zoom: 12 },
+  'Nam Định': { latitude: 20.4344, longitude: 106.1773, zoom: 12 },
+  'Lai Châu': { latitude: 22.3964, longitude: 103.4583, zoom: 12 },
+  'Lạng Sơn': { latitude: 21.8537, longitude: 106.7615, zoom: 12 },
+  'Thái Nguyên': { latitude: 21.5942, longitude: 105.8482, zoom: 12 },
+  'Tuyên Quang': { latitude: 21.8236, longitude: 105.2140, zoom: 12 },
+  'Yên Bái': { latitude: 21.7168, longitude: 104.8986, zoom: 12 },
+  'Bình Phước': { latitude: 11.5333, longitude: 106.8833, zoom: 12 },
+  'Trà Vinh': { latitude: 9.9347, longitude: 106.3455, zoom: 12 },
+  'Hậu Giang': { latitude: 9.7844, longitude: 105.4702, zoom: 12 },
+  'Sóc Trăng': { latitude: 9.6033, longitude: 105.9800, zoom: 12 },
+  'Bạc Liêu': { latitude: 9.2941, longitude: 105.7244, zoom: 12 },
+  'Cà Mau': { latitude: 9.1769, longitude: 105.1524, zoom: 12 },
 };
 
 export default function VistaMapPage() {
@@ -38,7 +91,7 @@ export default function VistaMapPage() {
     rejected: number;
     loading: boolean;
     error: string | null;
-  }>({ destinations: VIETNAM_300_DESTINATIONS, rejected: 0, loading: false, error: null });
+  }>({ destinations: VIETNAM_1000_DESTINATIONS, rejected: 0, loading: false, error: null });
 
   const [attempt, setAttempt] = useState(0);
   const [selectedId, setSelectedId] = useState<string | null>(null);

@@ -210,6 +210,15 @@ function getCurrentUserMember(defaultRole = 'Trưởng nhóm'): TripMember {
   };
 }
 
+function normalizeMemberText(str?: string) {
+  return (str || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/[^a-z0-9]/g, '');
+}
+
 function formatMembersForCurrentUser(
   members: Array<{ name: string; avatar?: string; color?: string; role?: string; email?: string; userId?: string }>,
   defaultRole = 'Trưởng nhóm'
@@ -223,42 +232,90 @@ function formatMembersForCurrentUser(
   }
 
   const currentEmail = (currentUser?.email || '').toLowerCase().trim();
-  const currentName = (currentUser?.displayName || currentUser?.name || '').toLowerCase().trim();
+  const currentNameNorm = normalizeMemberText(currentUser?.displayName || currentUser?.name || '');
+  const currentId = currentUser?.id || '';
 
   if (!Array.isArray(members) || members.length === 0) {
     return [getCurrentUserMember(defaultRole)];
   }
 
-  const seen = new Set<string>();
   const result: TripMember[] = [];
 
   for (const m of members) {
     if (!m) continue;
     const rawName = (m.name || '').replace(/\s*\([^)]*\)/g, '').trim();
-    const rawEmail = (m.email || '').toLowerCase().trim();
-    const key = (m.userId ? `id:${m.userId}` : '') || rawEmail || rawName.toLowerCase();
-
-    if (!key || seen.has(key)) continue;
-    seen.add(key);
+    if (!rawName) continue;
+    const nameNorm = normalizeMemberText(rawName);
+    const email = (m.email || '').toLowerCase().trim();
+    const userId = (m.userId || '').trim();
 
     const isMe = Boolean(
-      (currentUser && m.userId && currentUser.id && m.userId === currentUser.id) ||
-      (currentEmail && rawEmail && currentEmail === rawEmail) ||
-      (currentName && rawName.toLowerCase() === currentName) ||
+      (currentId && userId && currentId === userId) ||
+      (currentEmail && email && currentEmail === email) ||
+      (currentNameNorm && nameNorm && currentNameNorm === nameNorm) ||
       (m.name || '').toLowerCase().includes('(bạn)')
     );
 
-    result.push({
-      name: isMe ? `${rawName || 'Bạn'} (Bạn)` : rawName,
-      avatar: m.avatar || (rawName.slice(0, 2)).toUpperCase() || 'TV',
-      color: m.color || '#0284c7',
-      email: m.email || (isMe && currentEmail ? currentEmail : undefined),
-      role: m.role || 'Thành viên',
-      userId: m.userId || (isMe && currentUser?.id ? currentUser.id : undefined),
+    const existingIdx = result.findIndex((ex) => {
+      if (isMe && (ex as any)._isMe) return true;
+      const exNameNorm = normalizeMemberText(ex.name);
+      const exEmail = (ex.email || '').toLowerCase().trim();
+      const exUserId = (ex.userId || '').trim();
+
+      if (userId && exUserId && userId === exUserId) return true;
+      if (email && exEmail && email === exEmail) return true;
+      if (nameNorm && exNameNorm && nameNorm === exNameNorm) return true;
+      return false;
     });
+
+    const resolvedUserId = isMe ? (currentId || userId || 'u-me') : userId;
+    const resolvedEmail = isMe ? (currentEmail || email) : email;
+    const isRealEmail = resolvedEmail && !resolvedEmail.includes('@vista.vn');
+    const isRealUserId = resolvedUserId && !resolvedUserId.startsWith('u-');
+
+    if (existingIdx >= 0) {
+      const existing = result[existingIdx];
+      const isExRealEmail = existing.email && !existing.email.includes('@vista.vn');
+      const isExRealUserId = existing.userId && !existing.userId.startsWith('u-');
+
+      result[existingIdx] = {
+        ...existing,
+        name: rawName, // Clean name
+        avatar: existing.avatar || m.avatar || (rawName.slice(0, 2)).toUpperCase() || 'TV',
+        color: existing.color || m.color || '#0284c7',
+        email: isRealEmail ? resolvedEmail : (isExRealEmail ? existing.email : (resolvedEmail || existing.email)),
+        userId: isRealUserId ? resolvedUserId : (isExRealUserId ? existing.userId : (resolvedUserId || existing.userId)),
+        role: existing.role === 'Trưởng nhóm' || m.role === 'Trưởng nhóm' ? 'Trưởng nhóm' : (existing.role || m.role || 'Thành viên'),
+        _isMe: isMe || (existing as any)._isMe,
+      } as any;
+    } else {
+      result.push({
+        name: rawName, // Clean name
+        avatar: m.avatar || (rawName.slice(0, 2)).toUpperCase() || 'TV',
+        color: m.color || (result.length % 2 === 0 ? '#0284c7' : '#10b981'),
+        email: resolvedEmail || undefined,
+        userId: resolvedUserId || undefined,
+        role: m.role || (result.length === 0 ? defaultRole : 'Thành viên'),
+        _isMe: isMe,
+      } as any);
+    }
   }
 
-  return result.length > 0 ? result : [getCurrentUserMember(defaultRole)];
+  // Ensure exactly one leader (Trưởng nhóm)
+  let foundLeader = false;
+  const finalized = result.map((m) => {
+    delete (m as any)._isMe;
+    if (m.role === 'Trưởng nhóm') {
+      if (!foundLeader) {
+        foundLeader = true;
+        return m;
+      }
+      return { ...m, role: 'Thành viên' };
+    }
+    return m;
+  });
+
+  return finalized.length > 0 ? finalized : [getCurrentUserMember(defaultRole)];
 }
 
 type DateFilterType = 'all' | 'upcoming' | 'month-10' | 'month-11' | 'month-12' | 'year-2026' | 'past';
@@ -865,7 +922,8 @@ export default function TripsPage() {
                         map.set(st.id, {
                           ...existing,
                           ...st,
-                          members: formatMembersForCurrentUser([...(existing.members || []), ...(st.members || [])]),
+                          ownerId: st.ownerId || existing.ownerId,
+                          members: formatMembersForCurrentUser(st.members || existing.members || []),
                         });
                       } else {
                         map.set(st.id, {

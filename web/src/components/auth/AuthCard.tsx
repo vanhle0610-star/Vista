@@ -15,7 +15,14 @@ const GOOGLE_CLIENT_ID =
   process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
   '577926332144-23qceg2o944n9hg5iv7nai2vr0s9u2d1.apps.googleusercontent.com';
 
-const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081/api/v1').replace(/\/+$/, '');
+const getApiUrl = () => {
+  if (typeof window !== 'undefined') {
+    // Dùng relative path để Next.js proxy rewrite sang backend port 8080
+    // Hoạt động hoàn hảo trên cả localhost và mạng LAN (192.168.x.x) trên điện thoại / máy khác
+    return '/api/v1';
+  }
+  return (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1').replace(/\/+$/, '');
+};
 
 const WEAK_PASSWORDS = new Set([
   '1234567890',
@@ -224,7 +231,7 @@ export function AuthCard({ isNight, initialMode }: AuthCardProps) {
       });
 
       try {
-        const res = await fetch(`${API_URL}/auth/google`, {
+        const res = await fetch(`${getApiUrl()}/auth/google`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ idToken: response.credential }),
@@ -319,7 +326,7 @@ export function AuthCard({ isNight, initialMode }: AuthCardProps) {
     }
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/auth/forgot-password`, {
+      const res = await fetch(`${getApiUrl()}/auth/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim() }),
@@ -356,7 +363,7 @@ export function AuthCard({ isNight, initialMode }: AuthCardProps) {
       }
       setLoading(true);
       try {
-        const res = await fetch(`${API_URL}/auth/forgot-password`, {
+        const res = await fetch(`${getApiUrl()}/auth/forgot-password`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: email.trim() }),
@@ -424,7 +431,7 @@ export function AuthCard({ isNight, initialMode }: AuthCardProps) {
       }
       setLoading(true);
       try {
-        const res = await fetch(`${API_URL}/auth/reset-password`, {
+        const res = await fetch(`${getApiUrl()}/auth/reset-password`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -598,7 +605,7 @@ export function AuthCard({ isNight, initialMode }: AuthCardProps) {
           };
 
     try {
-      const res = await fetch(`${API_URL}${endpoint}`, {
+      const res = await fetch(`${getApiUrl()}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

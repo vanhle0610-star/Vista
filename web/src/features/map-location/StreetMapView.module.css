@@ -332,3 +332,323 @@
     right: auto;
   }
 }
+
+/* ─── VIETNAMESE SOVEREIGNTY BADGES & LABELS ─── */
+@keyframes sovereigntyPulse {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.9;
+  }
+  60% {
+    transform: scale(1.6);
+    opacity: 0.25;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+/* ─── VIETNAMESE SOVEREIGNTY (HOÀNG SA, TRƯỜNG SA, BIỂN ĐÔNG) ─── */
+.sovereigntyCompactPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 4px 8px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1.5px solid #dc2626;
+  border-radius: 9999px;
+  box-shadow: 0 3px 10px rgba(220, 38, 38, 0.22), 0 1px 3px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+  backdrop-filter: blur(6px);
+  z-index: 15;
+}
+
+.sovereigntyCompactPill:hover {
+  transform: translateY(-2px) scale(1.06);
+  border-color: #b91c1c;
+  background: #ffffff;
+  box-shadow: 0 6px 18px rgba(220, 38, 38, 0.38), 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+.sovereigntyCompactPill:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.sovereigntyPillFlag {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 12px;
+  border-radius: 2px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  flex-shrink: 0;
+}
+
+.sovereigntyPillTitle {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #991b1b;
+  letter-spacing: 0.02em;
+}
+
+.sovereigntyPillDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ef4444;
+  margin-left: 2px;
+  animation: pulsePillDot 2s infinite ease-in-out;
+}
+
+@keyframes pulsePillDot {
+  0%, 100% { opacity: 0.4; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+.sovereigntySeaLabel {
+  pointer-events: none;
+  user-select: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  z-index: 1;
+}
+
+.sovereigntySeaTitle {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.35em;
+  color: #1e40af;
+  font-style: italic;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.95), 0 0 20px rgba(255, 255, 255, 0.9), 0 1px 4px rgba(30, 64, 175, 0.25);
+  opacity: 0.88;
+}
+
+.sovereigntySeaSub {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  color: #2563eb;
+  margin-top: 2px;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.95), 0 0 16px rgba(255, 255, 255, 0.85);
+  opacity: 0.88;
+}
+
+/* ─── SOVEREIGNTY DETAIL OVERLAY CARD (ON CLICK) ─── */
+.sovereigntyCardOverlay {
+  position: absolute;
+  bottom: 24px;
+  left: 16px;
+  max-width: min(440px, calc(100% - 32px));
+  z-index: 30;
+  animation: slideUpFade 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.sovereigntyDetailCard {
+  background: #ffffff;
+  border: 1.5px solid #f87171;
+  border-radius: 18px;
+  padding: 18px 20px;
+  box-shadow: 0 16px 36px -4px rgba(220, 38, 38, 0.25), 0 4px 12px rgba(0, 0, 0, 0.08);
+  color: #1e293b;
+  position: relative;
+  overflow: hidden;
+}
+
+.sovereigntyCloseBtn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: #f1f5f9;
+  color: #64748b;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  transition: all 0.15s ease;
+}
+
+.sovereigntyCloseBtn:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.sovereigntyDetailHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding-right: 28px;
+}
+
+.sovereigntyDetailFlag {
+  width: 36px;
+  height: 24px;
+  border-radius: 3px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.sovereigntyDetailTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sovereigntyDetailTitle {
+  font-size: 15px;
+  font-weight: 800;
+  color: #991b1b;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.sovereigntyBadgeGold {
+  font-size: 9.5px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #fef08a 0%, #fde047 100%);
+  color: #854d0e;
+  border: 1px solid #facc15;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.sovereigntyDetailAdmin {
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  margin: 3px 0 0 0;
+}
+
+.sovereigntyAffirmation {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  background: #fef2f2;
+  border: 1px solid #fee2e2;
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+
+.sovereigntyAffirmationText {
+  font-size: 12px;
+  font-weight: 600;
+  color: #991b1b;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.sovereigntyMetaGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.sovereigntyMetaItem {
+  background: #f8fafc;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.sovereigntyMetaLabel {
+  font-size: 10.5px;
+  color: #64748b;
+  font-weight: 600;
+  display: block;
+}
+
+.sovereigntyMetaValue {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-top: 2px;
+  display: block;
+}
+
+.sovereigntyNote {
+  font-size: 11px;
+  color: #64748b;
+  line-height: 1.45;
+  margin: 0 0 14px 0;
+}
+
+.sovereigntyActionRow {
+  display: flex;
+  gap: 8px;
+}
+
+.sovereigntyZoomBtn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #0284c7;
+  font-size: 12.5px;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sovereigntyZoomBtn:hover {
+  background: #f0f9ff;
+  border-color: #0284c7;
+}
+
+.sovereigntyDismissBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border: none;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 12.5px;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sovereigntyDismissBtn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}

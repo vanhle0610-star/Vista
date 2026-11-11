@@ -1,15 +1,16 @@
 import type { components } from '@/types/api.generated';
 import type { DestinationMarker } from '../types';
 import { validPoint } from '../coordinates';
-import { VIETNAM_300_DESTINATIONS } from './vietnam300Destinations';
+import { VIETNAM_1000_DESTINATIONS } from './vietnam1000Destinations';
 
 export { validPoint } from '../coordinates';
+export { VIETNAM_1000_DESTINATIONS };
 
 type Page = components['schemas']['DestinationPage'];
 
 /**
  * Tải danh sách điểm đến hiển thị trên bản đồ VISTA:
- * - Khởi tạo ngay lập tức với kho 300+ địa điểm chuẩn hóa khắp 63 tỉnh thành Việt Nam (0ms chờ).
+ * - Khởi tạo ngay lập tức với kho 1.000 địa điểm chuẩn hóa khắp 63 tỉnh thành Việt Nam (0ms chờ).
  * - Cố gắng kết nối backend để tải thêm các địa điểm mới do người dùng tạo (nếu có).
  */
 export async function fetchMapDestinations(
@@ -18,8 +19,8 @@ export async function fetchMapDestinations(
 ) {
   const base = (process.env.NEXT_PUBLIC_API_URL ?? '/api/v1').replace(/\/+$/, '');
 
-  // 1. Nạp sẵn 300+ địa điểm chuẩn hóa toàn quốc kèm ảnh và tọa độ thực tế
-  const destinations: DestinationMarker[] = VIETNAM_300_DESTINATIONS.map((d: any) => ({
+  // 1. Nạp sẵn 1.000 địa điểm chuẩn hóa toàn quốc kèm ảnh và tọa độ thực tế
+  const destinations: DestinationMarker[] = VIETNAM_1000_DESTINATIONS.map((d: any) => ({
     ...d,
     thumbnailUrl: d.thumbnailUrl || d.imageUrl || '',
   }));
@@ -27,7 +28,7 @@ export async function fetchMapDestinations(
   let rejected = 0;
   let missingIds = 0;
 
-  // Phát tín hiệu trang đầu tiên ngay lập tức để giao diện hiển thị 300 điểm không cần đợi
+  // Phát tín hiệu trang đầu tiên ngay lập tức để giao diện hiển thị 1.000 điểm không cần đợi
   onPage?.({ destinations: [...destinations], rejected: 0 });
 
   // 2. Tải thêm từ backend API nếu máy chủ đang chạy

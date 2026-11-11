@@ -37,6 +37,15 @@ export function MapViewAdapter(props: MapViewAdapterProps) {
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [currentStyle, setCurrentStyle] = useState<MapStyleKey>('liberty');
   const [showStyleMenu, setShowStyleMenu] = useState(false);
+  const [activeSovereignty, setActiveSovereignty] = useState<{
+    id: 'hoang_sa' | 'truong_sa';
+    name: string;
+    admin: string;
+    coords: string;
+    lat: number;
+    lng: number;
+    description: string;
+  } | null>(null);
 
   const select = useEffectEvent((destination: MapViewAdapterProps['destinations'][number]) =>
     props.onSelectDestination?.(destination)
@@ -64,7 +73,7 @@ export function MapViewAdapter(props: MapViewAdapterProps) {
 
     try {
       maplibre.setWorkerUrl('/map-assets/maplibre-gl-worker.mjs');
-      map = new maplibre.Map({
+      const mapOptions: any = {
         container: container.current,
         style: MAP_STYLES[currentStyle].url,
         center: [initial.longitude, initial.latitude],
@@ -75,7 +84,29 @@ export function MapViewAdapter(props: MapViewAdapterProps) {
         dragRotate: false,
         touchPitch: false,
         attributionControl: false,
-      });
+        transformStyle: (_prev: any, next: any) => {
+          if (next && next.layers) {
+            next.layers.forEach((layer: any) => {
+              if (layer.id === 'water_name_point_label' || layer.id === 'water_name_line_label') {
+                layer.filter = [
+                  'all',
+                  layer.filter || ['literal', true],
+                  ['!=', ['coalesce', ['get', 'name:latin'], ''], 'South China Sea'],
+                  ['!=', ['coalesce', ['get', 'name_en'], ''], 'South China Sea'],
+                  ['!=', ['coalesce', ['get', 'name:en'], ''], 'South China Sea'],
+                  ['!=', ['coalesce', ['get', 'name'], ''], 'South China Sea'],
+                  ['!=', ['coalesce', ['get', 'name:nonlatin'], ''], '南海'],
+                  ['!', ['in', 'South China', ['coalesce', ['get', 'name:latin'], ['get', 'name_en'], ['get', 'name'], '']]],
+                  ['!', ['in', 'China Sea', ['coalesce', ['get', 'name:latin'], ['get', 'name_en'], ['get', 'name'], '']]],
+                  ['!', ['in', '南海', ['coalesce', ['get', 'name:nonlatin'], ['get', 'name'], '']]],
+                ];
+              }
+            });
+          }
+          return next;
+        },
+      };
+      map = new maplibre.Map(mapOptions);
 
       map.touchZoomRotate.disableRotation();
       map.addControl(new maplibre.NavigationControl({ showCompass: false }), 'bottom-right');
@@ -85,6 +116,10 @@ export function MapViewAdapter(props: MapViewAdapterProps) {
         })
       );
       mapRef.current = map;
+
+      map.on('click', () => {
+        setActiveSovereignty(null);
+      });
 
       map.on('load', () => {
         clearTimeout(timer);
@@ -144,7 +179,10 @@ export function MapViewAdapter(props: MapViewAdapterProps) {
         button.appendChild(label);
       }
 
-      button.addEventListener('click', () => select(destination));
+      button.addEventListener('click', () => {
+        setActiveSovereignty(null);
+        select(destination);
+      });
       return new maplibre.Marker({ element: button })
         .setLngLat([destination.longitude, destination.latitude])
         .addTo(map);
@@ -154,6 +192,140 @@ export function MapViewAdapter(props: MapViewAdapterProps) {
       markers.forEach((marker) => marker.remove());
     };
   }, [destinations, props.selectedDestinationId, status]);
+
+  // ─── VIETNAMESE SOVEREIGNTY OVERLAYS (HOÀNG SA, TRƯỜNG SA, BIỂN ĐÔNG) ───
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || status !== 'ready') return;
+
+    // Filter out foreign labels from openmaptiles base tiles
+    const hideForeignLabels = () => {
+      try {
+        const layers = ['water_name_point_label', 'water_name_line_label'];
+        layers.forEach((layerId) => {
+          if (map.getLayer(layerId)) {
+            try {
+              map.setPaintProperty(layerId, 'text-opacity', [
+                'case',
+                [
+                  'any',
+                  ['in', 'South China', ['coalesce', ['get', 'name:latin'], ['get', 'name_en'], ['get', 'name'], '']],
+                  ['in', 'China Sea', ['coalesce', ['get', 'name:latin'], ['get', 'name_en'], ['get', 'name'], '']],
+                  ['in', '南海', ['coalesce', ['get', 'name:nonlatin'], ['get', 'name'], '']],
+                ],
+                0,
+                1,
+              ] as any);
+            } catch {
+              // ignore
+            }
+
+            const existingFilter = map.getFilter(layerId);
+            const filtered = [
+              'all',
+              existingFilter || ['literal', true],
+              ['!=', ['coalesce', ['get', 'name:latin'], ''], 'South China Sea'],
+              ['!=', ['coalesce', ['get', 'name_en'], ''], 'South China Sea'],
+              ['!=', ['coalesce', ['get', 'name:en'], ''], 'South China Sea'],
+              ['!=', ['coalesce', ['get', 'name'], ''], 'South China Sea'],
+              ['!=', ['coalesce', ['get', 'name:nonlatin'], ''], '南海'],
+              ['!', ['in', 'South China', ['coalesce', ['get', 'name:latin'], ['get', 'name_en'], ['get', 'name'], '']]],
+              ['!', ['in', 'China Sea', ['coalesce', ['get', 'name:latin'], ['get', 'name_en'], ['get', 'name'], '']]],
+              ['!', ['in', '南海', ['coalesce', ['get', 'name:nonlatin'], ['get', 'name'], '']]],
+            ];
+            map.setFilter(layerId, filtered as any);
+          }
+        });
+      } catch {
+        // ignore
+      }
+    };
+
+    if (map.isStyleLoaded()) {
+      hideForeignLabels();
+    }
+    map.on('styledata', hideForeignLabels);
+    map.on('style.load', hideForeignLabels);
+
+    const sovereigntyMarkers: maplibre.Marker[] = [];
+    const VIETNAM_FLAG_SVG = `<svg width="18" height="12" viewBox="0 0 300 200" style="display:block;border-radius:2px;"><rect width="300" height="200" fill="#da251d"/><polygon points="150,30 162.36,88.04 221.35,88.04 173.65,123.92 191.86,181.96 150,146.08 108.14,181.96 126.35,123.92 78.65,88.04 137.64,88.04" fill="#ffff00"/></svg>`;
+
+    // 1. Biển Đông Label (Grand water label)
+    const seaElem = document.createElement('div');
+    seaElem.className = styles.sovereigntySeaLabel;
+    seaElem.innerHTML = `
+      <span class="${styles.sovereigntySeaTitle}">BIỂN ĐÔNG</span>
+      <span class="${styles.sovereigntySeaSub}">(VIỆT NAM)</span>
+    `;
+    const seaMarker = new maplibre.Marker({ element: seaElem, anchor: 'center' })
+      .setLngLat([113.2, 13.8])
+      .addTo(map);
+    sovereigntyMarkers.push(seaMarker);
+
+    // 2. Quần đảo Hoàng Sa (Compact Pill - Nhấp vào mới bung thông tin)
+    const hsElem = document.createElement('div');
+    hsElem.className = styles.sovereigntyCompactPill;
+    hsElem.setAttribute('title', 'Quần đảo Hoàng Sa (TP. Đà Nẵng, Việt Nam) — Nhấp để xem thông tin chủ quyền');
+    hsElem.innerHTML = `
+      <span class="${styles.sovereigntyPillFlag}">${VIETNAM_FLAG_SVG}</span>
+      <span class="${styles.sovereigntyPillTitle}">Quần đảo Hoàng Sa</span>
+      <span class="${styles.sovereigntyPillDot}"></span>
+    `;
+    hsElem.addEventListener('click', (e) => {
+      e.stopPropagation();
+      props.onSelectDestination?.(null);
+      map.flyTo({ center: [112.0, 16.5], zoom: 8, speed: 1.2 });
+      setActiveSovereignty({
+        id: 'hoang_sa',
+        name: 'QUẦN ĐẢO HOÀNG SA',
+        admin: 'Huyện đảo Hoàng Sa, Thành phố Đà Nẵng',
+        coords: '16°30\'B — 112°00\'Đ',
+        lat: 16.5,
+        lng: 112.0,
+        description:
+          'Quần đảo Hoàng Sa là phần lãnh thổ thiêng liêng, không thể tách rời và bất khả xâm phạm của Tổ quốc Việt Nam. Khu vực biển đảo tiền tiêu giữ vị trí chiến lược trọng yếu trong việc bảo đảm quốc phòng - an ninh biển đảo quốc gia.',
+      });
+    });
+    const hsMarker = new maplibre.Marker({ element: hsElem, anchor: 'center' })
+      .setLngLat([112.0, 16.5])
+      .addTo(map);
+    sovereigntyMarkers.push(hsMarker);
+
+    // 3. Quần đảo Trường Sa (Compact Pill - Nhấp vào mới bung thông tin)
+    const tsElem = document.createElement('div');
+    tsElem.className = styles.sovereigntyCompactPill;
+    tsElem.setAttribute('title', 'Quần đảo Trường Sa (Tỉnh Khánh Hòa, Việt Nam) — Nhấp để xem thông tin chủ quyền');
+    tsElem.innerHTML = `
+      <span class="${styles.sovereigntyPillFlag}">${VIETNAM_FLAG_SVG}</span>
+      <span class="${styles.sovereigntyPillTitle}">Quần đảo Trường Sa</span>
+      <span class="${styles.sovereigntyPillDot}"></span>
+    `;
+    tsElem.addEventListener('click', (e) => {
+      e.stopPropagation();
+      props.onSelectDestination?.(null);
+      map.flyTo({ center: [114.2, 10.0], zoom: 7.5, speed: 1.2 });
+      setActiveSovereignty({
+        id: 'truong_sa',
+        name: 'QUẦN ĐẢO TRƯỜNG SA',
+        admin: 'Huyện đảo Trường Sa, Tỉnh Khánh Hòa',
+        coords: '10°00\'B — 114°10\'Đ',
+        lat: 10.0,
+        lng: 114.2,
+        description:
+          'Quần đảo Trường Sa là phần lãnh thổ thiêng liêng, không thể tách rời và bất khả xâm phạm của Tổ quốc Việt Nam. Vùng biển và các điểm đảo tiền tiêu được các thế hệ người Việt Nam xác lập, bảo vệ vững chắc theo luật pháp quốc tế.',
+      });
+    });
+    const tsMarker = new maplibre.Marker({ element: tsElem, anchor: 'center' })
+      .setLngLat([114.2, 10.0])
+      .addTo(map);
+    sovereigntyMarkers.push(tsMarker);
+
+    return () => {
+      map.off('styledata', hideForeignLabels);
+      map.off('style.load', hideForeignLabels);
+      sovereigntyMarkers.forEach((m) => m.remove());
+    };
+  }, [status]);
 
   // Ease to selected destination
   useEffect(() => {
@@ -389,6 +561,88 @@ export function MapViewAdapter(props: MapViewAdapterProps) {
             onDirections={props.onDirections ? () => props.onDirections?.(selected) : undefined}
             onAddToTrip={props.onAddToTrip ? () => props.onAddToTrip?.(selected) : undefined}
           />
+        </div>
+      )}
+
+      {/* Sovereignty Detail Card (Shown ONLY when clicked) */}
+      {activeSovereignty && (
+        <div className={styles.sovereigntyCardOverlay}>
+          <div className={styles.sovereigntyDetailCard}>
+            <button
+              type="button"
+              className={styles.sovereigntyCloseBtn}
+              onClick={() => setActiveSovereignty(null)}
+              aria-label="Thu nhỏ"
+              title="Thu nhỏ"
+            >
+              ✕
+            </button>
+
+            <div className={styles.sovereigntyDetailHeader}>
+              <div className={styles.sovereigntyDetailFlag}>
+                <svg width="36" height="24" viewBox="0 0 300 200" style={{ display: 'block' }}>
+                  <rect width="300" height="200" fill="#da251d" />
+                  <polygon
+                    points="150,30 162.36,88.04 221.35,88.04 173.65,123.92 191.86,181.96 150,146.08 108.14,181.96 126.35,123.92 78.65,88.04 137.64,88.04"
+                    fill="#ffff00"
+                  />
+                </svg>
+              </div>
+              <div>
+                <div className={styles.sovereigntyDetailTitleRow}>
+                  <h3 className={styles.sovereigntyDetailTitle}>{activeSovereignty.name}</h3>
+                  <span className={styles.sovereigntyBadgeGold}>Việt Nam</span>
+                </div>
+                <p className={styles.sovereigntyDetailAdmin}>{activeSovereignty.admin}</p>
+              </div>
+            </div>
+
+            <div className={styles.sovereigntyAffirmation}>
+              <span style={{ fontSize: '15px' }}>🇻🇳</span>
+              <p className={styles.sovereigntyAffirmationText}>
+                {activeSovereignty.description}
+              </p>
+            </div>
+
+            <div className={styles.sovereigntyMetaGrid}>
+              <div className={styles.sovereigntyMetaItem}>
+                <span className={styles.sovereigntyMetaLabel}>Tọa độ địa lý:</span>
+                <span className={styles.sovereigntyMetaValue}>{activeSovereignty.coords}</span>
+              </div>
+              <div className={styles.sovereigntyMetaItem}>
+                <span className={styles.sovereigntyMetaLabel}>Vùng biển:</span>
+                <span className={styles.sovereigntyMetaValue}>Biển Đông (Việt Nam)</span>
+              </div>
+            </div>
+
+            <p className={styles.sovereigntyNote}>
+              ℹ️ Khu vực an ninh - quốc phòng tiền tiêu, hiện không khai thác tuyến du lịch thương mại tự do.
+            </p>
+
+            <div className={styles.sovereigntyActionRow}>
+              <button
+                type="button"
+                className={styles.sovereigntyZoomBtn}
+                onClick={() => {
+                  mapRef.current?.flyTo({
+                    center: [activeSovereignty.lng, activeSovereignty.lat],
+                    zoom: activeSovereignty.id === 'hoang_sa' ? 9.5 : 8.5,
+                    speed: 1.2,
+                  });
+                }}
+              >
+                <span>🔍</span>
+                <span>Xem cận cảnh khu vực</span>
+              </button>
+              <button
+                type="button"
+                className={styles.sovereigntyDismissBtn}
+                onClick={() => setActiveSovereignty(null)}
+              >
+                Thu nhỏ
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

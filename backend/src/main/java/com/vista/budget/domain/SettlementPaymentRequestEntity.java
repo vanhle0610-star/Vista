@@ -16,6 +16,8 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(
@@ -47,6 +49,7 @@ public class SettlementPaymentRequestEntity {
   @Column(name = "amount", nullable = false, precision = 15, scale = 2)
   private BigDecimal amount;
 
+  @JdbcTypeCode(SqlTypes.CHAR)
   @Column(name = "currency", nullable = false, length = 3)
   private String currency = "VND";
 
