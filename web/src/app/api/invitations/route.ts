@@ -126,6 +126,28 @@ export async function POST(request: Request) {
     const body = await request.json();
     const list = readStore();
 
+    // Handle user leaving trip
+    if (body.action === 'LEAVE') {
+      const tripId = body.tripId;
+      const cleanEmail = (body.email || body.inviteeEmail || '').toLowerCase().trim();
+      let modified = false;
+      const updatedList = list.map((it) => {
+        const itEmail = (it.email || it.inviteeEmail || '').toLowerCase().trim();
+        if (it.tripId === tripId && (!cleanEmail || itEmail === cleanEmail)) {
+          modified = true;
+          return {
+            ...it,
+            status: 'REVOKED' as const,
+          };
+        }
+        return it;
+      });
+      if (modified) {
+        writeStore(updatedList);
+      }
+      return NextResponse.json({ message: 'Đã hủy lời mời do rời nhóm', count: modified ? 1 : 0 });
+    }
+
     if (!body.token) {
       return NextResponse.json({ message: 'Token là bắt buộc' }, { status: 400 });
     }

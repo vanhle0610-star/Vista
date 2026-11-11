@@ -21,7 +21,9 @@ function syncAcceptedInvitationsToTrips(trips: any[]): boolean {
       const acceptedInvs = invitations.filter(
         (inv) =>
           inv.tripId === trip.id &&
-          (inv.status === 'ACCEPTED' || inv.action === 'ACCEPT')
+          inv.status === 'ACCEPTED' &&
+          inv.status !== 'REVOKED' &&
+          inv.status !== 'LEFT'
       );
 
       if (acceptedInvs.length === 0) continue;
@@ -248,7 +250,56 @@ export async function POST(request: Request) {
           (m: any) => !m.name?.includes('Trần Minh Tuấn') && !m.name?.includes('Lê Vân Anh')
         );
       }
-      const newOwnerId = body.ownerId || list[idx].ownerId;
+
+      // If user is leaving, revoke their invitations so they aren't re-synced
+      if (body.action === 'LEAVE') {
+        try {
+          const leavingEmail = (body.leavingEmail || '').toLowerCase().trim();
+          const leavingUserId = (body.leavingUserId || '').trim();
+          if (fs.existsSync(INVITATIONS_STORE_PATH)) {
+            const invData = fs.readFileSync(INVITATIONS_STORE_PATH, 'utf-8');
+            const invitations = JSON.parse(invData);
+            if (Array.isArray(invitations)) {
+              let invModified = false;
+              const updatedInvs = invitations.map((inv: any) => {
+                const invEmail = (inv.email || inv.inviteeEmail || '').toLowerCase().trim();
+                const invUserId = (inv.acceptedBy?.userId || inv.acceptedBy?.id || '').trim();
+                const matchEmail = leavingEmail && invEmail === leavingEmail;
+                const matchUserId = leavingUserId && invUserId === leavingUserId;
+                if (inv.tripId === body.id && (matchEmail || matchUserId || !leavingEmail)) {
+                  invModified = true;
+                  return { ...inv, status: 'REVOKED' };
+                }
+                return inv;
+              });
+              if (invModified) {
+                fs.writeFileSync(INVITATIONS_STORE_PATH, JSON.stringify(updatedInvs, null, 2), 'utf-8');
+              }
+            }
+          }
+        } catch (e) {
+          console.error('Error revoking invitations on LEAVE in api/trips:', e);
+        }
+      }
+
+      let newOwnerId = body.ownerId || list[idx].ownerId;
+      const leavingEmail = (body.leavingEmail || '').toLowerCase().trim();
+      const leavingUserId = (body.leavingUserId || '').trim();
+
+      const isOldOwnerLeaving = Boolean(
+        body.action === 'LEAVE' &&
+        (
+          (leavingUserId && newOwnerId === leavingUserId) ||
+          (leavingEmail && newOwnerId.toLowerCase() === leavingEmail) ||
+          (newOwnerId && newOwnerId.startsWith('u-VISTA-'))
+        )
+      );
+
+      if (isOldOwnerLeaving && combinedMembers.length > 0) {
+        const nextOwner = combinedMembers[0];
+        newOwnerId = nextOwner.userId || nextOwner.id || nextOwner.email || '0e83b597-d175-465b-bd0b-a3b41537c3d9';
+      }
+
       const mergedMembers = deduplicateTripMembers(combinedMembers, newOwnerId);
 
       const updated = {

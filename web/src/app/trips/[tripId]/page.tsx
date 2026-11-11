@@ -672,21 +672,41 @@ export default function TripDetailPage() {
   const handleLeaveTrip = async () => {
     if (!trip || !currentUser) return;
     const membersCount = trip.members?.length || 1;
+    const normMyName = normalizeMemberText(currentUser.displayName || (currentUser as any)?.name || '');
+
+    const remainingMembers = (trip.members || []).filter(
+      (m: any) =>
+        !(
+          (m.userId && currentUser.id && m.userId === currentUser.id) ||
+          (m.email && currentUser.email && m.email.toLowerCase() === currentUser.email.toLowerCase()) ||
+          (normMyName && normalizeMemberText(m.name || '') === normMyName)
+        )
+    );
+
+    let nextOwnerId = trip.ownerId;
     if (isTripOwner) {
-      if (membersCount > 1) {
-        showToast('⚠️ Trưởng nhóm phải chuyển quyền cho thành viên khác trước khi rời nhóm.');
-        alert('Trưởng nhóm phải chuyển quyền cho thành viên khác trước khi rời nhóm.');
-        return;
+      if (membersCount <= 1 || remainingMembers.length === 0) {
+        if (!confirm('Bạn là thành viên duy nhất của chuyến đi. Bạn có muốn xóa hẳn chuyến đi này không?')) {
+          return;
+        }
       } else {
-        showToast('⚠️ Bạn là thành viên duy nhất của chuyến đi. Vui lòng xóa chuyến đi thay vì rời nhóm.');
-        alert('Bạn là thành viên duy nhất của chuyến đi. Vui lòng xóa chuyến đi thay vì rời nhóm.');
+        const nextLeader = remainingMembers[0];
+        const nextLeaderName = (nextLeader?.name || 'thành viên kế tiếp').replace(/\s*\(Bạn.*?\)/gi, '').trim();
+        if (!confirm(`Bạn đang là Trưởng nhóm. Khi rời nhóm, quyền Trưởng nhóm sẽ được tự động chuyển giao cho "${nextLeaderName}". Bạn có chắc chắn muốn rời nhóm không?`)) {
+          return;
+        }
+        nextOwnerId = nextLeader?.userId || (nextLeader as any)?.id || nextLeader?.email || '0e83b597-d175-465b-bd0b-a3b41537c3d9';
+      }
+    } else {
+      if (!confirm('Bạn có chắc chắn muốn rời khỏi chuyến đi này không? Dữ liệu bạn từng tạo vẫn được giữ nguyên.')) {
         return;
       }
     }
 
-    if (!confirm('Bạn có chắc chắn muốn rời khỏi chuyến đi này không? Dữ liệu bạn từng tạo vẫn được giữ nguyên.')) {
-      return;
-    }
+    const updatedMembers = remainingMembers.map((m, idx) => ({
+      ...m,
+      role: idx === 0 ? 'Trưởng nhóm' : (m.role === 'Trưởng nhóm' ? 'Thành viên' : m.role || 'Thành viên'),
+    }));
 
     try {
       const token = localStorage.getItem('vista_token');
@@ -698,16 +718,6 @@ export default function TripDetailPage() {
         },
       }).catch(() => {});
 
-      const normMyName = normalizeMemberText(currentUser.displayName || (currentUser as any)?.name || '');
-      const updatedMembers = (trip.members || []).filter(
-        (m: any) =>
-          !(
-            (m.userId && currentUser.id && m.userId === currentUser.id) ||
-            (m.email && currentUser.email && m.email.toLowerCase() === currentUser.email.toLowerCase()) ||
-            (normMyName && normalizeMemberText(m.name || '') === normMyName)
-          )
-      );
-
       // Persist to server API store immediately
       await fetch('/api/trips', {
         method: 'POST',
@@ -717,6 +727,20 @@ export default function TripDetailPage() {
           members: updatedMembers,
           replaceMembers: true,
           action: 'LEAVE',
+          leavingEmail: currentUser.email,
+          leavingUserId: currentUser.id,
+          ownerId: nextOwnerId,
+        }),
+      }).catch(() => {});
+
+      // Revoke any active invitations for this user on server
+      await fetch('/api/invitations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'LEAVE',
+          tripId: tripId,
+          email: currentUser.email,
         }),
       }).catch(() => {});
 
@@ -728,6 +752,8 @@ export default function TripDetailPage() {
           const filtered = list.filter((t: any) => t.id !== tripId);
           localStorage.setItem('vista_custom_trips', JSON.stringify(filtered));
         }
+        window.dispatchEvent(new CustomEvent('vista-trips-change'));
+        window.dispatchEvent(new Event('storage'));
       } catch {}
 
       showToast('✓ Bạn đã rời nhóm thành công!');
