@@ -23,14 +23,46 @@ export default function InvitationAcceptPage() {
   const [testState, setTestState] = useState<'PENDING' | 'REVOKED' | 'EXPIRED' | 'ACCEPTED'>('PENDING');
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [invitationData, setInvitationData] = useState<{
+    tripTitle?: string;
+    destination?: string;
+    inviterName?: string;
+    startDate?: string;
+    endDate?: string;
+  } | null>(null);
 
-  // Parse simulated status from token if encoded
+  // Load real invitation details and status from server store or fallback
   useEffect(() => {
-    if (token.toLowerCase().includes('revoked')) {
-      setTestState('REVOKED');
-    } else if (token.toLowerCase().includes('expired')) {
-      setTestState('EXPIRED');
-    }
+    const fetchInvitation = async () => {
+      try {
+        const res = await fetch(`/api/invitations?token=${encodeURIComponent(token)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.status) {
+            setTestState(data.status);
+            setInvitationData(data);
+            if (data.status === 'REVOKED') {
+              setStatusMessage('❌ Lời mời này đã bị Trưởng nhóm (Owner) thu hồi! Bạn không thể tham gia chuyến đi.');
+            } else if (data.status === 'EXPIRED') {
+              setStatusMessage('❌ Lời mời này đã quá thời hạn và bị hết hạn! Vui lòng xin mã mời mới.');
+            } else if (data.status === 'ACCEPTED') {
+              setStatusMessage('❌ Lời mời này đã được sử dụng trước đó (Conflict 409)! Không thể tái sử dụng.');
+            }
+            return;
+          }
+        }
+      } catch {
+        // Fallback to local check below
+      }
+
+      if (token.toLowerCase().includes('revoked')) {
+        setTestState('REVOKED');
+      } else if (token.toLowerCase().includes('expired')) {
+        setTestState('EXPIRED');
+      }
+    };
+
+    fetchInvitation();
   }, [token]);
 
   const handleAccept = () => {
@@ -117,6 +149,15 @@ export default function InvitationAcceptPage() {
       // ignore
     }
 
+    // Notify server about ACCEPT in background
+    try {
+      fetch('/api/invitations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'ACCEPT', token }),
+      }).catch(() => {});
+    } catch {}
+
     setIsSuccess(true);
     setTestState('ACCEPTED');
     setStatusMessage(`🎉 Chúc mừng ${cleanName}! Bạn đã chấp nhận lời mời và trở thành thành viên chính thức của chuyến đi.`);
@@ -128,90 +169,18 @@ export default function InvitationAcceptPage() {
 
   const handleDecline = () => {
     setStatusMessage('⚠️ Bạn đã chọn TỪ CHỐI lời mời. Bạn không được thêm vào danh sách thành viên của nhóm.');
+    try {
+      fetch('/api/invitations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'REVOKE', token }),
+      }).catch(() => {});
+    } catch {}
   };
 
   return (
     <div style={{ minHeight: '100vh', background: '#F8FAFC', color: '#0F172A', paddingBottom: '80px' }}>
       <main style={{ maxWidth: '640px', margin: '40px auto 0', padding: '0 20px' }}>
-        {/* Banner kiểm thử Tuần 3 / Tuần 4 */}
-        <div style={{ background: '#EFF6FF', border: '1.5px solid #BFDBFE', borderRadius: '16px', padding: '14px 18px', marginBottom: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-            <span style={{ fontSize: '20px' }}>🎯</span>
-            <strong style={{ fontSize: '14px', color: '#1E40AF' }}>
-              Trạng thái kiểm tra Lời mời
-            </strong>
-          </div>
-          <p style={{ margin: '0 0 10px', fontSize: '13px', color: '#334155', lineHeight: '1.5' }}>
-            Chọn trường hợp muốn thử nghiệm bên dưới để kiểm tra phản hồi của hệ thống:
-          </p>
-          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-            <button
-              type="button"
-              onClick={() => { setTestState('PENDING'); setStatusMessage(null); }}
-              style={{
-                padding: '6px 12px',
-                borderRadius: '8px',
-                fontSize: '12px',
-                fontWeight: 700,
-                border: '1px solid #93C5FD',
-                background: testState === 'PENDING' ? '#0284C7' : '#FFFFFF',
-                color: testState === 'PENDING' ? '#FFFFFF' : '#0369A1',
-                cursor: 'pointer',
-              }}
-            >
-              1. Hợp lệ (PENDING)
-            </button>
-            <button
-              type="button"
-              onClick={() => { setTestState('REVOKED'); setStatusMessage(null); }}
-              style={{
-                padding: '6px 12px',
-                borderRadius: '8px',
-                fontSize: '12px',
-                fontWeight: 700,
-                border: '1px solid #FECACA',
-                background: testState === 'REVOKED' ? '#DC2626' : '#FFFFFF',
-                color: testState === 'REVOKED' ? '#FFFFFF' : '#B91C1C',
-                cursor: 'pointer',
-              }}
-            >
-              2. Đã thu hồi (REVOKED)
-            </button>
-            <button
-              type="button"
-              onClick={() => { setTestState('EXPIRED'); setStatusMessage(null); }}
-              style={{
-                padding: '6px 12px',
-                borderRadius: '8px',
-                fontSize: '12px',
-                fontWeight: 700,
-                border: '1px solid #FED7AA',
-                background: testState === 'EXPIRED' ? '#EA580C' : '#FFFFFF',
-                color: testState === 'EXPIRED' ? '#FFFFFF' : '#C2410C',
-                cursor: 'pointer',
-              }}
-            >
-              3. Hết hạn (EXPIRED)
-            </button>
-            <button
-              type="button"
-              onClick={() => { setTestState('ACCEPTED'); setStatusMessage(null); }}
-              style={{
-                padding: '6px 12px',
-                borderRadius: '8px',
-                fontSize: '12px',
-                fontWeight: 700,
-                border: '1px solid #CBD5E1',
-                background: testState === 'ACCEPTED' ? '#475569' : '#FFFFFF',
-                color: testState === 'ACCEPTED' ? '#FFFFFF' : '#334155',
-                cursor: 'pointer',
-              }}
-            >
-              4. Dùng lại (ACCEPTED - 409)
-            </button>
-          </div>
-        </div>
-
         {/* Thẻ Lời Mời Chính */}
         <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 12px 32px rgba(15, 23, 42, 0.06)' }}>
           {/* Header thiệp mời */}
@@ -223,7 +192,7 @@ export default function InvitationAcceptPage() {
               Lời mời tham gia chuyến đi
             </h2>
             <p style={{ margin: 0, opacity: 0.9, fontSize: '14px' }}>
-              Trưởng nhóm <strong>Lê Vân Anh</strong> đã mời bạn cùng đồng hành!
+              Trưởng nhóm <strong>{invitationData?.inviterName || 'Lê Vân Anh'}</strong> đã mời bạn cùng đồng hành!
             </p>
           </div>
 
@@ -236,16 +205,32 @@ export default function InvitationAcceptPage() {
                 <span style={{ fontFamily: 'monospace', fontWeight: 800, color: '#0284C7', background: '#E0F2FE', padding: '2px 8px', borderRadius: '6px' }}>
                   {token}
                 </span>
-                <span style={{ marginLeft: 'auto', fontSize: '11.5px', fontWeight: 800, padding: '3px 8px', borderRadius: '999px', background: testState === 'PENDING' ? '#DCFCE7' : '#FEE2E2', color: testState === 'PENDING' ? '#15803D' : '#991B1B' }}>
-                  {testState}
+                <span style={{
+                  marginLeft: 'auto',
+                  fontSize: '11.5px',
+                  fontWeight: 800,
+                  padding: '3px 8px',
+                  borderRadius: '999px',
+                  background: testState === 'PENDING' ? '#DCFCE7' : testState === 'ACCEPTED' ? '#E0F2FE' : '#FEE2E2',
+                  color: testState === 'PENDING' ? '#15803D' : testState === 'ACCEPTED' ? '#0369A1' : '#991B1B'
+                }}>
+                  {testState === 'PENDING' ? 'Có hiệu lực' : testState === 'ACCEPTED' ? 'Đã tham gia' : testState === 'REVOKED' ? 'Đã thu hồi' : 'Hết hạn'}
                 </span>
               </div>
 
               <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', margin: '0 0 12px' }}>
-                Khám phá Đà Nẵng - Hội An 4N3Đ
+                {invitationData?.tripTitle || 'Khám phá Đà Nẵng - Hội An 4N3Đ'}
               </h3>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', fontSize: '13.5px', color: '#475569' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <MapPin size={15} style={{ color: '#0EA5E9' }} />
+                  <span>{invitationData?.destination || 'Đà Nẵng & Hội An'}</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Calendar size={15} style={{ color: '#6366F1' }} />
+                  <span>{invitationData?.startDate && invitationData?.endDate ? `${invitationData.startDate} – ${invitationData.endDate}` : '15 – 18/11/2026'}</span>
+                </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <MapPin size={15} style={{ color: '#0EA5E9' }} />
                   <span>Đà Nẵng & Hội An</span>
