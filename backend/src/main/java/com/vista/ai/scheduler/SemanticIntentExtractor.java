@@ -12,18 +12,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Bộ phân tích ngữ nghĩa đa chiều (Semantic NLP & Physical Intensity Evaluator).
- * Giải quyết triệt để việc hiểu yêu cầu tự nhiên của du khách mà không phụ thuộc vào cú pháp cứng nhắc,
- * đồng thời lượng hóa mức độ tốn sức (Physical Intensity) của từng địa điểm cho người già & trẻ nhỏ.
+ * Bộ phân tích ngữ nghĩa đa chiều (Semantic NLP & Physical Intensity Evaluator). Giải quyết triệt
+ * để việc hiểu yêu cầu tự nhiên của du khách mà không phụ thuộc vào cú pháp cứng nhắc, đồng thời
+ * lượng hóa mức độ tốn sức (Physical Intensity) của từng địa điểm cho người già & trẻ nhỏ.
  */
 public final class SemanticIntentExtractor {
 
   public static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
 
   public enum PhysicalIntensity {
-    LOW,    // Nhẹ nhàng: Cafe, dạo biển, du thuyền, bảo tàng, ẩm thực, ngắm cầu/sông
+    LOW, // Nhẹ nhàng: Cafe, dạo biển, du thuyền, bảo tàng, ẩm thực, ngắm cầu/sông
     MEDIUM, // Vừa phải: Chùa, di tích bằng phẳng, phố cổ, làng nghề
-    HIGH    // Tốn sức / Leo trèo: Núi, đèo, hang động, thác nước, nhiều bậc thang cao
+    HIGH // Tốn sức / Leo trèo: Núi, đèo, hang động, thác nước, nhiều bậc thang cao
   }
 
   public record TravelIntent(
@@ -47,17 +47,17 @@ public final class SemanticIntentExtractor {
     }
   }
 
-  private static final Pattern FLEXIBLE_ARRIVAL_PATTERN = Pattern.compile(
-      "(?:den|ha\\s*canh|toi|check-?in|co\\s*mat|dap|bay\\s*den|khoi\\s*hanh\\s*den)[^0-9\\n]{0,45}(\\d{1,2})\\s*(?:gio|h|:|g)\\s*(\\d{1,2})?\\s*(sang|trua|chieu|toi|dem)?");
+  private static final Pattern FLEXIBLE_ARRIVAL_PATTERN =
+      Pattern.compile(
+          "(?:den|ha\\s*canh|toi|check-?in|co\\s*mat|dap|bay\\s*den|khoi\\s*hanh\\s*den)[^0-9\\n]{0,45}(\\d{1,2})\\s*(?:gio|h|:|g)\\s*(\\d{1,2})?\\s*(sang|trua|chieu|toi|dem)?");
 
-  private static final Pattern FLEXIBLE_DEPARTURE_PATTERN = Pattern.compile(
-      "(?:ve|roi|bay\\s*ve|khoi\\s*hanh\\s*ve|tra\\s*phong|check-?out|roi\\s*khoi|ket\\s*thuc|ra\\s*san\\s*bay)[^0-9\\n]{0,45}(\\d{1,2})\\s*(?:gio|h|:|g)\\s*(\\d{1,2})?\\s*(sang|trua|chieu|toi|dem)?");
+  private static final Pattern FLEXIBLE_DEPARTURE_PATTERN =
+      Pattern.compile(
+          "(?:ve|roi|bay\\s*ve|khoi\\s*hanh\\s*ve|tra\\s*phong|check-?out|roi\\s*khoi|ket\\s*thuc|ra\\s*san\\s*bay)[^0-9\\n]{0,45}(\\d{1,2})\\s*(?:gio|h|:|g)\\s*(\\d{1,2})?\\s*(sang|trua|chieu|toi|dem)?");
 
   private SemanticIntentExtractor() {}
 
-  /**
-   * Chuẩn hóa chuỗi tiếng Việt về dạng không dấu chữ thường để phân tích ngữ nghĩa bất biến.
-   */
+  /** Chuẩn hóa chuỗi tiếng Việt về dạng không dấu chữ thường để phân tích ngữ nghĩa bất biến. */
   public static String normalizeAscii(String input) {
     if (input == null || input.isBlank()) return "";
     return Normalizer.normalize(input, Normalizer.Form.NFD)
@@ -68,18 +68,19 @@ public final class SemanticIntentExtractor {
         .trim();
   }
 
-  /**
-   * Phân tích toàn diện hồ sơ yêu cầu chuyến đi từ cả trường có cấu trúc và văn bản tự nhiên.
-   */
+  /** Phân tích toàn diện hồ sơ yêu cầu chuyến đi từ cả trường có cấu trúc và văn bản tự nhiên. */
   public static TravelIntent extractIntent(AiItinerarySuggestionRequest request) {
     if (request == null) {
-      return new TravelIntent(null, null, false, false, "MODERATE", "DRIVING", "GENERAL", false, List.of(), List.of());
+      return new TravelIntent(
+          null, null, false, false, "MODERATE", "DRIVING", "GENERAL", false, List.of(), List.of());
     }
 
-    String combinedRaw = String.join(" ",
-        request.specialRequests() != null ? request.specialRequests() : "",
-        request.travelWith() != null ? request.travelWith() : "",
-        request.interests() != null ? String.join(" ", request.interests()) : "");
+    String combinedRaw =
+        String.join(
+            " ",
+            request.specialRequests() != null ? request.specialRequests() : "",
+            request.travelWith() != null ? request.travelWith() : "",
+            request.interests() != null ? String.join(" ", request.interests()) : "");
 
     String norm = normalizeAscii(combinedRaw);
 
@@ -96,15 +97,36 @@ public final class SemanticIntentExtractor {
     }
 
     // 3. Nhận diện thành phần đoàn (Người lớn tuổi & Trẻ nhỏ)
-    boolean hasElderly = containsAny(norm,
-        "nguoi lon tuoi", "nguoi gia", "ong ba", "bo me", "cha me", "cao tuoi", "phu huynh", "suc khoe yeu");
+    boolean hasElderly =
+        containsAny(
+            norm,
+            "nguoi lon tuoi",
+            "nguoi gia",
+            "ong ba",
+            "bo me",
+            "cha me",
+            "cao tuoi",
+            "phu huynh",
+            "suc khoe yeu");
 
-    boolean hasChildren = containsAny(norm,
-        "tre em", "tre nho", "em be", "con nho", "nhoc", "gia dinh co be");
+    boolean hasChildren =
+        containsAny(norm, "tre em", "tre nho", "em be", "con nho", "nhoc", "gia dinh co be");
 
     // 4. Nhận diện mức độ vận động & nhịp đi (Pacing)
-    String pace = request.pace() != null && !request.pace().isBlank() ? request.pace().toUpperCase(Locale.ROOT) : "MODERATE";
-    if (containsAny(norm, "thong tha", "thu tha", "nhe nhang", "nghi duong", "cham rai", "khong voi", "ung dung", "chill")) {
+    String pace =
+        request.pace() != null && !request.pace().isBlank()
+            ? request.pace().toUpperCase(Locale.ROOT)
+            : "MODERATE";
+    if (containsAny(
+        norm,
+        "thong tha",
+        "thu tha",
+        "nhe nhang",
+        "nghi duong",
+        "cham rai",
+        "khong voi",
+        "ung dung",
+        "chill")) {
       pace = "RELAXED";
     } else if (containsAny(norm, "nhieu noi", "day dac", "toi da", "check-in het", "lien tuc")) {
       pace = "PACKED";
@@ -113,9 +135,10 @@ public final class SemanticIntentExtractor {
     }
 
     // 5. Nhận diện phương tiện (Vehicle Mode)
-    String travelMode = request.travelMode() != null && !request.travelMode().isBlank()
-        ? request.travelMode().toUpperCase(Locale.ROOT)
-        : "DRIVING";
+    String travelMode =
+        request.travelMode() != null && !request.travelMode().isBlank()
+            ? request.travelMode().toUpperCase(Locale.ROOT)
+            : "DRIVING";
     if (containsAny(norm, "xe may", "phuot", "xe ga", "motorbike")) {
       travelMode = "MOTORBIKE";
     } else if (containsAny(norm, "di bo", "tan bo", "walking")) {
@@ -130,13 +153,23 @@ public final class SemanticIntentExtractor {
       dietary = "VEGETARIAN";
     } else if (containsAny(norm, "hai san", "seafood", "ca tuoi", "tom cua")) {
       dietary = "SEAFOOD";
-    } else if (containsAny(norm, "dac san", "bun", "mi quang", "banh trang", "com nieu", "am thuc")) {
+    } else if (containsAny(
+        norm, "dac san", "bun", "mi quang", "banh trang", "com nieu", "am thuc")) {
       dietary = "LOCAL_SPECIALTY";
     }
 
     // 7. Nhận diện yêu cầu tránh vận động nặng
-    boolean avoidStrenuous = hasElderly || containsAny(norm,
-        "khong leo", "ngai leo", "khong di bo nhieu", "dau chan", "dau khop", "met", "tranh leo nui");
+    boolean avoidStrenuous =
+        hasElderly
+            || containsAny(
+                norm,
+                "khong leo",
+                "ngai leo",
+                "khong di bo nhieu",
+                "dau chan",
+                "dau khop",
+                "met",
+                "tranh leo nui");
 
     // 8. Từ khóa ưu tiên và loại trừ
     List<String> preferred = new ArrayList<>();
@@ -168,35 +201,66 @@ public final class SemanticIntentExtractor {
         avoid);
   }
 
-  /**
-   * Đánh giá mức độ vận động (Physical Intensity) của một địa điểm.
-   */
+  /** Đánh giá mức độ vận động (Physical Intensity) của một địa điểm. */
   public static PhysicalIntensity evaluatePhysicalIntensity(DestinationSummary dest) {
     if (dest == null) return PhysicalIntensity.MEDIUM;
-    String text = normalizeAscii((dest.name() != null ? dest.name() : "") + " " + (dest.categoryName() != null ? dest.categoryName() : ""));
+    String text =
+        normalizeAscii(
+            (dest.name() != null ? dest.name() : "")
+                + " "
+                + (dest.categoryName() != null ? dest.categoryName() : ""));
 
     // Nhóm tốn sức / leo bậc thang cao / leo núi / hang động dốc
-    if (containsAny(text,
-        "dinh ", "nui ", "deo ", "hang ", "dong ", "thac ", "trekking", "leo ",
-        "ngu hanh son", "ba na", "fansipan", "yen tu", "chua huong", "lang biang",
-        "mui nghinh phong", "hai van quan", "ban co")) {
+    if (containsAny(
+        text,
+        "dinh ",
+        "nui ",
+        "deo ",
+        "hang ",
+        "dong ",
+        "thac ",
+        "trekking",
+        "leo ",
+        "ngu hanh son",
+        "ba na",
+        "fansipan",
+        "yen tu",
+        "chua huong",
+        "lang biang",
+        "mui nghinh phong",
+        "hai van quan",
+        "ban co")) {
       return PhysicalIntensity.HIGH;
     }
 
     // Nhóm thư giãn nhẹ nhàng, bằng phẳng, có chỗ ngồi nghỉ
-    if (containsAny(text,
-        "bien", "cafe", "ca phe", "quan", "nha hang", "am thuc", "cho ", "cau ",
-        "song ", "ho ", "cong vien", "bao tang", "du thuyen", "suoi khoang",
-        "nha tho", "pho co", "bistro", "lounge")) {
+    if (containsAny(
+        text,
+        "bien",
+        "cafe",
+        "ca phe",
+        "quan",
+        "nha hang",
+        "am thuc",
+        "cho ",
+        "cau ",
+        "song ",
+        "ho ",
+        "cong vien",
+        "bao tang",
+        "du thuyen",
+        "suoi khoang",
+        "nha tho",
+        "pho co",
+        "bistro",
+        "lounge")) {
       return PhysicalIntensity.LOW;
     }
 
     return PhysicalIntensity.MEDIUM;
   }
 
-  /**
-   * Kiểm tra địa điểm có thân thiện với người lớn tuổi không.
-   */
+  /** Kiểm tra địa điểm có thân thiện với người lớn tuổi không. */
   public static boolean isElderlyFriendly(DestinationSummary dest) {
     return evaluatePhysicalIntensity(dest) != PhysicalIntensity.HIGH;
   }
@@ -218,7 +282,8 @@ public final class SemanticIntentExtractor {
     if (m.find()) {
       try {
         int hour = Integer.parseInt(m.group(1));
-        int minute = (m.group(2) != null && !m.group(2).isBlank()) ? Integer.parseInt(m.group(2)) : 0;
+        int minute =
+            (m.group(2) != null && !m.group(2).isBlank()) ? Integer.parseInt(m.group(2)) : 0;
         String period = m.group(3);
 
         if (period != null) {
@@ -234,10 +299,12 @@ public final class SemanticIntentExtractor {
         if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
           return LocalTime.of(hour, minute);
         }
-      } catch (Exception ignored) {}
+      } catch (Exception ignored) {
+      }
     }
 
-    // Fallback nhận diện theo buổi nếu người dùng chỉ nói "hạ cánh buổi chiều" hoặc "bay về buổi sáng"
+    // Fallback nhận diện theo buổi nếu người dùng chỉ nói "hạ cánh buổi chiều" hoặc "bay về buổi
+    // sáng"
     if (isArrival) {
       if (normText.matches(".*(?:den|ha canh|toi|bay den)[^.\\n]{0,25}\\bbuoi chieu\\b.*")) {
         return LocalTime.of(14, 0);

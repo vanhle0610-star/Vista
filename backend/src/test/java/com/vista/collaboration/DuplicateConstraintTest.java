@@ -9,7 +9,6 @@ import com.vista.collaboration.exception.ConflictException;
 import com.vista.collaboration.invitation.CreateInvitationRequest;
 import com.vista.collaboration.invitation.Invitation;
 import com.vista.collaboration.invitation.InvitationRepository;
-import com.vista.collaboration.invitation.InvitationResponse;
 import com.vista.collaboration.invitation.InvitationService;
 import com.vista.collaboration.invitation.InvitationStatus;
 import com.vista.collaboration.itinerary.CreateItineraryDayRequest;
@@ -26,7 +25,6 @@ import com.vista.collaboration.proposal.VoteResponse;
 import com.vista.notification.application.NotificationService;
 import com.vista.trip.application.TripAccessService;
 import com.vista.trip.domain.TripEntity;
-import com.vista.trip.domain.TripMemberEntity;
 import com.vista.trip.domain.TripMemberRepository;
 import com.vista.trip.domain.TripRepository;
 import java.time.Instant;
@@ -42,12 +40,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
- * W7-TV3-03: Kiểm thử dữ liệu trùng lặp và xung đột trạng thái (Duplicate Constraints).
- * - Mời lại cùng email khi lời mời PENDING còn hạn → 409 Conflict.
- * - Accept 2 lần trên cùng token lời mời → lần 2 bị 409 Conflict.
- * - Thêm trùng số ngày (dayNumber) trong lịch trình → 409 Conflict.
- * - Vote lại trên proposal đang mở → cập nhật phiếu bầu, không sinh bản ghi trùng lặp trong DB.
- * - Vote trên proposal đã CLOSED / hết hạn → 409 Conflict.
+ * W7-TV3-03: Kiểm thử dữ liệu trùng lặp và xung đột trạng thái (Duplicate Constraints). - Mời lại
+ * cùng email khi lời mời PENDING còn hạn → 409 Conflict. - Accept 2 lần trên cùng token lời mời →
+ * lần 2 bị 409 Conflict. - Thêm trùng số ngày (dayNumber) trong lịch trình → 409 Conflict. - Vote
+ * lại trên proposal đang mở → cập nhật phiếu bầu, không sinh bản ghi trùng lặp trong DB. - Vote
+ * trên proposal đã CLOSED / hết hạn → 409 Conflict.
  */
 @ExtendWith(MockitoExtension.class)
 class DuplicateConstraintTest {
@@ -92,13 +89,11 @@ class DuplicateConstraintTest {
             null);
     proposalService =
         new ProposalService(
-            proposalRepository,
-            voteRepository,
-            tripAccessService,
-            notificationService);
+            proposalRepository, voteRepository, tripAccessService, notificationService);
 
     trip =
-        new TripEntity(USER_A, "Đà Nẵng Hè 2026", LocalDate.of(2026, 11, 1), LocalDate.of(2026, 11, 5));
+        new TripEntity(
+            USER_A, "Đà Nẵng Hè 2026", LocalDate.of(2026, 11, 1), LocalDate.of(2026, 11, 5));
     ReflectionTestUtils.setField(trip, "id", TRIP_ID);
   }
 
@@ -193,4 +188,3 @@ class DuplicateConstraintTest {
         .hasMessageContaining("Biểu quyết đã đóng");
   }
 }
-

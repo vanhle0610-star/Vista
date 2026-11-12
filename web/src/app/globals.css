@@ -47,42 +47,52 @@ input {
   min-height: 100vh;
   display: grid;
   grid-template-columns: 260px 1fr;
+  transition: grid-template-columns 0.2s ease;
+}
+
+.shellCollapsed {
+  grid-template-columns: 76px 1fr;
 }
 
 .sidebar {
-  padding: 28px 20px;
-  background: var(--sidebar-bg);
+  padding: 22px 16px;
+  background: #0f172a;
   color: #ffffff;
   border-right: 1px solid rgba(255, 255, 255, 0.08);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
 }
 
 .brand {
-  font-size: 24px;
-  font-weight: 800;
-  margin-bottom: 32px;
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 24px;
 }
 
 .nav {
   display: grid;
-  gap: 8px;
+  gap: 6px;
 }
 
 .nav a {
-  padding: 11px 14px;
-  border-radius: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
   color: #94a3b8;
   font-weight: 500;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
 
 .nav a:hover {
-  background: rgba(14, 165, 233, 0.12);
-  color: #38bdf8;
+  background: rgba(255, 255, 255, 0.06);
+  color: #f8fafc;
 }
 
 .main {
-  padding: 40px;
+  padding: 32px 36px;
   background: #f8fafc;
+  min-width: 0;
 }
 
 .header {
@@ -156,7 +166,7 @@ input:focus {
   box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
 }
 
-button {
+.login button {
   min-height: 46px;
   border: 0;
   border-radius: 10px;
@@ -168,16 +178,21 @@ button {
   transition: background 0.2s ease;
 }
 
-button:hover {
+.login button:hover {
   background: var(--primary-dark);
 }
 
 @media (max-width: 768px) {
-  .shell {
+  .shell,
+  .shellCollapsed {
     grid-template-columns: 1fr;
   }
+  .sidebar {
+    position: relative;
+    height: auto;
+  }
   .main {
-    padding: 24px;
+    padding: 20px 16px;
   }
 }
 

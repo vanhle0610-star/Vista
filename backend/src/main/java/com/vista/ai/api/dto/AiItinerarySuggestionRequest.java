@@ -58,10 +58,7 @@ public record AiItinerarySuggestionRequest(
   }
 
   public AiItinerarySuggestionRequest(
-      String destinationProvince,
-      Integer totalDays,
-      String budgetLevel,
-      List<String> interests) {
+      String destinationProvince, Integer totalDays, String budgetLevel, List<String> interests) {
     this(destinationProvince, totalDays, budgetLevel, interests, null, 2, "Nhóm bạn", null);
   }
 }

@@ -137,7 +137,8 @@ public class AiQuickPlanController {
 
     if (aiProviderRouter.isAvailable()) {
       try {
-        int members = request.peopleCount() != null && request.peopleCount() > 0 ? request.peopleCount() : 2;
+        int members =
+            request.peopleCount() != null && request.peopleCount() > 0 ? request.peopleCount() : 2;
         String travelWith = request.travelWith() != null ? request.travelWith() : "Nhóm bạn";
         PromptBuilder.PlanRequest planRequest =
             new PromptBuilder.PlanRequest(
@@ -187,28 +188,35 @@ public class AiQuickPlanController {
           String weatherSummary =
               parsed.has("weatherSummary") && !parsed.get("weatherSummary").asText("").isBlank()
                   ? parsed.get("weatherSummary").asText()
-                  : generateSeasonalWeatherInsight(request.destinationProvince(), request.startDate());
+                  : generateSeasonalWeatherInsight(
+                      request.destinationProvince(), request.startDate());
           String pacingSummary =
               parsed.has("pacingSummary") && !parsed.get("pacingSummary").asText("").isBlank()
                   ? parsed.get("pacingSummary").asText()
                   : generatePacingInsight(daysCount, request.interests());
           String localAdviceSummary =
-              parsed.has("localAdviceSummary") && !parsed.get("localAdviceSummary").asText("").isBlank()
+              parsed.has("localAdviceSummary")
+                      && !parsed.get("localAdviceSummary").asText("").isBlank()
                   ? parsed.get("localAdviceSummary").asText()
-                  : generateLocalAdviceInsight(request.destinationProvince(), request.budgetLevel(), request.interests());
+                  : generateLocalAdviceInsight(
+                      request.destinationProvince(), request.budgetLevel(), request.interests());
 
           String strategicRationale =
-              parsed.has("strategicRationale") && !parsed.get("strategicRationale").asText("").isBlank()
+              parsed.has("strategicRationale")
+                      && !parsed.get("strategicRationale").asText("").isBlank()
                   ? parsed.get("strategicRationale").asText()
-                  : generateStrategicRationale(request.destinationProvince(), daysCount, travelWith, request.interests());
+                  : generateStrategicRationale(
+                      request.destinationProvince(), daysCount, travelWith, request.interests());
 
           String companionFitRationale =
-              parsed.has("companionFitRationale") && !parsed.get("companionFitRationale").asText("").isBlank()
+              parsed.has("companionFitRationale")
+                      && !parsed.get("companionFitRationale").asText("").isBlank()
                   ? parsed.get("companionFitRationale").asText()
                   : generateCompanionFitRationale(members, travelWith, request.interests());
 
           String budgetOptimizationRationale =
-              parsed.has("budgetOptimizationRationale") && !parsed.get("budgetOptimizationRationale").asText("").isBlank()
+              parsed.has("budgetOptimizationRationale")
+                      && !parsed.get("budgetOptimizationRationale").asText("").isBlank()
                   ? parsed.get("budgetOptimizationRationale").asText()
                   : generateBudgetRationale(request.budgetLevel(), budgetVnd, members);
 
@@ -257,105 +265,141 @@ public class AiQuickPlanController {
   }
 
   @PostMapping("/quick-plan/modify")
-  @Operation(summary = "Trợ lý Chat AI Co-Pilot chỉnh sửa trực tiếp từng hoạt động trong lịch trình")
+  @Operation(
+      summary = "Trợ lý Chat AI Co-Pilot chỉnh sửa trực tiếp từng hoạt động trong lịch trình")
   public ResponseEntity<AiChatModifyResponse> modifyQuickPlan(
       @Valid @RequestBody AiChatModifyRequest request) {
 
     String normInstruction = SemanticIntentExtractor.normalizeAscii(request.userInstruction());
-    int targetDay = request.targetDayNumber() != null && request.targetDayNumber() > 0
-        ? request.targetDayNumber()
-        : 1;
+    int targetDay =
+        request.targetDayNumber() != null && request.targetDayNumber() > 0
+            ? request.targetDayNumber()
+            : 1;
 
     // Nhận diện ngày được nhắc tới trong câu lệnh (ví dụ: "ngày 2", "ngày 3")
-    java.util.regex.Matcher dayMatcher = java.util.regex.Pattern.compile("ngay\\s*(\\d+)").matcher(normInstruction);
+    java.util.regex.Matcher dayMatcher =
+        java.util.regex.Pattern.compile("ngay\\s*(\\d+)").matcher(normInstruction);
     if (dayMatcher.find()) {
       try {
         targetDay = Integer.parseInt(dayMatcher.group(1));
-      } catch (Exception ignored) {}
+      } catch (Exception ignored) {
+      }
     }
 
     // Nhận diện buổi (TimeSlot) mục tiêu
     String targetSlot = "AFTERNOON";
-    if (normInstruction.contains("sang") || normInstruction.contains("morning") || normInstruction.contains("ngu nuong") || normInstruction.contains("day muon")) {
+    if (normInstruction.contains("sang")
+        || normInstruction.contains("morning")
+        || normInstruction.contains("ngu nuong")
+        || normInstruction.contains("day muon")) {
       targetSlot = "MORNING";
-    } else if (normInstruction.contains("trua") || normInstruction.contains("an trua") || normInstruction.contains("noon") || normInstruction.contains("lunch")) {
+    } else if (normInstruction.contains("trua")
+        || normInstruction.contains("an trua")
+        || normInstruction.contains("noon")
+        || normInstruction.contains("lunch")) {
       targetSlot = "NOON";
-    } else if (normInstruction.contains("toi") || normInstruction.contains("dem") || normInstruction.contains("an toi") || normInstruction.contains("evening")) {
+    } else if (normInstruction.contains("toi")
+        || normInstruction.contains("dem")
+        || normInstruction.contains("an toi")
+        || normInstruction.contains("evening")) {
       targetSlot = "EVENING";
     } else if (normInstruction.contains("chieu") || normInstruction.contains("afternoon")) {
       targetSlot = "AFTERNOON";
     }
 
     // Trường hợp 1: Yêu cầu lùi giờ khởi hành / ngủ nướng buổi sáng
-    if (normInstruction.contains("ngu nuong") || normInstruction.contains("day muon") || normInstruction.contains("lui gio") || normInstruction.contains("khoi hanh muon")) {
-      return ResponseEntity.ok(new AiChatModifyResponse(
-          String.format("Đã điều chỉnh lịch trình buổi sáng Ngày %d lùi xuống khung giờ 09:30–11:15 để cả đoàn thoải mái ngủ nướng và ăn sáng thong thả!", targetDay),
-          "ADJUST_TIME",
-          targetDay,
-          "MORNING",
-          null,
-          "09:30–11:15"
-      ));
+    if (normInstruction.contains("ngu nuong")
+        || normInstruction.contains("day muon")
+        || normInstruction.contains("lui gio")
+        || normInstruction.contains("khoi hanh muon")) {
+      return ResponseEntity.ok(
+          new AiChatModifyResponse(
+              String.format(
+                  "Đã điều chỉnh lịch trình buổi sáng Ngày %d lùi xuống khung giờ 09:30–11:15 để cả đoàn thoải mái ngủ nướng và ăn sáng thong thả!",
+                  targetDay),
+              "ADJUST_TIME",
+              targetDay,
+              "MORNING",
+              null,
+              "09:30–11:15"));
     }
 
     // Trường hợp 2: Tìm địa điểm thay thế phù hợp nhất từ kho dữ liệu PUBLISHED
     BigDecimal budgetVnd = calculateBudgetVnd(request.budgetLevel(), 3);
-    List<DestinationSummary> candidates = destinationQueryService.searchPublished(
-        null, request.destinationProvince(), null, budgetVnd, 40);
+    List<DestinationSummary> candidates =
+        destinationQueryService.searchPublished(
+            null, request.destinationProvince(), null, budgetVnd, 40);
 
-    java.util.Set<UUID> usedSet = new java.util.HashSet<>(
-        request.currentDestinationIds() != null ? request.currentDestinationIds() : List.of());
+    java.util.Set<UUID> usedSet =
+        new java.util.HashSet<>(
+            request.currentDestinationIds() != null ? request.currentDestinationIds() : List.of());
 
-    boolean wantFood = "NOON".equals(targetSlot)
-        || normInstruction.contains("an ")
-        || normInstruction.contains("quan")
-        || normInstruction.contains("nha hang")
-        || normInstruction.contains("chay")
-        || normInstruction.contains("hai san")
-        || normInstruction.contains("dac san")
-        || normInstruction.contains("bun")
-        || normInstruction.contains("com");
+    boolean wantFood =
+        "NOON".equals(targetSlot)
+            || normInstruction.contains("an ")
+            || normInstruction.contains("quan")
+            || normInstruction.contains("nha hang")
+            || normInstruction.contains("chay")
+            || normInstruction.contains("hai san")
+            || normInstruction.contains("dac san")
+            || normInstruction.contains("bun")
+            || normInstruction.contains("com");
 
-    boolean wantRelaxedOrElderly = normInstruction.contains("nhe nhang")
-        || normInstruction.contains("nguoi lon tuoi")
-        || normInstruction.contains("nguoi gia")
-        || normInstruction.contains("ong ba")
-        || normInstruction.contains("met")
-        || normInstruction.contains("khong leo")
-        || normInstruction.contains("cafe")
-        || normInstruction.contains("ca phe")
-        || normInstruction.contains("nghi ngoi");
+    boolean wantRelaxedOrElderly =
+        normInstruction.contains("nhe nhang")
+            || normInstruction.contains("nguoi lon tuoi")
+            || normInstruction.contains("nguoi gia")
+            || normInstruction.contains("ong ba")
+            || normInstruction.contains("met")
+            || normInstruction.contains("khong leo")
+            || normInstruction.contains("cafe")
+            || normInstruction.contains("ca phe")
+            || normInstruction.contains("nghi ngoi");
 
-    boolean wantBeachOrNature = normInstruction.contains("bien")
-        || normInstruction.contains("dao mat")
-        || normInstruction.contains("ngam canh")
-        || normInstruction.contains("song");
+    boolean wantBeachOrNature =
+        normInstruction.contains("bien")
+            || normInstruction.contains("dao mat")
+            || normInstruction.contains("ngam canh")
+            || normInstruction.contains("song");
 
     DestinationSummary bestMatch = null;
     double bestScore = -9999.0;
 
     for (DestinationSummary cand : candidates) {
       double score = usedSet.contains(cand.id()) ? -500.0 : 100.0;
-      String candNorm = SemanticIntentExtractor.normalizeAscii(
-          (cand.name() != null ? cand.name() : "") + " " + (cand.categoryName() != null ? cand.categoryName() : ""));
+      String candNorm =
+          SemanticIntentExtractor.normalizeAscii(
+              (cand.name() != null ? cand.name() : "")
+                  + " "
+                  + (cand.categoryName() != null ? cand.categoryName() : ""));
 
       if (wantFood) {
         if (isCulinaryDestination(cand)) score += 300.0;
         else score -= 200.0;
         if (normInstruction.contains("chay") && candNorm.contains("chay")) score += 250.0;
-        if (normInstruction.contains("hai san") && (candNorm.contains("hai san") || candNorm.contains("bien"))) score += 200.0;
+        if (normInstruction.contains("hai san")
+            && (candNorm.contains("hai san") || candNorm.contains("bien"))) score += 200.0;
       }
 
       if (wantRelaxedOrElderly) {
-        SemanticIntentExtractor.PhysicalIntensity intensity = SemanticIntentExtractor.evaluatePhysicalIntensity(cand);
+        SemanticIntentExtractor.PhysicalIntensity intensity =
+            SemanticIntentExtractor.evaluatePhysicalIntensity(cand);
         if (intensity == SemanticIntentExtractor.PhysicalIntensity.LOW) score += 250.0;
         else if (intensity == SemanticIntentExtractor.PhysicalIntensity.HIGH) score -= 600.0;
-        if (candNorm.contains("cafe") || candNorm.contains("ca phe") || candNorm.contains("bao tang") || candNorm.contains("song") || candNorm.contains("bien")) {
+        if (candNorm.contains("cafe")
+            || candNorm.contains("ca phe")
+            || candNorm.contains("bao tang")
+            || candNorm.contains("song")
+            || candNorm.contains("bien")) {
           score += 120.0;
         }
       }
 
-      if (wantBeachOrNature && (candNorm.contains("bien") || candNorm.contains("song") || candNorm.contains("ho") || candNorm.contains("cau"))) {
+      if (wantBeachOrNature
+          && (candNorm.contains("bien")
+              || candNorm.contains("song")
+              || candNorm.contains("ho")
+              || candNorm.contains("cau"))) {
         score += 180.0;
       }
 
@@ -370,71 +414,71 @@ public class AiQuickPlanController {
     }
 
     if (bestMatch != null) {
-      int people = request.peopleCount() != null && request.peopleCount() > 0 ? request.peopleCount() : 2;
+      int people =
+          request.peopleCount() != null && request.peopleCount() > 0 ? request.peopleCount() : 2;
       BigDecimal unitCost = bestMatch.priceMin() != null ? bestMatch.priceMin() : BigDecimal.ZERO;
       BigDecimal totalCost = unitCost.multiply(BigDecimal.valueOf(people));
 
-      String timeRange = switch (targetSlot) {
-        case "MORNING" -> "08:30–10:30";
-        case "NOON" -> "11:45–13:15";
-        case "EVENING" -> "18:30–21:00";
-        default -> "14:30–17:00";
-      };
+      String timeRange =
+          switch (targetSlot) {
+            case "MORNING" -> "08:30–10:30";
+            case "NOON" -> "11:45–13:15";
+            case "EVENING" -> "18:30–21:00";
+            default -> "14:30–17:00";
+          };
 
-      String customReason = wantRelaxedOrElderly
-          ? "Địa điểm bằng phẳng, thoáng mát, rất nhẹ nhàng và có nhiều không gian nghỉ chân phù hợp cho người lớn tuổi."
-          : wantFood
-              ? "Điểm ẩm thực uy tín, hương vị đặc trưng bản địa và không gian ngồi thoải mái."
-              : generateWhyVisitReason(bestMatch, List.of("Khám phá", "Thư giãn"));
+      String customReason =
+          wantRelaxedOrElderly
+              ? "Địa điểm bằng phẳng, thoáng mát, rất nhẹ nhàng và có nhiều không gian nghỉ chân phù hợp cho người lớn tuổi."
+              : wantFood
+                  ? "Điểm ẩm thực uy tín, hương vị đặc trưng bản địa và không gian ngồi thoải mái."
+                  : generateWhyVisitReason(bestMatch, List.of("Khám phá", "Thư giãn"));
 
-      SuggestedActivityResponse replacement = new SuggestedActivityResponse(
-          bestMatch.id(),
-          targetSlot,
-          bestMatch.name(),
-          totalCost,
-          bestMatch.categoryName(),
-          bestMatch.name() + " — Đã cập nhật theo yêu cầu trực tiếp từ Trợ lý AI Co-Pilot.",
-          customReason,
-          generateTimeSlotReason(bestMatch, targetSlot),
-          customReason,
-          timeRange.split("–")[0],
-          timeRange.split("–")[1],
-          90,
-          15,
-          20,
-          unitCost.compareTo(BigDecimal.ZERO) == 0 ? "FREE" : "PAID",
-          null
-      );
+      SuggestedActivityResponse replacement =
+          new SuggestedActivityResponse(
+              bestMatch.id(),
+              targetSlot,
+              bestMatch.name(),
+              totalCost,
+              bestMatch.categoryName(),
+              bestMatch.name() + " — Đã cập nhật theo yêu cầu trực tiếp từ Trợ lý AI Co-Pilot.",
+              customReason,
+              generateTimeSlotReason(bestMatch, targetSlot),
+              customReason,
+              timeRange.split("–")[0],
+              timeRange.split("–")[1],
+              90,
+              15,
+              20,
+              unitCost.compareTo(BigDecimal.ZERO) == 0 ? "FREE" : "PAID",
+              null);
 
-      String slotLabel = switch (targetSlot) {
-        case "MORNING" -> "buổi sáng";
-        case "NOON" -> "bữa trưa";
-        case "EVENING" -> "buổi tối";
-        default -> "buổi chiều";
-      };
+      String slotLabel =
+          switch (targetSlot) {
+            case "MORNING" -> "buổi sáng";
+            case "NOON" -> "bữa trưa";
+            case "EVENING" -> "buổi tối";
+            default -> "buổi chiều";
+          };
 
-      String reply = String.format(
-          "Đã cập nhật %s Ngày %d sang **%s** (%s) — %s",
-          slotLabel, targetDay, bestMatch.name(), bestMatch.categoryName(), customReason);
+      String reply =
+          String.format(
+              "Đã cập nhật %s Ngày %d sang **%s** (%s) — %s",
+              slotLabel, targetDay, bestMatch.name(), bestMatch.categoryName(), customReason);
 
-      return ResponseEntity.ok(new AiChatModifyResponse(
-          reply,
-          "REPLACE_ACTIVITY",
-          targetDay,
-          targetSlot,
-          replacement,
-          timeRange
-      ));
+      return ResponseEntity.ok(
+          new AiChatModifyResponse(
+              reply, "REPLACE_ACTIVITY", targetDay, targetSlot, replacement, timeRange));
     }
 
-    return ResponseEntity.ok(new AiChatModifyResponse(
-        "Trợ lý AI đã ghi nhận yêu cầu và tối ưu hóa nhịp độ nghỉ ngơi thư thả hơn cho đoàn!",
-        "RELAX_DAY",
-        targetDay,
-        targetSlot,
-        null,
-        null
-    ));
+    return ResponseEntity.ok(
+        new AiChatModifyResponse(
+            "Trợ lý AI đã ghi nhận yêu cầu và tối ưu hóa nhịp độ nghỉ ngơi thư thả hơn cho đoàn!",
+            "RELAX_DAY",
+            targetDay,
+            targetSlot,
+            null,
+            null));
   }
 
   private BigDecimal calculateBudgetVnd(String budgetLevel, int daysCount) {
@@ -510,7 +554,8 @@ public class AiQuickPlanController {
           }
         }
         if (!activities.isEmpty()) {
-          // Kiểm tra và khắc phục trùng lặp tiểu loại trong ngày (ví dụ: cấm 2 lăng hoặc 2 chùa trong 1 ngày)
+          // Kiểm tra và khắc phục trùng lặp tiểu loại trong ngày (ví dụ: cấm 2 lăng hoặc 2 chùa
+          // trong 1 ngày)
           List<DestinationSummary> dayDests = new ArrayList<>();
           for (int i = 0; i < activities.size(); i++) {
             SuggestedActivityResponse act = activities.get(i);
@@ -541,7 +586,8 @@ public class AiQuickPlanController {
           }
 
           // Đảm bảo mỗi ngày có bữa trưa ẩm thực nạp năng lượng (slot NOON)
-          boolean hasNoon = activities.stream().anyMatch(a -> "NOON".equalsIgnoreCase(a.timeSlot()));
+          boolean hasNoon =
+              activities.stream().anyMatch(a -> "NOON".equalsIgnoreCase(a.timeSlot()));
           if (!hasNoon && activities.size() >= 2 && publishedDestinations != null) {
             DestinationSummary foodDest = null;
             for (DestinationSummary d : publishedDestinations) {
@@ -578,23 +624,31 @@ public class AiQuickPlanController {
           List<SuggestedActivityResponse> optimized =
               optimizeDayActivitiesByGeography(activities, allowedDestinations);
 
-          // Áp dụng ràng buộc giờ đến ngày đầu SAU khi đã phân bổ khung giờ (bỏ buổi sáng/trưa nếu đến muộn)
+          // Áp dụng ràng buộc giờ đến ngày đầu SAU khi đã phân bổ khung giờ (bỏ buổi sáng/trưa nếu
+          // đến muộn)
           if (dayNum == 1 && arrivalTime != null) {
-            optimized.removeIf(act -> {
-              if ("MORNING".equalsIgnoreCase(act.timeSlot())) return true;
-              if ("NOON".equalsIgnoreCase(act.timeSlot()) && arrivalTime.isAfter(LocalTime.of(12, 30))) return true;
-              return false;
-            });
+            optimized.removeIf(
+                act -> {
+                  if ("MORNING".equalsIgnoreCase(act.timeSlot())) return true;
+                  if ("NOON".equalsIgnoreCase(act.timeSlot())
+                      && arrivalTime.isAfter(LocalTime.of(12, 30))) return true;
+                  return false;
+                });
           }
 
-          // Áp dụng ràng buộc giờ rời đi ngày cuối SAU khi đã phân bổ khung giờ (bỏ buổi tối/chiều nếu về sớm)
+          // Áp dụng ràng buộc giờ rời đi ngày cuối SAU khi đã phân bổ khung giờ (bỏ buổi tối/chiều
+          // nếu về sớm)
           if (dayNum == daysCount && departureTime != null) {
-            optimized.removeIf(act -> {
-              if ("EVENING".equalsIgnoreCase(act.timeSlot()) && departureTime.isBefore(LocalTime.of(19, 0))) return true;
-              if ("AFTERNOON".equalsIgnoreCase(act.timeSlot()) && departureTime.isBefore(LocalTime.of(14, 0))) return true;
-              if ("NOON".equalsIgnoreCase(act.timeSlot()) && departureTime.isBefore(LocalTime.of(12, 0))) return true;
-              return false;
-            });
+            optimized.removeIf(
+                act -> {
+                  if ("EVENING".equalsIgnoreCase(act.timeSlot())
+                      && departureTime.isBefore(LocalTime.of(19, 0))) return true;
+                  if ("AFTERNOON".equalsIgnoreCase(act.timeSlot())
+                      && departureTime.isBefore(LocalTime.of(14, 0))) return true;
+                  if ("NOON".equalsIgnoreCase(act.timeSlot())
+                      && departureTime.isBefore(LocalTime.of(12, 0))) return true;
+                  return false;
+                });
           }
 
           if (!optimized.isEmpty()) {
@@ -619,7 +673,14 @@ public class AiQuickPlanController {
           String slot = slots[slotIdx];
           DestinationSummary chosen =
               selectBestGeoAndTimeCandidate(
-                  pool, usedIds, prev, slot, center, morningOutskirt, dayAccumulatedTicketCost, dayChosenDestinations);
+                  pool,
+                  usedIds,
+                  prev,
+                  slot,
+                  center,
+                  morningOutskirt,
+                  dayAccumulatedTicketCost,
+                  dayChosenDestinations);
           if (chosen == null) {
             for (DestinationSummary cand : pool) {
               if (!hasSubcategoryConflict(dayChosenDestinations, cand)) {
@@ -646,15 +707,16 @@ public class AiQuickPlanController {
                   chosen.name(),
                   chosen.priceMin() != null ? chosen.priceMin() : BigDecimal.ZERO,
                   chosen.categoryName(),
-                  slot.equals("NOON") ? "Nghỉ trưa, nạp lại năng lượng và thưởng thức ẩm thực đặc sản." : "Gợi ý bổ sung theo cung đường thuận tiện di chuyển.",
+                  slot.equals("NOON")
+                      ? "Nghỉ trưa, nạp lại năng lượng và thưởng thức ẩm thực đặc sản."
+                      : "Gợi ý bổ sung theo cung đường thuận tiện di chuyển.",
                   generateActivityRationale(chosen, slot, userInterests),
                   generateTimeSlotReason(chosen, slot),
                   generateWhyVisitReason(chosen, userInterests)));
           prev = chosen;
         }
         days.add(
-            new SuggestedDayResponse(
-                dayNum, "Ngày " + dayNum + " — Khám phá mở rộng", activities));
+            new SuggestedDayResponse(dayNum, "Ngày " + dayNum + " — Khám phá mở rộng", activities));
       }
     }
     return days;
@@ -728,14 +790,22 @@ public class AiQuickPlanController {
       }
     }
     String prov = province != null ? province.toLowerCase() : "";
-    if (prov.contains("đà nẵng") || prov.contains("hội an") || prov.contains("huế") || prov.contains("hà tĩnh") || prov.contains("quảng")) {
+    if (prov.contains("đà nẵng")
+        || prov.contains("hội an")
+        || prov.contains("huế")
+        || prov.contains("hà tĩnh")
+        || prov.contains("quảng")) {
       if (month >= 9 && month <= 12) {
         return "23°C – 28°C · Mùa mưa se lạnh miền Trung, biển có sóng lớn; nên mang ô/áo mưa và ưu tiên các điểm tham quan văn hóa, bảo tàng, ẩm thực trong nhà.";
       } else {
         return "27°C – 34°C · Nắng ráo chan hòa, biển êm sóng lặng; thời tiết lý tưởng để tắm biển, lặn san hô và ngắm hoàng hôn bán đảo.";
       }
     }
-    if (prov.contains("hà nội") || prov.contains("ninh bình") || prov.contains("hạ long") || prov.contains("sa pa") || prov.contains("hà giang")) {
+    if (prov.contains("hà nội")
+        || prov.contains("ninh bình")
+        || prov.contains("hạ long")
+        || prov.contains("sa pa")
+        || prov.contains("hà giang")) {
       if (month >= 11 || month <= 2) {
         return "14°C – 20°C · Mùa đông se lạnh khô ráo, vùng núi có sương mù bồng bềnh; cần mang áo khoác ấm và khăn quàng khi đi dạo phố/săn mây.";
       } else if (month >= 5 && month <= 8) {
@@ -747,7 +817,10 @@ public class AiQuickPlanController {
     if (prov.contains("đà lạt")) {
       return "15°C – 24°C · Tiết trời cao nguyên se lạnh quanh năm, sáng sớm nhiều sương mù và nắng nhẹ; mang trang phục ấm và chụp ảnh rất đẹp.";
     }
-    if (prov.contains("phú quốc") || prov.contains("hồ chí minh") || prov.contains("vũng tàu") || prov.contains("cần thơ")) {
+    if (prov.contains("phú quốc")
+        || prov.contains("hồ chí minh")
+        || prov.contains("vũng tàu")
+        || prov.contains("cần thơ")) {
       if (month >= 11 || month <= 4) {
         return "26°C – 33°C · Mùa khô tuyệt đẹp phương Nam, trời trong vắt, biển ngọc êm ả; hoàn hảo cho các hoạt động cano đảo và tiệc hoàng hôn.";
       } else {
@@ -760,45 +833,69 @@ public class AiQuickPlanController {
   static String generatePacingInsight(int daysCount, List<String> interests) {
     String joined = interests != null ? String.join(" ", interests).toLowerCase() : "";
     if (joined.contains("trekking") || joined.contains("núi") || joined.contains("phượt")) {
-      return String.format("Nhịp độ khám phá năng động (%d ngày): Ưu tiên các điểm địa hình buổi sáng sớm, dành buổi chiều thư giãn ẩm thực để bảo toàn thể lực.", daysCount);
+      return String.format(
+          "Nhịp độ khám phá năng động (%d ngày): Ưu tiên các điểm địa hình buổi sáng sớm, dành buổi chiều thư giãn ẩm thực để bảo toàn thể lực.",
+          daysCount);
     }
     if (joined.contains("nghỉ dưỡng") || joined.contains("biển")) {
-      return String.format("Nhịp độ nghỉ dưỡng thảnh thơi (%d ngày): Tối đa 3 hoạt động/ngày, không di chuyển vội vã, ưu tiên ngắm bình minh và thư giãn biển chiều.", daysCount);
+      return String.format(
+          "Nhịp độ nghỉ dưỡng thảnh thơi (%d ngày): Tối đa 3 hoạt động/ngày, không di chuyển vội vã, ưu tiên ngắm bình minh và thư giãn biển chiều.",
+          daysCount);
     }
     if (joined.contains("ẩm thực")) {
-      return String.format("Nhịp độ trải nghiệm văn hóa & vị giác (%d ngày): Chia nhỏ các chặng ăn vặt và ẩm thực đặc sản đan xen giữa các điểm danh thắng nổi tiếng.", daysCount);
+      return String.format(
+          "Nhịp độ trải nghiệm văn hóa & vị giác (%d ngày): Chia nhỏ các chặng ăn vặt và ẩm thực đặc sản đan xen giữa các điểm danh thắng nổi tiếng.",
+          daysCount);
     }
-    return String.format("Nhịp độ cân bằng tối ưu (%d ngày): Khoảng cách di chuyển giữa các điểm dưới 15km, tránh đi ngược hướng, tối ưu thời gian vui chơi.", daysCount);
+    return String.format(
+        "Nhịp độ cân bằng tối ưu (%d ngày): Khoảng cách di chuyển giữa các điểm dưới 15km, tránh đi ngược hướng, tối ưu thời gian vui chơi.",
+        daysCount);
   }
 
-  static String generateLocalAdviceInsight(String province, String budgetLevel, List<String> interests) {
+  static String generateLocalAdviceInsight(
+      String province, String budgetLevel, List<String> interests) {
     String prov = province != null ? province : "điểm đến";
     String b = budgetLevel != null ? budgetLevel.toUpperCase() : "MEDIUM";
-    String focusNote = (interests != null && !interests.isEmpty())
-        ? (" (ưu tiên " + String.join(", ", interests) + ")")
-        : "";
+    String focusNote =
+        (interests != null && !interests.isEmpty())
+            ? (" (ưu tiên " + String.join(", ", interests) + ")")
+            : "";
     if (b.contains("TIET_KIEM") || b.contains("BUDGET") || b.contains("LOW")) {
-      return String.format("Mẹo tiết kiệm tại %s%s: Thuê xe máy theo cặp (120k-150k/ngày), thưởng thức ẩm thực chợ truyền thống và tận dụng các điểm đến mở miễn phí vé tham quan.", prov, focusNote);
+      return String.format(
+          "Mẹo tiết kiệm tại %s%s: Thuê xe máy theo cặp (120k-150k/ngày), thưởng thức ẩm thực chợ truyền thống và tận dụng các điểm đến mở miễn phí vé tham quan.",
+          prov, focusNote);
     }
     if (b.contains("LUXURY") || b.contains("HIGH")) {
-      return String.format("Trải nghiệm cao cấp tại %s%s: Nên đặt trước dịch vụ xe riêng đón tận nơi, thưởng thức ẩm thực tại các nhà hàng đạt chuẩn Michelin/view biển và dịch vụ tour trọn gói.", prov, focusNote);
+      return String.format(
+          "Trải nghiệm cao cấp tại %s%s: Nên đặt trước dịch vụ xe riêng đón tận nơi, thưởng thức ẩm thực tại các nhà hàng đạt chuẩn Michelin/view biển và dịch vụ tour trọn gói.",
+          prov, focusNote);
     }
-    return String.format("Lời khuyên hữu ích tại %s%s: Đặt trước vé các khu du lịch lớn trực tuyến để không phải xếp hàng chờ, đồng thời thử các món ăn dân dã tại các quán có đông người bản xứ ăn uống.", prov, focusNote);
+    return String.format(
+        "Lời khuyên hữu ích tại %s%s: Đặt trước vé các khu du lịch lớn trực tuyến để không phải xếp hàng chờ, đồng thời thử các món ăn dân dã tại các quán có đông người bản xứ ăn uống.",
+        prov, focusNote);
   }
 
-  static String generateStrategicRationale(String province, int daysCount, String travelWith, List<String> interests) {
+  static String generateStrategicRationale(
+      String province, int daysCount, String travelWith, List<String> interests) {
     String prov = province != null ? province : "điểm đến";
     String with = travelWith != null ? travelWith : "đoàn";
-    String interestLabel = (interests != null && !interests.isEmpty()) ? String.join(", ", interests) : "khám phá & ẩm thực";
+    String interestLabel =
+        (interests != null && !interests.isEmpty())
+            ? String.join(", ", interests)
+            : "khám phá & ẩm thực";
     return String.format(
         "Hành trình %d ngày tại %s được sắp xếp liền kề trên cùng một cung đường tiện lợi, giúp bạn di chuyển nhanh chóng, tiết kiệm tiền taxi và không bị mệt hay say xe. Nhịp độ đan xen hài hòa theo sở thích (%s), đem lại trải nghiệm trọn vẹn và thoải mái nhất cho %s.",
         daysCount, prov, interestLabel, with);
   }
 
-  static String generateCompanionFitRationale(Integer peopleCount, String travelWith, List<String> interests) {
+  static String generateCompanionFitRationale(
+      Integer peopleCount, String travelWith, List<String> interests) {
     int count = peopleCount != null && peopleCount > 0 ? peopleCount : 2;
     String with = travelWith != null ? travelWith.toLowerCase() : "nhóm bạn";
-    String interestTag = (interests != null && !interests.isEmpty()) ? (" kết hợp " + interests.get(0).toLowerCase()) : "";
+    String interestTag =
+        (interests != null && !interests.isEmpty())
+            ? (" kết hợp " + interests.get(0).toLowerCase())
+            : "";
     if (with.contains("gia đình") || with.contains("family")) {
       return String.format(
           "Thiết kế riêng cho gia đình %d người%s: Lịch trình thong thả, cung đường bằng phẳng có nhiều bóng râm mát mẻ, rất an toàn và thoải mái cho cả người lớn tuổi lẫn các bé nhỏ.",
@@ -814,31 +911,44 @@ public class AiQuickPlanController {
         count, interestTag);
   }
 
-  static String generateBudgetRationale(String budgetLevel, BigDecimal totalBudget, Integer peopleCount) {
+  static String generateBudgetRationale(
+      String budgetLevel, BigDecimal totalBudget, Integer peopleCount) {
     int count = peopleCount != null && peopleCount > 0 ? peopleCount : 2;
     String b = budgetLevel != null ? budgetLevel.toUpperCase() : "STANDARD";
     if (b.contains("TIET_KIEM") || b.contains("BUDGET") || b.contains("LOW")) {
       return String.format(
           "Chi tiêu thông minh & tiết kiệm: Dành phần lớn ngân sách cho các món ăn ngon đặc sản, kết hợp tham quan các danh lam mở miễn phí vé và đi lại hợp lý (ước tính ~%,d VNĐ/người, không lo phát sinh).",
-          totalBudget != null ? totalBudget.divide(BigDecimal.valueOf(count), java.math.RoundingMode.HALF_UP).longValue() : 600000L);
+          totalBudget != null
+              ? totalBudget
+                  .divide(BigDecimal.valueOf(count), java.math.RoundingMode.HALF_UP)
+                  .longValue()
+              : 600000L);
     }
     if (b.contains("SANG_TRONG") || b.contains("LUXURY") || b.contains("HIGH")) {
       return String.format(
           "Trải nghiệm cao cấp & trọn gói: Ưu tiên các dịch vụ vé VIP không phải xếp hàng chờ đợi, ăn uống tại các nhà hàng view biển lãng mạn và xe riêng đưa đón tiện nghi (ước tính ~%,d VNĐ/người).",
-          totalBudget != null ? totalBudget.divide(BigDecimal.valueOf(count), java.math.RoundingMode.HALF_UP).longValue() : 3000000L);
+          totalBudget != null
+              ? totalBudget
+                  .divide(BigDecimal.valueOf(count), java.math.RoundingMode.HALF_UP)
+                  .longValue()
+              : 3000000L);
     }
     return String.format(
         "Chi tiêu cân đối & hợp lý: Kết hợp hài hòa giữa các điểm tham quan có vé danh tiếng và ẩm thực đặc sản bản địa uy tín, đảm bảo trải nghiệm đầy đủ mà không lo phát sinh phụ phí (ước tính ~%,d VNĐ/người).",
-        totalBudget != null ? totalBudget.divide(BigDecimal.valueOf(count), java.math.RoundingMode.HALF_UP).longValue() : 1400000L);
+        totalBudget != null
+            ? totalBudget
+                .divide(BigDecimal.valueOf(count), java.math.RoundingMode.HALF_UP)
+                .longValue()
+            : 1400000L);
   }
 
   public static final String[] STANDARD_SLOTS = {"MORNING", "NOON", "AFTERNOON", "EVENING"};
 
-  private static final List<String> RESTRICTED_SUBCATEGORIES = List.of(
-      "lăng", "chùa", "bãi biển", "biển", "động", "thác", "bảo tàng", "núi", "đèo"
-  );
+  private static final List<String> RESTRICTED_SUBCATEGORIES =
+      List.of("lăng", "chùa", "bãi biển", "biển", "động", "thác", "bảo tàng", "núi", "đèo");
 
-  public static boolean hasSubcategoryConflict(List<DestinationSummary> chosenSoFar, DestinationSummary cand) {
+  public static boolean hasSubcategoryConflict(
+      List<DestinationSummary> chosenSoFar, DestinationSummary cand) {
     if (chosenSoFar == null || cand == null || cand.name() == null) return false;
     String candName = cand.name().toLowerCase();
     for (DestinationSummary already : chosenSoFar) {
@@ -856,7 +966,9 @@ public class AiQuickPlanController {
   public static boolean isCulinaryDestination(DestinationSummary d) {
     if (d == null) return false;
     String text =
-        ((d.name() != null ? d.name() : "") + " " + (d.categoryName() != null ? d.categoryName() : ""))
+        ((d.name() != null ? d.name() : "")
+                + " "
+                + (d.categoryName() != null ? d.categoryName() : ""))
             .toLowerCase();
     return text.contains("ẩm thực")
         || text.contains("chợ")
@@ -886,7 +998,10 @@ public class AiQuickPlanController {
     } else if ("NOON".equals(slot)) {
       return "Khung giờ trưa (11:30 – 13:00) tiết trời nắng gắt nhất, hoàn hảo để dừng chân nghỉ ngơi trong không gian mát mẻ, nạp năng lượng và thưởng thức trọn vẹn tinh hoa ẩm thực bản địa.";
     } else if ("AFTERNOON".equals(slot)) {
-      if (cat.contains("văn hóa") || cat.contains("bảo tàng") || cat.contains("chùa") || cat.contains("di tích")) {
+      if (cat.contains("văn hóa")
+          || cat.contains("bảo tàng")
+          || cat.contains("chùa")
+          || cat.contains("di tích")) {
         return "Đầu giờ chiều nắng ráo, không gian râm mát thích hợp để tìm hiểu lịch sử, ngắm nhìn kiến trúc và thong dong dạo bước.";
       }
       return "Thời điểm chiều tà đón gió mát lành, ánh hoàng hôn buông xuống chụp ảnh check-in có màu sắc ấm áp tuyệt đẹp.";
@@ -900,46 +1015,74 @@ public class AiQuickPlanController {
 
   static String generateWhyVisitReason(DestinationSummary dest, List<String> interests) {
     String cat = dest.categoryName() != null ? dest.categoryName().toLowerCase() : "";
-    String interestSuffix = (interests != null && !interests.isEmpty()) ? (" Rất phù hợp với gu " + interests.get(0).toLowerCase() + " của đoàn.") : "";
+    String interestSuffix =
+        (interests != null && !interests.isEmpty())
+            ? (" Rất phù hợp với gu " + interests.get(0).toLowerCase() + " của đoàn.")
+            : "";
     if (isCulinaryDestination(dest) || cat.contains("ẩm thực") || cat.contains("chợ")) {
-      return "Thiên đường ăn uống với vô vàn món đặc sản nóng hổi chuẩn vị địa phương, giá cả bình dân và không khí vô cùng ấm cúng." + interestSuffix;
+      return "Thiên đường ăn uống với vô vàn món đặc sản nóng hổi chuẩn vị địa phương, giá cả bình dân và không khí vô cùng ấm cúng."
+          + interestSuffix;
     }
     if (cat.contains("biển") || cat.contains("đảo")) {
-      return "Bãi biển tuyệt đẹp với bờ cát mịn và làn nước trong xanh, là điểm đến biểu tượng nhất định phải check-in khi đến đây." + interestSuffix;
+      return "Bãi biển tuyệt đẹp với bờ cát mịn và làn nước trong xanh, là điểm đến biểu tượng nhất định phải check-in khi đến đây."
+          + interestSuffix;
     }
-    if (cat.contains("văn hóa") || cat.contains("chùa") || cat.contains("di tích") || cat.contains("bảo tàng")) {
-      return "Lưu giữ chiều sâu văn hóa và kiến trúc độc đáo, mang lại cảm giác an yên và những góc hình kỷ niệm rất có chiều sâu." + interestSuffix;
+    if (cat.contains("văn hóa")
+        || cat.contains("chùa")
+        || cat.contains("di tích")
+        || cat.contains("bảo tàng")) {
+      return "Lưu giữ chiều sâu văn hóa và kiến trúc độc đáo, mang lại cảm giác an yên và những góc hình kỷ niệm rất có chiều sâu."
+          + interestSuffix;
     }
     if (cat.contains("núi") || cat.contains("sinh thái") || cat.contains("rừng")) {
-      return "Cảnh sắc thiên nhiên khoáng đạt giúp bạn hít thở không khí trong lành, xua tan mệt mỏi và chiêm ngưỡng toàn cảnh danh thắng." + interestSuffix;
+      return "Cảnh sắc thiên nhiên khoáng đạt giúp bạn hít thở không khí trong lành, xua tan mệt mỏi và chiêm ngưỡng toàn cảnh danh thắng."
+          + interestSuffix;
     }
-    return "Một trong những điểm dừng chân được yêu thích nhất trong vùng, thuận tiện trên cung đường và mang đến nhiều trải nghiệm thú vị." + interestSuffix;
+    return "Một trong những điểm dừng chân được yêu thích nhất trong vùng, thuận tiện trên cung đường và mang đến nhiều trải nghiệm thú vị."
+        + interestSuffix;
   }
 
-  static String generateActivityRationale(DestinationSummary dest, String timeSlot, List<String> interests) {
+  static String generateActivityRationale(
+      DestinationSummary dest, String timeSlot, List<String> interests) {
     String slot = timeSlot != null ? timeSlot.toUpperCase() : "MORNING";
     String cat = dest.categoryName() != null ? dest.categoryName().toLowerCase() : "";
-    String focus = (interests != null && !interests.isEmpty()) ? (" (" + interests.get(0) + ")") : "";
+    String focus =
+        (interests != null && !interests.isEmpty()) ? (" (" + interests.get(0) + ")") : "";
     if ("MORNING".equals(slot)) {
       if (cat.contains("biển") || cat.contains("đảo")) {
-        return "Buổi sáng thời tiết êm dịu, không khí trong lành và nắng chưa gắt, hoàn hảo để ngắm biển và check-in" + focus + ".";
+        return "Buổi sáng thời tiết êm dịu, không khí trong lành và nắng chưa gắt, hoàn hảo để ngắm biển và check-in"
+            + focus
+            + ".";
       }
       if (cat.contains("núi") || cat.contains("thiên nhiên") || cat.contains("sinh thái")) {
-        return "Ưu tiên điểm vận động tự nhiên vào sáng sớm khi thể lực đoàn dồi dào nhất và tránh nắng gắt buổi trưa" + focus + ".";
+        return "Ưu tiên điểm vận động tự nhiên vào sáng sớm khi thể lực đoàn dồi dào nhất và tránh nắng gắt buổi trưa"
+            + focus
+            + ".";
       }
-      return "Khởi đầu ngày mới với điểm tham quan biểu tượng, thuận tiện mở đầu cung đường" + focus + ".";
+      return "Khởi đầu ngày mới với điểm tham quan biểu tượng, thuận tiện mở đầu cung đường"
+          + focus
+          + ".";
     } else if ("NOON".equals(slot)) {
       return "Nghỉ ngơi ăn trưa nạp lại năng lượng sau chặng tham quan sáng, thưởng thức tinh hoa ẩm thực bản địa trước khi tiếp tục hành trình chiều.";
     } else if ("AFTERNOON".equals(slot)) {
-      if (cat.contains("văn hóa") || cat.contains("bảo tàng") || cat.contains("chùa") || cat.contains("di tích")) {
-        return "Khám phá chiều sâu văn hóa và kiến trúc, có nhiều bóng râm hoặc không gian mát mẻ cho buổi đầu giờ chiều" + focus + ".";
+      if (cat.contains("văn hóa")
+          || cat.contains("bảo tàng")
+          || cat.contains("chùa")
+          || cat.contains("di tích")) {
+        return "Khám phá chiều sâu văn hóa và kiến trúc, có nhiều bóng râm hoặc không gian mát mẻ cho buổi đầu giờ chiều"
+            + focus
+            + ".";
       }
-      return "Tận hưởng không gian cảnh quan chiều tà, vừa vặn trên trục đường di chuyển trở về trung tâm" + focus + ".";
+      return "Tận hưởng không gian cảnh quan chiều tà, vừa vặn trên trục đường di chuyển trở về trung tâm"
+          + focus
+          + ".";
     } else {
       if (cat.contains("ẩm thực") || cat.contains("chợ")) {
         return "Thời điểm chợ đêm và phố ẩm thực nhộn nhịp nhất, tha hồ thưởng thức đặc sản và hòa vào nhịp sống bản địa.";
       }
-      return "Chiêm ngưỡng cảnh đêm lung linh và thư giãn thảnh thơi sau một ngày khám phá trọn vẹn" + focus + ".";
+      return "Chiêm ngưỡng cảnh đêm lung linh và thư giãn thảnh thơi sau một ngày khám phá trọn vẹn"
+          + focus
+          + ".";
     }
   }
 
@@ -960,7 +1103,8 @@ public class AiQuickPlanController {
       double score = alreadyUsed ? 250.0 : 0.0;
       boolean candIsOutskirt = isOutskirtDestination(cand, center);
 
-      // Quy tắc nghiêm ngặt: Tuyệt đối không trùng tiểu loại trong 1 ngày (cấm 2 lăng, 2 chùa, 2 biển)
+      // Quy tắc nghiêm ngặt: Tuyệt đối không trùng tiểu loại trong 1 ngày (cấm 2 lăng, 2 chùa, 2
+      // biển)
       if (hasSubcategoryConflict(dayChosenDestinations, cand)) {
         score += 2500.0;
       }
@@ -994,13 +1138,16 @@ public class AiQuickPlanController {
       } else {
         if (morningOutskirt != null && candIsOutskirt) {
           double kmFromPrev = prev != null ? haversineKm(prev, cand) : 999.0;
-          double angleDiff = Math.abs(computeAngleDifference(
-              computeAzimuthDegrees(center, morningOutskirt),
-              computeAzimuthDegrees(center, cand)));
+          double angleDiff =
+              Math.abs(
+                  computeAngleDifference(
+                      computeAzimuthDegrees(center, morningOutskirt),
+                      computeAzimuthDegrees(center, cand)));
 
           // Nếu điểm ngoại ô mới nằm lệch góc > 45 độ hoặc cách > 7.5km => Phạt cực nặng
           if (angleDiff > 45.0 || kmFromPrev > 7.5) {
-            score += 130.0; // Triệt tiêu hiện tượng đi Ngũ Hành Sơn xong lại chạy vòng sang Đèo Hải Vân/Bà Nà
+            score += 130.0; // Triệt tiêu hiện tượng đi Ngũ Hành Sơn xong lại chạy vòng sang Đèo Hải
+            // Vân/Bà Nà
           }
         }
         if (!candIsOutskirt) {
@@ -1030,7 +1177,9 @@ public class AiQuickPlanController {
       if ("AFTERNOON".equals(slot) || "EVENING".equals(slot)) {
         if (morningOutskirt != null && calculateFatigueLevel(morningOutskirt) >= 2) {
           if (candFatigue == 0) {
-            score -= 18.0; // Sau buổi sáng tốn sức (leo núi/đèo), chiều tối ưu tiên ẩm thực/cafe nghỉ ngơi
+            score -=
+                18.0; // Sau buổi sáng tốn sức (leo núi/đèo), chiều tối ưu tiên ẩm thực/cafe nghỉ
+            // ngơi
           } else if (candFatigue >= 2) {
             score += 40.0; // Tránh dồn 2 hoạt động nặng trong cùng 1 ngày
           }
@@ -1038,7 +1187,8 @@ public class AiQuickPlanController {
       }
 
       // Quy tắc 5: Cân đối Ngân sách Vé Ngày (Smart Budget Pacing)
-      if (dayAccumulatedTicketCost != null && dayAccumulatedTicketCost.compareTo(BigDecimal.valueOf(200000)) >= 0) {
+      if (dayAccumulatedTicketCost != null
+          && dayAccumulatedTicketCost.compareTo(BigDecimal.valueOf(200000)) >= 0) {
         BigDecimal candPrice = cand.priceMin() != null ? cand.priceMin() : BigDecimal.ZERO;
         if (candPrice.compareTo(BigDecimal.ZERO) == 0) {
           score -= 14.0; // Ưu tiên điểm miễn phí (Cầu Rồng, Biển, Chợ đêm) để cân bằng ví tiền
@@ -1070,7 +1220,9 @@ public class AiQuickPlanController {
   static int calculateFatigueLevel(DestinationSummary d) {
     if (d == null) return 1;
     String text =
-        ((d.name() != null ? d.name() : "") + " " + (d.categoryName() != null ? d.categoryName() : ""))
+        ((d.name() != null ? d.name() : "")
+                + " "
+                + (d.categoryName() != null ? d.categoryName() : ""))
             .toLowerCase();
     if (text.contains("núi")
         || text.contains("đèo")
@@ -1103,7 +1255,8 @@ public class AiQuickPlanController {
     if (lats.isEmpty()) return new double[] {0.0, 0.0};
     lats.sort(Double::compareTo);
     lngs.sort(Double::compareTo);
-    // Dùng Median (trung vị) để tâm luôn rơi đúng vào Trung tâm thành phố, không bị kéo lệch bởi điểm xa
+    // Dùng Median (trung vị) để tâm luôn rơi đúng vào Trung tâm thành phố, không bị kéo lệch bởi
+    // điểm xa
     int mid = lats.size() / 2;
     return new double[] {lats.get(mid), lngs.get(mid)};
   }
@@ -1140,8 +1293,7 @@ public class AiQuickPlanController {
         (a, b) -> {
           DestinationSummary da = allowedDestinations.get(a.destinationId());
           DestinationSummary db = allowedDestinations.get(b.destinationId());
-          return Double.compare(
-              timeSlotPenalty(da, "MORNING"), timeSlotPenalty(db, "MORNING"));
+          return Double.compare(timeSlotPenalty(da, "MORNING"), timeSlotPenalty(db, "MORNING"));
         });
 
     List<SuggestedActivityResponse> ordered = new ArrayList<>();
@@ -1179,10 +1331,15 @@ public class AiQuickPlanController {
   static double timeSlotPenalty(DestinationSummary d, String slot) {
     if (d == null) return 0.0;
     String text =
-        ((d.name() != null ? d.name() : "") + " " + (d.categoryName() != null ? d.categoryName() : ""))
+        ((d.name() != null ? d.name() : "")
+                + " "
+                + (d.categoryName() != null ? d.categoryName() : ""))
             .toLowerCase();
     boolean isMountainOrPass =
-        text.contains("đèo") || text.contains("núi") || text.contains("phượt") || text.contains("bà nà");
+        text.contains("đèo")
+            || text.contains("núi")
+            || text.contains("phượt")
+            || text.contains("bà nà");
     boolean isBeach = text.contains("biển") || text.contains("đảo") || text.contains("bãi");
     boolean isIndoorOrCulture =
         text.contains("bảo tàng")
@@ -1191,7 +1348,10 @@ public class AiQuickPlanController {
             || text.contains("chùa")
             || text.contains("suối khoáng");
     boolean isNightOrCity =
-        text.contains("cầu") || text.contains("phố") || text.contains("đêm") || text.contains("giải trí");
+        text.contains("cầu")
+            || text.contains("phố")
+            || text.contains("đêm")
+            || text.contains("giải trí");
 
     return switch (slot) {
       case "MORNING" -> {
@@ -1201,7 +1361,8 @@ public class AiQuickPlanController {
         yield 0.0;
       }
       case "NOON" -> {
-        if (isCulinaryDestination(d)) yield -35.0; // Buổi trưa bắt buộc ưu tiên ăn uống đặc sản, chợ
+        if (isCulinaryDestination(d))
+          yield -35.0; // Buổi trưa bắt buộc ưu tiên ăn uống đặc sản, chợ
         if (isMountainOrPass) yield 80.0; // Tuyệt đối không leo núi / đèo giữa trưa nắng gắt
         if (isBeach) yield 60.0; // Không phơi nắng biển giữa trưa
         yield 25.0;
@@ -1214,7 +1375,8 @@ public class AiQuickPlanController {
       }
       case "EVENING" -> {
         if (isMountainOrPass) yield 50.0; // Chiều tối không đi đèo/núi nguy hiểm
-        if (isNightOrCity || isBeach || isCulinaryDestination(d)) yield -15.0; // Chiều mát / tối hợp dạo biển, cầu Rồng, phố đêm
+        if (isNightOrCity || isBeach || isCulinaryDestination(d))
+          yield -15.0; // Chiều mát / tối hợp dạo biển, cầu Rồng, phố đêm
         yield 0.0;
       }
       default -> 0.0;

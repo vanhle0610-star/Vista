@@ -33,8 +33,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
- * W4-TV3-04 & W5-TV3-01: Test validate lịch trình nâng cao.
- * Kiểm tra: ngày ngoài khoảng trip, trùng giờ trong 1 ngày, giờ không hợp lệ, và cảnh báo vượt ngân sách.
+ * W4-TV3-04 & W5-TV3-01: Test validate lịch trình nâng cao. Kiểm tra: ngày ngoài khoảng trip, trùng
+ * giờ trong 1 ngày, giờ không hợp lệ, và cảnh báo vượt ngân sách.
  */
 @ExtendWith(MockitoExtension.class)
 class ItineraryValidationTest {
@@ -262,7 +262,8 @@ class ItineraryValidationTest {
   // ── W5-TV3-01: Cảnh báo ngân sách ──────────────────────────────────────────
 
   @Test
-  @DisplayName("W5-01 Chi phí dự kiến vượt ngân sách chuyến → trả cảnh báo BUDGET_EXCEEDED kèm chi tiết")
+  @DisplayName(
+      "W5-01 Chi phí dự kiến vượt ngân sách chuyến → trả cảnh báo BUDGET_EXCEEDED kèm chi tiết")
   void validate_budgetExceeded_returnsBudgetWarning() {
     UUID dayId = UUID.randomUUID();
     ItineraryDay day = makeDay(dayId, 1, LocalDate.of(2026, 11, 10));
@@ -275,16 +276,28 @@ class ItineraryValidationTest {
     Destination dest2 = new Destination();
     ReflectionTestUtils.setField(dest2, "priceMax", new BigDecimal("7000000.00"));
 
-    ItineraryItem item1 = new ItineraryItem(day, destId1, null, LocalTime.of(8, 0), LocalTime.of(10, 0), 0, null, USER_ID);
+    ItineraryItem item1 =
+        new ItineraryItem(
+            day, destId1, null, LocalTime.of(8, 0), LocalTime.of(10, 0), 0, null, USER_ID);
     ReflectionTestUtils.setField(item1, "id", UUID.randomUUID());
     ReflectionTestUtils.setField(item1, "updatedAt", Instant.now());
 
     UUID item2Id = UUID.randomUUID();
-    ItineraryItem item2 = new ItineraryItem(day, destId2, "Bà Nà Hills", LocalTime.of(11, 0), LocalTime.of(15, 0), 1, null, USER_ID);
+    ItineraryItem item2 =
+        new ItineraryItem(
+            day,
+            destId2,
+            "Bà Nà Hills",
+            LocalTime.of(11, 0),
+            LocalTime.of(15, 0),
+            1,
+            null,
+            USER_ID);
     ReflectionTestUtils.setField(item2, "id", item2Id);
     ReflectionTestUtils.setField(item2, "updatedAt", Instant.now());
 
-    // Ngân sách trip: 10,000,000 VND. Stop 1: 6,000,000. Stop 2: 7,000,000 -> Tổng: 13,000,000 -> Vượt 3,000,000
+    // Ngân sách trip: 10,000,000 VND. Stop 1: 6,000,000. Stop 2: 7,000,000 -> Tổng: 13,000,000 ->
+    // Vượt 3,000,000
     when(tripRepository.findById(TRIP_ID)).thenReturn(Optional.of(trip));
     when(dayRepository.findByTripIdOrderByDayNumberAsc(TRIP_ID)).thenReturn(List.of(day));
     when(itemRepository.findByDayIdOrderBySortOrderAsc(dayId)).thenReturn(List.of(item1, item2));
@@ -314,7 +327,16 @@ class ItineraryValidationTest {
     Destination dest = new Destination();
     ReflectionTestUtils.setField(dest, "priceMax", new BigDecimal("5000000.00"));
 
-    ItineraryItem item = new ItineraryItem(day, destId, "Bán đảo Sơn Trà", LocalTime.of(8, 0), LocalTime.of(11, 0), 0, null, USER_ID);
+    ItineraryItem item =
+        new ItineraryItem(
+            day,
+            destId,
+            "Bán đảo Sơn Trà",
+            LocalTime.of(8, 0),
+            LocalTime.of(11, 0),
+            0,
+            null,
+            USER_ID);
     ReflectionTestUtils.setField(item, "id", UUID.randomUUID());
     ReflectionTestUtils.setField(item, "updatedAt", Instant.now());
 
@@ -338,14 +360,26 @@ class ItineraryValidationTest {
 
     UUID destId1 = UUID.randomUUID();
     Destination dest1 = new Destination();
-    ReflectionTestUtils.setField(dest1, "priceMax", new BigDecimal("15000000.00")); // Vượt ngân sách 10 triệu
+    ReflectionTestUtils.setField(
+        dest1, "priceMax", new BigDecimal("15000000.00")); // Vượt ngân sách 10 triệu
 
     // 2. Trùng giờ: 08:00–12:00 và 10:00–14:00
-    ItineraryItem item1 = new ItineraryItem(day, destId1, "Cù Lao Chàm", LocalTime.of(8, 0), LocalTime.of(12, 0), 0, null, USER_ID);
+    ItineraryItem item1 =
+        new ItineraryItem(
+            day, destId1, "Cù Lao Chàm", LocalTime.of(8, 0), LocalTime.of(12, 0), 0, null, USER_ID);
     ReflectionTestUtils.setField(item1, "id", UUID.randomUUID());
     ReflectionTestUtils.setField(item1, "updatedAt", Instant.now());
 
-    ItineraryItem item2 = new ItineraryItem(day, null, "Rừng dừa Bảy Mẫu", LocalTime.of(10, 0), LocalTime.of(14, 0), 1, null, USER_ID);
+    ItineraryItem item2 =
+        new ItineraryItem(
+            day,
+            null,
+            "Rừng dừa Bảy Mẫu",
+            LocalTime.of(10, 0),
+            LocalTime.of(14, 0),
+            1,
+            null,
+            USER_ID);
     ReflectionTestUtils.setField(item2, "id", UUID.randomUUID());
     ReflectionTestUtils.setField(item2, "updatedAt", Instant.now());
 

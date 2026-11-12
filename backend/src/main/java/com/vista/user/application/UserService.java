@@ -61,7 +61,13 @@ public class UserService {
       PasswordEncoder passwordEncoder,
       RefreshTokenRepository refreshTokenRepository,
       ObjectMapper objectMapper) {
-    this(userRepository, auditLogService, passwordEncoder, refreshTokenRepository, objectMapper, null);
+    this(
+        userRepository,
+        auditLogService,
+        passwordEncoder,
+        refreshTokenRepository,
+        objectMapper,
+        null);
   }
 
   @Autowired
@@ -184,9 +190,9 @@ public class UserService {
   }
 
   /**
-   * Xóa mềm tài khoản người dùng (FR-AUTH-05 / BR-01).
-   * Tuyệt đối không xóa cứng (userRepository.delete) để bảo vệ toàn vẹn lịch sử dữ liệu.
-   * Ràng buộc: Không được xóa nếu user đang là OWNER của bất kỳ chuyến đi nào chưa hủy.
+   * Xóa mềm tài khoản người dùng (FR-AUTH-05 / BR-01). Tuyệt đối không xóa cứng
+   * (userRepository.delete) để bảo vệ toàn vẹn lịch sử dữ liệu. Ràng buộc: Không được xóa nếu user
+   * đang là OWNER của bất kỳ chuyến đi nào chưa hủy.
    */
   @Transactional
   public void deleteAccount(UUID userId) {
@@ -217,9 +223,7 @@ public class UserService {
         "Xóa mềm tài khoản người dùng thành công");
   }
 
-  /**
-   * Vô hiệu hóa tài khoản (alias cho deleteAccount theo chuẩn SRS FR-AUTH-05).
-   */
+  /** Vô hiệu hóa tài khoản (alias cho deleteAccount theo chuẩn SRS FR-AUTH-05). */
   @Transactional
   public void deactivateAccount(UUID userId) {
     deleteAccount(userId);

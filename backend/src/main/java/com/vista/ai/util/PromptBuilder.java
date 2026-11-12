@@ -167,17 +167,21 @@ public final class PromptBuilder {
     }
 
     if (request.arrivalTime() != null && !request.arrivalTime().isBlank()) {
-      sb.append("- Day 1 Arrival Time: ").append(request.arrivalTime())
+      sb.append("- Day 1 Arrival Time: ")
+          .append(request.arrivalTime())
           .append(" (Do NOT schedule activities before this arrival time!)\n");
     }
 
     if (request.departureTime() != null && !request.departureTime().isBlank()) {
-      sb.append("- Last Day Departure Time: ").append(request.departureTime())
+      sb.append("- Last Day Departure Time: ")
+          .append(request.departureTime())
           .append(" (All activities on the last day must finish comfortably before departure!)\n");
     }
 
     if (request.avoidPlaces() != null && !request.avoidPlaces().isEmpty()) {
-      sb.append("- Avoid/Exclude places: ").append(String.join(", ", request.avoidPlaces())).append("\n");
+      sb.append("- Avoid/Exclude places: ")
+          .append(String.join(", ", request.avoidPlaces()))
+          .append("\n");
     }
 
     if (request.specialRequests() != null && !request.specialRequests().isBlank()) {
@@ -186,7 +190,8 @@ public final class PromptBuilder {
 
     if (request.startDate() != null && !request.startDate().isBlank()) {
       sb.append("- Departure Date: ").append(request.startDate()).append("\n");
-      sb.append("- Weather & Season context: Provide an accurate seasonal weather forecast and packing advice for ")
+      sb.append(
+              "- Weather & Season context: Provide an accurate seasonal weather forecast and packing advice for ")
           .append(request.destination())
           .append(" around this departure date.\n");
     }

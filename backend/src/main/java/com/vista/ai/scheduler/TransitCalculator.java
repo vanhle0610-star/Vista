@@ -4,14 +4,15 @@ import java.math.BigDecimal;
 import java.util.Locale;
 
 /**
- * Tiện ích tính toán di chuyển thực tế (Transit & Buffer Estimator).
- * Áp dụng hệ số uốn khúc mạng lưới đường bộ Việt Nam (Tortuosity factor 1.35x),
- * tốc độ trung bình theo phương tiện và ước tính chi phí di chuyển minh bạch.
+ * Tiện ích tính toán di chuyển thực tế (Transit & Buffer Estimator). Áp dụng hệ số uốn khúc mạng
+ * lưới đường bộ Việt Nam (Tortuosity factor 1.35x), tốc độ trung bình theo phương tiện và ước tính
+ * chi phí di chuyển minh bạch.
  */
 public final class TransitCalculator {
 
   private static final double EARTH_RADIUS_KM = 6371.0;
-  private static final double VIETNAM_ROAD_FACTOR = 1.35; // Đường bộ thực tế dài hơn đường chim bay ~35%
+  private static final double VIETNAM_ROAD_FACTOR =
+      1.35; // Đường bộ thực tế dài hơn đường chim bay ~35%
 
   public record TransitInfo(
       double roadDistanceKm,
@@ -23,9 +24,7 @@ public final class TransitCalculator {
 
   private TransitCalculator() {}
 
-  /**
-   * Tính khoảng cách Haversine giữa 2 tọa độ (km).
-   */
+  /** Tính khoảng cách Haversine giữa 2 tọa độ (km). */
   public static double haversineDistanceKm(double lat1, double lon1, double lat2, double lon2) {
     double dLat = Math.toRadians(lat2 - lat1);
     double dLon = Math.toRadians(lon2 - lon1);
@@ -48,7 +47,8 @@ public final class TransitCalculator {
    * @param lon2 kinh độ điểm đến
    * @param mode phương tiện ("DRIVING", "MOTORBIKE", "WALKING")
    * @param pace nhịp độ ("RELAXED", "MODERATE", "PACKED")
-   * @param travelWith thành phần đoàn ("Gia đình có trẻ nhỏ", "Người lớn tuổi", "Cặp đôi", "Nhóm bạn")
+   * @param travelWith thành phần đoàn ("Gia đình có trẻ nhỏ", "Người lớn tuổi", "Cặp đôi", "Nhóm
+   *     bạn")
    * @return TransitInfo chứa quãng đường, thời gian và chi phí
    */
   public static TransitInfo estimateTransit(
@@ -62,7 +62,13 @@ public final class TransitCalculator {
 
     if (lat1 == null || lon1 == null || lat2 == null || lon2 == null) {
       int defaultBuffer = determineBufferMinutes(pace, travelWith);
-      return new TransitInfo(0.0, 15, defaultBuffer, BigDecimal.ZERO, "DRIVING", "Ước tính di chuyển tiêu chuẩn ~15 phút");
+      return new TransitInfo(
+          0.0,
+          15,
+          defaultBuffer,
+          BigDecimal.ZERO,
+          "DRIVING",
+          "Ước tính di chuyển tiêu chuẩn ~15 phút");
     }
 
     double airDistKm = haversineDistanceKm(lat1, lon1, lat2, lon2);
@@ -115,11 +121,14 @@ public final class TransitCalculator {
     }
 
     // Nếu đoàn có trẻ em hoặc người lớn tuổi, cộng thêm 10 phút đệm nghỉ ngơi
-    if (w.contains("trẻ") || w.contains("bé") || w.contains("lớn tuổi") || w.contains("già") || w.contains("gia đình")) {
+    if (w.contains("trẻ")
+        || w.contains("bé")
+        || w.contains("lớn tuổi")
+        || w.contains("già")
+        || w.contains("gia đình")) {
       buffer += 10;
     }
 
     return Math.min(45, Math.max(10, buffer));
   }
 }
-

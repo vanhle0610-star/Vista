@@ -43,8 +43,8 @@ public class CommunityController {
   }
 
   @PatchMapping("/posts/{id}")
-  public Post edit(@PathVariable UUID id, @Valid @RequestBody Edit body) {
-    return service.edit(current.getCurrentUserId(), id, body);
+  public Post edit(@PathVariable UUID id, @Valid @RequestBody PostEdit body) {
+    return service.editPost(current.getCurrentUserId(), id, body);
   }
 
   @DeleteMapping("/posts/{id}")
@@ -63,7 +63,31 @@ public class CommunityController {
 
   @PostMapping("/posts/{id}/comments")
   public Comment addComment(@PathVariable UUID id, @RequestBody CreateComment body) {
-    return service.addComment(current.getCurrentUserId(), id, body.body());
+    return service.createComment(current.getCurrentUserId(), id, body);
+  }
+
+  @GetMapping("/posts/{id}/comments/{rootId}/replies")
+  public Page<Comment> replies(
+      @PathVariable UUID id,
+      @PathVariable UUID rootId,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "10") int size) {
+    return service.replies(id, rootId, page, size);
+  }
+
+  @GetMapping("/posts/{id}/like")
+  public PostLike likeState(@PathVariable UUID id) {
+    return service.likeState(current.getCurrentUserId(), id);
+  }
+
+  @PutMapping("/posts/{id}/like")
+  public PostLike like(@PathVariable UUID id) {
+    return service.setLiked(current.getCurrentUserId(), id, true);
+  }
+
+  @DeleteMapping("/posts/{id}/like")
+  public PostLike unlike(@PathVariable UUID id) {
+    return service.setLiked(current.getCurrentUserId(), id, false);
   }
 
   @PatchMapping("/posts/{id}/comments/{commentId}")

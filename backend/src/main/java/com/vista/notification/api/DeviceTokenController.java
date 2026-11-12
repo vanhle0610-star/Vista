@@ -21,9 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-/**
- * W6-TV3-04: API đăng ký và hủy token thiết bị phục vụ thông báo đẩy (FCM / APNs).
- */
+/** W6-TV3-04: API đăng ký và hủy token thiết bị phục vụ thông báo đẩy (FCM / APNs). */
 @RestController
 @RequestMapping("/api/v1/devices/tokens")
 @Tag(name = "Device Tokens", description = "Đăng ký và hủy token thiết bị cho push notifications")

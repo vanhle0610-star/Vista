@@ -55,7 +55,9 @@ class ItineraryControllerTest {
 
   @Test
   void guestCannotReadItinerary() throws Exception {
-    mockMvc.perform(get("/api/v1/trips/{tripId}/itinerary", tripId)).andExpect(status().isUnauthorized());
+    mockMvc
+        .perform(get("/api/v1/trips/{tripId}/itinerary", tripId))
+        .andExpect(status().isUnauthorized());
   }
 
   @Test

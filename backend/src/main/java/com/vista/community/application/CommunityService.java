@@ -13,12 +13,21 @@ import java.sql.SQLException;
 import java.util.*;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Primary
 public class CommunityService implements PostVisibilityService {
+  private static final Set<String> FEELINGS =
+      Set.of("HAPPY", "DELIGHTED", "EXCITED", "RELAXED", "GRATEFUL", "CONFIDENT", "SAD", "TIRED");
+  private static final String POST_SELECT =
+      "SELECT p.*,COALESCE(cc.comment_count,0) AS comment_count FROM posts p LEFT JOIN (SELECT c.post_id,count(*) AS comment_count FROM comments c WHERE c.status='VISIBLE' AND c.deleted_at IS NULL AND (c.root_id IS NULL OR EXISTS(SELECT 1 FROM comments root WHERE root.id=c.root_id AND root.status='VISIBLE')) GROUP BY c.post_id) cc ON cc.post_id=p.id ";
+  private static final String COMMENT_SELECT =
+      "SELECT c.*,COALESCE(rc.reply_count,0) AS reply_count,t.user_id AS target_user_id FROM comments c LEFT JOIN (SELECT root_id,count(*) AS reply_count FROM comments WHERE status='VISIBLE' AND deleted_at IS NULL AND root_id IS NOT NULL GROUP BY root_id) rc ON rc.root_id=c.id LEFT JOIN comments t ON t.id=c.reply_to_id ";
+  private static final String ROOT_VISIBLE =
+      "c.post_id=? AND c.root_id IS NULL AND c.status='VISIBLE' AND (c.deleted_at IS NULL OR EXISTS(SELECT 1 FROM comments r WHERE r.root_id=c.id AND r.status='VISIBLE' AND r.deleted_at IS NULL))";
   private final JdbcTemplate db;
   private final UserService users;
   private final DestinationQueryService destinations;
@@ -31,7 +40,17 @@ public class CommunityService implements PostVisibilityService {
   }
 
   private Author author(UUID id) {
-    return new Author(id, users.getProfile(id).displayName());
+    try {
+      var profile = users.getProfile(id);
+      return new Author(
+          id,
+          profile.displayName() == null || profile.displayName().isBlank()
+              ? "Người dùng VISTA"
+              : profile.displayName(),
+          profile.avatarUrl());
+    } catch (BadCredentialsException missing) {
+      return new Author(id, "Tài khoản không còn hoạt động", null);
+    }
   }
 
   private Post post(ResultSet row, int n) throws SQLException {
@@ -52,18 +71,39 @@ public class CommunityService implements PostVisibilityService {
         row.getTimestamp("updated_at").toInstant(),
         author(row.getObject("user_id", UUID.class)),
         row.getObject("destination_id", UUID.class),
-        media);
+        media,
+        row.getString("feeling"),
+        row.getLong("comment_count"),
+        Optional.ofNullable(row.getObject("destination_id", UUID.class))
+            .flatMap(destinations::findPublishedById)
+            .map(
+                d ->
+                    new CommunityPlace(
+                        d.id(),
+                        d.name(),
+                        d.provinceName(),
+                        d.imageUrl(),
+                        d.latitude(),
+                        d.longitude()))
+            .orElse(null));
   }
 
   private Comment comment(ResultSet row, int n) throws SQLException {
     return new Comment(
         row.getObject("id", UUID.class),
         row.getObject("post_id", UUID.class),
-        row.getString("body"),
+        row.getTimestamp("deleted_at") == null ? row.getString("body") : "Bình luận đã bị xóa",
         row.getLong("version"),
         row.getTimestamp("created_at").toInstant(),
         row.getTimestamp("updated_at").toInstant(),
-        author(row.getObject("user_id", UUID.class)));
+        author(row.getObject("user_id", UUID.class)),
+        row.getObject("root_id", UUID.class),
+        row.getObject("reply_to_id", UUID.class),
+        row.getObject("target_user_id", UUID.class) == null
+            ? null
+            : author(row.getObject("target_user_id", UUID.class)),
+        row.getLong("reply_count"),
+        row.getTimestamp("deleted_at") != null);
   }
 
   private static void pagination(int page, int size) {
@@ -86,7 +126,8 @@ public class CommunityService implements PostVisibilityService {
     pagination(page, size);
     var items =
         db.query(
-            "SELECT * FROM posts WHERE status='VISIBLE' AND deleted_at IS NULL ORDER BY created_at DESC, id DESC LIMIT ? OFFSET ?",
+            POST_SELECT
+                + "WHERE p.status='VISIBLE' AND p.deleted_at IS NULL ORDER BY p.created_at DESC, p.id DESC LIMIT ? OFFSET ?",
             this::post,
             size,
             (long) page * size);
@@ -100,7 +141,7 @@ public class CommunityService implements PostVisibilityService {
   public Post detail(UUID id) {
     return db
         .query(
-            "SELECT * FROM posts WHERE id=? AND status='VISIBLE' AND deleted_at IS NULL",
+            POST_SELECT + "WHERE p.id=? AND p.status='VISIBLE' AND p.deleted_at IS NULL",
             this::post,
             id)
         .stream()
@@ -140,6 +181,8 @@ public class CommunityService implements PostVisibilityService {
   @Transactional
   public Post create(UUID user, CreatePost input) {
     String text = body(input.body(), 4000);
+    if (input.feeling() != null && !FEELINGS.contains(input.feeling()))
+      throw of(BAD_REQUEST, "INVALID_FEELING", "Cảm xúc không hợp lệ.");
     List<UUID> uploads = input.uploadIds() == null ? List.of() : input.uploadIds();
     if (input.clientRequestId() == null
         || uploads.size() > 4
@@ -153,7 +196,12 @@ public class CommunityService implements PostVisibilityService {
               .formatHex(
                   MessageDigest.getInstance("SHA-256")
                       .digest(
-                          (text + "\n" + input.destinationId() + "\n" + uploads)
+                          (text
+                                  + "\n"
+                                  + input.destinationId()
+                                  + "\n"
+                                  + uploads
+                                  + (input.feeling() == null ? "" : "\n" + input.feeling()))
                               .getBytes(StandardCharsets.UTF_8)));
     } catch (Exception ex) {
       throw new IllegalStateException(ex);
@@ -174,7 +222,7 @@ public class CommunityService implements PostVisibilityService {
             CONFLICT,
             "REQUEST_REUSED",
             "Mã gửi đã được dùng cho nội dung khác. Hãy làm mới bản nháp.");
-      return db.query("SELECT * FROM posts WHERE id=?", this::post, row.get("id")).getFirst();
+      return db.query(POST_SELECT + "WHERE p.id=?", this::post, row.get("id")).getFirst();
     }
     if (input.destinationId() != null
         && destinations.findPublishedById(input.destinationId()).isEmpty())
@@ -183,13 +231,14 @@ public class CommunityService implements PostVisibilityService {
     // New posts are public in the basic week-3 feed; future moderation can hide them via the
     // boundary.
     db.update(
-        "INSERT INTO posts(id,user_id,destination_id,body,status,client_request_id,request_hash) VALUES (?,?,?,?,'VISIBLE',?,?)",
+        "INSERT INTO posts(id,user_id,destination_id,body,status,client_request_id,request_hash,feeling) VALUES (?,?,?,?,'VISIBLE',?,?,?)",
         id,
         user,
         input.destinationId(),
         text,
         input.clientRequestId(),
-        hash);
+        hash,
+        input.feeling());
     for (UUID upload : uploads) {
       var found =
           db.queryForList(
@@ -215,14 +264,30 @@ public class CommunityService implements PostVisibilityService {
 
   @Transactional
   public Post edit(UUID user, UUID id, Edit input) {
+    var patch = new PostEdit();
+    patch.body = input.body();
+    patch.version = input.version();
+    return editPost(user, id, patch);
+  }
+
+  @Transactional
+  public Post editPost(UUID user, UUID id, PostEdit input) {
     var row = lockPost(id);
     owner(row, user);
-    expected(row, input.version());
+    expected(row, input.version);
     if (!"VISIBLE".equals(row.get("status")))
       throw of(CONFLICT, "POST_HIDDEN", "Bài hiện không cho phép chỉnh sửa.");
+    if (input.feelingSupplied() && input.feeling() != null && !FEELINGS.contains(input.feeling()))
+      throw of(BAD_REQUEST, "INVALID_FEELING", "Cảm xúc không hợp lệ.");
+    if (input.destinationSupplied()
+        && input.destinationId() != null
+        && destinations.findPublishedById(input.destinationId()).isEmpty())
+      throw of(BAD_REQUEST, "DESTINATION_NOT_FOUND", "Địa điểm chưa được công bố.");
     db.update(
-        "UPDATE posts SET body=?,version=version+1,updated_at=now() WHERE id=?",
-        body(input.body(), 4000),
+        "UPDATE posts SET body=?,destination_id=?,feeling=?,version=version+1,updated_at=now() WHERE id=?",
+        body(input.body, 4000),
+        input.destinationSupplied() ? input.destinationId() : row.get("destination_id"),
+        input.feelingSupplied() ? input.feeling() : row.get("feeling"),
         id);
     return detail(id);
   }
@@ -250,31 +315,165 @@ public class CommunityService implements PostVisibilityService {
     visiblePost(postId);
     var items =
         db.query(
-            "SELECT * FROM comments WHERE post_id=? AND status='VISIBLE' AND deleted_at IS NULL ORDER BY created_at DESC,id DESC LIMIT ? OFFSET ?",
+            COMMENT_SELECT
+                + "WHERE "
+                + ROOT_VISIBLE
+                + " ORDER BY c.created_at DESC,c.id DESC LIMIT ? OFFSET ?",
             this::comment,
             postId,
             size,
             (long) page * size);
     long total =
         db.queryForObject(
-            "SELECT count(*) FROM comments WHERE post_id=? AND status='VISIBLE' AND deleted_at IS NULL",
-            Long.class,
+            "SELECT count(*) FROM comments c WHERE " + ROOT_VISIBLE, Long.class, postId);
+    return new Page<>(items, total, page, size, commentCount(postId));
+  }
+
+  private long commentCount(UUID postId) {
+    return db.queryForObject(
+        "SELECT count(*) FROM comments c WHERE c.post_id=? AND c.status='VISIBLE' AND c.deleted_at IS NULL AND (c.root_id IS NULL OR EXISTS(SELECT 1 FROM comments root WHERE root.id=c.root_id AND root.status='VISIBLE'))",
+        Long.class,
+        postId);
+  }
+
+  @Transactional(readOnly = true)
+  public Page<Comment> replies(UUID postId, UUID rootId, int page, int size) {
+    pagination(page, size);
+    visiblePost(postId);
+    var roots =
+        db.queryForList(
+            "SELECT id FROM comments WHERE id=? AND post_id=? AND root_id IS NULL AND status='VISIBLE'",
+            rootId,
             postId);
-    return new Page<>(items, total, page, size);
+    if (roots.isEmpty())
+      throw of(NOT_FOUND, "COMMENT_NOT_FOUND", "Không tìm thấy luồng bình luận.");
+    var items =
+        db.query(
+            COMMENT_SELECT
+                + "WHERE c.post_id=? AND c.root_id=? AND c.status='VISIBLE' AND c.deleted_at IS NULL ORDER BY c.created_at,c.id LIMIT ? OFFSET ?",
+            this::comment,
+            postId,
+            rootId,
+            size,
+            (long) page * size);
+    long total =
+        db.queryForObject(
+            "SELECT count(*) FROM comments WHERE post_id=? AND root_id=? AND status='VISIBLE' AND deleted_at IS NULL",
+            Long.class,
+            postId,
+            rootId);
+    return new Page<>(items, total, page, size, commentCount(postId));
+  }
+
+  @Transactional(readOnly = true)
+  public PostLike likeState(UUID user, UUID postId) {
+    visiblePost(postId);
+    return db.queryForObject(
+        "SELECT count(*) AS like_count, count(*) FILTER (WHERE user_id=?) > 0 AS liked FROM post_likes WHERE post_id=?",
+        (row, n) -> new PostLike(postId, row.getBoolean("liked"), row.getLong("like_count")),
+        user,
+        postId);
+  }
+
+  @Transactional
+  public PostLike setLiked(UUID user, UUID postId, boolean liked) {
+    lockPost(postId);
+    visiblePost(postId);
+    if (liked) {
+      db.update(
+          "INSERT INTO post_likes(post_id,user_id) VALUES (?,?) ON CONFLICT (post_id,user_id) DO NOTHING",
+          postId,
+          user);
+    } else {
+      db.update("DELETE FROM post_likes WHERE post_id=? AND user_id=?", postId, user);
+    }
+    return likeState(user, postId);
   }
 
   @Transactional
   public Comment addComment(UUID user, UUID postId, String text) {
+    return createComment(user, postId, new CreateComment(text));
+  }
+
+  @Transactional
+  public Comment createComment(UUID user, UUID postId, CreateComment input) {
+    String text = body(input.body(), 2000);
+    if (input.replyToId() != null && input.clientRequestId() == null)
+      throw of(
+          BAD_REQUEST,
+          "COMMENT_REQUEST_ID_REQUIRED",
+          "Không thể gửi phản hồi. Hãy thử lại hoặc cập nhật ứng dụng.");
     lockPost(postId);
     visiblePost(postId);
+    String hash = postId + "\n" + input.replyToId() + "\n" + text;
+    if (input.clientRequestId() != null) {
+      db.queryForList(
+          "SELECT pg_advisory_xact_lock(hashtextextended(?,0))",
+          user + ":comment:" + input.clientRequestId());
+      var existing =
+          db.queryForList(
+              "SELECT id,request_hash,deleted_at,status,root_id FROM comments WHERE user_id=? AND client_request_id=?",
+              user,
+              input.clientRequestId());
+      if (!existing.isEmpty()) {
+        var saved = existing.getFirst();
+        if (!"VISIBLE".equals(saved.get("status"))
+            || (saved.get("root_id") != null
+                && !Boolean.TRUE.equals(
+                    db.queryForObject(
+                        "SELECT EXISTS(SELECT 1 FROM comments WHERE id=? AND status='VISIBLE')",
+                        Boolean.class,
+                        saved.get("root_id")))))
+          throw of(NOT_FOUND, "COMMENT_NOT_FOUND", "Bình luận không còn cho phép xem.");
+        if (!digest(hash).equals(saved.get("request_hash")) || saved.get("deleted_at") != null)
+          throw of(CONFLICT, "REQUEST_REUSED", "Mã gửi đã dùng cho bình luận khác.");
+        return db.query(COMMENT_SELECT + "WHERE c.id=?", this::comment, saved.get("id")).getFirst();
+      }
+    }
+    UUID rootId = null;
+    if (input.replyToId() != null) {
+      var targets =
+          db.queryForList(
+              "SELECT id,root_id FROM comments WHERE id=? AND post_id=? AND status='VISIBLE' AND deleted_at IS NULL FOR UPDATE",
+              input.replyToId(),
+              postId);
+      if (targets.isEmpty())
+        throw of(
+            NOT_FOUND,
+            "COMMENT_NOT_FOUND",
+            "Bình luận không thuộc bài này hoặc không còn cho phép trả lời.");
+      var target = targets.getFirst();
+      rootId =
+          target.get("root_id") == null ? (UUID) target.get("id") : (UUID) target.get("root_id");
+      var root =
+          db.queryForList(
+              "SELECT id FROM comments WHERE id=? AND post_id=? AND root_id IS NULL AND status='VISIBLE' AND deleted_at IS NULL",
+              rootId,
+              postId);
+      if (root.isEmpty()) throw of(NOT_FOUND, "COMMENT_NOT_FOUND", "Luồng bình luận đã đóng.");
+    }
     UUID id = UUID.randomUUID();
     db.update(
-        "INSERT INTO comments(id,post_id,user_id,body,status) VALUES (?,?,?,?,'VISIBLE')",
+        "INSERT INTO comments(id,post_id,user_id,body,status,root_id,reply_to_id,client_request_id,request_hash) VALUES (?,?,?,?,'VISIBLE',?,?,?,?)",
         id,
         postId,
         user,
-        body(text, 2000));
-    return db.query("SELECT * FROM comments WHERE id=?", this::comment, id).getFirst();
+        text,
+        rootId,
+        input.replyToId(),
+        input.clientRequestId(),
+        digest(hash));
+    return db.query(COMMENT_SELECT + "WHERE c.id=?", this::comment, id).getFirst();
+  }
+
+  private static String digest(String value) {
+    try {
+      return HexFormat.of()
+          .formatHex(
+              MessageDigest.getInstance("SHA-256").digest(value.getBytes(StandardCharsets.UTF_8)));
+    } catch (Exception error) {
+      throw new IllegalStateException(error);
+    }
   }
 
   private Map<String, Object> lockComment(UUID postId, UUID commentId, UUID user) {
@@ -301,7 +500,7 @@ public class CommunityService implements PostVisibilityService {
         "UPDATE comments SET body=?,updated_at=now(),version=version+1 WHERE id=?",
         body(input.body(), 2000),
         id);
-    return db.query("SELECT * FROM comments WHERE id=?", this::comment, id).getFirst();
+    return db.query(COMMENT_SELECT + "WHERE c.id=?", this::comment, id).getFirst();
   }
 
   @Transactional

@@ -27,8 +27,6 @@ import com.vista.trip.application.TripAccessService;
 import com.vista.trip.domain.TripEntity;
 import com.vista.trip.domain.TripMemberEntity;
 import com.vista.trip.domain.TripMemberRepository;
-import com.vista.trip.domain.TripMemberRole;
-import com.vista.trip.domain.TripMemberStatus;
 import com.vista.trip.domain.TripRepository;
 import com.vista.user.domain.UserEntity;
 import com.vista.user.infrastructure.UserRepository;
@@ -51,7 +49,8 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
- * W5-TV3-02, W5-TV3-03, W6-TV3-04: Kiểm thử NotificationService bản thật + Sự kiện lời mời + Device tokens & Push.
+ * W5-TV3-02, W5-TV3-03, W6-TV3-04: Kiểm thử NotificationService bản thật + Sự kiện lời mời + Device
+ * tokens & Push.
  */
 @ExtendWith(MockitoExtension.class)
 class NotificationRealIntegrationTest {
@@ -84,8 +83,7 @@ class NotificationRealIntegrationTest {
             notificationRepository, jdbcClient, objectMapper, deviceTokenRepository);
     notificationController =
         new NotificationController(notificationRepository, currentUserProvider);
-    deviceTokenController =
-        new DeviceTokenController(deviceTokenRepository, currentUserProvider);
+    deviceTokenController = new DeviceTokenController(deviceTokenRepository, currentUserProvider);
     invitationService =
         new InvitationService(
             invitationRepository,
@@ -147,7 +145,8 @@ class NotificationRealIntegrationTest {
     ReflectionTestUtils.setField(notif, "id", notifId);
 
     when(notificationRepository.findById(notifId)).thenReturn(Optional.of(notif));
-    when(notificationRepository.save(any(NotificationEntity.class))).thenAnswer(i -> i.getArgument(0));
+    when(notificationRepository.save(any(NotificationEntity.class)))
+        .thenAnswer(i -> i.getArgument(0));
 
     var readResp = notificationController.markRead(notifId);
     assertThat(readResp.getBody().read()).isTrue();
@@ -247,7 +246,8 @@ class NotificationRealIntegrationTest {
   void registerAndDeactivateDeviceToken() {
     when(currentUserProvider.getCurrentUserId()).thenReturn(USER_A);
     when(deviceTokenRepository.findByToken("fcm-device-token-123")).thenReturn(Optional.empty());
-    when(deviceTokenRepository.save(any(DeviceTokenEntity.class))).thenAnswer(i -> i.getArgument(0));
+    when(deviceTokenRepository.save(any(DeviceTokenEntity.class)))
+        .thenAnswer(i -> i.getArgument(0));
 
     var regReq =
         new DeviceTokenController.RegisterDeviceTokenRequest(
@@ -258,14 +258,15 @@ class NotificationRealIntegrationTest {
 
     assertThat(regResp.getStatusCode()).isEqualTo(HttpStatus.CREATED);
     assertThat(regResp.getBody().token()).isEqualTo("fcm-device-token-123");
+    assertThat(regResp.getBody().userId()).isEqualTo(USER_A);
     assertThat(regResp.getBody().platform()).isEqualTo("FCM");
     assertThat(regResp.getBody().active()).isTrue();
 
     // Unregister token
-    ResponseEntity<Void> unregResp =
-        deviceTokenController.unregisterToken("fcm-device-token-123");
+    when(deviceTokenRepository.deactivateByUserAndToken(USER_A, "fcm-device-token-123"))
+        .thenReturn(1);
+    ResponseEntity<Void> unregResp = deviceTokenController.unregisterToken("fcm-device-token-123");
     assertThat(unregResp.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
-    verify(deviceTokenRepository).deactivateByToken("fcm-device-token-123");
+    verify(deviceTokenRepository).deactivateByUserAndToken(USER_A, "fcm-device-token-123");
   }
 }
-

@@ -24,8 +24,7 @@ public class ItineraryService {
   private final JdbcClient jdbcClient;
   private final DestinationQueryService destinationQueryService;
 
-  public ItineraryService(
-      JdbcClient jdbcClient, DestinationQueryService destinationQueryService) {
+  public ItineraryService(JdbcClient jdbcClient, DestinationQueryService destinationQueryService) {
     this.jdbcClient = jdbcClient;
     this.destinationQueryService = destinationQueryService;
   }
@@ -55,8 +54,7 @@ public class ItineraryService {
                 long dayVersion = resultSet.getLong("day_version");
                 MutableDay day =
                     days.computeIfAbsent(
-                        dayId,
-                        ignored -> new MutableDay(dayId, dayNumber, tripDate, dayVersion));
+                        dayId, ignored -> new MutableDay(dayId, dayNumber, tripDate, dayVersion));
                 UUID itemId = (UUID) resultSet.getObject("item_id");
                 if (itemId != null) {
                   Time startTime = resultSet.getTime("start_time");
@@ -88,8 +86,7 @@ public class ItineraryService {
   }
 
   @Transactional
-  public ItineraryResponse merge(
-      UUID tripId, UUID currentUserId, MergeItineraryRequest request) {
+  public ItineraryResponse merge(UUID tripId, UUID currentUserId, MergeItineraryRequest request) {
     LocalDate startDate =
         jdbcClient
             .sql("SELECT start_date FROM trips WHERE id = :tripId")
@@ -97,7 +94,8 @@ public class ItineraryService {
             .query((resultSet, rowNumber) -> resultSet.getObject(1, LocalDate.class))
             .optional()
             .orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy chuyến đi"));
+                () ->
+                    new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy chuyến đi"));
 
     validatePublishedDestinations(request);
     for (MergeItineraryRequest.ItineraryDayRequest day : request.days()) {
@@ -211,7 +209,8 @@ public class ItineraryService {
   private String normalizeSource(String source) {
     if (source == null) return "MANUAL";
     return switch (source.trim().toUpperCase()) {
-      case "AI_LOCAL", "AI_GEMINI", "AI_CLAUDE", "AI_OFFLINE", "MANUAL" -> source.trim().toUpperCase();
+      case "AI_LOCAL", "AI_GEMINI", "AI_CLAUDE", "AI_OFFLINE", "MANUAL" ->
+          source.trim().toUpperCase();
       default -> "MANUAL";
     };
   }
@@ -231,4 +230,3 @@ public class ItineraryService {
     }
   }
 }
-

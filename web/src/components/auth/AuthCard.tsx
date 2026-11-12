@@ -15,7 +15,14 @@ const GOOGLE_CLIENT_ID =
   process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
   '577926332144-23qceg2o944n9hg5iv7nai2vr0s9u2d1.apps.googleusercontent.com';
 
-const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081/api/v1').replace(/\/+$/, '');
+const getApiUrl = () => {
+  if (typeof window !== 'undefined') {
+    // Dùng relative path để Next.js proxy rewrite sang backend port 8080
+    // Hoạt động hoàn hảo trên cả localhost và mạng LAN (192.168.x.x) trên điện thoại / máy khác
+    return '/api/v1';
+  }
+  return (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1').replace(/\/+$/, '');
+};
 
 const WEAK_PASSWORDS = new Set([
   '1234567890',
@@ -110,20 +117,28 @@ export function AuthCard({ isNight, initialMode }: AuthCardProps) {
     }, 1000);
     return () => clearInterval(timer);
   }, [resendCountdown]);
+  const [alreadyLoggedInUser, setAlreadyLoggedInUser] = useState<{
+    id?: string;
+    email?: string;
+    displayName?: string;
+    roles?: string[];
+  } | null>(null);
+
   useEffect(() => {
     try {
       const token = localStorage.getItem('vista_token');
       const userStr = localStorage.getItem('vista_user');
       if (token && userStr) {
-        // Đảm bảo Cookie luôn được đồng bộ với LocalStorage với thời hạn 7 ngày
+        const parsed = JSON.parse(userStr);
+        setAlreadyLoggedInUser(parsed);
         document.cookie = `vista_token=${token}; path=/; max-age=604800; SameSite=Lax`;
-        // Nếu đã đăng nhập, tự động chuyển ngay về trang đích (hoặc trang chủ), không hiện thẻ chặn
-        const dest = getSafeReturnUrl(returnUrlParam);
-        const targetUrl = dest && dest !== '/login' ? dest : '/';
-        window.location.replace(targetUrl);
+      } else {
+        setAlreadyLoggedInUser(null);
       }
-    } catch {}
-  }, [returnUrlParam]);
+    } catch {
+      setAlreadyLoggedInUser(null);
+    }
+  }, []);
 
   // International Country Dial Code State
   const [selectedDialCode, setSelectedDialCode] = useState<CountryDialCode>(() => {
@@ -194,7 +209,8 @@ export function AuthCard({ isNight, initialMode }: AuthCardProps) {
 
   const navigateToDestination = useCallback(() => {
     const destination = getSafeReturnUrl(returnUrlParam);
-    window.location.href = destination;
+    const target = destination && destination !== '/login' ? destination : '/';
+    window.location.href = target;
   }, [returnUrlParam]);
 
   const handleGoogleCredentialResponse = useCallback(
@@ -218,8 +234,9 @@ export function AuthCard({ isNight, initialMode }: AuthCardProps) {
       });
 
       try {
-        const res = await fetch(`${API_URL}/auth/google`, {
+        const res = await fetch(`${getApiUrl()}/auth/google`, {
           method: 'POST',
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ idToken: response.credential }),
         });
@@ -313,7 +330,7 @@ export function AuthCard({ isNight, initialMode }: AuthCardProps) {
     }
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/auth/forgot-password`, {
+      const res = await fetch(`${getApiUrl()}/auth/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim() }),
@@ -350,7 +367,7 @@ export function AuthCard({ isNight, initialMode }: AuthCardProps) {
       }
       setLoading(true);
       try {
-        const res = await fetch(`${API_URL}/auth/forgot-password`, {
+        const res = await fetch(`${getApiUrl()}/auth/forgot-password`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: email.trim() }),
@@ -418,7 +435,7 @@ export function AuthCard({ isNight, initialMode }: AuthCardProps) {
       }
       setLoading(true);
       try {
-        const res = await fetch(`${API_URL}/auth/reset-password`, {
+        const res = await fetch(`${getApiUrl()}/auth/reset-password`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -592,8 +609,9 @@ export function AuthCard({ isNight, initialMode }: AuthCardProps) {
           };
 
     try {
-      const res = await fetch(`${API_URL}${endpoint}`, {
+      const res = await fetch(`${getApiUrl()}${endpoint}`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
@@ -756,6 +774,72 @@ export function AuthCard({ isNight, initialMode }: AuthCardProps) {
               : `Nhập mã xác thực OTP gửi đến ${email || 'email của bạn'}`}
           </p>
         </div>
+
+        {/* Already Logged In Session Pill */}
+        {alreadyLoggedInUser && (
+          <div
+            style={{
+              background: isNight ? 'rgba(2, 132, 199, 0.15)' : '#F0F9FF',
+              border: '1px solid #BAE6FD',
+              borderRadius: '12px',
+              padding: '12px 14px',
+              marginBottom: '16px',
+              fontSize: '13px',
+              textAlign: 'left',
+            }}
+          >
+            <div style={{ fontWeight: 700, color: isNight ? '#7DD3FC' : '#0369A1', marginBottom: '3px' }}>
+              ✓ Đang có phiên: <span>{alreadyLoggedInUser.displayName || alreadyLoggedInUser.email}</span>
+            </div>
+            <div style={{ fontSize: '11.5px', color: isNight ? '#94A3B8' : '#64748B', marginBottom: '8px' }}>
+              {alreadyLoggedInUser.email}
+            </div>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  const dest = getSafeReturnUrl(returnUrlParam);
+                  const target = dest && dest !== '/login' ? dest : '/';
+                  window.location.href = target;
+                }}
+                style={{
+                  background: '#0284C7',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '5px 12px',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
+              >
+                Tiếp tục phiên →
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  localStorage.removeItem('vista_token');
+                  localStorage.removeItem('vista_user');
+                  document.cookie = 'vista_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
+                  window.dispatchEvent(new Event('vista-auth-change'));
+                  setAlreadyLoggedInUser(null);
+                }}
+                style={{
+                  background: 'transparent',
+                  color: '#EF4444',
+                  border: '1px solid #FECACA',
+                  borderRadius: '8px',
+                  padding: '5px 12px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Đăng xuất / Dùng tài khoản khác
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Tab Switcher */}
         {(mode === 'login' || mode === 'register') && (

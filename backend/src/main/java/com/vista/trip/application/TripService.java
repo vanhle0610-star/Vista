@@ -176,18 +176,14 @@ public class TripService {
     tripMemberRepository.save(member);
     if (auditLogService != null) {
       auditLogService.logAction(
-          userId,
-          "LEAVE_TRIP",
-          "TRIP",
-          tripId.toString(),
-          "{\"userId\":\"" + userId + "\"}");
+          userId, "LEAVE_TRIP", "TRIP", tripId.toString(), "{\"userId\":\"" + userId + "\"}");
     }
   }
 
   /**
-   * Chuyển quyền Owner (TV2 W4 / BR-01) — chỉ owner hiện tại mới được phép chuyển cho một active member.
-   * Sử dụng isolation = SERIALIZABLE và flush tuần tự để chống Race Condition và đảm bảo invariant
-   * chỉ duy nhất 1 OWNER tồn tại tại mọi thời điểm.
+   * Chuyển quyền Owner (TV2 W4 / BR-01) — chỉ owner hiện tại mới được phép chuyển cho một active
+   * member. Sử dụng isolation = SERIALIZABLE và flush tuần tự để chống Race Condition và đảm bảo
+   * invariant chỉ duy nhất 1 OWNER tồn tại tại mọi thời điểm.
    */
   @Transactional(isolation = Isolation.SERIALIZABLE)
   public TripResponse transferOwner(UUID tripId, UUID currentUserId, UUID newOwnerId) {
@@ -241,7 +237,8 @@ public class TripService {
           "TRANSFER_OWNER",
           "TRIP",
           tripId.toString(),
-          String.format("{\"oldOwnerId\":\"%s\",\"newOwnerId\":\"%s\"}", currentUserId, newOwnerId));
+          String.format(
+              "{\"oldOwnerId\":\"%s\",\"newOwnerId\":\"%s\"}", currentUserId, newOwnerId));
     }
 
     return TripResponse.from(savedTrip);

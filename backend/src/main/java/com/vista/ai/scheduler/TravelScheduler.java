@@ -18,29 +18,30 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 /**
- * Bộ máy lập lịch du lịch thực tế (Deterministic Travel Scheduling Engine).
- * Đảm bảo:
- * 1. Bất biến thời gian: start(next) >= end(previous) + travelDuration + bufferMinutes.
- * 2. Tôn trọng giờ mở cửa và ngày đóng cửa thực tế từ CSDL.
- * 3. Hỗ trợ giờ đến muộn ngày 1 (arrivalTime) và giờ về sớm ngày cuối (departureTime).
- * 4. Không ép cố định 4 slot nếu thời gian hoặc nhịp độ không cho phép.
- * 5. Tính chi phí minh bạch: vé tham quan, ăn uống, di chuyển và cờ UNVERIFIED.
- * 6. Đa dạng hóa theo sở thích người dùng (cho phép nhiều di tích nếu thích lịch sử).
+ * Bộ máy lập lịch du lịch thực tế (Deterministic Travel Scheduling Engine). Đảm bảo: 1. Bất biến
+ * thời gian: start(next) >= end(previous) + travelDuration + bufferMinutes. 2. Tôn trọng giờ mở cửa
+ * và ngày đóng cửa thực tế từ CSDL. 3. Hỗ trợ giờ đến muộn ngày 1 (arrivalTime) và giờ về sớm ngày
+ * cuối (departureTime). 4. Không ép cố định 4 slot nếu thời gian hoặc nhịp độ không cho phép. 5.
+ * Tính chi phí minh bạch: vé tham quan, ăn uống, di chuyển và cờ UNVERIFIED. 6. Đa dạng hóa theo sở
+ * thích người dùng (cho phép nhiều di tích nếu thích lịch sử).
  */
 public final class TravelScheduler {
 
   public static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
 
-  public static final Pattern ARRIVAL_PATTERN = Pattern.compile(
-      "(?i)(?:den|ha\\s*canh|toi|check-?in|co\\s*mat|dap|bay\\s*den)[^0-9\\n]{0,40}(\\d{1,2})\\s*(?:h|:)\\s*(\\d{2})?");
-  public static final Pattern DEPARTURE_PATTERN = Pattern.compile(
-      "(?i)(?:ve|roi|bay\\s*ve|khoi\\s*hanh\\s*ve|tra\\s*phong|check-?out|roi\\s*khoi)[^0-9\\n]{0,40}(\\d{1,2})\\s*(?:h|:)\\s*(\\d{2})?");
+  public static final Pattern ARRIVAL_PATTERN =
+      Pattern.compile(
+          "(?i)(?:den|ha\\s*canh|toi|check-?in|co\\s*mat|dap|bay\\s*den)[^0-9\\n]{0,40}(\\d{1,2})\\s*(?:h|:)\\s*(\\d{2})?");
+  public static final Pattern DEPARTURE_PATTERN =
+      Pattern.compile(
+          "(?i)(?:ve|roi|bay\\s*ve|khoi\\s*hanh\\s*ve|tra\\s*phong|check-?out|roi\\s*khoi)[^0-9\\n]{0,40}(\\d{1,2})\\s*(?:h|:)\\s*(\\d{2})?");
 
   public static LocalTime extractTimeFromText(String text, Pattern pattern) {
     if (text == null || text.isBlank()) return null;
-    String norm = java.text.Normalizer.normalize(text, java.text.Normalizer.Form.NFD)
-        .replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
-        .toLowerCase(Locale.ROOT);
+    String norm =
+        java.text.Normalizer.normalize(text, java.text.Normalizer.Form.NFD)
+            .replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
+            .toLowerCase(Locale.ROOT);
     java.util.regex.Matcher m = pattern.matcher(norm);
     if (m.find()) {
       try {
@@ -49,7 +50,8 @@ public final class TravelScheduler {
         if (h >= 0 && h <= 23 && min >= 0 && min <= 59) {
           return LocalTime.of(h, min);
         }
-      } catch (Exception ignored) {}
+      } catch (Exception ignored) {
+      }
     }
     return null;
   }
@@ -70,9 +72,7 @@ public final class TravelScheduler {
       String pacingSummary,
       String localAdviceSummary) {}
 
-  /**
-   * Tạo lịch trình hoàn chỉnh có căn cứ và bất biến thời gian từ danh sách địa điểm PUBLISHED.
-   */
+  /** Tạo lịch trình hoàn chỉnh có căn cứ và bất biến thời gian từ danh sách địa điểm PUBLISHED. */
   public static ScheduledPlanResult buildDeterministicPlan(
       AiItinerarySuggestionRequest request,
       int daysCount,
@@ -84,15 +84,18 @@ public final class TravelScheduler {
     LocalTime arrivalTime = intent.arrivalTime();
     LocalTime departureTime = intent.departureTime();
 
-    int people = request.peopleCount() != null && request.peopleCount() > 0 ? request.peopleCount() : 2;
+    int people =
+        request.peopleCount() != null && request.peopleCount() > 0 ? request.peopleCount() : 2;
     String pace = intent.effectivePace();
     String travelMode = intent.effectiveTravelMode();
     String travelWith = request.travelWith() != null ? request.travelWith() : "Nhóm bạn";
-    List<String> userInterests = request.interests() != null ? request.interests() : List.of("Khám phá", "Ẩm thực");
+    List<String> userInterests =
+        request.interests() != null ? request.interests() : List.of("Khám phá", "Ẩm thực");
 
     boolean userLovesHistory = isHistoryFocused(userInterests, request.specialRequests());
 
-    List<DestinationSummary> pool = new ArrayList<>(destinations != null ? destinations : List.of());
+    List<DestinationSummary> pool =
+        new ArrayList<>(destinations != null ? destinations : List.of());
     Set<UUID> usedDestinationIds = new HashSet<>();
 
     List<SuggestedDayResponse> scheduledDays = new ArrayList<>();
@@ -132,7 +135,8 @@ public final class TravelScheduler {
       DestinationSummary previousDest = null;
 
       // 1. CHẶNG BUỔI SÁNG (Chỉ xếp nếu thời gian bắt đầu trước 11:00)
-      if (currentTimeCursor.isBefore(LocalTime.of(11, 0)) && dayLatestEnd.isAfter(LocalTime.of(10, 0))) {
+      if (currentTimeCursor.isBefore(LocalTime.of(11, 0))
+          && dayLatestEnd.isAfter(LocalTime.of(10, 0))) {
         DestinationSummary morningCand =
             findBestCandidate(
                 pool,
@@ -165,9 +169,13 @@ public final class TravelScheduler {
           OpeningHoursHelper.ScheduleWindow window =
               OpeningHoursHelper.parseWindow(morningCand.openingHours(), dayOfWeek);
           String warning = null;
-          if (window.isVerified() && window.closeTime() != null && actEnd.isAfter(window.closeTime())) {
+          if (window.isVerified()
+              && window.closeTime() != null
+              && actEnd.isAfter(window.closeTime())) {
             actEnd = window.closeTime();
-            warning = "Đã điều chỉnh giờ tham quan do điểm đến đóng cửa lúc " + window.closeTime().format(TIME_FMT);
+            warning =
+                "Đã điều chỉnh giờ tham quan do điểm đến đóng cửa lúc "
+                    + window.closeTime().format(TIME_FMT);
           }
           if (!window.isVerified()) {
             warning = "Giờ mở cửa chưa được kiểm chứng chính thức, nên liên hệ trước khi đến.";
@@ -190,7 +198,11 @@ public final class TravelScheduler {
                   morningCand.categoryName(),
                   morningCand.name() + " — Điểm khởi đầu lý tưởng theo khung giờ râm mát đầu ngày.",
                   "Khám phá cảnh quan và di sản văn hóa khi thời tiết mát mẻ và vắng khách.",
-                  "Khung giờ sáng (" + actStart.format(TIME_FMT) + " – " + actEnd.format(TIME_FMT) + ") trời dịu mát, nắng chưa gắt, chụp ảnh đẹp và thoải mái dạo chơi.",
+                  "Khung giờ sáng ("
+                      + actStart.format(TIME_FMT)
+                      + " – "
+                      + actEnd.format(TIME_FMT)
+                      + ") trời dịu mát, nắng chưa gắt, chụp ảnh đẹp và thoải mái dạo chơi.",
                   "Điểm đến mang tính biểu tượng cao với kiến trúc đặc sắc và chiều sâu lịch sử văn hóa.",
                   actStart.format(TIME_FMT),
                   actEnd.format(TIME_FMT),
@@ -206,9 +218,14 @@ public final class TravelScheduler {
       }
 
       // 2. CHẶNG BUỔI TRƯA: ĂN TRƯA & NGHỈ NGƠI MÁT MẺ (Nếu ngày hoạt động bao gồm giờ trưa)
-      if (currentTimeCursor.isBefore(LocalTime.of(13, 30)) && dayLatestEnd.isAfter(LocalTime.of(12, 30))) {
-        LocalTime lunchStart = currentTimeCursor.isBefore(LocalTime.of(11, 45)) ? LocalTime.of(11, 45) : currentTimeCursor;
-        DestinationSummary foodCand = findCulinaryCandidate(pool, usedDestinationIds, previousDest, dayOfWeek);
+      if (currentTimeCursor.isBefore(LocalTime.of(13, 30))
+          && dayLatestEnd.isAfter(LocalTime.of(12, 30))) {
+        LocalTime lunchStart =
+            currentTimeCursor.isBefore(LocalTime.of(11, 45))
+                ? LocalTime.of(11, 45)
+                : currentTimeCursor;
+        DestinationSummary foodCand =
+            findCulinaryCandidate(pool, usedDestinationIds, previousDest, dayOfWeek);
 
         int lunchDuration = 75; // 75 phút ăn trưa nghỉ ngơi thư thả
         TransitCalculator.TransitInfo transit =
@@ -221,7 +238,8 @@ public final class TravelScheduler {
                 pace,
                 travelWith);
 
-        LocalTime actualLunchStart = lunchStart.plusMinutes(previousDest != null ? transit.durationMinutes() : 0);
+        LocalTime actualLunchStart =
+            lunchStart.plusMinutes(previousDest != null ? transit.durationMinutes() : 0);
         LocalTime actualLunchEnd = actualLunchStart.plusMinutes(lunchDuration);
 
         // Chi phí ăn trưa ước tính (60.000đ - 90.000đ / người)
@@ -230,7 +248,10 @@ public final class TravelScheduler {
         totalTransit = totalTransit.add(transit.estimatedFareVnd());
 
         UUID foodId = foodCand != null ? foodCand.id() : UUID.randomUUID();
-        String foodName = foodCand != null ? foodCand.name() : ("Thưởng thức Ẩm thực Bản địa " + request.destinationProvince());
+        String foodName =
+            foodCand != null
+                ? foodCand.name()
+                : ("Thưởng thức Ẩm thực Bản địa " + request.destinationProvince());
         String foodCat = foodCand != null ? foodCand.categoryName() : "Ẩm thực & Đặc sản";
 
         if (foodCand != null) {
@@ -248,8 +269,14 @@ public final class TravelScheduler {
                 foodCat,
                 "Dừng chân ăn trưa, nạp lại năng lượng và thưởng thức món ngon đặc sản trong không gian mát mẻ.",
                 "Trải nghiệm hương vị bản địa và nghỉ ngơi tránh cái nắng gay gắt giữa trưa.",
-                "Khung giờ trưa (" + actualLunchStart.format(TIME_FMT) + " – " + actualLunchEnd.format(TIME_FMT) + ") nắng gắt nhất trong ngày, hoàn hảo để dừng chân ăn uống và hồi phục thể lực.",
-                "Đặc sản chuẩn vị truyền thống của vùng đất " + request.destinationProvince() + " với giá cả hợp lý và không khí ấm cúng.",
+                "Khung giờ trưa ("
+                    + actualLunchStart.format(TIME_FMT)
+                    + " – "
+                    + actualLunchEnd.format(TIME_FMT)
+                    + ") nắng gắt nhất trong ngày, hoàn hảo để dừng chân ăn uống và hồi phục thể lực.",
+                "Đặc sản chuẩn vị truyền thống của vùng đất "
+                    + request.destinationProvince()
+                    + " với giá cả hợp lý và không khí ấm cúng.",
                 actualLunchStart.format(TIME_FMT),
                 actualLunchEnd.format(TIME_FMT),
                 lunchDuration,
@@ -262,8 +289,12 @@ public final class TravelScheduler {
       }
 
       // 3. CHẶNG BUỔI CHIỀU (Nếu thời gian còn lại trước dayLatestEnd ít nhất 90 phút)
-      if (currentTimeCursor.isBefore(dayLatestEnd.minusMinutes(60)) && currentTimeCursor.isBefore(LocalTime.of(17, 30))) {
-        LocalTime afternoonStart = currentTimeCursor.isBefore(LocalTime.of(14, 0)) ? LocalTime.of(14, 0) : currentTimeCursor;
+      if (currentTimeCursor.isBefore(dayLatestEnd.minusMinutes(60))
+          && currentTimeCursor.isBefore(LocalTime.of(17, 30))) {
+        LocalTime afternoonStart =
+            currentTimeCursor.isBefore(LocalTime.of(14, 0))
+                ? LocalTime.of(14, 0)
+                : currentTimeCursor;
         DestinationSummary afternoonCand =
             findBestCandidate(
                 pool,
@@ -299,7 +330,9 @@ public final class TravelScheduler {
           OpeningHoursHelper.ScheduleWindow window =
               OpeningHoursHelper.parseWindow(afternoonCand.openingHours(), dayOfWeek);
           String warning = null;
-          if (window.isVerified() && window.closeTime() != null && actEnd.isAfter(window.closeTime())) {
+          if (window.isVerified()
+              && window.closeTime() != null
+              && actEnd.isAfter(window.closeTime())) {
             actEnd = window.closeTime();
             warning = "Lưu ý điểm đến đóng cửa lúc " + window.closeTime().format(TIME_FMT);
           }
@@ -322,9 +355,14 @@ public final class TravelScheduler {
                   afternoonCand.name(),
                   costEst.totalVnd,
                   afternoonCand.categoryName(),
-                  afternoonCand.name() + " — Điểm đến văn hóa / trải nghiệm chiều tà thuận đường di chuyển.",
+                  afternoonCand.name()
+                      + " — Điểm đến văn hóa / trải nghiệm chiều tà thuận đường di chuyển.",
                   "Khám phá chiều sâu bản địa và ngắm cảnh chiều tà trong không gian thoáng đãng.",
-                  "Khung giờ chiều (" + actStart.format(TIME_FMT) + " – " + actEnd.format(TIME_FMT) + ") nắng đã dịu hẳn, gió mát mẻ, rất thích hợp check-in và tản bộ thư thái.",
+                  "Khung giờ chiều ("
+                      + actStart.format(TIME_FMT)
+                      + " – "
+                      + actEnd.format(TIME_FMT)
+                      + ") nắng đã dịu hẳn, gió mát mẻ, rất thích hợp check-in và tản bộ thư thái.",
                   "Nơi lưu giữ nét văn hóa độc đáo và tạo cảm giác thư giãn sau chặng đường dài.",
                   actStart.format(TIME_FMT),
                   actEnd.format(TIME_FMT),
@@ -340,8 +378,12 @@ public final class TravelScheduler {
       }
 
       // 4. CHẶNG BUỔI TỐI: PHỐ ĐÊM, CHỢ ĐÊM, CẢNH ĐÊM (Nếu ngày chưa kết thúc trước 18:30)
-      if (currentTimeCursor.isBefore(dayLatestEnd.minusMinutes(45)) && dayLatestEnd.isAfter(LocalTime.of(18, 30))) {
-        LocalTime eveningStart = currentTimeCursor.isBefore(LocalTime.of(18, 30)) ? LocalTime.of(18, 30) : currentTimeCursor;
+      if (currentTimeCursor.isBefore(dayLatestEnd.minusMinutes(45))
+          && dayLatestEnd.isAfter(LocalTime.of(18, 30))) {
+        LocalTime eveningStart =
+            currentTimeCursor.isBefore(LocalTime.of(18, 30))
+                ? LocalTime.of(18, 30)
+                : currentTimeCursor;
         DestinationSummary eveningCand =
             findBestCandidate(
                 pool,
@@ -388,7 +430,11 @@ public final class TravelScheduler {
                   eveningCand.categoryName(),
                   eveningCand.name() + " — Khám phá nhịp sống đêm rực rỡ và ẩm thực đường phố.",
                   "Hòa mình vào không khí sôi động về đêm và dạo mát ngắm cảnh lung linh.",
-                  "Buổi tối (" + actStart.format(TIME_FMT) + " – " + actEnd.format(TIME_FMT) + ") phố lên đèn rực rỡ, gió mát mẻ, hoàn hảo để dạo bộ thư giãn sau ngày dài.",
+                  "Buổi tối ("
+                      + actStart.format(TIME_FMT)
+                      + " – "
+                      + actEnd.format(TIME_FMT)
+                      + ") phố lên đèn rực rỡ, gió mát mẻ, hoàn hảo để dạo bộ thư giãn sau ngày dài.",
                   "Không gian lung linh, tấp nập người dân và du khách, nhiều món ăn vặt đặc sắc.",
                   actStart.format(TIME_FMT),
                   actEnd.format(TIME_FMT),
@@ -400,15 +446,17 @@ public final class TravelScheduler {
         }
       }
 
-      String dayTheme = switch (dayNum) {
-        case 1 -> "Ngày 1 — Khởi động & Danh thắng Cốt lõi";
-        case 2 -> "Ngày 2 — Chiều sâu Văn hóa & Làng nghề Bản địa";
-        case 3 -> "Ngày 3 — Cảnh quan Thiên nhiên & Thư giãn";
-        default -> "Ngày " + dayNum + " — Trải nghiệm mở rộng";
-      };
+      String dayTheme =
+          switch (dayNum) {
+            case 1 -> "Ngày 1 — Khởi động & Danh thắng Cốt lõi";
+            case 2 -> "Ngày 2 — Chiều sâu Văn hóa & Làng nghề Bản địa";
+            case 3 -> "Ngày 3 — Cảnh quan Thiên nhiên & Thư giãn";
+            default -> "Ngày " + dayNum + " — Trải nghiệm mở rộng";
+          };
 
       if (!dayActivities.isEmpty()) {
-        scheduledDays.add(new SuggestedDayResponse(dayNum, dateLabel + " — " + dayTheme, dayActivities));
+        scheduledDays.add(
+            new SuggestedDayResponse(dayNum, dateLabel + " — " + dayTheme, dayActivities));
       }
     }
 
@@ -422,17 +470,20 @@ public final class TravelScheduler {
 
     String companionRationale;
     if (intent.hasElderly()) {
-      companionRationale = String.format(
-          "Thiết kế tối ưu thể lực cho đoàn %d người có Người lớn tuổi: Chọn lọc các điểm bằng phẳng, thoáng mát, hạn chế leo bậc thang cao; nhịp độ %s thảnh thơi với thời gian nghỉ đệm 25–30 phút.",
-          people, pace.toLowerCase(Locale.ROOT));
+      companionRationale =
+          String.format(
+              "Thiết kế tối ưu thể lực cho đoàn %d người có Người lớn tuổi: Chọn lọc các điểm bằng phẳng, thoáng mát, hạn chế leo bậc thang cao; nhịp độ %s thảnh thơi với thời gian nghỉ đệm 25–30 phút.",
+              people, pace.toLowerCase(Locale.ROOT));
     } else if (intent.hasChildren()) {
-      companionRationale = String.format(
-          "Thiết kế an toàn và thoải mái cho đoàn %d người có Trẻ nhỏ: Ưu tiên không gian rộng rãi, sinh thái nhẹ nhàng và nghỉ trưa mát mẻ tránh nắng gắt.",
-          people);
+      companionRationale =
+          String.format(
+              "Thiết kế an toàn và thoải mái cho đoàn %d người có Trẻ nhỏ: Ưu tiên không gian rộng rãi, sinh thái nhẹ nhàng và nghỉ trưa mát mẻ tránh nắng gắt.",
+              people);
     } else {
-      companionRationale = String.format(
-          "Thiết kế riêng cho %d người (%s) với nhịp độ %s: Mỗi chặng di chuyển có đệm nghỉ ngơi hợp lý, các hoạt động ngoài trời xếp vào buổi sáng và chiều dịu mát.",
-          people, travelWith, pace.toLowerCase(Locale.ROOT));
+      companionRationale =
+          String.format(
+              "Thiết kế riêng cho %d người (%s) với nhịp độ %s: Mỗi chặng di chuyển có đệm nghỉ ngơi hợp lý, các hoạt động ngoài trời xếp vào buổi sáng và chiều dịu mát.",
+              people, travelWith, pace.toLowerCase(Locale.ROOT));
     }
 
     String budgetRationale =
@@ -446,7 +497,9 @@ public final class TravelScheduler {
             budgetFeasible ? "Nằm trong giới hạn" : "Cần lưu ý vượt mức");
 
     String pacingSummary =
-        String.format("Nhịp độ %s: Thời gian chuyển tiếp giữa các điểm có đệm dự phòng 15–30 phút, đảm bảo không bị hối thúc.", pace.toLowerCase(Locale.ROOT));
+        String.format(
+            "Nhịp độ %s: Thời gian chuyển tiếp giữa các điểm có đệm dự phòng 15–30 phút, đảm bảo không bị hối thúc.",
+            pace.toLowerCase(Locale.ROOT));
 
     String localAdvice =
         "Nên đặt trước vé các điểm du lịch lớn trực tuyến để không phải xếp hàng chờ đợi, đồng thời mang theo trang phục lịch sự khi ghé thăm các công trình di sản văn hóa tâm linh.";
@@ -484,10 +537,20 @@ public final class TravelScheduler {
 
   private static int determineVisitDuration(DestinationSummary d) {
     if (d == null) return 60;
-    String text = ((d.name() != null ? d.name() : "") + " " + (d.categoryName() != null ? d.categoryName() : "")).toLowerCase(Locale.ROOT);
+    String text =
+        ((d.name() != null ? d.name() : "")
+                + " "
+                + (d.categoryName() != null ? d.categoryName() : ""))
+            .toLowerCase(Locale.ROOT);
     if (text.contains("bà nà") || text.contains("vinpearl") || text.contains("cù lao")) return 180;
-    if (text.contains("lăng") || text.contains("đại nội") || text.contains("bảo tàng") || text.contains("phố cổ")) return 120;
-    if (text.contains("chùa") || text.contains("làng hương") || text.contains("thác") || text.contains("động")) return 75;
+    if (text.contains("lăng")
+        || text.contains("đại nội")
+        || text.contains("bảo tàng")
+        || text.contains("phố cổ")) return 120;
+    if (text.contains("chùa")
+        || text.contains("làng hương")
+        || text.contains("thác")
+        || text.contains("động")) return 75;
     if (text.contains("cầu") || text.contains("đồi") || text.contains("quốc học")) return 45;
     return 60;
   }
@@ -528,7 +591,8 @@ public final class TravelScheduler {
 
       // Kiểm tra trùng tiểu loại di tích (chỉ phạt nếu người dùng KHÔNG yêu cầu chuyên sâu lịch sử)
       if (!userLovesHistory && hasSubcategoryRepetition(daySelectedDests, cand)) {
-        score += 800.0; // Phạt nặng nếu cùng 1 ngày xếp 2 lăng hoặc 2 chùa khi không có yêu cầu đặc biệt
+        score +=
+            800.0; // Phạt nặng nếu cùng 1 ngày xếp 2 lăng hoặc 2 chùa khi không có yêu cầu đặc biệt
       }
 
       // Đánh giá thể lực & đối tượng đoàn (Người lớn tuổi / Trẻ nhỏ)
@@ -538,13 +602,16 @@ public final class TravelScheduler {
         if (intensity == SemanticIntentExtractor.PhysicalIntensity.HIGH) {
           score += 650.0; // Phạt nặng các điểm leo núi/bậc thang dốc đối với đoàn có người lớn tuổi
         } else if (intensity == SemanticIntentExtractor.PhysicalIntensity.LOW) {
-          score -= 45.0;  // Ưu tiên điểm nhẹ nhàng, bằng phẳng, có chỗ ngồi nghỉ
+          score -= 45.0; // Ưu tiên điểm nhẹ nhàng, bằng phẳng, có chỗ ngồi nghỉ
         }
       }
 
       // Khớp sở thích / từ khóa ưu tiên
-      String candNorm = SemanticIntentExtractor.normalizeAscii(
-          (cand.name() != null ? cand.name() : "") + " " + (cand.categoryName() != null ? cand.categoryName() : ""));
+      String candNorm =
+          SemanticIntentExtractor.normalizeAscii(
+              (cand.name() != null ? cand.name() : "")
+                  + " "
+                  + (cand.categoryName() != null ? cand.categoryName() : ""));
       if (intent != null && !intent.preferredKeywords().isEmpty()) {
         for (String pref : intent.preferredKeywords()) {
           if (candNorm.contains(SemanticIntentExtractor.normalizeAscii(pref))) {
@@ -565,8 +632,14 @@ public final class TravelScheduler {
       score += evaluateTimeSlotFit(cand, timeSlot);
 
       // Cự ly di chuyển từ điểm trước (nếu có)
-      if (prev != null && prev.latitude() != null && prev.longitude() != null && cand.latitude() != null && cand.longitude() != null) {
-        double distKm = TransitCalculator.haversineDistanceKm(prev.latitude(), prev.longitude(), cand.latitude(), cand.longitude());
+      if (prev != null
+          && prev.latitude() != null
+          && prev.longitude() != null
+          && cand.latitude() != null
+          && cand.longitude() != null) {
+        double distKm =
+            TransitCalculator.haversineDistanceKm(
+                prev.latitude(), prev.longitude(), cand.latitude(), cand.longitude());
         score += distKm * 3.0; // Ưu tiên các điểm gần nhau, tránh đi vòng
       }
 
@@ -580,22 +653,38 @@ public final class TravelScheduler {
   }
 
   private static DestinationSummary findCulinaryCandidate(
-      List<DestinationSummary> pool, Set<UUID> usedIds, DestinationSummary prev, DayOfWeek dayOfWeek) {
+      List<DestinationSummary> pool,
+      Set<UUID> usedIds,
+      DestinationSummary prev,
+      DayOfWeek dayOfWeek) {
     DestinationSummary best = null;
     double bestDist = Double.MAX_VALUE;
 
     for (DestinationSummary cand : pool) {
       if (usedIds.contains(cand.id())) continue;
-      String text = ((cand.name() != null ? cand.name() : "") + " " + (cand.categoryName() != null ? cand.categoryName() : "")).toLowerCase(Locale.ROOT);
-      boolean isFood = text.contains("ẩm thực") || text.contains("chợ") || text.contains("quán") || text.contains("bún") || text.contains("cơm") || text.contains("bánh");
+      String text =
+          ((cand.name() != null ? cand.name() : "")
+                  + " "
+                  + (cand.categoryName() != null ? cand.categoryName() : ""))
+              .toLowerCase(Locale.ROOT);
+      boolean isFood =
+          text.contains("ẩm thực")
+              || text.contains("chợ")
+              || text.contains("quán")
+              || text.contains("bún")
+              || text.contains("cơm")
+              || text.contains("bánh");
       if (!isFood) continue;
 
-      OpeningHoursHelper.ScheduleWindow window = OpeningHoursHelper.parseWindow(cand.openingHours(), dayOfWeek);
+      OpeningHoursHelper.ScheduleWindow window =
+          OpeningHoursHelper.parseWindow(cand.openingHours(), dayOfWeek);
       if (window.isVerified() && !window.isOpen()) continue;
 
       double dist = 10.0;
       if (prev != null && prev.latitude() != null && cand.latitude() != null) {
-        dist = TransitCalculator.haversineDistanceKm(prev.latitude(), prev.longitude(), cand.latitude(), cand.longitude());
+        dist =
+            TransitCalculator.haversineDistanceKm(
+                prev.latitude(), prev.longitude(), cand.latitude(), cand.longitude());
       }
       if (dist < bestDist) {
         bestDist = dist;
@@ -606,11 +695,24 @@ public final class TravelScheduler {
   }
 
   private static double evaluateTimeSlotFit(DestinationSummary cand, String slot) {
-    String text = ((cand.name() != null ? cand.name() : "") + " " + (cand.categoryName() != null ? cand.categoryName() : "")).toLowerCase(Locale.ROOT);
-    boolean isPassOrMountain = text.contains("đèo") || text.contains("núi") || text.contains("phượt");
+    String text =
+        ((cand.name() != null ? cand.name() : "")
+                + " "
+                + (cand.categoryName() != null ? cand.categoryName() : ""))
+            .toLowerCase(Locale.ROOT);
+    boolean isPassOrMountain =
+        text.contains("đèo") || text.contains("núi") || text.contains("phượt");
     boolean isBeach = text.contains("biển") || text.contains("bãi");
-    boolean isCultureOrMuseum = text.contains("di tích") || text.contains("bảo tàng") || text.contains("lăng") || text.contains("chùa");
-    boolean isNightSpot = text.contains("cầu") || text.contains("đêm") || text.contains("phố") || text.contains("du thuyền");
+    boolean isCultureOrMuseum =
+        text.contains("di tích")
+            || text.contains("bảo tàng")
+            || text.contains("lăng")
+            || text.contains("chùa");
+    boolean isNightSpot =
+        text.contains("cầu")
+            || text.contains("đêm")
+            || text.contains("phố")
+            || text.contains("du thuyền");
 
     return switch (slot) {
       case "MORNING" -> {
@@ -635,11 +737,11 @@ public final class TravelScheduler {
     };
   }
 
-  private static final List<String> RESTRICTED_KEYWORDS = List.of(
-      "lăng", "chùa", "bãi biển", "biển", "động", "thác", "bảo tàng", "núi", "đèo"
-  );
+  private static final List<String> RESTRICTED_KEYWORDS =
+      List.of("lăng", "chùa", "bãi biển", "biển", "động", "thác", "bảo tàng", "núi", "đèo");
 
-  private static boolean hasSubcategoryRepetition(List<DestinationSummary> chosenSoFar, DestinationSummary cand) {
+  private static boolean hasSubcategoryRepetition(
+      List<DestinationSummary> chosenSoFar, DestinationSummary cand) {
     if (chosenSoFar == null || cand == null || cand.name() == null) return false;
     String candName = cand.name().toLowerCase(Locale.ROOT);
     for (DestinationSummary already : chosenSoFar) {
@@ -655,15 +757,24 @@ public final class TravelScheduler {
   }
 
   private static boolean isHistoryFocused(List<String> interests, String specialRequests) {
-    String joined = ((interests != null ? String.join(" ", interests) : "") + " " + (specialRequests != null ? specialRequests : "")).toLowerCase(Locale.ROOT);
-    return joined.contains("lịch sử") || joined.contains("văn hóa") || joined.contains("di tích") || joined.contains("lăng") || joined.contains("triều nguyễn");
+    String joined =
+        ((interests != null ? String.join(" ", interests) : "")
+                + " "
+                + (specialRequests != null ? specialRequests : ""))
+            .toLowerCase(Locale.ROOT);
+    return joined.contains("lịch sử")
+        || joined.contains("văn hóa")
+        || joined.contains("di tích")
+        || joined.contains("lăng")
+        || joined.contains("triều nguyễn");
   }
 
   private static LocalDate parseStartDate(String s) {
     if (s != null && !s.isBlank()) {
       try {
         return LocalDate.parse(s.trim());
-      } catch (Exception ignored) {}
+      } catch (Exception ignored) {
+      }
     }
     return LocalDate.now().plusDays(1);
   }
@@ -672,4 +783,3 @@ public final class TravelScheduler {
     return date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
   }
 }
-

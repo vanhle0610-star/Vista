@@ -18,8 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Triển khai NotificationService lưu thực vào DB (bảng {@code notifications}).
- * Hỗ trợ lưu thông báo in-app và dispatch push notifications tới các thiết bị đã đăng ký.
+ * Triển khai NotificationService lưu thực vào DB (bảng {@code notifications}). Hỗ trợ lưu thông báo
+ * in-app và dispatch push notifications tới các thiết bị đã đăng ký.
  */
 @Service("realNotificationService")
 @Primary
@@ -131,7 +131,8 @@ public class DatabaseNotificationService implements NotificationService {
     try {
       List<DeviceTokenEntity> tokens = deviceTokenRepository.findByUserIdAndActiveTrue(userId);
       for (DeviceTokenEntity token : tokens) {
-        // TODO: Tích hợp với Firebase Admin SDK / APNs Gateway để gửi thông báo đẩy từ xa tới mobile/web client.
+        // TODO: Tích hợp với Firebase Admin SDK / APNs Gateway để gửi thông báo đẩy từ xa tới
+        // mobile/web client.
         log.info(
             "[PUSH-DISPATCH] Gửi push tới thiết bị {} ({}) user {}: type={}, title='{}', body='{}'",
             token.getToken(),

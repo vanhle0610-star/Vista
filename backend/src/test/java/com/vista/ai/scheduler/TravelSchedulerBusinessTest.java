@@ -11,7 +11,6 @@ import com.vista.ai.api.dto.AiItinerarySuggestionResponse.SuggestedDayResponse;
 import com.vista.ai.scheduler.OpeningHoursHelper.ScheduleWindow;
 import com.vista.ai.scheduler.TransitCalculator.TransitInfo;
 import com.vista.ai.scheduler.TravelScheduler.ScheduledPlanResult;
-import com.vista.ai.util.AiResponseValidator;
 import com.vista.destination.application.DestinationSummary;
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
@@ -144,7 +143,8 @@ class TravelSchedulerBusinessTest {
             null);
 
     ScheduledPlanResult result =
-        TravelScheduler.buildDeterministicPlan(request, 1, BigDecimal.valueOf(5000000), mockDestinations);
+        TravelScheduler.buildDeterministicPlan(
+            request, 1, BigDecimal.valueOf(5000000), mockDestinations);
 
     assertNotNull(result);
     assertFalse(result.days().isEmpty());
@@ -162,7 +162,8 @@ class TravelSchedulerBusinessTest {
     // Không có bất kỳ hoạt động nào trong khung giờ sáng (< 12:00)
     for (SuggestedActivityResponse act : day1.activities()) {
       LocalTime s = LocalTime.parse(act.startTime(), TIME_FMT);
-      assertTrue(s.isAfter(LocalTime.of(12, 0)), "Không được có hoạt động sáng khi khách đến lúc 14:00");
+      assertTrue(
+          s.isAfter(LocalTime.of(12, 0)), "Không được có hoạt động sáng khi khách đến lúc 14:00");
     }
   }
 
@@ -187,7 +188,8 @@ class TravelSchedulerBusinessTest {
             null);
 
     ScheduledPlanResult result =
-        TravelScheduler.buildDeterministicPlan(request, 1, BigDecimal.valueOf(5000000), mockDestinations);
+        TravelScheduler.buildDeterministicPlan(
+            request, 1, BigDecimal.valueOf(5000000), mockDestinations);
 
     assertNotNull(result);
     SuggestedDayResponse day1 = result.days().get(0);
@@ -207,17 +209,26 @@ class TravelSchedulerBusinessTest {
     double lat2 = 16.3991, lon2 = 107.5904; // Lăng Khải Định
 
     double directKm = TransitCalculator.haversineDistanceKm(lat1, lon1, lat2, lon2);
-    TransitInfo transit = TransitCalculator.estimateTransit(lat1, lon1, lat2, lon2, "DRIVING", "MODERATE", "Cặp đôi");
+    TransitInfo transit =
+        TransitCalculator.estimateTransit(lat1, lon1, lat2, lon2, "DRIVING", "MODERATE", "Cặp đôi");
 
     assertTrue(directKm > 0);
-    assertTrue(transit.roadDistanceKm() > directKm, "Cự ly đường bộ phải lớn hơn cự ly đường thẳng do uốn khúc");
-    assertEquals(1.35, transit.roadDistanceKm() / directKm, 0.1, "Hệ số uốn khúc đường bộ Việt Nam phải xấp xỉ ~1.35x");
+    assertTrue(
+        transit.roadDistanceKm() > directKm,
+        "Cự ly đường bộ phải lớn hơn cự ly đường thẳng do uốn khúc");
+    assertEquals(
+        1.35,
+        transit.roadDistanceKm() / directKm,
+        0.1,
+        "Hệ số uốn khúc đường bộ Việt Nam phải xấp xỉ ~1.35x");
   }
 
   @Test
-  @DisplayName("Kịch bản 4: Điểm đóng cửa vào ngày được chọn -> OpeningHoursHelper phát hiện isOpen = false")
+  @DisplayName(
+      "Kịch bản 4: Điểm đóng cửa vào ngày được chọn -> OpeningHoursHelper phát hiện isOpen = false")
   void testScenario04_ClosedOnSelectedDayDetected() {
-    String hoursJson = "{\"tue\":\"08:00-17:00\",\"wed\":\"08:00-17:00\",\"thu\":\"08:00-17:00\",\"fri\":\"08:00-17:00\",\"sat\":\"08:00-17:00\",\"sun\":\"08:00-17:00\"}";
+    String hoursJson =
+        "{\"tue\":\"08:00-17:00\",\"wed\":\"08:00-17:00\",\"thu\":\"08:00-17:00\",\"fri\":\"08:00-17:00\",\"sat\":\"08:00-17:00\",\"sun\":\"08:00-17:00\"}";
 
     // Thứ Hai: Không có trong lịch -> Đóng cửa
     ScheduleWindow mondayWindow = OpeningHoursHelper.parseWindow(hoursJson, DayOfWeek.MONDAY);
@@ -246,7 +257,8 @@ class TravelSchedulerBusinessTest {
   }
 
   @Test
-  @DisplayName("Kịch bản 6: Khách thích lịch sử/văn hóa -> Chấp nhận nhiều di tích mà không bị gạt bỏ")
+  @DisplayName(
+      "Kịch bản 6: Khách thích lịch sử/văn hóa -> Chấp nhận nhiều di tích mà không bị gạt bỏ")
   void testScenario06_HistoryLover_AllowsMultipleHeritageSitesWithoutStrictPenalty() {
     AiItinerarySuggestionRequest request =
         new AiItinerarySuggestionRequest(
@@ -266,7 +278,8 @@ class TravelSchedulerBusinessTest {
             null);
 
     ScheduledPlanResult result =
-        TravelScheduler.buildDeterministicPlan(request, 1, BigDecimal.valueOf(5000000), mockDestinations);
+        TravelScheduler.buildDeterministicPlan(
+            request, 1, BigDecimal.valueOf(5000000), mockDestinations);
 
     long heritageCount =
         result.days().get(0).activities().stream()
@@ -274,17 +287,25 @@ class TravelSchedulerBusinessTest {
             .count();
 
     // Với người mê lịch sử, cho phép xếp >= 2 di tích trong ngày mà không bị phạt từ khóa
-    assertTrue(heritageCount >= 2, "Người mê lịch sử phải được xếp ít nhất 2 di tích văn hóa trong ngày. Thực tế: " + heritageCount);
+    assertTrue(
+        heritageCount >= 2,
+        "Người mê lịch sử phải được xếp ít nhất 2 di tích văn hóa trong ngày. Thực tế: "
+            + heritageCount);
   }
 
   @Test
   @DisplayName("Kịch bản 7: Đoàn có người già hoặc trẻ nhỏ -> Thời gian đệm nghỉ (buffer) tăng lên")
   void testScenario07_FamilyWithElderlyOrKids_GetsLargerBufferTime() {
     int bufferCouple = TransitCalculator.determineBufferMinutes("RELAXED", "Cặp đôi");
-    int bufferFamilyWithElderly = TransitCalculator.determineBufferMinutes("RELAXED", "Gia đình có người lớn tuổi");
+    int bufferFamilyWithElderly =
+        TransitCalculator.determineBufferMinutes("RELAXED", "Gia đình có người lớn tuổi");
 
-    assertTrue(bufferFamilyWithElderly > bufferCouple, "Đoàn có người cao tuổi phải có thời gian đệm lớn hơn");
-    assertTrue(bufferFamilyWithElderly >= 25, "Thời gian đệm tối thiểu cho đoàn có người già/trẻ em phải >= 25 phút");
+    assertTrue(
+        bufferFamilyWithElderly > bufferCouple,
+        "Đoàn có người cao tuổi phải có thời gian đệm lớn hơn");
+    assertTrue(
+        bufferFamilyWithElderly >= 25,
+        "Thời gian đệm tối thiểu cho đoàn có người già/trẻ em phải >= 25 phút");
   }
 
   @Test
@@ -339,7 +360,8 @@ class TravelSchedulerBusinessTest {
             null);
 
     ScheduledPlanResult result =
-        TravelScheduler.buildDeterministicPlan(request, 1, BigDecimal.valueOf(5000000), mockDestinations);
+        TravelScheduler.buildDeterministicPlan(
+            request, 1, BigDecimal.valueOf(5000000), mockDestinations);
 
     boolean foundUnverified = false;
     for (SuggestedDayResponse day : result.days()) {
@@ -347,20 +369,21 @@ class TravelSchedulerBusinessTest {
         if ("Làng nón Phú Cam".equals(act.destinationName())) {
           foundUnverified = true;
           assertEquals(
-              "UNVERIFIED",
-              act.costStatus(),
-              "Điểm thiếu giá phải có costStatus là UNVERIFIED");
+              "UNVERIFIED", act.costStatus(), "Điểm thiếu giá phải có costStatus là UNVERIFIED");
         }
       }
     }
 
     if (foundUnverified) {
-      assertTrue(result.unverifiedCostCount() > 0, "unverifiedCostCount phải phản ánh số điểm chưa xác minh giá");
+      assertTrue(
+          result.unverifiedCostCount() > 0,
+          "unverifiedCostCount phải phản ánh số điểm chưa xác minh giá");
     }
   }
 
   @Test
-  @DisplayName("Kịch bản 10: CSDL thiếu nhà hàng ẩm thực -> Scheduler tự chèn điểm dừng chân ăn trưa hợp lý")
+  @DisplayName(
+      "Kịch bản 10: CSDL thiếu nhà hàng ẩm thực -> Scheduler tự chèn điểm dừng chân ăn trưa hợp lý")
   void testScenario10_MissingDiningInDatabase_GeneratesRealisticCulinaryStop() {
     AiItinerarySuggestionRequest request =
         new AiItinerarySuggestionRequest(
@@ -380,18 +403,25 @@ class TravelSchedulerBusinessTest {
             null);
 
     ScheduledPlanResult result =
-        TravelScheduler.buildDeterministicPlan(request, 1, BigDecimal.valueOf(5000000), mockDestinations);
+        TravelScheduler.buildDeterministicPlan(
+            request, 1, BigDecimal.valueOf(5000000), mockDestinations);
 
     boolean hasLunch =
         result.days().get(0).activities().stream()
-            .anyMatch(a -> a.category() != null && (a.category().contains("Ẩm thực") || a.category().contains("Ăn uống")));
+            .anyMatch(
+                a ->
+                    a.category() != null
+                        && (a.category().contains("Ẩm thực") || a.category().contains("Ăn uống")));
 
     assertTrue(hasLunch, "Lịch trình cả ngày phải có điểm dừng chân ăn trưa đặc sản");
-    assertTrue(result.totalDiningCost().compareTo(BigDecimal.ZERO) > 0, "Chi phí ăn uống phải được ước tính minh bạch");
+    assertTrue(
+        result.totalDiningCost().compareTo(BigDecimal.ZERO) > 0,
+        "Chi phí ăn uống phải được ước tính minh bạch");
   }
 
   @Test
-  @DisplayName("Kịch bản 11: Bất biến thời gian: start(next) >= end(prev) + travelDuration + bufferMinutes")
+  @DisplayName(
+      "Kịch bản 11: Bất biến thời gian: start(next) >= end(prev) + travelDuration + bufferMinutes")
   void testScenario11_TimeInvariant_NextStartsAfterPreviousEndPlusTravelPlusBuffer() {
     AiItinerarySuggestionRequest request =
         new AiItinerarySuggestionRequest(
@@ -411,7 +441,8 @@ class TravelSchedulerBusinessTest {
             null);
 
     ScheduledPlanResult result =
-        TravelScheduler.buildDeterministicPlan(request, 1, BigDecimal.valueOf(5000000), mockDestinations);
+        TravelScheduler.buildDeterministicPlan(
+            request, 1, BigDecimal.valueOf(5000000), mockDestinations);
 
     List<SuggestedActivityResponse> acts = result.days().get(0).activities();
     for (int i = 0; i < acts.size() - 1; i++) {
@@ -421,7 +452,10 @@ class TravelSchedulerBusinessTest {
       LocalTime currentEnd = LocalTime.parse(current.endTime(), TIME_FMT);
       LocalTime nextStart = LocalTime.parse(next.startTime(), TIME_FMT);
 
-      int travelMin = next.travelDurationFromPreviousMinutes() != null ? next.travelDurationFromPreviousMinutes() : 0;
+      int travelMin =
+          next.travelDurationFromPreviousMinutes() != null
+              ? next.travelDurationFromPreviousMinutes()
+              : 0;
       int bufferMin = next.bufferMinutes() != null ? next.bufferMinutes() : 0;
 
       LocalTime minEarliestNext = currentEnd.plusMinutes(travelMin + bufferMin);
@@ -430,7 +464,13 @@ class TravelSchedulerBusinessTest {
           !nextStart.isBefore(minEarliestNext),
           String.format(
               "Vi phạm bất biến thời gian: Điểm tiếp theo '%s' bắt đầu lúc %s, nhưng điểm trước '%s' kết thúc lúc %s + di chuyển %dp + đệm %dp = tối thiểu %s",
-              next.destinationName(), nextStart, current.destinationName(), currentEnd, travelMin, bufferMin, minEarliestNext));
+              next.destinationName(),
+              nextStart,
+              current.destinationName(),
+              currentEnd,
+              travelMin,
+              bufferMin,
+              minEarliestNext));
     }
   }
 
@@ -444,7 +484,8 @@ class TravelSchedulerBusinessTest {
     UUID fakeId = UUID.fromString("99999999-9999-9999-9999-999999999999");
 
     assertTrue(destinationLookup.containsKey(realId), "Địa điểm có thật trong CSDL được chấp nhận");
-    assertFalse(destinationLookup.containsKey(fakeId), "Địa điểm bịa đặt không có trong CSDL bị loại bỏ");
+    assertFalse(
+        destinationLookup.containsKey(fakeId), "Địa điểm bịa đặt không có trong CSDL bị loại bỏ");
   }
 
   @Test
@@ -468,7 +509,8 @@ class TravelSchedulerBusinessTest {
             null);
 
     ScheduledPlanResult result =
-        TravelScheduler.buildDeterministicPlan(request, 3, BigDecimal.valueOf(10000000), mockDestinations);
+        TravelScheduler.buildDeterministicPlan(
+            request, 3, BigDecimal.valueOf(10000000), mockDestinations);
 
     Set<UUID> visitedDestinationIds = new HashSet<>();
     for (SuggestedDayResponse day : result.days()) {
@@ -484,14 +526,19 @@ class TravelSchedulerBusinessTest {
   }
 
   @Test
-  @DisplayName("Kịch bản 14: Đổi phương tiện di chuyển (MOTORBIKE vs DRIVING vs WALKING) cho cự ly, thời gian và chi phí khác biệt")
+  @DisplayName(
+      "Kịch bản 14: Đổi phương tiện di chuyển (MOTORBIKE vs DRIVING vs WALKING) cho cự ly, thời gian và chi phí khác biệt")
   void testScenario14_TransportMode_DifferencesInTransitTimeAndCost() {
     double lat1 = 16.3888, lon1 = 107.5714;
     double lat2 = 16.3991, lon2 = 107.5904;
 
-    TransitInfo carEstimate = TransitCalculator.estimateTransit(lat1, lon1, lat2, lon2, "DRIVING", "MODERATE", "Cặp đôi");
-    TransitInfo bikeEstimate = TransitCalculator.estimateTransit(lat1, lon1, lat2, lon2, "MOTORBIKE", "MODERATE", "Cặp đôi");
-    TransitInfo walkEstimate = TransitCalculator.estimateTransit(lat1, lon1, lat2, lon2, "WALKING", "MODERATE", "Cặp đôi");
+    TransitInfo carEstimate =
+        TransitCalculator.estimateTransit(lat1, lon1, lat2, lon2, "DRIVING", "MODERATE", "Cặp đôi");
+    TransitInfo bikeEstimate =
+        TransitCalculator.estimateTransit(
+            lat1, lon1, lat2, lon2, "MOTORBIKE", "MODERATE", "Cặp đôi");
+    TransitInfo walkEstimate =
+        TransitCalculator.estimateTransit(lat1, lon1, lat2, lon2, "WALKING", "MODERATE", "Cặp đôi");
 
     // Đi bộ chậm hơn xe máy & ô tô
     assertTrue(walkEstimate.durationMinutes() >= carEstimate.durationMinutes());
@@ -504,7 +551,8 @@ class TravelSchedulerBusinessTest {
   }
 
   @Test
-  @DisplayName("Kịch bản 15: Tính khả thi ngân sách rành mạch: grandTotal = Vé + Ăn uống + Di chuyển")
+  @DisplayName(
+      "Kịch bản 15: Tính khả thi ngân sách rành mạch: grandTotal = Vé + Ăn uống + Di chuyển")
   void testScenario15_BudgetBreakdown_SightseeingDiningTransit() {
     AiItinerarySuggestionRequest request =
         new AiItinerarySuggestionRequest(
@@ -524,7 +572,8 @@ class TravelSchedulerBusinessTest {
             null);
 
     ScheduledPlanResult result =
-        TravelScheduler.buildDeterministicPlan(request, 1, BigDecimal.valueOf(5000000), mockDestinations);
+        TravelScheduler.buildDeterministicPlan(
+            request, 1, BigDecimal.valueOf(5000000), mockDestinations);
 
     BigDecimal expectedSum =
         result.totalSightseeingCost().add(result.totalDiningCost()).add(result.totalTransitCost());
@@ -536,7 +585,8 @@ class TravelSchedulerBusinessTest {
   }
 
   @Test
-  @DisplayName("Kịch bản 16: Nhịp độ RELAXED có thời gian đệm lớn hơn hoặc số hoạt động trong ngày ít hơn PACKED")
+  @DisplayName(
+      "Kịch bản 16: Nhịp độ RELAXED có thời gian đệm lớn hơn hoặc số hoạt động trong ngày ít hơn PACKED")
   void testScenario16_PacingComparison_RelaxedVsPacked() {
     int relaxedBuffer = TransitCalculator.determineBufferMinutes("RELAXED", "Cặp đôi");
     int packedBuffer = TransitCalculator.determineBufferMinutes("PACKED", "Cặp đôi");
@@ -547,15 +597,43 @@ class TravelSchedulerBusinessTest {
 
     AiItinerarySuggestionRequest relaxedReq =
         new AiItinerarySuggestionRequest(
-            "Thừa Thiên Huế", 1, "STANDARD", List.of("Lịch sử"), "2026-10-30", 2, "Cặp đôi", null, null, null, "RELAXED", "DRIVING", null, null);
+            "Thừa Thiên Huế",
+            1,
+            "STANDARD",
+            List.of("Lịch sử"),
+            "2026-10-30",
+            2,
+            "Cặp đôi",
+            null,
+            null,
+            null,
+            "RELAXED",
+            "DRIVING",
+            null,
+            null);
     AiItinerarySuggestionRequest packedReq =
         new AiItinerarySuggestionRequest(
-            "Thừa Thiên Huế", 1, "STANDARD", List.of("Lịch sử"), "2026-10-30", 2, "Cặp đôi", null, null, null, "PACKED", "DRIVING", null, null);
+            "Thừa Thiên Huế",
+            1,
+            "STANDARD",
+            List.of("Lịch sử"),
+            "2026-10-30",
+            2,
+            "Cặp đôi",
+            null,
+            null,
+            null,
+            "PACKED",
+            "DRIVING",
+            null,
+            null);
 
     ScheduledPlanResult relaxedPlan =
-        TravelScheduler.buildDeterministicPlan(relaxedReq, 1, BigDecimal.valueOf(5000000), mockDestinations);
+        TravelScheduler.buildDeterministicPlan(
+            relaxedReq, 1, BigDecimal.valueOf(5000000), mockDestinations);
     ScheduledPlanResult packedPlan =
-        TravelScheduler.buildDeterministicPlan(packedReq, 1, BigDecimal.valueOf(5000000), mockDestinations);
+        TravelScheduler.buildDeterministicPlan(
+            packedReq, 1, BigDecimal.valueOf(5000000), mockDestinations);
 
     int relaxedActCount = relaxedPlan.days().get(0).activities().size();
     int packedActCount = packedPlan.days().get(0).activities().size();
@@ -566,13 +644,16 @@ class TravelSchedulerBusinessTest {
   }
 
   @Test
-  @DisplayName("Kịch bản 17: Tự động trích xuất giờ đến (14:00) và giờ về (11:00) từ câu yêu cầu tự do của người dùng")
+  @DisplayName(
+      "Kịch bản 17: Tự động trích xuất giờ đến (14:00) và giờ về (11:00) từ câu yêu cầu tự do của người dùng")
   void testScenario17_AutoExtractArrivalAndDepartureFromSpecialRequests() {
     String userSpecialRequest =
         "Đoàn mình có người lớn tuổi nên muốn đi thong thả, hạ cánh Đà Nẵng lúc 14:00 và ngày cuối bay về lúc 11:00";
 
-    LocalTime arrival = TravelScheduler.extractTimeFromText(userSpecialRequest, TravelScheduler.ARRIVAL_PATTERN);
-    LocalTime departure = TravelScheduler.extractTimeFromText(userSpecialRequest, TravelScheduler.DEPARTURE_PATTERN);
+    LocalTime arrival =
+        TravelScheduler.extractTimeFromText(userSpecialRequest, TravelScheduler.ARRIVAL_PATTERN);
+    LocalTime departure =
+        TravelScheduler.extractTimeFromText(userSpecialRequest, TravelScheduler.DEPARTURE_PATTERN);
 
     assertNotNull(arrival, "Phải trích xuất được giờ hạ cánh từ văn bản tự nhiên");
     assertEquals(LocalTime.of(14, 0), arrival, "Giờ hạ cánh phải chính xác 14:00");
@@ -580,7 +661,8 @@ class TravelSchedulerBusinessTest {
     assertNotNull(departure, "Phải trích xuất được giờ bay về từ văn bản tự nhiên");
     assertEquals(LocalTime.of(11, 0), departure, "Giờ bay về phải chính xác 11:00");
 
-    // Lập lịch 3 ngày với câu yêu cầu trên (để arrivalTime và departureTime = null trong request để test auto-extract)
+    // Lập lịch 3 ngày với câu yêu cầu trên (để arrivalTime và departureTime = null trong request để
+    // test auto-extract)
     AiItinerarySuggestionRequest request =
         new AiItinerarySuggestionRequest(
             "Thừa Thiên Huế",
@@ -599,7 +681,8 @@ class TravelSchedulerBusinessTest {
             null);
 
     ScheduledPlanResult plan =
-        TravelScheduler.buildDeterministicPlan(request, 3, BigDecimal.valueOf(10000000), mockDestinations);
+        TravelScheduler.buildDeterministicPlan(
+            request, 3, BigDecimal.valueOf(10000000), mockDestinations);
 
     // Ngày 1: Hoạt động đầu tiên phải bắt đầu sau 14:00
     SuggestedDayResponse day1 = plan.days().get(0);
@@ -608,7 +691,9 @@ class TravelSchedulerBusinessTest {
       LocalTime st = LocalTime.parse(act.startTime(), TIME_FMT);
       assertTrue(
           !st.isBefore(LocalTime.of(14, 0)),
-          "Ngày 1: Không được có hoạt động nào bắt đầu trước giờ hạ cánh 14:00 (thực tế: " + act.startTime() + ")");
+          "Ngày 1: Không được có hoạt động nào bắt đầu trước giờ hạ cánh 14:00 (thực tế: "
+              + act.startTime()
+              + ")");
       assertFalse(
           "MORNING".equalsIgnoreCase(act.timeSlot()),
           "Ngày 1: Không được có slot MORNING khi khách hạ cánh lúc 14:00");
@@ -620,12 +705,15 @@ class TravelSchedulerBusinessTest {
       LocalTime et = LocalTime.parse(act.endTime(), TIME_FMT);
       assertTrue(
           !et.isAfter(LocalTime.of(11, 0)),
-          "Ngày cuối: Mọi hoạt động phải kết thúc trước hoặc đúng giờ bay về 11:00 (thực tế: " + act.endTime() + ")");
+          "Ngày cuối: Mọi hoạt động phải kết thúc trước hoặc đúng giờ bay về 11:00 (thực tế: "
+              + act.endTime()
+              + ")");
     }
   }
 
   @Test
-  @DisplayName("Kịch bản 18: Semantic NLP hiểu đa dạng cách nói giờ tự nhiên & Energy Engine bảo vệ sức khỏe người lớn tuổi")
+  @DisplayName(
+      "Kịch bản 18: Semantic NLP hiểu đa dạng cách nói giờ tự nhiên & Energy Engine bảo vệ sức khỏe người lớn tuổi")
   void testScenario18_SemanticNlpAndElderlyEnergyEngine() {
     AiItinerarySuggestionRequest naturalReq =
         new AiItinerarySuggestionRequest(
@@ -646,10 +734,17 @@ class TravelSchedulerBusinessTest {
 
     SemanticIntentExtractor.TravelIntent intent = SemanticIntentExtractor.extractIntent(naturalReq);
 
-    assertEquals(LocalTime.of(14, 0), intent.arrivalTime(), "Phải hiểu '2 giờ chiều' chính là 14:00");
-    assertTrue(intent.hasElderly(), "Phải nhận diện được đoàn có ông bà / bố mẹ già (hasElderly = true)");
-    assertTrue(intent.avoidStrenuousActivity(), "Phải bật cờ tránh vận động nặng (avoidStrenuousActivity = true)");
-    assertEquals("RELAXED", intent.effectivePace(), "Tự động chuyển nhịp đi sang RELAXED cho người lớn tuổi");
+    assertEquals(
+        LocalTime.of(14, 0), intent.arrivalTime(), "Phải hiểu '2 giờ chiều' chính là 14:00");
+    assertTrue(
+        intent.hasElderly(), "Phải nhận diện được đoàn có ông bà / bố mẹ già (hasElderly = true)");
+    assertTrue(
+        intent.avoidStrenuousActivity(),
+        "Phải bật cờ tránh vận động nặng (avoidStrenuousActivity = true)");
+    assertEquals(
+        "RELAXED",
+        intent.effectivePace(),
+        "Tự động chuyển nhịp đi sang RELAXED cho người lớn tuổi");
     assertEquals("VEGETARIAN", intent.dietaryPreference(), "Nhận diện được nhu cầu ăn chay");
 
     DestinationSummary mountainSpot =
