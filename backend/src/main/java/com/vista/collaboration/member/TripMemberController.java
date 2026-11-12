@@ -15,13 +15,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Controller xử lý các endpoint Quản lý thành viên (TV3):
- * - DELETE /trips/{tripId}/members/me (và /api/v1/trips/{tripId}/members/me)
- * - POST /trips/{tripId}/transfer-ownership (và /api/v1/trips/{tripId}/transfer-ownership)
+ * Controller xử lý các endpoint Quản lý thành viên (TV3): - DELETE /trips/{tripId}/members/me (và
+ * /api/v1/trips/{tripId}/members/me) - POST /trips/{tripId}/transfer-ownership (và
+ * /api/v1/trips/{tripId}/transfer-ownership)
  */
 @RestController
 @RequestMapping({"/api/v1", ""})
-@Tag(name = "Trip Members", description = "Quản lý thành viên chuyến đi: rời nhóm, chuyển quyền trưởng nhóm (TV3)")
+@Tag(
+    name = "Trip Members",
+    description = "Quản lý thành viên chuyến đi: rời nhóm, chuyển quyền trưởng nhóm (TV3)")
 @SecurityRequirement(name = "bearerAuth")
 public class TripMemberController {
 
@@ -48,8 +50,7 @@ public class TripMemberController {
   @PostMapping("/trips/{tripId}/transfer-ownership")
   @Operation(
       summary = "Chuyển quyền trưởng nhóm",
-      description =
-          "Trưởng nhóm chuyển quyền cho một thành viên ACTIVE khác trong cùng chuyến đi.")
+      description = "Trưởng nhóm chuyển quyền cho một thành viên ACTIVE khác trong cùng chuyến đi.")
   public ResponseEntity<TransferOwnershipResponse> transferOwnership(
       @PathVariable UUID tripId, @Valid @RequestBody TransferOwnershipRequest request) {
     UUID currentUserId = currentUserProvider.getCurrentUserId();
@@ -58,4 +59,3 @@ public class TripMemberController {
     return ResponseEntity.ok(response);
   }
 }
-

@@ -20,9 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Service xử lý nghiệp vụ Quản lý thành viên (TV3):
- * - Rời nhóm chuyến đi (MEMBER / OWNER).
- * - Chuyển quyền trưởng nhóm (OWNER -> MEMBER).
+ * Service xử lý nghiệp vụ Quản lý thành viên (TV3): - Rời nhóm chuyến đi (MEMBER / OWNER). - Chuyển
+ * quyền trưởng nhóm (OWNER -> MEMBER).
  */
 @Service
 public class TripMemberService {
@@ -46,11 +45,10 @@ public class TripMemberService {
   }
 
   /**
-   * Rời nhóm chuyến đi:
-   * - Người không phải thành viên: 403.
-   * - OWNER còn thành viên khác trong nhóm: 409 ("Trưởng nhóm phải chuyển quyền cho thành viên khác trước khi rời nhóm").
-   * - OWNER là thành viên duy nhất của chuyến: 409 (yêu cầu xóa chuyến thay vì rời).
-   * - MEMBER: xóa đúng dòng trip_members của chính mình. Dữ liệu họ tạo giữ nguyên. Sau khi rời bị chặn quyền truy cập.
+   * Rời nhóm chuyến đi: - Người không phải thành viên: 403. - OWNER còn thành viên khác trong nhóm:
+   * 409 ("Trưởng nhóm phải chuyển quyền cho thành viên khác trước khi rời nhóm"). - OWNER là thành
+   * viên duy nhất của chuyến: 409 (yêu cầu xóa chuyến thay vì rời). - MEMBER: xóa đúng dòng
+   * trip_members của chính mình. Dữ liệu họ tạo giữ nguyên. Sau khi rời bị chặn quyền truy cập.
    */
   @Transactional
   public void leaveTrip(UUID tripId, UUID userId) {
@@ -95,12 +93,11 @@ public class TripMemberService {
   }
 
   /**
-   * Chuyển quyền trưởng nhóm:
-   * - Chỉ OWNER hiện tại mới gọi được, người khác -> 403.
-   * - Người được chuyển phải là MEMBER active của chuyến; chuyển cho chính mình hoặc ngoài nhóm -> 400.
-   * - Nằm trong 1 transaction: người nhận -> OWNER, chủ cũ -> MEMBER, cập nhật trip.ownerId.
-   * - Không bao giờ tồn tại trạng thái chuyến có 0 hoặc 2 OWNER.
-   * - Gửi thông báo cho chủ mới qua NotificationService (OWNERSHIP_TRANSFERRED).
+   * Chuyển quyền trưởng nhóm: - Chỉ OWNER hiện tại mới gọi được, người khác -> 403. - Người được
+   * chuyển phải là MEMBER active của chuyến; chuyển cho chính mình hoặc ngoài nhóm -> 400. - Nằm
+   * trong 1 transaction: người nhận -> OWNER, chủ cũ -> MEMBER, cập nhật trip.ownerId. - Không bao
+   * giờ tồn tại trạng thái chuyến có 0 hoặc 2 OWNER. - Gửi thông báo cho chủ mới qua
+   * NotificationService (OWNERSHIP_TRANSFERRED).
    */
   @Transactional
   public TransferOwnershipResponse transferOwnership(
@@ -153,10 +150,7 @@ public class TripMemberService {
     tripRepository.flush();
 
     log.info(
-        "Chuyển quyền trưởng nhóm chuyến đi {} từ {} sang {}",
-        tripId,
-        currentUserId,
-        newOwnerId);
+        "Chuyển quyền trưởng nhóm chuyến đi {} từ {} sang {}", tripId, currentUserId, newOwnerId);
 
     // 5. Gửi thông báo cho chủ mới qua NotificationService
     try {
@@ -170,8 +164,7 @@ public class TripMemberService {
               "tripTitle", trip.getTitle(),
               "previousOwnerId", currentUserId.toString()));
     } catch (Exception e) {
-      log.warn(
-          "Không thể gửi thông báo chuyển quyền tới user {}: {}", newOwnerId, e.getMessage());
+      log.warn("Không thể gửi thông báo chuyển quyền tới user {}: {}", newOwnerId, e.getMessage());
     }
 
     return new TransferOwnershipResponse(
@@ -181,4 +174,3 @@ public class TripMemberService {
         "Chuyển quyền trưởng nhóm thành công cho chuyến đi: " + trip.getTitle());
   }
 }
-

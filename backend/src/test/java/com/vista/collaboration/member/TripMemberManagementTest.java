@@ -58,7 +58,8 @@ class TripMemberManagementTest {
         new TripMemberService(
             tripRepository, tripMemberRepository, tripAccessService, notificationService);
 
-    trip = new TripEntity(OWNER_ID, "Chuyến đi Đà Nẵng", LocalDate.now(), LocalDate.now().plusDays(3));
+    trip =
+        new TripEntity(OWNER_ID, "Chuyến đi Đà Nẵng", LocalDate.now(), LocalDate.now().plusDays(3));
     ReflectionTestUtils.setField(trip, "id", TRIP_ID);
 
     ownerMember = new TripMemberEntity(trip, OWNER_ID, TripMemberRole.OWNER);
@@ -73,7 +74,8 @@ class TripMemberManagementTest {
   // ── Quy tắc 2: Rời nhóm ─────────────────────────────────────────────────────
 
   @Test
-  @DisplayName("1. MEMBER rời nhóm thành công → dòng trip_members bị xóa, sau đó bị chặn khi xem chuyến")
+  @DisplayName(
+      "1. MEMBER rời nhóm thành công → dòng trip_members bị xóa, sau đó bị chặn khi xem chuyến")
   void memberLeaveTrip_success_deletesRowAndBlocksSubsequentAccess() {
     // Member gọi rời nhóm
     when(tripRepository.findById(TRIP_ID)).thenReturn(Optional.of(trip));
@@ -117,7 +119,8 @@ class TripMemberManagementTest {
 
     assertThatThrownBy(() -> tripMemberService.leaveTrip(TRIP_ID, OWNER_ID))
         .isInstanceOf(ConflictException.class)
-        .hasMessage("Bạn là thành viên duy nhất của chuyến đi. Vui lòng xóa chuyến đi thay vì rời nhóm.");
+        .hasMessage(
+            "Bạn là thành viên duy nhất của chuyến đi. Vui lòng xóa chuyến đi thay vì rời nhóm.");
 
     verify(tripMemberRepository, never()).delete(any());
   }
@@ -177,7 +180,8 @@ class TripMemberManagementTest {
   }
 
   @Test
-  @DisplayName("6. Chuyển quyền hợp lệ → đúng 1 OWNER mới, chủ cũ thành MEMBER, gửi thông báo, rồi chủ cũ rời nhóm thành công")
+  @DisplayName(
+      "6. Chuyển quyền hợp lệ → đúng 1 OWNER mới, chủ cũ thành MEMBER, gửi thông báo, rồi chủ cũ rời nhóm thành công")
   void transferOwnership_valid_invariantsSatisfied_andOldOwnerCanLeave() {
     when(tripRepository.findById(TRIP_ID)).thenReturn(Optional.of(trip));
     when(tripMemberRepository.findByTripIdAndUserId(TRIP_ID, MEMBER_ID))
@@ -204,13 +208,13 @@ class TripMemberManagementTest {
 
     // Gửi thông báo cho chủ mới qua NotificationService (OWNERSHIP_TRANSFERRED)
     ArgumentCaptor<String> bodyCaptor = ArgumentCaptor.forClass(String.class);
-    verify(notificationService).sendInAppNotification(
-        eq(MEMBER_ID),
-        eq("Chuyển quyền trưởng nhóm"),
-        bodyCaptor.capture(),
-        eq(NotificationType.OWNERSHIP_TRANSFERRED.name()),
-        any()
-    );
+    verify(notificationService)
+        .sendInAppNotification(
+            eq(MEMBER_ID),
+            eq("Chuyển quyền trưởng nhóm"),
+            bodyCaptor.capture(),
+            eq(NotificationType.OWNERSHIP_TRANSFERRED.name()),
+            any());
     assertThat(bodyCaptor.getValue()).contains("Chuyến đi Đà Nẵng");
 
     // Sau khi chuyển quyền, chủ cũ (OWNER_ID) rời nhóm được theo quy tắc 2 (vì đã là MEMBER)
@@ -222,4 +226,3 @@ class TripMemberManagementTest {
     verify(tripMemberRepository).delete(ownerMember);
   }
 }
-
