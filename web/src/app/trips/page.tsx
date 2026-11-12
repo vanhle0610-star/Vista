@@ -211,6 +211,15 @@ function getCurrentUserMember(defaultRole = 'Trưởng nhóm'): TripMember {
   };
 }
 
+function normalizeMemberText(str?: string) {
+  return (str || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/[^a-z0-9]/g, '');
+}
+
 function formatMembersForCurrentUser(
   members: Array<{ name: string; avatar?: string; color?: string; role?: string; email?: string; userId?: string }>,
   defaultRole = 'Trưởng nhóm'
@@ -224,42 +233,90 @@ function formatMembersForCurrentUser(
   }
 
   const currentEmail = (currentUser?.email || '').toLowerCase().trim();
-  const currentName = (currentUser?.displayName || currentUser?.name || '').toLowerCase().trim();
+  const currentNameNorm = normalizeMemberText(currentUser?.displayName || currentUser?.name || '');
+  const currentId = currentUser?.id || '';
 
   if (!Array.isArray(members) || members.length === 0) {
     return [getCurrentUserMember(defaultRole)];
   }
 
-  const seen = new Set<string>();
   const result: TripMember[] = [];
 
   for (const m of members) {
     if (!m) continue;
     const rawName = (m.name || '').replace(/\s*\([^)]*\)/g, '').trim();
-    const rawEmail = (m.email || '').toLowerCase().trim();
-    const key = (m.userId ? `id:${m.userId}` : '') || rawEmail || rawName.toLowerCase();
-
-    if (!key || seen.has(key)) continue;
-    seen.add(key);
+    if (!rawName) continue;
+    const nameNorm = normalizeMemberText(rawName);
+    const email = (m.email || '').toLowerCase().trim();
+    const userId = (m.userId || '').trim();
 
     const isMe = Boolean(
-      (currentUser && m.userId && currentUser.id && m.userId === currentUser.id) ||
-      (currentEmail && rawEmail && currentEmail === rawEmail) ||
-      (currentName && rawName.toLowerCase() === currentName) ||
+      (currentId && userId && currentId === userId) ||
+      (currentEmail && email && currentEmail === email) ||
+      (currentNameNorm && nameNorm && currentNameNorm === nameNorm) ||
       (m.name || '').toLowerCase().includes('(bạn)')
     );
 
-    result.push({
-      name: isMe ? `${rawName || 'Bạn'} (Bạn)` : rawName,
-      avatar: m.avatar || (rawName.slice(0, 2)).toUpperCase() || 'TV',
-      color: m.color || '#0284c7',
-      email: m.email || (isMe && currentEmail ? currentEmail : undefined),
-      role: m.role || 'Thành viên',
-      userId: m.userId || (isMe && currentUser?.id ? currentUser.id : undefined),
+    const existingIdx = result.findIndex((ex) => {
+      if (isMe && (ex as any)._isMe) return true;
+      const exNameNorm = normalizeMemberText(ex.name);
+      const exEmail = (ex.email || '').toLowerCase().trim();
+      const exUserId = (ex.userId || '').trim();
+
+      if (userId && exUserId && userId === exUserId) return true;
+      if (email && exEmail && email === exEmail) return true;
+      if (nameNorm && exNameNorm && nameNorm === exNameNorm) return true;
+      return false;
     });
+
+    const resolvedUserId = isMe ? (currentId || userId || 'u-me') : userId;
+    const resolvedEmail = isMe ? (currentEmail || email) : email;
+    const isRealEmail = resolvedEmail && !resolvedEmail.includes('@vista.vn');
+    const isRealUserId = resolvedUserId && !resolvedUserId.startsWith('u-');
+
+    if (existingIdx >= 0) {
+      const existing = result[existingIdx];
+      const isExRealEmail = existing.email && !existing.email.includes('@vista.vn');
+      const isExRealUserId = existing.userId && !existing.userId.startsWith('u-');
+
+      result[existingIdx] = {
+        ...existing,
+        name: rawName, // Clean name
+        avatar: existing.avatar || m.avatar || (rawName.slice(0, 2)).toUpperCase() || 'TV',
+        color: existing.color || m.color || '#0284c7',
+        email: isRealEmail ? resolvedEmail : (isExRealEmail ? existing.email : (resolvedEmail || existing.email)),
+        userId: isRealUserId ? resolvedUserId : (isExRealUserId ? existing.userId : (resolvedUserId || existing.userId)),
+        role: existing.role === 'Trưởng nhóm' || m.role === 'Trưởng nhóm' ? 'Trưởng nhóm' : (existing.role || m.role || 'Thành viên'),
+        _isMe: isMe || (existing as any)._isMe,
+      } as any;
+    } else {
+      result.push({
+        name: rawName, // Clean name
+        avatar: m.avatar || (rawName.slice(0, 2)).toUpperCase() || 'TV',
+        color: m.color || (result.length % 2 === 0 ? '#0284c7' : '#10b981'),
+        email: resolvedEmail || undefined,
+        userId: resolvedUserId || undefined,
+        role: m.role || (result.length === 0 ? defaultRole : 'Thành viên'),
+        _isMe: isMe,
+      } as any);
+    }
   }
 
-  return result.length > 0 ? result : [getCurrentUserMember(defaultRole)];
+  // Ensure exactly one leader (Trưởng nhóm)
+  let foundLeader = false;
+  const finalized = result.map((m) => {
+    delete (m as any)._isMe;
+    if (m.role === 'Trưởng nhóm') {
+      if (!foundLeader) {
+        foundLeader = true;
+        return m;
+      }
+      return { ...m, role: 'Thành viên' };
+    }
+    return m;
+  });
+
+  return finalized.length > 0 ? finalized : [getCurrentUserMember(defaultRole)];
 }
 
 type DateFilterType = 'all' | 'upcoming' | 'month-10' | 'month-11' | 'month-12' | 'year-2026' | 'past';
@@ -882,7 +939,8 @@ export default function TripsPage() {
                         map.set(st.id, {
                           ...existing,
                           ...st,
-                          members: formatMembersForCurrentUser([...(existing.members || []), ...(st.members || [])]),
+                          ownerId: st.ownerId || existing.ownerId,
+                          members: formatMembersForCurrentUser(st.members || existing.members || []),
                         });
                       } else {
                         map.set(st.id, {
@@ -1734,248 +1792,265 @@ export default function TripsPage() {
 
                 {/* Card Body */}
                 <div className={styles.tripCardBody}>
-                  {/* Row 1: Role / Rating + Date */}
-                  <div className={styles.cardHeaderRow}>
-                    {trip.rating ? (
-                      <div className={styles.ratingRow}>
-                        <Star size={13} fill="#D97706" color="#D97706" />
-                        <Star size={13} fill="#D97706" color="#D97706" />
-                        <Star size={13} fill="#D97706" color="#D97706" />
-                        <Star size={13} fill="#D97706" color="#D97706" />
-                        <Star size={13} fill="#D97706" color="#D97706" />
-                        <span>5.0</span>
-                      </div>
-                    ) : isTripOwner ? (
-                      <span className={styles.roleBadgeOwner}>Bạn là trưởng nhóm</span>
-                    ) : isTripMember ? (
-                      <span className={styles.roleBadgeMember}>Thành viên nhóm</span>
-                    ) : (
-                      <span className={styles.roleBadgeOther}>
-                        Trưởng nhóm: {trip.members?.[0]?.name || 'Khác'}
-                      </span>
-                    )}
+                  <div className={styles.cardTopSection}>
+                    {/* Row 1: Role / Rating + Date */}
+                    <div className={styles.cardHeaderRow}>
+                      {trip.rating ? (
+                        <div className={styles.ratingRow}>
+                          <Star size={13} fill="#D97706" color="#D97706" />
+                          <Star size={13} fill="#D97706" color="#D97706" />
+                          <Star size={13} fill="#D97706" color="#D97706" />
+                          <Star size={13} fill="#D97706" color="#D97706" />
+                          <Star size={13} fill="#D97706" color="#D97706" />
+                          <span>5.0</span>
+                        </div>
+                      ) : isTripOwner ? (
+                        <span className={styles.roleBadgeOwner} title="Bạn là trưởng nhóm">Bạn là trưởng nhóm</span>
+                      ) : isTripMember ? (
+                        <span className={styles.roleBadgeMember} title="Thành viên nhóm">Thành viên nhóm</span>
+                      ) : (
+                        <span className={styles.roleBadgeOther} title={`Trưởng nhóm: ${trip.members?.[0]?.name || 'Khác'}`}>
+                          Trưởng nhóm: {trip.members?.[0]?.name || 'Khác'}
+                        </span>
+                      )}
 
-                    <span className={styles.cardDateText}>
-                      <Calendar size={13} />
-                      <span>{trip.startDate} – {trip.endDate}</span>
-                    </span>
+                      <span className={styles.cardDateText}>
+                        <Calendar size={12} />
+                        <span>{trip.startDate} – {trip.endDate}</span>
+                      </span>
+                    </div>
+
+                    {/* Row 2: Trip Title */}
+                    <h3 className={styles.tripTitle} title={trip.title}>
+                      <Link href={`/trips/${trip.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                        {trip.title}
+                      </Link>
+                    </h3>
+
+                    {/* Row 3: Members Avatar Stack */}
+                    <div className={styles.membersRow}>
+                      <div className={styles.avatarStack}>
+                        {membersList.map((m, idx) => {
+                          const isMe = Boolean(
+                            currentUser && (
+                              (m.userId && currentUser.id && m.userId === currentUser.id) ||
+                              (m.email && currentUser.email && m.email.toLowerCase() === currentUser.email.toLowerCase()) ||
+                              (currentUser.displayName && m.name.toLowerCase() === currentUser.displayName.toLowerCase())
+                            )
+                          );
+                          return (
+                            <div
+                              key={idx}
+                              className={styles.avatarCircle}
+                              style={{ backgroundColor: m.color || '#0284c7' }}
+                              title={`${m.name}${isMe ? ' (Bạn)' : ''}`}
+                            >
+                              {m.avatar || 'TV'}
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <span className={styles.memberCountText}>
+                        {membersList.length} thành viên
+                      </span>
+                    </div>
+
+                    {/* Row 4: Alert Box Slot (Always fixed 46px height for perfect alignment) */}
+                    <div className={styles.cardAlertSlot}>
+                      {trip.alertType === 'AMBER' && (
+                        <div className={styles.alertBoxAmber}>
+                          <Bell size={14} style={{ flexShrink: 0 }} />
+                          <span className={styles.alertTextClamp}>{trip.alertText}</span>
+                        </div>
+                      )}
+                      {trip.alertType === 'BLUE' && (
+                        <div className={styles.alertBoxBlue}>
+                          <Shuffle size={14} style={{ flexShrink: 0 }} />
+                          <span className={styles.alertTextClamp}>{trip.alertText}</span>
+                        </div>
+                      )}
+                      {trip.alertType === 'COMPLETED' && (
+                        <div className={styles.alertBoxCompleted}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, overflow: 'hidden', flex: 1 }}>
+                            <Camera size={14} style={{ flexShrink: 0 }} />
+                            <span className={styles.alertTextClamp}>{trip.alertText}</span>
+                          </div>
+                          <span
+                            className={styles.alertLinkBtn}
+                            onClick={() => showToast('Mở bộ sưu tập 148 ảnh & hóa đơn')}
+                          >
+                            {trip.alertLinkText || 'Xem'}
+                          </span>
+                        </div>
+                      )}
+                      {!['AMBER', 'BLUE', 'COMPLETED'].includes(trip.alertType as any) && trip.alertText && (
+                        <div className={styles.alertBoxBlue}>
+                          <Shuffle size={14} style={{ flexShrink: 0 }} />
+                          <span className={styles.alertTextClamp}>{trip.alertText}</span>
+                        </div>
+                      )}
+                      {!trip.alertText && (
+                        <div className={styles.alertBoxNeutral}>
+                          <Sparkles size={13} style={{ flexShrink: 0, color: '#0284C7' }} />
+                          <span className={styles.alertTextClamp}>Kế hoạch & trải nghiệm đang diễn ra</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Row 2: Trip Title */}
-                  <h3 className={styles.tripTitle}>
-                    <Link href={`/trips/${trip.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
-                      {trip.title}
-                    </Link>
-                  </h3>
-
-                  {/* Row 3: Members Avatar Stack */}
-                  <div className={styles.membersRow}>
-                    <div className={styles.avatarStack}>
-                      {membersList.map((m, idx) => {
-                        const isMe = Boolean(
-                          currentUser && (
-                            (m.userId && currentUser.id && m.userId === currentUser.id) ||
-                            (m.email && currentUser.email && m.email.toLowerCase() === currentUser.email.toLowerCase()) ||
-                            (currentUser.displayName && m.name.toLowerCase() === currentUser.displayName.toLowerCase())
-                          )
-                        );
-                        return (
-                          <div
-                            key={idx}
-                            className={styles.avatarCircle}
-                            style={{ backgroundColor: m.color || '#0284c7' }}
-                            title={`${m.name}${isMe ? ' (Bạn)' : ''}`}
-                          >
-                            {m.avatar || 'TV'}
+                  <div className={styles.cardBottomSection}>
+                    {/* Row 5: Progress Bar / Budget */}
+                    <div className={styles.cardProgressGroup}>
+                      {tripStatus === 'COMPLETED' ? (
+                        <>
+                          <div className={styles.progressLabelRow}>
+                            <span>Tổng chi tiêu hoàn tất</span>
+                            <span className={styles.progressValueBold}>
+                              {trip.budgetSpent.toLocaleString('vi-VN')}đ / {trip.budgetTotal.toLocaleString('vi-VN')}đ
+                            </span>
                           </div>
+                          <div className={styles.progressBarTrack}>
+                            <div
+                              className={styles.progressBarFillNavy}
+                              style={{ width: `${trip.progressPercent}%` }}
+                            />
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className={styles.progressLabelRow}>
+                            <span>Chi phí đã chi</span>
+                            <span className={styles.progressValueBold}>{trip.progressPercent}%</span>
+                          </div>
+                          <div className={styles.progressBarTrack}>
+                            <div
+                              className={styles.progressBarFillCyan}
+                              style={{ width: `${trip.progressPercent}%` }}
+                            />
+                          </div>
+                          <div className={styles.progressLabelRow}>
+                            <span>Ngân sách chuyến đi</span>
+                            <span className={styles.progressValueBold}>
+                              {trip.budgetSpent.toLocaleString('vi-VN')}đ / {trip.budgetTotal.toLocaleString('vi-VN')}đ
+                            </span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Row 6: Primary CTA Button */}
+                    <Link
+                      href={`/trips/${trip.id}`}
+                      className={
+                        tripStatus === 'ACTIVE'
+                          ? styles.btnCardMainPrimary
+                          : styles.btnCardMainSoft
+                      }
+                      id={`btn-cta-${trip.id}`}
+                    >
+                      {tripStatus === 'COMPLETED' ? 'Xem lại hành trình' : 'Xem chi tiết'}
+                    </Link>
+
+                    {/* Row 7: Secondary Action Pills */}
+                    <div
+                      className={
+                        actions.length === 2
+                          ? styles.secondaryActionsRow2
+                          : styles.secondaryActionsRow
+                      }
+                    >
+                      {actions.map((act, aIdx) => {
+                        const isItinerary = act.label.toLowerCase().includes('lịch trình') || act.actionType === 'PLAN';
+                        const isAssign = act.label.toLowerCase().includes('phân công') || act.actionType === 'ASSIGN';
+                        const isNote = act.label.toLowerCase().includes('ghi chú') || act.actionType === 'NOTE';
+                        const isVote = act.label.toLowerCase().includes('biểu quyết') || act.actionType === 'VOTE';
+
+                        if (isItinerary) {
+                          return (
+                            <Link
+                              key={aIdx}
+                              href={`/trips/${trip.id}?tab=itinerary`}
+                              className={styles.btnSecondaryPill}
+                              title="Mở lịch trình từng ngày của chuyến đi"
+                            >
+                              <Calendar size={12} style={{ marginRight: 3, flexShrink: 0 }} />
+                              <span>{act.label}</span>
+                            </Link>
+                          );
+                        }
+
+                        if (isAssign) {
+                          return (
+                            <button
+                              key={aIdx}
+                              type="button"
+                              className={styles.btnSecondaryPill}
+                              onClick={() => handleOpenAssignModal(trip)}
+                              title={isTripMember ? "Mở bảng phân công nhiệm vụ nhóm" : "Chỉ thành viên chuyến đi mới có quyền xem phân công"}
+                              style={!isTripMember ? { opacity: 0.65 } : undefined}
+                            >
+                              <Users size={12} style={{ marginRight: 3, flexShrink: 0 }} />
+                              <span>{act.label}</span>
+                              {!isTripMember && <Lock size={10} style={{ marginLeft: 3, opacity: 0.7, flexShrink: 0 }} />}
+                            </button>
+                          );
+                        }
+
+                        if (isNote) {
+                          return (
+                            <button
+                              key={aIdx}
+                              type="button"
+                              className={styles.btnSecondaryPill}
+                              onClick={() => handleOpenNoteModal(trip)}
+                              title={isTripMember ? "Mở ghi chú và danh sách chuẩn bị" : "Chỉ thành viên chuyến đi mới có quyền xem ghi chú"}
+                              style={!isTripMember ? { opacity: 0.65 } : undefined}
+                            >
+                              <CheckSquare size={12} style={{ marginRight: 3, flexShrink: 0 }} />
+                              <span>{act.label}</span>
+                              {!isTripMember && <Lock size={10} style={{ marginLeft: 3, opacity: 0.7, flexShrink: 0 }} />}
+                            </button>
+                          );
+                        }
+
+                        if (isVote) {
+                          return (
+                            <button
+                              key={aIdx}
+                              type="button"
+                              className={styles.btnSecondaryPill}
+                              onClick={() => setShowVoteModal(true)}
+                            >
+                              <ThumbsUp size={12} style={{ marginRight: 3, flexShrink: 0 }} />
+                              <span>{act.label}</span>
+                            </button>
+                          );
+                        }
+
+                        if (act.href) {
+                          return (
+                            <Link
+                              key={aIdx}
+                              href={act.href}
+                              className={styles.btnSecondaryPill}
+                            >
+                              <span>{act.label}</span>
+                            </Link>
+                          );
+                        }
+
+                        return (
+                          <button
+                            key={aIdx}
+                            type="button"
+                            className={styles.btnSecondaryPill}
+                            onClick={() => showToast(`Mở tính năng: ${act.label}`)}
+                          >
+                            <span>{act.label}</span>
+                          </button>
                         );
                       })}
                     </div>
-                    <span className={styles.memberCountText}>
-                      {membersList.length} thành viên
-                    </span>
-                  </div>
-
-                  {/* Row 4: Alert Box */}
-                  {trip.alertType === 'AMBER' && (
-                    <div className={styles.alertBoxAmber}>
-                      <Bell size={14} style={{ flexShrink: 0 }} />
-                      <span>{trip.alertText}</span>
-                    </div>
-                  )}
-                  {trip.alertType === 'BLUE' && (
-                    <div className={styles.alertBoxBlue}>
-                      <Shuffle size={14} style={{ flexShrink: 0 }} />
-                      <span>{trip.alertText}</span>
-                    </div>
-                  )}
-                  {trip.alertType === 'COMPLETED' && (
-                    <div className={styles.alertBoxCompleted}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <Camera size={14} style={{ flexShrink: 0 }} />
-                        <span>{trip.alertText}</span>
-                      </div>
-                      <span
-                        className={styles.alertLinkBtn}
-                        onClick={() => showToast('Mở bộ sưu tập 148 ảnh & hóa đơn')}
-                      >
-                        {trip.alertLinkText || 'Xem'}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Row 5: Progress Bar / Budget */}
-                  <div className={styles.cardProgressGroup}>
-                    {tripStatus === 'COMPLETED' ? (
-                      <div className={styles.progressLabelRow}>
-                        <span>Tổng chi tiêu hoàn tất</span>
-                        <span className={styles.progressValueBold}>
-                          {trip.budgetSpent.toLocaleString('vi-VN')}đ / {trip.budgetTotal.toLocaleString('vi-VN')}đ
-                        </span>
-                      </div>
-                    ) : (
-                      <>
-                        <div className={styles.progressLabelRow}>
-                          <span>Chi phí đã chi</span>
-                          <span className={styles.progressValueBold}>{trip.progressPercent}%</span>
-                        </div>
-                        <div className={styles.progressBarTrack}>
-                          <div
-                            className={styles.progressBarFillCyan}
-                            style={{ width: `${trip.progressPercent}%` }}
-                          />
-                        </div>
-                        <div className={styles.progressLabelRow}>
-                          <span>Ngân sách chuyến đi</span>
-                          <span className={styles.progressValueBold}>
-                            {trip.budgetSpent.toLocaleString('vi-VN')}đ / {trip.budgetTotal.toLocaleString('vi-VN')}đ
-                          </span>
-                        </div>
-                      </>
-                    )}
-
-                    {tripStatus === 'COMPLETED' && (
-                      <div className={styles.progressBarTrack}>
-                        <div
-                          className={styles.progressBarFillNavy}
-                          style={{ width: `${trip.progressPercent}%` }}
-                        />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Row 6: Primary CTA Button */}
-                  <Link
-                    href={`/trips/${trip.id}`}
-                    className={
-                      tripStatus === 'ACTIVE'
-                        ? styles.btnCardMainPrimary
-                        : styles.btnCardMainSoft
-                    }
-                    id={`btn-cta-${trip.id}`}
-                  >
-                    {tripStatus === 'COMPLETED' ? 'Xem lại hành trình' : 'Xem chi tiết'}
-                  </Link>
-
-                  {/* Row 7: Secondary Action Pills */}
-                  <div
-                    className={
-                      actions.length === 2
-                        ? styles.secondaryActionsRow2
-                        : styles.secondaryActionsRow
-                    }
-                  >
-                    {actions.map((act, aIdx) => {
-                      const isItinerary = act.label.toLowerCase().includes('lịch trình') || act.actionType === 'PLAN';
-                      const isAssign = act.label.toLowerCase().includes('phân công') || act.actionType === 'ASSIGN';
-                      const isNote = act.label.toLowerCase().includes('ghi chú') || act.actionType === 'NOTE';
-                      const isVote = act.label.toLowerCase().includes('biểu quyết') || act.actionType === 'VOTE';
-
-                      if (isItinerary) {
-                        return (
-                          <Link
-                            key={aIdx}
-                            href={`/trips/${trip.id}?tab=itinerary`}
-                            className={styles.btnSecondaryPill}
-                            title="Mở lịch trình từng ngày của chuyến đi"
-                          >
-                            <Calendar size={13} style={{ marginRight: 4 }} />
-                            <span>{act.label}</span>
-                          </Link>
-                        );
-                      }
-
-                      if (isAssign) {
-                        return (
-                          <button
-                            key={aIdx}
-                            type="button"
-                            className={styles.btnSecondaryPill}
-                            onClick={() => handleOpenAssignModal(trip)}
-                            title={isTripMember ? "Mở bảng phân công nhiệm vụ nhóm" : "Chỉ thành viên chuyến đi mới có quyền xem phân công"}
-                            style={!isTripMember ? { opacity: 0.65 } : undefined}
-                          >
-                            <Users size={13} style={{ marginRight: 4 }} />
-                            <span>{act.label}</span>
-                            {!isTripMember && <Lock size={10} style={{ marginLeft: 3, opacity: 0.7 }} />}
-                          </button>
-                        );
-                      }
-
-                      if (isNote) {
-                        return (
-                          <button
-                            key={aIdx}
-                            type="button"
-                            className={styles.btnSecondaryPill}
-                            onClick={() => handleOpenNoteModal(trip)}
-                            title={isTripMember ? "Mở ghi chú và danh sách chuẩn bị" : "Chỉ thành viên chuyến đi mới có quyền xem ghi chú"}
-                            style={!isTripMember ? { opacity: 0.65 } : undefined}
-                          >
-                            <CheckSquare size={13} style={{ marginRight: 4 }} />
-                            <span>{act.label}</span>
-                            {!isTripMember && <Lock size={10} style={{ marginLeft: 3, opacity: 0.7 }} />}
-                          </button>
-                        );
-                      }
-
-                      if (isVote) {
-                        return (
-                          <button
-                            key={aIdx}
-                            type="button"
-                            className={styles.btnSecondaryPill}
-                            onClick={() => setShowVoteModal(true)}
-                          >
-                            <ThumbsUp size={13} style={{ marginRight: 4 }} />
-                            <span>{act.label}</span>
-                          </button>
-                        );
-                      }
-
-                      if (act.href) {
-                        return (
-                          <Link
-                            key={aIdx}
-                            href={act.href}
-                            className={styles.btnSecondaryPill}
-                          >
-                            <span>{act.label}</span>
-                          </Link>
-                        );
-                      }
-
-                      return (
-                        <button
-                          key={aIdx}
-                          type="button"
-                          className={styles.btnSecondaryPill}
-                          onClick={() => showToast(`Mở tính năng: ${act.label}`)}
-                        >
-                          <span>{act.label}</span>
-                        </button>
-                      );
-                    })}
                   </div>
                 </div>
               </div>

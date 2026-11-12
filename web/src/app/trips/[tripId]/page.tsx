@@ -364,10 +364,19 @@ const DEFAULT_DEMO_TRIPS: TripDetailData[] = [
   },
 ];
 
+function normalizeMemberText(str?: string) {
+  return (str || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/[^a-z0-9]/g, '');
+}
+
 function getCurrentUserMember(defaultRole = 'Trưởng nhóm'): MemberItem {
   const u = getStoredUser();
   const rawName = u?.displayName || u?.email || 'Thành viên VISTA';
-  const cleanName = rawName.replace(/\s*\(Bạn\)/g, '').trim() || 'Thành viên VISTA';
+  const cleanName = rawName.replace(/\s*\(Bạn\)/gi, '').trim() || 'Thành viên VISTA';
   const parts = cleanName.split(/\s+/);
   const initials = (parts.length >= 2 ? parts[0][0] + parts[parts.length - 1][0] : cleanName.slice(0, 2)).toUpperCase();
   return {
@@ -380,6 +389,106 @@ function getCurrentUserMember(defaultRole = 'Trưởng nhóm'): MemberItem {
   };
 }
 
+function formatMembersForCurrentUser(
+  members: Array<{ name: string; avatar?: string; color?: string; role?: string; email?: string; userId?: string }>,
+  defaultRole = 'Trưởng nhóm'
+): MemberItem[] {
+  let currentUser: any = null;
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = localStorage.getItem('vista_user');
+      if (stored) currentUser = JSON.parse(stored);
+    } catch {}
+  }
+
+  const currentEmail = (currentUser?.email || '').toLowerCase().trim();
+  const currentNameNorm = normalizeMemberText(currentUser?.displayName || currentUser?.name || '');
+  const currentId = currentUser?.id || '';
+
+  if (!Array.isArray(members) || members.length === 0) {
+    return [getCurrentUserMember(defaultRole)];
+  }
+
+  const result: MemberItem[] = [];
+
+  for (const m of members) {
+    if (!m) continue;
+    const rawName = (m.name || (m as any).displayName || '').replace(/\s*\([^)]*\)/g, '').trim();
+    if (!rawName) continue;
+    const nameNorm = normalizeMemberText(rawName);
+    const email = (m.email || '').toLowerCase().trim();
+    const userId = (m.userId || (m as any).id || '').trim();
+
+    const isMe = Boolean(
+      (currentId && userId && currentId === userId) ||
+      (currentEmail && email && currentEmail === email) ||
+      (currentNameNorm && nameNorm && currentNameNorm === nameNorm) ||
+      (m.name || '').toLowerCase().includes('(bạn)')
+    );
+
+    // Check if this member or "me" already exists in result
+    const existingIdx = result.findIndex((ex) => {
+      if (isMe && (ex as any)._isMe) return true;
+      const exNameNorm = normalizeMemberText(ex.name);
+      const exEmail = (ex.email || '').toLowerCase().trim();
+      const exUserId = (ex.userId || '').trim();
+
+      if (userId && exUserId && userId === exUserId) return true;
+      if (email && exEmail && email === exEmail) return true;
+      if (nameNorm && exNameNorm && nameNorm === exNameNorm) return true;
+      return false;
+    });
+
+    const resolvedUserId = isMe ? (currentId || userId || 'u-me') : userId;
+    const resolvedEmail = isMe ? (currentEmail || email) : email;
+    const isRealEmail = resolvedEmail && !resolvedEmail.includes('@vista.vn');
+    const isRealUserId = resolvedUserId && !resolvedUserId.startsWith('u-');
+
+    if (existingIdx >= 0) {
+      const existing = result[existingIdx];
+      const isExRealEmail = existing.email && !existing.email.includes('@vista.vn');
+      const isExRealUserId = existing.userId && !existing.userId.startsWith('u-');
+
+      result[existingIdx] = {
+        ...existing,
+        name: rawName, // ALWAYS CLEAN, NEVER APPEND (Bạn)
+        avatar: existing.avatar || m.avatar || rawName.slice(0, 2).toUpperCase() || 'TV',
+        color: existing.color || m.color || '#0284c7',
+        email: isRealEmail ? resolvedEmail : (isExRealEmail ? existing.email : (resolvedEmail || existing.email)),
+        userId: isRealUserId ? resolvedUserId : (isExRealUserId ? existing.userId : (resolvedUserId || existing.userId)),
+        role: existing.role === 'Trưởng nhóm' || m.role === 'Trưởng nhóm' ? 'Trưởng nhóm' : (existing.role || m.role || 'Thành viên'),
+        _isMe: isMe || (existing as any)._isMe,
+      } as any;
+    } else {
+      result.push({
+        name: rawName, // ALWAYS CLEAN, NEVER APPEND (Bạn)
+        avatar: m.avatar || rawName.slice(0, 2).toUpperCase() || 'TV',
+        color: m.color || (result.length % 2 === 0 ? '#0284c7' : '#10b981'),
+        email: resolvedEmail || undefined,
+        userId: resolvedUserId || undefined,
+        role: m.role || (result.length === 0 ? defaultRole : 'Thành viên'),
+        _isMe: isMe,
+      } as any);
+    }
+  }
+
+  // Ensure exactly one leader (Trưởng nhóm)
+  let foundLeader = false;
+  const finalized = result.map((m) => {
+    delete (m as any)._isMe;
+    if (m.role === 'Trưởng nhóm') {
+      if (!foundLeader) {
+        foundLeader = true;
+        return m;
+      }
+      return { ...m, role: 'Thành viên' };
+    }
+    return m;
+  });
+
+  return finalized.length > 0 ? finalized : [getCurrentUserMember(defaultRole)];
+}
+
 export default function TripDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -388,7 +497,7 @@ export default function TripDetailPage() {
 
   const [accessDenied, setAccessDenied] = useState(() => Boolean(tripId && tripId.includes('private')));
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const [currentUser, setCurrentUser] = useState<StoredUser | null>(null);
+  const [currentUser, setCurrentUser] = useState<StoredUser | null>(() => getStoredUser());
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -467,6 +576,29 @@ export default function TripDetailPage() {
   const [checkedActivities, setCheckedActivities] = useState<Record<string, boolean>>({});
   const [highlightedActId, setHighlightedActId] = useState<string | null>(null);
 
+  const [invitationsList, setInvitationsList] = useState<Array<{
+    id: string;
+    email: string;
+    token: string;
+    status: 'PENDING' | 'ACCEPTED' | 'REVOKED' | 'EXPIRED';
+    expiresAt: string;
+  }>>([
+    {
+      id: 'inv-1',
+      email: 'nguyenvanb@gmail.com',
+      token: 'VISTA-NG2026',
+      status: 'PENDING',
+      expiresAt: '22/11/2026 (Còn 6 ngày)',
+    },
+    {
+      id: 'inv-2',
+      email: 'nguoithuhoi@gmail.com',
+      token: 'VISTA-REVOKED',
+      status: 'REVOKED',
+      expiresAt: 'Đã thu hồi bởi Owner',
+    },
+  ]);
+
   const isTripOwner = Boolean(
     currentUser && trip && (
       (trip.ownerId && (trip.ownerId === currentUser.id || (currentUser.email && trip.ownerId === currentUser.email))) ||
@@ -522,6 +654,184 @@ export default function TripDetailPage() {
     showToast(`🎉 Bạn đã tham gia thành công "${trip.title}"! Giờ đây bạn có thể check-in và biểu quyết.`);
   };
 
+  const handleLeaveTrip = async () => {
+    if (!trip || !currentUser) return;
+    const membersCount = trip.members?.length || 1;
+    const normMyName = normalizeMemberText(currentUser.displayName || (currentUser as any)?.name || '');
+
+    const remainingMembers = (trip.members || []).filter(
+      (m: any) =>
+        !(
+          (m.userId && currentUser.id && m.userId === currentUser.id) ||
+          (m.email && currentUser.email && m.email.toLowerCase() === currentUser.email.toLowerCase()) ||
+          (normMyName && normalizeMemberText(m.name || '') === normMyName)
+        )
+    );
+
+    let nextOwnerId = trip.ownerId;
+    if (isTripOwner) {
+      if (membersCount <= 1 || remainingMembers.length === 0) {
+        if (!confirm('Bạn là thành viên duy nhất của chuyến đi. Bạn có muốn xóa hẳn chuyến đi này không?')) {
+          return;
+        }
+      } else {
+        const nextLeader = remainingMembers[0];
+        const nextLeaderName = (nextLeader?.name || 'thành viên kế tiếp').replace(/\s*\(Bạn.*?\)/gi, '').trim();
+        if (!confirm(`Bạn đang là Trưởng nhóm. Khi rời nhóm, quyền Trưởng nhóm sẽ được tự động chuyển giao cho "${nextLeaderName}". Bạn có chắc chắn muốn rời nhóm không?`)) {
+          return;
+        }
+        nextOwnerId = nextLeader?.userId || (nextLeader as any)?.id || nextLeader?.email || '0e83b597-d175-465b-bd0b-a3b41537c3d9';
+      }
+    } else {
+      if (!confirm('Bạn có chắc chắn muốn rời khỏi chuyến đi này không? Dữ liệu bạn từng tạo vẫn được giữ nguyên.')) {
+        return;
+      }
+    }
+
+    const updatedMembers = remainingMembers.map((m, idx) => ({
+      ...m,
+      role: idx === 0 ? 'Trưởng nhóm' : (m.role === 'Trưởng nhóm' ? 'Thành viên' : m.role || 'Thành viên'),
+    }));
+
+    try {
+      const token = localStorage.getItem('vista_token');
+      await fetch(`http://localhost:8081/api/v1/trips/${tripId}/members/me`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      }).catch(() => {});
+
+      // Persist to server API store immediately
+      await fetch('/api/trips', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: tripId,
+          members: updatedMembers,
+          replaceMembers: true,
+          action: 'LEAVE',
+          leavingEmail: currentUser.email,
+          leavingUserId: currentUser.id,
+          ownerId: nextOwnerId,
+        }),
+      }).catch(() => {});
+
+      // Revoke any active invitations for this user on server
+      await fetch('/api/invitations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'LEAVE',
+          tripId: tripId,
+          email: currentUser.email,
+        }),
+      }).catch(() => {});
+
+      // Remove from localStorage custom trips
+      try {
+        const stored = localStorage.getItem('vista_custom_trips');
+        if (stored) {
+          const list = JSON.parse(stored);
+          const filtered = list.filter((t: any) => t.id !== tripId);
+          localStorage.setItem('vista_custom_trips', JSON.stringify(filtered));
+        }
+        window.dispatchEvent(new CustomEvent('vista-trips-change'));
+        window.dispatchEvent(new Event('storage'));
+      } catch {}
+
+      showToast('✓ Bạn đã rời nhóm thành công!');
+      setTimeout(() => {
+        router.push('/trips');
+      }, 500);
+    } catch {
+      showToast('❌ Không thể rời nhóm. Vui lòng thử lại sau.');
+    }
+  };
+
+  const handleTransferOwnership = async (targetMember: any) => {
+    if (!trip || !currentUser || !isTripOwner) return;
+    const rawTargetName = typeof targetMember === 'string' ? targetMember : targetMember?.name || 'thành viên';
+    const targetName = rawTargetName.replace(/\s*\(Bạn\)/gi, '').trim() || rawTargetName;
+    if (!confirm(`Bạn có chắc chắn muốn chuyển quyền Trưởng nhóm cho "${targetName}" không?\n\nSau khi chuyển quyền, bạn sẽ trở thành Thành viên và "${targetName}" sẽ là Trưởng nhóm mới.`)) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('vista_token');
+      const targetUserId = targetMember.userId || targetMember.id;
+      if (targetUserId) {
+        await fetch(`http://localhost:8081/api/v1/trips/${tripId}/transfer-ownership`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ newOwnerId: targetUserId }),
+        }).catch(() => {});
+      }
+
+      // Cập nhật vai trò: người nhận -> Trưởng nhóm, các người khác -> Thành viên
+      const normTargetName = normalizeMemberText(targetName);
+      const updatedMembers = (trip.members || []).map((m: any) => {
+        const mName = typeof m === 'string' ? m : m?.name || '';
+        const isTarget = m === targetMember ||
+          (targetUserId && (m.userId === targetUserId || m.id === targetUserId)) ||
+          (normTargetName && normalizeMemberText(mName) === normTargetName);
+
+        if (isTarget) {
+          return { ...m, role: 'Trưởng nhóm' };
+        }
+        return { ...m, role: 'Thành viên' };
+      });
+
+      // Đưa Trưởng nhóm mới lên đầu
+      const leaderIdx = updatedMembers.findIndex((m: any) => m.role === 'Trưởng nhóm');
+      if (leaderIdx > 0) {
+        const [leader] = updatedMembers.splice(leaderIdx, 1);
+        updatedMembers.unshift(leader);
+      }
+
+      const updatedTrip = {
+        ...trip,
+        members: updatedMembers,
+        ownerId: targetUserId || trip.ownerId,
+        role: 'MEMBER' as const
+      };
+      setTrip(updatedTrip);
+
+      // Persist to server API store so other members (user B) see the new leader immediately!
+      await fetch('/api/trips', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: tripId,
+          ownerId: targetUserId || trip.ownerId,
+          members: updatedMembers,
+          replaceMembers: true,
+          action: 'TRANSFER_OWNERSHIP',
+        }),
+      }).catch(() => {});
+
+      try {
+        const stored = localStorage.getItem('vista_custom_trips');
+        if (stored) {
+          const list = JSON.parse(stored);
+          const idx = list.findIndex((t: any) => t.id === tripId);
+          if (idx >= 0) {
+            list[idx] = { ...list[idx], members: updatedMembers, ownerId: targetUserId || trip.ownerId };
+            localStorage.setItem('vista_custom_trips', JSON.stringify(list));
+          }
+        }
+      } catch {}
+
+      showToast(`👑 Đã chuyển quyền Trưởng nhóm cho "${targetName}" thành công!`);
+    } catch {
+      showToast('❌ Chuyển quyền thất bại. Vui lòng thử lại.');
+    }
+  };
+
   const toggleCheckActivity = (id: string, title: string) => {
     if (!isTripMember) {
       showToast('⚠️ Bạn chưa tham gia chuyến đi này. Vui lòng tham gia nhóm để check-in địa điểm!');
@@ -575,28 +885,6 @@ export default function TripDetailPage() {
     link: string;
   } | null>(null);
   const [manualCodeInput, setManualCodeInput] = useState('');
-  const [invitationsList, setInvitationsList] = useState<Array<{
-    id: string;
-    email: string;
-    token: string;
-    status: 'PENDING' | 'ACCEPTED' | 'REVOKED' | 'EXPIRED';
-    expiresAt: string;
-  }>>([
-    {
-      id: 'inv-1',
-      email: 'nguyenvanb@gmail.com',
-      token: 'VISTA-NG2026',
-      status: 'PENDING',
-      expiresAt: '22/11/2026 (Còn 6 ngày)',
-    },
-    {
-      id: 'inv-2',
-      email: 'nguoithuhoi@gmail.com',
-      token: 'VISTA-REVOKED',
-      status: 'REVOKED',
-      expiresAt: 'Đã thu hồi bởi Owner',
-    },
-  ]);
 
   // Proposals & Voting (W4-TV3-02)
   const [isVotingClosed, setIsVotingClosed] = useState(false);
@@ -629,6 +917,94 @@ export default function TripDetailPage() {
   useEffect(() => {
     if (!tripId) return;
 
+    // Load persisted invitations for this trip
+    try {
+      const storedInvs = localStorage.getItem(`vista_invitations_${tripId}`);
+      if (storedInvs) {
+        setInvitationsList(JSON.parse(storedInvs));
+      } else {
+        setInvitationsList([]);
+      }
+    } catch {
+      setInvitationsList([]);
+    }
+
+    // Sync invitations from server API (cross-browser / cross-session support)
+    fetch(`/api/invitations?tripId=${tripId}`)
+      .then((r) => r.json())
+      .then((serverInvs) => {
+        if (Array.isArray(serverInvs) && serverInvs.length > 0) {
+          setInvitationsList((prev) => {
+            const map = new Map();
+            prev.forEach((i: any) => map.set(i.token, { ...i, email: i.email || i.inviteeEmail || '' }));
+            serverInvs.forEach((i: any) => map.set(i.token, { ...i, email: i.email || i.inviteeEmail || '' }));
+            return Array.from(map.values());
+          });
+        }
+      })
+      .catch(() => {});
+
+    // Sync trip data & members from server API
+    const syncTripFromServer = () => {
+      fetch(`/api/trips?id=${tripId}`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((serverTrip) => {
+          if (serverTrip && Array.isArray(serverTrip.members) && serverTrip.members.length > 0) {
+            setTrip((prev) => {
+              const formattedMembers = formatMembersForCurrentUser(serverTrip.members);
+
+              const isUserMember = formattedMembers.some(
+                (m: any) =>
+                  (m.userId && currentUser?.id && m.userId === currentUser.id) ||
+                  (m.email && currentUser?.email && m.email.toLowerCase() === currentUser.email.toLowerCase()) ||
+                  (currentUser?.displayName && m.name && m.name.trim().toLowerCase() === currentUser.displayName.trim().toLowerCase())
+              );
+              const isUserOwner = Boolean(
+                currentUser && (
+                  (serverTrip.ownerId && (serverTrip.ownerId === currentUser.id || serverTrip.ownerId === currentUser.email)) ||
+                  (formattedMembers[0] && (
+                    (formattedMembers[0].userId && formattedMembers[0].userId === currentUser.id) ||
+                    (formattedMembers[0].email && currentUser.email && formattedMembers[0].email.toLowerCase() === currentUser.email.toLowerCase())
+                  ))
+                )
+              );
+
+              // Keep local storage in sync for offline and fast reloads
+              try {
+                const stored = localStorage.getItem('vista_custom_trips');
+                if (stored) {
+                  const list = JSON.parse(stored);
+                  if (!isUserMember && !isUserOwner) {
+                    const filtered = list.filter((t: any) => t.id !== tripId);
+                    localStorage.setItem('vista_custom_trips', JSON.stringify(filtered));
+                  } else {
+                    const idx = list.findIndex((t: any) => t.id === tripId);
+                    if (idx >= 0) {
+                      list[idx].members = formattedMembers;
+                      list[idx].ownerId = serverTrip.ownerId || list[idx].ownerId;
+                      localStorage.setItem('vista_custom_trips', JSON.stringify(list));
+                    }
+                  }
+                }
+              } catch {}
+
+              if (!prev) return { ...serverTrip, members: formattedMembers };
+              return {
+                ...prev,
+                ...serverTrip,
+                ownerId: serverTrip.ownerId || prev.ownerId,
+                members: formattedMembers,
+              };
+            });
+          }
+        })
+        .catch(() => {});
+    };
+
+    syncTripFromServer();
+    const pollTimer = setInterval(syncTripFromServer, 2500);
+    window.addEventListener('focus', syncTripFromServer);
+
     const timer = setTimeout(() => {
       // 1. Try finding in custom trips in localStorage
       try {
@@ -639,59 +1015,21 @@ export default function TripDetailPage() {
           if (match) {
             let needsUpdate = false;
             const currentOwner = getCurrentUserMember('Trưởng nhóm');
-            const filteredMembers = (match.members && match.members.length > 0 ? match.members : [currentOwner]).filter(
-              (m: any) => {
-                const n = (m?.name || '').toLowerCase();
-                if (n.includes('nguyễn văn b') && currentUser && !currentUser.displayName?.toLowerCase().includes('nguyễn văn b')) {
-                  needsUpdate = true;
-                  return false;
-                }
-                return true;
-              }
-            );
-            const rawMembers = filteredMembers.length > 0 ? filteredMembers : [currentOwner];
-            const normalizedMembers: MemberItem[] = rawMembers.map((m: any, idx: number) => {
-              const rawName = m.name || '';
-              let cleanName = rawName.replace(/\s*\(Bạn.*?\)/gi, '').trim();
-              if (!cleanName || cleanName === 'Bạn') {
-                cleanName = idx === 0 ? 'Trưởng nhóm VISTA' : 'Thành viên VISTA';
-              }
-              if (cleanName !== rawName) {
-                needsUpdate = true;
-              }
-
-              const isMe = Boolean(
-                currentUser && (
-                  (m.userId && m.userId === currentUser.id) ||
-                  (currentUser.displayName && cleanName.toLowerCase() === currentUser.displayName.toLowerCase()) ||
-                  (currentUser.email && m.email && m.email.toLowerCase() === currentUser.email.toLowerCase())
-                )
-              );
-
-              const memberUserId = isMe
-                ? (currentUser?.id || currentOwner.userId)
-                : (m.userId && m.userId !== currentOwner.userId ? m.userId : `u-${encodeURIComponent(cleanName.toLowerCase().replace(/\s+/g, '-'))}`);
-
-              const memberEmail = isMe
-                ? (currentUser?.email || currentOwner.email)
-                : (m.email && m.email !== currentOwner.email ? m.email : `${encodeURIComponent(cleanName.toLowerCase().replace(/\s+/g, ''))}@vista.vn`);
-
-              return {
-                ...m,
-                name: cleanName,
-                avatar: m.avatar || cleanName.slice(0, 2).toUpperCase(),
-                color: m.color || '#0284c7',
-                role: m.role || (idx === 0 ? 'Trưởng nhóm' : 'Thành viên'),
-                userId: memberUserId,
-                email: memberEmail,
-              };
-            });
+            const isCustomTrip = match.id.startsWith('trip-') && !match.id.includes('danang') && !match.id.includes('hagiang');
+            const filteredMembers = isCustomTrip
+              ? (match.members || []).filter((m: any) => !m.name?.includes('Trần Minh Tuấn') && !m.name?.includes('Lê Vân Anh'))
+              : (match.members || []);
+            const rawMembers = filteredMembers.length > 0 ? filteredMembers : (match.members && match.members.length > 0 ? match.members : [currentOwner]);
+            const normalizedMembers: MemberItem[] = formatMembersForCurrentUser(rawMembers, 'Trưởng nhóm');
+            if (JSON.stringify(normalizedMembers) !== JSON.stringify(match.members)) {
+              needsUpdate = true;
+            }
 
             const firstMember = normalizedMembers[0];
             const isCreatorMe = Boolean(
               currentUser && (
                 (firstMember?.userId && firstMember.userId === currentUser.id) ||
-                (currentUser.displayName && firstMember?.name && firstMember.name.toLowerCase() === currentUser.displayName.toLowerCase()) ||
+                (currentUser.displayName && firstMember?.name && normalizeMemberText(firstMember.name) === normalizeMemberText(currentUser.displayName)) ||
                 (currentUser.email && firstMember?.email && firstMember.email.toLowerCase() === currentUser.email.toLowerCase())
               )
             );
@@ -919,15 +1257,44 @@ export default function TripDetailPage() {
       return;
     }
 
+    const currentInviterName = currentUser?.displayName || currentUser?.email || 'Trưởng nhóm';
+    const cleanInviterName = currentInviterName.replace(/\s*\(Bạn.*?\)/gi, '').trim() || 'Trưởng nhóm';
+
     const token = `VISTA-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
     const newInv = {
       id: `inv-${Date.now()}`,
+      tripId: tripId || trip?.id || 'demo-trip',
+      tripTitle: trip?.title || 'Khám phá chuyến đi VISTA',
+      destination: trip?.destination || 'Việt Nam',
+      startDate: trip?.startDate || 'Sắp tới',
+      endDate: trip?.endDate || '2026',
+      inviterName: cleanInviterName,
+      inviterEmail: currentUser?.email || '',
+      inviteeEmail: email,
       email: email,
       token: token,
       status: 'PENDING' as const,
       expiresAt: 'Trong 7 ngày tới',
+      createdAt: new Date().toISOString(),
     };
-    setInvitationsList((prev) => [newInv, ...prev]);
+    const updated = [newInv, ...invitationsList];
+    setInvitationsList(updated);
+    if (typeof window !== 'undefined' && tripId) {
+      try {
+        localStorage.setItem(`vista_invitations_${tripId}`, JSON.stringify(updated));
+        window.dispatchEvent(new CustomEvent('vista-invitations-change'));
+      } catch {}
+    }
+
+    // Sync to shared server API so any other window / user receives it immediately
+    try {
+      fetch('/api/invitations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newInv),
+      }).catch(() => {});
+    } catch {}
+
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
     const inviteLink = `${baseUrl}/invitations/${token}`;
     setCreatedInvitationInfo({
@@ -944,10 +1311,27 @@ export default function TripDetailPage() {
       showToast('⚠️ Quyền hạn không đủ! Chỉ Trưởng nhóm (Owner) mới có quyền thu hồi lời mời.');
       return;
     }
-    setInvitationsList((prev) =>
-      prev.map((inv) => (inv.id === id ? { ...inv, status: 'REVOKED' } : inv))
+    const target = invitationsList.find((i) => i.id === id);
+    const updated = invitationsList.map((inv) =>
+      inv.id === id ? { ...inv, status: 'REVOKED' as const } : inv
     );
-    showToast('✓ Trưởng nhóm (Owner) đã thu hồi lời mời! Token này sẽ bị từ chối.');
+    setInvitationsList(updated);
+    if (typeof window !== 'undefined' && tripId) {
+      try {
+        localStorage.setItem(`vista_invitations_${tripId}`, JSON.stringify(updated));
+        window.dispatchEvent(new CustomEvent('vista-invitations-change'));
+      } catch {}
+    }
+    if (target?.token) {
+      try {
+        fetch('/api/invitations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: target.token, status: 'REVOKED' }),
+        }).catch(() => {});
+      } catch {}
+    }
+    showToast('✓ Trưởng nhóm (Owner) đã thu hồi lời mời! Token này đã bị vô hiệu hóa.');
   };
 
   // Vote toggle with closing support (W4-TV3-02)
@@ -1390,6 +1774,39 @@ export default function TripDetailPage() {
           <p style={{ color: '#64748b', fontSize: '0.95rem' }}>
             Bạn cần đăng nhập để xem chi tiết chuyến đi này. Đang chuyển hướng...
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (trip && currentUser && !isTripMember) {
+    return (
+      <div className={styles.tripDetailPage}>
+        <div style={{ maxWidth: '640px', margin: '80px auto', textAlign: 'center', padding: '48px 24px', background: '#FFFFFF', borderRadius: '24px', border: '1px solid #E2E8F0', boxShadow: '0 10px 30px rgba(0,0,0,0.06)' }}>
+          <div style={{ fontSize: '56px', marginBottom: '16px' }}>🔒</div>
+          <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#0F172A', marginBottom: '10px' }}>
+            Không có quyền truy cập chuyến đi (403)
+          </h2>
+          <p style={{ fontSize: '15px', color: '#64748B', lineHeight: '1.6', marginBottom: '28px' }}>
+            Bạn không phải là thành viên hoặc đã rời khỏi chuyến đi <strong>&ldquo;{trip.title}&rdquo;</strong>. Theo quy định bảo mật, chỉ thành viên đang tham gia mới có quyền xem lịch trình, thành viên và chi tiêu.
+          </p>
+          <button
+            type="button"
+            onClick={() => router.push('/trips')}
+            style={{
+              padding: '13px 32px',
+              backgroundColor: '#0284C7',
+              color: '#FFFFFF',
+              border: 'none',
+              borderRadius: '12px',
+              fontSize: '15px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              boxShadow: '0 4px 14px rgba(2, 132, 199, 0.3)',
+            }}
+          >
+            ← Quay về danh sách Chuyến đi của tôi
+          </button>
         </div>
       </div>
     );
@@ -2232,50 +2649,78 @@ export default function TripDetailPage() {
                     : 'Bạn đang xem chuyến đi này ở chế độ Khách quan sát (chưa gia nhập nhóm).'}
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  if (!isTripMember) {
-                    showToast('⚠️ Bạn đang ở chế độ Khách quan sát. Vui lòng bấm "Tham gia chuyến đi" để có quyền tạo lời mời!');
-                    return;
-                  }
-                  setShowInviteModal(true);
-                }}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '9px 16px',
-                  background: isTripMember ? '#0284C7' : '#94A3B8',
-                  color: '#FFFFFF',
-                  border: 'none',
-                  borderRadius: '10px',
-                  fontSize: '13px',
-                  fontWeight: 700,
-                  cursor: isTripMember ? 'pointer' : 'not-allowed',
-                  boxShadow: isTripMember ? '0 4px 12px rgba(2, 132, 199, 0.25)' : 'none',
-                }}
-                title={!isTripMember ? 'Chỉ thành viên chuyến đi mới có quyền tạo lời mời' : undefined}
-              >
-                <span>+ Tạo lời mời mới</span>
-              </button>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!isTripMember) {
+                      showToast('⚠️ Bạn đang ở chế độ Khách quan sát. Vui lòng bấm "Tham gia chuyến đi" để có quyền tạo lời mời!');
+                      return;
+                    }
+                    setShowInviteModal(true);
+                  }}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '9px 16px',
+                    background: isTripMember ? '#0284C7' : '#94A3B8',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    borderRadius: '10px',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    cursor: isTripMember ? 'pointer' : 'not-allowed',
+                    boxShadow: isTripMember ? '0 4px 12px rgba(2, 132, 199, 0.25)' : 'none',
+                  }}
+                  title={!isTripMember ? 'Chỉ thành viên chuyến đi mới có quyền tạo lời mời' : undefined}
+                >
+                  <span>+ Tạo lời mời mới</span>
+                </button>
+                {isTripMember && (
+                  <button
+                    type="button"
+                    onClick={handleLeaveTrip}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '9px 14px',
+                      background: '#FFF1F2',
+                      color: '#E11D48',
+                      border: '1px solid #FECDD3',
+                      borderRadius: '10px',
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                    }}
+                    title="Rời khỏi chuyến đi này"
+                  >
+                    <span>🚪 Rời nhóm</span>
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className={styles.membersGrid}>
               {(trip.members || []).map((m: any, idx) => {
-                const name = typeof m === 'string' ? m : m?.name || `Thành viên ${idx + 1}`;
+                const rawItemName = typeof m === 'string' ? m : m?.name || `Thành viên ${idx + 1}`;
+                const name = rawItemName.replace(/\s*\(Bạn\)/gi, '').trim() || rawItemName;
                 const avatar = typeof m === 'object' && m?.avatar ? m.avatar : name.slice(0, 2).toUpperCase();
                 const color = typeof m === 'object' && m?.color ? m.color : (idx % 2 === 0 ? '#0284c7' : '#10b981');
                 const role = typeof m === 'object' && m?.role ? m.role : (idx === 0 ? 'Trưởng nhóm' : 'Thành viên');
+                const normMemberName = normalizeMemberText(name);
+                const normCurrentName = normalizeMemberText(currentUser?.displayName || (currentUser as any)?.name || '');
                 const isMe = Boolean(
                   currentUser && (
                     (m.userId && currentUser.id && m.userId === currentUser.id) ||
                     (m.email && currentUser.email && m.email.toLowerCase() === currentUser.email.toLowerCase()) ||
-                    (currentUser.displayName && name.trim().toLowerCase() === currentUser.displayName.trim().toLowerCase())
+                    (normCurrentName && normMemberName && normCurrentName === normMemberName)
                   )
                 );
                 return (
-                  <div key={idx} className={styles.memberCard}>
+                  <div key={m.userId || m.email || idx} className={styles.memberCard}>
                     <div className={styles.memberAvatarCircle} style={{ background: color }}>
                       {avatar}
                     </div>
@@ -2288,7 +2733,32 @@ export default function TripDetailPage() {
                           </span>
                         )}
                       </h4>
-                      <span className={styles.memberRole}>{role}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap', marginTop: '4px' }}>
+                        <span className={styles.memberRole}>{role}</span>
+                        {isTripOwner && !isMe && role !== 'Trưởng nhóm' && (
+                          <button
+                            type="button"
+                            onClick={() => handleTransferOwnership(m)}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              padding: '3px 9px',
+                              background: '#F0F9FF',
+                              color: '#0284C7',
+                              border: '1px solid #BAE6FD',
+                              borderRadius: '7px',
+                              fontSize: '11px',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              transition: 'all 0.15s ease',
+                            }}
+                            title={`Chuyển quyền trưởng nhóm cho ${name}`}
+                          >
+                            <span>👑 Chuyển quyền</span>
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
@@ -3019,13 +3489,23 @@ export default function TripDetailPage() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
               {(trip.members || []).map((m: any, idx: number) => {
-                const name = typeof m === 'string' ? m : m?.name || `Thành viên ${idx + 1}`;
+                const rawItemName = typeof m === 'string' ? m : m?.name || `Thành viên ${idx + 1}`;
+                const name = rawItemName.replace(/\s*\(Bạn\)/gi, '').trim() || rawItemName;
                 const avatar = typeof m === 'object' && m?.avatar ? m.avatar : name.slice(0, 2).toUpperCase();
                 const color = typeof m === 'object' && m?.color ? m.color : (idx % 2 === 0 ? '#0284c7' : '#10b981');
                 const role = typeof m === 'object' && m?.role ? m.role : (idx === 0 ? 'Trưởng nhóm' : 'Thành viên');
+                const normMemberName = normalizeMemberText(name);
+                const normCurrentName = normalizeMemberText(currentUser?.displayName || (currentUser as any)?.name || '');
+                const isMe = Boolean(
+                  currentUser && (
+                    (m.userId && currentUser.id && m.userId === currentUser.id) ||
+                    (m.email && currentUser.email && m.email.toLowerCase() === currentUser.email.toLowerCase()) ||
+                    (normCurrentName && normMemberName && normCurrentName === normMemberName)
+                  )
+                );
                 return (
                   <div
-                    key={idx}
+                    key={m.userId || m.email || idx}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -3056,6 +3536,11 @@ export default function TripDetailPage() {
                     <div style={{ flex: 1 }}>
                       <p style={{ margin: 0, fontSize: '14.5px', fontWeight: 700, color: '#0F172A' }}>
                         {name}
+                        {isMe && (
+                          <span style={{ marginLeft: 6, fontSize: '12px', fontWeight: 600, color: '#0284C7' }}>
+                            (Bạn)
+                          </span>
+                        )}
                       </p>
                       <span style={{ fontSize: '12px', color: '#64748B' }}>{role}</span>
                     </div>

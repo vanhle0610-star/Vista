@@ -28,6 +28,7 @@ spring:
     validate-migration-naming: true
     validate-on-migrate: false
     out-of-order: true
+    ignore-migration-patterns: "*:missing"
   mvc:
     problemdetails:
       enabled: true

@@ -17,6 +17,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "trips")
@@ -44,6 +46,7 @@ public class TripEntity {
   @Column(name = "budget_total", precision = 15, scale = 2)
   private BigDecimal budgetTotal;
 
+  @JdbcTypeCode(SqlTypes.CHAR)
   @Column(name = "currency", nullable = false, length = 3)
   private String currency = "VND";
 
