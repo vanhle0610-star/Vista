@@ -34,7 +34,7 @@ class VistaAIHandler(BaseHTTPRequestHandler):
         self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Internal-Token, X-Admin-Inspect')
 
     def _check_auth(self) -> bool:
-        if not config.INTERNAL_TOKEN:
+        if config.DEV or not config.INTERNAL_TOKEN:
             return True
         token = self.headers.get('X-Internal-Token', '') if hasattr(self, 'headers') and self.headers else ''
         return hmac.compare_digest(str(token), str(config.INTERNAL_TOKEN))

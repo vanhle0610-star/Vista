@@ -19,7 +19,7 @@ class VistaAiRequestHandler(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Internal-Token")
 
     def _check_auth(self) -> bool:
-        if not config.INTERNAL_TOKEN:
+        if config.DEV or not config.INTERNAL_TOKEN:
             return True
         token = self.headers.get("X-Internal-Token", "")
         return hmac.compare_digest(token, config.INTERNAL_TOKEN)
