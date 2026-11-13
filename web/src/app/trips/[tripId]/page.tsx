@@ -599,6 +599,23 @@ export default function TripDetailPage() {
     },
   ]);
 
+  // Invitation filter state (W4-TV3)
+  const [invitationFilter, setInvitationFilter] = useState<'ALL' | 'PENDING' | 'ACCEPTED' | 'REVOKED'>('ALL');
+
+  const invitationCounts = useMemo(() => {
+    return {
+      all: invitationsList.length,
+      pending: invitationsList.filter((i) => i.status === 'PENDING').length,
+      accepted: invitationsList.filter((i) => i.status === 'ACCEPTED').length,
+      revoked: invitationsList.filter((i) => i.status === 'REVOKED').length,
+    };
+  }, [invitationsList]);
+
+  const filteredInvitations = useMemo(() => {
+    if (invitationFilter === 'ALL') return invitationsList;
+    return invitationsList.filter((inv) => inv.status === invitationFilter);
+  }, [invitationsList, invitationFilter]);
+
   const isTripOwner = Boolean(
     currentUser && trip && (
       (trip.ownerId && (trip.ownerId === currentUser.id || (currentUser.email && trip.ownerId === currentUser.email))) ||
@@ -2825,118 +2842,171 @@ export default function TripDetailPage() {
                 </button>
               </div>
             ) : (
-              <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '20px', padding: '24px', marginBottom: '24px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
-                  <h4 style={{ fontSize: '16px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
-                    ✉️ Danh sách lời mời đã phát hành
-                  </h4>
+              <div className={styles.invitationListCard}>
+                <div className={styles.invitationListHeader}>
+                  <div className={styles.invitationHeaderTitleRow}>
+                    <h4 style={{ fontSize: '16px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
+                      ✉️ Danh sách lời mời đã phát hành
+                    </h4>
+                    <span className={styles.invitationCountBadge}>
+                      {invitationsList.length} lời mời
+                    </span>
+                  </div>
                   <span style={{ fontSize: '12px', color: '#64748B' }}>
                     {isTripOwner ? 'Trưởng nhóm (Owner): có quyền tạo & thu hồi lời mời' : 'Thành viên: có quyền tạo lời mời'}
                   </span>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
-                  {invitationsList.map((inv) => (
-                    <div
-                      key={inv.id}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        flexWrap: 'wrap',
-                        gap: '10px',
-                        padding: '12px 16px',
-                        background: '#F8FAFC',
-                        border: '1px solid #E2E8F0',
-                        borderRadius: '12px',
-                      }}
-                    >
-                      <div>
-                        <span style={{ fontWeight: 700, fontSize: '13.5px', color: '#0F172A' }}>{inv.email}</span>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-                          <span style={{ fontFamily: 'monospace', fontSize: '12px', color: '#0284C7', background: '#E0F2FE', padding: '1px 6px', borderRadius: '4px', fontWeight: 800 }}>
-                            {inv.token}
-                          </span>
-                          <span style={{ fontSize: '12px', color: '#64748B' }}>Hạn: {inv.expiresAt}</span>
-                        </div>
-                      </div>
-
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{
-                          fontSize: '11.5px',
-                          fontWeight: 800,
-                          padding: '3px 8px',
-                          borderRadius: '999px',
-                          background: inv.status === 'PENDING' ? '#DCFCE7' : inv.status === 'REVOKED' ? '#FEE2E2' : '#F1F5F9',
-                          color: inv.status === 'PENDING' ? '#15803D' : inv.status === 'REVOKED' ? '#991B1B' : '#475569',
-                        }}>
-                          {inv.status}
-                        </span>
-
-                        <Link
-                          href={`/invitations/${inv.token}`}
-                          target="_blank"
-                          style={{
-                            fontSize: '12px',
-                            color: '#0284C7',
-                            fontWeight: 700,
-                            textDecoration: 'none',
-                            padding: '6px 12px',
-                            background: '#FFFFFF',
-                            border: '1px solid #BAE6FD',
-                            borderRadius: '8px',
-                          }}
-                          title="Mở link mời như người nhận (B)"
-                        >
-                          Mở link mời ↗
-                        </Link>
-
-                        {inv.status === 'PENDING' && (
-                          <a
-                            href={getGmailComposeUrl(inv.email, inv.token)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{
-                              fontSize: '12px',
-                              color: '#EA4335',
-                              fontWeight: 700,
-                              textDecoration: 'none',
-                              padding: '6px 12px',
-                              background: '#FEF2F2',
-                              border: '1px solid #FECACA',
-                              borderRadius: '8px',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                            }}
-                            title={`Mở Gmail để gửi thư mời thật tới ${inv.email}`}
-                          >
-                            <span>✉️ Gửi Gmail</span>
-                          </a>
-                        )}
-
-                        {isTripOwner && inv.status === 'PENDING' && (
-                          <button
-                            type="button"
-                            onClick={() => handleRevokeInvite(inv.id)}
-                            style={{
-                              fontSize: '12px',
-                              color: '#DC2626',
-                              fontWeight: 700,
-                              padding: '6px 12px',
-                              background: '#FEF2F2',
-                              border: '1px solid #FECACA',
-                              borderRadius: '8px',
-                              cursor: 'pointer',
-                            }}
-                          >
-                            Thu hồi (Revoke)
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                {/* Filter pills: All / Pending / Accepted / Revoked */}
+                <div className={styles.invitationFilterRow}>
+                  <button
+                    type="button"
+                    onClick={() => setInvitationFilter('ALL')}
+                    className={`${styles.invitationFilterBtn} ${invitationFilter === 'ALL' ? styles.invitationFilterBtnActive : ''}`}
+                  >
+                    Tất cả ({invitationCounts.all})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setInvitationFilter('PENDING')}
+                    className={`${styles.invitationFilterBtn} ${invitationFilter === 'PENDING' ? styles.invitationFilterBtnActive : ''}`}
+                  >
+                    Đang chờ ({invitationCounts.pending})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setInvitationFilter('ACCEPTED')}
+                    className={`${styles.invitationFilterBtn} ${invitationFilter === 'ACCEPTED' ? styles.invitationFilterBtnActive : ''}`}
+                  >
+                    Đã chấp nhận ({invitationCounts.accepted})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setInvitationFilter('REVOKED')}
+                    className={`${styles.invitationFilterBtn} ${invitationFilter === 'REVOKED' ? styles.invitationFilterBtnActive : ''}`}
+                  >
+                    Đã thu hồi ({invitationCounts.revoked})
+                  </button>
                 </div>
+
+                {/* Scrollable list container */}
+                {filteredInvitations.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '24px 16px', background: '#F8FAFC', borderRadius: '12px', border: '1px dashed #CBD5E1', color: '#64748B', fontSize: '13px', marginBottom: '16px' }}>
+                    Chưa có lời mời nào trong mục này.
+                  </div>
+                ) : (
+                  <>
+                    <div className={styles.invitationScrollContainer}>
+                      {filteredInvitations.map((inv) => (
+                        <div
+                          key={inv.id}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            flexWrap: 'wrap',
+                            gap: '10px',
+                            padding: '12px 16px',
+                            background: '#F8FAFC',
+                            border: '1px solid #E2E8F0',
+                            borderRadius: '12px',
+                          }}
+                        >
+                          <div>
+                            <span style={{ fontWeight: 700, fontSize: '13.5px', color: '#0F172A' }}>{inv.email}</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                              <span style={{ fontFamily: 'monospace', fontSize: '12px', color: '#0284C7', background: '#E0F2FE', padding: '1px 6px', borderRadius: '4px', fontWeight: 800 }}>
+                                {inv.token}
+                              </span>
+                              <span style={{ fontSize: '12px', color: '#64748B' }}>Hạn: {inv.expiresAt}</span>
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{
+                              fontSize: '11.5px',
+                              fontWeight: 800,
+                              padding: '3px 8px',
+                              borderRadius: '999px',
+                              background: inv.status === 'PENDING' ? '#DCFCE7' : inv.status === 'REVOKED' ? '#FEE2E2' : '#F1F5F9',
+                              color: inv.status === 'PENDING' ? '#15803D' : inv.status === 'REVOKED' ? '#991B1B' : '#475569',
+                            }}>
+                              {inv.status}
+                            </span>
+
+                            <Link
+                              href={`/invitations/${inv.token}`}
+                              target="_blank"
+                              style={{
+                                fontSize: '12px',
+                                color: '#0284C7',
+                                fontWeight: 700,
+                                textDecoration: 'none',
+                                padding: '6px 12px',
+                                background: '#FFFFFF',
+                                border: '1px solid #BAE6FD',
+                                borderRadius: '8px',
+                              }}
+                              title="Mở link mời như người nhận (B)"
+                            >
+                              Mở link mời ↗
+                            </Link>
+
+                            {inv.status === 'PENDING' && (
+                              <a
+                                href={getGmailComposeUrl(inv.email, inv.token)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                  fontSize: '12px',
+                                  color: '#EA4335',
+                                  fontWeight: 700,
+                                  textDecoration: 'none',
+                                  padding: '6px 12px',
+                                  background: '#FEF2F2',
+                                  border: '1px solid #FECACA',
+                                  borderRadius: '8px',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                }}
+                                title={`Mở Gmail để gửi thư mời thật tới ${inv.email}`}
+                              >
+                                <span>✉️ Gửi Gmail</span>
+                              </a>
+                            )}
+
+                            {isTripOwner && inv.status === 'PENDING' && (
+                              <button
+                                type="button"
+                                onClick={() => handleRevokeInvite(inv.id)}
+                                style={{
+                                  fontSize: '12px',
+                                  color: '#DC2626',
+                                  fontWeight: 700,
+                                  padding: '6px 12px',
+                                  background: '#FEF2F2',
+                                  border: '1px solid #FECACA',
+                                  borderRadius: '8px',
+                                  cursor: 'pointer',
+                                }}
+                              >
+                                Thu hồi (Revoke)
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {filteredInvitations.length > 4 && (
+                      <div className={styles.invitationScrollFooterHint}>
+                        <span>↕ Cuộn để xem danh sách ({filteredInvitations.length} lời mời)</span>
+                        <span>Đã tối ưu cuộn mượt</span>
+                      </div>
+                    )}
+                  </>
+                )}
 
                 {/* Ô NHẬP MÃ THỦ CÔNG (W4-TV3-03) */}
                 <div style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', borderRadius: '14px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
