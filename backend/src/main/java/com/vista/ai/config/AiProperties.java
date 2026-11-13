@@ -77,7 +77,7 @@ public record AiProperties(
 
   @ConstructorBinding
   public AiProperties {
-    if (model == null) model = "gemini-2.5-flash";
+    if (model == null) model = "gemini-3.5-flash";
     if (timeout == null) timeout = Duration.ofSeconds(60);
     if (maxRetries <= 0) maxRetries = 2;
     if (localBaseUrl == null || localBaseUrl.isBlank()) {

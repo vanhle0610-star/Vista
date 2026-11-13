@@ -5234,9 +5234,9 @@ export const VIETNAM_300_DESTINATIONS: DestinationMarker[] = [
     "category": "Ẩm thực & Mua sắm",
     "latitude": 16.465102,
     "longitude": 107.593579,
-    "description": "Địa chỉ thưởng thức các loại chè mang phong vị Huế.",
-    "priceMin": 16000,
-    "priceMax": 16000,
+    "description": "Địa chỉ thưởng thức các loại chè mang phong vị cố đô Huế (chè bột lọc heo quay, chè hạt sen, chè môn sáp...) chỉ từ 12.000đ – 20.000đ/ly.",
+    "priceMin": 12000,
+    "priceMax": 20000,
     "openingHours": "10:00-22:00",
     "sourceUrl": "https://khamphahue.com.vn/Du-lich/Chi-tiet/tid/Che-hem-Hue.html/pid/7037/cid/383",
     "thumbnailUrl": "https://khamphahue.com.vn/Portals/0/DuLich/DiemAnUong/QuanAnDacSan/CheHem/Che-Hue_ThanhToan.jpg?ver=2022-10-18-103733-150"

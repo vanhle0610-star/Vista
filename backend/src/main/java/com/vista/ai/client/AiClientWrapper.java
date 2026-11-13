@@ -8,7 +8,10 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +31,7 @@ public class AiClientWrapper {
   private final AiProperties properties;
   private final HttpClient httpClient;
   private final ObjectMapper objectMapper;
+  private final AtomicInteger activeKeyIndex = new AtomicInteger(0);
 
   @Autowired
   public AiClientWrapper(AiProperties properties) {
@@ -66,16 +70,7 @@ public class AiClientWrapper {
                     new GeminiContent(new GeminiPart[] {new GeminiPart(prompt)})
                   }));
 
-      HttpRequest request =
-          HttpRequest.newBuilder()
-              .uri(URI.create(endpoint))
-              .header("Content-Type", "application/json")
-              .header("x-goog-api-key", properties.apiKey())
-              .timeout(properties.timeout())
-              .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-              .build();
-
-      HttpResponse<String> response = sendWithBoundedRetry(request);
+      HttpResponse<String> response = sendWithKeyFailover(endpoint, requestBody);
       if (response == null) {
         return Optional.empty();
       }
@@ -102,35 +97,82 @@ public class AiClientWrapper {
     }
   }
 
-  private HttpResponse<String> sendWithBoundedRetry(HttpRequest request)
-      throws InterruptedException {
-    int maxAttempts = Math.max(1, properties.maxRetries() + 1);
-    for (int attempt = 1; attempt <= maxAttempts; attempt++) {
-      try {
-        HttpResponse<String> response =
-            httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        int status = response.statusCode();
-        if (status == 200) {
-          return response;
-        }
+  private List<String> resolveApiKeys() {
+    String raw = properties.apiKey();
+    if (raw == null || raw.isBlank()) {
+      return List.of();
+    }
+    return Arrays.stream(raw.split(","))
+        .map(String::trim)
+        .filter(k -> !k.isBlank())
+        .distinct()
+        .toList();
+  }
 
-        boolean retryable = status == 429 || status >= 500;
-        log.warn(
-            "Gemini API request failed with status {} (attempt {}/{})",
-            status,
-            attempt,
-            maxAttempts);
-        if (!retryable || attempt == maxAttempts) {
-          return null;
-        }
-      } catch (java.io.IOException e) {
-        log.warn(
-            "Gemini API transport failure {} (attempt {}/{})",
-            e.getClass().getSimpleName(),
-            attempt,
-            maxAttempts);
-        if (attempt == maxAttempts) {
-          return null;
+  private HttpResponse<String> sendWithKeyFailover(String endpoint, String requestBody)
+      throws InterruptedException {
+    List<String> keys = resolveApiKeys();
+    if (keys.isEmpty()) {
+      return null;
+    }
+
+    int startIdx = Math.floorMod(activeKeyIndex.get(), keys.size());
+    int totalKeyAttempts = keys.size();
+    for (int offset = 0; offset < totalKeyAttempts; offset++) {
+      int currentIdx = (startIdx + offset) % keys.size();
+      String key = keys.get(currentIdx);
+
+      HttpRequest request =
+          HttpRequest.newBuilder()
+              .uri(URI.create(endpoint))
+              .header("Content-Type", "application/json")
+              .header("x-goog-api-key", key)
+              .timeout(properties.timeout())
+              .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+              .build();
+
+      int perKeyAttempts = keys.size() > 1 ? 1 : Math.max(1, properties.maxRetries() + 1);
+      for (int attempt = 1; attempt <= perKeyAttempts; attempt++) {
+        try {
+          HttpResponse<String> response =
+              httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+          int status = response.statusCode();
+          if (status == 200) {
+            activeKeyIndex.set(currentIdx);
+            return response;
+          }
+
+          boolean keyExhaustedOrRetryable =
+              status == 401 || status == 403 || status == 429 || status >= 500;
+          log.warn(
+              "Gemini API request failed with status {} (keySlot {}/{}, attempt {}/{})",
+              status,
+              currentIdx + 1,
+              keys.size(),
+              attempt,
+              perKeyAttempts);
+          if (keys.size() > 1 && keyExhaustedOrRetryable) {
+            activeKeyIndex.set((currentIdx + 1) % keys.size());
+            break;
+          }
+          if (!keyExhaustedOrRetryable || attempt == perKeyAttempts) {
+            return null;
+          }
+        } catch (java.io.IOException e) {
+          log.warn(
+              "Gemini API transport failure {} (keySlot {}/{}, attempt {}/{})",
+              e.getClass().getSimpleName(),
+              currentIdx + 1,
+              keys.size(),
+              attempt,
+              perKeyAttempts);
+          if (keys.size() > 1) {
+            activeKeyIndex.set((currentIdx + 1) % keys.size());
+            break;
+          }
+          if (attempt == perKeyAttempts) {
+            return null;
+          }
         }
       }
     }
@@ -138,7 +180,7 @@ public class AiClientWrapper {
   }
 
   public boolean isAvailable() {
-    return properties.apiKey() != null && !properties.apiKey().isBlank();
+    return !resolveApiKeys().isEmpty();
   }
 
   // Records phục vụ serialize Gemini API request payload

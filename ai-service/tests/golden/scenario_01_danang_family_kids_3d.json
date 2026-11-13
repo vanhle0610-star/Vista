@@ -1,0 +1,18 @@
+{
+  "destinationProvince": "Đà Nẵng",
+  "totalDays": 3,
+  "peopleCount": 4,
+  "hasChildren": true,
+  "budgetTier": "standard",
+  "interests": [
+    "Biển",
+    "Ẩm thực"
+  ],
+  "expect": {
+    "expect_http_status": 200,
+    "must_not_contain_walking_load": [],
+    "min_days": 3,
+    "min_total_activities": 3,
+    "expected_province": "Đà Nẵng"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "destinationProvince": "Thừa Thiên Huế",
+  "totalDays": 2,
+  "peopleCount": 2,
+  "hasElderly": true,
+  "budgetTier": "economy",
+  "interests": [
+    "Văn hóa",
+    "Lịch sử"
+  ],
+  "expect": {
+    "expect_http_status": 200,
+    "must_not_contain_walking_load": [
+      "STRENUOUS"
+    ],
+    "min_days": 2,
+    "min_total_activities": 2,
+    "expected_province": "Thừa Thiên Huế"
+  }
+}
