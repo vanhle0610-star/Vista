@@ -69,7 +69,7 @@ public class OpenAiCompatibleProvider implements AiProvider {
       Map<String, Object> payload = new LinkedHashMap<>();
       payload.put("model", modelName);
       payload.put("temperature", properties.temperature());
-      payload.put("max_tokens", Math.min(properties.maxOutputTokens(), 800));
+      payload.put("max_tokens", Math.max(properties.maxOutputTokens(), 4000));
       payload.put(
           "messages",
           List.of(
@@ -136,7 +136,7 @@ public class OpenAiCompatibleProvider implements AiProvider {
         HttpRequest.Builder probeBuilder =
             HttpRequest.newBuilder()
                 .uri(URI.create(base + "/models"))
-                .timeout(Duration.ofSeconds(2))
+                .timeout(Duration.ofSeconds(8))
                 .GET();
         if (properties.localApiKey() != null && !properties.localApiKey().isBlank()) {
           probeBuilder.header("Authorization", "Bearer " + properties.localApiKey().trim());

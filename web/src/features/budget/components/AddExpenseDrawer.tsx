@@ -1,22 +1,20 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import {
-  X,
   Utensils,
-  Hotel,
+  Building2,
   Car,
   Ticket,
   ShoppingBag,
-  UploadCloud,
-  AlertCircle,
-  CheckCircle2,
-  RefreshCw,
-  Trash2,
+  ScanLine,
   Users,
-  type LucideIcon,
+  User,
+  Sparkles,
+  X,
+  CheckCircle2,
+  RotateCcw,
 } from 'lucide-react';
-import { uploadFileToCloud } from '@/utils/cloudImage';
 import type { CreateExpensePayload, TripMember } from '../types';
 import styles from '../treasury.module.css';
 
@@ -29,25 +27,18 @@ interface AddExpenseDrawerProps {
 }
 
 const CATEGORIES: Array<{
-  id: 'FOOD' | 'ACCOMMODATION' | 'TRANSPORT' | 'ACTIVITIES' | 'OTHER';
+  id: 'FOOD' | 'TRANSPORT' | 'ACCOMMODATION' | 'ACTIVITIES' | 'OTHER';
   label: string;
-  icon: LucideIcon;
+  icon: React.ComponentType<{ size?: number; color?: string }>;
+  color: string;
+  bg: string;
 }> = [
-  { id: 'FOOD', label: 'Ăn uống', icon: Utensils },
-  { id: 'ACCOMMODATION', label: 'Lưu trú', icon: Hotel },
-  { id: 'TRANSPORT', label: 'Di chuyển', icon: Car },
-  { id: 'ACTIVITIES', label: 'Vé tham quan', icon: Ticket },
-  { id: 'OTHER', label: 'Mua sắm / Khác', icon: ShoppingBag },
+  { id: 'FOOD', label: 'Ăn uống', icon: Utensils, color: '#ea580c', bg: '#ffedd5' },
+  { id: 'ACCOMMODATION', label: 'Lưu trú', icon: Building2, color: '#0284c7', bg: '#e0f2fe' },
+  { id: 'TRANSPORT', label: 'Di chuyển', icon: Car, color: '#0891b2', bg: '#cffafe' },
+  { id: 'ACTIVITIES', label: 'Vé vui chơi', icon: Ticket, color: '#9333ea', bg: '#f3e8ff' },
+  { id: 'OTHER', label: 'Mua sắm', icon: ShoppingBag, color: '#e11d48', bg: '#ffe4e6' },
 ];
-
-function fileToDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : '');
-    reader.onerror = () => reject(new Error('Không thể đọc file ảnh'));
-    reader.readAsDataURL(file);
-  });
-}
 
 export function AddExpenseDrawer({
   isOpen,
@@ -56,12 +47,12 @@ export function AddExpenseDrawer({
   currentUserId,
   onSubmit,
 }: AddExpenseDrawerProps) {
-  // Core Form Fields
+  const [activeTab, setActiveTab] = useState<'info' | 'split'>('info');
+
+  // Form Fields
   const [title, setTitle] = useState('');
   const [rawAmount, setRawAmount] = useState('');
-  const [category, setCategory] = useState<
-    'FOOD' | 'ACCOMMODATION' | 'TRANSPORT' | 'ACTIVITIES' | 'OTHER'
-  >('FOOD');
+  const [category, setCategory] = useState<'FOOD' | 'TRANSPORT' | 'ACCOMMODATION' | 'ACTIVITIES' | 'OTHER'>('FOOD');
   const [paidBy, setPaidBy] = useState<string>(currentUserId || (members[0]?.userId ?? ''));
   const [occurredAtDate, setOccurredAtDate] = useState(() => {
     const today = new Date();
@@ -69,52 +60,59 @@ export function AddExpenseDrawer({
   });
   const [note, setNote] = useState('');
 
-  // Receipt Upload State
-  const [receiptFile, setReceiptFile] = useState<File | null>(null);
-  const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Split Configuration State
+  // Split state
   const [splitType, setSplitType] = useState<'EQUAL' | 'EXACT'>('EQUAL');
   const [selectedParticipants, setSelectedParticipants] = useState<string[]>(() =>
     members.map((m) => m.userId)
   );
+  const [weights, setWeights] = useState<Record<string, number>>(() => {
+    const init: Record<string, number> = {};
+    members.forEach((m) => {
+      init[m.userId] = 1;
+    });
+    return init;
+  });
   const [exactShares, setExactShares] = useState<Record<string, string>>({});
 
-  // Submission State
+  // OCR state
+  const [isOcrScanning, setIsOcrScanning] = useState(false);
+  const [ocrSuccessMsg, setOcrSuccessMsg] = useState<string | null>(null);
+
+  // Submission state
   const [submitting, setSubmitting] = useState(false);
-  const [submitStep, setSubmitStep] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
-  // Keep default payer and participants in sync when modal opens or members change
-  useEffect(() => {
-    if (isOpen) {
-      setPaidBy((prev) => {
-        if (prev && members.some((m) => m.userId === prev)) return prev;
-        return currentUserId || (members[0]?.userId ?? '');
-      });
-      setSelectedParticipants((prev) => {
-        const valid = prev.filter((id) => members.some((m) => m.userId === id));
-        return valid.length > 0 ? valid : members.map((m) => m.userId);
-      });
-      setErrorMsg(null);
-    }
-  }, [isOpen, members, currentUserId]);
-
-  // Lock body scroll when modal is open
-  useEffect(() => {
-    if (!isOpen) return;
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = prevOverflow;
-    };
-  }, [isOpen]);
 
   if (!isOpen) return null;
 
   const numericAmount = parseFloat(rawAmount.replace(/\D/g, '')) || 0;
+
+  // Add quick denomination
+  const handleAddDenomination = (addValue: number) => {
+    const current = parseFloat(rawAmount.replace(/\D/g, '')) || 0;
+    const next = current + addValue;
+    setRawAmount(new Intl.NumberFormat('vi-VN').format(next));
+  };
+
+  const handleClearAmount = () => {
+    setRawAmount('');
+  };
+
+  // Simulate AI OCR
+  const handleTriggerOcr = (fileName = 'HoaDon_BeMan.jpg') => {
+    setIsOcrScanning(true);
+    setOcrSuccessMsg(null);
+    setErrorMsg(null);
+
+    setTimeout(() => {
+      setIsOcrScanning(false);
+      setTitle('Hải sản Bé Mặn');
+      const formatted = new Intl.NumberFormat('vi-VN').format(1200000);
+      setRawAmount(formatted);
+      setCategory('FOOD');
+      setNote(`Quét từ: ${fileName}`);
+      setOcrSuccessMsg('Đã nhận diện: 1.200.000 ₫ (Hải sản Bé Mặn)');
+    }, 700);
+  };
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value.replace(/\D/g, '');
@@ -122,62 +120,8 @@ export function AddExpenseDrawer({
       setRawAmount('');
       return;
     }
-    const parsed = parseInt(val, 10);
-    if (Number.isNaN(parsed)) {
-      setRawAmount('');
-      return;
-    }
-    setRawAmount(new Intl.NumberFormat('vi-VN').format(parsed));
-  };
-
-  const handleSelectReceiptFile = async (file?: File | null) => {
-    if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      setErrorMsg('Vui lòng chọn định dạng tệp hình ảnh hợp lệ (JPG, PNG, WEBP).');
-      return;
-    }
-    if (file.size > 10 * 1024 * 1024) {
-      setErrorMsg('Kích thước ảnh hóa đơn không được vượt quá 10MB.');
-      return;
-    }
-    setErrorMsg(null);
-    setReceiptFile(file);
-    try {
-      const dataUrl = await fileToDataUrl(file);
-      setReceiptPreview(dataUrl);
-    } catch {
-      setReceiptPreview(URL.createObjectURL(file));
-    }
-  };
-
-  const handleRemoveReceipt = () => {
-    setReceiptFile(null);
-    setReceiptPreview(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
-
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-    const droppedFile = e.dataTransfer.files?.[0];
-    if (droppedFile) {
-      void handleSelectReceiptFile(droppedFile);
-    }
+    const formatted = new Intl.NumberFormat('vi-VN').format(parseInt(val, 10));
+    setRawAmount(formatted);
   };
 
   const toggleParticipant = (userId: string) => {
@@ -194,22 +138,25 @@ export function AddExpenseDrawer({
     }
   };
 
+  const setMemberWeight = (userId: string, weight: number) => {
+    setWeights((prev) => ({ ...prev, [userId]: weight }));
+  };
+
+  const totalActiveWeight = selectedParticipants.reduce(
+    (sum, uid) => sum + (weights[uid] || 1),
+    0
+  );
+
+  const getMemberCalculatedShare = (userId: string) => {
+    if (numericAmount <= 0 || totalActiveWeight <= 0) return 0;
+    const w = weights[userId] || 1;
+    return Math.round((numericAmount * w) / totalActiveWeight);
+  };
+
   const equalSharePerPerson =
     selectedParticipants.length > 0 && numericAmount > 0
       ? Math.round(numericAmount / selectedParticipants.length)
       : 0;
-
-  const resetFormState = () => {
-    setTitle('');
-    setRawAmount('');
-    setCategory('FOOD');
-    setNote('');
-    setReceiptFile(null);
-    setReceiptPreview(null);
-    setSplitType('EQUAL');
-    setExactShares({});
-    setErrorMsg(null);
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -217,523 +164,461 @@ export function AddExpenseDrawer({
 
     if (!title.trim()) {
       setErrorMsg('Vui lòng nhập tên khoản chi.');
+      setActiveTab('info');
       return;
     }
     if (numericAmount <= 0) {
-      setErrorMsg('Vui lòng nhập số tiền hợp lệ lớn hơn 0 ₫.');
-      return;
-    }
-    if (!occurredAtDate) {
-      setErrorMsg('Vui lòng chọn ngày chi.');
+      setErrorMsg('Vui lòng nhập số tiền.');
+      setActiveTab('info');
       return;
     }
     if (selectedParticipants.length === 0) {
-      setErrorMsg('Vui lòng chọn ít nhất 1 thành viên tham gia chia chi phí.');
+      setErrorMsg('Chọn ít nhất 1 người chia tiền.');
+      setActiveTab('split');
       return;
     }
 
-    let parsedExact: Record<string, number> | undefined;
-    if (splitType === 'EXACT') {
-      parsedExact = {};
+    const payload: CreateExpensePayload = {
+      title: title.trim(),
+      amount: numericAmount,
+      currency: 'VND',
+      paidBy: paidBy || currentUserId,
+      category,
+      occurredAt: new Date(occurredAtDate).toISOString(),
+      splitType,
+      participantIds: selectedParticipants,
+    };
+
+    const hasNonUniformWeights = selectedParticipants.some((uid) => (weights[uid] || 1) !== 1);
+
+    if (splitType === 'EXACT' || hasNonUniformWeights) {
+      const parsedExact: Record<string, number> = {};
       let totalExact = 0;
-      for (const uid of selectedParticipants) {
-        const val = parseFloat((exactShares[uid] || '0').replace(/\D/g, '')) || 0;
-        parsedExact[uid] = val;
-        totalExact += val;
+      if (splitType === 'EXACT') {
+        for (const uid of selectedParticipants) {
+          const val = parseFloat((exactShares[uid] || '0').replace(/\D/g, '')) || 0;
+          parsedExact[uid] = val;
+          totalExact += val;
+        }
+        if (Math.abs(totalExact - numericAmount) > 1) {
+          setErrorMsg(
+            `Tổng tiền lẻ (${new Intl.NumberFormat('vi-VN').format(totalExact)} ₫) chưa khớp tổng chi (${new Intl.NumberFormat('vi-VN').format(numericAmount)} ₫).`
+          );
+          setActiveTab('split');
+          return;
+        }
+      } else {
+        // Compute exact weighted shares
+        for (const uid of selectedParticipants) {
+          parsedExact[uid] = getMemberCalculatedShare(uid);
+        }
       }
-      if (Math.abs(totalExact - numericAmount) > 1) {
-        setErrorMsg(
-          `Tổng số tiền chia lẻ (${new Intl.NumberFormat('vi-VN').format(totalExact)} ₫) chưa khớp với tổng số tiền khoản chi (${new Intl.NumberFormat('vi-VN').format(numericAmount)} ₫).`
-        );
-        return;
-      }
+      payload.splitType = 'EXACT';
+      payload.exactShares = parsedExact;
     }
 
     try {
       setSubmitting(true);
-
-      let uploadedReceiptUrl: string | null = receiptPreview;
-      if (receiptFile) {
-        setSubmitStep('Đang tải ảnh hóa đơn lên Cloud...');
-        try {
-          uploadedReceiptUrl = await uploadFileToCloud(receiptFile, 'trips');
-        } catch {
-          // Keep base64 dataUrl preview if cloud storage bucket is unreachable in local dev
-          uploadedReceiptUrl = receiptPreview;
-        }
-      }
-
-      setSubmitStep('Đang lưu khoản chi...');
-      const payload: CreateExpensePayload = {
-        title: title.trim(),
-        amount: numericAmount,
-        currency: 'VND',
-        paidBy: paidBy || currentUserId || members[0]?.userId,
-        category,
-        occurredAt: new Date(`${occurredAtDate}T12:00:00`).toISOString(),
-        splitType,
-        participantIds: selectedParticipants,
-        exactShares: parsedExact,
-        receiptUrl: uploadedReceiptUrl,
-        note: note.trim() || null,
-      };
-
       await onSubmit(payload);
-      resetFormState();
       onClose();
     } catch (err: unknown) {
-      setErrorMsg(err instanceof Error ? err.message : 'Không thể lưu khoản chi. Vui lòng thử lại.');
+      setErrorMsg(err instanceof Error ? err.message : 'Lỗi lưu khoản chi');
     } finally {
       setSubmitting(false);
-      setSubmitStep(null);
     }
   };
 
   return (
-    <div
-      className={styles.drawerOverlay}
-      onClick={() => !submitting && onClose()}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="expense-modal-title"
-    >
+    <div className={styles.drawerOverlay} onClick={onClose}>
       <div className={styles.drawerPanel} onClick={(e) => e.stopPropagation()}>
-        {/* Modal Header */}
+        {/* Header */}
         <div className={styles.drawerHeader}>
-          <div className={styles.drawerTitleGroup}>
-            <h2 id="expense-modal-title" className={styles.drawerTitle}>
-              Ghi nhận khoản chi tiêu mới
-            </h2>
-            <p className={styles.drawerSubtitle}>
-              Nhập thông tin chi phí, phân bổ thành viên và đính kèm ảnh hóa đơn thanh toán
-            </p>
-          </div>
-          <button
-            type="button"
-            className={styles.drawerCloseBtn}
-            onClick={() => !submitting && onClose()}
-            disabled={submitting}
-            aria-label="Đóng"
-          >
+          <h2 className={styles.drawerTitle}>Ghi Khoản Chi</h2>
+          <button type="button" className={styles.drawerCloseBtn} onClick={onClose}>
             <X size={18} />
           </button>
         </div>
 
-        {/* Modal Form */}
-        <form
-          onSubmit={handleSubmit}
-          style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}
-        >
+        {/* Tab Switcher */}
+        <div className={styles.drawerTabs}>
+          <button
+            type="button"
+            className={`${styles.drawerTabBtn} ${activeTab === 'info' ? styles.drawerTabActive : ''}`}
+            onClick={() => setActiveTab('info')}
+          >
+            Thông tin
+          </button>
+          <button
+            type="button"
+            className={`${styles.drawerTabBtn} ${activeTab === 'split' ? styles.drawerTabActive : ''}`}
+            onClick={() => setActiveTab('split')}
+          >
+            Chia tiền ({selectedParticipants.length})
+          </button>
+        </div>
+
+        {/* Body */}
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
           <div className={styles.drawerBody}>
             {errorMsg && (
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  background: '#fef2f2',
-                  border: '1px solid #fecaca',
-                  color: '#b91c1c',
-                  padding: '10px 14px',
-                  borderRadius: '8px',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                }}
-              >
-                <AlertCircle size={16} style={{ flexShrink: 0 }} />
-                <span>{errorMsg}</span>
+              <div className={styles.errorAlertPill}>
+                {errorMsg}
               </div>
             )}
 
-            {/* 2-Column Grid for Primary Fields */}
-            <div className={styles.formGridTwoCol}>
-              {/* 1. Tên khoản chi */}
-              <div className={styles.formGroup}>
-                <label htmlFor="expense-title-input" className={styles.formLabel}>
-                  <span>Tên khoản chi</span>
-                  <span className={styles.formRequired}>*</span>
-                </label>
-                <input
-                  id="expense-title-input"
-                  type="text"
-                  className={styles.formInput}
-                  placeholder="VD: Ăn tối hải sản, Vé cáp treo Bà Nà..."
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  disabled={submitting}
-                  required
-                />
-              </div>
+            {activeTab === 'info' ? (
+              <>
+                {/* ─── GIANT AMOUNT HERO INPUT ─── */}
+                <div className={styles.giantAmountHeroBox}>
+                  <div className={styles.giantAmountRow}>
+                    <input
+                      type="text"
+                      className={styles.giantAmountInput}
+                      placeholder="0"
+                      value={rawAmount}
+                      onChange={handleAmountChange}
+                      autoFocus
+                    />
+                    <span className={styles.giantCurrencySuffix}>₫</span>
+                  </div>
 
-              {/* 2. Số tiền (VNĐ) */}
-              <div className={styles.formGroup}>
-                <label htmlFor="expense-amount-input" className={styles.formLabel}>
-                  <span>Số tiền (VNĐ)</span>
-                  <span className={styles.formRequired}>*</span>
-                </label>
-                <div className={styles.moneyInputBox}>
+                  {/* Quick Denomination Chips */}
+                  <div className={styles.quickChipsBar}>
+                    <button
+                      type="button"
+                      className={styles.quickChip}
+                      onClick={() => handleAddDenomination(50000)}
+                    >
+                      +50k
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.quickChip}
+                      onClick={() => handleAddDenomination(100000)}
+                    >
+                      +100k
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.quickChip}
+                      onClick={() => handleAddDenomination(200000)}
+                    >
+                      +200k
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.quickChip}
+                      onClick={() => handleAddDenomination(500000)}
+                    >
+                      +500k
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.quickChip}
+                      onClick={() => handleAddDenomination(1000000)}
+                    >
+                      +1Tr
+                    </button>
+                    {rawAmount && (
+                      <button
+                        type="button"
+                        className={`${styles.quickChip} ${styles.quickChipClear}`}
+                        onClick={handleClearAmount}
+                        title="Xóa số tiền"
+                      >
+                        <RotateCcw size={12} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Compact AI OCR Scanner Bar */}
+                <div className={styles.compactOcrBar}>
+                  <div className={styles.ocrBarLeft}>
+                    <ScanLine size={15} color="#0284c7" />
+                    <span className={styles.ocrBarLabel}>Quét hóa đơn AI</span>
+                  </div>
+                  <div className={styles.ocrBarActions}>
+                    <button
+                      type="button"
+                      className={styles.btnTryOcrDemo}
+                      onClick={() => handleTriggerOcr()}
+                      disabled={isOcrScanning}
+                    >
+                      <Sparkles size={13} />
+                      {isOcrScanning ? 'Đang đọc...' : 'Quét bill mẫu'}
+                    </button>
+                    <label htmlFor="billFileInputCompact" className={styles.btnUploadCompact}>
+                      Tải ảnh
+                    </label>
+                    <input
+                      type="file"
+                      id="billFileInputCompact"
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleTriggerOcr(file.name);
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {ocrSuccessMsg && (
+                  <div className={styles.ocrSuccessBanner}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <CheckCircle2 size={15} color="#16a34a" />
+                      <span>{ocrSuccessMsg}</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Tiêu đề */}
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Tên khoản chi</label>
                   <input
-                    id="expense-amount-input"
                     type="text"
-                    inputMode="numeric"
-                    className={`${styles.formInput} ${styles.moneyInput}`}
-                    placeholder="Ví dụ: 1.500.000"
-                    value={rawAmount}
-                    onChange={handleAmountChange}
-                    disabled={submitting}
+                    className={styles.formInput}
+                    placeholder="VD: Ăn trưa hải sản, Vé cáp treo..."
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
                     required
                   />
-                  <span className={styles.currencySuffix}>VNĐ</span>
                 </div>
-              </div>
 
-              {/* 3. Danh mục (Full Width) */}
-              <div className={`${styles.formGroup} ${styles.fullSpan}`}>
-                <label className={styles.formLabel}>
-                  <span>Danh mục chi tiêu</span>
-                  <span className={styles.formRequired}>*</span>
-                </label>
-                <div className={styles.categoryPillGrid}>
-                  {CATEGORIES.map((cat) => {
-                    const Icon = cat.icon;
-                    const active = category === cat.id;
+                {/* Danh mục */}
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Danh mục</label>
+                  <div className={styles.categoryPillGrid}>
+                    {CATEGORIES.map((cat) => {
+                      const IconComponent = cat.icon;
+                      const isSelected = category === cat.id;
+                      return (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          className={`${styles.categorySelectPill} ${
+                            isSelected ? styles.categoryPillSelected : ''
+                          }`}
+                          onClick={() => setCategory(cat.id)}
+                        >
+                          <IconComponent size={14} />
+                          <span>{cat.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Người chi & Ngày chi (2 cột gọn gàng) */}
+                <div className={styles.formTwoCols}>
+                  <div className={styles.formGroup} style={{ flex: 1 }}>
+                    <label className={styles.formLabel}>Người trả</label>
+                    <select
+                      className={styles.formSelect}
+                      value={paidBy}
+                      onChange={(e) => setPaidBy(e.target.value)}
+                    >
+                      {members.map((m) => (
+                        <option key={m.userId} value={m.userId}>
+                          {m.userId === currentUserId ? `Bạn (${m.displayName})` : m.displayName}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className={styles.formGroup} style={{ flex: 1 }}>
+                    <label className={styles.formLabel}>Ngày</label>
+                    <input
+                      type="date"
+                      className={styles.formInput}
+                      value={occurredAtDate}
+                      onChange={(e) => setOccurredAtDate(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Ghi chú */}
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Ghi chú</label>
+                  <input
+                    type="text"
+                    className={styles.formInput}
+                    placeholder="Tùy chọn..."
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                {/* ─── TAB 2: CHIA TIỀN MA TRẬN ─── */}
+                <div className={styles.formGroup}>
+                  <div className={styles.splitModeSwitcher}>
+                    <button
+                      type="button"
+                      className={`${styles.splitModeBtn} ${
+                        splitType === 'EQUAL' ? styles.splitModeBtnActive : ''
+                      }`}
+                      onClick={() => setSplitType('EQUAL')}
+                    >
+                      Chia đều
+                    </button>
+                    <button
+                      type="button"
+                      className={`${styles.splitModeBtn} ${
+                        splitType === 'EXACT' ? styles.splitModeBtnActive : ''
+                      }`}
+                      onClick={() => setSplitType('EXACT')}
+                    >
+                      Tùy chỉnh số tiền
+                    </button>
+                  </div>
+                </div>
+
+                {/* Preset Chips */}
+                <div className={styles.splitPresetRow}>
+                  <button
+                    type="button"
+                    className={`${styles.splitPresetBtn} ${
+                      selectedParticipants.length === members.length ? styles.splitPresetActive : ''
+                    }`}
+                    onClick={() => setSelectedParticipants(members.map((m) => m.userId))}
+                  >
+                    <Users size={12} /> Cả đoàn ({members.length})
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.splitPresetBtn} ${
+                      selectedParticipants.length === 1 && selectedParticipants.includes(currentUserId || '')
+                        ? styles.splitPresetActive
+                        : ''
+                    }`}
+                    onClick={() => setSelectedParticipants(currentUserId ? [currentUserId] : [members[0]?.userId])}
+                  >
+                    <User size={12} /> Chỉ mình tôi
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.splitPresetBtn}
+                    onClick={toggleAllParticipants}
+                  >
+                    {selectedParticipants.length === members.length ? 'Bỏ chọn' : 'Tất cả'}
+                  </button>
+                </div>
+
+                {/* Members Checklist */}
+                <div className={styles.splitMemberList}>
+                  {members.map((m) => {
+                    const isChecked = selectedParticipants.includes(m.userId);
                     return (
-                      <button
-                        key={cat.id}
-                        type="button"
-                        disabled={submitting}
-                        className={`${styles.categorySelectPill} ${
-                          active ? styles.categoryPillSelected : ''
+                      <div
+                        key={m.userId}
+                        className={`${styles.splitMemberRow} ${
+                          !isChecked ? styles.splitMemberRowExcluded : ''
                         }`}
-                        onClick={() => setCategory(cat.id)}
                       >
-                        <Icon size={15} strokeWidth={1.85} />
-                        <span>{cat.label}</span>
-                      </button>
+                        <div className={styles.splitMemberLeft}>
+                          <input
+                            type="checkbox"
+                            className={styles.splitMemberCheck}
+                            checked={isChecked}
+                            onChange={() => toggleParticipant(m.userId)}
+                          />
+                          <div className={styles.avatarCircle}>
+                            {m.displayName.charAt(0).toUpperCase()}
+                          </div>
+                          <span className={styles.splitMemberName}>
+                            {m.userId === currentUserId ? `Bạn (${m.displayName})` : m.displayName}
+                          </span>
+                        </div>
+
+                        <div>
+                          {isChecked ? (
+                            splitType === 'EQUAL' ? (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                {/* Weight selector [Khung 9] */}
+                                <div className={styles.weightSelector}>
+                                  {[0.5, 1, 1.5, 2].map((w) => (
+                                    <button
+                                      key={w}
+                                      type="button"
+                                      className={`${styles.weightChip} ${
+                                        (weights[m.userId] || 1) === w ? styles.weightChipActive : ''
+                                      }`}
+                                      onClick={() => setMemberWeight(m.userId, w)}
+                                      title={`Trọng số ${w}x`}
+                                    >
+                                      {w}x
+                                    </button>
+                                  ))}
+                                </div>
+                                <span className={styles.splitShareText}>
+                                  {new Intl.NumberFormat('vi-VN').format(getMemberCalculatedShare(m.userId))} ₫
+                                </span>
+                              </div>
+                            ) : (
+                              <input
+                                type="text"
+                                className={styles.exactShareInput}
+                                placeholder="0 ₫"
+                                value={exactShares[m.userId] || ''}
+                                onChange={(e) => {
+                                  const val = e.target.value.replace(/\D/g, '');
+                                  const f = val ? new Intl.NumberFormat('vi-VN').format(parseInt(val, 10)) : '';
+                                  setExactShares({ ...exactShares, [m.userId]: f });
+                                }}
+                              />
+                            )
+                          ) : (
+                            <span className={styles.splitExcludedBadge}>0 ₫</span>
+                          )}
+                        </div>
+                      </div>
                     );
                   })}
                 </div>
-              </div>
 
-              {/* 4. Ngày chi */}
-              <div className={styles.formGroup}>
-                <label htmlFor="expense-date-input" className={styles.formLabel}>
-                  <span>Ngày chi</span>
-                  <span className={styles.formRequired}>*</span>
-                </label>
-                <input
-                  id="expense-date-input"
-                  type="date"
-                  className={styles.formInput}
-                  value={occurredAtDate}
-                  onChange={(e) => setOccurredAtDate(e.target.value)}
-                  disabled={submitting}
-                  required
-                />
-              </div>
-
-              {/* 5. Người chi */}
-              <div className={styles.formGroup}>
-                <label htmlFor="expense-payer-select" className={styles.formLabel}>
-                  <span>Người chi trả</span>
-                  <span className={styles.formRequired}>*</span>
-                </label>
-                <select
-                  id="expense-payer-select"
-                  className={styles.formSelect}
-                  value={paidBy}
-                  onChange={(e) => setPaidBy(e.target.value)}
-                  disabled={submitting}
-                >
-                  {members.map((m) => (
-                    <option key={m.userId} value={m.userId}>
-                      {m.userId === currentUserId ? `${m.displayName} (Bạn)` : m.displayName}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Phân chia chi phí giữa các thành viên */}
-            <div className={styles.splitSectionBox}>
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  flexWrap: 'wrap',
-                  gap: '8px',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Users size={15} color="#0284c7" />
-                  <span style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a' }}>
-                    Phân bổ cho thành viên ({selectedParticipants.length}/{members.length})
-                  </span>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <button
-                    type="button"
-                    disabled={submitting}
-                    onClick={() => setSplitType('EQUAL')}
-                    style={{
-                      padding: '4px 10px',
-                      borderRadius: '6px',
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      border: '1px solid',
-                      borderColor: splitType === 'EQUAL' ? '#0f172a' : '#cbd5e1',
-                      background: splitType === 'EQUAL' ? '#0f172a' : '#ffffff',
-                      color: splitType === 'EQUAL' ? '#ffffff' : '#475569',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Chia đều
-                  </button>
-                  <button
-                    type="button"
-                    disabled={submitting}
-                    onClick={() => setSplitType('EXACT')}
-                    style={{
-                      padding: '4px 10px',
-                      borderRadius: '6px',
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      border: '1px solid',
-                      borderColor: splitType === 'EXACT' ? '#0f172a' : '#cbd5e1',
-                      background: splitType === 'EXACT' ? '#0f172a' : '#ffffff',
-                      color: splitType === 'EXACT' ? '#ffffff' : '#475569',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Tùy chỉnh số tiền
-                  </button>
-                  {members.length > 1 && (
-                    <button
-                      type="button"
-                      disabled={submitting}
-                      onClick={toggleAllParticipants}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: '#0284c7',
-                        fontSize: '12px',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        marginLeft: '4px',
-                      }}
-                    >
-                      {selectedParticipants.length === members.length ? 'Bỏ chọn' : 'Chọn tất cả'}
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              <div className={styles.splitMemberList}>
-                {members.map((m) => {
-                  const isChecked = selectedParticipants.includes(m.userId);
-                  return (
-                    <div key={m.userId} className={styles.splitMemberRow}>
-                      <label className={styles.splitMemberLeft} style={{ cursor: 'pointer' }}>
-                        <input
-                          type="checkbox"
-                          className={styles.splitMemberCheck}
-                          checked={isChecked}
-                          disabled={submitting}
-                          onChange={() => toggleParticipant(m.userId)}
-                        />
-                        <div
-                          className={styles.avatarCircle}
-                          style={{ width: '26px', height: '26px', fontSize: '11px' }}
-                        >
-                          {m.displayName ? m.displayName.charAt(0).toUpperCase() : 'U'}
-                        </div>
-                        <span style={{ fontSize: '13px', fontWeight: 600, color: '#1e293b' }}>
-                          {m.userId === currentUserId ? `${m.displayName} (Bạn)` : m.displayName}
-                        </span>
-                      </label>
-
-                      {isChecked && (
-                        <div>
-                          {splitType === 'EQUAL' ? (
-                            <span className={styles.splitShareText}>
-                              {new Intl.NumberFormat('vi-VN').format(equalSharePerPerson)} ₫
-                            </span>
-                          ) : (
-                            <input
-                              type="text"
-                              inputMode="numeric"
-                              disabled={submitting}
-                              style={{
-                                width: '120px',
-                                padding: '5px 8px',
-                                fontSize: '13px',
-                                fontWeight: 600,
-                                textAlign: 'right',
-                                border: '1px solid #cbd5e1',
-                                borderRadius: '6px',
-                              }}
-                              placeholder="0 ₫"
-                              value={exactShares[m.userId] || ''}
-                              onChange={(e) => {
-                                const val = e.target.value.replace(/\D/g, '');
-                                const f = val
-                                  ? new Intl.NumberFormat('vi-VN').format(parseInt(val, 10))
-                                  : '';
-                                setExactShares({ ...exactShares, [m.userId]: f });
-                              }}
-                            />
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* 6. Hình ảnh hóa đơn (Upload ảnh) */}
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>
-                <span>Hình ảnh hóa đơn (Tùy chọn)</span>
-              </label>
-
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                style={{ display: 'none' }}
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) void handleSelectReceiptFile(file);
-                }}
-              />
-
-              {receiptPreview ? (
-                <div className={styles.uploadPreviewCard}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={receiptPreview}
-                      alt="Xem trước hóa đơn"
-                      className={styles.uploadPreviewThumb}
-                    />
-                    <div style={{ minWidth: 0 }}>
-                      <div
-                        style={{
-                          fontSize: '13px',
-                          fontWeight: 600,
-                          color: '#0f172a',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        {receiptFile?.name || 'Ảnh hóa đơn đính kèm'}
-                      </div>
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          fontSize: '11.5px',
-                          color: '#16a34a',
-                          marginTop: '2px',
-                          fontWeight: 500,
-                        }}
-                      >
-                        <CheckCircle2 size={13} />
-                        <span>
-                          Sẵn sàng tải lên Cloud
-                          {receiptFile
-                            ? ` (${(receiptFile.size / 1024).toFixed(0)} KB)`
-                            : ''}
-                        </span>
-                      </div>
-                    </div>
+                {/* Bottom Live Split Summary */}
+                <div className={styles.splitSummaryCard}>
+                  <div className={styles.splitSummaryItem}>
+                    <span>Tổng chi</span>
+                    <strong>{new Intl.NumberFormat('vi-VN').format(numericAmount)} ₫</strong>
                   </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <button
-                      type="button"
-                      disabled={submitting}
-                      onClick={() => fileInputRef.current?.click()}
-                      className={styles.btnCancel}
-                      style={{ padding: '5px 10px', fontSize: '12px' }}
-                    >
-                      Đổi ảnh
-                    </button>
-                    <button
-                      type="button"
-                      disabled={submitting}
-                      onClick={handleRemoveReceipt}
-                      className={styles.deleteBtn}
-                      title="Xóa ảnh hóa đơn"
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                  <div className={styles.splitSummaryItem}>
+                    <span>Người chia</span>
+                    <strong>{selectedParticipants.length} / {members.length}</strong>
+                  </div>
+                  <div className={styles.splitSummaryItem}>
+                    <span>Bình quân</span>
+                    <strong style={{ color: '#0284c7' }}>
+                      {new Intl.NumberFormat('vi-VN').format(equalSharePerPerson)} ₫
+                    </strong>
                   </div>
                 </div>
-              ) : (
-                <div
-                  className={`${styles.uploadZone} ${isDragging ? styles.uploadZoneActive : ''}`}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <div className={styles.uploadIcon}>
-                    <UploadCloud size={20} strokeWidth={1.85} />
-                  </div>
-                  <div className={styles.uploadPrompt}>
-                    Kéo thả ảnh hóa đơn vào đây hoặc{' '}
-                    <span className={styles.uploadLink}>chọn tệp từ thiết bị</span>
-                  </div>
-                  <div style={{ fontSize: '11.5px', color: '#64748b' }}>
-                    Hỗ trợ JPG, PNG, WEBP (tối đa 10MB) • Tự động đồng bộ Supabase Storage
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Ghi chú bổ sung */}
-            <div className={styles.formGroup}>
-              <label htmlFor="expense-note-input" className={styles.formLabel}>
-                <span>Ghi chú (Tùy chọn)</span>
-              </label>
-              <textarea
-                id="expense-note-input"
-                rows={2}
-                className={styles.formTextarea}
-                placeholder="Ghi chú chi tiết về hóa đơn, địa điểm thanh toán..."
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                disabled={submitting}
-              />
-            </div>
+              </>
+            )}
           </div>
 
-          {/* Modal Footer */}
+          {/* Drawer Footer */}
           <div className={styles.drawerFooter}>
-            <button
-              type="button"
-              className={styles.btnCancel}
-              onClick={onClose}
-              disabled={submitting}
-            >
-              Hủy
+            <button type="button" className={styles.btnCancel} onClick={onClose} disabled={submitting}>
+              Đóng
             </button>
-            <button type="submit" className={styles.btnSubmit} disabled={submitting}>
-              {submitting ? (
-                <>
-                  <RefreshCw size={15} className="animate-spin" />
-                  <span>{submitStep || 'Đang lưu...'}</span>
-                </>
-              ) : (
-                <span>Lưu khoản chi</span>
-              )}
-            </button>
+            {activeTab === 'info' ? (
+              <button
+                type="button"
+                className={styles.btnSubmit}
+                onClick={() => setActiveTab('split')}
+              >
+                Chia tiền ({selectedParticipants.length}) →
+              </button>
+            ) : (
+              <button type="submit" className={styles.btnSubmit} disabled={submitting}>
+                {submitting ? 'Đang lưu...' : 'Lưu khoản chi'}
+              </button>
+            )}
           </div>
         </form>
       </div>

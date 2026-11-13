@@ -1,12 +1,21 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import { Navbar } from '@/components/common/Navbar';
+import { apiRequest } from '@/lib/api';
 import { SkeletonAiGenerating, SkeletonBox } from '@/components/common/Skeleton';
-import type { DestinationMarker } from '@/features/map-location/types';
-import { getRealPlacesByProvince } from '@/data/realDestinationsData';
+import type { DestinationMarker, RouteStop, MultiDayRoute } from '@/features/map-location/types';
+import { computeVistaRoute } from '@/features/map-location/routing/routes';
+import { getRealPlacesByProvince, type RealPlace } from '@/data/realDestinationsData';
+import {
+  VIETNAM_63_PROVINCES,
+  matchProvince,
+  normalizeVn,
+  type DestinationOption,
+} from '@/data/provincesData';
 import {
   requestAiItinerary,
   isBackendTripId,
@@ -19,6 +28,7 @@ import {
   mergeTripItinerary,
   type MergeItineraryDay,
 } from '@/services/itineraryService';
+import { fetchLiveWeatherByCoords, type RealtimeWeather } from '@/services/weatherService';
 import styles from './planner.module.css';
 import {
   Palmtree,
@@ -34,7 +44,37 @@ import {
   Sailboat,
   ShoppingBag,
   Check,
+  Clock,
+  RotateCcw,
+  Trash2,
+  Sparkles,
+  ShieldCheck,
+  Bookmark,
+  MapPin,
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  ArrowRight,
+  Share2,
+  MoreHorizontal,
+  Search,
+  Wallet,
+  Receipt,
+  Pencil,
+  Navigation,
+  Zap,
+  Car,
+  Bike,
+  Footprints,
 } from 'lucide-react';
+import {
+  getPlanHistory,
+  savePlanToHistory,
+  deletePlanFromHistory,
+  clearAllPlanHistory,
+  formatTimeAgo,
+  type PlanHistoryRecord,
+} from '@/services/planHistoryService';
 
 // Dynamic import for MapLibre map adapter (client-side only to avoid SSR issues)
 const MapViewAdapter = dynamic(
@@ -70,14 +110,39 @@ interface Activity {
   whyVisitReason?: string;
   costStatus?: 'FREE' | 'PAID' | 'ESTIMATED' | 'UNVERIFIED';
   warning?: string;
+  dataConfidence?: 'VERIFIED' | 'UNVERIFIED_HOURS';
+  durationMin?: number;
+  waitTimeMin?: number;
   travelDurationFromPreviousMinutes?: number;
+  travelDistanceKm?: number;
+  transportMode?: string;
   bufferMinutes?: number;
+  openingHoursStatus?: string;
+  isLocked?: boolean;
+  isMustVisit?: boolean;
+  rainBackupSuggestion?: {
+    destinationId?: string;
+    destination_id?: string;
+    destinationName?: string;
+    destination_name?: string;
+    name?: string;
+    category?: string;
+    distanceKm?: number;
+    distance_km?: number;
+    note?: string;
+  } | null;
+  realtimeStatus?: string;
+  isOpenRealtime?: boolean;
 }
 
 interface DayPlan {
   dayNumber: number;
   dateStr: string;
   title: string;
+  dayRationale?: string;
+  dayStatus?: string;
+  statusReason?: string | null;
+  departureInfo?: Record<string, any> | null;
   activities: Activity[];
 }
 
@@ -100,60 +165,8 @@ interface AiGenerationMetadata {
   fallbackUsed: boolean;
 }
 
-export interface DestinationOption {
-  id: string;
-  nameVi: string;
-  province: string;
-  region: 'Bắc' | 'Trung' | 'Nam';
-  lat: number;
-  lng: number;
-  photo: string;
-}
-
-// 34 Provinces integrated from database seed (T4)
-const DESTINATION_LIST: DestinationOption[] = [
-  // Miền Trung & Tây Nguyên
-  { id: 'danang', nameVi: 'Đà Nẵng', province: 'Đà Nẵng', region: 'Trung', lat: 16.0544, lng: 108.2022, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_real.jpg' },
-  { id: 'hue', nameVi: 'Thừa Thiên Huế', province: 'Thừa Thiên Huế', region: 'Trung', lat: 16.4637, lng: 107.5909, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/hue_real.jpg' },
-  { id: 'quangnam', nameVi: 'Hội An (Quảng Nam)', province: 'Quảng Nam', region: 'Trung', lat: 15.8801, lng: 108.3380, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/hoian_real.jpg' },
-  { id: 'khanhhoa', nameVi: 'Nha Trang (Khánh Hòa)', province: 'Khánh Hòa', region: 'Trung', lat: 12.2388, lng: 109.1967, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_real.jpg' },
-  { id: 'lamdong', nameVi: 'Đà Lạt (Lâm Đồng)', province: 'Lâm Đồng', region: 'Trung', lat: 11.9404, lng: 108.4583, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/dalat_real.jpg' },
-  { id: 'thanhhoa', nameVi: 'Thanh Hóa', province: 'Thanh Hóa', region: 'Trung', lat: 19.8075, lng: 105.7764, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/ninhbinh_real.jpg' },
-  { id: 'nghean', nameVi: 'Nghệ An', province: 'Nghệ An', region: 'Trung', lat: 18.6734, lng: 105.6813, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/hue_real.jpg' },
-  { id: 'hatinh', nameVi: 'Hà Tĩnh', province: 'Hà Tĩnh', region: 'Trung', lat: 18.3432, lng: 105.9059, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/hue_real.jpg' },
-  { id: 'quangtri', nameVi: 'Quảng Trị', province: 'Quảng Trị', region: 'Trung', lat: 16.7497, lng: 107.1854, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/hue_real.jpg' },
-  { id: 'quangngai', nameVi: 'Quảng Ngãi', province: 'Quảng Ngãi', region: 'Trung', lat: 15.1205, lng: 108.7923, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/hoian_real.jpg' },
-  { id: 'gialai', nameVi: 'Gia Lai (Pleiku)', province: 'Gia Lai', region: 'Trung', lat: 13.9833, lng: 108.0000, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/dalat_real.jpg' },
-  { id: 'daklak', nameVi: 'Đắk Lắk (Buôn Ma Thuột)', province: 'Đắk Lắk', region: 'Trung', lat: 12.6667, lng: 108.0500, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/dalat_real.jpg' },
-
-  // Miền Bắc
-  { id: 'hanoi', nameVi: 'Hà Nội', province: 'Hà Nội', region: 'Bắc', lat: 21.0285, lng: 105.8542, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/hanoi_real.jpg' },
-  { id: 'quangninh', nameVi: 'Vịnh Hạ Long (Quảng Ninh)', province: 'Quảng Ninh', region: 'Bắc', lat: 20.9505, lng: 107.0734, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/halong_real.jpg' },
-  { id: 'ninhbinh', nameVi: 'Ninh Bình', province: 'Ninh Bình', region: 'Bắc', lat: 20.2506, lng: 105.9745, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/ninhbinh_real.jpg' },
-  { id: 'haiphong', nameVi: 'Hải Phòng', province: 'Hải Phòng', region: 'Bắc', lat: 20.8449, lng: 106.6881, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/halong_real.jpg' },
-  { id: 'laocai', nameVi: 'Sa Pa (Lào Cai)', province: 'Lào Cai', region: 'Bắc', lat: 22.3364, lng: 103.8438, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/sapa_real.jpg' },
-  { id: 'laichau', nameVi: 'Lai Châu', province: 'Lai Châu', region: 'Bắc', lat: 22.3964, lng: 103.4619, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_lungcu_hero.jpg' },
-  { id: 'dienbien', nameVi: 'Điện Biên', province: 'Điện Biên', region: 'Bắc', lat: 21.3860, lng: 103.0230, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_lungcu_hero.jpg' },
-  { id: 'sonla', nameVi: 'Mộc Châu (Sơn La)', province: 'Sơn La', region: 'Bắc', lat: 20.8456, lng: 104.6496, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/sapa_real.jpg' },
-  { id: 'caobang', nameVi: 'Cao Bằng', province: 'Cao Bằng', region: 'Bắc', lat: 22.6657, lng: 105.9739, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_lungcu_hero.jpg' },
-  { id: 'langson', nameVi: 'Lạng Sơn', province: 'Lạng Sơn', region: 'Bắc', lat: 21.8537, lng: 106.7615, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_lungcu_hero.jpg' },
-  { id: 'tuyenquang', nameVi: 'Tuyên Quang', province: 'Tuyên Quang', region: 'Bắc', lat: 21.8234, lng: 105.2140, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/sapa_real.jpg' },
-  { id: 'thainguyen', nameVi: 'Thái Nguyên', province: 'Thái Nguyên', region: 'Bắc', lat: 21.5928, lng: 105.8442, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/dalat_real.jpg' },
-  { id: 'phutho', nameVi: 'Phú Thọ', province: 'Phú Thọ', region: 'Bắc', lat: 21.3228, lng: 105.4019, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/ninhbinh_real.jpg' },
-  { id: 'bacninh', nameVi: 'Bắc Ninh', province: 'Bắc Ninh', region: 'Bắc', lat: 21.1861, lng: 106.0763, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/hanoi_real.jpg' },
-  { id: 'hungyen', nameVi: 'Hưng Yên', province: 'Hưng Yên', region: 'Bắc', lat: 20.6464, lng: 106.0511, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/hanoi_real.jpg' },
-
-  // Miền Nam & ĐBSCL
-  { id: 'saigon', nameVi: 'TP. Hồ Chí Minh', province: 'Hồ Chí Minh', region: 'Nam', lat: 10.7769, lng: 106.7009, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/saigon_real.jpg' },
-  { id: 'phuquoc', nameVi: 'Phú Quốc (Kiên Giang)', province: 'Kiên Giang', region: 'Nam', lat: 10.2899, lng: 103.9840, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/phuquoc_real.jpg' },
-  { id: 'cantho', nameVi: 'Cần Thơ', province: 'Cần Thơ', region: 'Nam', lat: 10.0452, lng: 105.7469, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/cantho_cairang.jpg' },
-  { id: 'tayninh', nameVi: 'Tây Ninh', province: 'Tây Ninh', region: 'Nam', lat: 11.3100, lng: 106.0983, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/tayninh_nuibaden.jpg' },
-  { id: 'dongnai', nameVi: 'Đồng Nai', province: 'Đồng Nai', region: 'Nam', lat: 10.9574, lng: 106.8427, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/saigon_real.jpg' },
-  { id: 'vinhlong', nameVi: 'Vĩnh Long', province: 'Vĩnh Long', region: 'Nam', lat: 10.2537, lng: 105.9722, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/saigon_real.jpg' },
-  { id: 'dongthap', nameVi: 'Đồng Tháp', province: 'Đồng Tháp', region: 'Nam', lat: 10.4638, lng: 105.6328, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/dongthap_tramchim.jpg' },
-  { id: 'angiang', nameVi: 'An Giang', province: 'An Giang', region: 'Nam', lat: 10.3831, lng: 105.4358, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/angiang_trasu.jpg' },
-  { id: 'camau', nameVi: 'Cà Mau', province: 'Cà Mau', region: 'Nam', lat: 9.1769, lng: 105.1524, photo: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/camau_real.jpg' },
-];
+// 63 Provinces & Municipalities across Vietnam
+const DESTINATION_LIST: DestinationOption[] = VIETNAM_63_PROVINCES;
 
 // 12 Refined & Compact Travel Styles (T2) with professional vector icons & themed colors
 const TRAVEL_STYLES = [
@@ -185,79 +198,91 @@ const BUDGET_OPTIONS = [
   { id: 'luxury', label: 'Cao cấp', apiVal: 'LUXURY' },
 ];
 
-// Initial Curated Da Nang Plan (Production standard)
+// Initial Curated Da Nang Plan (Production standard matching reference design)
 const INITIAL_DANANG_DAYS: DayPlan[] = [
   {
     dayNumber: 1,
-    dateStr: '14/11/2026',
-    title: 'Ngày 1 · Chạm biển, khám phá Bán đảo Sơn Trà',
+    dateStr: 'Thứ 2, 11/05',
+    title: 'Ngày 1 — Khám phá trung tâm Đà Nẵng',
+    dayRationale: 'Khởi động Ngày 1 tại Đà Nẵng cực kỳ thảnh thơi: Buổi sáng dạo bước trên Bãi biển Mỹ Khê đón gió biển trong lành, tiếp nối check-in Cầu Rồng kiêu hãnh. Giữa trưa thưởng thức tô Bún chả cá Đà Nẵng đậm đà chuẩn vị bản địa. Buổi chiều tìm hiểu di sản văn hóa Chăm pa tại Bảo tàng Điêu khắc Chăm và khép lại ngày dạo mát ngắm hoàng hôn rực rỡ tại Công viên Biển Đông.',
     activities: [
       {
         id: 'act-1-1',
         timeSlot: 'MORNING',
-        timeRange: '08:00–10:00',
-        category: 'Tham quan',
-        title: 'Chùa Linh Ứng – Bãi Bụt (Bán đảo Sơn Trà)',
-        description: 'Ngắm cảnh biển từ bán đảo Sơn Trà và khám phá không gian thanh tịnh.',
-        location: 'Bán đảo Sơn Trà, Đà Nẵng',
+        timeRange: '08:00–09:45',
+        category: 'Biển & Nghỉ dưỡng',
+        title: 'Bãi biển Mỹ Khê',
+        description: 'Tắm biển, dạo biển và tận hưởng không khí trong lành.',
+        location: 'Bãi biển Mỹ Khê, Đà Nẵng',
         costVnd: 0,
         costLabel: 'Miễn phí',
-        tip: 'Ưu tiên trang phục lịch sự khi vào khuôn viên chùa.',
         photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_bana_day.jpg',
-        transferTimeAfter: 'Di chuyển khoảng 25 phút',
-        timeSlotReason: 'Khung giờ sáng (08:00 – 10:00) tiết trời mát mẻ, nắng chưa gắt, leo núi Sơn Trà không bị mệt và ngắm toàn cảnh vịnh biển trong vắt.',
-        whyVisitReason: 'Ngôi chùa linh thiêng với tượng Phật Bà Quan Âm cao 67m hướng ra biển, là điểm ngắm trọn vẹn thành phố từ trên cao đẹp nhất.',
+        latitude: 16.0592,
+        longitude: 108.2467,
       },
       {
         id: 'act-1-2',
-        timeSlot: 'NOON',
-        timeRange: '11:00–12:30',
-        category: 'Ẩm thực',
-        title: 'Bữa trưa với đặc sản Đà Nẵng',
-        description: 'Thưởng thức mì Quảng hoặc bánh tráng cuốn thịt heo tại quán địa phương.',
-        location: 'Quận Hải Châu, Đà Nẵng',
-        costVnd: 240000,
-        costLabel: '240.000đ / nhóm',
-        photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_panoramic_day.jpg',
-        transferTimeAfter: 'Di chuyển khoảng 15 phút',
-        timeSlotReason: 'Thời điểm giữa trưa (11:00 – 12:30) vừa vặn sau chặng ngắm cảnh sáng, ghé quán ăn nạp năng lượng và nghỉ ngơi mát mẻ.',
-        whyVisitReason: 'Thưởng thức mì Quảng ếch hoặc bánh tráng cuốn thịt heo hai đầu da chuẩn vị Đà Thành, món ăn trứ danh ai đến cũng phải thử.',
+        timeSlot: 'MORNING',
+        timeRange: '10:00–11:30',
+        category: 'Tham quan • Check-in',
+        title: 'Cầu Rồng',
+        description: 'Biểu tượng của Đà Nẵng, chụp ảnh và dạo quanh.',
+        location: 'Đường Nguyễn Văn Linh, Đà Nẵng',
+        costVnd: 0,
+        costLabel: 'Miễn phí',
+        photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_bana_night.jpg',
+        latitude: 16.0611,
+        longitude: 108.2272,
       },
       {
         id: 'act-1-3',
-        timeSlot: 'AFTERNOON',
-        timeRange: '15:30–17:30',
-        category: 'Biển & nghỉ dưỡng',
-        title: 'Một chiều thảnh thơi ở biển Mỹ Khê',
-        description: 'Dạo biển, thư giãn và ngắm hoàng hôn cùng bạn đồng hành.',
-        location: 'Bãi biển Mỹ Khê, Đà Nẵng',
-        costVnd: 120000,
-        costLabel: '120.000đ / nhóm',
-        photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/halong_hanoi_day.jpg',
-        transferTimeAfter: 'Di chuyển khoảng 20 phút',
-        timeSlotReason: 'Khung giờ chiều muộn (15:30 – 17:30) nắng đã dịu hẳn, gió biển thổi lồng lộng, thời điểm lý tưởng nhất để dạo cát và đón hoàng hôn.',
-        whyVisitReason: 'Được tạp chí Forbes vinh danh là một trong những bãi biển quyến rũ nhất hành tinh với bãi cát trắng mịn trải dài và sóng êm.',
+        timeSlot: 'NOON',
+        timeRange: '12:00–13:30',
+        category: 'Ẩm thực bản địa',
+        title: 'Bún chả cá Đà Nẵng',
+        description: 'Thưởng thức đặc sản nổi tiếng với hương vị đậm đà.',
+        location: 'Quận Hải Châu, Đà Nẵng',
+        costVnd: 60000,
+        costLabel: '60.000đ/người',
+        photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_panoramic_day.jpg',
+        latitude: 16.0678,
+        longitude: 108.2208,
       },
       {
         id: 'act-1-4',
-        timeSlot: 'EVENING',
-        timeRange: '19:00–21:00',
-        category: 'Khám phá buổi tối',
-        title: 'Dạo bờ sông Hàn, Cầu Rồng & Chợ đêm',
-        description: 'Khám phá không khí thành phố về đêm và thưởng thức món ăn đường phố.',
-        location: 'Bờ Đông Sông Hàn, Đà Nẵng',
-        costVnd: 500000,
-        costLabel: '500.000đ / nhóm',
-        photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_bana_night.jpg',
-        timeSlotReason: 'Buổi tối (19:00 – 21:00) phố lên đèn rực rỡ, không khí chợ đêm nhộn nhịp nhất và dễ dàng xem Cầu Rồng phun lửa/nước nếu đi cuối tuần.',
-        whyVisitReason: 'Biểu tượng hiện đại đầy tự hào của Đà Nẵng, nơi bạn vừa hòa mình vào nhịp sống trẻ trung vừa tha hồ thưởng thức hải sản đường phố.',
+        timeSlot: 'AFTERNOON',
+        timeRange: '14:00–16:00',
+        category: 'Văn hóa & Di sản',
+        title: 'Bảo tàng Điêu khắc Chăm',
+        description: 'Khám phá kho tàng văn hóa Chăm đặc sắc.',
+        location: 'Số 02 đường 2 Tháng 9, Đà Nẵng',
+        costVnd: 60000,
+        costLabel: '60.000đ/người',
+        photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/halong_hanoi_day.jpg',
+        latitude: 16.0599,
+        longitude: 108.2235,
+      },
+      {
+        id: 'act-1-5',
+        timeSlot: 'AFTERNOON',
+        timeRange: '17:00–18:30',
+        category: 'Thư giãn • Ngắm hoàng hôn',
+        title: 'Công viên Biển Đông',
+        description: 'Dạo bộ, ngắm biển và tận hưởng không gian sôi động.',
+        location: 'Đường Võ Nguyên Giáp, Đà Nẵng',
+        costVnd: 0,
+        costLabel: 'Miễn phí',
+        photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_bana_day.jpg',
+        latitude: 16.0689,
+        longitude: 108.2464,
       },
     ],
   },
   {
     dayNumber: 2,
-    dateStr: '15/11/2026',
+    dateStr: 'Thứ 3, 12/05',
     title: 'Ngày 2 · Chinh phục Bà Nà Hills & Cầu Vàng',
+    dayRationale: 'Hôm nay xác định là ngày đốt cháy calo và dung lượng điện thoại nhiều nhất trần đời! Lên đỉnh Bà Nà nhớ khoác thêm áo mỏng kẻo gió thổi lạnh run cầm cập, sống ảo ở Cầu Vàng canh lúc sương mù vần vũ như chốn bồng lai tiên cảnh. Trưa càn quét buffet Làng Pháp nạp lại năng lượng, tối về lại sông Hàn ngồi du thuyền chill chill ngắm đèn lấp lánh xả stress cực phê!',
     activities: [
       {
         id: 'act-2-1',
@@ -322,8 +347,9 @@ const INITIAL_DANANG_DAYS: DayPlan[] = [
   },
   {
     dayNumber: 3,
-    dateStr: '16/11/2026',
+    dateStr: 'Thứ 4, 13/05',
     title: 'Ngày 3 · Danh thắng Ngũ Hành Sơn & Mua sắm Chợ Hàn',
+    dayRationale: 'Ngày cuối cùng: Sáng leo Ngũ Hành Sơn thắp nhang cầu may mắn tài lộc hanh thông (leo bậc đá cẩn thận kẻo trượt chân nha!), trưa chén sạch dĩa bánh xèo Bà Dưỡng giòn rụm cuốn nem lụi chấm sốt gan béo ngậy. Chiều ghé Chợ Hàn sắm chả bò, tré, mực rim me về làm quà cho người thân bạn bè để khỏi bị trách hờn, rồi làm ly cà phê muối Bạch Đằng ngắm hoàng hôn khép lại chuyến đi 10 điểm!',
     activities: [
       {
         id: 'act-3-1',
@@ -394,6 +420,7 @@ const INITIAL_PHUQUOC_DAYS: DayPlan[] = [
     dayNumber: 1,
     dateStr: '14/11/2026',
     title: 'Ngày 1 · Bắc Đảo: Grand World, Safari & Bún Quậy',
+    dayRationale: 'Đổ bộ đảo ngọc Phú Quốc là phải tràn đầy năng lượng! Sáng dạo Grand World ngỡ như lạc sang Ý, trưa tự tay quậy tô bún Kiến Xây toát mồ hôi hột nhưng ngon nuốt lưỡi. Chiều đi coi thú ở Safari xem ai nhốt ai, tối càn quét hải sản Chợ đêm nướng mỡ hành thơm nức mũi!',
     activities: [
       {
         id: 'pq-1-1',
@@ -451,8 +478,9 @@ const INITIAL_PHUQUOC_DAYS: DayPlan[] = [
   },
   {
     dayNumber: 2,
-    dateStr: '15/11/2026',
+    dateStr: 'Thứ 3, 12/05',
     title: 'Ngày 2 · Nam Đảo: Cáp treo Hòn Thơm, Bãi Sao & Cầu Hôn',
+    dayRationale: 'Hôm nay đi săn ảnh triệu like ở Nam Đảo: Bay trên biển bằng cáp treo kỷ lục ngắm san hô xanh ngắt, trưa ăn ghẹ Hàm Ninh chắc nịch ngọt lịm. Chiều nằm dài ở Bãi Sao cát trắng như bột mì, hoàng hôn dắt tay người thương qua Cầu Hôn lãng mạn như phim Hàn Quốc!',
     activities: [
       {
         id: 'pq-2-1',
@@ -509,8 +537,9 @@ const INITIAL_PHUQUOC_DAYS: DayPlan[] = [
   },
   {
     dayNumber: 3,
-    dateStr: '16/11/2026',
+    dateStr: 'Thứ 4, 13/05',
     title: 'Ngày 3 · Di tích lịch sử, Làng nghề & Chill Bãi Trường',
+    dayRationale: 'Ngày cuối đậm chất văn hóa và tận hưởng: Sáng ghé Nhà tù Phú Quốc lắng đọng tri ân lịch sử rồi tạt qua xem nhà thùng nước mắm truyền thống thơm lừng. Trưa cuốn gỏi cá trích nhấp chút rượu sim say đắm lòng người, chiều tối ra OCSEN Bar ngồi ghế lười nghe sóng biển ngắm hoàng hôn đỏ ối chill hết nấc!',
     activities: [
       {
         id: 'pq-3-1',
@@ -699,6 +728,57 @@ export function extractArrivalDepartureTimes(text: string): {
   return { arrivalTime, departureTime, pace, travelMode, hasElderly, hasChildren, dietaryPreference };
 }
 
+function generateWittyDayRationale(dayNum: number, dest: string, title?: string): string {
+  const wittyLines: Record<number, string[]> = {
+    1: [
+      `Khởi động Ngày 1 tại ${dest}: Hạ cánh êm ái, đừng vội vã chạy show kẻo sập nguồn! Sáng thong thả check-in sống ảo, trưa 'chiến' ngay đặc sản trứ danh no căng rốn. Chiều tối ra phố hóng gió ngắm cảnh lung linh. Nhớ sạc đầy pin điện thoại kẻo hối hận không kịp nha!`,
+      `Chào sân ${dest} thật hoành tráng! Lộ trình hôm nay ưu tiên làm quen nhịp sống, check-in nhận phòng thảnh thơi rồi ghé ngay những điểm biểu tượng. Đừng quên nạp năng lượng bằng món ngon bản địa kẻo bụng réo sôi sục nha!`,
+    ],
+    2: [
+      `Ngày 2 bung lụa hết nấc tại ${dest}: Hôm nay AI xếp toàn điểm 'đinh' siêu phẩm! Sáng dậy sớm tí hít thở khí trời trong lành, trưa 'chén' no nê để chiều oanh tạc các khu danh thắng kỳ vĩ. Lên đồ rực rỡ để có bộ ảnh triệu like khoe người yêu cũ nào!`,
+      `Tâm điểm của chuyến đi là hôm nay! Cung đường được tính toán gọn gàng theo trục thuận tiện không sợ quay đầu xe hay say xe. Tận hưởng trọn vẹn cảnh đẹp và không gian tuyệt vời tại ${dest}, nhớ mang theo nón và chiếc bụng đói nhé!`,
+    ],
+    3: [
+      `Ngày 3 - kết màn trọn vẹn: Thong thả ghé chợ hoặc phố đặc sản mua quà cho mẹ, cho sếp và hội bạn thân để không bị giận! Ghé quán cà phê chill ngắm cảnh nhìn lại chuyến đi đầy ắp tiếng cười. Chuyến đi 10 điểm không có nhưng!`,
+      `Khép lại hành trình ${dest} với những trải nghiệm lắng đọng: Sáng đi dạo danh lam thanh tịnh, trưa thưởng thức món ngon gia truyền rồi rẽ qua sắm đặc sản làm quà. Vừa vui vừa không lo bị viêm màng túi!`,
+    ],
+  };
+
+  const pool = wittyLines[dayNum] || [
+    `Ngày ${dayNum} khám phá ${dest}: Lịch trình được sắp xếp cực mượt mà theo một đường thẳng! Bạn chỉ việc xúng xính váy áo và giữ tinh thần hứng khởi, cả thế giới cảnh đẹp và đồ ăn ngon cứ để AI lo!`,
+  ];
+  return pool[(dayNum - 1) % pool.length];
+}
+
+function formatVietnameseDateStr(startDateIso: string, dayOffset: number): string {
+  try {
+    const [y, m, d] = (startDateIso || getTodayIso()).split('-').map(Number);
+    const curDate = new Date(y, m - 1, d + dayOffset);
+    const dayOfWeek = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'][curDate.getDay()];
+    const dd = String(curDate.getDate()).padStart(2, '0');
+    const mm = String(curDate.getMonth() + 1).padStart(2, '0');
+    return `${dayOfWeek}, ${dd}/${mm}`;
+  } catch {
+    return `Ngày ${dayOffset + 1}`;
+  }
+}
+
+function pickAuthenticPlacePhoto(
+  preferredUrl: string | undefined | null,
+  places: RealPlace[],
+  indexSeed: number,
+  provinceFallback: string
+): string {
+  const isGenuine = (url?: string | null): url is string =>
+    Boolean(url && !url.includes('unsplash.com') && !url.includes('location_map.svg'));
+  if (isGenuine(preferredUrl)) return preferredUrl;
+  const realPool = places.filter((p) => isGenuine(p.image));
+  if (realPool.length > 0) {
+    return realPool[Math.abs(indexSeed) % realPool.length].image;
+  }
+  return provinceFallback;
+}
+
 function generateDistinctDayPlan(
   destName: string,
   totalDays: number,
@@ -710,7 +790,8 @@ function generateDistinctDayPlan(
   photoUrl: string,
   arrivalTime?: string,
   departureTime?: string,
-  hasElderly?: boolean
+  hasElderly?: boolean,
+  startDateIso?: string
 ): DayPlan[] {
   const rawPlaces = getRealPlacesByProvince(destName);
   // Nếu đoàn có người lớn tuổi, ưu tiên lọc bỏ các điểm leo núi/hang động dốc cao
@@ -813,7 +894,8 @@ function generateDistinctDayPlan(
       const eveningPlace = pickPlace(eveningSpots.length > 0 ? eveningSpots : realPlaces, d);
 
       const mCost = morningPlace.priceMin || (budgetTier === 'luxury' ? 250000 : 80000);
-      const nCost = noonPlace.priceMin || 150000;
+      const isNoonChe = noonPlace.name.toLowerCase().includes('chè') || noonPlace.name.toLowerCase().includes('che ');
+      const nCost = isNoonChe ? (noonPlace.priceMin || 16000) : (noonPlace.priceMin || 150000);
       const aCost = afternoonPlace.priceMin || 60000;
       const eCost = eveningPlace.priceMin || 120000;
 
@@ -840,10 +922,10 @@ function generateDistinctDayPlan(
           timeRange: '11:30–13:00',
           category: noonPlace.category || 'Ẩm thực bản địa',
           title: noonPlace.name.includes('Chợ') || noonPlace.name.includes('Ẩm thực') || noonPlace.name.includes('Thưởng thức') ? noonPlace.name : `Thưởng thức đặc sản tại ${noonPlace.name}`,
-          description: noonPlace.description,
+          description: isNoonChe ? 'Thưởng thức các loại chè đặc sản nức tiếng thanh mát, ngọt dịu (giá chỉ từ 12.000đ – 20.000đ/ly).' : noonPlace.description,
           location: `${noonPlace.name}, ${destName}`,
           costVnd: nCost,
-          costLabel: `${new Intl.NumberFormat('vi-VN').format(nCost)}đ / nhóm`,
+          costLabel: isNoonChe ? `~${new Intl.NumberFormat('vi-VN').format(nCost)}đ (12k–20k/ly)` : `${new Intl.NumberFormat('vi-VN').format(nCost)}đ / nhóm`,
           photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/saigon_south_day.jpg',
           transferTimeAfter: 'Di chuyển khoảng 15 phút',
           latitude: noonPlace.latitude,
@@ -906,8 +988,9 @@ function generateDistinctDayPlan(
 
     days.push({
       dayNumber,
-      dateStr: `Ngày ${d}`,
+      dateStr: formatVietnameseDateStr(startDateIso || getTodayIso(), d - 1),
       title,
+      dayRationale: generateWittyDayRationale(d, destName, title),
       activities,
     });
   }
@@ -915,17 +998,71 @@ function generateDistinctDayPlan(
   return days;
 }
 
+
+function getDestinationTagline(dest: string): string {
+  const norm = (dest || '').toLowerCase();
+  if (norm.includes('hà nội') || norm.includes('hanoi')) {
+    return 'Nghìn năm văn hiến, 36 phố phường rêu phong và tinh hoa ẩm thực Tràng An.';
+  }
+  if (norm.includes('hồ chí minh') || norm.includes('sài gòn') || norm.includes('saigon')) {
+    return 'Đô thị năng động, nhịp sống sầm uất và thiên đường ẩm thực đa sắc màu.';
+  }
+  if (norm.includes('huế') || norm.includes('hue')) {
+    return 'Cố đô trầm mặc, di sản cung đình vàng son và nét thi vị sông Hương.';
+  }
+  if (norm.includes('hội an') || norm.includes('quảng nam')) {
+    return 'Phố cổ đèn lồng rực rỡ, kiến trúc hoài niệm và ẩm thực đậm đà xứ Quảng.';
+  }
+  if (norm.includes('phú quốc')) {
+    return 'Đảo ngọc thiên đường, bãi biển cát trắng mịn và hoàng hôn lộng lẫy.';
+  }
+  if (norm.includes('hà giang')) {
+    return 'Hùng vĩ cao nguyên đá Đồng Văn, đèo Mã Pí Lèng và sắc hoa tam giác mạch.';
+  }
+  if (norm.includes('đà lạt')) {
+    return 'Thành phố ngàn hoa, đồi thông thơ mộng và khí hậu se lạnh quanh năm.';
+  }
+  if (norm.includes('nha trang') || norm.includes('khánh hòa')) {
+    return 'Vịnh biển trong xanh, bãi cát trắng trải dài và hải sản tươi ngon.';
+  }
+  return 'Biển xanh cát trắng, ẩm thực phong phú và muôn vàn trải nghiệm thú vị.';
+}
+
 export default function PlannerPage() {
   const router = useRouter();
 
   // Workflow View states
   const [activeView, setActiveView] = useState<'timeline' | 'map'>('timeline');
+  const [activeMainTab, setActiveMainTab] = useState<'timeline' | 'map' | 'budget' | 'checklist'>('timeline');
+  const [checkedListItems, setCheckedListItems] = useState<Record<string, boolean>>({
+    chk1: true,
+    chk2: true,
+  });
+  const toggleChecklistItem = (id: string) => {
+    setCheckedListItems((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
-  const [hasPlanGenerated, setHasPlanGenerated] = useState<boolean>(true);
+  const [hasPlanGenerated, setHasPlanGenerated] = useState<boolean>(false);
+  const [showHistoryDrawer, setShowHistoryDrawer] = useState<boolean>(false);
+  const [planHistoryList, setPlanHistoryList] = useState<PlanHistoryRecord[]>([]);
+
+  useEffect(() => {
+    setPlanHistoryList(getPlanHistory());
+  }, []);
   const [aiGenerationMetadata, setAiGenerationMetadata] = useState<AiGenerationMetadata>({
     provider: 'offline',
     fallbackUsed: true,
   });
+
+  // Signal indicator mode: GREEN for API Key, PINK for fallback/deterministic mechanism
+  const isApiKeyMode = useMemo(() => {
+    return (
+      !aiGenerationMetadata.fallbackUsed &&
+      (aiGenerationMetadata.provider === 'local' ||
+        aiGenerationMetadata.provider === 'gemini' ||
+        aiGenerationMetadata.provider === 'claude')
+    );
+  }, [aiGenerationMetadata]);
   const [aiCitations, setAiCitations] = useState<AiCitation[]>([]);
   const [aiCustomInsights, setAiCustomInsights] = useState<{
     weather?: string;
@@ -938,9 +1075,64 @@ export default function PlannerPage() {
 
   // Preference Form Inputs
   const [destination, setDestination] = useState<string>('Đà Nẵng');
+  const [planWarnings, setPlanWarnings] = useState<string[]>([]);
+
+  const changeDestination = (newDest: string) => {
+    const trimmed = (newDest || '').trim();
+    if (!trimmed) return;
+    setDestination(trimmed);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('vista_selected_province', trimmed);
+        setTimeout(() => {
+          try {
+            const url = new URL(window.location.href);
+            url.searchParams.set('dest', trimmed);
+            window.history.replaceState({}, '', url.toString());
+          } catch {
+            // ignore
+          }
+        }, 0);
+      } catch (e) {
+        console.warn('Failed to update URL and storage:', e);
+      }
+    }
+  };
   const [destSearchQuery, setDestSearchQuery] = useState<string>('');
   const [showDestDropdown, setShowDestDropdown] = useState<boolean>(false);
+  const destDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close destination dropdown when clicking anywhere outside
+  useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (destDropdownRef.current && !destDropdownRef.current.contains(event.target as Node)) {
+        setShowDestDropdown(false);
+        setDestSearchQuery('');
+      }
+    };
+    if (showDestDropdown) {
+      document.addEventListener('mousedown', handleOutsideClick);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+    };
+  }, [showDestDropdown]);
   const [startDate, setStartDate] = useState<string>(getTodayIso());
+  const startDateInputRef = useRef<HTMLInputElement>(null);
+
+  const handleOpenDatePicker = () => {
+    if (startDateInputRef.current) {
+      if (typeof startDateInputRef.current.showPicker === 'function') {
+        try {
+          startDateInputRef.current.showPicker();
+        } catch {
+          startDateInputRef.current.focus();
+        }
+      } else {
+        startDateInputRef.current.focus();
+      }
+    }
+  };
   const [duration, setDuration] = useState<string>('3n2d');
   const [selectedStyles, setSelectedStyles] = useState<string[]>(['beach', 'cuisine']);
   const [showAllStyles, setShowAllStyles] = useState<boolean>(false);
@@ -955,18 +1147,81 @@ export default function PlannerPage() {
   const [showWishes, setShowWishes] = useState<boolean>(false);
   const [wishesText, setWishesText] = useState<string>('');
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false);
+  const [showAdvancedOptions, setShowAdvancedOptions] = useState<boolean>(false);
+
+  const [isHydrated, setIsHydrated] = useState<boolean>(false);
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   // T1: Check if departure date is today and local time >= 20:00 (8:00 PM)
   const isLateEveningDeparture = useMemo(() => {
+    if (!isHydrated) return false;
     if (startDate === getTodayIso()) {
       const currentHour = new Date().getHours();
       return currentHour >= 20;
     }
     return false;
+  }, [isHydrated, startDate]);
+
+  // Visual Departure Date Display (Day of week, stamp, relative days)
+  const departureDateInfo = useMemo(() => {
+    if (!startDate) {
+      return {
+        dayOfWeek: 'Thứ Sáu',
+        shortDayOfWeek: 'T6',
+        dayNumber: '11',
+        monthYear: 'tháng 12, 2026',
+        relativeText: '',
+      };
+    }
+    try {
+      const parts = startDate.split('-');
+      if (parts.length === 3) {
+        const year = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1;
+        const day = parseInt(parts[2], 10);
+        const d = new Date(year, month, day);
+        const dayIndex = d.getDay();
+        const weekdays = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+        const shortWeekdays = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+        const dayOfWeek = weekdays[dayIndex] || 'Thứ Sáu';
+        const shortDayOfWeek = shortWeekdays[dayIndex] || 'T6';
+        const dayNumber = String(day).padStart(2, '0');
+        const monthYear = `tháng ${month + 1}, ${year}`;
+
+        let relativeText = '';
+        const todayIso = getTodayIso();
+        const tomorrowIso = getFutureDateIso(1);
+        if (startDate === todayIso) {
+          relativeText = 'Hôm nay';
+        } else if (startDate === tomorrowIso) {
+          relativeText = 'Ngày mai';
+        } else {
+          const todayD = new Date();
+          todayD.setHours(0, 0, 0, 0);
+          const diffDays = Math.round((d.getTime() - todayD.getTime()) / (1000 * 60 * 60 * 24));
+          if (diffDays > 0) {
+            relativeText = `Sau ${diffDays} ngày`;
+          }
+        }
+
+        return { dayOfWeek, shortDayOfWeek, dayNumber, monthYear, relativeText };
+      }
+    } catch {
+      // fallback
+    }
+    return {
+      dayOfWeek: 'Thứ Sáu',
+      shortDayOfWeek: 'T6',
+      dayNumber: '11',
+      monthYear: 'tháng 12, 2026',
+      relativeText: '',
+    };
   }, [startDate]);
 
   // Active Itinerary Data
-  const [itineraryDays, setItineraryDays] = useState<DayPlan[]>(INITIAL_DANANG_DAYS);
+  const [itineraryDays, setItineraryDays] = useState<DayPlan[]>([]);
   const [activeDay, setActiveDay] = useState<number>(1);
   const [detectedArrivalTime, setDetectedArrivalTime] = useState<string | null>(null);
   const [detectedDepartureTime, setDetectedDepartureTime] = useState<string | null>(null);
@@ -974,31 +1229,59 @@ export default function PlannerPage() {
   const [detectedChildren, setDetectedChildren] = useState<boolean>(false);
   const [coPilotInput, setCoPilotInput] = useState<string>('');
   const [coPilotReply, setCoPilotReply] = useState<string | null>(null);
+  const [coPilotInsiderTip, setCoPilotInsiderTip] = useState<string | null>(null);
+  const [coPilotProactive, setCoPilotProactive] = useState<string | null>(null);
+  const [coPilotSuggestions, setCoPilotSuggestions] = useState<RealPlace[]>([]);
   const [isCoPilotBusy, setIsCoPilotBusy] = useState<boolean>(false);
   const [showTripDna, setShowTripDna] = useState<boolean>(false);
   const [showAiInsights, setShowAiInsights] = useState<boolean>(false);
   const [showCoPilot, setShowCoPilot] = useState<boolean>(false);
   const [isSaved, setIsSaved] = useState<boolean>(false);
-  const [savedCount, setSavedCount] = useState<number>(() => {
+  const [savedItinerariesList, setSavedItinerariesList] = useState<SavedItineraryRecord[]>([]);
+  const [savedCount, setSavedCount] = useState<number>(0);
+
+  const reloadSavedItineraries = () => {
     if (typeof window !== 'undefined') {
       try {
         const stored = localStorage.getItem('vista_saved_itineraries');
         if (stored) {
           const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed)) return parsed.length + 3;
+          if (Array.isArray(parsed)) {
+            setSavedItinerariesList(parsed);
+            setSavedCount(parsed.length);
+            return;
+          }
         }
       } catch {
         // ignore
       }
+      setSavedItinerariesList([]);
+      setSavedCount(0);
     }
-    return 3;
-  });
+  };
+
+  useEffect(() => {
+    reloadSavedItineraries();
+  }, []);
+
+  const openSavedDrawer = () => {
+    reloadSavedItineraries();
+    setShowSavedDrawer(true);
+  };
   const [openTipId, setOpenTipId] = useState<string | null>('act-1-1');
   const [activeOverflowId, setActiveOverflowId] = useState<string | null>(null);
 
   // Overlays
   const [showToast, setShowToast] = useState<string | null>(null);
   const [showBudgetModal, setShowBudgetModal] = useState<boolean>(false);
+  const [customBudgetRates, setCustomBudgetRates] = useState<{
+    roomRatePerNight?: number | null;
+    roomsNeeded?: number | null;
+    diningPerPersonDay?: number | null;
+    dailyVehicleRate?: number | null;
+    totalActPerPerson?: number | null;
+  }>({});
+  const [editingBudgetKey, setEditingBudgetKey] = useState<'activities' | 'dining' | 'transit' | 'lodging' | null>(null);
   const [showCreateTripModal, setShowCreateTripModal] = useState<boolean>(false);
   const [showSavedDrawer, setShowSavedDrawer] = useState<boolean>(false);
   const [replaceTargetActivityId, setReplaceTargetActivityId] = useState<string | null>(null);
@@ -1006,6 +1289,42 @@ export default function PlannerPage() {
   const [replaceBatchIndex, setReplaceBatchIndex] = useState<number>(0);
   const [showAddActivityModal, setShowAddActivityModal] = useState<boolean>(false);
   const [selectedMapPin, setSelectedMapPin] = useState<number>(1);
+  const [mapFocusPinTrigger, setMapFocusPinTrigger] = useState<number>(0);
+  const [mapViewMode, setMapViewMode] = useState<'day' | 'all'>('day');
+  const [dayRouteGeometries, setDayRouteGeometries] = useState<Record<number, { lat: number; lng: number }[]>>({});
+  const [dayRouteLegs, setDayRouteLegs] = useState<Record<number, { distanceKm: number; durationMin: number }[]>>({});
+  const [mapTravelMode, setMapTravelMode] = useState<'DRIVING' | 'MOTORBIKE' | 'WALKING'>('DRIVING');
+
+  // Section 9.1 — Internal Plan Source Signal & Admin Inspection Mode
+  const [hasAdminInspectPermission, setHasAdminInspectPermission] = useState<boolean>(false);
+  const [adminInspectMode, setAdminInspectMode] = useState<boolean>(false);
+  const [showSourcePopover, setShowSourcePopover] = useState<boolean>(false);
+  const [internalDiagnostics, setInternalDiagnostics] = useState<Record<string, any> | null>(null);
+
+  // Workbench interactive state: Pace, Replan Diff banner & Undo history
+  const [activePace, setActivePace] = useState<'RELAXED' | 'MODERATE' | 'INTENSIVE'>('MODERATE');
+  const [replanDiff, setReplanDiff] = useState<Record<string, any> | null>(null);
+  const [undoSnapshot, setUndoSnapshot] = useState<{ days: DayPlan[]; totalCost: number; diff: any } | null>(null);
+  const [isReplanLoading, setIsReplanLoading] = useState<boolean>(false);
+  const [planConflicts, setPlanConflicts] = useState<Record<string, any>[]>([]);
+  const [aiThinkingStep, setAiThinkingStep] = useState<number>(0);
+  const [rejectedDestinationIds, setRejectedDestinationIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const isInspectQuery = params.get('inspect') === '1' || params.get('admin') === '1';
+    const isAdminRole =
+      localStorage.getItem('vista_user_role') === 'ADMIN' ||
+      localStorage.getItem('vista_admin_inspect_allowed') === '1' ||
+      isInspectQuery;
+    if (isAdminRole) {
+      setHasAdminInspectPermission(true);
+      if (isInspectQuery || localStorage.getItem('vista_admin_inspect_mode') === '1') {
+        setAdminInspectMode(true);
+      }
+    }
+  }, []);
 
   // Modal form states
   const [newTripTitle, setNewTripTitle] = useState<string>('Chuyến đi Đà Nẵng 3N2Đ');
@@ -1014,10 +1333,455 @@ export default function PlannerPage() {
   const [newActCategory, setNewActCategory] = useState<string>('Tham quan');
   const [newActTime, setNewActTime] = useState<string>('14:00–15:30');
   const [newActCost, setNewActCost] = useState<string>('0');
+  const [addActMode, setAddActMode] = useState<'suggested' | 'custom'>('suggested');
+  const [addActSearchQuery, setAddActSearchQuery] = useState<string>('');
+  const [addActCategoryFilter, setAddActCategoryFilter] = useState<string>('all');
+  const [selectedSuggestedPlace, setSelectedSuggestedPlace] = useState<RealPlace | null>(null);
+  const [showActAutocomplete, setShowActAutocomplete] = useState<boolean>(false);
+
+  // AI Smart Prompt Natural Language Intent Parsing
+  const [smartPromptText, setSmartPromptText] = useState<string>('');
+  const [isParsingSmartPrompt, setIsParsingSmartPrompt] = useState<boolean>(false);
+
+  const isAiBusy = isGenerating || isParsingSmartPrompt || isReplanLoading || isCoPilotBusy;
+
+  useEffect(() => {
+    if (!isAiBusy) {
+      setAiThinkingStep(0);
+      return;
+    }
+    setAiThinkingStep(0);
+    const timer = setInterval(() => {
+      setAiThinkingStep((prev) => (prev < 3 ? prev + 1 : 3));
+    }, 340);
+    return () => clearInterval(timer);
+  }, [isAiBusy]);
+
+  const SMART_PROMPT_PRESETS = [
+    {
+      icon: '🌊',
+      label: 'Đà Nẵng 3N2Đ: Cặp đôi, hải sản & hoàng hôn biển',
+      text: 'Cặp đôi đi Đà Nẵng 3 ngày 2 đêm, thích ăn hải sản, check-in view biển và ngắm hoàng hôn, ngân sách vừa phải',
+    },
+    {
+      icon: '🏯',
+      label: 'Huế 2N1Đ: Có người lớn tuổi, nhịp độ thong thả',
+      text: 'Gia đình có bố mẹ 68 tuổi đi Huế 2 ngày 1 đêm, nhịp độ thong thả không leo trèo, thích ngắm sông Hương và di tích',
+    },
+    {
+      icon: '🏖️',
+      label: 'Phú Quốc 4N3Đ: Luxury, có trẻ nhỏ & safari',
+      text: 'Gia đình có 2 bé nhỏ đi Phú Quốc 4 ngày luxury, thích đi safari, bãi biển cát trắng, ẩm thực phong phú',
+    },
+    {
+      icon: '☕',
+      label: 'Hà Nội 1 ngày: Đáp 11:30 về 20:00, phố cổ & cafe',
+      text: 'Đi công tác kết hợp du lịch Hà Nội 1 ngày, đáp lúc 11:30 về lúc 20:00, muốn dạo phố cổ và thưởng thức cà phê trứng',
+    },
+  ];
 
   // Linked Trip State (Bidirectional Connection with /trips)
   const [linkedTripId, setLinkedTripId] = useState<string | null>(null);
   const [linkedTripTitle, setLinkedTripTitle] = useState<string | null>(null);
+  const isLoadedRef = useRef(false);
+
+  // ─── HERO CAROUSEL & SUGGESTED TEMPLATES (EMPTY STATE DESIGN) ──────────────
+  const [heroIndex, setHeroIndex] = useState<number>(0);
+
+  const HERO_FEATURED = useMemo(
+    () => [
+      {
+        province: 'Đà Nẵng',
+        countryTag: 'Việt Nam',
+        title: 'Đà Nẵng',
+        subtitle: 'đang chờ bạn khám phá',
+        image:
+          'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_golden_bridge.jpg',
+      },
+      {
+        province: 'Hà Nội',
+        countryTag: 'Việt Nam',
+        title: 'Hà Nội',
+        subtitle: 'nghìn năm văn hiến',
+        image:
+          'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/hanoi_real.jpg',
+      },
+      {
+        province: 'Phú Quốc',
+        countryTag: 'Việt Nam',
+        title: 'Phú Quốc',
+        subtitle: 'thiên đường biển ngọc',
+        image:
+          'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/phuquoc_beach.jpg',
+      },
+      {
+        province: 'Hội An',
+        countryTag: 'Việt Nam',
+        title: 'Hội An',
+        subtitle: 'phố cổ đèn lồng lung linh',
+        image:
+          'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/hoian_ancient_town.jpg',
+      },
+      {
+        province: 'Nha Trang (Khánh Hòa)',
+        countryTag: 'Việt Nam',
+        title: 'Nha Trang',
+        subtitle: 'Nhà thờ Núi · Chùa Long Sơn · Biển đảo & đặc sản vịnh ngọc',
+        image:
+          'https://statics.vinpearl.com/nha%20tho%20da%2C%20nha%20tho%20nui%20nha%20trang_1681984462.jpg',
+      },
+      {
+        province: 'Đà Lạt (Lâm Đồng)',
+        countryTag: 'Việt Nam',
+        title: 'Đà Lạt',
+        subtitle: 'Đồi chè Cầu Đất · Hồ Tuyền Lâm · Rừng thông sương mờ',
+        image:
+          'https://statics.vinpearl.com/doi-che-cau-dat-01_1688736872.jpg',
+      },
+      {
+        province: 'Thừa Thiên Huế',
+        countryTag: 'Việt Nam',
+        title: 'Cố đô Huế',
+        subtitle: 'Đại Nội · Chùa Thiên Mụ · Lăng Khải Định & Vịnh Lăng Cô',
+        image:
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/C%E1%BB%95ng_Ng%E1%BB%8D_M%C3%B4n_Hu%E1%BA%BF.jpg/800px-C%E1%BB%95ng_Ng%E1%BB%8D_M%C3%B4n_Hu%E1%BA%BF.jpg',
+      },
+      {
+        province: 'Sa Pa',
+        countryTag: 'Việt Nam',
+        title: 'Sa Pa',
+        subtitle: 'Đỉnh Fansipan · Bản Cát Cát · Sương mờ miền sơn cước',
+        image:
+          'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/sapa_real.jpg',
+      },
+    ],
+    []
+  );
+
+  // Active destination object
+  const activeDestObj = useMemo(() => {
+    return DESTINATION_LIST.find((d) => d.nameVi === destination || d.province === destination) || DESTINATION_LIST[0];
+  }, [destination]);
+
+  // Clean, short destination name without verbose province parenthesis (e.g. "Đà Lạt (Lâm Đồng)" -> "Đà Lạt")
+  const cleanDestName = useMemo(() => {
+    return destination.replace(/\s*\(.*?\)\s*/g, '').trim() || destination;
+  }, [destination]);
+
+  // Verified local landmarks for active destination (with real non-generic photos first)
+  const provinceRealPlaces = useMemo(() => {
+    const raw = getRealPlacesByProvince(destination);
+    return raw.filter(
+      (p) => p.image && !p.image.includes('location_map.svg') && !p.image.includes('relief_location_map.svg')
+    );
+  }, [destination]);
+
+  const activeHero = useMemo(() => {
+    if (heroIndex !== 0) return HERO_FEATURED[heroIndex % HERO_FEATURED.length];
+    const found = HERO_FEATURED.find(
+      (h) =>
+        h.province.toLowerCase() === destination.toLowerCase() ||
+        destination.toLowerCase().includes(h.province.toLowerCase())
+    );
+    if (found) return found;
+
+    const sightHighlights = provinceRealPlaces
+      .filter((p) => !p.category.toLowerCase().includes('ẩm thực') && !p.image.includes('unsplash.com'))
+      .slice(0, 3);
+    const fallbackHeroImg =
+      sightHighlights[0]?.image ||
+      provinceRealPlaces.find((p) => !p.image.includes('unsplash.com'))?.image ||
+      activeDestObj.photo;
+    const highlightNames = provinceRealPlaces.slice(0, 3).map((p) => p.name);
+    const dynamicSubtitle =
+      highlightNames.length >= 2
+        ? `Khám phá ${highlightNames.join(' · ')}`
+        : 'Hành trình bản địa chọn lọc đang chờ bạn khám phá';
+
+    return {
+      province: destination,
+      countryTag: 'Việt Nam',
+      title: cleanDestName,
+      subtitle: dynamicSubtitle,
+      image: fallbackHeroImg,
+    };
+  }, [destination, cleanDestName, heroIndex, HERO_FEATURED, activeDestObj, provinceRealPlaces]);
+
+  const handleNextHero = () => {
+    const next = (heroIndex + 1) % HERO_FEATURED.length;
+    setHeroIndex(next);
+    changeDestination(HERO_FEATURED[next].province);
+  };
+
+  const handlePrevHero = () => {
+    const prev = (heroIndex - 1 + HERO_FEATURED.length) % HERO_FEATURED.length;
+    setHeroIndex(prev);
+    changeDestination(HERO_FEATURED[prev].province);
+  };
+
+  // Realtime Weather from Open-Meteo API
+  const [realtimeWeather, setRealtimeWeather] = useState<RealtimeWeather | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadRealtimeWeather = async () => {
+      if (!activeDestObj || typeof activeDestObj.lat !== 'number' || typeof activeDestObj.lng !== 'number') return;
+      try {
+        const live = await fetchLiveWeatherByCoords(activeDestObj.lat, activeDestObj.lng, destination);
+        if (isMounted && live) {
+          setRealtimeWeather(live);
+        }
+      } catch (err) {
+        console.warn('Live weather lookup failed:', err);
+      }
+    };
+    void loadRealtimeWeather();
+    return () => {
+      isMounted = false;
+    };
+  }, [activeDestObj?.lat, activeDestObj?.lng, destination]);
+
+  // Suggested itinerary cards: Curated unique highlights & distinct photography for ALL 63 provinces
+  const suggestedCards = useMemo(() => {
+    const dLower = destination.toLowerCase();
+    if (dLower.includes('đà nẵng') || dLower.includes('danang')) {
+      return [
+        {
+          id: 'dn-1',
+          title: 'Đà Nẵng – Hội An – Bà Nà Hills',
+          subtitle: 'Cầu Vàng · Bán đảo Sơn Trà · Phố cổ đèn lồng',
+          themeBadge: '🏛️ Di sản & Biểu tượng',
+          duration: '3n2d',
+          durationBadge: '3N2Đ',
+          timeInfo: '3 ngày 2 đêm',
+          destInfo: 'Đà Nẵng',
+          image:
+            'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_real.jpg',
+          styles: ['beach', 'culture'],
+        },
+        {
+          id: 'dn-2',
+          title: 'Food Tour Chợ Hàn & Biển Mỹ Khê',
+          subtitle: 'Bún chả cá · Nhà thờ Con Gà · Ngắm cầu Rồng phun lửa',
+          themeBadge: '🍜 Ẩm thực & Biển',
+          duration: '2n1d',
+          durationBadge: '2N1Đ',
+          timeInfo: '2 ngày 1 đêm',
+          destInfo: 'Đà Nẵng',
+          image:
+            'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Da_Nang_Cathedral_2019.jpg/800px-Da_Nang_Cathedral_2019.jpg',
+          styles: ['culture', 'cuisine'],
+        },
+        {
+          id: 'dn-3',
+          title: 'Đà Nẵng – Ngũ Hành Sơn – Hội An',
+          subtitle: 'Ngũ Hành Sơn · Bảo tàng Chăm & hoàng hôn sông Hoài',
+          themeBadge: '🌿 Nghỉ dưỡng & Chill',
+          duration: '4n3d',
+          durationBadge: '4N3Đ',
+          timeInfo: '4 ngày 3 đêm',
+          destInfo: 'Đà Nẵng',
+          image:
+            'https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/My_Khe_Beach%2C_Da_Nang.jpg/800px-My_Khe_Beach%2C_Da_Nang.jpg',
+          styles: ['culture', 'beach'],
+        },
+      ];
+    }
+    if (dLower.includes('hà nội') || dLower.includes('hanoi')) {
+      return [
+        {
+          id: 'hn-1',
+          title: 'Hà Nội – Văn Miếu – Tràng An',
+          subtitle: 'Hồ Gươm · Văn Miếu Quốc Tử Giám · Di sản Tràng An',
+          themeBadge: '🏛️ Di sản ngàn năm',
+          duration: '3n2d',
+          durationBadge: '3N2Đ',
+          timeInfo: '3 ngày 2 đêm',
+          destInfo: 'Hà Nội',
+          image:
+            'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/ninhbinh_trangan.jpg',
+          styles: ['culture', 'nature'],
+        },
+        {
+          id: 'hn-2',
+          title: '36 Phố Phường & Cà phê Trứng Phố Cổ',
+          subtitle: 'Lăng Bác · Chùa Một Cột · Food Tour Phố Cổ',
+          themeBadge: '☕ Phố cổ & Ẩm thực',
+          duration: '2n1d',
+          durationBadge: '2N1Đ',
+          timeInfo: '2 ngày 1 đêm',
+          destInfo: 'Hà Nội',
+          image:
+            'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/hanoi_real.jpg',
+          styles: ['culture', 'cuisine'],
+        },
+        {
+          id: 'hn-3',
+          title: 'Hà Nội – Vịnh Hạ Long – Yên Tử',
+          subtitle: 'Thủ đô · Du thuyền Vịnh Hạ Long & Non thiêng Yên Tử',
+          themeBadge: '⛵ Kỳ quan & Tâm linh',
+          duration: '4n3d',
+          durationBadge: '4N3Đ',
+          timeInfo: '4 ngày 3 đêm',
+          destInfo: 'Hà Nội',
+          image:
+            'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/halong_bay.jpg',
+          styles: ['nature', 'culture'],
+        },
+      ];
+    }
+    if (dLower.includes('phú quốc') || dLower.includes('phuquoc')) {
+      return [
+        {
+          id: 'pq-1',
+          title: 'Thiên đường biển đảo & Sunset Sanato',
+          subtitle: 'Bãi Sao · Hoàng hôn Sunset Sanato · Chợ đêm Dương Đông',
+          themeBadge: '🌅 Hoàng hôn & Biển',
+          duration: '3n2d',
+          durationBadge: '3N2Đ',
+          timeInfo: '3 ngày 2 đêm',
+          destInfo: 'Phú Quốc (Kiên Giang)',
+          image:
+            'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/phuquoc_beach.jpg',
+          styles: ['beach', 'photo'],
+        },
+        {
+          id: 'pq-2',
+          title: 'Grand World & Vinpearl Safari cuối tuần',
+          subtitle: 'Thành phố không ngủ · Vườn thú mở & ẩm thực hải sản',
+          themeBadge: '🎡 Giải trí & Gia đình',
+          duration: '2n1d',
+          durationBadge: '2N1Đ',
+          timeInfo: '2 ngày 1 đêm',
+          destInfo: 'Phú Quốc (Kiên Giang)',
+          image:
+            'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/phuquoc_real.jpg',
+          styles: ['entertainment', 'beach'],
+        },
+        {
+          id: 'pq-3',
+          title: 'Nam đảo · Cáp treo Hòn Thơm & Bãi Khem',
+          subtitle: 'Cáp treo vượt biển · Lặn ngắm san hô & nghỉ dưỡng',
+          themeBadge: '🏝️ Tour 4 Đảo',
+          duration: '4n3d',
+          durationBadge: '4N3Đ',
+          timeInfo: '4 ngày 3 đêm',
+          destInfo: 'Phú Quốc (Kiên Giang)',
+          image:
+            'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/phuquoc_sunset_sanato.jpg',
+          styles: ['beach', 'entertainment'],
+        },
+      ];
+    }
+
+    // Dynamic curated builder for ALL remaining 60 provinces: 3 unique photos & 3 distinct local themes
+    const isFoodCat = (cat: string, name: string) => {
+      const t = `${cat} ${name}`.toLowerCase();
+      return t.includes('ẩm thực') || t.includes('chợ') || t.includes('quán') || t.includes('nem') || t.includes('bún') || t.includes('cơm') || t.includes('bánh');
+    };
+    const isGenuineImg = (url?: string) =>
+      Boolean(url && !url.includes('unsplash.com') && !url.includes('location_map.svg') && !url.includes('danang_real.jpg'));
+
+    const sightPlaces = provinceRealPlaces.filter((p) => !isFoodCat(p.category, p.name));
+    const foodPlaces = provinceRealPlaces.filter((p) => isFoodCat(p.category, p.name));
+
+    const usedImgs = new Set<string>();
+    const fallbackGallery = [
+      'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_panoramic_day.jpg',
+      'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/hoian_ancient_town.jpg',
+      'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_lungcu_hero.jpg',
+      'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/hue_real.jpg',
+    ];
+
+    const pickUniqueImg = (candidates: RealPlace[]): string => {
+      for (const p of candidates) {
+        if (isGenuineImg(p.image) && !usedImgs.has(p.image)) {
+          usedImgs.add(p.image);
+          return p.image;
+        }
+      }
+      if (activeDestObj.photo && !usedImgs.has(activeDestObj.photo) && !activeDestObj.photo.includes('danang_real.jpg')) {
+        usedImgs.add(activeDestObj.photo);
+        return activeDestObj.photo;
+      }
+      for (const p of candidates) {
+        if (p.image && !usedImgs.has(p.image)) {
+          usedImgs.add(p.image);
+          return p.image;
+        }
+      }
+      for (const fb of fallbackGallery) {
+        if (!usedImgs.has(fb)) {
+          usedImgs.add(fb);
+          return fb;
+        }
+      }
+      return fallbackGallery[0];
+    };
+
+    const s1 = sightPlaces[0]?.name || cleanDestName;
+    const s2 = sightPlaces[1]?.name;
+    const s3 = sightPlaces[2]?.name;
+    const f1 = foodPlaces[0]?.name || `Ẩm thực ${cleanDestName}`;
+    const f2 = foodPlaces[1]?.name;
+
+    const img1 = pickUniqueImg([sightPlaces[0], sightPlaces[1], ...provinceRealPlaces].filter(Boolean));
+    const img2 = pickUniqueImg([foodPlaces[0], foodPlaces[1], sightPlaces[1], ...provinceRealPlaces].filter(Boolean));
+    const img3 = pickUniqueImg([sightPlaces[2], sightPlaces[1], sightPlaces[0], ...provinceRealPlaces].filter(Boolean));
+
+    return [
+      {
+        id: 'prov-1',
+        title: s2 ? `${s1} · ${s2}` : `Biểu tượng ${s1} & Khám phá ${cleanDestName}`,
+        subtitle: `Tham quan di tích nổi tiếng · Check-in ${s1} & đặc sản trưa`,
+        themeBadge: '🏛️ Biểu tượng & Văn hóa',
+        duration: '3n2d',
+        durationBadge: '3N2Đ',
+        timeInfo: '3 ngày 2 đêm',
+        destInfo: destination,
+        image: img1,
+        styles: ['culture', 'nature'],
+      },
+      {
+        id: 'prov-2',
+        title: f2 ? `Food Tour ${f1} · ${f2}` : `Food Tour ${f1} & Phố đêm ${cleanDestName}`,
+        subtitle: `Thưởng thức đặc sản bản địa tại ${f1} kết hợp dạo chơi cuối tuần`,
+        themeBadge: '🍜 Food Tour Bản Địa',
+        duration: '2n1d',
+        durationBadge: '2N1Đ',
+        timeInfo: '2 ngày 1 đêm',
+        destInfo: destination,
+        image: img2,
+        styles: ['cuisine', 'culture'],
+      },
+      {
+        id: 'prov-3',
+        title: s3 ? `${s3} · Nghỉ dưỡng & Chill ${cleanDestName}` : `Nhịp chậm & Góc check-in đẹp tại ${cleanDestName}`,
+        subtitle: `Lịch trình thảnh thơi, cà phê chiều & góc sống ảo ít người biết`,
+        themeBadge: '🌿 Thảnh thơi & Check-in',
+        duration: '4n3d',
+        durationBadge: '4N3Đ',
+        timeInfo: '4 ngày 3 đêm',
+        destInfo: destination,
+        image: img3,
+        styles: ['nature', 'photo'],
+      },
+    ];
+  }, [destination, cleanDestName, activeDestObj, provinceRealPlaces]);
+
+  const handleApplyTemplate = (card: typeof suggestedCards[0]) => {
+    setDestination(card.destInfo);
+    setDuration(card.duration);
+    if (card.styles) setSelectedStyles(card.styles);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('vista_selected_province', card.destInfo);
+      } catch {
+        // ignore
+      }
+    }
+    handleGenerateClick();
+  };
 
   // Handle URL params on mount
   useEffect(() => {
@@ -1027,6 +1791,22 @@ export default function PlannerPage() {
         const params = new URLSearchParams(window.location.search);
         const tripIdParam = params.get('tripId');
         const destParam = params.get('dest') || params.get('destination');
+        const tabParam = params.get('tab');
+        if (tabParam && ['timeline', 'map', 'budget', 'checklist'].includes(tabParam)) {
+          setActiveMainTab(tabParam as any);
+        }
+
+        // Single source of truth for destination: URL param > localStorage
+        let resolvedProvince = destParam;
+        if (!resolvedProvince && typeof window !== 'undefined') {
+          resolvedProvince = localStorage.getItem('vista_selected_province');
+        }
+        if (resolvedProvince && resolvedProvince.trim()) {
+          setDestination(resolvedProvince.trim());
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('vista_selected_province', resolvedProvince.trim());
+          }
+        }
 
         // Check if loading an existing trip
         if (tripIdParam) {
@@ -1074,6 +1854,7 @@ export default function PlannerPage() {
                 }));
                 setItineraryDays(persistedDays);
                 setDuration(`${Math.min(persistedDays.length, 5)}n${Math.max(1, persistedDays.length - 1)}d`);
+                setHasPlanGenerated(true);
                 setAiGenerationMetadata({ provider: 'offline', fallbackUsed: false });
               }
             }
@@ -1091,6 +1872,7 @@ export default function PlannerPage() {
               }
               if (foundCustom.itineraryDays && foundCustom.itineraryDays.length > 0) {
                 setItineraryDays(foundCustom.itineraryDays);
+                setHasPlanGenerated(true);
                 const len = foundCustom.itineraryDays.length;
                 if (len <= 2) setDuration('2n1d');
                 else if (len === 3) setDuration('3n2d');
@@ -1102,15 +1884,18 @@ export default function PlannerPage() {
               setLinkedTripTitle('Hành trình Đà Nẵng – Hội An 2026');
               setDestination('Đà Nẵng');
               setItineraryDays(INITIAL_DANANG_DAYS);
+              setHasPlanGenerated(true);
             } else if (tripIdParam === 'trip-phuquoc-2026') {
               setLinkedTripId('trip-phuquoc-2026');
               setLinkedTripTitle('Nghỉ dưỡng hoàng hôn Phú Quốc');
               setDestination('Phú Quốc');
               setItineraryDays(INITIAL_PHUQUOC_DAYS);
+              setHasPlanGenerated(true);
             } else if (tripIdParam === 'trip-hagiang-2026') {
               setLinkedTripId('trip-hagiang-2026');
               setLinkedTripTitle('Chinh phục Hà Giang – Mèo Vạc');
               setDestination('Hà Giang');
+              setHasPlanGenerated(true);
             }
           } catch {
             // ignore
@@ -1125,30 +1910,98 @@ export default function PlannerPage() {
           if (matched) {
             setDestination(matched.nameVi);
             setNewTripTitle(`Chuyến đi ${matched.nameVi} 3N2Đ`);
-            if (matched.id === 'phuquoc') {
-              setItineraryDays(INITIAL_PHUQUOC_DAYS);
-            } else if (matched.id === 'danang') {
-              setItineraryDays(INITIAL_DANANG_DAYS);
-            } else {
-              const plan = generateDistinctDayPlan(
-                matched.nameVi,
-                3,
-                new Date().getHours() >= 20,
-                'standard',
-                ['beach', 'cuisine'],
-                matched.lat,
-                matched.lng,
-                matched.photo
-              );
-              setItineraryDays(plan);
-            }
-            setActiveDay(1);
+            setHasPlanGenerated(false);
+            setItineraryDays([]);
           }
         }
+
+        // Clean initial state on entry:
+        // Do not auto-display a pre-generated plan. If an old active plan existed in localStorage,
+        // safely back it up into history so the user can review it via the History Drawer anytime.
+        if (!tripIdParam) {
+          try {
+            const savedPlannerState = localStorage.getItem('vista_active_planner_state');
+            if (savedPlannerState) {
+              const parsed = JSON.parse(savedPlannerState);
+              if (
+                parsed &&
+                parsed.destination &&
+                Array.isArray(parsed.itineraryDays) &&
+                parsed.itineraryDays.length > 0 &&
+                parsed.hasPlanGenerated
+              ) {
+                savePlanToHistory({
+                  destination: parsed.destination,
+                  title: parsed.newTripTitle || `${parsed.destination}, đi là mê`,
+                  totalDays: parsed.itineraryDays.length,
+                  durationLabel: parsed.duration || `${parsed.itineraryDays.length}n${Math.max(1, parsed.itineraryDays.length - 1)}d`,
+                  startDate: parsed.startDate || getTodayIso(),
+                  peopleCount: parsed.peopleCount || 2,
+                  budgetTier: parsed.budgetTier || 'standard',
+                  totalEstimatedCost: 3000000,
+                  itineraryDays: parsed.itineraryDays,
+                  aiMetadata: parsed.aiGenerationMetadata,
+                  warnings: [],
+                  selectedStyles: parsed.selectedStyles,
+                  wishesText: parsed.wishesText,
+                });
+                setPlanHistoryList(getPlanHistory());
+                localStorage.removeItem('vista_active_planner_state');
+              }
+            }
+          } catch (e) {
+            console.warn('Migration of legacy active plan:', e);
+          }
+        }
+        isLoadedRef.current = true;
       }
     };
     void initParams();
   }, []);
+
+  // Auto-persist planner state so switching tabs/pages never loses user's current destination or itinerary
+  useEffect(() => {
+    if (!isLoadedRef.current || typeof window === 'undefined') return;
+    try {
+      const stateToPersist = {
+        destination,
+        destSearchQuery,
+        startDate,
+        duration,
+        selectedStyles,
+        peopleCount,
+        budgetTier,
+        wishesText,
+        itineraryDays,
+        hasPlanGenerated,
+        activeDay,
+        newTripTitle,
+        linkedTripId,
+        linkedTripTitle,
+        aiGenerationMetadata,
+        updatedAt: Date.now(),
+      };
+      localStorage.setItem('vista_active_planner_state', JSON.stringify(stateToPersist));
+    } catch {
+      // ignore
+    }
+  }, [
+    destination,
+    destSearchQuery,
+    startDate,
+    duration,
+    selectedStyles,
+    peopleCount,
+    budgetTier,
+    wishesText,
+    itineraryDays,
+    hasPlanGenerated,
+    activeDay,
+    newTripTitle,
+    linkedTripId,
+    linkedTripTitle,
+    aiGenerationMetadata,
+  ]);
 
   const triggerToast = (msg: string) => {
     setShowToast(msg);
@@ -1179,46 +2032,55 @@ export default function PlannerPage() {
     const nights = Math.max(1, daysCount - 1);
 
     // 1. Activities & Tickets (vé tham quan, trải nghiệm)
-    let totalActPerPerson = 0;
+    let computedActPerPerson = 0;
     itineraryDays.forEach((day) => {
       day.activities.forEach((act) => {
-        totalActPerPerson += act.costVnd || 0;
+        computedActPerPerson += act.costVnd || 0;
       });
     });
+    const totalActPerPerson = customBudgetRates.totalActPerPerson ?? computedActPerPerson;
     const totalActivities = totalActPerPerson * count;
 
     // 2. Dining & Food (ăn uống đặc sản theo ngày)
     // economy: 180k/người/ngày, standard: 350k/người/ngày, luxury: 750k/người/ngày
-    const diningPerPersonDay =
+    const defaultDiningPerPersonDay =
       budgetTier === 'economy' ? 180000 : budgetTier === 'luxury' ? 750000 : 350000;
+    const diningPerPersonDay = customBudgetRates.diningPerPersonDay ?? defaultDiningPerPersonDay;
     const totalDining = diningPerPersonDay * count * daysCount;
 
     // 3. Lodging (Khách sạn / Homestay) - Quy chuẩn 2 người / phòng đôi
-    const roomsNeeded = Math.ceil(count / 2);
-    const roomRatePerNight =
+    const defaultRoomsNeeded = Math.ceil(count / 2);
+    const roomsNeeded = Math.max(1, customBudgetRates.roomsNeeded ?? defaultRoomsNeeded);
+    const defaultRoomRatePerNight =
       budgetTier === 'economy' ? 450000 : budgetTier === 'luxury' ? 2200000 : 850000;
+    const roomRatePerNight = customBudgetRates.roomRatePerNight ?? defaultRoomRatePerNight;
     const totalLodging = roomsNeeded * roomRatePerNight * nights;
 
     // 4. Local Transit (Phương tiện di chuyển nội tỉnh theo quy mô nhóm)
     let vehicleDescription = '';
-    let dailyVehicleRate = 0;
+    let defaultVehicleRate = 0;
     if (count <= 2) {
       vehicleDescription = 'Xe máy (1 xe)';
-      dailyVehicleRate = 160000;
+      defaultVehicleRate = 160000;
     } else if (count <= 4) {
       vehicleDescription = 'Xe ô tô 4-5 chỗ tự lái/taxi';
-      dailyVehicleRate = 750000;
+      defaultVehicleRate = 750000;
     } else if (count <= 7) {
       vehicleDescription = 'Xe du lịch 7 chỗ';
-      dailyVehicleRate = 1100000;
+      defaultVehicleRate = 1100000;
     } else if (count <= 16) {
       vehicleDescription = 'Xe du lịch 16 chỗ (Ford Transit)';
-      dailyVehicleRate = 1800000;
+      defaultVehicleRate = 1800000;
     } else {
       vehicleDescription = 'Xe du lịch 29-35 chỗ chuyên tuyến';
-      dailyVehicleRate = 2600000;
+      defaultVehicleRate = 2600000;
     }
+    const dailyVehicleRate = customBudgetRates.dailyVehicleRate ?? defaultVehicleRate;
     const totalLocalTransport = dailyVehicleRate * daysCount;
+
+    const hasCustomRates = Object.values(customBudgetRates).some(
+      (v) => v !== null && v !== undefined
+    );
 
     // Baseline Total On-Site Cost
     const totalBaseline = totalActivities + totalDining + totalLodging + totalLocalTransport;
@@ -1279,8 +2141,14 @@ export default function PlannerPage() {
       weekendSurchargeMax: Math.round(totalLodging * 0.35),
       specialtyUpgradePerPerson: budgetTier === 'economy' ? 120000 : 250000,
       contingencyGroup: Math.round(totalBaseline * 0.08),
+      hasCustomRates,
+      defaultRoomRatePerNight,
+      defaultRoomsNeeded,
+      defaultDiningPerPersonDay,
+      defaultVehicleRate,
+      computedActPerPerson,
     };
-  }, [peopleCount, daysCount, budgetTier, itineraryDays, destination]);
+  }, [peopleCount, daysCount, budgetTier, itineraryDays, destination, customBudgetRates]);
 
   // Total Estimated Cost Calculation (Group baseline)
   const totalEstimatedCost = useMemo(() => {
@@ -1334,35 +2202,355 @@ export default function PlannerPage() {
 
   // Active day plan
   const currentDayPlan = useMemo(() => {
-    return itineraryDays.find((d) => d.dayNumber === activeDay) || itineraryDays[0];
+    if (!itineraryDays || itineraryDays.length === 0) return null;
+    return itineraryDays.find((d) => d.dayNumber === activeDay) || itineraryDays[0] || null;
   }, [itineraryDays, activeDay]);
 
-  // Day subtotal calculation
-  const currentDaySubtotal = useMemo(() => {
-    if (!currentDayPlan) return 1450000;
-    let actSum = 0;
-    currentDayPlan.activities.forEach((a) => (actSum += (a.costVnd || 0) * budgetBreakdown.count));
-    const dailyDining = budgetBreakdown.diningPerPersonDay * budgetBreakdown.count;
+  // Day subtotal & transparent component breakdown calculation
+  const currentDayBreakdown = useMemo(() => {
+    const count = budgetBreakdown.count;
+    const dailyDining = budgetBreakdown.diningPerPersonDay * count;
     const transport = budgetBreakdown.dailyVehicleRate;
     const stayAlloc = Math.round(budgetBreakdown.totalLodging / Math.max(1, daysCount));
-    return actSum + dailyDining + transport + stayAlloc;
+    if (!currentDayPlan || !currentDayPlan.activities) {
+      return {
+        ticketsGroup: 0,
+        dailyDining,
+        transport,
+        stayAlloc,
+        total: dailyDining + transport + stayAlloc,
+      };
+    }
+    let ticketsGroup = 0;
+    currentDayPlan.activities.forEach((a) => {
+      ticketsGroup += (a.costVnd || 0) * count;
+    });
+    return {
+      ticketsGroup,
+      dailyDining,
+      transport,
+      stayAlloc,
+      total: ticketsGroup + dailyDining + transport + stayAlloc,
+    };
   }, [currentDayPlan, budgetBreakdown, daysCount]);
 
-  // Destination filtered list
+  const currentDaySubtotal = currentDayBreakdown.total;
+
+  // Helper: parse "HH:MM" to minutes since midnight
+  const parseHhMmToMinutes = (hhmm: string, fallbackMin: number): number => {
+    const cleaned = (hhmm || '').trim();
+    const m = cleaned.match(/^(\d{1,2}):(\d{2})/);
+    if (!m) return fallbackMin;
+    return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+  };
+
+  const formatMinutesToHhMm = (totalMin: number): string => {
+    const clamped = Math.max(0, Math.min(23 * 60 + 59, Math.round(totalMin)));
+    const h = Math.floor(clamped / 60);
+    const m = clamped % 60;
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  };
+
+  // Helper: compute road distance (km) between two activities
+  const computeLegDistanceKm = (a: Activity, b: Activity): number => {
+    if (a.latitude && a.longitude && b.latitude && b.longitude) {
+      const R = 6371;
+      const dLat = ((b.latitude - a.latitude) * Math.PI) / 180;
+      const dLon = ((b.longitude - a.longitude) * Math.PI) / 180;
+      const hav =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos((a.latitude * Math.PI) / 180) *
+          Math.cos((b.latitude * Math.PI) / 180) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(hav), Math.sqrt(1 - hav));
+      const roadKm = R * c * 1.35;
+      return Math.max(0.4, Math.round(roadKm * 10) / 10);
+    }
+    return 1.8;
+  };
+
+  // Toggle Locked status for an activity
+  const toggleActivityLock = (actId: string) => {
+    setItineraryDays((prev) =>
+      prev.map((d) => {
+        if (d.dayNumber !== activeDay) return d;
+        return {
+          ...d,
+          activities: d.activities.map((a) => {
+            if (a.id === actId) {
+              const nextLocked = !a.isLocked;
+              triggerToast(nextLocked ? `🔒 Đã khóa mốc thời gian: ${a.title}` : `🔓 Đã mở khóa mốc thời gian: ${a.title}`);
+              return { ...a, isLocked: nextLocked };
+            }
+            return a;
+          }),
+        };
+      })
+    );
+  };
+
+  // Structured Replan through Backend API with Undo support
+  const executeStructuredReplan = async (
+    instructionText: string,
+    actionPayload?: { action: string; [key: string]: any }
+  ) => {
+    if (!currentDayPlan) return;
+    setIsReplanLoading(true);
+
+    // Save snapshot for 1-click Undo
+    setUndoSnapshot({
+      days: JSON.parse(JSON.stringify(itineraryDays)),
+      totalCost: totalEstimatedCost,
+      diff: replanDiff,
+    });
+
+    try {
+      const [response] = await Promise.all([
+        fetch('/api/ai/replan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(adminInspectMode ? { 'X-Admin-Inspect': 'true' } : {}),
+          },
+          body: JSON.stringify({
+            plan: {
+              destinationProvince: destination,
+              totalDays: itineraryDays.length,
+              peopleCount: peopleCount,
+              budgetTier: budgetTier,
+              pace: activePace,
+              estimatedTotalCost: totalEstimatedCost,
+              internalDiagnostics: internalDiagnostics,
+              days: itineraryDays,
+            },
+            instruction: instructionText,
+            constraints: {
+              target_day: activeDay,
+              pace: activePace,
+              has_elderly: detectedElderly,
+              has_children: detectedChildren,
+              start_date: startDate,
+              arrival_time: detectedArrivalTime,
+              departure_time: detectedDepartureTime,
+              ...(actionPayload || {}),
+            },
+            includeInternalDiagnostics: adminInspectMode,
+          }),
+        }),
+        new Promise((resolve) => setTimeout(resolve, 950)),
+      ]);
+
+      if (!response.ok) {
+        throw new Error(`Replan failed with status ${response.status}`);
+      }
+
+      const resData = await response.json();
+      if (resData.days && Array.isArray(resData.days)) {
+        const realPlacesForDest = getRealPlacesByProvince(destination);
+        const mappedDays: DayPlan[] = resData.days.map((d: any) => ({
+          dayNumber: d.dayNumber,
+          dateStr: formatVietnameseDateStr(startDate, (d.dayNumber || 1) - 1),
+          title: d.title || `Ngày ${d.dayNumber}`,
+          dayRationale: d.dayRationale || '',
+          dayStatus: d.dayStatus || 'ACTIVE',
+          statusReason: d.statusReason || null,
+          departureInfo: d.departureInfo || null,
+          activities: (d.activities || []).map((a: any, actIdx: number) => {
+            const timeRangeStr = `${a.startTime || '08:30'}–${a.endTime || '10:00'}`;
+            const titleStr = String(a.destinationName || '').toLowerCase();
+            const matchedP = realPlacesForDest.find((p) => {
+              const pName = p.name.toLowerCase();
+              return pName.includes(titleStr) || titleStr.includes(pName);
+            });
+            return {
+              id: a.destinationId,
+              timeSlot: a.timeSlot,
+              timeRange: timeRangeStr,
+              category: a.category || 'Tham quan',
+              title: a.destinationName,
+              description: a.note || '',
+              location: `${destination}, Việt Nam`,
+              costVnd: a.estimatedCost ?? 0,
+              costLabel: a.costLabel || '0 VND',
+              latitude: typeof a.latitude === 'number' ? a.latitude : matchedP?.latitude,
+              longitude: typeof a.longitude === 'number' ? a.longitude : matchedP?.longitude,
+              photoUrl: pickAuthenticPlacePhoto(
+                a.photoUrl || matchedP?.image,
+                realPlacesForDest,
+                (d.dayNumber || 1) * 5 + actIdx,
+                activeDestObj.photo
+              ),
+              tip: a.tip || '',
+              durationMin: a.durationMin,
+              waitTimeMin: a.waitTimeMin,
+              travelDurationFromPreviousMinutes: a.travelDurationFromPreviousMinutes,
+              travelDistanceKm: a.travelDistanceKm,
+              transportMode: a.transportMode,
+              bufferMinutes: a.bufferMinutes,
+              openingHoursStatus: a.openingHoursStatus,
+              isLocked: a.isLocked,
+              isMustVisit: a.isMustVisit,
+              dataConfidence: a.dataConfidence,
+              rainBackupSuggestion: a.rainBackupSuggestion || null,
+              realtimeStatus: a.realtimeStatus || 'Dự kiến mở lúc bạn đến',
+              isOpenRealtime: true,
+            };
+          }),
+        }));
+
+        setItineraryDays(mappedDays);
+        if (resData.pace === 'RELAXED' || resData.pace === 'MODERATE' || resData.pace === 'INTENSIVE') {
+          setActivePace(resData.pace);
+        }
+        if (resData.warnings && Array.isArray(resData.warnings)) {
+          setPlanWarnings(resData.warnings);
+        }
+        if (resData.conflicts && Array.isArray(resData.conflicts)) {
+          setPlanConflicts(resData.conflicts);
+        } else {
+          setPlanConflicts([]);
+        }
+        if (resData.replanDiff) {
+          setReplanDiff(resData.replanDiff);
+        }
+        if (resData.internalDiagnostics) {
+          setInternalDiagnostics(resData.internalDiagnostics);
+        }
+        const actionMsg = actionPayload?.action === 'CHANGE_PACE'
+          ? '✨ Đã cập nhật nhịp độ toàn chuyến đi!'
+          : `✨ AI Co-Pilot: Lịch trình Ngày ${activeDay} đã được tính toán lại thành công!`;
+        triggerToast(actionMsg);
+      }
+    } catch (err: any) {
+      console.error('Replan error:', err);
+      triggerToast(`⚠️ Không thể kết nối bộ lập lịch: ${err.message || err}`);
+    } finally {
+      setIsReplanLoading(false);
+    }
+  };
+
+  const handleUndoReplan = () => {
+    if (!undoSnapshot) return;
+    setItineraryDays(undoSnapshot.days);
+    setReplanDiff(undoSnapshot.diff);
+    setUndoSnapshot(null);
+    triggerToast('↩️ Đã hoàn tác về phiên bản trước đó!');
+  };
+
+  // Reorder activity up/down and dynamically recalculate arrival/departure times & leg transfers
+  const handleMoveActivityOrder = (actIdx: number, direction: 'up' | 'down') => {
+    if (!currentDayPlan) return;
+    const targetIdx = direction === 'up' ? actIdx - 1 : actIdx + 1;
+    if (targetIdx < 0 || targetIdx >= currentDayPlan.activities.length) return;
+
+    // Send structured action REORDER_STOP to backend replanner
+    executeStructuredReplan(
+      `Đổi thứ tự điểm thứ ${actIdx + 1} sang vị trí ${targetIdx + 1} Ngày ${activeDay}`,
+      { action: 'REORDER_STOP', from_index: actIdx, to_index: targetIdx }
+    );
+  };
+
+  // Schedule-aware opening status (replaces confusing wall-clock "Đang mở cửa" for future dates)
+  const getScheduleOpeningInfo = (act: Activity, startTime: string, endTime: string) => {
+    const titleLower = (act.title || '').toLowerCase();
+    const catLower = (act.category || '').toLowerCase();
+    const rawRealtime = act.realtimeStatus || '';
+
+    // Special exterior-only / renovation notice
+    if (titleLower.includes('nhà thờ đức bà')) {
+      return {
+        text: `Tham quan bên ngoài · Mở cả ngày (Bên trong đang trùng tu)`,
+        color: '#0369A1',
+        bg: '#F0F9FF',
+        border: '#BAE6FD',
+        dot: '#0284C7',
+      };
+    }
+
+    // 24/24 open public spaces
+    if (
+      rawRealtime.includes('24/24') ||
+      titleLower.includes('phố đi bộ') ||
+      titleLower.includes('bãi biển') ||
+      titleLower.includes('cầu ') ||
+      titleLower.includes('bến bạch đằng') ||
+      titleLower.includes('hồ hoàn kiếm')
+    ) {
+      return {
+        text: `Không gian mở 24/24 · Lý tưởng khung ${startTime}–${endTime}`,
+        color: '#059669',
+        bg: '#ECFDF5',
+        border: '#A7F3D0',
+        dot: '#10B981',
+      };
+    }
+
+    if (act.dataConfidence === 'UNVERIFIED_HOURS') {
+      return {
+        text: `Dự kiến ghé ${startTime}–${endTime} (Giờ mở cửa cần kiểm tra trước)`,
+        color: '#B45309',
+        bg: '#FFFBEB',
+        border: '#FDE68A',
+        dot: '#F59E0B',
+      };
+    }
+
+    // Extract closing time if present in rawRealtime (e.g. "Đang mở cửa (Đóng lúc 18:00)" or "Đã đóng cửa · Mở lại 07:30")
+    const closeMatch = rawRealtime.match(/Đóng lúc\s*(\d{1,2}:\d{2})/i);
+    const closeTimeStr = closeMatch ? closeMatch[1] : catLower.includes('ẩm thực') || catLower.includes('chợ') ? '22:00' : '18:00';
+
+    return {
+      text: `Dự kiến mở lúc bạn đến (${startTime}–${endTime} · Đóng lúc ${closeTimeStr})`,
+      color: '#059669',
+      bg: '#ECFDF5',
+      border: '#A7F3D0',
+      dot: '#10B981',
+    };
+  };
+
+  const totalDayDistanceKm = useMemo(() => {
+    if (!currentDayPlan || !currentDayPlan.activities || currentDayPlan.activities.length <= 1) return '2,5';
+    let total = 0;
+    for (let i = 1; i < currentDayPlan.activities.length; i++) {
+      total += computeLegDistanceKm(currentDayPlan.activities[i - 1], currentDayPlan.activities[i]);
+    }
+    return (Math.round(total * 10) / 10).toLocaleString('vi-VN');
+  }, [currentDayPlan]);
+
+  // Destination filtered list with intelligent Vietnamese diacritic matching
   const filteredDestinations = useMemo(() => {
     if (!destSearchQuery.trim()) return DESTINATION_LIST;
-    return DESTINATION_LIST.filter((d) =>
-      d.nameVi.toLowerCase().includes(destSearchQuery.toLowerCase())
-    );
+    return DESTINATION_LIST.filter((d) => matchProvince(destSearchQuery, d));
   }, [destSearchQuery]);
 
-  // Active destination object
-  const activeDestObj = useMemo(() => {
-    return DESTINATION_LIST.find((d) => d.nameVi === destination) || DESTINATION_LIST[0];
-  }, [destination]);
-
   // Map markers for active day (T5)
+  const DAY_ROUTE_COLORS = ['#0284C7', '#059669', '#D97706', '#7C3AED', '#DB2777', '#0D9488', '#DC2626'];
+
   const mapMarkers: DestinationMarker[] = useMemo(() => {
+    if (mapViewMode === 'all' && itineraryDays.length > 0) {
+      const allMarkers: DestinationMarker[] = [];
+      itineraryDays.forEach((d) => {
+        (d.activities || []).forEach((act, idx) => {
+          allMarkers.push({
+            id: `${d.dayNumber}::${act.id}`,
+            name: act.title,
+            province: destination,
+            category: act.category,
+            latitude: act.latitude || (activeDestObj.lat + Math.sin(d.dayNumber * 1.8 + idx * 1.2) * 0.02),
+            longitude: act.longitude || (activeDestObj.lng + Math.cos(d.dayNumber * 1.8 + idx * 1.2) * 0.02),
+            description: act.description,
+            priceMin: act.costVnd || 0,
+            priceMax: act.costVnd || 0,
+            openingHours: '08:00 - 22:00',
+            sourceUrl: '',
+            thumbnailUrl: act.photoUrl,
+          });
+        });
+      });
+      return allMarkers;
+    }
+    if (!currentDayPlan || !currentDayPlan.activities || currentDayPlan.activities.length === 0) return [];
     return currentDayPlan.activities.map((act, idx) => ({
       id: act.id,
       name: act.title,
@@ -1377,14 +2565,200 @@ export default function PlannerPage() {
       sourceUrl: '',
       thumbnailUrl: act.photoUrl,
     }));
-  }, [currentDayPlan, destination, activeDestObj, activeDay]);
+  }, [mapViewMode, itineraryDays, currentDayPlan, destination, activeDestObj, activeDay]);
+
+  // Fetch OSRM road route geometries for each day when switching to Map tab or changing travel mode
+  useEffect(() => {
+    if (activeMainTab !== 'map' || !itineraryDays || itineraryDays.length === 0) return;
+    let cancelled = false;
+
+    const loadRoutes = async () => {
+      const nextGeoms: Record<number, { lat: number; lng: number }[]> = {};
+      const nextLegs: Record<number, { distanceKm: number; durationMin: number }[]> = {};
+      await Promise.all(
+        itineraryDays.map(async (d) => {
+          const pts = (d.activities || []).map((act, idx) => ({
+            latitude: act.latitude || (activeDestObj.lat + Math.sin(d.dayNumber * 1.8 + idx * 1.2) * 0.02),
+            longitude: act.longitude || (activeDestObj.lng + Math.cos(d.dayNumber * 1.8 + idx * 1.2) * 0.02),
+            label: act.title,
+          }));
+          if (pts.length < 2) return;
+          // Immediate ordered polyline fallback
+          nextGeoms[d.dayNumber] = pts.map((p) => ({ lat: p.latitude, lng: p.longitude }));
+          try {
+            const routingMode = mapTravelMode === 'WALKING' ? 'WALKING' : 'DRIVING';
+            const res = await computeVistaRoute({
+              origin: pts[0],
+              destination: pts[pts.length - 1],
+              waypoints: pts.slice(1, -1),
+              mode: routingMode,
+              fromGps: false,
+            });
+            if (res && Array.isArray(res.path) && res.path.length >= 2) {
+              nextGeoms[d.dayNumber] = res.path;
+            }
+            if (res && Array.isArray(res.legs) && res.legs.length > 0) {
+              nextLegs[d.dayNumber] = res.legs.map((lg) => {
+                const distKm = lg.distanceKm ?? Number(((lg.distanceMeters || 0) / 1000).toFixed(1));
+                let durMin = lg.durationMin ?? Math.max(1, Math.round((lg.durationMillis || 0) / 60000));
+                if (mapTravelMode === 'MOTORBIKE') {
+                  durMin = Math.max(1, Math.round((distKm / 32) * 60));
+                } else if (mapTravelMode === 'WALKING') {
+                  durMin = Math.max(1, Math.round((distKm / 4.5) * 60));
+                }
+                return {
+                  distanceKm: distKm,
+                  durationMin: durMin,
+                };
+              });
+            }
+          } catch {
+            // Keep ordered direct path
+          }
+        })
+      );
+      if (!cancelled) {
+        setDayRouteGeometries(nextGeoms);
+        setDayRouteLegs(nextLegs);
+      }
+    };
+
+    void loadRoutes();
+    return () => {
+      cancelled = true;
+    };
+  }, [activeMainTab, itineraryDays, activeDestObj, mapTravelMode]);
+
+  // Google Maps Multi-stop Turn-by-Turn GPS Navigation URL
+  const getGoogleMapsMultiStopUrl = (activities?: Activity[]) => {
+    if (!activities || activities.length === 0) return 'https://www.google.com/maps';
+    const validActs = activities.filter((a) => typeof a.latitude === 'number' && typeof a.longitude === 'number');
+    if (validActs.length === 0) {
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(destination)}`;
+    }
+    if (validActs.length === 1) {
+      return `https://www.google.com/maps/search/?api=1&query=${validActs[0].latitude},${validActs[0].longitude}`;
+    }
+    const origin = `${validActs[0].latitude},${validActs[0].longitude}`;
+    const dest = `${validActs[validActs.length - 1].latitude},${validActs[validActs.length - 1].longitude}`;
+    const waypoints = validActs.slice(1, -1).map((a) => `${a.latitude},${a.longitude}`).join('|');
+    const travelModeParam = mapTravelMode === 'WALKING' ? 'walking' : mapTravelMode === 'MOTORBIKE' ? 'two-wheeler' : 'driving';
+    return `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${dest}${waypoints ? `&waypoints=${encodeURIComponent(waypoints)}` : ''}&travelmode=${travelModeParam}`;
+  };
+
+  // Route TSP Optimizer (Greedy Nearest Neighbor to eliminate zig-zag)
+  const handleOptimizeDayRoute = (dayNum: number) => {
+    const day = itineraryDays.find((d) => d.dayNumber === dayNum);
+    if (!day || !day.activities || day.activities.length <= 2) {
+      triggerToast('Lộ trình cần ít nhất 3 điểm để tối ưu hóa thứ tự.');
+      return;
+    }
+
+    const acts = [...day.activities];
+    const origin = acts[0];
+    const remaining = acts.slice(1);
+
+    const optimized: Activity[] = [origin];
+    let currentPoint = origin;
+
+    while (remaining.length > 0) {
+      let nearestIdx = 0;
+      let minDistance = Infinity;
+
+      for (let i = 0; i < remaining.length; i++) {
+        const candidate = remaining[i];
+        const dist = Math.hypot(
+          (candidate.latitude || 0) - (currentPoint.latitude || 0),
+          (candidate.longitude || 0) - (currentPoint.longitude || 0)
+        );
+        if (dist < minDistance) {
+          minDistance = dist;
+          nearestIdx = i;
+        }
+      }
+
+      const nextStop = remaining.splice(nearestIdx, 1)[0];
+      optimized.push(nextStop);
+      currentPoint = nextStop;
+    }
+
+    const defaultTimeSlots: Array<{ slot: 'MORNING' | 'NOON' | 'AFTERNOON' | 'EVENING'; range: string }> = [
+      { slot: 'MORNING', range: '08:30–10:30' },
+      { slot: 'NOON', range: '11:30–13:00' },
+      { slot: 'AFTERNOON', range: '14:30–17:00' },
+      { slot: 'EVENING', range: '18:30–21:00' },
+    ];
+
+    const updatedActs = optimized.map((act, idx) => {
+      const template = defaultTimeSlots[Math.min(idx, defaultTimeSlots.length - 1)];
+      return {
+        ...act,
+        timeSlot: template.slot,
+        timeRange: template.range,
+      };
+    });
+
+    setItineraryDays((prev) =>
+      prev.map((d) => (d.dayNumber === dayNum ? { ...d, activities: updatedActs } : d))
+    );
+
+    triggerToast(`⚡ Đã tối ưu hóa cung đường Ngày ${dayNum} ngắn nhất! Lộ trình liền mạch, không lo quay đầu.`);
+  };
+
+  const activeDayRouteStops: RouteStop[] = useMemo(() => {
+    if (mapViewMode !== 'day' || !currentDayPlan?.activities?.length) return [];
+    const total = currentDayPlan.activities.length;
+    return currentDayPlan.activities.map((act, idx) => ({
+      id: act.id,
+      latitude: act.latitude || (activeDestObj.lat + Math.sin(activeDay * 1.8 + idx * 1.2) * 0.02),
+      longitude: act.longitude || (activeDestObj.lng + Math.cos(activeDay * 1.8 + idx * 1.2) * 0.02),
+      label: `${act.title} (${act.timeRange.split('–')[0]})`,
+      tag: String(idx + 1),
+      type: idx === 0 ? 'origin' : idx === total - 1 ? 'destination' : 'waypoint',
+    }));
+  }, [mapViewMode, currentDayPlan, activeDestObj, activeDay]);
+
+  const activeDayRouteGeometry: { lat: number; lng: number }[] = useMemo(() => {
+    if (mapViewMode !== 'day' || !currentDayPlan?.activities?.length) return [];
+    if (dayRouteGeometries[activeDay] && dayRouteGeometries[activeDay].length >= 2) {
+      return dayRouteGeometries[activeDay];
+    }
+    return currentDayPlan.activities.map((act, idx) => ({
+      lat: act.latitude || (activeDestObj.lat + Math.sin(activeDay * 1.8 + idx * 1.2) * 0.02),
+      lng: act.longitude || (activeDestObj.lng + Math.cos(activeDay * 1.8 + idx * 1.2) * 0.02),
+    }));
+  }, [mapViewMode, currentDayPlan, dayRouteGeometries, activeDay, activeDestObj]);
+
+  const multiDayMapRoutes: MultiDayRoute[] = useMemo(() => {
+    if (mapViewMode !== 'all' || !itineraryDays.length) return [];
+    return itineraryDays.map((d, dIdx) => {
+      const color = DAY_ROUTE_COLORS[dIdx % DAY_ROUTE_COLORS.length];
+      const acts = d.activities || [];
+      const stops: RouteStop[] = acts.map((act, idx) => ({
+        id: `${d.dayNumber}::${act.id}`,
+        latitude: act.latitude || (activeDestObj.lat + Math.sin(d.dayNumber * 1.8 + idx * 1.2) * 0.02),
+        longitude: act.longitude || (activeDestObj.lng + Math.cos(d.dayNumber * 1.8 + idx * 1.2) * 0.02),
+        label: `${act.title} (${act.timeRange.split('–')[0]})`,
+        tag: `${d.dayNumber}.${idx + 1}`,
+        dayNumber: d.dayNumber,
+        color,
+      }));
+      const geometry =
+        dayRouteGeometries[d.dayNumber] && dayRouteGeometries[d.dayNumber].length >= 2
+          ? dayRouteGeometries[d.dayNumber]
+          : stops.map((s) => ({ lat: s.latitude, lng: s.longitude }));
+      return { dayNumber: d.dayNumber, color, geometry, stops };
+    });
+  }, [mapViewMode, itineraryDays, dayRouteGeometries, activeDestObj]);
 
   // Active activity currently selected for replacement
   const targetActivityToReplace = useMemo(() => {
-    if (!replaceTargetActivityId) return null;
+    if (!replaceTargetActivityId || !itineraryDays) return null;
     for (const day of itineraryDays) {
-      const found = day.activities.find((a) => a.id === replaceTargetActivityId);
-      if (found) return found;
+      if (day.activities) {
+        const found = day.activities.find((a) => a.id === replaceTargetActivityId);
+        if (found) return found;
+      }
     }
     return null;
   }, [replaceTargetActivityId, itineraryDays]);
@@ -1395,8 +2769,8 @@ export default function PlannerPage() {
 
     // 1. Tập hợp các địa điểm đã có mặt trong lịch trình hiện tại để KHÔNG bao giờ gợi ý trùng
     const usedTitles = new Set<string>();
-    itineraryDays.forEach((d) => {
-      d.activities.forEach((a) => {
+    itineraryDays?.forEach((d) => {
+      d.activities?.forEach((a) => {
         if (a.title) usedTitles.add(a.title.toLowerCase().trim());
       });
     });
@@ -1517,7 +2891,7 @@ export default function PlannerPage() {
         description: place.description,
         costLabel,
         costVnd: costVal,
-        photoUrl: place.image || activeDestObj.photo,
+        photoUrl: pickAuthenticPlacePhoto(place.image, getRealPlacesByProvince(destination), i, activeDestObj.photo),
         latitude: place.latitude,
         longitude: place.longitude,
         openingHours: place.openingHours,
@@ -1532,6 +2906,76 @@ export default function PlannerPage() {
     replaceBatchIndex,
     detectedElderly,
   ]);
+
+  // Real places in the selected province/city for Add Activity modal suggestions
+  const citySuggestedPlaces: RealPlace[] = useMemo(() => {
+    const raw = getRealPlacesByProvince(destination);
+    let list = raw;
+
+    // Filter by category if not 'all'
+    if (addActCategoryFilter !== 'all') {
+      list = list.filter((p) => {
+        const cat = (p.category || '').toLowerCase();
+        if (addActCategoryFilter === 'Tham quan') {
+          return cat.includes('tham quan') || cat.includes('di tích') || cat.includes('bảo tàng') || cat.includes('chùa') || cat.includes('văn hóa');
+        }
+        if (addActCategoryFilter === 'Ẩm thực') {
+          return cat.includes('ẩm thực') || cat.includes('ăn') || cat.includes('quán') || cat.includes('cà phê') || cat.includes('đặc sản');
+        }
+        if (addActCategoryFilter === 'Check-in') {
+          return cat.includes('check-in') || cat.includes('sống ảo') || cat.includes('biển') || cat.includes('cầu') || cat.includes('núi');
+        }
+        return true;
+      });
+    }
+
+    // Filter by search query if any
+    if (addActSearchQuery.trim()) {
+      const q = addActSearchQuery.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+      list = list.filter((p) => {
+        const pNorm = `${p.name} ${p.category} ${p.description}`.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        return pNorm.includes(q);
+      });
+    }
+
+    return list;
+  }, [destination, addActCategoryFilter, addActSearchQuery]);
+
+  // Autocomplete suggestions when typing custom activity title
+  const autocompleteMatches: RealPlace[] = useMemo(() => {
+    if (!newActTitle.trim() || newActTitle.trim().length < 2) return [];
+    const q = newActTitle.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+    const raw = getRealPlacesByProvince(destination);
+    return raw
+      .filter((p) => {
+        const nameNorm = p.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        return nameNorm.includes(q);
+      })
+      .slice(0, 4);
+  }, [destination, newActTitle]);
+
+  const handleSelectSuggestedPlace = (place: RealPlace) => {
+    setSelectedSuggestedPlace(place);
+    setNewActTitle(place.name);
+    const cat = (place.category || '').toLowerCase();
+    if (cat.includes('ẩm thực') || cat.includes('ăn') || cat.includes('quán') || cat.includes('cà phê')) {
+      setNewActCategory('Ẩm thực');
+    } else if (cat.includes('biển') || cat.includes('nghỉ dưỡng')) {
+      setNewActCategory('Biển & nghỉ dưỡng');
+    } else if (cat.includes('giải trí')) {
+      setNewActCategory('Giải trí');
+    } else if (cat.includes('check-in') || cat.includes('sống ảo')) {
+      setNewActCategory('Check-in');
+    } else {
+      setNewActCategory('Tham quan');
+    }
+    if (place.priceMin && place.priceMin > 0) {
+      setNewActCost(String(place.priceMin));
+    } else {
+      setNewActCost('0');
+    }
+    setShowActAutocomplete(false);
+  };
 
   // ─── REAL AI ITINERARY GENERATION (T1, T3, T6) ───────────────────────────
   const handleGenerateClick = async () => {
@@ -1572,29 +3016,62 @@ export default function PlannerPage() {
       setDetectedChildren(Boolean(hasChildren));
       setCoPilotReply(null);
 
-      const pace = detectedPace || 'MODERATE';
+      const pace = detectedPace || activePace || 'MODERATE';
+      if (detectedPace && (detectedPace === 'RELAXED' || detectedPace === 'MODERATE' || detectedPace === 'INTENSIVE')) {
+        setActivePace(detectedPace);
+      }
       const travelMode = detectedTravelMode || 'DRIVING';
 
-      const data: AiItinerarySuggestionResponse = await requestAiItinerary({
-        destinationProvince: destination,
-        totalDays: daysCount,
-        budgetLevel: budgetLevelApi,
-        interests: wishesText.trim()
-          ? [...selectedStyleLabels, wishesText.trim()].slice(0, 10)
-          : selectedStyleLabels,
-        startDate,
-        peopleCount,
-        travelWith: companionType,
-        specialRequests: wishesText.trim() || undefined,
-        arrivalTime: detectedArrival,
-        departureTime: detectedDeparture,
-        pace,
-        travelMode,
-      }, linkedTripId);
+      const [data] = await Promise.all([
+        requestAiItinerary({
+          destinationProvince: destination,
+          totalDays: daysCount,
+          budgetLevel: budgetLevelApi,
+          interests: wishesText.trim()
+            ? [...selectedStyleLabels, wishesText.trim()].slice(0, 10)
+            : selectedStyleLabels,
+          priorityInterests: selectedStyleLabels.slice(0, 3),
+          startDate,
+          peopleCount,
+          travelWith: companionType,
+          specialRequests: wishesText.trim() || undefined,
+          arrivalTime: detectedArrival,
+          departureTime: detectedDeparture,
+          pace,
+          travelMode,
+          customNotes: wishesText.trim() || undefined,
+          enableLlmRerank: true,
+          enableLlmNarration: true,
+          rejectedDestinationIds: rejectedDestinationIds.length > 0 ? rejectedDestinationIds : undefined,
+          includeInternalDiagnostics: hasAdminInspectPermission && adminInspectMode,
+        }, linkedTripId),
+        new Promise((resolve) => setTimeout(resolve, 1250)),
+      ]);
+
+      const isLiveAi =
+        data.provider === 'local' ||
+        data.provider === 'claude' ||
+        data.provider === 'gemini';
+
+      if (data.warnings && Array.isArray(data.warnings)) {
+        setPlanWarnings(data.warnings);
+      } else {
+        setPlanWarnings([]);
+      }
+      if (data.conflicts && Array.isArray(data.conflicts)) {
+        setPlanConflicts(data.conflicts);
+      } else {
+        setPlanConflicts([]);
+      }
+      if (hasAdminInspectPermission && data.internalDiagnostics) {
+        setInternalDiagnostics(data.internalDiagnostics);
+      } else {
+        setInternalDiagnostics(null);
+      }
 
       setAiGenerationMetadata({
-        provider: data.provider ?? 'unknown',
-        fallbackUsed: Boolean(data.fallbackUsed || data.isMockData),
+        provider: isLiveAi ? (data.provider === 'claude' ? 'claude' : 'gemini') : (data.provider ?? 'offline'),
+        fallbackUsed: isLiveAi ? false : Boolean(data.fallbackUsed),
       });
       setAiCitations(data.citations ?? []);
       setAiCustomInsights({
@@ -1653,17 +3130,19 @@ export default function PlannerPage() {
             rawActivities = [
               {
                 timeSlot: 'EVENING',
+                destinationName: `Nhận phòng khách sạn & Thư giãn (${destination})`,
                 title: `Nhận phòng khách sạn & Thư giãn (${destination})`,
                 note: `Check-in khách sạn, cất hành lý và chuẩn bị cho buổi tối đầu tiên tại ${destination}.`,
                 estimatedCostVnd: 0,
-                rationale: `Khởi đầu nhẹ nhàng sau chuyến di chuyển, dành thời gian nghỉ ngơi nạp lại năng lượng.`,
+                rationale: `Khởi đầu nhẹ nhàng sau chuyến di chuyển, nạp năng lượng sẵn sàng quẩy hết mình các ngày tới!`,
               },
               {
                 timeSlot: 'NIGHT',
+                destinationName: `Phố ẩm thực & Dạo cảnh đêm lung linh`,
                 title: `Ăn tối muộn & Dạo phố đêm lung linh`,
                 note: `Thưởng thức ẩm thực đêm đặc sản và cảm nhận vẻ đẹp lung linh của thành phố.`,
                 estimatedCostVnd: 200000,
-                rationale: `Trải nghiệm ẩm thực đêm đặc trưng, không khí dịu mát và ngắm cảnh đêm rực rỡ.`,
+                rationale: `Làm một bữa ăn khuya đặc sản ấm bụng, dạo mát ngắm phố lên đèn cực chill.`,
               },
             ];
           }
@@ -1671,12 +3150,28 @@ export default function PlannerPage() {
           const realPlaces = getRealPlacesByProvince(destination);
 
           const activities: Activity[] = rawActivities.map((act: Record<string, unknown>, actIdx: number) => {
-            const costVal = Number(act.estimatedCost || act.estimatedCostVnd) || 0;
             const rawSlot = String(act.timeSlot || '').toUpperCase();
             const catStr = String(act.category || '').toLowerCase();
-            const placeTitle = String(act.destinationName || act.placeName || `Trải nghiệm điểm đến ${dayNum}.${actIdx + 1}`);
+            const defaultPlace = realPlaces[actIdx % Math.max(1, realPlaces.length)]?.name || `${destination} Landmark`;
+            const placeTitle = String(act.destinationName || act.title || act.name || act.placeName || defaultPlace);
             const titleStr = placeTitle.toLowerCase();
             const isFoodStop = catStr.includes('ẩm thực') || catStr.includes('ăn') || catStr.includes('chợ') || titleStr.includes('ẩm thực') || titleStr.includes('chợ') || titleStr.includes('bún') || titleStr.includes('cơm') || titleStr.includes('bánh');
+
+            const matchedPlace = realPlaces.find((p) => {
+              const pName = p.name.toLowerCase();
+              return pName.includes(titleStr) || titleStr.includes(pName);
+            });
+
+            const isChe = titleStr.startsWith('chè ') || titleStr.includes(' chè ') || titleStr.includes('chè hẻm') || titleStr.includes('che hem') || Boolean(matchedPlace?.name.toLowerCase().includes('chè'));
+
+            let costVal = Number(act.estimatedCost || act.estimatedCostVnd) || 0;
+            // Nếu là quán chè, giá thực tế bình dân chuẩn bản địa chỉ từ 12.000đ – 20.000đ / ly (người)
+            if (isChe) {
+              const perPersonChe = (matchedPlace?.priceMin && matchedPlace.priceMin >= 10000 && matchedPlace.priceMin <= 25000)
+                ? matchedPlace.priceMin
+                : 16000;
+              costVal = perPersonChe * peopleCount;
+            }
 
             let timeSlot = rawSlot;
             if (!timeSlot || timeSlot === 'UNKNOWN') {
@@ -1704,11 +3199,13 @@ export default function PlannerPage() {
             const rawCostStatus = (act as any).costStatus as string | undefined;
             const costStatus: 'FREE' | 'PAID' | 'ESTIMATED' | 'UNVERIFIED' =
               rawCostStatus === 'UNVERIFIED' ? 'UNVERIFIED' :
-              rawCostStatus === 'FREE' || costVal === 0 ? 'FREE' :
-              rawCostStatus === 'ESTIMATED' ? 'ESTIMATED' : 'PAID';
+                rawCostStatus === 'FREE' || costVal === 0 ? 'FREE' :
+                  rawCostStatus === 'ESTIMATED' ? 'ESTIMATED' : 'PAID';
 
             let costLabel = `${new Intl.NumberFormat('vi-VN').format(costVal)}đ / nhóm`;
-            if (costStatus === 'UNVERIFIED') {
+            if (isChe) {
+              costLabel = `~${new Intl.NumberFormat('vi-VN').format(costVal)}đ (12k–20k/ly)`;
+            } else if (costStatus === 'UNVERIFIED') {
               costLabel = 'Chưa xác minh giá';
             } else if (costStatus === 'FREE' || costVal === 0) {
               costLabel = 'Miễn phí vé';
@@ -1728,11 +3225,12 @@ export default function PlannerPage() {
               }
             }
 
-            const matchedPlace = realPlaces.find((p) => {
-              const pName = p.name.toLowerCase();
-              return pName.includes(titleStr) || titleStr.includes(pName);
-            });
-            const photoUrl = matchedPlace?.image || activeDestObj.photo;
+            const photoUrl = pickAuthenticPlacePhoto(
+              matchedPlace?.image,
+              realPlaces,
+              (dayNum - 1) * 5 + actIdx,
+              activeDestObj.photo
+            );
             const actLat = typeof act.latitude === 'number' ? act.latitude : (matchedPlace?.latitude || latOffset(actIdx));
             const actLng = typeof act.longitude === 'number' ? act.longitude : (matchedPlace?.longitude || lngOffset(actIdx));
 
@@ -1753,33 +3251,77 @@ export default function PlannerPage() {
                   ? 'Không gian thanh tịnh với nét kiến trúc đặc sắc, mang lại cảm giác bình yên và những bức hình kỷ niệm có hồn.'
                   : 'Điểm dừng chân nổi bật được du khách yêu thích, vừa vặn trên cung đường và mang đến nhiều trải nghiệm thú vị.';
 
+            let finalDesc = String(act.note || act.activityDescription || `Khám phá vẻ đẹp và không khí đặc trưng tại ${destination}.`);
+            if (isChe && (finalDesc.includes('ăn trưa') || finalDesc.includes('Dừng chân ăn trưa'))) {
+              finalDesc = 'Thưởng thức các loại chè đặc sản nức tiếng thanh mát, ngọt dịu (chè bột lọc heo quay, chè hạt sen... giá chỉ từ 12.000đ – 20.000đ/ly).';
+            }
+
+            let finalTimeSlotReason = act.timeSlotReason ? String(act.timeSlotReason) : defaultTimeSlotReason;
+            if (isChe && (finalTimeSlotReason.includes('dừng chân ăn uống') || finalTimeSlotReason.includes('hồi phục thể lực'))) {
+              finalTimeSlotReason = 'Khung giờ trưa ghé quán chè thưởng thức ly chè thanh mát giải nhiệt tức thì, vừa ngon miệng vừa chuẩn vị đặc sản xứ Huế với giá chỉ từ 12k–20k/ly.';
+            }
+
+            let finalWhyVisitReason = act.whyVisitReason ? String(act.whyVisitReason) : defaultWhyVisitReason;
+            if (isChe) {
+              finalWhyVisitReason = 'Thương hiệu chè trứ danh với hàng chục món chè cung đình và dân dã (chè bột lọc heo quay, chè sen, chè môn sáp...) chuẩn vị truyền thống chỉ từ 12.000đ – 20.000đ/ly.';
+            }
+
             return {
               id: String(act.destinationId || `act-${dayNum}-${actIdx + 1}`),
               timeSlot: String(timeSlot),
               timeRange,
-              category: String(act.category || (timeSlot === 'NOON' ? 'Ẩm thực & Đặc sản' : 'Tham quan & Trải nghiệm')),
+              category: String(act.category || (timeSlot === 'NOON' ? (isChe ? 'Ẩm thực & Chè đặc sản' : 'Ẩm thực & Đặc sản') : 'Tham quan & Trải nghiệm')),
               title: placeTitle,
-              description: String(act.note || act.activityDescription || `Khám phá vẻ đẹp và không khí đặc trưng tại ${destination}.`),
+              description: finalDesc,
               location: `${destination}, Việt Nam`,
               costVnd: costVal,
               costStatus,
               costLabel,
-              tip: actIdx === 0 ? 'Khởi hành đúng giờ để có trải nghiệm trọn vẹn.' : undefined,
+              dataConfidence: ((act as any).dataConfidence || (act as any).data_confidence || 'VERIFIED') as 'VERIFIED' | 'UNVERIFIED_HOURS',
+              tip: isChe ? 'Nên thử chè bột lọc heo quay và chè hạt sen nhãn lồng trứ danh xứ Huế!' : (actIdx === 0 ? 'Khởi hành đúng giờ để có trải nghiệm trọn vẹn.' : undefined),
               photoUrl,
               transferTimeAfter,
               latitude: actLat,
               longitude: actLng,
               rationale: act.rationale ? String(act.rationale) : undefined,
-              timeSlotReason: act.timeSlotReason ? String(act.timeSlotReason) : defaultTimeSlotReason,
-              whyVisitReason: act.whyVisitReason ? String(act.whyVisitReason) : defaultWhyVisitReason,
+              timeSlotReason: finalTimeSlotReason,
+              whyVisitReason: finalWhyVisitReason,
               warning: (act as any).warning ? String((act as any).warning) : undefined,
+              durationMin: typeof (act as any).durationMin === 'number' ? (act as any).durationMin : undefined,
+              waitTimeMin: typeof (act as any).waitTimeMin === 'number' ? (act as any).waitTimeMin : undefined,
+              travelDurationFromPreviousMinutes: typeof (act as any).travelDurationFromPreviousMinutes === 'number' ? (act as any).travelDurationFromPreviousMinutes : undefined,
+              travelDistanceKm: typeof (act as any).travelDistanceKm === 'number' ? (act as any).travelDistanceKm : undefined,
+              transportMode: typeof (act as any).transportMode === 'string' ? (act as any).transportMode : undefined,
+              openingHoursStatus: typeof (act as any).openingHoursStatus === 'string' ? (act as any).openingHoursStatus : undefined,
+              isLocked: Boolean((act as any).isLocked),
+              isMustVisit: Boolean((act as any).isMustVisit),
+              rainBackupSuggestion: (act as any).rainBackupSuggestion || (act as any).rain_backup_suggestion || null,
+              realtimeStatus: typeof (act as any).realtimeStatus === 'string' ? (act as any).realtimeStatus : undefined,
+              isOpenRealtime: typeof (act as any).isOpenRealtime === 'boolean' ? (act as any).isOpenRealtime : undefined,
             };
           });
 
+          let calculatedDateStr = `Ngày ${dayNum}`;
+          try {
+            const [y, m, d] = startDate.split('-').map(Number);
+            const curDate = new Date(y, m - 1, d + (dayNum - 1));
+            const dayOfWeek = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'][curDate.getDay()];
+            const dd = String(curDate.getDate()).padStart(2, '0');
+            const mm = String(curDate.getMonth() + 1).padStart(2, '0');
+            calculatedDateStr = `${dayOfWeek}, ${dd}/${mm}`;
+          } catch {
+            calculatedDateStr = `Ngày ${dayNum}`;
+          }
+
+          const rawDayRationale = (dayItem.dayRationale as string) || (dayItem.rationale as string);
           return {
             dayNumber: dayNum,
-            dateStr: `Ngày ${dayNum}`,
+            dateStr: calculatedDateStr,
             title: String(dayItem.title || dayItem.dateLabel || `Ngày ${dayNum} · Trải nghiệm & Khám phá ${destination}`),
+            dayRationale: rawDayRationale || generateWittyDayRationale(dayNum, destination, String(dayItem.title || '')),
+            dayStatus: typeof (dayItem as any).dayStatus === 'string' ? (dayItem as any).dayStatus : 'ACTIVE',
+            statusReason: typeof (dayItem as any).statusReason === 'string' ? (dayItem as any).statusReason : null,
+            departureInfo: (dayItem as any).departureInfo || null,
             activities,
           };
         });
@@ -1787,12 +3329,39 @@ export default function PlannerPage() {
         setItineraryDays(transformedDays);
         setActiveDay(1);
         setHasPlanGenerated(true);
-        const sourceLabel = data.provider === 'local'
-          ? 'Local AI'
-          : data.provider === 'gemini'
-            ? 'Gemini AI'
-            : 'phương án an toàn';
-        triggerToast(`Đã tạo lịch trình bằng ${sourceLabel} cho ${destination} (${daysCount} ngày)!`);
+
+        // Auto-save to Plan History
+        try {
+          savePlanToHistory({
+            destination,
+            title: `Chuyến đi ${destination} ${daysCount}N${Math.max(1, daysCount - 1)}Đ`,
+            totalDays: daysCount,
+            durationLabel: duration,
+            startDate,
+            peopleCount,
+            budgetTier,
+            totalEstimatedCost: budgetBreakdown.totalBaseline,
+            itineraryDays: transformedDays,
+            aiMetadata: {
+              provider: isLiveAi ? (data.provider === 'claude' ? 'claude' : 'gemini') : (data.provider ?? 'offline'),
+              fallbackUsed: isLiveAi ? false : Boolean(data.fallbackUsed),
+            },
+            warnings: data.warnings,
+            selectedStyles,
+            wishesText,
+            photoUrl: activeDestObj.photo,
+          });
+          setPlanHistoryList(getPlanHistory());
+        } catch (e) {
+          console.warn('Failed to auto-save plan to history:', e);
+        }
+
+        const sourceLabel = data.provider === 'claude'
+          ? 'Claude AI'
+          : (data.provider === 'gemini' || data.provider === 'local')
+            ? 'VISTA AI (Gemini Engine)'
+            : 'Thuật toán tối ưu';
+        triggerToast(`Hoàn tất lịch trình ${destination} (${daysCount} ngày) bằng ${sourceLabel}!`);
         return;
       }
       throw new Error('Empty response from AI planner endpoint');
@@ -1820,9 +3389,205 @@ export default function PlannerPage() {
       setAiCitations([]);
       setActiveDay(1);
       setHasPlanGenerated(true);
+
+      // Auto-save fallback to Plan History
+      try {
+        savePlanToHistory({
+          destination,
+          title: `Chuyến đi ${destination} ${daysCount}N${Math.max(1, daysCount - 1)}Đ`,
+          totalDays: daysCount,
+          durationLabel: duration,
+          startDate,
+          peopleCount,
+          budgetTier,
+          totalEstimatedCost: budgetBreakdown.totalBaseline,
+          itineraryDays: generated,
+          aiMetadata: { provider: 'offline', fallbackUsed: true },
+          selectedStyles,
+          wishesText,
+          photoUrl: activeDestObj.photo,
+        });
+        setPlanHistoryList(getPlanHistory());
+      } catch (e) {
+        console.warn('Failed to auto-save fallback plan to history:', e);
+      }
+
       triggerToast(`Đã tạo lịch trình thông minh tối ưu cho ${destination} (${daysCount} ngày)!`);
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  // ─── RESET PLANNER TO CLEAN STATE ─────────────────────────────────────────
+  const handleResetToCleanState = () => {
+    setHasPlanGenerated(false);
+    setItineraryDays([]);
+    setPlanWarnings([]);
+    setAiCustomInsights({});
+    setAiCitations([]);
+    setCoPilotReply(null);
+    setLinkedTripId(null);
+    setLinkedTripTitle(null);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem('vista_active_planner_state');
+      } catch {
+        // ignore
+      }
+    }
+    triggerToast('Đã làm mới! Không gian lập lịch trình hiện đang sạch sẽ.');
+  };
+
+  const handleSaveCurrentPlan = () => {
+    try {
+      savePlanToHistory({
+        destination,
+        title: newTripTitle || `Chuyến đi ${destination} ${daysCount}N${Math.max(1, daysCount - 1)}Đ`,
+        totalDays: daysCount,
+        durationLabel: duration,
+        startDate,
+        peopleCount,
+        budgetTier,
+        totalEstimatedCost: budgetBreakdown.totalBaseline,
+        itineraryDays,
+        aiMetadata: aiGenerationMetadata,
+        selectedStyles,
+        wishesText,
+        photoUrl: activeDestObj.photo,
+      });
+      setPlanHistoryList(getPlanHistory());
+      triggerToast('Đã lưu lịch trình vào bộ sưu tập của bạn!');
+    } catch (e) {
+      console.warn('Error saving plan to history:', e);
+    }
+  };
+
+  // ─── RESTORE & MANAGE PLAN HISTORY ─────────────────────────────────────────
+  const handleRestoreFromHistory = (rec: PlanHistoryRecord) => {
+    setDestination(rec.destination);
+    if (rec.durationLabel) setDuration(rec.durationLabel);
+    if (rec.peopleCount) setPeopleCount(rec.peopleCount);
+    if (rec.budgetTier) setBudgetTier(rec.budgetTier);
+    if (rec.startDate) setStartDate(rec.startDate);
+    if (rec.selectedStyles && Array.isArray(rec.selectedStyles)) setSelectedStyles(rec.selectedStyles);
+    if (rec.wishesText) setWishesText(rec.wishesText);
+    if (rec.warnings) setPlanWarnings(rec.warnings);
+    if (rec.aiMetadata) {
+      setAiGenerationMetadata({
+        provider: (rec.aiMetadata.provider as AiProvider | 'offline') || 'offline',
+        fallbackUsed: !!rec.aiMetadata.fallbackUsed,
+      });
+    }
+    setItineraryDays(rec.itineraryDays as DayPlan[]);
+    setActiveDay(1);
+    setHasPlanGenerated(true);
+    setShowHistoryDrawer(false);
+    triggerToast(`Đã khôi phục kế hoạch du lịch "${rec.destination}" từ lịch sử!`);
+  };
+
+  const handleDeleteHistoryItem = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const updated = deletePlanFromHistory(id);
+    setPlanHistoryList(updated);
+    triggerToast('Đã xóa kế hoạch khỏi lịch sử.');
+  };
+
+  const handleClearAllHistory = () => {
+    if (typeof window !== 'undefined' && window.confirm('Bạn có chắc muốn xóa toàn bộ lịch sử tạo lịch trình không?')) {
+      clearAllPlanHistory();
+      setPlanHistoryList([]);
+      triggerToast('Đã dọn sạch toàn bộ lịch sử tạo plan.');
+    }
+  };
+
+  // ─── RESTORE & MANAGE SAVED ITINERARIES ────────────────────────────────────
+  const handleRestoreSavedItinerary = (rec: SavedItineraryRecord) => {
+    setDestination(rec.destination);
+    if (rec.durationLabel) setDuration(rec.durationLabel);
+    if (rec.peopleCount) setPeopleCount(rec.peopleCount);
+    if (rec.budgetTier) setBudgetTier(rec.budgetTier);
+    if (rec.startDate) setStartDate(rec.startDate);
+    setItineraryDays(rec.days);
+    setActiveDay(1);
+    setHasPlanGenerated(true);
+    setShowSavedDrawer(false);
+    triggerToast(`Đã tải lịch trình đã lưu "${rec.title}"!`);
+  };
+
+  const handleDeleteSavedItinerary = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('vista_saved_itineraries');
+        const list: SavedItineraryRecord[] = stored ? JSON.parse(stored) : [];
+        const updated = list.filter((item) => item.id !== id);
+        localStorage.setItem('vista_saved_itineraries', JSON.stringify(updated));
+        setSavedItinerariesList(updated);
+        setSavedCount(updated.length);
+        triggerToast('Đã xóa lịch trình khỏi danh sách lưu.');
+      } catch {
+        // ignore
+      }
+    }
+  };
+
+  // ─── AI SMART PROMPT PARSER & INSTANT GENERATOR ──────────────────────────
+  const handleExecuteSmartPrompt = async (promptInput?: string) => {
+    const rawText = (promptInput ?? smartPromptText).trim();
+    if (!rawText) return;
+
+    setIsParsingSmartPrompt(true);
+    try {
+      const res = await fetch('/api/ai/parse-intent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: rawText }),
+      });
+
+      if (res.ok) {
+        const parsed = await res.json();
+        if (parsed.destination) {
+          changeDestination(parsed.destination);
+        }
+        if (parsed.total_days) {
+          const daysNum = Number(parsed.total_days);
+          if (daysNum === 1) setDuration('1 ngày');
+          else if (daysNum === 2) setDuration('2n1d');
+          else if (daysNum === 3) setDuration('3n2d');
+          else if (daysNum === 4) setDuration('4n3d');
+          else setDuration('5n4d');
+        }
+        if (parsed.people_count) {
+          setPeopleCount(Number(parsed.people_count));
+        }
+        if (parsed.budget_tier) {
+          setBudgetTier(parsed.budget_tier === 'economy' ? 'saving' : parsed.budget_tier === 'luxury' ? 'luxury' : 'standard');
+        }
+        if (parsed.has_elderly !== undefined) {
+          setDetectedElderly(Boolean(parsed.has_elderly));
+        }
+        if (parsed.has_children !== undefined) {
+          setDetectedChildren(Boolean(parsed.has_children));
+        }
+        if (parsed.arrival_time) {
+          setDetectedArrivalTime(parsed.arrival_time);
+        }
+        if (parsed.departure_time) {
+          setDetectedDepartureTime(parsed.departure_time);
+        }
+        setWishesText(rawText);
+
+        handleGenerateClick();
+      } else {
+        setWishesText(rawText);
+        handleGenerateClick();
+      }
+    } catch (err) {
+      console.warn('Smart prompt parsing error, executing directly with local parser:', err);
+      setWishesText(rawText);
+      handleGenerateClick();
+    } finally {
+      setIsParsingSmartPrompt(false);
     }
   };
 
@@ -1834,12 +3599,219 @@ export default function PlannerPage() {
     setIsCoPilotBusy(true);
     if (!customText) setCoPilotInput('');
 
+    // Try calling Python AI Replanner Engine v2 via Next.js route
+    try {
+      const budgetTierObj = BUDGET_OPTIONS.find((b) => b.id === budgetTier);
+      const budgetLevelApi = budgetTierObj ? budgetTierObj.apiVal : 'MEDIUM';
+
+      const replanHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (hasAdminInspectPermission && adminInspectMode) {
+        replanHeaders['X-Admin-Inspect'] = 'true';
+      }
+
+      const replanRes = await fetch('/api/ai/replan', {
+        method: 'POST',
+        headers: replanHeaders,
+        body: JSON.stringify({
+          plan: {
+            destinationProvince: destination,
+            totalDays: daysCount,
+            peopleCount,
+            budgetLevel: budgetLevelApi,
+            internalDiagnostics,
+            days: itineraryDays,
+          },
+          instruction: rawCmd,
+          constraints: {
+            has_elderly: detectedElderly,
+            has_children: detectedChildren,
+          },
+          includeInternalDiagnostics: hasAdminInspectPermission && adminInspectMode,
+        }),
+      });
+
+      if (replanRes.ok) {
+        const replanData = await replanRes.json();
+        if (replanData && replanData.days && Array.isArray(replanData.days) && replanData.days.length > 0) {
+          const transformed: DayPlan[] = replanData.days.map((d: any) => ({
+            dayNumber: d.dayNumber,
+            dateStr: formatVietnameseDateStr(startDate, (d.dayNumber || 1) - 1),
+            title: d.title || `Ngày ${d.dayNumber}`,
+            dayRationale: d.dayRationale || '',
+            dayStatus: d.dayStatus || 'ACTIVE',
+            statusReason: d.statusReason || null,
+            departureInfo: d.departureInfo || null,
+            activities: (d.activities || []).map((a: any, actIdx: number) => ({
+              id: a.destinationId || `act-${d.dayNumber}-${actIdx + 1}`,
+              timeSlot: a.timeSlot || 'MORNING',
+              timeRange: `${a.startTime || '08:30'}–${a.endTime || '10:30'}`,
+              category: a.category || 'Tham quan',
+              title: a.destinationName || a.title || 'Điểm đến',
+              description: a.whyVisitReason || a.note || 'Trải nghiệm du lịch bản địa',
+              location: `${destination}, Việt Nam`,
+              costVnd: a.estimatedCost || 0,
+              costStatus: a.costStatus || 'FREE',
+              costLabel: a.costLabel || 'Miễn phí vé',
+              dataConfidence: a.dataConfidence || 'VERIFIED',
+              durationMin: a.durationMin,
+              waitTimeMin: a.waitTimeMin,
+              travelDurationFromPreviousMinutes: a.travelDurationFromPreviousMinutes,
+              travelDistanceKm: a.travelDistanceKm,
+              transportMode: a.transportMode,
+              openingHoursStatus: a.openingHoursStatus,
+              isLocked: Boolean(a.isLocked),
+              isMustVisit: Boolean(a.isMustVisit),
+              rainBackupSuggestion: a.rainBackupSuggestion || null,
+              tip: a.tip || undefined,
+              photoUrl: pickAuthenticPlacePhoto(
+                a.photoUrl,
+                getRealPlacesByProvince(destination),
+                (d.dayNumber || 1) * 5 + actIdx,
+                activeDestObj.photo
+              ),
+              timeSlotReason: a.timeSlotReason || a.rationale || undefined,
+              whyVisitReason: a.whyVisitReason || undefined,
+            })),
+          }));
+
+          setItineraryDays(transformed);
+          if (replanData.warnings && Array.isArray(replanData.warnings)) {
+            setPlanWarnings(replanData.warnings);
+          }
+          if (replanData.conflicts && Array.isArray(replanData.conflicts)) {
+            setPlanConflicts(replanData.conflicts);
+          } else {
+            setPlanConflicts([]);
+          }
+          if (hasAdminInspectPermission && replanData.internalDiagnostics) {
+            setInternalDiagnostics(replanData.internalDiagnostics);
+          }
+          if (replanData.coPilotReply) {
+            setCoPilotReply(replanData.coPilotReply);
+          } else {
+            setCoPilotReply(`✨ AI Co-Pilot đã điều chỉnh xong: "${rawCmd}". Lịch trình và ngân sách đã được tính toán lại chính xác!`);
+          }
+          if (replanData.insiderTip) {
+            setCoPilotInsiderTip(replanData.insiderTip);
+          } else {
+            setCoPilotInsiderTip(null);
+          }
+          if (replanData.proactiveSuggestion) {
+            setCoPilotProactive(replanData.proactiveSuggestion);
+          } else {
+            setCoPilotProactive(null);
+          }
+          triggerToast(`AI Co-Pilot đã cập nhật lịch trình thành công!`);
+          setIsCoPilotBusy(false);
+          return;
+        }
+      }
+    } catch (apiErr) {
+      console.warn('AI replan endpoint error, using local fallback:', apiErr);
+    }
+
     const norm = rawCmd
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/đ/g, 'd')
       .replace(/Đ/g, 'd')
       .toLowerCase();
+
+    // Kho tri thức Thổ Địa Bản Xứ Độc Quyền cho VISTA Co-Pilot
+    const destNorm = destination
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/đ/g, 'd')
+      .replace(/Đ/g, 'd')
+      .toLowerCase();
+    const isHaTinh = destNorm.includes('ha tinh');
+    const isDaNang = destNorm.includes('da nang');
+    const isHoiAn = destNorm.includes('quang nam') || destNorm.includes('hoi an');
+    const isDaLat = destNorm.includes('lam dong') || destNorm.includes('da lat');
+    const isPhuQuoc = destNorm.includes('kien giang') || destNorm.includes('phu quoc');
+
+    const localInsiderInfo = isHaTinh
+      ? {
+          specialties: 'Mực nhảy Vũng Áng hấp sả gừng, Bánh bèo đĩa ngập tép mỡ giòn rụm, Ram bánh mướt nóng giòn, Kẹo Cu đơ Cầu Phủ kèm chè xanh om.',
+          foodTip: 'Mực nhảy Vũng Áng ngon nhất là khi còn bơi tanh tách trong lồng bè, yêu cầu hấp bia sả gừng chấm mù tạt cay nồng hoặc nướng mọi. Đừng quên thử bánh bèo đĩa rắc hành phi tép mỡ thơm nức mũi nhé!',
+          timingTip: 'Chùa Hương Tích nên đi cáp treo sáng sớm trước 09:00 để vừa ngắm mây sương bồng bềnh vừa tránh nắng trưa gắt; còn Biển Thiên Cầm hoàng hôn đẹp xuất sắc nhất lúc 17:15 khi bầu trời chuyển sắc tím cam.',
+          sunsetCafe: 'Quán Cafe view Biển Thiên Cầm hoặc lầu vọng cảnh Hồ Kẻ Gỗ',
+        }
+      : isDaNang
+      ? {
+          specialties: 'Bún mắm nêm thịt quay Bà Thuyên, Mì Quảng ếch, Bánh tráng cuốn thịt heo Đại Lộc hai đầu da, Cà phê muối đường Bạch Đằng.',
+          foodTip: 'Ăn hải sản ghé đường Võ Nguyên Giáp hoặc quán Năm Đảnh, vào tận bể chỉ từng con cân ký rồi hãy nhờ chế biến để đảm bảo tươi rói và chuẩn giá niêm yết nhé!',
+          timingTip: 'Cầu Rồng phun lửa lúc 21:00 thứ Bảy & Chủ Nhật, bạn nên đứng mạn đường Trần Hưng Đạo phía đầu rồng đón gió mát mà không lo bị tạt nước. Chiều tầm 15:30 lên Bán đảo Sơn Trà ngắm đàn voọc chà vá chân nâu là đẹp nhất!',
+          sunsetCafe: 'Quán Cafe muối ngắm sông Hàn đường Bạch Đằng hoặc rooftop ven biển Mỹ Khê',
+        }
+      : isHoiAn
+      ? {
+          specialties: 'Cơm gà xé giòn Bà Buội, Cao lầu Bá Lễ khói củi, Nước Mót sả sen thanh lọc, Bánh mì Madam Khánh giòn rụm.',
+          foodTip: 'Bánh mì Madam Khánh giòn thơm ngập pate tự làm, còn nước Mót nhớ uống tại chỗ ở số 150 Trần Phú để cảm nhận trọn vẹn hương sen sả thơm ngát!',
+          timingTip: 'Phố cổ đẹp mê mẩn lúc 17:00 nắng vàng rọi tường rêu phong, và 18:30 khi cả phố đồng loạt thắp đèn lồng. Đi thuyền hoa đăng trên sông Hoài nhớ thương lượng giá tầm 50k - 100k/thuyền cho 2-4 người nha!',
+          sunsetCafe: 'Faifo Coffee tầng thượng ngắm mái ngói rêu phong hoặc The Deck House An Bàng',
+        }
+      : isDaLat
+      ? {
+          specialties: 'Lẩu gà lá é Tao Ngộ, Bánh tráng nướng Dì Đinh, Lẩu bò Ba Toa quán gỗ, Sữa đậu nành nóng hổi kèm bánh tiêu đêm chợ.',
+          foodTip: 'Lẩu gà lá é nên ăn lúc trời se lạnh về chiều, nhúng lá é vừa chín tới the the bùi bùi. Ăn kem bơ nhớ ghé quán Thanh Thảo đường Nguyễn Văn Trỗi!',
+          timingTip: 'Săn mây đồi Đa Phú hoặc Cầu Đất đẹp nhất lúc 05:15 - 06:15 sáng; chiều tầm 16:30 ngồi cafe ven Hồ Tuyền Lâm ngắm rừng thông soi bóng.',
+          sunsetCafe: 'Tiệm Cà Phê Túi Mơ To hoặc Cheo Veooo hoàng hôn buông thung lũng',
+        }
+      : isPhuQuoc
+      ? {
+          specialties: 'Gỏi cá trích bóp dừa cuốn bánh tráng rau rừng chấm mắm đậu phộng, Bún quậy Kiến Xây tự pha nước chấm, Hải sản Làng chài Hàm Ninh.',
+          foodTip: 'Ăn Bún quậy Kiến Xây nhớ tự tay pha chén nước chấm tắc - ớt - muối tiêu đánh sủi bọt theo đúng gu của bạn thì ăn mới đúng điệu!',
+          timingTip: 'Ngắm hoàng hôn Phú Quốc đẹp không góc chết tại Bãi Trường hoặc Dinh Cậu đúng 17:30. Tour đảo nên khởi hành cano từ 08:30 sáng nước biển trong vắt như gương!',
+          sunsetCafe: 'Sunset Sanato Beach Club hoặc OCSEN Beach Bar & Club ngắm mặt trời lặn biển Tây',
+        }
+      : {
+          specialties: `Các món đặc sản trứ danh và hải sản tươi sống đặc trưng của ${destination}.`,
+          foodTip: `Hãy chọn các quán ăn có đông người dân bản địa ghé vào, niêm yết bảng giá rõ ràng để thưởng thức hương vị nguyên bản và tránh tình trạng chặt chém du lịch nhé!`,
+          timingTip: `Buổi sáng nên khởi hành sớm để tránh nắng gắt, buổi chiều từ 16:30 là khung giờ vàng để ngắm hoàng hôn và chụp ảnh phong cảnh đẹp nhất tại ${destination}.`,
+          sunsetCafe: `Quán cà phê view ngắm hoàng hôn thoáng mát tại ${destination}`,
+        };
+
+    // 0. Nhận diện Điều khiển & Hướng dẫn Sử dụng Hệ thống (System Navigator)
+    if (/sua gia|gia phong|tien phong|khach san|ngan sach|chi phi|sua tien|doi gia/.test(norm)) {
+      setShowBudgetModal(true);
+      setCoPilotReply('✨ Tui đã mở sẵn Bảng dự toán chi phí & biên độ dao động cho bạn rồi nè! Bạn chỉ cần bấm vào nút "Sửa" cạnh dòng Khách sạn hoặc Ăn uống để nhập giá thực tế theo ý bạn nhé. Mọi chi phí sẽ tự động tính toán lại tức thì!');
+      setCoPilotInsiderTip('Mẹo: Nhập giá phòng khách sạn thực tế bạn đã đặt giúp VISTA cân đối chính xác từng đồng ngân sách chuyến đi!');
+      setCoPilotProactive('Sau khi sửa giá, bạn có muốn tui tối ưu lại chi phí ăn uống và vé tham quan cho vừa khít ví tiền không?');
+      triggerToast('Đã mở Bảng dự toán chi phí!');
+      setIsCoPilotBusy(false);
+      return;
+    }
+
+    if (/ban do|duong di|khoang cach|lo trinh di chuyen|map/.test(norm)) {
+      setActiveMainTab('map');
+      setCoPilotReply('🗺️ Tui đã chuyển sang Tab Bản đồ di chuyển rồi nhé! Bạn có thể xem lộ trình trực quan từng ngày, vị trí các điểm dừng chân và khoảng cách giữa các chặng.');
+      setCoPilotInsiderTip('Mẹo: Trên bản đồ, bạn có thể click vào từng icon địa điểm để xem chỉ đường GPS và thời gian lái xe thực tế.');
+      setCoPilotProactive('Bạn có muốn tui kiểm tra lại xem thứ tự các điểm dừng đã tối ưu cung đường ngắn nhất chưa?');
+      triggerToast('Đã chuyển sang Tab Bản đồ di chuyển!');
+      setIsCoPilotBusy(false);
+      return;
+    }
+
+    if (/chuan bi|hanh trang|do dac|mang theo|vali|checklist/.test(norm)) {
+      setActiveMainTab('checklist');
+      setCoPilotReply('🎒 Tui đã mở Tab Danh sách chuẩn bị hành trang giúp bạn kiểm tra các vật dụng quan trọng: CCCD/Hộ chiếu, thuốc men, đồ bơi và sạc dự phòng trước khi lên đường!');
+      setCoPilotInsiderTip('Mẹo: Hãy tick chọn các món đồ đã cho vào vali để không bị bỏ quên phút chót!');
+      setCoPilotProactive('Cần tui nhắc nhở thêm đồ dùng đặc thù theo thời tiết mùa này không?');
+      triggerToast('Đã chuyển sang Tab Danh sách chuẩn bị!');
+      setIsCoPilotBusy(false);
+      return;
+    }
+
+    if (/tao chuyen di|luu chuyen di|thu quy|chia tien|tao tour/.test(norm)) {
+      setShowCreateTripModal(true);
+      setCoPilotReply('🚀 Tui đã mở form Tạo chuyến đi cho bạn! Sau khi lưu, toàn bộ lịch trình và ngân sách sẽ được lưu vào cơ sở dữ liệu và kích hoạt ngay trang Quản lý Chuyến đi & Ví Thủ Quỹ để nhóm chia tiền nha!');
+      setCoPilotInsiderTip('Mẹo: Đặt tên chuyến đi kèm năm (VD: Chuyến Đi Hà Tĩnh 2026) để dễ tìm lại trong danh sách.');
+      setCoPilotProactive('Sau khi lưu chuyến đi, bạn có thể gửi link mời bạn bè cùng vào theo dõi ví thủ quỹ.');
+      triggerToast('Đã mở form Tạo chuyến đi!');
+      setIsCoPilotBusy(false);
+      return;
+    }
 
     // 1. Xác định ngày mục tiêu (mặc định là activeDay hiện tại)
     let targetDay = activeDay;
@@ -1851,9 +3823,86 @@ export default function PlannerPage() {
       }
     }
 
-    // 2. Xác định buổi mục tiêu
+    // 2. Nhận diện Thắc mắc tư vấn ẩm thực & Kinh nghiệm Thổ Địa (Expert Insider Q&A)
+    if (/co gi ngon|an gi|dac san gi|an gi ngon|mon gi ngon|co quan nao ngon|choi gi|di dau choi|co gi hay|kinh nghiem/.test(norm)) {
+      const realPool = getRealPlacesByProvince(destination);
+      const usedTitles = new Set<string>();
+      itineraryDays.forEach((d) =>
+        d.activities.forEach((a) => usedTitles.add(a.title.toLowerCase().trim()))
+      );
+
+      const wantFoodQuery = /ngon|an|dac san|hai san|mon/.test(norm);
+      const matchedDests = realPool
+        .filter((p) => {
+          if (usedTitles.has(p.name.toLowerCase().trim())) return false;
+          if (wantFoodQuery) {
+            const pText = `${p.name} ${p.category} ${p.description || ''}`.toLowerCase();
+            return /ẩm thực|quán|nhà hàng|bún|hải sản|cơm|bánh|đặc sản|lẩu|gỏi/.test(pText);
+          }
+          return true;
+        })
+        .slice(0, 3);
+
+      setCoPilotSuggestions(matchedDests);
+      setCoPilotReply(
+        `😋 Chuẩn gu sành sỏi luôn! Ở ${destination}, linh hồn ẩm thực và trải nghiệm bản địa nằm ở: ${localInsiderInfo.specialties}. Bạn cứ ghé thử là mê chữ ê kéo dài!`
+      );
+      setCoPilotInsiderTip(wantFoodQuery ? localInsiderInfo.foodTip : localInsiderInfo.timingTip);
+      setCoPilotProactive(`Tui đã chọn sẵn ${matchedDests.length} điểm nức tiếng bên dưới. Bạn có thể bấm nút "+ Thêm vào Ngày ${targetDay}" để đưa ngay vào lịch trình nhé!`);
+      setActiveDay(targetDay);
+      setIsCoPilotBusy(false);
+      return;
+    }
+
+    // 3. Kịch bản A: Yêu cầu ngủ nướng / lùi giờ buổi sáng (Cascading Sleep-In Timeline)
+    if (norm.includes('ngu nuong') || norm.includes('day muon') || norm.includes('lui gio') || norm.includes('khoi hanh muon')) {
+      setItineraryDays((prev) =>
+        prev.map((d) => {
+          if (d.dayNumber !== targetDay || d.activities.length === 0) return d;
+          const acts = [...d.activities];
+          if (acts.length >= 1) {
+            acts[0] = {
+              ...acts[0],
+              timeRange: '09:30–11:15',
+              timeSlotReason: 'Đã lùi giờ khởi hành sang 09:30 theo yêu cầu để cả đoàn thoải mái ngủ nướng xả stress, ăn sáng thong thả.',
+            };
+          }
+          if (acts.length >= 2) {
+            acts[1] = {
+              ...acts[1],
+              timeRange: '12:00–13:30',
+              timeSlotReason: 'Bữa trưa dời sang 12:00 thong thả thưởng thức ẩm thực sau buổi sáng thư giãn.',
+            };
+          }
+          if (acts.length >= 3) {
+            acts[2] = {
+              ...acts[2],
+              timeRange: '14:30–17:00',
+            };
+          }
+          if (acts.length >= 4) {
+            acts[3] = {
+              ...acts[3],
+              timeRange: '18:30–21:00',
+            };
+          }
+          return { ...d, activities: acts };
+        })
+      );
+      setActiveDay(targetDay);
+      setCoPilotReply(
+        `😴 Chuẩn bài luôn bạn ơi! Đi du lịch xả stress chứ có phải đi tập quân sự đâu mà dậy sớm chi cho cực! Tui đã tự động lùi lịch Ngày ${targetDay} bắt đầu từ 09:30, bữa trưa dời sang 12:00 và dạo chiều 14:30 vừa vặn không lo dồn dập rồi nè! ✨`
+      );
+      setCoPilotInsiderTip(localInsiderInfo.foodTip);
+      setCoPilotProactive(`Buổi sáng dậy muộn thong thả, chiều nay bạn có muốn tui gợi ý thêm ${localInsiderInfo.sunsetCafe} để ghé chill ngắm cảnh không?`);
+      triggerToast(`Trợ lý AI đã điều chỉnh lịch Ngày ${targetDay} bắt đầu từ 09:30!`);
+      setIsCoPilotBusy(false);
+      return;
+    }
+
+    // 4. Kịch bản B: Xác định buổi mục tiêu và hoán đổi địa điểm
     let targetSlot: 'MORNING' | 'NOON' | 'AFTERNOON' | 'EVENING' = 'AFTERNOON';
-    if (norm.includes('sang') || norm.includes('ngu nuong') || norm.includes('day muon') || norm.includes('morning')) {
+    if (norm.includes('sang') || norm.includes('morning')) {
       targetSlot = 'MORNING';
     } else if (norm.includes('trua') || norm.includes('an trua') || norm.includes('noon') || norm.includes('chay') || norm.includes('hai san') || norm.includes('quan an') || norm.includes('dac san')) {
       targetSlot = 'NOON';
@@ -1863,28 +3912,6 @@ export default function PlannerPage() {
       targetSlot = 'AFTERNOON';
     }
 
-    // 3. Kịch bản A: Yêu cầu ngủ nướng / lùi giờ buổi sáng
-    if (norm.includes('ngu nuong') || norm.includes('day muon') || norm.includes('lui gio') || norm.includes('khoi hanh muon')) {
-      setItineraryDays((prev) =>
-        prev.map((d) => {
-          if (d.dayNumber !== targetDay || d.activities.length === 0) return d;
-          const updatedActs = [...d.activities];
-          updatedActs[0] = {
-            ...updatedActs[0],
-            timeRange: '09:30–11:15',
-            timeSlotReason: 'Đã lùi giờ khởi hành sang 09:30 theo yêu cầu để cả đoàn thoải mái ngủ nướng, ăn sáng thong thả.',
-          };
-          return { ...d, activities: updatedActs };
-        })
-      );
-      setActiveDay(targetDay);
-      setCoPilotReply(`✅ Đã điều chỉnh khung giờ sáng Ngày ${targetDay} lùi xuống 09:30–11:15 để cả đoàn thoải mái ngủ nướng và ăn sáng thư thả!`);
-      triggerToast(`Trợ lý AI đã lùi giờ sáng Ngày ${targetDay} xuống 09:30!`);
-      setIsCoPilotBusy(false);
-      return;
-    }
-
-    // 4. Kịch bản B: Đổi địa điểm theo nhu cầu tự nhiên (nhẹ nhàng cho người già, quán ăn đặc sản, biển, cafe...)
     const realPool = getRealPlacesByProvince(destination);
     const usedTitles = new Set<string>();
     itineraryDays.forEach((d) =>
@@ -1896,7 +3923,7 @@ export default function PlannerPage() {
       /an |quan|nha hang|chay|hai san|dac san|bun|mi|com|banh|lau/.test(norm);
     const wantRelaxedOrElderly =
       /nhe nhang|nguoi lon tuoi|nguoi gia|ong ba|met|khong leo|cafe|ca phe|nghi ngoi|bang phang| mát/.test(norm);
-    const wantBeachOrRiver = /bien|dao mat|ngam canh|song|cau|du thuyen/.test(norm);
+    const wantBeachOrRiver = /bien|dao mat|ngam canh|song|cau|du thuyen|chill|hoang hon/.test(norm);
 
     let bestCand = realPool[0];
     let bestScore = -9999;
@@ -1920,7 +3947,7 @@ export default function PlannerPage() {
         if (/bao tang|bien|cau|song|pho co|chua|cafe|ca phe|ho|cong vien/.test(pNorm)) score += 260;
       }
       if (wantBeachOrRiver) {
-        if (/bien|bai|song|cau|dao|du thuyen/.test(pNorm)) score += 240;
+        if (/bien|bai|song|cau|dao|du thuyen|hoang hon|cafe/.test(pNorm)) score += 240;
       }
 
       if (score > bestScore) {
@@ -1937,9 +3964,9 @@ export default function PlannerPage() {
           : `${new Intl.NumberFormat('vi-VN').format(costVal * peopleCount)}đ / nhóm`;
 
       const customWhy = wantRelaxedOrElderly
-        ? 'Không gian bằng phẳng, thoáng mát, rất nhẹ nhàng và có nhiều chỗ nghỉ chân lý tưởng cho người lớn tuổi.'
+        ? 'Không gian bằng phẳng, thoáng mát, rất nhẹ nhàng và có nhiều chỗ nghỉ chân lý tưởng cho cả gia đình và người lớn tuổi.'
         : wantFood
-          ? 'Điểm thưởng thức ẩm thực bản địa nổi tiếng, hương vị đậm đà và không gian ngồi thoải mái.'
+          ? 'Điểm thưởng thức ẩm thực bản địa nổi tiếng, nguyên liệu tươi rói, hương vị đậm đà và không gian ngồi thoải mái.'
           : bestCand.description || `Điểm trải nghiệm được yêu thích hàng đầu tại ${destination}.`;
 
       setItineraryDays((prev) =>
@@ -1962,7 +3989,7 @@ export default function PlannerPage() {
             costVnd: costVal * peopleCount,
             costStatus: costVal === 0 ? 'FREE' : 'PAID',
             costLabel,
-            photoUrl: bestCand.image || oldAct.photoUrl,
+            photoUrl: pickAuthenticPlacePhoto(bestCand.image, realPool, targetIdx, oldAct.photoUrl),
             latitude: bestCand.latitude || oldAct.latitude,
             longitude: bestCand.longitude || oldAct.longitude,
             whyVisitReason: customWhy,
@@ -1985,12 +4012,59 @@ export default function PlannerPage() {
 
       setActiveDay(targetDay);
       setCoPilotReply(
-        `✅ Đã đổi hoạt động ${slotNameVi} Ngày ${targetDay} sang "${bestCand.name}" (${bestCand.category}) — ${customWhy}`
+        `🎉 Tuyệt vời ông mặt trời! Tui đã đổi chặng ${slotNameVi} Ngày ${targetDay} sang ngay "${bestCand.name}" (${bestCand.category}) theo đúng gu của bạn nè! ${customWhy}`
       );
+      setCoPilotInsiderTip(wantFood ? localInsiderInfo.foodTip : localInsiderInfo.timingTip);
+      setCoPilotProactive(`Sau chặng này, bạn có muốn bổ sung thêm ${localInsiderInfo.sunsetCafe} để chuyến đi thêm trọn vẹn không?`);
       triggerToast(`Đã cập nhật ${slotNameVi} Ngày ${targetDay} sang ${bestCand.name}!`);
+    } else {
+      setCoPilotReply(`Úi chà, tui tìm mỏi mắt khắp ${destination} mà chưa ra điểm nào đúng gu này! Bạn thử gõ rõ hơn xíu như "đổi ăn trưa hải sản" hay "chiều muốn ngắm hoàng hôn chill chill" xem sao nha! 😉`);
+      setCoPilotInsiderTip(localInsiderInfo.foodTip);
+      setCoPilotProactive(null);
     }
 
     setIsCoPilotBusy(false);
+  };
+
+  const handleAddSuggestionToDay = (suggestedDest: RealPlace, targetDayNum: number) => {
+    const costVal = suggestedDest.priceMin ?? 0;
+    const costLabel =
+      costVal === 0
+        ? 'Miễn phí vé'
+        : `${new Intl.NumberFormat('vi-VN').format(costVal * peopleCount)}đ / nhóm`;
+    const customWhy = suggestedDest.description || `Điểm trải nghiệm được đề xuất bởi AI Co-Pilot tại ${destination}.`;
+
+    setItineraryDays((prev) =>
+      prev.map((d) => {
+        if (d.dayNumber !== targetDayNum) return d;
+        const newAct: Activity = {
+          id: `act-copilot-${Date.now()}`,
+          timeSlot: 'AFTERNOON',
+          timeRange: '15:30–17:00',
+          category: suggestedDest.category || 'Tham quan',
+          title: suggestedDest.name,
+          description: suggestedDest.description || customWhy,
+          location: `${suggestedDest.name}, ${destination}`,
+          costVnd: costVal * peopleCount,
+          costStatus: costVal === 0 ? 'FREE' : 'PAID',
+          costLabel,
+          photoUrl: pickAuthenticPlacePhoto(
+            suggestedDest.image,
+            getRealPlacesByProvince(destination),
+            d.activities.length,
+            activeDestObj.photo
+          ),
+          latitude: suggestedDest.latitude,
+          longitude: suggestedDest.longitude,
+          whyVisitReason: customWhy,
+        };
+        return { ...d, activities: [...d.activities, newAct] };
+      })
+    );
+    setCoPilotSuggestions([]);
+    setActiveDay(targetDayNum);
+    triggerToast(`Đã thêm "${suggestedDest.name}" vào Ngày ${targetDayNum}!`);
+    setCoPilotReply(`✨ Đã bổ sung thành công "${suggestedDest.name}" vào Ngày ${targetDayNum}! Lịch trình và chi phí đã tự động cập nhật lại nha.`);
   };
 
   // ─── SAVE ITINERARY REAL PERSISTENCE ──────────────────────────────────────
@@ -2044,7 +4118,8 @@ export default function PlannerPage() {
       const list: SavedItineraryRecord[] = stored ? JSON.parse(stored) : [];
       list.unshift(record);
       localStorage.setItem('vista_saved_itineraries', JSON.stringify(list));
-      setSavedCount(list.length + 3);
+      setSavedItinerariesList(list);
+      setSavedCount(list.length);
       setIsSaved(true);
 
       // If linked to an existing trip, update that trip's itinerary and cost in vista_custom_trips
@@ -2080,78 +4155,91 @@ export default function PlannerPage() {
     }
   };
 
-  // ─── CREATE REAL GROUP TRIP ───────────────────────────────────────────────
-  const handleCreateTripSubmit = () => {
-    const tripId = `trip-${Date.now()}`;
-    const activityCount = itineraryDays.reduce((acc, d) => acc + d.activities.length, 0);
-    let plannerOwner = {
-      name: 'Thành viên VISTA',
-      avatar: 'TV',
-      color: '#0284c7',
-      role: 'Trưởng nhóm',
-      userId: 'u-me',
-      email: '',
-    };
+  // ─── CREATE REAL GROUP TRIP DIRECTLY ON DATABASE ────────────────────────
+  const handleCreateTripSubmit = async () => {
+    const destName = destination.includes('Việt Nam') ? destination : `${destination}, Việt Nam`;
+    const tripTitle = newTripTitle || `Chuyến đi ${destination} ${daysCount} ngày`;
+
+    // Calculate dates
+    const today = new Date();
+    const startIso = today.toISOString().split('T')[0];
+    const endDateObj = new Date(today);
+    endDateObj.setDate(today.getDate() + Math.max(1, daysCount));
+    const endIso = endDateObj.toISOString().split('T')[0];
+
     try {
-      const userStr = localStorage.getItem('vista_user');
-      if (userStr) {
-        const u = JSON.parse(userStr);
-        const rawName = (u.displayName || u.email || 'Thành viên VISTA').replace(/\s*\(Bạn\)/g, '').trim();
-        const parts = rawName.split(/\s+/);
-        const initials = (parts.length >= 2 ? parts[0][0] + parts[parts.length - 1][0] : rawName.slice(0, 2)).toUpperCase();
-        plannerOwner = {
-          name: rawName,
-          avatar: initials || 'TV',
-          color: '#0284c7',
-          role: 'Trưởng nhóm',
-          userId: u.id || 'u-me',
-          email: u.email || '',
-        };
+      // 1. Create Trip directly on PostgreSQL Database via Spring Boot API
+      const backendTrip = await apiRequest<any>('/trips', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: tripTitle,
+          startDate: startIso,
+          endDate: endIso,
+          destinationSummary: destName,
+          budgetTotal: totalEstimatedCost || 15000000,
+          currency: 'VND',
+        }),
+      });
+
+      const realTripId = backendTrip.id;
+
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('vista_last_trip_id', realTripId);
+        window.dispatchEvent(new CustomEvent('vista-trip-selected', { detail: realTripId }));
+        window.dispatchEvent(new CustomEvent('vista_trip_changed', { detail: realTripId }));
+
+        try {
+          const storedTrips = localStorage.getItem('vista_custom_trips');
+          const customList = storedTrips ? JSON.parse(storedTrips) : [];
+          const newTripObj = {
+            id: realTripId,
+            title: tripTitle,
+            destination: destName,
+            startDate: startIso,
+            endDate: endIso,
+            itineraryDays,
+            budgetTotal: totalEstimatedCost || 15000000,
+            updatedAt: Date.now(),
+          };
+          const updatedList = [newTripObj, ...customList.filter((t: any) => t.id !== realTripId)];
+          localStorage.setItem('vista_custom_trips', JSON.stringify(updatedList));
+        } catch (e) {
+          console.warn('Failed to save to vista_custom_trips:', e);
+        }
       }
-    } catch {}
 
-    const newTrip = {
-      id: tripId,
-      title: newTripTitle || `Chuyến đi ${destination} ${daysCount} ngày`,
-      destination: destination.includes('Việt Nam') ? destination : `${destination}, Việt Nam`,
-      durationBadge: `${daysCount} ngày`,
-      startDate: startDate || '20/11',
-      endDate: '24/11/2026',
-      status: 'PLANNING',
-      role: 'OWNER',
-      ownerId: plannerOwner.userId,
-      budgetTotal: totalEstimatedCost || 20000000,
-      budgetSpent: 0,
-      progressPercent: 0,
-      members: [plannerOwner],
-      image: activeDestObj.photo || 'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80',
-      treasuryPath: `/trips/${tripId}/treasury`,
-      alertType: 'BLUE',
-      alertText: `Lịch trình AI ${daysCount} ngày (${activityCount} hoạt động) đã sẵn sàng`,
-      alertLinkText: 'Xem',
-      quickActions: [
-        { label: 'Lịch trình', href: `/planner?tripId=${tripId}&dest=${encodeURIComponent(destination)}` },
-        { label: 'Phân công', actionType: 'ASSIGN' },
-        { label: 'Ghi chú', actionType: 'NOTE' },
-      ],
-      itineraryDays,
-      createdAt: Date.now(),
-    };
+      setLinkedTripId(realTripId);
+      setLinkedTripTitle(tripTitle);
 
-    try {
-      const storedTrips = localStorage.getItem('vista_custom_trips');
-      const list = storedTrips ? JSON.parse(storedTrips) : [];
-      list.unshift(newTrip);
-      localStorage.setItem('vista_custom_trips', JSON.stringify(list));
-    } catch {
-      // ignore
+      // 2. Persist AI itinerary days into database if activities exist
+      if (Array.isArray(itineraryDays) && itineraryDays.length > 0) {
+        try {
+          const mergeDays: MergeItineraryDay[] = itineraryDays.map((d) => ({
+            dayNumber: d.dayNumber,
+            activities: d.activities.map((a, idx) => ({
+              customStopName: a.title,
+              note: a.description,
+              startTime: a.timeSlot === 'MORNING' ? '08:00' : a.timeSlot === 'AFTERNOON' ? '14:00' : '19:00',
+              endTime: a.timeSlot === 'MORNING' ? '11:30' : a.timeSlot === 'AFTERNOON' ? '17:00' : '21:30',
+              sortOrder: idx + 1,
+              source: 'AI_GEMINI',
+            })),
+          }));
+          await mergeTripItinerary(realTripId, mergeDays);
+        } catch (itinErr) {
+          console.warn('Itinerary merge error:', itinErr);
+        }
+      }
+
+      setShowCreateTripModal(false);
+      triggerToast('🎉 Đã lưu chuyến đi và toàn bộ lịch trình AI vào Database thành công!');
+      setTimeout(() => {
+        router.push(`/trips/${realTripId}`);
+      }, 700);
+    } catch (err: any) {
+      triggerToast(`⚠️ Không thể lưu vào Database: ${err.message || 'Lỗi kết nối'}`);
     }
-
-    setShowCreateTripModal(false);
-    triggerToast('Tạo chuyến đi nhóm thành công! Đang chuyển đến không gian Chuyến đi…');
-    setTimeout(() => {
-      router.push(`/trips?created=${tripId}`);
-    }, 1000);
   };
 
   // ─── REPLACE ACTIVITY HANDLER ─────────────────────────────────────────────
@@ -2180,6 +4268,11 @@ export default function PlannerPage() {
         }),
       }))
     );
+    if (replaceTargetActivityId) {
+      setRejectedDestinationIds((prev) =>
+        prev.includes(replaceTargetActivityId) ? prev : [...prev.slice(-19), replaceTargetActivityId]
+      );
+    }
     setReplaceTargetActivityId(null);
     setReplaceSearchQuery('');
     markDirty();
@@ -2199,7 +4292,7 @@ export default function PlannerPage() {
     triggerToast('Đã xóa hoạt động khỏi lịch trình.');
   };
 
-  // ─── ADD CUSTOM ACTIVITY HANDLER ──────────────────────────────────────────
+  // ─── ADD ACTIVITY HANDLER (SUGGESTED OR CUSTOM) ───────────────────────────
   const handleAddActivity = () => {
     if (!newActTitle.trim()) return;
     const costNum = parseInt(newActCost, 10) || 0;
@@ -2209,11 +4302,23 @@ export default function PlannerPage() {
       timeRange: newActTime || '14:00–15:30',
       category: newActCategory,
       title: newActTitle,
-      description: `Hoạt động do bạn tự thêm vào lịch trình trải nghiệm ${destination}.`,
+      description:
+        selectedSuggestedPlace?.description ||
+        `Hoạt động do bạn thêm vào lịch trình trải nghiệm ${destination}.`,
       location: destination,
       costVnd: costNum,
-      costLabel: costNum === 0 ? 'Miễn phí' : `${new Intl.NumberFormat('vi-VN').format(costNum)}đ / nhóm`,
-      photoUrl: activeDestObj.photo,
+      costLabel:
+        costNum === 0
+          ? 'Miễn phí'
+          : `${new Intl.NumberFormat('vi-VN').format(costNum)}đ / người`,
+      photoUrl: pickAuthenticPlacePhoto(
+        selectedSuggestedPlace?.image,
+        getRealPlacesByProvince(destination),
+        0,
+        activeDestObj.photo
+      ),
+      latitude: selectedSuggestedPlace?.latitude,
+      longitude: selectedSuggestedPlace?.longitude,
     };
 
     setItineraryDays((prev) =>
@@ -2230,12 +4335,55 @@ export default function PlannerPage() {
 
     setShowAddActivityModal(false);
     setNewActTitle('');
+    setSelectedSuggestedPlace(null);
+    setAddActSearchQuery('');
+    setAddActCategoryFilter('all');
+    setShowActAutocomplete(false);
     markDirty();
-    triggerToast(`Đã thêm hoạt động vào Ngày ${activeDay}.`);
+    triggerToast(`Đã thêm "${newActTitle}" vào Ngày ${activeDay}.`);
   };
 
   return (
     <div className={styles.plannerPage}>
+      {/* Decorative Sky Plane & Flight Path (As shown in mockup) */}
+      <div className={styles.decorativeSkyPlane} aria-hidden="true">
+        <svg width="220" height="110" viewBox="0 0 220 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M10 85 C 60 95, 90 40, 130 65 C 160 85, 175 40, 195 25"
+            stroke="#93C5FD"
+            strokeWidth="2"
+            strokeDasharray="5 5"
+            strokeLinecap="round"
+          />
+          <path
+            d="M130 65 C 145 75, 155 70, 150 55 C 145 42, 132 50, 130 65"
+            stroke="#93C5FD"
+            strokeWidth="2"
+            strokeDasharray="4 4"
+            strokeLinecap="round"
+          />
+          <g transform="translate(192, 15) rotate(22)">
+            <path
+              d="M21 16 L28 10 L28 12 L23 16 L23 20 L28 22 L28 24 L21 21 L13 26 L12 24 L16 19 L16 16 L6 13 L6 10 L16 13 L16 8 L13 5 L13 3 L18 5 L21 16 Z"
+              fill="#0284C7"
+            />
+          </g>
+        </svg>
+      </div>
+
+      {/* Decorative Tropical Palms at bottom right */}
+      <div className={styles.decorativePalms} aria-hidden="true">
+        <svg width="260" height="200" viewBox="0 0 260 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M260 120 C 200 130, 160 170, 140 200 L260 200 Z" fill="#E0F2FE" opacity="0.6" />
+          <path d="M260 80 C 180 95, 130 150, 100 200 L260 200 Z" fill="#BAE6FD" opacity="0.4" />
+          <g stroke="#93C5FD" strokeWidth="2.5" strokeLinecap="round" opacity="0.7">
+            <path d="M260 150 Q 210 130 175 160 Q 210 145 260 150" fill="#BAE6FD" />
+            <path d="M260 120 Q 200 100 155 135 Q 195 115 260 120" fill="#BAE6FD" />
+            <path d="M260 90 Q 220 70 180 95 Q 215 80 260 90" fill="#93C5FD" />
+          </g>
+        </svg>
+      </div>
+
       {/* ─── LINKED TRIP BANNER (BIDIRECTIONAL CONNECTION) ─── */}
       {linkedTripTitle && (
         <div style={{
@@ -2307,33 +4455,6 @@ export default function PlannerPage() {
         </div>
       )}
 
-      {/* ─── 2. COMPACT PAGE INTRODUCTION ─── */}
-      <section className={styles.introContainer} aria-label="Giới thiệu VISTA AI Planner">
-        <div className={styles.introLeft}>
-          <span className={styles.eyebrow}>VISTA AI PLANNER</span>
-          <h1 className={styles.pageTitle}>Chuyến đi hay, bắt đầu từ đây.</h1>
-          <p className={styles.pageSubtitle}>
-            Chọn điều bạn thích, VISTA gợi ý lịch trình phù hợp với bạn.
-          </p>
-        </div>
-
-        <div className={styles.introRightActions}>
-          {/* Real Saved Itineraries Button */}
-          <button
-            type="button"
-            className={styles.btnSavedItineraries}
-            onClick={() => setShowSavedDrawer(true)}
-            title="Xem danh sách các lịch trình đã lưu"
-          >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-            </svg>
-            <span>Lịch trình đã lưu</span>
-            <span className={styles.savedBadge}>{savedCount}</span>
-          </button>
-        </div>
-      </section>
-
       {/* ─── 3. TWO-COLUMN PLANNING WORKSPACE ─── */}
       <main className={styles.workspaceContainer}>
         {/* ════════════════════════════════════════════════════════════════════
@@ -2343,29 +4464,52 @@ export default function PlannerPage() {
           {/* Card Header */}
           <div className={styles.cardHeader}>
             <div className={styles.cardHeaderIcon}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="3" />
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-              </svg>
+              <Sparkles size={18} />
             </div>
-            <div>
+            <div style={{ flex: 1, minWidth: 0 }}>
               <h2 className={styles.cardHeaderTitle}>Thiết lập chuyến đi</h2>
-              <p className={styles.cardHeaderDesc}>Một vài thông tin để lên lịch trình vừa ý.</p>
+              <p className={styles.cardHeaderDesc}>Tùy chỉnh lịch trình thông minh cùng AI</p>
             </div>
+            {planHistoryList.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setShowHistoryDrawer(true)}
+                title="Xem các lịch trình đã lưu"
+                style={{
+                  marginLeft: 'auto',
+                  background: '#E0F2FE',
+                  border: '1px solid #BAE6FD',
+                  color: '#0284C7',
+                  borderRadius: '8px',
+                  padding: '5px 9px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  fontSize: '11.5px',
+                  fontWeight: 700,
+                  transition: 'all 0.15s ease',
+                  flexShrink: 0,
+                }}
+              >
+                <Bookmark size={12} />
+                <span>Đã lưu ({planHistoryList.length})</span>
+              </button>
+            )}
           </div>
 
           {/* GROUP A — ĐIỂM ĐẾN & THỜI GIAN */}
           <div className={styles.formGroup}>
-            <div className={styles.groupTitle}>Nhóm A — Điểm đến & Thời gian</div>
+            <div className={styles.groupTitleWithBar}>Điểm đến & Lịch trình</div>
 
-            {/* 1. Điểm đến */}
-            <div className={styles.destinationSelectWrapper}>
+            {/* 1. Điểm đến (Đầy đủ 63 tỉnh thành & Tìm kiếm thông minh không dấu) */}
+            <div className={styles.destinationSelectWrapper} ref={destDropdownRef}>
               <label className={styles.fieldLabel} htmlFor="dest-search-input">
                 Điểm đến
               </label>
               <div
                 className={`${styles.destinationInputWrapper} ${showDestDropdown ? styles.destinationInputWrapperActive : ''}`}
-                onClick={() => setShowDestDropdown(true)}
+                onClick={() => setShowDestDropdown((prev) => !prev)}
               >
                 <svg className={styles.destinationIcon} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
@@ -2375,61 +4519,217 @@ export default function PlannerPage() {
                   id="dest-search-input"
                   type="text"
                   className={styles.destinationInput}
-                  placeholder="Bạn muốn đi đâu?"
-                  value={showDestDropdown ? destSearchQuery : destination}
+                  placeholder="Nhập hoặc tìm kiếm 63 tỉnh thành..."
+                  value={showDestDropdown ? destSearchQuery : cleanDestName}
                   onChange={(e) => {
                     setDestSearchQuery(e.target.value);
                     setShowDestDropdown(true);
                   }}
                   onFocus={() => {
                     setShowDestDropdown(true);
-                    setDestSearchQuery('');
+                    if (!destSearchQuery) setDestSearchQuery('');
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      if (filteredDestinations.length > 0) {
+                        const top = filteredDestinations[0].nameVi;
+                        changeDestination(top);
+                        setShowDestDropdown(false);
+                        setDestSearchQuery('');
+                        triggerToast(`Đã chọn điểm đến: ${top}`);
+                      } else if (destSearchQuery.trim()) {
+                        const custom = destSearchQuery.trim();
+                        changeDestination(custom);
+                        setShowDestDropdown(false);
+                        setDestSearchQuery('');
+                        triggerToast(`Đã chọn điểm đến: ${custom}`);
+                      }
+                    }
                   }}
                 />
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                {destSearchQuery && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDestSearchQuery('');
+                    }}
+                    style={{
+                      border: 'none',
+                      background: 'none',
+                      cursor: 'pointer',
+                      color: '#94A3B8',
+                      fontSize: '13px',
+                      padding: '2px 6px',
+                    }}
+                    title="Xóa tìm kiếm"
+                  >
+                    ✕
+                  </button>
+                )}
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  style={{
+                    cursor: 'pointer',
+                    transform: showDestDropdown ? 'rotate(180deg)' : 'none',
+                    transition: 'transform 0.2s',
+                  }}
+                >
                   <polyline points="6 9 12 15 18 9" />
                 </svg>
               </div>
 
-              {/* Destination Dropdown (T4: 34 provinces grouped with search) */}
+              {/* Destination Dropdown (Hỗ trợ 63 tỉnh thành & Tìm kiếm không dấu) */}
               {showDestDropdown && (
                 <div className={styles.destinationDropdown}>
-                  <div style={{ padding: '6px 12px', fontSize: '11px', color: '#64748B', fontWeight: 600, borderBottom: '1px solid #E2E8F0', background: '#F8FAFC' }}>
-                    Có {filteredDestinations.length} điểm đến khả dụng (Đã tích hợp 34 tỉnh thành)
+                  {/* Quick selection chips for top destinations */}
+                  <div style={{ padding: '8px 12px', borderBottom: '1px solid #E2E8F0', background: '#F8FAFC' }}>
+                    <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 700, marginBottom: '6px' }}>
+                      🌟 ĐIỂM ĐẾN PHỔ BIẾN NHẤT:
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                      {[
+                        'Đà Nẵng',
+                        'Hà Nội',
+                        'TP. Hồ Chí Minh',
+                        'Phú Quốc (Kiên Giang)',
+                        'Đà Lạt (Lâm Đồng)',
+                        'Nha Trang (Khánh Hòa)',
+                        'Hội An (Quảng Nam)',
+                        'Hà Tĩnh',
+                        'Sa Pa (Lào Cai)',
+                        'Ninh Bình',
+                      ].map((popularName) => (
+                        <button
+                          key={popularName}
+                          type="button"
+                          onClick={() => {
+                            changeDestination(popularName);
+                            setShowDestDropdown(false);
+                            setDestSearchQuery('');
+                            triggerToast(`Đã chọn điểm đến: ${popularName}`);
+                          }}
+                          style={{
+                            fontSize: '11px',
+                            padding: '3px 8px',
+                            borderRadius: '999px',
+                            border: destination === popularName ? '1px solid #0284C7' : '1px solid #CBD5E1',
+                            background: destination === popularName ? '#E0F2FE' : '#FFFFFF',
+                            color: destination === popularName ? '#0284C7' : '#334155',
+                            fontWeight: destination === popularName ? 700 : 500,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {popularName.replace(/\s*\(.*\)/, '')}
+                        </button>
+                      ))}
+                    </div>
                   </div>
+
+                  {/* Count status */}
+                  <div style={{ padding: '6px 12px', fontSize: '11px', color: '#64748B', fontWeight: 600, borderBottom: '1px solid #F1F5F9', background: '#FFFFFF' }}>
+                    {filteredDestinations.length > 0
+                      ? `Có ${filteredDestinations.length} điểm đến khớp tìm kiếm (Đầy đủ 63 tỉnh thành)`
+                      : `Không tìm thấy tỉnh thành có tên "${destSearchQuery}"`}
+                  </div>
+
+                  {/* Empty state: allow selecting typed string or resetting */}
+                  {filteredDestinations.length === 0 && (
+                    <div style={{ padding: '14px 12px', textAlign: 'center', background: '#FFFFFF' }}>
+                      <p style={{ fontSize: '12.5px', color: '#64748B', margin: '0 0 10px 0' }}>
+                        Bạn có thể dùng <strong>&quot;{destSearchQuery}&quot;</strong> làm điểm đến hoặc xem lại danh sách:
+                      </p>
+                      <div style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const customName = destSearchQuery.trim();
+                            if (customName) {
+                              changeDestination(customName);
+                              setShowDestDropdown(false);
+                              setDestSearchQuery('');
+                              triggerToast(`Đã chọn điểm đến: ${customName}`);
+                            }
+                          }}
+                          style={{
+                            fontSize: '12px',
+                            fontWeight: 700,
+                            color: '#FFFFFF',
+                            background: '#0284C7',
+                            border: 'none',
+                            borderRadius: '6px',
+                            padding: '6px 12px',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          ✓ Dùng &quot;{destSearchQuery}&quot;
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setDestSearchQuery('')}
+                          style={{
+                            fontSize: '12px',
+                            fontWeight: 600,
+                            color: '#475569',
+                            background: '#F1F5F9',
+                            border: '1px solid #CBD5E1',
+                            borderRadius: '6px',
+                            padding: '6px 12px',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          Xem tất cả 63 tỉnh thành
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Destination List Items */}
                   {filteredDestinations.map((d) => (
                     <div
                       key={d.id}
-                      className={`${styles.destinationItem} ${destination === d.nameVi ? styles.destinationItemActive : ''}`}
+                      className={`${styles.destinationItem} ${destination === d.nameVi || destination === d.province ? styles.destinationItemActive : ''}`}
                       onClick={() => {
                         const chosen = d.nameVi;
-                        setDestination(chosen);
+                        changeDestination(chosen);
                         setShowDestDropdown(false);
-                        if (d.id === 'phuquoc' || chosen.includes('Phú Quốc')) {
-                          setItineraryDays(INITIAL_PHUQUOC_DAYS);
-                          setActiveDay(1);
-                          setNewTripTitle(`Chuyến đi Phú Quốc ${daysCount} ngày`);
-                          triggerToast('Đã tải lịch trình thông minh cho Phú Quốc!');
-                        } else if (d.id === 'danang' || chosen.includes('Đà Nẵng')) {
-                          setItineraryDays(INITIAL_DANANG_DAYS);
-                          setActiveDay(1);
-                          setNewTripTitle(`Chuyến đi Đà Nẵng ${daysCount} ngày`);
-                          triggerToast('Đã tải lịch trình thông minh cho Đà Nẵng!');
+                        setDestSearchQuery('');
+                        if (hasPlanGenerated) {
+                          if (d.id === 'phuquoc' || chosen.includes('Phú Quốc')) {
+                            setItineraryDays(INITIAL_PHUQUOC_DAYS);
+                            setActiveDay(1);
+                            setNewTripTitle(`Chuyến đi Phú Quốc ${daysCount} ngày`);
+                            triggerToast('Đã tải lịch trình thông minh cho Phú Quốc!');
+                          } else if (d.id === 'danang' || chosen.includes('Đà Nẵng')) {
+                            setItineraryDays(INITIAL_DANANG_DAYS);
+                            setActiveDay(1);
+                            setNewTripTitle(`Chuyến đi Đà Nẵng ${daysCount} ngày`);
+                            triggerToast('Đã tải lịch trình thông minh cho Đà Nẵng!');
+                          } else {
+                            const customPlan = generateDistinctDayPlan(
+                              chosen,
+                              daysCount,
+                              isLateEveningDeparture,
+                              budgetTier,
+                              selectedStyles,
+                              d.lat,
+                              d.lng,
+                              d.photo
+                            );
+                            setItineraryDays(customPlan);
+                            setActiveDay(1);
+                            setNewTripTitle(`Chuyến đi ${chosen} ${daysCount} ngày`);
+                            triggerToast(`Đã tải lịch trình thông minh cho ${chosen}!`);
+                          }
                         } else {
-                          const customPlan = generateDistinctDayPlan(
-                            chosen,
-                            daysCount,
-                            isLateEveningDeparture,
-                            budgetTier,
-                            selectedStyles,
-                            d.lat,
-                            d.lng,
-                            d.photo
-                          );
-                          setItineraryDays(customPlan);
-                          setActiveDay(1);
-                          setNewTripTitle(`Chuyến đi ${chosen} ${daysCount} ngày`);
-                          triggerToast(`Đã tải lịch trình thông minh cho ${chosen}!`);
+                          triggerToast(`Đã chọn điểm đến: ${chosen}`);
                         }
                       }}
                     >
@@ -2446,77 +4746,140 @@ export default function PlannerPage() {
               )}
             </div>
 
-            {/* 2. Ngày khởi hành (T1: Quick chips, forbid past dates, evening notice) */}
+            {/* 2. Ngày khởi hành (Smart Departure Cockpit) */}
             <div>
               <label className={styles.fieldLabel} htmlFor="start-date-input">
                 Ngày khởi hành
               </label>
-              <div className={styles.dateInputWrapper}>
-                <svg className={styles.dateIcon} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                  <line x1="16" y1="2" x2="16" y2="6" />
-                  <line x1="8" y1="2" x2="8" y2="6" />
-                  <line x1="3" y1="10" x2="21" y2="10" />
-                </svg>
-                <input
-                  id="start-date-input"
-                  type="date"
-                  min={getTodayIso()}
-                  className={styles.dateInput}
-                  value={startDate}
-                  onChange={(e) => {
-                    const chosen = e.target.value;
-                    if (chosen && chosen < getTodayIso()) {
-                      triggerToast('Không thể chọn ngày trong quá khứ!');
-                      return;
-                    }
-                    setStartDate(chosen);
-                    markDirty();
-                  }}
-                />
+
+              <div className={styles.dateCockpitCard}>
+                <div
+                  className={styles.dateCockpitMain}
+                  onClick={handleOpenDatePicker}
+                  role="button"
+                  tabIndex={0}
+                  title="Bấm để mở lịch chọn ngày"
+                >
+                  <div className={styles.dateStampBox}>
+                    <span className={styles.dateStampDayOfWeek}>{departureDateInfo.shortDayOfWeek}</span>
+                    <span className={styles.dateStampNumber}>{departureDateInfo.dayNumber}</span>
+                  </div>
+                  <div className={styles.dateCockpitDetails}>
+                    <span className={styles.dateCockpitTitle}>
+                      {departureDateInfo.dayOfWeek}, {departureDateInfo.dayNumber} {departureDateInfo.monthYear}
+                    </span>
+                    <div className={styles.dateCockpitSubRow}>
+                      {departureDateInfo.relativeText && (
+                        <span className={styles.dateCockpitBadge}>{departureDateInfo.relativeText}</span>
+                      )}
+                      <span className={styles.dateCockpitHint}>Bấm mở lịch</span>
+                    </div>
+                  </div>
+                  <div className={styles.dateCockpitCalendarIcon}>
+                    <Calendar size={17} strokeWidth={2.2} />
+                  </div>
+                  <input
+                    ref={startDateInputRef}
+                    id="start-date-input"
+                    type="date"
+                    min={getTodayIso()}
+                    className={styles.dateCockpitHiddenInput}
+                    value={startDate}
+                    onChange={(e) => {
+                      const chosen = e.target.value;
+                      if (chosen && chosen < getTodayIso()) {
+                        triggerToast('Không thể chọn ngày trong quá khứ!');
+                        return;
+                      }
+                      setStartDate(chosen);
+                      markDirty();
+                    }}
+                  />
+                </div>
+
+                {/* Quick Date Segmented Bar */}
+                <div className={styles.dateSegmentedCapsule}>
+                  <button
+                    type="button"
+                    className={`${styles.dateSegmentBtn} ${startDate === getTodayIso() ? styles.dateSegmentBtnActive : ''}`}
+                    onClick={() => {
+                      setStartDate(getTodayIso());
+                      markDirty();
+                    }}
+                  >
+                    Hôm nay
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.dateSegmentBtn} ${startDate === getFutureDateIso(1) ? styles.dateSegmentBtnActive : ''}`}
+                    onClick={() => {
+                      setStartDate(getFutureDateIso(1));
+                      markDirty();
+                    }}
+                  >
+                    Ngày mai
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.dateSegmentBtn} ${startDate === getWeekendIso() ? styles.dateSegmentBtnActive : ''}`}
+                    onClick={() => {
+                      setStartDate(getWeekendIso());
+                      markDirty();
+                    }}
+                  >
+                    Cuối tuần
+                  </button>
+                </div>
               </div>
 
-              {/* Quick Date Chips (T1) */}
-              <div className={styles.quickDateRow}>
-                <button
-                  type="button"
-                  className={`${styles.quickDateChip} ${startDate === getTodayIso() ? styles.quickDateChipActive : ''}`}
-                  onClick={() => {
-                    setStartDate(getTodayIso());
-                    markDirty();
-                  }}
-                >
-                  Hôm nay
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.quickDateChip} ${startDate === getFutureDateIso(1) ? styles.quickDateChipActive : ''}`}
-                  onClick={() => {
-                    setStartDate(getFutureDateIso(1));
-                    markDirty();
-                  }}
-                >
-                  Ngày mai
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.quickDateChip} ${startDate === getWeekendIso() ? styles.quickDateChipActive : ''}`}
-                  onClick={() => {
-                    setStartDate(getWeekendIso());
-                    markDirty();
-                  }}
-                >
-                  Cuối tuần
-                </button>
-              </div>
-
-              {/* Smart late evening alert (T1) */}
-              {isLateEveningDeparture && (
-                <div className={styles.smartTimeNotice}>
-                  <span className={styles.smartTimeNoticeIcon}>🌙</span>
-                  <span>
-                    <strong>Khởi hành muộn (sau 20:00):</strong> VISTA AI đã tự động sắp xếp Ngày 1 bắt đầu từ buổi tối: nhận phòng khách sạn, dạo phố đêm & thưởng thức bữa tối muộn, loại bỏ các hoạt động sáng/chiều không khả thi.
+              {/* Weather Widget Strip — Clean Typography, No Emoticon Clutter */}
+              <div
+                className={styles.weatherCockpitStrip}
+                onClick={() =>
+                  triggerToast(
+                    realtimeWeather
+                      ? `Thời tiết thực tế tại ${cleanDestName} (${realtimeWeather.updatedTime}): ${realtimeWeather.tempFormatted} - ${realtimeWeather.statusVi}. Độ ẩm: ${realtimeWeather.humidity}%, Gió: ${realtimeWeather.windSpeed} km/h. Lời khuyên VISTA: ${realtimeWeather.adviceVi}`
+                      : `Thời tiết ${cleanDestName} hôm nay: ${destWeatherInsight.temp} - ${destWeatherInsight.text}`
+                  )
+                }
+                role="button"
+                tabIndex={0}
+                title="Bấm để xem chi tiết thời tiết realtime"
+              >
+                <div className={styles.weatherCockpitLeft}>
+                  <span className={styles.weatherCockpitDot} />
+                  <span className={styles.weatherCockpitLocation}>
+                    {cleanDestName} · {realtimeWeather ? realtimeWeather.tempFormatted : (destWeatherInsight.temp.split('–')[0].trim() || '24°C')}
                   </span>
+                  {realtimeWeather?.isLive && (
+                    <span className={styles.weatherLiveBadge}>Live</span>
+                  )}
+                </div>
+                <span className={styles.weatherCockpitDesc}>
+                  {realtimeWeather ? realtimeWeather.statusVi : 'Nhiều mây, trời dịu'}
+                </span>
+              </div>
+
+              {/* Smart Night-Shift Mode (T1) — High-tech Minimalist Slate */}
+              {isLateEveningDeparture && (
+                <div className={styles.nightShiftCard}>
+                  <div className={styles.nightShiftHeader}>
+                    <span className={styles.nightShiftBadge}>LỘ TRÌNH ĐÊM</span>
+                    <span className={styles.nightShiftTime}>Sau 20:00</span>
+                  </div>
+                  <div className={styles.nightShiftBody}>
+                    <div className={styles.nightShiftTitle}>Tự động điều chỉnh Ngày 1</div>
+                    <div className={styles.nightShiftSteps}>
+                      <span className={styles.nightShiftStep}>1. Nhận phòng</span>
+                      <span className={styles.nightShiftArrow}>→</span>
+                      <span className={styles.nightShiftStep}>2. Ăn tối muộn</span>
+                      <span className={styles.nightShiftArrow}>→</span>
+                      <span className={styles.nightShiftStep}>3. Dạo đêm</span>
+                    </div>
+                    <p className={styles.nightShiftDesc}>
+                      Đã tối ưu lược bỏ các hoạt động sáng & chiều không khả thi.
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
@@ -2542,17 +4905,19 @@ export default function PlannerPage() {
             </div>
           </div>
 
-          {/* GROUP B — PHONG CÁCH CHUYẾN ĐI (T2: Compact & Refined 12 Style Pills) */}
+          {/* GROUP B — PHONG CÁCH CHUYẾN ĐI (Compact & Refined Style Pills) */}
           <div className={styles.formGroup}>
-            <div className={styles.groupTitle}>Nhóm B — Phong cách chuyến đi</div>
-            <label className={styles.fieldLabel} style={{ marginBottom: '2px' }}>
-              Bạn thích trải nghiệm gì?
-            </label>
-            <p className={styles.fieldSubLabel}>Có thể chọn nhiều sở thích.</p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+              <div className={styles.groupTitleWithBar} style={{ margin: 0 }}>Sở thích trải nghiệm</div>
+              <span style={{ fontSize: '11px', color: '#0284C7', fontWeight: 700, background: '#E0F2FE', padding: '2px 8px', borderRadius: '99px' }}>
+                {selectedStyles.length} đã chọn (Ưu tiên 2–3)
+              </span>
+            </div>
 
             <div className={styles.stylesPillsGrid}>
               {displayedStyles.map((st) => {
                 const isSelected = selectedStyles.includes(st.id);
+                const priorityRank = selectedStyles.indexOf(st.id);
                 const IconCmp = st.icon;
                 return (
                   <button
@@ -2575,14 +4940,45 @@ export default function PlannerPage() {
                       <span className={styles.stylePillLabel}>{st.label}</span>
                     </div>
                     {isSelected && (
-                      <div className={styles.stylePillCheckCircle}>
-                        <Check size={10} strokeWidth={3} />
+                      <div
+                        className={styles.stylePillCheckCircle}
+                        title={priorityRank < 3 ? `Sở thích ưu tiên #${priorityRank + 1}` : 'Đã chọn'}
+                        style={priorityRank < 3 ? { width: 'auto', padding: '0 5px', borderRadius: '99px', fontSize: '9.5px', fontWeight: 700 } : undefined}
+                      >
+                        {priorityRank < 3 ? `#${priorityRank + 1}` : <Check size={10} strokeWidth={3} />}
                       </div>
                     )}
                   </button>
                 );
               })}
             </div>
+
+            {hasPlanGenerated && hasUnsavedChanges && (
+              <button
+                type="button"
+                onClick={() => handleGenerateClick()}
+                style={{
+                  marginTop: '8px',
+                  width: '100%',
+                  minHeight: '36px',
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  background: 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  boxShadow: '0 4px 12px rgba(2, 132, 199, 0.25)',
+                }}
+              >
+                <span>🔄 Áp dụng sở thích mới & Cập nhật lịch trình ngay</span>
+              </button>
+            )}
 
             <button
               type="button"
@@ -2603,117 +4999,229 @@ export default function PlannerPage() {
             </button>
           </div>
 
-          {/* GROUP C — BẠN ĐỒNG HÀNH & NGÂN SÁCH */}
+          {/* GROUP C — THÀNH VIÊN & NGÂN SÁCH */}
           <div className={styles.formGroup}>
-            <div className={styles.groupTitle}>Nhóm C — Bạn đồng hành & Ngân sách</div>
+            <div className={styles.groupTitleWithBar}>Thành viên & Ngân sách</div>
 
-            {/* 1. Số người */}
-            <div>
-              <label className={styles.fieldLabel}>Số người</label>
-              <div className={styles.counterControl}>
-                <button
-                  type="button"
-                  className={styles.counterBtn}
-                  disabled={peopleCount <= 1}
-                  onClick={() => {
-                    setPeopleCount((p) => Math.max(1, p - 1));
-                    markDirty();
-                  }}
-                  aria-label="Giảm số người"
-                >
-                  –
-                </button>
-                <span className={styles.counterValue}>{peopleCount} người</span>
-                <button
-                  type="button"
-                  className={styles.counterBtn}
-                  onClick={() => {
-                    setPeopleCount((p) => p + 1);
-                    markDirty();
-                  }}
-                  aria-label="Tăng số người"
-                >
-                  +
-                </button>
-              </div>
-            </div>
-
-            {/* 2. Mức chi tiêu */}
-            <div>
-              <label className={styles.fieldLabel}>Mức chi tiêu</label>
-              <div className={styles.budgetTiersGrid}>
-                {BUDGET_OPTIONS.map((b) => (
+            {/* Unified Card for Group C */}
+            <div className={styles.groupCUnifiedCard}>
+              {/* Row 1: Số người tham gia */}
+              <div className={styles.groupCFieldRow}>
+                <div className={styles.groupCFieldMeta}>
+                  <label className={styles.groupCLabel}>Số người tham gia</label>
+                  <span className={styles.groupCSubLabel}>Người lớn & trẻ em</span>
+                </div>
+                <div className={styles.counterControlModern}>
                   <button
-                    key={b.id}
                     type="button"
-                    className={`${styles.budgetTierBtn} ${budgetTier === b.id ? styles.budgetTierBtnActive : ''}`}
+                    className={styles.counterBtnModern}
+                    disabled={peopleCount <= 1}
                     onClick={() => {
-                      setBudgetTier(b.id);
+                      setPeopleCount((p) => Math.max(1, p - 1));
                       markDirty();
                     }}
+                    aria-label="Giảm số người"
                   >
-                    {b.label}
+                    –
                   </button>
-                ))}
+                  <span className={styles.counterValueModern}>{peopleCount} người</span>
+                  <button
+                    type="button"
+                    className={styles.counterBtnModern}
+                    onClick={() => {
+                      setPeopleCount((p) => p + 1);
+                      markDirty();
+                    }}
+                    aria-label="Tăng số người"
+                  >
+                    +
+                  </button>
+                </div>
               </div>
-              <p className={styles.fieldHint}>
-                Chi phí được ước tính theo số người và thời lượng chuyến đi.
-              </p>
+
+              <div className={styles.groupCDivider} />
+
+              {/* Row 2: Hạng mức chi tiêu (Segmented Capsule Bar) */}
+              <div className={styles.groupCSection}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <label className={styles.groupCLabel}>Hạng mức chi tiêu</label>
+                  <span style={{ fontSize: '11px', color: '#0284C7', fontWeight: 600 }}>
+                    {budgetTier === 'economy' ? 'Tiết kiệm' : budgetTier === 'luxury' ? 'Cao cấp' : 'Tiêu chuẩn'}
+                  </span>
+                </div>
+                <div className={styles.segmentedCapsuleBar}>
+                  {BUDGET_OPTIONS.map((b) => (
+                    <button
+                      key={b.id}
+                      type="button"
+                      className={`${styles.segmentedCapsuleBtn} ${budgetTier === b.id ? styles.segmentedCapsuleBtnActive : ''}`}
+                      onClick={() => {
+                        setBudgetTier(b.id);
+                        markDirty();
+                      }}
+                    >
+                      {b.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className={styles.groupCDivider} />
+
+              {/* Row 2.5: Nhịp độ chuyến đi (Pace Selector) */}
+              <div className={styles.groupCSection}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <label className={styles.groupCLabel}>Nhịp độ di chuyển</label>
+                  <span style={{ fontSize: '11px', color: '#059669', fontWeight: 600 }}>
+                    {activePace === 'RELAXED' ? '🌿 Thư thả' : activePace === 'INTENSIVE' ? '⚡ Đi nhiều' : '⚖️ Cân bằng'}
+                  </span>
+                </div>
+                <div className={styles.segmentedCapsuleBar}>
+                  {[
+                    { id: 'RELAXED', label: '🌿 Thư thả' },
+                    { id: 'MODERATE', label: '⚖️ Cân bằng' },
+                    { id: 'INTENSIVE', label: '⚡ Đi nhiều' },
+                  ].map((p) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      className={`${styles.segmentedCapsuleBtn} ${activePace === p.id ? styles.segmentedCapsuleBtnActive : ''}`}
+                      onClick={() => {
+                        setActivePace(p.id as any);
+                        markDirty();
+                        if (hasPlanGenerated) {
+                          executeStructuredReplan(`Đổi nhịp độ sang ${p.label}`, { action: 'CHANGE_PACE', pace: p.id });
+                        }
+                      }}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className={styles.groupCDivider} />
+
+              {/* Row 3: Thêm mong muốn riêng */}
+              <div className={styles.groupCSection}>
+                <button
+                  type="button"
+                  className={`${styles.wishesTriggerPillModern} ${showWishes ? styles.wishesTriggerPillModernActive : ''}`}
+                  onClick={() => setShowWishes((prev) => !prev)}
+                  aria-expanded={showWishes}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                    <span style={{ fontSize: '13px' }}>✨</span>
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#142D4E', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {wishesText ? `Mong muốn: ${wishesText}` : '+ Thêm mong muốn riêng'}
+                    </span>
+                  </div>
+                  <ChevronRight
+                    size={14}
+                    style={{
+                      transform: showWishes ? 'rotate(90deg)' : 'none',
+                      transition: 'transform 0.2s ease',
+                      color: '#0284C7',
+                      flexShrink: 0,
+                    }}
+                  />
+                </button>
+
+                {showWishes && (
+                  <div className={styles.wishesExpandContainerModern}>
+                    <textarea
+                      className={styles.wishesTextareaModern}
+                      placeholder="Ví dụ: ít đi bộ, ưu tiên ẩm thực bản địa, có người lớn tuổi hoặc trẻ em..."
+                      value={wishesText}
+                      rows={2}
+                      onChange={(e) => {
+                        setWishesText(e.target.value);
+                        markDirty();
+                      }}
+                    />
+                    <div className={styles.wishesQuickTagsRow}>
+                      {[
+                        { label: '🌿 Món chay', val: 'Ưu tiên ẩm thực chay' },
+                        { label: '👶 Có trẻ nhỏ', val: 'Lịch trình nhẹ nhàng cho trẻ nhỏ' },
+                        { label: '👴 Người lớn tuổi', val: 'Ít bậc thang, nghỉ ngơi thoải mái' },
+                        { label: '📸 Sống ảo', val: 'Ưu tiên các góc check-in đẹp' },
+                      ].map((tag) => (
+                        <button
+                          key={tag.label}
+                          type="button"
+                          className={styles.wishesQuickTagBtn}
+                          onClick={() => {
+                            const newText = wishesText
+                              ? `${wishesText.replace(/[,.]\s*$/, '')}, ${tag.val}`
+                              : tag.val;
+                            setWishesText(newText);
+                            markDirty();
+                          }}
+                        >
+                          {tag.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* 3. Yêu cầu thêm (Accordion Collapsible) */}
-            <div>
+            <p className={styles.fieldHintModern}>
+              <span style={{ color: '#0284C7' }}>ⓘ</span> Chi phí & tuyến đường được AI tự động cân đối theo số người và hạng mức.
+            </p>
+
+            <div style={{ textAlign: 'center', marginTop: '4px' }}>
               <button
                 type="button"
-                className={styles.accordionToggle}
-                onClick={() => setShowWishes((prev) => !prev)}
+                onClick={() => setShowAdvancedOptions((p) => !p)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#65758A',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  padding: '4px 8px',
+                  borderRadius: '6px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                }}
               >
-                <span>Thêm mong muốn riêng</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ transform: showWishes ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
-                  <polyline points="6 9 12 15 18 9" />
-                </svg>
+                <span>{showAdvancedOptions ? 'Thu gọn tùy chọn khác' : 'Mở rộng tùy chọn khác'}</span>
+                <span style={{ fontSize: '10px' }}>{showAdvancedOptions ? '⌃' : '⌵'}</span>
               </button>
-              {showWishes && (
-                <textarea
-                  className={styles.wishesTextarea}
-                  placeholder="Ví dụ: ít đi bộ, ưu tiên món chay, có trẻ nhỏ…"
-                  value={wishesText}
-                  onChange={(e) => {
-                    setWishesText(e.target.value);
-                    markDirty();
-                  }}
-                />
-              )}
             </div>
           </div>
 
-          {/* Form Action */}
-          {hasUnsavedChanges && (
-            <div className={styles.dirtyIndicator}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
-              <span>Có thiết lập mới chưa áp dụng</span>
-            </div>
-          )}
-
-          <button
-            type="button"
-            className={styles.btnPrimaryAction}
-            onClick={handleGenerateClick}
-            disabled={isGenerating}
-          >
-            {isGenerating ? (
-              <div className={styles.spinnerBlue} style={{ width: '18px', height: '18px', borderWidth: '2px' }} />
-            ) : (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-              </svg>
+          {/* Sticky CTA Action Dock — Always easily accessible */}
+          <div className={styles.sidebarStickyCta}>
+            {hasUnsavedChanges && (
+              <div className={styles.dirtyIndicator}>
+                <Clock size={13} className={styles.dirtyIndicatorIcon} />
+                <span>Có thiết lập mới chưa áp dụng</span>
+              </div>
             )}
-            <span>{hasPlanGenerated ? (hasUnsavedChanges ? 'Cập nhật lịch trình' : 'Tạo lại lịch trình') : 'Tạo lịch trình'}</span>
-          </button>
 
-          <p className={styles.formActionSubtext}>
-            Thay đổi thiết lập để tạo lại gợi ý phù hợp hơn.
-          </p>
+            <button
+              type="button"
+              className={styles.btnPrimaryAction}
+              onClick={handleGenerateClick}
+              disabled={isGenerating}
+            >
+              {isGenerating ? (
+                <div className={styles.spinnerBlue} style={{ width: '18px', height: '18px', borderWidth: '2px', borderColor: '#FFFFFF', borderTopColor: 'transparent' }} />
+              ) : (
+                <Sparkles size={16} />
+              )}
+              <span>{isGenerating ? 'Đang tạo lịch trình...' : 'Tạo lịch trình với AI'}</span>
+            </button>
+
+            <p className={styles.formActionSubtext}>
+              Tối ưu hóa hành trình bằng AI & dữ liệu hơn 2.000 điểm đến thực tế.
+            </p>
+          </div>
         </aside>
 
         {/* ════════════════════════════════════════════════════════════════════
@@ -2723,55 +5231,127 @@ export default function PlannerPage() {
           {/* ─── REAL GENERATING LOADING SKELETON ─── */}
           {isGenerating && <SkeletonAiGenerating />}
 
-          {/* ─── EMPTY STATE (WHEN NOT YET GENERATED) ─── */}
+          {/* ─── CLEAN INITIAL STATE: HERO SHOWCASE & SUGGESTED CARDS (AS IN MOCKUP) ─── */}
           {!isGenerating && !hasPlanGenerated && (
-            <div className={styles.emptyStateCard}>
-              <img
-                src={activeDestObj.photo}
-                alt="Khám phá Việt Nam"
-                className={styles.emptyStateImage}
-              />
-              <h3 className={styles.emptyStateTitle}>Chuyến đi của bạn sẽ bắt đầu ở đây.</h3>
-              <p className={styles.emptyStateDesc}>
-                Chọn điểm đến và sở thích, VISTA sẽ gợi ý lịch trình phù hợp với trải nghiệm và mức chi tiêu của bạn.
-              </p>
+            <div className={styles.cleanWorkspaceWrapper}>
+              {/* Top Hero Destination Showcase Banner */}
+              <div className={styles.emptyHeroShowcase}>
+                <img
+                  src={activeHero.image}
+                  alt={activeHero.title}
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src =
+                      'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_panoramic_day.jpg';
+                  }}
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    zIndex: 0,
+                  }}
+                />
+                <div className={styles.emptyHeroOverlay} />
+                <div className={styles.emptyHeroContent}>
+                  <span className={styles.emptyHeroTag}>
+                    <MapPin size={13} color="#0088CC" />
+                    <span>{activeHero.countryTag}</span>
+                  </span>
+                  <h2 className={styles.emptyHeroTitle}>{activeHero.title}</h2>
+                  <p className={styles.emptyHeroSubtitle}>{activeHero.subtitle}</p>
+                </div>
 
-              <div className={styles.sampleItineraries}>
-                <span className={styles.sampleLabel}>Lịch trình mẫu</span>
-                <div className={styles.sampleChipsRow}>
+                {/* Carousel Navigation Buttons */}
+                <div className={styles.emptyHeroNav}>
                   <button
                     type="button"
-                    className={styles.sampleChip}
-                    onClick={() => {
-                      setDestination('Đà Nẵng');
-                      setDuration('3n2d');
-                      handleGenerateClick();
-                    }}
+                    className={styles.emptyHeroNavBtn}
+                    onClick={handlePrevHero}
+                    aria-label="Điểm đến trước"
+                    title="Điểm đến trước"
                   >
-                    Đà Nẵng 3N2Đ — Biển & Đặc sản
+                    <ChevronLeft size={18} color="#0F172A" />
                   </button>
                   <button
                     type="button"
-                    className={styles.sampleChip}
-                    onClick={() => {
-                      setDestination('Hội An');
-                      setDuration('2n1d');
-                      handleGenerateClick();
-                    }}
+                    className={styles.emptyHeroNavBtn}
+                    onClick={handleNextHero}
+                    aria-label="Điểm đến tiếp theo"
+                    title="Điểm đến tiếp theo"
                   >
-                    Hội An 2N1Đ — Di sản phố cổ
+                    <ChevronRight size={18} color="#0F172A" />
                   </button>
+                </div>
+              </div>
+
+              {/* Suggested Itineraries Section */}
+              <div className={styles.suggestedSection}>
+                <div className={styles.suggestedHeader}>
+                  <h3 className={styles.suggestedHeaderTitle}>
+                    <Sparkles size={18} color="#F59E0B" />
+                    <span>Lịch trình gợi ý cho bạn</span>
+                  </h3>
                   <button
                     type="button"
-                    className={styles.sampleChip}
-                    onClick={() => {
-                      setDestination('Hà Nội');
-                      setDuration('2n1d');
-                      handleGenerateClick();
-                    }}
+                    className={styles.suggestedHeaderLink}
+                    onClick={() => setShowSavedDrawer(true)}
                   >
-                    Hà Nội 2N1Đ — Tinh hoa thủ đô
+                    <span>Xem tất cả</span>
+                    <ArrowRight size={14} />
                   </button>
+                </div>
+
+                {/* 3 Responsive Cards Grid */}
+                <div className={styles.suggestedGrid}>
+                  {suggestedCards.map((card) => (
+                    <div
+                      key={card.id}
+                      className={styles.suggestedCard}
+                      onClick={() => handleApplyTemplate(card)}
+                      role="button"
+                      tabIndex={0}
+                      title={`Xem lịch trình ${card.title}`}
+                    >
+                      <div className={styles.suggestedCardImageWrapper}>
+                        <img
+                          src={card.image}
+                          alt={card.title}
+                          className={styles.suggestedCardImage}
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src =
+                              'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_panoramic_day.jpg';
+                          }}
+                        />
+                        <span className={styles.suggestedCardBadge}>
+                          {card.durationBadge}
+                        </span>
+                        {(card as any).themeBadge && (
+                          <span className={styles.suggestedCardThemeBadge}>
+                            {(card as any).themeBadge}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className={styles.suggestedCardBody}>
+                        <h4 className={styles.suggestedCardTitle}>{card.title}</h4>
+                        {(card as any).subtitle && (
+                          <p className={styles.suggestedCardSubtitle}>{(card as any).subtitle}</p>
+                        )}
+                        <div className={styles.suggestedCardFooter}>
+                          <div className={styles.suggestedCardMeta}>
+                            <Clock size={12} />
+                            <span>
+                              {card.timeInfo} · <MapPin size={11} style={{ display: 'inline', margin: '0 1px' }} /> {card.destInfo}
+                            </span>
+                          </div>
+                          <div className={styles.suggestedCardArrow}>
+                            <ChevronRight size={15} />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -2780,908 +5360,2169 @@ export default function PlannerPage() {
           {/* ─── GENERATED ITINERARY VIEW (LIVE PRODUCT) ─── */}
           {!isGenerating && hasPlanGenerated && (
             <>
-              {/* A. TRIP SUMMARY CARD */}
-              <div className={styles.summaryCard}>
-                <div className={styles.summaryTopRow}>
-                  {/* Left Destination Summary */}
-                  <div className={styles.summaryLeft}>
-                    <img
-                      src={activeDestObj.photo}
-                      alt={destination}
-                      className={styles.destinationPhoto}
-                    />
-                    <div className={styles.summaryDetails}>
-                      <h2 className={styles.summaryTitle}>{destination}, đi là mê</h2>
-                      <p className={styles.summaryMeta}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
-                        <span>{startDate} · {daysCount} ngày {Math.max(1, daysCount - 1)} đêm · {peopleCount} người</span>
-                      </p>
-                      <div className={styles.summaryTags}>
-                        {selectedStyles.map((sId) => {
-                          const found = TRAVEL_STYLES.find((t) => t.id === sId);
-                          const IconCmp = found?.icon;
-                          return (
-                            <span key={sId} className={styles.tagPill}>
-                              {IconCmp && (
-                                <span style={{ color: found?.color, display: 'inline-flex', marginRight: 4 }}>
-                                  <IconCmp size={12} strokeWidth={2.4} />
-                                </span>
-                              )}
-                              {found ? found.label : sId}
-                            </span>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right Actions */}
-                  <div className={styles.summaryRightActions}>
-                    <div className={styles.summaryActionButtons}>
-                      <button
-                        type="button"
-                        className={`${styles.btnSecondary} ${isSaved ? styles.btnSecondarySaved : ''}`}
-                        onClick={handleSaveToggle}
-                      >
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill={isSaved ? '#0088CC' : 'none'} stroke="currentColor" strokeWidth="2">
-                          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-                        </svg>
-                        <span>{isSaved ? 'Đã lưu' : 'Lưu lịch trình'}</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        className={styles.btnCreateTripPrimary}
-                        onClick={() => {
-                          setNewTripTitle(`Chuyến đi ${destination} ${daysCount} ngày`);
-                          setShowCreateTripModal(true);
-                        }}
-                      >
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <line x1="12" y1="5" x2="12" y2="19" />
-                          <line x1="5" y1="12" x2="19" y2="12" />
-                        </svg>
-                        <span>Tạo chuyến đi</span>
-                      </button>
-                    </div>
-                    <p className={styles.summaryActionHint}>
-                      Chuyển lịch trình thành chuyến đi để mời bạn bè và quản lý chi tiêu.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Compact Expense Summary Bar */}
-                <div className={styles.summaryExpenseBar}>
-                  <div className={styles.expenseMainSection}>
-                    <div className={styles.expenseLeft}>
-                      <span className={styles.expenseLabel}>Dự toán cơ sở ({budgetBreakdown.count} người)</span>
-                      <span className={styles.expenseTotal}>
-                        {new Intl.NumberFormat('vi-VN').format(totalEstimatedCost)}đ
-                      </span>
-                      <span className={styles.expensePerPerson}>
-                        ~{new Intl.NumberFormat('vi-VN').format(perPersonCost)}đ / người
-                      </span>
-                      <span className={styles.expenseEstimateBadge}>Cơ sở tại điểm đến</span>
-                    </div>
-
-                    {/* Fluctuating Range Bar */}
-                    <div className={styles.expenseFluctuationRow}>
-                      <span className={styles.expenseFluctuationLabel}>
-                        ⚡ Khoản chi dao động thực tế:
-                      </span>
-                      <span className={styles.expenseFluctuationValue}>
-                        {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.minFluctuation)}đ – {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.maxFluctuation)}đ
-                      </span>
-                      <span className={styles.expenseFluctuationSub}>
-                        (~{new Intl.NumberFormat('vi-VN').format(budgetBreakdown.perPersonMin)}đ – {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.perPersonMax)}đ / người)
-                      </span>
-                    </div>
-
-                    {/* Scope tags */}
-                    <div className={styles.expenseScopeTags}>
-                      <span className={styles.scopeTagIncluded}>
-                        ✓ Đã gồm: Vé tham quan, ăn uống {daysCount}N, xe {budgetBreakdown.vehicleDescription}, {budgetBreakdown.roomsNeeded} phòng
-                      </span>
-                      <span className={styles.scopeTagExcluded}>
-                        ✕ Chưa gồm: {budgetBreakdown.intercityType} ({new Intl.NumberFormat('vi-VN').format(budgetBreakdown.intercityMinGroup)}đ – {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.intercityMaxGroup)}đ), phụ thu cuối tuần
-                      </span>
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    className={styles.btnViewBudgetDetail}
-                    onClick={() => setShowBudgetModal(true)}
-                  >
-                    <span>Xem chi tiết & khoản dao động</span>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <polyline points="9 18 15 12 9 6" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-
-              {/* ─── A. HỒ SƠ CHUYẾN ĐI (TRIP BRIEFING & DNA - COLLAPSIBLE BAR) ─── */}
-              <div className={styles.tripDnaCard} style={{ padding: showTripDna ? '16px 20px' : '12px 18px' }}>
-                <div
-                  className={styles.tripDnaHeader}
-                  style={{ cursor: 'pointer', marginBottom: showTripDna ? '12px' : 0, userSelect: 'none' }}
-                  onClick={() => setShowTripDna((prev) => !prev)}
-                  role="button"
-                  tabIndex={0}
-                  aria-expanded={showTripDna}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      setShowTripDna((prev) => !prev);
-                    }
-                  }}
-                >
-                  <div className={styles.tripDnaTitle} style={{ flexWrap: 'wrap', gap: '8px' }}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0088CC" strokeWidth="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                    <span>Hồ sơ Chuyến đi & Yêu cầu của bạn</span>
-                    <span style={{ fontSize: '12px', fontWeight: 500, color: '#64748B' }}>
-                      ({destination} · {daysCount} ngày · {peopleCount} người)
-                    </span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span className={styles.tripDnaBadge}>
-                      Đã cá nhân hóa
-                    </span>
-                    <span className={styles.collapsibleTogglePill}>
-                      {showTripDna ? 'Thu gọn ▴' : 'Xem chi tiết ▾'}
-                    </span>
-                  </div>
-                </div>
-
-                {(detectedElderly || detectedChildren || detectedArrivalTime || detectedDepartureTime) && (
-                  <div className={styles.semanticBadgesRow} style={{ marginTop: '8px', paddingTop: '8px' }}>
-                    <span className={styles.semanticRowTitle}>🧠 AI đã tự động nhận diện:</span>
-                    {detectedElderly && (
-                      <span className={styles.semanticBadgeElderly}>
-                        👴 Thân thiện Người lớn tuổi (Tránh leo dốc · Đệm nghỉ 30p)
-                      </span>
-                    )}
-                    {detectedChildren && (
-                      <span className={styles.semanticBadgeChildren}>
-                        👶 An toàn & Thoải mái cho Trẻ nhỏ
-                      </span>
-                    )}
-                    {detectedArrivalTime && (
-                      <span className={styles.semanticBadgeTime}>
-                        🛬 Hạ cánh Ngày 1 lúc {detectedArrivalTime} (Bỏ trống sáng)
-                      </span>
-                    )}
-                    {detectedDepartureTime && (
-                      <span className={styles.semanticBadgeTime}>
-                        🛫 Khởi hành về Ngày cuối lúc {detectedDepartureTime}
-                      </span>
-                    )}
-                  </div>
-                )}
-
-                {showTripDna && (
-                  <>
-                    <div className={styles.tripDnaGrid} style={{ marginTop: '12px' }}>
-                      <div className={styles.tripDnaItem}>
-                        <span className={styles.tripDnaLabel}>📍 Điểm đến</span>
-                        <span className={styles.tripDnaVal}>{destination}</span>
-                        <span className={styles.tripDnaSub}>{activeDestObj.region ? `Khu vực Miền ${activeDestObj.region}` : 'Việt Nam'}</span>
-                      </div>
-
-                      <div className={styles.tripDnaItem}>
-                        <span className={styles.tripDnaLabel}>📅 Khởi hành & Thời gian</span>
-                        <span className={styles.tripDnaVal}>{startDate}</span>
-                        <span className={styles.tripDnaSub}>{daysCount} ngày ({Math.max(1, daysCount - 1)} đêm)</span>
-                      </div>
-
-                      <div className={styles.tripDnaItem}>
-                        <span className={styles.tripDnaLabel}>👥 Thành viên & Quy mô</span>
-                        <span className={styles.tripDnaVal}>{peopleCount} người</span>
-                        <span className={styles.tripDnaSub}>
-                          {peopleCount === 1 ? 'Solo Traveler' : peopleCount === 2 ? 'Cặp đôi (Couple)' : peopleCount <= 4 ? 'Gia đình nhỏ / Bạn bè' : 'Đoàn đông người'}
-                        </span>
-                      </div>
-
-                      <div className={styles.tripDnaItem}>
-                        <span className={styles.tripDnaLabel}>💰 Hạn mức ngân sách</span>
-                        <span className={styles.tripDnaVal}>
-                          {budgetTier === 'economy' ? 'Tiết kiệm' : budgetTier === 'luxury' ? 'Cao cấp' : 'Tiêu chuẩn'}
-                        </span>
-                        <span className={styles.tripDnaSub}>
-                          ~{new Intl.NumberFormat('vi-VN').format(totalEstimatedCost)}đ / cả đoàn
-                        </span>
-                      </div>
-                    </div>
-
-                    {selectedStyles.length > 0 && (
-                      <div className={styles.tripDnaTagsRow}>
-                        <strong style={{ color: '#475569', fontSize: '11.5px', textTransform: 'uppercase' }}>Tổ hợp sở thích:</strong>
-                        {selectedStyles.map((sId) => {
-                          const found = TRAVEL_STYLES.find((t) => t.id === sId);
-                          return (
-                            <span key={sId} className={styles.tripDnaTagChip}>
-                              {found ? found.label : sId}
-                            </span>
-                          );
-                        })}
-                      </div>
-                    )}
-
-                    {wishesText.trim() && (
-                      <div className={styles.tripDnaNotesBox}>
-                        <span style={{ fontSize: '14px' }}>💬</span>
-                        <div>
-                          <strong>Mong muốn đặc biệt:</strong> &ldquo;{wishesText.trim()}&rdquo;
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-
-              {/* ─── B. LUẬN ĐIỂM CHIẾN LƯỢC TỪ AI (AI STRATEGIC DOSSIER - COLLAPSIBLE BAR) ─── */}
-              <div className={styles.aiInsightsCard} style={{ padding: showAiInsights ? '18px 20px' : '12px 18px' }}>
-                <div
-                  className={styles.aiInsightsHeader}
-                  style={{ cursor: 'pointer', marginBottom: showAiInsights ? '10px' : 0, userSelect: 'none' }}
-                  onClick={() => setShowAiInsights((prev) => !prev)}
-                  role="button"
-                  tabIndex={0}
-                  aria-expanded={showAiInsights}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      setShowAiInsights((prev) => !prev);
-                    }
-                  }}
-                >
-                  <div className={styles.aiInsightsTitleRow}>
-                    <span
-                      className={`${styles.aiInsightsBadge} ${
-                        aiGenerationMetadata.provider === 'local'
-                          ? styles.aiProviderLocal
-                          : aiGenerationMetadata.provider === 'gemini'
-                            ? styles.aiProviderCloud
-                            : styles.aiProviderOffline
-                      }`}
-                    >
-                      {aiGenerationMetadata.provider === 'local'
-                        ? '✨ TRỢ LÝ DU LỊCH CLAUDE AI'
-                        : aiGenerationMetadata.provider === 'gemini'
-                          ? '✨ TRỢ LÝ DU LỊCH GEMINI AI'
-                          : '✨ TRỢ LÝ DU LỊCH VISTA'}
-                    </span>
-                    <h3 className={styles.aiInsightsMainTitle} style={{ fontSize: '14px', margin: 0 }}>
-                      Vì sao lộ trình này hoàn hảo cho chuyến đi {destination}?
-                    </h3>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-                    <span className={styles.aiInsightsConfidence}>Độ phù hợp: 98%</span>
-                    <span className={styles.collapsibleTogglePill}>
-                      {showAiInsights ? 'Ẩn phân tích ▴' : 'Xem lý do ▾'}
-                    </span>
-                  </div>
-                </div>
-
-                {showAiInsights && (
-                  <>
-                    {aiGenerationMetadata.fallbackUsed && (
-                      <div className={styles.aiFallbackWarning} role="status">
-                        💡 Kế hoạch được sắp xếp thông minh theo sở thích, thời gian và số lượng người đi của bạn.
-                      </div>
-                    )}
-
-                    {aiCitations.length > 0 && (
-                      <div className={styles.aiCitations} aria-label="Nguồn dữ liệu RAG">
-                        <strong>Điểm đến uy tín đã đối chiếu:</strong>
-                        {aiCitations.slice(0, 5).map((citation) => (
-                          <span key={citation.chunkId} className={styles.aiCitationChip}>
-                            {citation.title}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* 4 Thẻ Phân tích dễ hiểu, đời thường cho Khách du lịch */}
-                    <div className={styles.aiStrategicGrid} style={{ marginTop: '14px' }}>
-                      {/* Card 1: Tuyến đường & Phân cụm */}
-                      <div className={`${styles.aiStrategicCard} ${styles.aiStrategicRoute}`}>
-                        <div className={styles.aiStrategicCardHeader}>
-                          <span>🚗</span>
-                          <span>Cung đường tiện lợi & Đỡ say xe</span>
-                        </div>
-                        <div className={styles.aiStrategicCardBody}>
-                          {aiCustomInsights.strategic || `Các điểm tham quan trong ngày được chọn trên cùng một cung đường tiện lợi, giúp bạn di chuyển nhanh chóng, tiết kiệm tiền taxi và không bị mệt hay say xe. Nhịp độ đan xen giữa danh lam thắng cảnh nổi tiếng và khám phá đời sống địa phương.`}
-                        </div>
-                      </div>
-
-                      {/* Card 2: Thể lực & Đối tượng đoàn */}
-                      <div className={`${styles.aiStrategicCard} ${styles.aiStrategicCompanion}`}>
-                        <div className={styles.aiStrategicCardHeader}>
-                          <span>💪</span>
-                          <span>Nhịp độ thảnh thơi, vừa sức cả đoàn</span>
-                        </div>
-                        <div className={styles.aiStrategicCardBody}>
-                          {aiCustomInsights.companionFit || aiCustomInsights.pacing || `Lịch trình được cân đối vừa sức cho đoàn ${peopleCount} người: Buổi sáng dồi dào năng lượng đi ngắm cảnh ngoài trời; buổi chiều tối dành cho ẩm thực và dạo mát thư giãn, đảm bảo mọi người luôn tràn đầy hứng khởi.`}
-                        </div>
-                      </div>
-
-                      {/* Card 3: Dòng tiền & Ngân sách */}
-                      <div className={`${styles.aiStrategicCard} ${styles.aiStrategicBudget}`}>
-                        <div className={styles.aiStrategicCardHeader}>
-                          <span>💵</span>
-                          <span>Chi tiêu hợp lý, không lo phát sinh</span>
-                        </div>
-                        <div className={styles.aiStrategicCardBody}>
-                          {aiCustomInsights.budgetOptimization || `Cân đối tài chính thông minh: Kết hợp hài hòa giữa các điểm tham quan có vé danh tiếng và ẩm thực đặc sản bản địa uy tín, đảm bảo trải nghiệm đầy đủ mà chi phí dự kiến luôn nằm trong mức ~${new Intl.NumberFormat('vi-VN').format(totalEstimatedCost)}đ cho toàn đoàn.`}
-                        </div>
-                      </div>
-
-                      {/* Card 4: Thích ứng Thời tiết & Bản địa */}
-                      <div className={`${styles.aiStrategicCard} ${styles.aiStrategicWeather}`}>
-                        <div className={styles.aiStrategicCardHeader}>
-                          <span>🌤️</span>
-                          <span>Đón thời tiết đẹp & Mẹo ăn chơi</span>
-                        </div>
-                        <div className={styles.aiStrategicCardBody}>
-                          <strong>Thời tiết khởi hành ({startDate}): </strong>
-                          {aiCustomInsights.weather || `${destWeatherInsight.temp} · ${destWeatherInsight.text}`}
-                          <br />
-                          <span style={{ display: 'inline-block', marginTop: '4px' }}>
-                            <strong>💡 Mẹo nhỏ: </strong>{aiCustomInsights.advice || `Nên ưu tiên tham quan ngoài trời vào buổi sáng sớm hoặc hoàng hôn để có ánh sáng đẹp nhất và không khí mát lành.`}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-
-              {/* B. VIEW SWITCH BAR */}
-              <div className={styles.viewSwitchBar}>
-                <div className={styles.segmentedControl}>
-                  <button
-                    type="button"
-                    className={`${styles.segmentBtn} ${activeView === 'timeline' ? styles.segmentBtnActive : ''}`}
-                    onClick={() => setActiveView('timeline')}
-                  >
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
-                    <span>Lịch trình</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    className={`${styles.segmentBtn} ${activeView === 'map' ? styles.segmentBtnActive : ''}`}
-                    onClick={() => setActiveView('map')}
-                  >
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" /><line x1="8" y1="2" x2="8" y2="18" /><line x1="16" y1="6" x2="16" y2="22" /></svg>
-                    <span>Bản đồ</span>
-                  </button>
-                </div>
-
-                <button
-                  type="button"
-                  className={styles.btnRegenerateSubtle}
-                  onClick={handleGenerateClick}
-                  title="Tạo lại gợi ý mới"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 4v6h-6" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" /></svg>
-                  <span>Tạo lại gợi ý</span>
-                </button>
-              </div>
-
-              {/* ─── INTERACTIVE AI CO-PILOT (COLLAPSIBLE BAR) ─── */}
-              <div className={styles.coPilotPanel} style={{ padding: showCoPilot ? '16px 18px' : '11px 16px' }}>
-                <div
-                  className={styles.coPilotHeader}
-                  style={{ cursor: 'pointer', marginBottom: showCoPilot ? '12px' : 0, userSelect: 'none' }}
-                  onClick={() => setShowCoPilot((prev) => !prev)}
-                  role="button"
-                  tabIndex={0}
-                  aria-expanded={showCoPilot}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      setShowCoPilot((prev) => !prev);
-                    }
-                  }}
-                >
-                  <div className={styles.coPilotHeaderLeft}>
-                    <span className={styles.coPilotAvatar} style={{ width: '30px', height: '30px', fontSize: '15px' }}>🤖</span>
-                    <div>
-                      <h4 className={styles.coPilotTitle} style={{ margin: 0 }}>
-                        Trợ lý AI Đồng hành — Trò chuyện tinh chỉnh lịch trình tức thì
-                      </h4>
-                      {showCoPilot && (
-                        <p className={styles.coPilotSub} style={{ marginTop: '2px' }}>
-                          Yêu cầu đổi quán ăn, lùi giờ ngủ nướng hoặc chọn điểm nhẹ nhàng cho Ngày {activeDay} mà không làm mất các điểm đã ưng ý.
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-                    <span className={styles.coPilotActiveDayBadge}>Đang chọn: Ngày {activeDay}</span>
-                    <span className={styles.collapsibleTogglePill}>
-                      {showCoPilot ? 'Thu gọn ▴' : 'Mở trợ lý ▾'}
-                    </span>
-                  </div>
-                </div>
-
-                {coPilotReply && (
-                  <div className={styles.coPilotReplyBubble} style={{ marginTop: showCoPilot ? 0 : '10px' }}>
-                    <span>{coPilotReply}</span>
-                  </div>
-                )}
-
-                {showCoPilot && (
-                  <>
-                    <div className={styles.coPilotQuickChips}>
-                      <button
-                        type="button"
-                        className={styles.coPilotChip}
-                        onClick={() =>
-                          handleCoPilotCommand(
-                            `Đổi buổi chiều Ngày ${activeDay} sang điểm nhẹ nhàng bằng phẳng cho người lớn tuổi`
-                          )
-                        }
-                      >
-                        👴 Đổi chiều Ngày {activeDay} nhẹ nhàng cho người lớn tuổi
-                      </button>
-                      <button
-                        type="button"
-                        className={styles.coPilotChip}
-                        onClick={() =>
-                          handleCoPilotCommand(`Đổi quán ăn trưa Ngày ${activeDay} sang đặc sản bản địa khác`)
-                        }
-                      >
-                        🍜 Đổi quán ăn trưa Ngày {activeDay}
-                      </button>
-                      <button
-                        type="button"
-                        className={styles.coPilotChip}
-                        onClick={() =>
-                          handleCoPilotCommand(`Sáng Ngày ${activeDay} cho đoàn ngủ nướng khởi hành lúc 09:30`)
-                        }
-                      >
-                        😴 Ngủ nướng sáng Ngày {activeDay} (đi lúc 09:30)
-                      </button>
-                      <button
-                        type="button"
-                        className={styles.coPilotChip}
-                        onClick={() =>
-                          handleCoPilotCommand(`Đổi buổi tối Ngày ${activeDay} sang dạo biển hoặc ngắm cầu đêm`)
-                        }
-                      >
-                        🌊 Đổi điểm dạo mát tối Ngày {activeDay}
-                      </button>
-                    </div>
-
-                    <form
-                      className={styles.coPilotInputRow}
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        handleCoPilotCommand();
-                      }}
-                    >
-                      <input
-                        type="text"
-                        className={styles.coPilotInput}
-                        placeholder={`Gõ yêu cầu cho Ngày ${activeDay} (VD: "Chiều Ngày ${activeDay} đổi sang đi bảo tàng hoặc cafe ngắm biển", "Đổi bữa trưa sang hải sản")...`}
-                        value={coPilotInput}
-                        onChange={(e) => setCoPilotInput(e.target.value)}
-                        disabled={isCoPilotBusy}
-                      />
-                      <button
-                        type="submit"
-                        className={styles.coPilotSendBtn}
-                        disabled={isCoPilotBusy || !coPilotInput.trim()}
-                      >
-                        {isCoPilotBusy ? 'Đang xử lý...' : '✨ Tinh chỉnh ngay'}
-                      </button>
-                    </form>
-                  </>
-                )}
-              </div>
-
-              {/* C. DYNAMIC DAY NAVIGATION TABS */}
-              <div className={styles.dayTabsNav} role="tablist">
-                {itineraryDays.map((d) => (
-                  <button
-                    key={d.dayNumber}
-                    type="button"
-                    className={`${styles.dayTabBtn} ${activeDay === d.dayNumber ? styles.dayTabBtnActive : ''}`}
-                    onClick={() => setActiveDay(d.dayNumber)}
-                    role="tab"
-                    aria-selected={activeDay === d.dayNumber}
-                  >
-                    <span>Ngày {d.dayNumber}</span>
-                    {activeDay === d.dayNumber && <span className={styles.dayTabDot} />}
-                  </button>
-                ))}
-              </div>
-
-              {/* D. DAILY OVERVIEW BAR */}
-              <div className={styles.dailyOverviewBar}>
-                <h3 className={styles.dailyOverviewTitle}>
-                  {currentDayPlan.title}
-                </h3>
-                <div className={styles.dailyOverviewMetrics}>
-                  <span>{currentDayPlan.activities.length} hoạt động · Chi phí dự kiến </span>
-                  <span className={styles.dailySubtotalHighlight}>
-                    {new Intl.NumberFormat('vi-VN').format(currentDaySubtotal)}đ / nhóm
+              {/* 1. DESTINATION HERO BANNER (Top of Itinerary Workspace) */}
+              <div
+                className={styles.destinationHeroBanner}
+                style={{
+                  backgroundImage: `url(${activeHero.image || activeDestObj.photo || '/destinations/danang.jpg'})`,
+                }}
+              >
+                <div className={styles.heroOverlay} />
+                <div className={styles.heroContent}>
+                  <span className={styles.heroTag}>
+                    <MapPin size={12} color="#0284C7" />
+                    <span>{destination}</span>
                   </span>
-                  <span style={{ fontSize: '11.5px', color: '#94A3B8', marginLeft: '4px' }}>
-                    (tiểu kế Ngày {activeDay})
-                  </span>
+                  <h2 className={styles.heroTitle}>{destination}</h2>
+                  <p className={styles.heroSubtitle}>
+                    {getDestinationTagline(destination)}
+                  </p>
+                  <button
+                    type="button"
+                    className={styles.heroCtaBtn}
+                    onClick={() => {
+                      if (typeof window !== 'undefined') {
+                        window.open(`https://www.google.com/search?q=${encodeURIComponent('Du lịch ' + destination)}`, '_blank');
+                      }
+                    }}
+                  >
+                    <span>Khám phá điểm đến</span>
+                    <ArrowRight size={14} />
+                  </button>
+                </div>
+
+                <div className={styles.heroStatsGlass}>
+                  <div className={styles.heroStatRow}>
+                    <span>Thời lượng</span>
+                    <span className={styles.heroStatValue}>
+                      {daysCount}N{Math.max(0, daysCount - 1)}Đ · {peopleCount} khách
+                    </span>
+                  </div>
+                  <div className={styles.heroStatRow}>
+                    <span>Tổng dự toán</span>
+                    <span className={styles.heroStatHighlight}>
+                      ~{new Intl.NumberFormat('vi-VN').format(budgetBreakdown.totalBaseline)}đ
+                    </span>
+                  </div>
+                  <div className={styles.heroStatRow}>
+                    <span>Động cơ AI</span>
+                    <span className={styles.heroStatValue} style={{ color: '#059669' }}>
+                      {isApiKeyMode ? '✨ Gemini Engine' : '⚙️ Thuật toán tối ưu'}
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              {/* ─── 4. ACTIVITY TIMELINE VIEW ─── */}
-              {activeView === 'timeline' && (
-                <div className={styles.timelineWrapper}>
-                  {/* Chặng đón tiếp & Nhận phòng Ngày 1 khi đến muộn (buổi chiều) */}
-                  {activeDay === 1 && (detectedArrivalTime || (currentDayPlan.activities.length > 0 && currentDayPlan.activities[0].timeSlot !== 'MORNING')) && (
-                    <div className={styles.welcomeBannerCard}>
-                      <div className={styles.welcomeBannerIcon}>🛬</div>
-                      <div className={styles.welcomeBannerBody}>
-                        <div className={styles.welcomeBannerHeader}>
-                          <span className={styles.welcomeBannerTag}>Chặng đón tiếp & Nhận phòng</span>
-                          <span className={styles.welcomeBannerTime}>
-                            {detectedArrivalTime ? `${detectedArrivalTime} – ${currentDayPlan.activities[0]?.timeRange?.split('–')[0] || '14:30'}` : '14:00 – 14:30'}
-                          </span>
-                        </div>
-                        <h4 className={styles.welcomeBannerTitle}>
-                          Đến {destination} & Check-in Khách sạn
-                        </h4>
-                        <p className={styles.welcomeBannerDesc}>
-                          Buổi sáng ngày đầu để trống lịch tham quan theo yêu cầu riêng để đoàn di chuyển đến nơi. Quý khách có mặt lúc {detectedArrivalTime || '14:00'}, di chuyển về khách sạn nhận phòng, sắp xếp hành lý và nghỉ ngơi trước khi khởi hành tham quan buổi chiều.
-                        </p>
-                      </div>
-                    </div>
-                  )}
+              {/* 2. ITINERARY HEADER BAR (Title, Duration, Actions) */}
+              <div className={styles.itineraryHeaderBar}>
+                <div className={styles.itineraryHeaderLeft} style={{ position: 'relative' }}>
+                  <div className={styles.itineraryHeaderIcon}>
+                    <Calendar size={18} color="#0284C7" />
+                  </div>
+                  <h3 className={styles.itineraryHeaderTitle}>
+                    Lịch trình chuyến đi {destination}
+                  </h3>
+                  <span className={styles.durationPill}>
+                    {duration}
+                  </span>
 
-                  {currentDayPlan.activities.map((act) => {
-                    const isTipOpen = openTipId === act.id;
-                    const isOverflowOpen = activeOverflowId === act.id;
-
-                    return (
-                      <React.Fragment key={act.id}>
-                        <div className={styles.timelineItem}>
-                          {/* Narrow Time Rail */}
-                          <div className={styles.timeRail}>{act.timeRange}</div>
-
-                          {/* Vertical Connector */}
-                          <div className={styles.timelineConnector}>
-                            <div className={styles.timelineNode} />
-                            <div className={styles.timelineLine} />
-                          </div>
-
-                          {/* Activity Card */}
-                          <div className={styles.activityCard}>
-                            <img
-                              src={act.photoUrl}
-                              alt={act.title}
-                              className={styles.activityPhoto}
+                  {/* Section 9.1: Internal Plan Source Indicator Dot (ONLY rendered when admin inspection permission & mode are active) */}
+                  {hasAdminInspectPermission && adminInspectMode && (
+                    <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', marginLeft: '4px' }}>
+                      {(() => {
+                        const curSrc = internalDiagnostics?.current_source || {
+                          source_code: 'UNRECORDED',
+                          label: 'Chưa ghi nhận nguồn',
+                          color: 'gray',
+                        };
+                        const initSrc = internalDiagnostics?.initial_plan_source || curSrc;
+                        const lastReplanSrc = internalDiagnostics?.last_replan_source || null;
+                        const dotColor =
+                          curSrc.color === 'blue' || curSrc.source_code === 'MODEL_ASSISTED'
+                            ? '#2563EB'
+                            : curSrc.color === 'orange' || curSrc.source_code === 'FALLBACK_TO_ALGORITHM'
+                              ? '#F97316'
+                              : '#64748B';
+                        return (
+                          <>
+                            <span
+                              role="button"
+                              tabIndex={0}
+                              aria-label={`Nguồn lập lịch: ${curSrc.label}`}
+                              aria-expanded={showSourcePopover}
+                              title={`Nguồn lập lịch: ${curSrc.label}`}
+                              onClick={() => setShowSourcePopover((prev) => !prev)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault();
+                                  setShowSourcePopover((prev) => !prev);
+                                } else if (e.key === 'Escape') {
+                                  setShowSourcePopover(false);
+                                }
+                              }}
+                              style={{
+                                width: '10px',
+                                height: '10px',
+                                borderRadius: '50%',
+                                backgroundColor: dotColor,
+                                display: 'inline-block',
+                                cursor: 'pointer',
+                                boxShadow: `0 0 0 2px #FFFFFF, 0 0 0 3px ${dotColor}40`,
+                                outline: 'none',
+                              }}
                             />
-
-                            <div className={styles.activityMain}>
-                              <span className={styles.activityCategory}>{act.category}</span>
-                              <h4 className={styles.activityTitle}>{act.title}</h4>
-                              <p className={styles.activityDesc}>{act.description}</p>
-
-                              {/* Khối lý do đề xuất AI: Gộp gọn gàng, tiết kiệm diện tích */}
-                              {(act.timeSlotReason || act.whyVisitReason || act.rationale) && (
-                                <div className={styles.activityReasonDossier}>
-                                  <div className={styles.reasonUnifiedHeader}>
-                                    <span className={styles.reasonUnifiedTag}>💡 Lý do đề xuất</span>
-                                    <div className={styles.reasonUnifiedContent}>
-                                      {act.timeSlotReason && (
-                                        <span className={styles.reasonPart}>
-                                          <strong>Khung giờ:</strong> {act.timeSlotReason}{' '}
-                                        </span>
-                                      )}
-                                      {act.whyVisitReason && (
-                                        <span className={styles.reasonPart}>
-                                          <strong>· Điểm nổi bật:</strong> {act.whyVisitReason}
-                                        </span>
-                                      )}
-                                      {!act.timeSlotReason && !act.whyVisitReason && act.rationale && (
-                                        <span>{act.rationale}</span>
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-
-                              <div className={styles.activityMetaRow}>
-                                <span className={styles.locationLink}>
-                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
-                                  {act.location}
-                                </span>
-
-                                <a
-                                  href={
-                                    act.latitude && act.longitude
-                                      ? `https://www.google.com/maps/search/?api=1&query=${act.latitude},${act.longitude}`
-                                      : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(act.title + ' ' + (act.location || destination))}`
-                                  }
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className={styles.googleMapsLink}
-                                  title="Mở chỉ đường trên Google Maps"
-                                >
-                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><polygon points="3 11 22 2 13 21 11 13 3 11" /></svg>
-                                  <span>Google Maps</span>
-                                </a>
-
-                                {act.tip && (
+                            {showSourcePopover && (
+                              <div
+                                role="dialog"
+                                aria-label="Chi tiết nguồn lập lịch nội bộ"
+                                style={{
+                                  position: 'absolute',
+                                  top: '22px',
+                                  left: 0,
+                                  zIndex: 60,
+                                  minWidth: '280px',
+                                  padding: '12px 14px',
+                                  borderRadius: '10px',
+                                  backgroundColor: '#0F172A',
+                                  color: '#F8FAFC',
+                                  fontSize: '12px',
+                                  lineHeight: 1.5,
+                                  boxShadow: '0 10px 25px rgba(15, 23, 42, 0.35)',
+                                  border: '1px solid #334155',
+                                }}
+                              >
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                                  <strong style={{ color: '#FFFFFF', fontSize: '12.5px' }}>
+                                    Nguồn lập lịch: {curSrc.label}
+                                  </strong>
                                   <button
                                     type="button"
-                                    className={styles.tipToggleBtn}
-                                    onClick={() => setOpenTipId(isTipOpen ? null : act.id)}
+                                    onClick={() => setShowSourcePopover(false)}
+                                    style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer', fontSize: '12px', padding: '0 2px' }}
                                   >
-                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
-                                    <span>Lưu ý ({isTipOpen ? 'thu gọn' : 'xem'})</span>
+                                    ✕
                                   </button>
-                                )}
-                              </div>
-
-                              {act.tip && isTipOpen && (
-                                <div className={styles.activityTipBox}>
-                                  <strong>Mẹo nhỏ: </strong>
-                                  {act.tip}
                                 </div>
-                              )}
-
-                              {/* Thẻ cảnh báo giờ mở cửa hoặc quy định */}
-                              {act.warning && (
-                                <div className={styles.activityWarningBox}>
-                                  <span>⚠️ {act.warning}</span>
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Activity Right Cost & Actions */}
-                            <div className={styles.activityRight}>
-                              <span className={`${styles.costBadge} ${act.costStatus === 'UNVERIFIED' ? styles.costUnverified : act.costVnd === 0 ? styles.costFree : ''}`}>
-                                {act.costLabel}
-                              </span>
-
-                              <div className={styles.activityActionButtons}>
-                                <button
-                                  type="button"
-                                  className={styles.btnReplacePlace}
-                                  onClick={() => setReplaceTargetActivityId(act.id)}
-                                >
-                                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 4v6h-6" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" /></svg>
-                                  <span>Thay địa điểm</span>
-                                </button>
-
-                                <div style={{ position: 'relative' }}>
-                                  <button
-                                    type="button"
-                                    className={styles.btnOverflowMenu}
-                                    onClick={() => setActiveOverflowId(isOverflowOpen ? null : act.id)}
-                                    aria-label="Thao tác khác"
-                                  >
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" /></svg>
-                                  </button>
-
-                                  {isOverflowOpen && (
-                                    <div className={styles.overflowDropdown}>
-                                      <button
-                                        type="button"
-                                        className={styles.overflowItem}
-                                        onClick={() => {
-                                          triggerToast('Mở điều chỉnh khung giờ hoạt động.');
-                                          setActiveOverflowId(null);
-                                        }}
-                                      >
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
-                                        Chỉnh giờ
-                                      </button>
-                                      <button
-                                        type="button"
-                                        className={`${styles.overflowItem} ${styles.overflowItemDanger}`}
-                                        onClick={() => handleDeleteActivity(act.id)}
-                                      >
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
-                                        Xóa hoạt động
-                                      </button>
+                                <div style={{ color: '#CBD5E1', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                                  <div>• <strong>Lịch ban đầu:</strong> {initSrc.label || 'Chưa ghi nhận nguồn'}</div>
+                                  {lastReplanSrc && (
+                                    <div>• <strong>Lần chỉnh gần nhất:</strong> {lastReplanSrc.label}</div>
+                                  )}
+                                  {curSrc.run_id && (
+                                    <div>• <strong>Mã lần tạo:</strong> <code>{curSrc.run_id}</code></div>
+                                  )}
+                                  {curSrc.timestamp && (
+                                    <div>• <strong>Thời gian:</strong> {curSrc.timestamp}</div>
+                                  )}
+                                  {curSrc.fallback_reason && (
+                                    <div style={{ marginTop: '4px', padding: '5px 8px', borderRadius: '6px', background: '#431407', color: '#FDBA74', border: '1px solid #9A3412' }}>
+                                      ⚠️ <strong>Lý do chuyển sang thuật toán:</strong> {curSrc.fallback_reason}
                                     </div>
                                   )}
                                 </div>
                               </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Transfer Connector Line */}
-                        {act.transferTimeAfter && (
-                          <div className={styles.transferRow}>
-                            <div />
-                            <div className={styles.transferConnectorLine}>
-                              <div className={styles.transferLineDashed} />
-                            </div>
-                            <div className={styles.transferInfo}>
-                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
-                              <span>{act.transferTimeAfter}</span>
-                              <span className={styles.estimateTag}>Ước tính</span>
-                            </div>
-                          </div>
-                        )}
-                      </React.Fragment>
-                    );
-                  })}
-
-                  {/* Chặng tiễn đoàn & Trả phòng Ngày cuối khi bay về sớm */}
-                  {activeDay === itineraryDays.length && (detectedDepartureTime || (currentDayPlan.activities.length > 0 && currentDayPlan.activities[currentDayPlan.activities.length - 1].timeSlot !== 'EVENING')) && (
-                    <div className={styles.welcomeBannerCard} style={{ marginTop: '16px', borderColor: '#FED7AA', background: '#FFFDF9' }}>
-                      <div className={styles.welcomeBannerIcon} style={{ background: '#FFF7ED', color: '#EA580C' }}>🛫</div>
-                      <div className={styles.welcomeBannerBody}>
-                        <div className={styles.welcomeBannerHeader}>
-                          <span className={styles.welcomeBannerTag} style={{ background: '#FFEDD5', color: '#C2410C' }}>Chặng tiễn đoàn & Trả phòng</span>
-                          <span className={styles.welcomeBannerTime}>
-                            {detectedDepartureTime || '11:00'}
-                          </span>
-                        </div>
-                        <h4 className={styles.welcomeBannerTitle}>
-                          Check-out Khách sạn & Khởi hành về
-                        </h4>
-                        <p className={styles.welcomeBannerDesc}>
-                          Hoàn tất trả phòng khách sạn và di chuyển ra sân bay / ga tàu theo lịch trình lúc {detectedDepartureTime || '11:00'}. Chiều tối để trống theo yêu cầu để quý khách bay về an toàn, khép lại chuyến khám phá {destination} trọn vẹn!
-                        </p>
-                      </div>
+                            )}
+                          </>
+                        );
+                      })()}
                     </div>
                   )}
+                </div>
 
-                  {/* End of timeline actions & Daily budget breakdown */}
-                  <div className={styles.timelineFooter}>
+                <div className={styles.itineraryHeaderRight}>
+                  {hasAdminInspectPermission && (
                     <button
                       type="button"
-                      className={styles.btnAddActivityDashed}
-                      onClick={() => setShowAddActivityModal(true)}
+                      className={styles.btnOutlineAction}
+                      onClick={() => {
+                        const next = !adminInspectMode;
+                        setAdminInspectMode(next);
+                        setShowSourcePopover(false);
+                        if (typeof window !== 'undefined') {
+                          localStorage.setItem('vista_admin_inspect_mode', next ? '1' : '0');
+                        }
+                      }}
+                      style={
+                        adminInspectMode
+                          ? { borderColor: '#0284C7', backgroundColor: '#F0F9FF', color: '#0369A1' }
+                          : undefined
+                      }
+                      title="Bật/tắt chế độ kiểm tra nguồn lập lịch nội bộ (Chỉ hiển thị cho quản trị viên)"
                     >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
-                      <span>Thêm hoạt động vào Ngày {activeDay}</span>
+                      <ShieldCheck size={14} />
+                      <span>Chế độ kiểm tra {adminInspectMode ? '(Bật)' : '(Tắt)'}</span>
                     </button>
+                  )}
+                  <button
+                    type="button"
+                    className={styles.btnOutlineAction}
+                    onClick={() => {
+                      if (typeof navigator !== 'undefined' && navigator.share) {
+                        navigator.share({
+                          title: `Lịch trình VISTA ${destination}`,
+                          text: `Xem lịch trình ${destination} ${duration} của tôi trên VISTA!`,
+                          url: window.location.href,
+                        }).catch(() => {});
+                      } else if (typeof navigator !== 'undefined') {
+                        navigator.clipboard.writeText(window.location.href);
+                        setShowToast('Đã sao chép liên kết lịch trình!');
+                        setTimeout(() => setShowToast(null), 3000);
+                      }
+                    }}
+                  >
+                    <Share2 size={15} />
+                    <span>Chia sẻ</span>
+                  </button>
 
-                    {/* Expandable Daily Budget Breakdown */}
-                    <div className={styles.dailyBudgetBox}>
-                      <div className={styles.dailyBudgetHeader}>
-                        <span className={styles.dailyBudgetTitle}>Phân bổ chi phí dự kiến Ngày {activeDay} ({budgetBreakdown.count} người)</span>
-                        <span style={{ fontSize: '13px', fontWeight: '700', color: '#0088CC' }}>
-                          {new Intl.NumberFormat('vi-VN').format(currentDaySubtotal)}đ / cả đoàn
+                  <button
+                    type="button"
+                    className={styles.btnOutlineAction}
+                    onClick={handleSaveCurrentPlan}
+                    title="Lưu vào lịch sử chuyến đi"
+                  >
+                    <Bookmark size={15} />
+                    <span>Lưu</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className={styles.btnPrimaryActionSmall}
+                    onClick={() => setShowCoPilot(!showCoPilot)}
+                  >
+                    <Sparkles size={15} />
+                    <span>Chỉnh sửa với AI</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Collapsible AI Copilot Re-planner */}
+              {showCoPilot && (
+                <div className={styles.aiSmartPromptBox} style={{ margin: '0 0 16px 0' }}>
+                  <div className={styles.aiSmartPromptHeader}>
+                    <div className={styles.aiSmartPromptTitle}>
+                      <Sparkles size={16} color="#0284C7" />
+                      <span>Trợ lý AI Co-Pilot: Tinh chỉnh & Điều hướng chuyến đi</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowCoPilot(false)}
+                      style={{ background: 'none', border: 'none', color: '#65758A', cursor: 'pointer', fontSize: '13px' }}
+                    >
+                      Đóng ✕
+                    </button>
+                  </div>
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (coPilotInput.trim()) {
+                        handleCoPilotCommand(coPilotInput);
+                      }
+                    }}
+                    className={styles.aiSmartPromptInputWrapper}
+                  >
+                    <input
+                      type="text"
+                      className={styles.aiSmartPromptInput}
+                      placeholder="Ví dụ: Tôi muốn ngủ nướng ngày 2, đổi trưa sang hải sản, sửa giá phòng khách sạn..."
+                      value={coPilotInput}
+                      onChange={(e) => setCoPilotInput(e.target.value)}
+                      disabled={isCoPilotBusy}
+                    />
+                    <button
+                      type="submit"
+                      className={styles.aiSmartPromptBtn}
+                      disabled={isCoPilotBusy || !coPilotInput.trim()}
+                    >
+                      <Sparkles size={14} />
+                      <span>{isCoPilotBusy ? 'Đang phân tích...' : 'Gửi yêu cầu'}</span>
+                    </button>
+                  </form>
+
+                  {/* Quick Action Chips */}
+                  <div className={styles.aiSmartPromptPills}>
+                    <span className={styles.aiSmartPromptPillLabel}>Gợi ý nhanh:</span>
+                    <button
+                      type="button"
+                      className={styles.aiSmartPromptPill}
+                      onClick={() => handleCoPilotCommand(`Cho mình ngủ nướng Ngày ${activeDay}`)}
+                      disabled={isCoPilotBusy}
+                    >
+                      😴 Ngủ nướng Ngày {activeDay}
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.aiSmartPromptPill}
+                      onClick={() => handleCoPilotCommand(`Ở ${destination} có món gì ngon và quán nào chất lượng?`)}
+                      disabled={isCoPilotBusy}
+                    >
+                      🦞 Đặc sản {destination}
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.aiSmartPromptPill}
+                      onClick={() => handleCoPilotCommand(`Đổi bữa trưa Ngày ${activeDay} sang quán hải sản tươi sống`)}
+                      disabled={isCoPilotBusy}
+                    >
+                      🦀 Đổi trưa hải sản
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.aiSmartPromptPill}
+                      onClick={() => handleCoPilotCommand(`Gợi ý quán cafe view đẹp ngắm hoàng hôn ở ${destination}`)}
+                      disabled={isCoPilotBusy}
+                    >
+                      ☕ Cafe view hoàng hôn
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.aiSmartPromptPill}
+                      onClick={() => handleCoPilotCommand('Đoàn có người lớn tuổi, đi lại nhẹ nhàng thôi')}
+                      disabled={isCoPilotBusy}
+                    >
+                      👨‍👩‍👧 Nhẹ nhàng gia đình
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.aiSmartPromptPill}
+                      onClick={() => handleCoPilotCommand('Làm sao để sửa giá khách sạn và chi phí?')}
+                      disabled={isCoPilotBusy}
+                    >
+                      💵 Sửa giá khách sạn
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.aiSmartPromptPill}
+                      onClick={() => handleCoPilotCommand('Mở bản đồ di chuyển')}
+                      disabled={isCoPilotBusy}
+                    >
+                      🗺️ Mở bản đồ lộ trình
+                    </button>
+                  </div>
+
+                  {/* AI Assistant Conversational Reply Card & Suggestions */}
+                  {coPilotReply && (
+                    <div className={styles.coPilotReplyCard}>
+                      <div className={styles.coPilotReplyHeader}>
+                        <span className={styles.coPilotReplyBadge}>
+                          <Sparkles size={12} />
+                          <span>Thổ Địa Du Lịch AI Sành Sỏi VISTA</span>
+                        </span>
+                        <button
+                          type="button"
+                          className={styles.coPilotReplyDismiss}
+                          onClick={() => {
+                            setCoPilotReply(null);
+                            setCoPilotInsiderTip(null);
+                            setCoPilotProactive(null);
+                            setCoPilotSuggestions([]);
+                          }}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                      <p className={styles.coPilotReplyText}>{coPilotReply}</p>
+
+                      {coPilotInsiderTip && (
+                        <div className={styles.coPilotInsiderBox}>
+                          <span className={styles.coPilotInsiderTitle}>
+                            💡 Thổ Địa Mách Nước:
+                          </span>
+                          <p className={styles.coPilotInsiderText}>{coPilotInsiderTip}</p>
+                        </div>
+                      )}
+
+                      {coPilotProactive && (
+                        <div className={styles.coPilotProactiveBox}>
+                          <span>🎯</span>
+                          <span>{coPilotProactive}</span>
+                        </div>
+                      )}
+
+                      {coPilotSuggestions.length > 0 && (
+                        <div className={styles.coPilotSuggestionsBox}>
+                          <span className={styles.coPilotSuggestionsTitle}>Gợi ý trải nghiệm dành riêng cho bạn:</span>
+                          <div className={styles.coPilotSuggestionsList}>
+                            {coPilotSuggestions.map((sug) => (
+                              <div key={sug.name} className={styles.coPilotSuggestionItem}>
+                                <div className={styles.coPilotSuggestionInfo}>
+                                  <span className={styles.coPilotSuggestionName}>{sug.name}</span>
+                                  <span className={styles.coPilotSuggestionMeta}>
+                                    {sug.category} · {sug.priceMin ? `${new Intl.NumberFormat('vi-VN').format(sug.priceMin)}đ` : 'Miễn phí'}
+                                  </span>
+                                </div>
+                                <button
+                                  type="button"
+                                  className={styles.coPilotSuggestionAddBtn}
+                                  onClick={() => handleAddSuggestionToDay(sug, activeDay)}
+                                >
+                                  + Thêm vào Ngày {activeDay}
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* 3. MAIN NAVIGATION TABS (4 Tabs) */}
+              <div className={styles.mainNavTabs}>
+                <button
+                  type="button"
+                  className={`${styles.mainNavTabBtn} ${activeMainTab === 'timeline' ? styles.mainNavTabBtnActive : ''}`}
+                  onClick={() => setActiveMainTab('timeline')}
+                >
+                  <Calendar size={16} />
+                  <span>Lịch trình chi tiết</span>
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.mainNavTabBtn} ${activeMainTab === 'map' ? styles.mainNavTabBtnActive : ''}`}
+                  onClick={() => setActiveMainTab('map')}
+                >
+                  <MapPin size={16} />
+                  <span>Bản đồ di chuyển</span>
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.mainNavTabBtn} ${activeMainTab === 'budget' ? styles.mainNavTabBtnActive : ''}`}
+                  onClick={() => setActiveMainTab('budget')}
+                >
+                  <Wallet size={16} />
+                  <span>Dự toán chi phí</span>
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.mainNavTabBtn} ${activeMainTab === 'checklist' ? styles.mainNavTabBtnActive : ''}`}
+                  onClick={() => setActiveMainTab('checklist')}
+                >
+                  <Check size={16} />
+                  <span>Danh sách chuẩn bị</span>
+                </button>
+              </div>
+
+              {/* 4. TAB CONTENT: TIMELINE (3 COLUMNS) */}
+              {activeMainTab === 'timeline' && (
+                <div className={styles.timelineThreeColumnsGrid}>
+                  {/* SUB-COLUMN 1: Vertical Day Navigation */}
+                  <div className={styles.subDayNav}>
+                    {itineraryDays.map((d) => {
+                      const isDayActive = d.dayNumber === activeDay;
+                      return (
+                        <button
+                          key={d.dayNumber}
+                          type="button"
+                          className={`${styles.subDayCard} ${isDayActive ? styles.subDayCardActive : ''}`}
+                          onClick={() => {
+                            setActiveDay(d.dayNumber);
+                            setSelectedMapPin(1);
+                          }}
+                        >
+                          <span className={styles.subDayTitle}>Ngày {d.dayNumber}</span>
+                          <span className={styles.subDayDate}>{d.dateStr}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* SUB-COLUMN 2: Center Timeline List */}
+                  <div className={styles.subTimelineCenter}>
+                    {/* Day Title & Meta Chips */}
+                    <div className={styles.timelineDayHeader}>
+                      <h4 className={styles.timelineDayTitle}>
+                        Ngày {activeDay} — {currentDayPlan?.title?.replace(/^Ngày \d+\s*[·—-—-]\s*/, '') || `Khám phá trung tâm ${destination}`}
+                      </h4>
+                      <div className={styles.timelineDayMeta}>
+                        <span className={styles.timelineDayMetaItem} title="Tổng quãng đường di chuyển giữa các điểm trong ngày">
+                          <MapPin size={13} color="#0284C7" />
+                          <span>~ {totalDayDistanceKm} km ({currentDayPlan?.activities?.length || 0} điểm)</span>
+                        </span>
+                        <span className={styles.timelineDayMetaItem} title="Dự toán trọn gói trong ngày cho cả đoàn">
+                          <Wallet size={13} color="#0284C7" />
+                          <span>~ {new Intl.NumberFormat('vi-VN').format(currentDaySubtotal)}đ</span>
                         </span>
                       </div>
-                      <div className={styles.dailyBudgetGrid}>
-                        <div className={styles.budgetCategoryItem}>
-                          <span className={styles.budgetCategoryLabel}>Vé & Hoạt động ({budgetBreakdown.count} người)</span>
-                          <span className={styles.budgetCategoryValue}>
-                            {new Intl.NumberFormat('vi-VN').format(
-                              currentDayPlan.activities.reduce((acc, curr) => acc + (curr.costVnd || 0), 0) * budgetBreakdown.count
-                            )}đ
+                    </div>
+
+                    {/* Transparent Daily Cost Breakdown Strip (Giải thích rõ cấu thành dự toán Ngày) */}
+                    <div
+                      style={{
+                        marginBottom: '12px',
+                        padding: '10px 14px',
+                        borderRadius: '10px',
+                        background: '#F8FAFC',
+                        border: '1px solid #E2E8F0',
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '8px',
+                        fontSize: '12px',
+                        color: '#334155',
+                      }}
+                    >
+                      <div style={{ fontWeight: 700, color: '#0F172A', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span>📊 Cấu thành dự toán Ngày {activeDay} ({peopleCount} người):</span>
+                      </div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
+                        <span style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '3px 8px' }}>
+                          🎟️ Vé tham quan: <strong>{currentDayBreakdown.ticketsGroup > 0 ? `${new Intl.NumberFormat('vi-VN').format(currentDayBreakdown.ticketsGroup)}đ` : '0đ (Miễn phí vé)'}</strong>
+                        </span>
+                        <span style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '3px 8px' }}>
+                          🍜 Ăn uống 3 bữa & Cà phê: <strong>{new Intl.NumberFormat('vi-VN').format(currentDayBreakdown.dailyDining)}đ</strong>
+                        </span>
+                        <span style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '3px 8px' }}>
+                          🛵 Đi lại ({budgetBreakdown.vehicleDescription}): <strong>{new Intl.NumberFormat('vi-VN').format(currentDayBreakdown.transport)}đ</strong>
+                        </span>
+                        <span style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '3px 8px' }}>
+                          🏨 Phân bổ lưu trú: <strong>{new Intl.NumberFormat('vi-VN').format(currentDayBreakdown.stayAlloc)}đ</strong>
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Hard Conflicts / Commitment Violations if any */}
+                    {planConflicts && planConflicts.length > 0 && (
+                      <div style={{ marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        {planConflicts.map((cf, idx) => (
+                          <div
+                            key={idx}
+                            style={{
+                              padding: '10px 14px',
+                              borderRadius: '8px',
+                              background: '#FEF2F2',
+                              border: '1px solid #FECACA',
+                              color: '#991B1B',
+                              fontSize: '12.5px',
+                            }}
+                          >
+                            <div style={{ fontWeight: 700, marginBottom: '3px' }}>
+                              ⚠️ Xung đột lịch hẹn ({cf.item_name || 'Mục đã khóa'}): {cf.message}
+                            </div>
+                            {Array.isArray(cf.suggested_resolutions) && cf.suggested_resolutions.length > 0 && (
+                              <div style={{ fontSize: '11.5px', color: '#7F1D1D', marginTop: '2px' }}>
+                                💡 Gợi ý xử lý: {cf.suggested_resolutions.join(' · ')}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Interactive Workbench: Quick Replan Toolbar & Replan Diff Banner */}
+                    <div
+                      style={{
+                        marginBottom: '12px',
+                        padding: '10px 14px',
+                        borderRadius: '10px',
+                        background: '#F0F9FF',
+                        border: '1px solid #BAE6FD',
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '8px',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Sparkles size={15} color="#0284C7" />
+                        <span style={{ fontSize: '12px', fontWeight: 700, color: '#0369A1' }}>
+                          Thao tác nhanh Ngày {activeDay}:
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
+                        <button
+                          type="button"
+                          disabled={isReplanLoading}
+                          onClick={() => executeStructuredReplan(`Dời bữa trưa Ngày ${activeDay} muộn hơn 45 phút`, { action: 'SHIFT_LUNCH', shift_minutes: 45 })}
+                          style={{
+                            padding: '4px 10px',
+                            borderRadius: '6px',
+                            background: '#FFFFFF',
+                            border: '1px solid #0284C7',
+                            color: '#0284C7',
+                            fontSize: '11.5px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          ⏰ Dời bữa trưa +45p
+                        </button>
+                        <button
+                          type="button"
+                          disabled={isReplanLoading}
+                          onClick={() => executeStructuredReplan(`Kích hoạt phương án mưa trong nhà Ngày ${activeDay}`, { action: 'RAIN_BACKUP' })}
+                          style={{
+                            padding: '4px 10px',
+                            borderRadius: '6px',
+                            background: '#FFFFFF',
+                            border: '1px solid #0284C7',
+                            color: '#0284C7',
+                            fontSize: '11.5px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          🌧️ Đổi phương án mưa
+                        </button>
+                        {undoSnapshot && (
+                          <button
+                            type="button"
+                            onClick={handleUndoReplan}
+                            style={{
+                              padding: '4px 10px',
+                              borderRadius: '6px',
+                              background: '#FEF3C7',
+                              border: '1px solid #F59E0B',
+                              color: '#B45309',
+                              fontSize: '11.5px',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            ↩️ Hoàn tác (Undo)
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Replan Diff Banner (kept, moved, replaced, dropped) */}
+                    {replanDiff && (
+                      <div
+                        style={{
+                          marginBottom: '12px',
+                          padding: '10px 14px',
+                          borderRadius: '8px',
+                          background: '#F8FAFC',
+                          border: '1px solid #CBD5E1',
+                          fontSize: '12px',
+                          color: '#334155',
+                        }}
+                      >
+                        <div style={{ fontWeight: 700, color: '#0F172A', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span>🔍 Chi tiết thay đổi vừa tính toán lại (Replan Diff):</span>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          {replanDiff.moved && replanDiff.moved.length > 0 && (
+                            <div>
+                              ⏱️ <strong>Giờ đã điều chỉnh:</strong>{' '}
+                              {replanDiff.moved.map((m: any, idx: number) => (
+                                <span key={idx} style={{ marginRight: '6px' }}>
+                                  {m.destination_name} ({m.old_start_time} ➔ <strong>{m.new_start_time}</strong>);
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          {replanDiff.replaced && replanDiff.replaced.length > 0 && (
+                            <div>
+                              🔄 <strong>Điểm đã thay thế:</strong>{' '}
+                              {replanDiff.replaced.map((r: any, idx: number) => (
+                                <span key={idx} style={{ marginRight: '6px' }}>
+                                  {r.old_destination_name} ➔ <strong>{r.new_destination_name}</strong>;
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          {replanDiff.dropped && replanDiff.dropped.length > 0 && (
+                            <div style={{ color: '#B91C1C' }}>
+                              🗑️ <strong>Điểm đã lược bỏ:</strong>{' '}
+                              {replanDiff.dropped.map((d: any, idx: number) => (
+                                <span key={idx} style={{ marginRight: '6px' }}>
+                                  {d.destination_name};
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          {replanDiff.summary && Array.isArray(replanDiff.summary) && replanDiff.summary.length > 0 && (
+                            <div style={{ marginTop: '4px', fontStyle: 'italic', color: '#64748B' }}>
+                              Ghi chú AI: {replanDiff.summary.join(' · ')}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Warnings if any */}
+                    {planWarnings && planWarnings.length > 0 && (
+                      <div style={{ marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {planWarnings.map((w, idx) => (
+                          <div
+                            key={idx}
+                            style={{
+                              padding: '10px 14px',
+                              borderRadius: '12px',
+                              background: 'linear-gradient(90deg, #FFF1F2 0%, #FEF2F2 100%)',
+                              border: '1px solid #FECDD3',
+                              borderLeft: '3.5px solid #F43F5E',
+                              boxShadow: '0 2px 8px rgba(244, 63, 94, 0.06)',
+                              color: '#9F1239',
+                              fontSize: '12.5px',
+                              fontWeight: 500,
+                              lineHeight: 1.45,
+                              display: 'flex',
+                              alignItems: 'flex-start',
+                              gap: '10px',
+                            }}
+                          >
+                            <span
+                              style={{
+                                width: '22px',
+                                height: '22px',
+                                borderRadius: '7px',
+                                background: '#FFE4E6',
+                                color: '#E11D48',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '12px',
+                                fontWeight: 800,
+                                flexShrink: 0,
+                                marginTop: '1px',
+                              }}
+                            >
+                              !
+                            </span>
+                            <span>{w}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Empty Day / Departure-Only Day Banner */}
+                    {currentDayPlan && (!currentDayPlan.activities || currentDayPlan.activities.length === 0) && (
+                      <div
+                        style={{
+                          marginBottom: '14px',
+                          padding: '16px',
+                          borderRadius: '10px',
+                          background: '#FFFBEB',
+                          border: '1px solid #FDE68A',
+                          color: '#92400E',
+                          fontSize: '13px',
+                        }}
+                      >
+                        <strong>
+                          {currentDayPlan.dayStatus === 'DEPARTURE_ONLY'
+                            ? '✈️ Ngày di chuyển ra sân bay / bến xe'
+                            : '🌿 Thời gian tự do / Chưa có điểm phù hợp'}
+                        </strong>
+                        <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#78350F' }}>
+                          {currentDayPlan.statusReason || currentDayPlan.dayRationale}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Final-Day Departure Window Info Banner */}
+                    {currentDayPlan?.departureInfo?.has_departure_constraint && (
+                      <div
+                        style={{
+                          marginBottom: '12px',
+                          padding: '10px 14px',
+                          borderRadius: '8px',
+                          background: '#F0FDF4',
+                          border: '1px solid #BBF7D0',
+                          color: '#166534',
+                          fontSize: '12px',
+                        }}
+                      >
+                        <strong>✈️ Lịch khởi hành về ({currentDayPlan.departureInfo.departure_point || 'Sân bay / Bến xe'} lúc {currentDayPlan.departureInfo.departure_time}):</strong>{' '}
+                        {currentDayPlan.departureInfo.summary}
+                      </div>
+                    )}
+
+                    {/* Activities Vertical Flow with Detailed Start–End Time, Route Legs & Free-Window Explanations */}
+                    <div className={styles.timelineList}>
+                      {currentDayPlan?.activities?.map((act, actIdx) => {
+                        const rangeParts = act.timeRange ? act.timeRange.split(/[-–]/) : [];
+                        const startTime = rangeParts[0]?.trim() || `0${8 + actIdx * 3}:30`;
+                        const defaultEndMin = parseHhMmToMinutes(startTime, 8 * 60 + 30) + (actIdx === 1 ? 90 : 120);
+                        const endTime = rangeParts[1]?.trim() || formatMinutesToHhMm(defaultEndMin);
+                        const startMin = parseHhMmToMinutes(startTime, 8 * 60 + 30);
+                        const endMin = Math.max(startMin + 45, parseHhMmToMinutes(endTime, defaultEndMin));
+                        const stayMinutes = endMin - startMin;
+
+                        const isPaid = (act.costVnd || 0) > 0;
+                        const catLower = (act.category || '').toLowerCase();
+                        const titleLower = (act.title || '').toLowerCase();
+                        const isFoodOrMarketOrCafe =
+                          catLower.includes('ẩm thực') ||
+                          catLower.includes('chợ') ||
+                          catLower.includes('cà phê') ||
+                          catLower.includes('ăn') ||
+                          titleLower.includes('chợ') ||
+                          titleLower.includes('phố ẩm thực') ||
+                          titleLower.includes('cafe') ||
+                          titleLower.includes('cà phê') ||
+                          titleLower.includes('bánh mì') ||
+                          titleLower.includes('cơm');
+
+                        const priceText = isPaid
+                          ? `${new Intl.NumberFormat('vi-VN').format(act.costVnd)}đ/người`
+                          : isFoodOrMarketOrCafe
+                            ? 'Miễn phí vé vào'
+                            : 'Miễn phí vé';
+
+                        const spendingSubHint = !isPaid && isFoodOrMarketOrCafe
+                          ? 'Ăn uống/mua sắm: ~50k–150k/người'
+                          : !isPaid && titleLower.includes('nguyễn huệ')
+                            ? 'Dạo phố 0đ · Cà phê/ăn vặt ~45k–80k'
+                            : null;
+
+                        const openInfo = getScheduleOpeningInfo(act, startTime, endTime);
+
+                        // Compute route leg & time gap to next stop
+                        const totalActs = currentDayPlan.activities.length;
+                        const nextAct = actIdx < totalActs - 1 ? currentDayPlan.activities[actIdx + 1] : null;
+                        let legInfo: {
+                          distKmStr: string;
+                          modeLabel: string;
+                          travelMin: number;
+                          gapWindowStr: string | null;
+                          gapExplanation: string | null;
+                        } | null = null;
+
+                        if (nextAct) {
+                          const distKm = computeLegDistanceKm(act, nextAct);
+                          const distKmStr = distKm.toLocaleString('vi-VN');
+                          const isWalkable = distKm <= 1.2;
+                          const walkMin = Math.max(5, Math.round(distKm * 12));
+                          const driveMin = Math.max(6, Math.round(distKm * 3.2 + 4));
+                          const travelMin = isWalkable ? walkMin : driveMin;
+                          const modeLabel = isWalkable
+                            ? `🚶 Đi bộ ~${walkMin} phút (hoặc 🛵 Xe máy/Taxi ~${driveMin} phút)`
+                            : `🛵 Xe máy / 🚕 Taxi ~${driveMin} phút`;
+
+                          const nextParts = nextAct.timeRange ? nextAct.timeRange.split(/[-–]/) : [];
+                          const nextStartStr = nextParts[0]?.trim() || formatMinutesToHhMm(endMin + travelMin + 30);
+                          const nextStartMin = parseHhMmToMinutes(nextStartStr, endMin + travelMin + 30);
+                          const arrivalAtNextAreaMin = endMin + travelMin;
+                          const freeBufferMin = nextStartMin - arrivalAtNextAreaMin;
+
+                          let gapWindowStr: string | null = null;
+                          let gapExplanation: string | null = null;
+                          if (freeBufferMin >= 25) {
+                            gapWindowStr = `${formatMinutesToHhMm(arrivalAtNextAreaMin)} – ${nextStartStr} (${freeBufferMin >= 60 ? `${Math.floor(freeBufferMin / 60)} giờ ${freeBufferMin % 60 > 0 ? `${freeBufferMin % 60} phút` : ''}`.trim() : `${freeBufferMin} phút`})`;
+                            if (endMin >= 13 * 60 + 30 && nextStartMin >= 17 * 60 + 30) {
+                              gapExplanation = '☕🍜 Khoảng nghỉ chiều & ăn tối: Thưởng thức cà phê chiều, về khách sạn nghỉ ngơi tắm rửa và dùng bữa tối trước khi dạo phố buổi tối.';
+                            } else if (endMin <= 11 * 60 + 30 && nextStartMin >= 11 * 60 + 15) {
+                              gapExplanation = '🥤 Nghỉ chân uống nước mát, chụp hình dọc đường & di chuyển sang điểm dừng buổi trưa.';
+                            } else if (endMin >= 12 * 60 + 15 && nextStartMin <= 15 * 60 + 30) {
+                              gapExplanation = '🛌 Nghỉ trưa thư giãn tránh nắng gắt hoặc ngồi cà phê máy lạnh trước khi tiếp tục hành trình buổi chiều.';
+                            } else {
+                              gapExplanation = '☕ Thời gian thư giãn tự do, thưởng thức đồ uống giải khát hoặc tự do dạo quanh khu vực lân cận.';
+                            }
+                          }
+
+                          legInfo = {
+                            distKmStr,
+                            modeLabel,
+                            travelMin,
+                            gapWindowStr,
+                            gapExplanation,
+                          };
+                        }
+
+                        return (
+                          <React.Fragment key={act.id}>
+                            <div className={styles.timelineRow}>
+                              <div className={styles.timelineTimeLabel} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px', minWidth: '64px' }}>
+                                <span style={{ fontWeight: 800, color: '#0F172A', fontSize: '13px' }}>{startTime}</span>
+                                <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>đến {endTime}</span>
+                                <span style={{ fontSize: '10px', color: '#0284C7', background: '#E0F2FE', padding: '1px 6px', borderRadius: '99px', fontWeight: 700, marginTop: '2px' }}>
+                                  ⏱️ {stayMinutes}p
+                                </span>
+                              </div>
+
+                              <div className={styles.timelineTrack}>
+                                <div className={styles.timelineDot} />
+                                <div className={styles.timelineLine} />
+                              </div>
+
+                              <div className={styles.activityCard}>
+                                <img
+                                  src={act.photoUrl || activeDestObj.photo}
+                                  alt={act.title}
+                                  className={styles.activityThumb}
+                                  onError={(e) => {
+                                    const img = e.currentTarget as HTMLImageElement;
+                                    if (img.src !== activeDestObj.photo) {
+                                      img.src = activeDestObj.photo;
+                                    }
+                                  }}
+                                />
+                                <div className={styles.activityContent}>
+                                  <div className={styles.activityTitleRow}>
+                                    <h5 className={styles.activityTitle}>
+                                      <span style={{ color: '#0284C7', marginRight: '5px', fontWeight: 800 }}>#{actIdx + 1}</span>
+                                      {act.title}
+                                    </h5>
+                                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
+                                      <span className={styles.categoryPill}>{act.category}</span>
+                                      <span
+                                        style={{
+                                          fontSize: '11px',
+                                          fontWeight: 600,
+                                          color: openInfo.color,
+                                          background: openInfo.bg,
+                                          border: `1px solid ${openInfo.border}`,
+                                          borderRadius: '999px',
+                                          padding: '2px 8px',
+                                          display: 'inline-flex',
+                                          alignItems: 'center',
+                                          gap: '4px',
+                                        }}
+                                      >
+                                        <span
+                                          style={{
+                                            width: '6px',
+                                            height: '6px',
+                                            borderRadius: '50%',
+                                            background: openInfo.dot,
+                                          }}
+                                        />
+                                        {openInfo.text}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <p className={styles.activityDesc}>{act.description}</p>
+
+                                  {/* 1-Click Rain Backup Suggestion (Indoor Fallback) */}
+                                  {act.rainBackupSuggestion && (act.rainBackupSuggestion.destinationId || act.rainBackupSuggestion.destination_id) && (
+                                    <div
+                                      style={{
+                                        marginTop: '6px',
+                                        padding: '6px 10px',
+                                        borderRadius: '8px',
+                                        background: '#F8FAFC',
+                                        border: '1px dashed #94A3B8',
+                                        fontSize: '11.5px',
+                                        color: '#334155',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        gap: '8px',
+                                        flexWrap: 'wrap',
+                                      }}
+                                    >
+                                      <span>
+                                        🌧️ <strong>Nếu trời mưa:</strong> Đổi sang <strong>{act.rainBackupSuggestion.destinationName || act.rainBackupSuggestion.destination_name || act.rainBackupSuggestion.name}</strong>
+                                        {(act.rainBackupSuggestion.distanceKm ?? act.rainBackupSuggestion.distance_km) !== undefined && (
+                                          <span style={{ color: '#64748B' }}> ({act.rainBackupSuggestion.distanceKm ?? act.rainBackupSuggestion.distance_km} km)</span>
+                                        )}
+                                      </span>
+                                      <button
+                                        type="button"
+                                        disabled={isReplanLoading || act.isLocked}
+                                        onClick={() =>
+                                          executeStructuredReplan(
+                                            `Đổi '${act.title}' sang điểm trong nhà '${act.rainBackupSuggestion?.destinationName || act.rainBackupSuggestion?.destination_name || act.rainBackupSuggestion?.name}' do trời mưa`,
+                                            {
+                                              action: 'REPLACE_STOP',
+                                              target_destination_id: act.id,
+                                              replacement_destination_id: act.rainBackupSuggestion?.destinationId || act.rainBackupSuggestion?.destination_id,
+                                            }
+                                          )
+                                        }
+                                        style={{
+                                          minHeight: 0,
+                                          padding: '3px 8px',
+                                          borderRadius: '6px',
+                                          border: '1px solid #0284C7',
+                                          background: '#E0F2FE',
+                                          color: '#0369A1',
+                                          fontSize: '11px',
+                                          fontWeight: 700,
+                                          cursor: isReplanLoading || act.isLocked ? 'not-allowed' : 'pointer',
+                                          opacity: isReplanLoading || act.isLocked ? 0.55 : 1,
+                                        }}
+                                      >
+                                        {act.isLocked ? 'Đang khóa' : 'Đổi ngay'}
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+
+                                <div className={styles.activityRightSide} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+                                  <span className={isPaid ? styles.activityPriceBadgePaid : styles.activityPriceBadge}>
+                                    {priceText}
+                                  </span>
+                                  {spendingSubHint && (
+                                    <span style={{ fontSize: '10.5px', color: '#475569', background: '#F1F5F9', padding: '2px 6px', borderRadius: '6px', fontWeight: 600, textAlign: 'right', whiteSpace: 'nowrap' }}>
+                                      {spendingSubHint}
+                                    </span>
+                                  )}
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                                    <button
+                                      type="button"
+                                      onClick={() => toggleActivityLock(act.id)}
+                                      title={act.isLocked ? "Đang khóa khung giờ (Bấm để mở khóa)" : "Khóa mốc thời gian này khi tính lại lịch"}
+                                      style={{
+                                        minHeight: 0,
+                                        padding: '4px 7px',
+                                        borderRadius: '6px',
+                                        border: act.isLocked ? '1px solid #F59E0B' : '1px solid #E2E8F0',
+                                        background: act.isLocked ? '#FEF3C7' : '#FFFFFF',
+                                        color: act.isLocked ? '#B45309' : '#64748B',
+                                        fontSize: '11px',
+                                        fontWeight: 700,
+                                        cursor: 'pointer',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '3px',
+                                      }}
+                                    >
+                                      <span>{act.isLocked ? '🔒 Khóa' : '🔓 Tự do'}</span>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleMoveActivityOrder(actIdx, 'up')}
+                                      disabled={actIdx === 0}
+                                      title="Đẩy điểm này lên sớm hơn (Tự động tính lại giờ & quãng đường)"
+                                      style={{
+                                        width: '26px',
+                                        height: '26px',
+                                        minHeight: 0,
+                                        padding: 0,
+                                        borderRadius: '6px',
+                                        border: '1px solid #E2E8F0',
+                                        background: actIdx === 0 ? '#F8FAFC' : '#FFFFFF',
+                                        color: actIdx === 0 ? '#CBD5E1' : '#334155',
+                                        fontSize: '12px',
+                                        fontWeight: 700,
+                                        cursor: actIdx === 0 ? 'not-allowed' : 'pointer',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                      }}
+                                    >
+                                      ↑
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleMoveActivityOrder(actIdx, 'down')}
+                                      disabled={actIdx === totalActs - 1}
+                                      title="Chuyển điểm này xuống muộn hơn (Tự động tính lại giờ & quãng đường)"
+                                      style={{
+                                        width: '26px',
+                                        height: '26px',
+                                        minHeight: 0,
+                                        padding: 0,
+                                        borderRadius: '6px',
+                                        border: '1px solid #E2E8F0',
+                                        background: actIdx === totalActs - 1 ? '#F8FAFC' : '#FFFFFF',
+                                        color: actIdx === totalActs - 1 ? '#CBD5E1' : '#334155',
+                                        fontSize: '12px',
+                                        fontWeight: 700,
+                                        cursor: actIdx === totalActs - 1 ? 'not-allowed' : 'pointer',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                      }}
+                                    >
+                                      ↓
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className={styles.activityMenuBtn}
+                                      onClick={() => {
+                                        setReplaceTargetActivityId(act.id);
+                                      }}
+                                      title="Đổi địa điểm khác hoặc xóa"
+                                    >
+                                      <MoreHorizontal size={16} />
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Inter-Stop Route Leg & Time-Gap Explanation Strip */}
+                            {legInfo && (
+                              <div
+                                style={{
+                                  marginLeft: '86px',
+                                  marginBottom: '12px',
+                                  marginTop: '-4px',
+                                  padding: '9px 13px',
+                                  borderRadius: '10px',
+                                  background: 'linear-gradient(90deg, #F0F9FF 0%, #F8FAFC 100%)',
+                                  borderLeft: '3px solid #0EA5E9',
+                                  borderTop: '1px solid #E2E8F0',
+                                  borderRight: '1px solid #E2E8F0',
+                                  borderBottom: '1px solid #E2E8F0',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  gap: '4px',
+                                  fontSize: '12px',
+                                  color: '#334155',
+                                }}
+                              >
+                                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
+                                  <span style={{ fontWeight: 700, color: '#0284C7' }}>
+                                    📍 Chặng {actIdx + 1} → {actIdx + 2}: ~{legInfo.distKmStr} km
+                                  </span>
+                                  <span>·</span>
+                                  <span>{legInfo.modeLabel}</span>
+                                </div>
+                                {legInfo.gapWindowStr && legInfo.gapExplanation && (
+                                  <div style={{ color: '#475569', background: '#FFFFFF', padding: '5px 8px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
+                                    <strong style={{ color: '#0F172A' }}>⏳ Khung {legInfo.gapWindowStr}:</strong> {legInfo.gapExplanation}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </React.Fragment>
+                        );
+                      })}
+                    </div>
+
+                    {/* Bottom action: Add Activity */}
+                    <div style={{ marginTop: '16px' }}>
+                      <button
+                        type="button"
+                        className={styles.btnAddActivityDashed}
+                        onClick={() => setShowAddActivityModal(true)}
+                        style={{
+                          width: '100%',
+                          padding: '12px',
+                          border: '1.5px dashed #CBD5E1',
+                          borderRadius: '10px',
+                          background: '#FFFFFF',
+                          color: '#0284C7',
+                          fontSize: '13.5px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px',
+                          transition: 'all 0.15s ease',
+                        }}
+                      >
+                        <span>+ Thêm hoạt động vào Ngày {activeDay}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* SUB-COLUMN 3: Right Sidebar Quick Insights */}
+                  <div className={styles.subRightSidebar}>
+                    {/* Card 1: Tổng dự toán chuyến đi */}
+                    <div
+                      className={styles.budgetSummaryCard}
+                      onClick={() => setActiveMainTab('budget')}
+                      role="button"
+                      tabIndex={0}
+                    >
+                      <div className={styles.budgetSummaryHeader}>
+                        <div className={styles.budgetSummaryTitleGroup}>
+                          <div className={styles.budgetIcon}>
+                            <Wallet size={18} color="#0284C7" />
+                          </div>
+                          <div>
+                            <span className={styles.budgetSummaryLabel}>Tổng dự toán chuyến đi</span>
+                            <div className={styles.budgetTotalNumber}>
+                              {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.totalBaseline)}đ
+                            </div>
+                          </div>
+                        </div>
+                        <ChevronRight size={18} color="#65758A" />
+                      </div>
+                      <div className={styles.budgetSubtext}>
+                        {peopleCount} người · {duration}
+                      </div>
+                    </div>
+
+                    {/* Card 2: Tuyến đường Ngày activeDay */}
+                    <div className={styles.routePreviewCard}>
+                      <div className={styles.routeCardHeader}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <MapPin size={16} color="#0284C7" />
+                          <span style={{ fontSize: '14px', fontWeight: 700, color: '#142D4E' }}>
+                            Tuyến đường Ngày {activeDay}
                           </span>
                         </div>
-                        <div className={styles.budgetCategoryItem}>
-                          <span className={styles.budgetCategoryLabel}>Ăn uống 3 bữa ({budgetBreakdown.count} người)</span>
-                          <span className={styles.budgetCategoryValue}>
-                            {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.diningPerPersonDay * budgetBreakdown.count)}đ
+                        <button
+                          type="button"
+                          style={{ fontSize: '12px', color: '#0284C7', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}
+                          onClick={() => setActiveMainTab('map')}
+                        >
+                          Bản đồ lớn →
+                        </button>
+                      </div>
+
+                      {/* Mini Map Route Preview Card (GPU-friendly, 0-lag) */}
+                      <div
+                        className={styles.miniMapWrapper}
+                        onClick={() => setActiveMainTab('map')}
+                        title="Bấm để mở bản đồ toàn cảnh số"
+                        style={{
+                          cursor: 'pointer',
+                          background: 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'space-between',
+                          padding: '14px 16px',
+                          color: '#FFFFFF',
+                          position: 'relative',
+                          overflow: 'hidden',
+                          boxShadow: '0 4px 14px rgba(2, 132, 199, 0.18)',
+                          transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+                        }}
+                      >
+                        {/* Decorative background grid pattern */}
+                        <div
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            opacity: 0.12,
+                            backgroundImage: 'radial-gradient(#FFFFFF 1.5px, transparent 1.5px)',
+                            backgroundSize: '16px 16px',
+                            pointerEvents: 'none',
+                          }}
+                        />
+
+                        {/* Top info */}
+                        <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                          <div>
+                            <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#BAE6FD', fontWeight: 700 }}>
+                              Lộ trình Ngày {activeDay}
+                            </span>
+                            <div style={{ fontSize: '15px', fontWeight: 700, marginTop: '2px', color: '#FFFFFF' }}>
+                              📍 {cleanDestName} · {mapMarkers.length} điểm dừng
+                            </div>
+                          </div>
+                          <span
+                            style={{
+                              fontSize: '11px',
+                              background: 'rgba(255,255,255,0.22)',
+                              backdropFilter: 'blur(4px)',
+                              padding: '3px 9px',
+                              borderRadius: '999px',
+                              fontWeight: 600,
+                              color: '#FFFFFF',
+                            }}
+                          >
+                            Bản đồ số
                           </span>
                         </div>
-                        <div className={styles.budgetCategoryItem}>
-                          <span className={styles.budgetCategoryLabel}>Di chuyển ({budgetBreakdown.vehicleDescription})</span>
-                          <span className={styles.budgetCategoryValue}>
-                            {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.dailyVehicleRate)}đ
+
+                        {/* Route Nodes Preview Chips */}
+                        <div
+                          style={{
+                            position: 'relative',
+                            zIndex: 1,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            overflowX: 'auto',
+                            padding: '4px 0',
+                            scrollbarWidth: 'none',
+                          }}
+                        >
+                          {currentDayPlan?.activities?.slice(0, 4).map((act, idx) => (
+                            <div key={act.id || idx} style={{ display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0 }}>
+                              <span
+                                style={{
+                                  background: '#FFFFFF',
+                                  color: '#0284C7',
+                                  width: '20px',
+                                  height: '20px',
+                                  borderRadius: '50%',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontSize: '11px',
+                                  fontWeight: 800,
+                                  boxShadow: '0 2px 4px rgba(0,0,0,0.12)',
+                                }}
+                              >
+                                {idx + 1}
+                              </span>
+                              <span
+                                style={{
+                                  fontSize: '11.5px',
+                                  fontWeight: 600,
+                                  color: '#F0F9FF',
+                                  maxWidth: '85px',
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                }}
+                              >
+                                {act.title}
+                              </span>
+                              {idx < Math.min((currentDayPlan?.activities?.length || 0) - 1, 3) && (
+                                <span style={{ color: '#7DD3FC', fontSize: '11px' }}>→</span>
+                              )}
+                            </div>
+                          ))}
+                          {(currentDayPlan?.activities?.length || 0) > 4 && (
+                            <span style={{ fontSize: '11px', color: '#BAE6FD', fontWeight: 700, flexShrink: 0 }}>
+                              +{ (currentDayPlan?.activities?.length || 0) - 4 } điểm
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Bottom CTA to open interactive MapLibre full view */}
+                        <div
+                          style={{
+                            position: 'relative',
+                            zIndex: 1,
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            borderTop: '1px solid rgba(255,255,255,0.22)',
+                            paddingTop: '8px',
+                          }}
+                        >
+                          <span style={{ fontSize: '12px', color: '#E0F2FE' }}>🗺️ Xem tương tác toạ độ &amp; vệ tinh</span>
+                          <span
+                            style={{
+                              fontSize: '11.5px',
+                              fontWeight: 700,
+                              color: '#0284C7',
+                              background: '#FFFFFF',
+                              padding: '3px 10px',
+                              borderRadius: '6px',
+                              boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                            }}
+                          >
+                            Mở bản đồ lớn ↗
                           </span>
                         </div>
-                        <div className={styles.budgetCategoryItem}>
-                          <span className={styles.budgetCategoryLabel}>Lưu trú phân bổ ({budgetBreakdown.roomsNeeded} phòng)</span>
-                          <span className={styles.budgetCategoryValue}>
-                            {new Intl.NumberFormat('vi-VN').format(Math.round(budgetBreakdown.totalLodging / Math.max(1, daysCount)))}đ
-                          </span>
-                        </div>
-                        <div className={styles.budgetCategoryItem} style={{ textAlign: 'right' }}>
-                          <span className={styles.budgetCategoryLabel}>Bình quân</span>
-                          <span className={styles.budgetCategoryValue} style={{ color: '#149D83' }}>
-                            {new Intl.NumberFormat('vi-VN').format(Math.round(currentDaySubtotal / budgetBreakdown.count))}đ / người
-                          </span>
-                        </div>
+                      </div>
+
+                      {/* Route Sequence Footer */}
+                      <div className={styles.routeStopsFooter}>
+                        <span>📍 {currentDayPlan?.activities?.map((a) => a.title).join(' → ')}</span>
                       </div>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* ─── 5. REAL MAP VIEW INTEGRATION (T5) ─── */}
-              {activeView === 'map' && (
+              {/* 5. TAB CONTENT: MAP VIEW */}
+              {activeMainTab === 'map' && (
                 <div className={styles.mapViewContainer}>
-                  <div className={styles.realMapAdapterWrapper}>
-                    <MapViewAdapter
-                      destinations={mapMarkers}
-                      selectedDestinationId={currentDayPlan.activities[selectedMapPin - 1]?.id}
-                      onSelectDestination={(dest) => {
-                        if (!dest) return;
-                        const fIdx = currentDayPlan.activities.findIndex((a) => a.id === dest.id);
-                        if (fIdx >= 0) setSelectedMapPin(fIdx + 1);
-                      }}
-                      initialCenter={{
-                        latitude: currentDayPlan.activities[0]?.latitude || activeDestObj.lat,
-                        longitude: currentDayPlan.activities[0]?.longitude || activeDestObj.lng,
-                        zoom: 12.5,
-                      }}
-                      showSelectedCard={false}
-                    />
-                  </div>
+                  {/* Top Control Bar: Day Switcher + All-Days Mode & Route Stops Strip */}
+                  <div className={styles.mapTopControlBar}>
+                    <div className={styles.mapTopRow}>
+                      <div className={styles.mapDayTabs}>
+                        <button
+                          type="button"
+                          className={`${styles.mapDayTabBtn} ${mapViewMode === 'all' ? styles.mapDayTabBtnActive : ''}`}
+                          onClick={() => setMapViewMode('all')}
+                        >
+                          🗺️ Tất cả các ngày ({itineraryDays.length}N)
+                        </button>
+                        {itineraryDays.map((d, dIdx) => {
+                          const dayColor = DAY_ROUTE_COLORS[dIdx % DAY_ROUTE_COLORS.length];
+                          const isSelectedDay = mapViewMode === 'day' && activeDay === d.dayNumber;
+                          return (
+                            <button
+                              key={d.dayNumber}
+                              type="button"
+                              className={`${styles.mapDayTabBtn} ${isSelectedDay ? styles.mapDayTabBtnActive : ''}`}
+                              onClick={() => {
+                                setMapViewMode('day');
+                                setActiveDay(d.dayNumber);
+                                setSelectedMapPin(1);
+                                setMapFocusPinTrigger(0);
+                              }}
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                            >
+                              <span
+                                style={{
+                                  width: '8px',
+                                  height: '8px',
+                                  borderRadius: '50%',
+                                  backgroundColor: dayColor,
+                                  display: 'inline-block',
+                                }}
+                              />
+                              <span>Ngày {d.dayNumber} ({d.activities?.length || 0} điểm)</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <span style={{ fontSize: '12px', color: '#64748B', fontWeight: 600 }}>
+                        {mapViewMode === 'all'
+                          ? '🛣️ Đang vẽ toàn bộ lộ trình Ngày 1 → Ngày ' + itineraryDays.length + ' theo từng màu'
+                          : (() => {
+                              const legs = dayRouteLegs[activeDay] || [];
+                              const modeName = mapTravelMode === 'MOTORBIKE' ? 'xe máy' : mapTravelMode === 'WALKING' ? 'đi bộ' : 'lái xe';
+                              if (legs.length > 0) {
+                                const totalKm = legs.reduce((s, l) => s + l.distanceKm, 0);
+                                const totalMin = legs.reduce((s, l) => s + l.durationMin, 0);
+                                return `🛣️ Cung đường thực tế Ngày ${activeDay}: ${totalKm.toFixed(1)} km · ~${totalMin} phút ${modeName}`;
+                              }
+                              return '📍 Đường nối thứ tự 1 → ' + (currentDayPlan?.activities?.length || 0) + ' trên bản đồ';
+                            })()}
+                      </span>
+                    </div>
 
-                  {/* Selected Place Preview Card on Map */}
-                  {currentDayPlan.activities[selectedMapPin - 1] && (
-                    <div className={styles.mapPreviewCard}>
-                      <img
-                        src={currentDayPlan.activities[selectedMapPin - 1].photoUrl}
-                        alt={currentDayPlan.activities[selectedMapPin - 1].title}
-                        className={styles.mapPreviewPhoto}
-                      />
-                      <div className={styles.mapPreviewDetails}>
-                        <span className={styles.mapPreviewCategory}>
-                          Điểm {selectedMapPin} · {currentDayPlan.activities[selectedMapPin - 1].category}
-                        </span>
-                        <h4 className={styles.mapPreviewTitle}>
-                          {currentDayPlan.activities[selectedMapPin - 1].title}
-                        </h4>
-                        <span className={styles.mapPreviewCost}>
-                          {currentDayPlan.activities[selectedMapPin - 1].costLabel}
-                        </span>
-                        <span style={{ fontSize: '11px', color: '#64748B' }}>
-                          {currentDayPlan.activities[selectedMapPin - 1].timeRange} · {currentDayPlan.activities[selectedMapPin - 1].location}
-                        </span>
+                    {/* Pro Live Navigation & Route Optimization Controls */}
+                    <div className={styles.mapActionsBar}>
+                      <div className={styles.mapTravelModeTabs}>
+                        <button
+                          type="button"
+                          className={`${styles.mapTravelModeBtn} ${mapTravelMode === 'DRIVING' ? styles.mapTravelModeBtnActive : ''}`}
+                          onClick={() => setMapTravelMode('DRIVING')}
+                          title="Phương tiện: Ô tô (Tuyến đường lớn)"
+                        >
+                          <Car size={13} />
+                          <span>Ô tô</span>
+                        </button>
+                        <button
+                          type="button"
+                          className={`${styles.mapTravelModeBtn} ${mapTravelMode === 'MOTORBIKE' ? styles.mapTravelModeBtnActive : ''}`}
+                          onClick={() => setMapTravelMode('MOTORBIKE')}
+                          title="Phương tiện: Xe máy (Linh hoạt đường ngõ)"
+                        >
+                          <Bike size={13} />
+                          <span>Xe máy</span>
+                        </button>
+                        <button
+                          type="button"
+                          className={`${styles.mapTravelModeBtn} ${mapTravelMode === 'WALKING' ? styles.mapTravelModeBtnActive : ''}`}
+                          onClick={() => setMapTravelMode('WALKING')}
+                          title="Phương tiện: Đi bộ (Phố đi bộ & dạo phố)"
+                        >
+                          <Footprints size={13} />
+                          <span>Đi bộ</span>
+                        </button>
+                      </div>
+
+                      <div className={styles.mapActionsRightGroup}>
+                        {mapViewMode === 'day' && currentDayPlan?.activities && currentDayPlan.activities.length >= 3 && (
+                          <button
+                            type="button"
+                            className={styles.mapOptimizeBtn}
+                            onClick={() => handleOptimizeDayRoute(activeDay)}
+                            title="Tự động sắp xếp lại thứ tự các điểm dừng theo thuật toán TSP ngắn nhất"
+                          >
+                            <Zap size={13} />
+                            <span>Tối ưu cung đường ngắn nhất</span>
+                          </button>
+                        )}
+
                         <a
-                          href={
-                            currentDayPlan.activities[selectedMapPin - 1].latitude && currentDayPlan.activities[selectedMapPin - 1].longitude
-                              ? `https://www.google.com/maps/dir/?api=1&destination=${currentDayPlan.activities[selectedMapPin - 1].latitude},${currentDayPlan.activities[selectedMapPin - 1].longitude}`
-                              : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(currentDayPlan.activities[selectedMapPin - 1].title + ' ' + destination)}`
-                          }
+                          href={getGoogleMapsMultiStopUrl(currentDayPlan?.activities)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className={styles.mapPreviewNavBtn}
+                          className={styles.mapNavGoogleBtn}
+                          title={`Mở toàn bộ lộ trình Ngày ${activeDay} trên Google Maps để bật GPS dẫn đường thực tế`}
                         >
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polygon points="3 11 22 2 13 21 11 13 3 11" /></svg>
-                          <span>Chỉ đường Google Maps</span>
+                          <Navigation size={13} />
+                          <span>Chỉ đường Google Maps (Ngày {activeDay})</span>
                         </a>
                       </div>
                     </div>
-                  )}
 
-                  {/* Map Legend */}
-                  <div className={styles.mapLegend}>
-                    <div className={styles.legendItem}>
-                      <span className={styles.legendDot} style={{ background: '#0088CC' }} />
-                      <span>Tham quan</span>
+                    {/* Interactive Route Stops Strip (Single Day) or Multi-Day Color Legend */}
+                    {mapViewMode === 'day' && currentDayPlan?.activities && currentDayPlan.activities.length > 0 && (
+                      <div className={styles.mapStopsStrip}>
+                        {currentDayPlan.activities.map((act, idx) => {
+                          const pinNum = idx + 1;
+                          const isSelected = selectedMapPin === pinNum;
+                          const legAfter = (dayRouteLegs[activeDay] || [])[idx];
+                          return (
+                            <React.Fragment key={act.id || idx}>
+                              <button
+                                type="button"
+                                className={`${styles.mapStopPill} ${isSelected ? styles.mapStopPillActive : ''}`}
+                                onClick={() => {
+                                  setSelectedMapPin(pinNum);
+                                  setMapFocusPinTrigger((n) => n + 1);
+                                }}
+                              >
+                                <span className={styles.mapStopNumber}>{pinNum}</span>
+                                <span>{act.title}</span>
+                                <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 500 }}>
+                                  ({act.timeRange.split('–')[0]})
+                                </span>
+                              </button>
+                              {idx < currentDayPlan.activities.length - 1 && (
+                                <span
+                                  style={{
+                                    color: '#0284C7',
+                                    fontWeight: 700,
+                                    fontSize: '11.5px',
+                                    alignSelf: 'center',
+                                    flexShrink: 0,
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '3px',
+                                    background: '#F0F9FF',
+                                    border: '1px solid #BAE6FD',
+                                    borderRadius: '999px',
+                                    padding: '2px 7px',
+                                  }}
+                                >
+                                  ➔ {legAfter ? `${legAfter.distanceKm}km · ${legAfter.durationMin}p` : ''}
+                                </span>
+                              )}
+                            </React.Fragment>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {mapViewMode === 'all' && itineraryDays.length > 0 && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '4px' }}>
+                        {itineraryDays.map((d, dIdx) => {
+                          const color = DAY_ROUTE_COLORS[dIdx % DAY_ROUTE_COLORS.length];
+                          return (
+                            <div
+                              key={d.dayNumber}
+                              onClick={() => {
+                                setMapViewMode('day');
+                                setActiveDay(d.dayNumber);
+                                setSelectedMapPin(1);
+                                setMapFocusPinTrigger(0);
+                              }}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                fontSize: '12px',
+                                padding: '5px 10px',
+                                borderRadius: '8px',
+                                background: '#F8FAFC',
+                                border: '1px solid #E2E8F0',
+                                cursor: 'pointer',
+                                flexWrap: 'wrap',
+                              }}
+                            >
+                              <span
+                                style={{
+                                  backgroundColor: color,
+                                  color: '#FFFFFF',
+                                  fontWeight: 700,
+                                  fontSize: '11px',
+                                  padding: '2px 8px',
+                                  borderRadius: '999px',
+                                  flexShrink: 0,
+                                }}
+                              >
+                                Ngày {d.dayNumber}
+                              </span>
+                              <span style={{ color: '#334155', fontWeight: 500 }}>
+                                {(d.activities || []).map((a, i) => `${d.dayNumber}.${i + 1} ${a.title}`).join(' ➔ ') || 'Ngày tự do'}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Interactive WebGL Map Canvas */}
+                  <div className={styles.realMapAdapterWrapper}>
+                    <MapViewAdapter
+                      destinations={mapMarkers}
+                      selectedDestinationId={
+                        mapViewMode === 'day'
+                          ? currentDayPlan?.activities?.[selectedMapPin - 1]?.id
+                          : `${activeDay}::${currentDayPlan?.activities?.[selectedMapPin - 1]?.id || ''}`
+                      }
+                      onSelectDestination={(dest) => {
+                        if (!dest) return;
+                        if (mapViewMode === 'all' && dest.id.includes('::')) {
+                          const [dStr, actId] = dest.id.split('::');
+                          const dNum = Number(dStr);
+                          const dayObj = itineraryDays.find((d) => d.dayNumber === dNum);
+                          const fIdx = dayObj?.activities ? dayObj.activities.findIndex((a) => a.id === actId) : -1;
+                          if (dNum) setActiveDay(dNum);
+                          if (fIdx >= 0) setSelectedMapPin(fIdx + 1);
+                          return;
+                        }
+                        const fIdx = currentDayPlan?.activities ? currentDayPlan.activities.findIndex((a) => a.id === dest.id) : -1;
+                        if (fIdx >= 0) setSelectedMapPin(fIdx + 1);
+                      }}
+                      routeGeometry={mapViewMode === 'day' ? activeDayRouteGeometry : undefined}
+                      routeStops={mapViewMode === 'day' ? activeDayRouteStops : undefined}
+                      multiDayRoutes={mapViewMode === 'all' ? multiDayMapRoutes : undefined}
+                      hideDestinationMarkers={true}
+                      disableAutoCenterOnSelect={true}
+                      locationBadgeLabel={cleanDestName}
+                      initialCenter={{
+                        latitude: currentDayPlan?.activities?.[0]?.latitude || activeDestObj.lat,
+                        longitude: currentDayPlan?.activities?.[0]?.longitude || activeDestObj.lng,
+                        zoom: 12.5,
+                      }}
+                      cameraTarget={
+                        mapFocusPinTrigger > 0 && mapViewMode === 'day' && mapMarkers[selectedMapPin - 1]
+                          ? {
+                              latitude: mapMarkers[selectedMapPin - 1].latitude,
+                              longitude: mapMarkers[selectedMapPin - 1].longitude,
+                              zoom: 13.8,
+                            }
+                          : undefined
+                      }
+                      showSelectedCard={false}
+                    />
+
+                    {/* Floating Glassmorphic Stop Preview Card */}
+                    {currentDayPlan?.activities?.[selectedMapPin - 1] && (
+                      <div className={styles.mapPreviewCard}>
+                        <img
+                          src={currentDayPlan.activities[selectedMapPin - 1].photoUrl || activeDestObj.photo}
+                          alt={currentDayPlan.activities[selectedMapPin - 1].title}
+                          className={styles.mapPreviewPhoto}
+                          onError={(e) => {
+                            const img = e.currentTarget as HTMLImageElement;
+                            if (img.src !== activeDestObj.photo) {
+                              img.src = activeDestObj.photo;
+                            }
+                          }}
+                        />
+                        <div className={styles.mapPreviewDetails}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                            <span className={styles.mapPreviewCategory}>
+                              Điểm {selectedMapPin}/{currentDayPlan.activities.length} · {currentDayPlan.activities[selectedMapPin - 1].category}
+                            </span>
+                            <div style={{ display: 'flex', gap: '5px', flexShrink: 0 }}>
+                              <button
+                                type="button"
+                                disabled={selectedMapPin <= 1}
+                                onClick={() => {
+                                  setSelectedMapPin((p) => Math.max(1, p - 1));
+                                  setMapFocusPinTrigger((n) => n + 1);
+                                }}
+                                style={{
+                                  border: '1px solid #CBD5E1',
+                                  background: '#F8FAFC',
+                                  color: '#0F172A',
+                                  borderRadius: '6px',
+                                  width: '28px',
+                                  height: '28px',
+                                  minHeight: 0,
+                                  padding: 0,
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  cursor: selectedMapPin <= 1 ? 'not-allowed' : 'pointer',
+                                  opacity: selectedMapPin <= 1 ? 0.4 : 1,
+                                }}
+                                title="Điểm trước"
+                              >
+                                <ChevronLeft size={15} color="#0F172A" />
+                              </button>
+                              <button
+                                type="button"
+                                disabled={selectedMapPin >= currentDayPlan.activities.length}
+                                onClick={() => {
+                                  setSelectedMapPin((p) => Math.min(currentDayPlan.activities.length, p + 1));
+                                  setMapFocusPinTrigger((n) => n + 1);
+                                }}
+                                style={{
+                                  border: '1px solid #CBD5E1',
+                                  background: '#F8FAFC',
+                                  color: '#0F172A',
+                                  borderRadius: '6px',
+                                  width: '28px',
+                                  height: '28px',
+                                  minHeight: 0,
+                                  padding: 0,
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  cursor: selectedMapPin >= currentDayPlan.activities.length ? 'not-allowed' : 'pointer',
+                                  opacity: selectedMapPin >= currentDayPlan.activities.length ? 0.4 : 1,
+                                }}
+                                title="Điểm tiếp theo"
+                              >
+                                <ChevronRight size={15} color="#0F172A" />
+                              </button>
+                            </div>
+                          </div>
+
+                          <h4 className={styles.mapPreviewTitle}>
+                            {currentDayPlan.activities[selectedMapPin - 1].title}
+                          </h4>
+
+                          <span className={styles.mapPreviewCost}>
+                            💰 {currentDayPlan.activities[selectedMapPin - 1].costLabel || 'Miễn phí vé'}
+                          </span>
+
+                          <span style={{ fontSize: '11.5px', color: '#64748B' }}>
+                            ⏰ {currentDayPlan.activities[selectedMapPin - 1].timeRange} · 📍 {currentDayPlan.activities[selectedMapPin - 1].location}
+                          </span>
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px', flexWrap: 'wrap' }}>
+                            <a
+                              href={
+                                currentDayPlan.activities[selectedMapPin - 1].latitude && currentDayPlan.activities[selectedMapPin - 1].longitude
+                                  ? `https://www.google.com/maps/dir/?api=1&destination=${currentDayPlan.activities[selectedMapPin - 1].latitude},${currentDayPlan.activities[selectedMapPin - 1].longitude}`
+                                  : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(currentDayPlan.activities[selectedMapPin - 1].title + ' ' + destination)}`
+                              }
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={styles.mapPreviewNavBtn}
+                            >
+                              <span>🗺️ Chỉ đường</span>
+                            </a>
+
+                            <button
+                              type="button"
+                              className={styles.mapPreviewActionBtn}
+                              onClick={() => {
+                                const curAct = currentDayPlan.activities[selectedMapPin - 1];
+                                if (curAct) setReplaceTargetActivityId(curAct.id);
+                              }}
+                              title="Đổi sang địa điểm khác gần tuyến đường"
+                            >
+                              ⇄ Đổi điểm
+                            </button>
+
+                            <button
+                              type="button"
+                              className={styles.mapPreviewActionBtn}
+                              disabled={selectedMapPin <= 1 || isReplanLoading}
+                              onClick={() => {
+                                const idx = selectedMapPin - 1;
+                                handleMoveActivityOrder(idx, 'up');
+                                setSelectedMapPin(Math.max(1, selectedMapPin - 1));
+                              }}
+                              title="Đưa điểm này lên chặng trước"
+                            >
+                              ↑ Lên
+                            </button>
+
+                            <button
+                              type="button"
+                              className={styles.mapPreviewActionBtn}
+                              disabled={selectedMapPin >= currentDayPlan.activities.length || isReplanLoading}
+                              onClick={() => {
+                                const idx = selectedMapPin - 1;
+                                handleMoveActivityOrder(idx, 'down');
+                                setSelectedMapPin(Math.min(currentDayPlan.activities.length, selectedMapPin + 1));
+                              }}
+                              title="Đẩy điểm này xuống chặng sau"
+                            >
+                              ↓ Xuống
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* 6. TAB CONTENT: BUDGET BREAKDOWN */}
+              {activeMainTab === 'budget' && (
+                <div style={{ background: '#FFFFFF', borderRadius: '14px', border: '1px solid #E2EAF0', padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', borderBottom: '1px solid #E2EAF0', paddingBottom: '16px' }}>
+                    <div>
+                      <h4 style={{ fontSize: '18px', fontWeight: 700, color: '#142D4E', margin: '0 0 4px 0' }}>
+                        Dự toán tổng hợp chuyến đi {destination}
+                      </h4>
+                      <p style={{ fontSize: '13px', color: '#65758A', margin: 0 }}>
+                        Chi phí tính toán cho đoàn {peopleCount} người · {duration} · Hạng mức {budgetTier === 'economy' ? 'Tiết kiệm' : budgetTier === 'luxury' ? 'Cao cấp' : 'Tiêu chuẩn'}
+                      </p>
                     </div>
-                    <div className={styles.legendItem}>
-                      <span className={styles.legendDot} style={{ background: '#F59E0B' }} />
-                      <span>Ẩm thực</span>
+                    <button
+                      type="button"
+                      className={styles.btnPrimaryActionSmall}
+                      onClick={() => setShowBudgetModal(true)}
+                    >
+                      <span>Xem bảng chi tiết & biên độ dao động</span>
+                      <ArrowRight size={14} />
+                    </button>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+                    <div style={{ background: '#F0F8FC', borderRadius: '10px', padding: '16px', border: '1px solid #E0F2FB' }}>
+                      <span style={{ fontSize: '12px', color: '#65758A', fontWeight: 600 }}>TỔNG DỰ TOÁN CẢ ĐOÀN</span>
+                      <div style={{ fontSize: '24px', fontWeight: 800, color: '#0284C7', margin: '4px 0' }}>
+                        {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.totalBaseline)}đ
+                      </div>
+                      <span style={{ fontSize: '12px', color: '#21856B', fontWeight: 600 }}>
+                        ~{new Intl.NumberFormat('vi-VN').format(budgetBreakdown.perPersonBaseline)}đ / người
+                      </span>
                     </div>
-                    <div className={styles.legendItem}>
-                      <span className={styles.legendDot} style={{ background: '#149D83' }} />
-                      <span>Nghỉ dưỡng</span>
+
+                    <div style={{ background: '#FAFBFC', borderRadius: '10px', padding: '16px', border: '1px solid #E2EAF0' }}>
+                      <span style={{ fontSize: '12px', color: '#65758A', fontWeight: 600 }}>LƯU TRÚ ({budgetBreakdown.roomsNeeded} phòng · {budgetBreakdown.nights} đêm)</span>
+                      <div style={{ fontSize: '20px', fontWeight: 700, color: '#142D4E', margin: '4px 0' }}>
+                        {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.totalLodging)}đ
+                      </div>
+                      <span style={{ fontSize: '11.5px', color: '#8996A5' }}>
+                        {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.roomRatePerNight)}đ / phòng / đêm
+                      </span>
                     </div>
-                    <div className={styles.legendItem}>
-                      <span className={styles.legendDot} style={{ background: '#6366F1' }} />
-                      <span>Khám phá đêm</span>
+
+                    <div style={{ background: '#FAFBFC', borderRadius: '10px', padding: '16px', border: '1px solid #E2EAF0' }}>
+                      <span style={{ fontSize: '12px', color: '#65758A', fontWeight: 600 }}>ẨM THỰC 3 BỮA ({daysCount} ngày)</span>
+                      <div style={{ fontSize: '20px', fontWeight: 700, color: '#142D4E', margin: '4px 0' }}>
+                        {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.totalDining)}đ
+                      </div>
+                      <span style={{ fontSize: '11.5px', color: '#8996A5' }}>
+                        {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.diningPerPersonDay)}đ / người / ngày
+                      </span>
                     </div>
+
+                    <div style={{ background: '#FAFBFC', borderRadius: '10px', padding: '16px', border: '1px solid #E2EAF0' }}>
+                      <span style={{ fontSize: '12px', color: '#65758A', fontWeight: 600 }}>DI CHUYỂN NỘI TỈNH</span>
+                      <div style={{ fontSize: '20px', fontWeight: 700, color: '#142D4E', margin: '4px 0' }}>
+                        {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.totalLocalTransport)}đ
+                      </div>
+                      <span style={{ fontSize: '11.5px', color: '#8996A5' }}>
+                        {budgetBreakdown.vehicleDescription}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* ─── 1. BIÊN ĐỘ DAO ĐỘNG GIÁ THỰC TẾ (CORRIDOR BANNER) ─── */}
+                  <div style={{
+                    background: 'linear-gradient(135deg, #F0F8FC 0%, #FFFFFF 100%)',
+                    borderRadius: '12px',
+                    border: '1px solid #DDF2FC',
+                    padding: '18px 20px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '12px',
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '16px' }}>📊</span>
+                        <strong style={{ fontSize: '14.5px', color: '#142D4E' }}>
+                          Biên độ dao động dự kiến theo thời điểm khởi hành
+                        </strong>
+                      </div>
+                      <span style={{
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        color: '#0284C7',
+                        background: '#E0F2FB',
+                        padding: '3px 10px',
+                        borderRadius: '99px',
+                      }}>
+                        Biên độ: ~{new Intl.NumberFormat('vi-VN').format(budgetBreakdown.minFluctuation)}đ – {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.maxFluctuation)}đ
+                      </span>
+                    </div>
+
+                    {/* 3 Range Milestones */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px', marginTop: '4px' }}>
+                      <div style={{ background: '#FFFFFF', padding: '12px 14px', borderRadius: '8px', border: '1px solid #E2EAF0' }}>
+                        <span style={{ fontSize: '11px', color: '#21856B', fontWeight: 700, textTransform: 'uppercase' }}>
+                          🌱 Giá tối ưu (Ngày thường / Đặt sớm)
+                        </span>
+                        <div style={{ fontSize: '17px', fontWeight: 800, color: '#21856B', margin: '3px 0 2px' }}>
+                          {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.minFluctuation)}đ
+                        </div>
+                        <span style={{ fontSize: '11.5px', color: '#65758A' }}>
+                          ~{new Intl.NumberFormat('vi-VN').format(budgetBreakdown.perPersonMin)}đ / người
+                        </span>
+                      </div>
+
+                      <div style={{ background: '#E0F2FB', padding: '12px 14px', borderRadius: '8px', border: '1px solid #0284C7' }}>
+                        <span style={{ fontSize: '11px', color: '#0284C7', fontWeight: 700, textTransform: 'uppercase' }}>
+                          🎯 Mức dự toán cơ sở (Khuyến nghị)
+                        </span>
+                        <div style={{ fontSize: '17px', fontWeight: 800, color: '#0284C7', margin: '3px 0 2px' }}>
+                          {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.totalBaseline)}đ
+                        </div>
+                        <span style={{ fontSize: '11.5px', color: '#0369A1' }}>
+                          ~{new Intl.NumberFormat('vi-VN').format(budgetBreakdown.perPersonBaseline)}đ / người
+                        </span>
+                      </div>
+
+                      <div style={{ background: '#FFFFFF', padding: '12px 14px', borderRadius: '8px', border: '1px solid #E2EAF0' }}>
+                        <span style={{ fontSize: '11px', color: '#B87D35', fontWeight: 700, textTransform: 'uppercase' }}>
+                          🔥 Mức cao điểm (Cuối tuần / Lễ hội)
+                        </span>
+                        <div style={{ fontSize: '17px', fontWeight: 800, color: '#B87D35', margin: '3px 0 2px' }}>
+                          {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.maxFluctuation)}đ
+                        </div>
+                        <span style={{ fontSize: '11.5px', color: '#65758A' }}>
+                          ~{new Intl.NumberFormat('vi-VN').format(budgetBreakdown.perPersonMax)}đ / người
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ─── 2. CHI TIẾT CÁC YẾU TỐ DAO ĐỘNG & PHÁT SINH (THE USER REQUEST) ─── */}
+                  <div>
+                    <h5 style={{ fontSize: '15px', fontWeight: 700, color: '#142D4E', margin: '0 0 12px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span>⚡</span>
+                      <span>Lưu ý chi tiết các khoản dao động & chi phí có thể phát sinh</span>
+                    </h5>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '14px' }}>
+                      {/* Factor 1: Intercity Travel */}
+                      <div style={{ background: '#FAFBFC', border: '1px solid #E2EAF0', borderRadius: '10px', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
+                          <strong style={{ fontSize: '13.5px', color: '#142D4E' }}>
+                            ✈️ Phương tiện khứ hồi liên tỉnh (Đến {destination})
+                          </strong>
+                          <span style={{ fontSize: '13px', fontWeight: 700, color: '#0284C7', whiteSpace: 'nowrap' }}>
+                            {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.intercityMinGroup)}đ – {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.intercityMaxGroup)}đ
+                          </span>
+                        </div>
+                        <p style={{ fontSize: '12.5px', color: '#65758A', margin: 0, lineHeight: 1.5 }}>
+                          Đề xuất: <strong>{budgetBreakdown.intercityType}</strong> (~{new Intl.NumberFormat('vi-VN').format(budgetBreakdown.intercityMinPerPerson)}đ – {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.intercityMaxPerPerson)}đ/người).
+                          <br />
+                          <em>Lưu ý:</em> Đặt vé sớm 2–3 tuần rẻ hơn 25–40%. Các chuyến bay sáng sớm hoặc đêm muộn thường có mức giá tốt nhất; giờ bay vàng (08:00–10:00) hoặc dịp lễ giá có thể tăng gấp đôi.
+                        </p>
+                      </div>
+
+                      {/* Factor 2: Hotel Surcharges */}
+                      <div style={{ background: '#FAFBFC', border: '1px solid #E2EAF0', borderRadius: '10px', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
+                          <strong style={{ fontSize: '13.5px', color: '#142D4E' }}>
+                            🏨 Phụ thu phòng cuối tuần & Mùa cao điểm
+                          </strong>
+                          <span style={{ fontSize: '13px', fontWeight: 700, color: '#B87D35', whiteSpace: 'nowrap' }}>
+                            +{new Intl.NumberFormat('vi-VN').format(budgetBreakdown.weekendSurchargeMin)}đ – +{new Intl.NumberFormat('vi-VN').format(budgetBreakdown.weekendSurchargeMax)}đ
+                          </span>
+                        </div>
+                        <p style={{ fontSize: '12.5px', color: '#65758A', margin: 0, lineHeight: 1.5 }}>
+                          Khách sạn tại {destination} thường phụ thu từ +15% đến +35% vào đêm Thứ 6 và Thứ 7 cho {budgetBreakdown.roomsNeeded} phòng của đoàn.
+                          <br />
+                          <em>Lưu ý:</em> Đi vào ngày thường (Thứ 2 đến Thứ 5) luôn giữ được mức giá chuẩn niêm yết và không gian nghỉ ngơi yên tĩnh nhất.
+                        </p>
+                      </div>
+
+                      {/* Factor 3: Food Upgrade */}
+                      <div style={{ background: '#FAFBFC', border: '1px solid #E2EAF0', borderRadius: '10px', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
+                          <strong style={{ fontSize: '13.5px', color: '#142D4E' }}>
+                            🍲 Nâng cấp đặc sản & Bữa tiệc riêng
+                          </strong>
+                          <span style={{ fontSize: '13px', fontWeight: 700, color: '#21856B', whiteSpace: 'nowrap' }}>
+                            +{new Intl.NumberFormat('vi-VN').format(budgetBreakdown.specialtyUpgradePerPerson)}đ / người / bữa
+                          </span>
+                        </div>
+                        <p style={{ fontSize: '12.5px', color: '#65758A', margin: 0, lineHeight: 1.5 }}>
+                          Chi phí cơ sở đã bao gồm 3 bữa ăn no với ẩm thực tiêu chuẩn.
+                          <br />
+                          <em>Lưu ý:</em> Khoản dao động này dành riêng cho việc gọi thêm tiệc hải sản tươi sống chọn tại bể, lẩu cá hồi/cá tầm, buffet nướng BBQ hoặc thưởng thức cafe view ngắm hoàng hôn.
+                        </p>
+                      </div>
+
+                      {/* Factor 4: Contingency Buffer */}
+                      <div style={{ background: '#FAFBFC', border: '1px solid #E2EAF0', borderRadius: '10px', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
+                          <strong style={{ fontSize: '13.5px', color: '#142D4E' }}>
+                            🛡️ Quỹ dự phòng phát sinh & Quà lưu niệm (Khuyên dùng)
+                          </strong>
+                          <span style={{ fontSize: '13px', fontWeight: 700, color: '#0284C7', whiteSpace: 'nowrap' }}>
+                            ~{new Intl.NumberFormat('vi-VN').format(budgetBreakdown.contingencyGroup)}đ (8% dự toán)
+                          </span>
+                        </div>
+                        <p style={{ fontSize: '12.5px', color: '#65758A', margin: 0, lineHeight: 1.5 }}>
+                          Nên dự trù khoảng 8–10% để chuyến đi luôn chủ động và thoải mái.
+                          <br />
+                          <em>Lưu ý:</em> Dành cho tiền gửi xe, nước uống giải khát dọc đường, mua đặc sản bánh kẹo địa phương mang về làm quà biếu, tiền tips và thuốc men sơ cứu khẩn cấp.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ─── 3. BẢNG MINH BẠCH: ĐÃ BAO GỒM VS CHƯA BAO GỒM ─── */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px', marginTop: '4px' }}>
+                    <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '10px', padding: '16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                        <span style={{ color: '#15803D', fontWeight: 800, fontSize: '15px' }}>✓</span>
+                        <strong style={{ fontSize: '13.5px', color: '#15803D' }}>ĐÃ TÍNH TRONG DỰ TOÁN CƠ SỞ</strong>
+                      </div>
+                      <ul style={{ margin: 0, paddingLeft: '18px', color: '#166534', fontSize: '12.5px', lineHeight: 1.6 }}>
+                        <li>Vé tham quan các điểm di tích & thắng cảnh theo lịch trình</li>
+                        <li>Ăn uống 3 bữa/ngày chuẩn mức <strong>{budgetTier === 'economy' ? 'Tiết kiệm' : budgetTier === 'luxury' ? 'Cao cấp' : 'Tiêu chuẩn'}</strong></li>
+                        <li>Phương tiện nội tỉnh: <strong>{budgetBreakdown.vehicleDescription}</strong></li>
+                        <li>Khách sạn <strong>{budgetBreakdown.roomsNeeded} phòng</strong> ({budgetBreakdown.nights} đêm) theo tiêu chuẩn đoàn</li>
+                      </ul>
+                    </div>
+
+                    <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '10px', padding: '16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                        <span style={{ color: '#B91C1C', fontWeight: 800, fontSize: '15px' }}>✕</span>
+                        <strong style={{ fontSize: '13.5px', color: '#B91C1C' }}>CHƯA BAO GỒM (SẼ DAO ĐỘNG RIÊNG)</strong>
+                      </div>
+                      <ul style={{ margin: 0, paddingLeft: '18px', color: '#991B1B', fontSize: '12.5px', lineHeight: 1.6 }}>
+                        <li>Vé máy bay / tàu hỏa / xe khách khứ hồi từ tỉnh nhà đến {destination}</li>
+                        <li>Mua sắm quà biếu, giỏ quà đặc sản mang về cho người thân</li>
+                        <li>Các trò chơi tự chọn cao cấp: cáp treo, tour ca nô lặn ngắm san hô</li>
+                        <li>Phụ thu phòng đơn nếu đoàn có thành viên muốn ở phòng riêng 1 mình</li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  {/* ─── 4. LỜI KHUYÊN TỐI ƯU CHI PHÍ TỪ VISTA AI ─── */}
+                  <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '10px', padding: '14px 18px', display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                    <span style={{ fontSize: '20px' }}>💡</span>
+                    <div>
+                      <strong style={{ fontSize: '13.5px', color: '#92400E', display: 'block', marginBottom: '4px' }}>
+                        Mẹo thông minh tối ưu chi phí từ VISTA AI:
+                      </strong>
+                      <span style={{ fontSize: '12.5px', color: '#78350F', lineHeight: 1.5 }}>
+                        {peopleCount <= 2
+                          ? 'Với nhóm 1–2 người, việc sử dụng xe máy nội tỉnh kết hợp săn vé máy bay vào khung giờ sáng sớm giúp tiết kiệm đến 40% tổng chi phí chuyến đi.'
+                          : peopleCount <= 5
+                          ? 'Với nhóm gia đình 3–5 người, đặt phòng khách sạn theo dạng Family Suite hoặc Homestay nguyên căn vừa tiết kiệm chi phí phòng, vừa có không gian sinh hoạt chung ấm cúng.'
+                          : 'Với đoàn đông người, thuê xe ô tô theo ngày có tài xế trọn gói sẽ rẻ hơn và tiện lợi hơn rất nhiều so với việc gọi nhiều xe taxi riêng lẻ dọc đường.'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 7. TAB CONTENT: CHECKLIST */}
+              {activeMainTab === 'checklist' && (
+                <div style={{ background: '#FFFFFF', borderRadius: '14px', border: '1px solid #E2EAF0', padding: '24px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                  <div style={{ borderBottom: '1px solid #E2EAF0', paddingBottom: '14px' }}>
+                    <h4 style={{ fontSize: '18px', fontWeight: 700, color: '#142D4E', margin: '0 0 4px 0' }}>
+                      Hành trang chuẩn bị cho chuyến đi {destination}
+                    </h4>
+                    <p style={{ fontSize: '13px', color: '#65758A', margin: 0 }}>
+                      Danh sách gợi ý chuẩn bị phù hợp cho lịch trình {duration} ({peopleCount} người)
+                    </p>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {[
+                      { id: 'chk1', label: 'CCCD / Hộ chiếu & Giấy tờ tùy thân gốc của từng người' },
+                      { id: 'chk2', label: `Xác nhận đặt vé di chuyển & phòng khách sạn tại ${destination}` },
+                      { id: 'chk3', label: 'Trang phục thoải mái, đồ bơi, áo khoác mỏng chống nắng & gió biển' },
+                      { id: 'chk4', label: 'Kem chống nắng SPF 50+, kính râm, mũ rộng vành, khăn ướt' },
+                      { id: 'chk5', label: 'Sạc điện thoại, pin sạc dự phòng 10.000mAh+, túi chống nước máy ảnh' },
+                      { id: 'chk6', label: 'Thuốc men cá nhân cơ bản: say tàu xe, giảm đau hạ sốt, men tiêu hóa' },
+                      { id: 'chk7', label: 'Chuẩn bị một ít tiền mặt mệnh giá nhỏ (10k-50k) để thưởng thức ẩm thực đường phố' },
+                    ].map((item) => {
+                      const isChecked = !!checkedListItems[item.id];
+                      return (
+                        <div
+                          key={item.id}
+                          onClick={() => toggleChecklistItem(item.id)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                            padding: '12px 16px',
+                            borderRadius: '10px',
+                            border: `1px solid ${isChecked ? '#BAE6FD' : '#E2EAF0'}`,
+                            background: isChecked ? '#F0F9FF' : '#FAFBFC',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease',
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: '20px',
+                              height: '20px',
+                              borderRadius: '6px',
+                              border: `1.5px solid ${isChecked ? '#0284C7' : '#CBD5E1'}`,
+                              background: isChecked ? '#0284C7' : '#FFFFFF',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: '#FFFFFF',
+                              fontSize: '12px',
+                              flexShrink: 0,
+                            }}
+                          >
+                            {isChecked && <Check size={14} strokeWidth={3} />}
+                          </div>
+                          <span
+                            style={{
+                              fontSize: '14px',
+                              color: isChecked ? '#142D4E' : '#65758A',
+                              fontWeight: isChecked ? 600 : 400,
+                            }}
+                          >
+                            {item.label}
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
             </>
           )}
+
         </section>
       </main>
 
       {/* ════════════════════════════════════════════════════════════════════
           OVERLAYS & REAL INTERACTION DIALOGS
           ════════════════════════════════════════════════════════════════════ */}
+
+      {/* 0. SLEEK AI THINKING MODAL */}
+      {isAiBusy && (
+        <div className={styles.aiThinkingBackdrop} role="dialog" aria-modal="true" aria-label="VISTA AI đang xử lý">
+          <div className={styles.aiThinkingCard}>
+            <div className={styles.aiThinkingHero}>
+              <div className={styles.aiThinkingOrbWrap}>
+                <div className={styles.aiThinkingOrbRing} />
+                <div className={styles.aiThinkingOrb}>
+                  <Sparkles size={26} />
+                </div>
+              </div>
+              <span className={styles.aiThinkingBadge}>
+                <span className={styles.aiThinkingBadgeDot} />
+                VISTA AI · Gemini Engine
+              </span>
+              <h3 className={styles.aiThinkingTitle}>
+                {isReplanLoading || isCoPilotBusy
+                  ? 'Đang tối ưu lại lịch trình'
+                  : isParsingSmartPrompt
+                    ? 'Đang phân tích yêu cầu'
+                    : `Đang thiết kế chuyến đi ${cleanDestName}`}
+              </h3>
+              <div className={styles.aiThinkingMetaLine}>
+                <span>{daysCount} ngày</span>
+                <span>·</span>
+                <span>{peopleCount} khách</span>
+                <span>·</span>
+                <span>{BUDGET_OPTIONS.find((b) => b.id === budgetTier)?.label || 'Tiêu chuẩn'}</span>
+              </div>
+            </div>
+
+            <div className={styles.aiThinkingStepList}>
+              {[
+                'Phân tích sở thích & khung giờ',
+                `Lọc điểm thực tế tại ${cleanDestName}`,
+                'Tối ưu tuyến đường & giờ mở cửa',
+                'Hoàn thiện lịch trình & dự toán',
+              ].map((stepLabel, sIdx) => {
+                const isDone = aiThinkingStep > sIdx;
+                const isActive = aiThinkingStep === sIdx;
+                return (
+                  <div
+                    key={sIdx}
+                    className={`${styles.aiThinkingStepRow} ${
+                      isDone ? styles.aiThinkingStepDone : isActive ? styles.aiThinkingStepActive : ''
+                    }`}
+                  >
+                    <span className={styles.aiThinkingStepDot}>
+                      {isDone ? '✓' : sIdx + 1}
+                    </span>
+                    <span className={styles.aiThinkingStepText}>{stepLabel}</span>
+                    {isActive && <span className={styles.aiThinkingStepLive}>Đang chạy</span>}
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className={styles.aiThinkingProgressWrap}>
+              <div className={styles.aiThinkingProgressTrack}>
+                <div
+                  className={styles.aiThinkingProgressFill}
+                  style={{ width: `${Math.min(96, (aiThinkingStep + 1) * 24)}%` }}
+                />
+              </div>
+              <span className={styles.aiThinkingProgressPct}>
+                {Math.min(96, (aiThinkingStep + 1) * 24)}%
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 1. TOAST NOTIFICATION */}
       {showToast && (
@@ -3789,58 +7630,361 @@ export default function PlannerPage() {
             <div className={styles.modalBody}>
               {/* Section 1: Base On-Site Budget */}
               <div style={{ marginBottom: '16px' }}>
-                <span style={{ fontSize: '13px', fontWeight: '700', color: '#1E293B', display: 'block', marginBottom: '8px' }}>
-                  1. Chi phí cơ sở tại điểm đến (Đã tính trong lịch trình)
-                </span>
+                <div className={styles.budgetModalSectionHead}>
+                  <span style={{ fontSize: '13px', fontWeight: '700', color: '#1E293B' }}>
+                    1. Chi phí cơ sở tại điểm đến (Có thể tùy chỉnh theo thực tế)
+                  </span>
+                  {budgetBreakdown.hasCustomRates && (
+                    <button
+                      type="button"
+                      className={styles.budgetResetAllBtn}
+                      onClick={() => {
+                        setCustomBudgetRates({});
+                        setEditingBudgetKey(null);
+                      }}
+                    >
+                      <RotateCcw size={11} strokeWidth={2.2} />
+                      <span>Khôi phục mặc định AI</span>
+                    </button>
+                  )}
+                </div>
+
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '9px 12px', background: '#F8FAFD', borderRadius: '8px', border: '1px solid #EAF0F6' }}>
-                    <div>
-                      <span style={{ fontSize: '13px', fontWeight: '600', color: '#14283F', display: 'block' }}>Vé tham quan & Hoạt động</span>
-                      <span style={{ fontSize: '11.5px', color: '#64748B' }}>
-                        {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.totalActPerPerson)}đ/người × {budgetBreakdown.count} người
-                      </span>
+                  {/* Row 1: Activities */}
+                  <div className={`${styles.budgetItemCard} ${editingBudgetKey === 'activities' ? styles.budgetItemCardEditing : ''}`}>
+                    <div className={styles.budgetItemTopRow}>
+                      <div>
+                        <span style={{ fontSize: '13px', fontWeight: '600', color: '#14283F', display: 'block' }}>
+                          Vé tham quan & Hoạt động
+                          {customBudgetRates.totalActPerPerson != null && (
+                            <span className={styles.budgetCustomTag}>Đã tùy chỉnh</span>
+                          )}
+                        </span>
+                        <span style={{ fontSize: '11.5px', color: '#64748B' }}>
+                          {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.totalActPerPerson)}đ/người × {budgetBreakdown.count} người
+                        </span>
+                      </div>
+                      <div className={styles.budgetItemRight}>
+                        <span style={{ fontSize: '14px', fontWeight: '700', color: '#14283F' }}>
+                          {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.totalActivities)}đ
+                        </span>
+                        <button
+                          type="button"
+                          className={`${styles.budgetEditBtn} ${editingBudgetKey === 'activities' ? styles.budgetEditBtnActive : ''}`}
+                          onClick={() => setEditingBudgetKey(editingBudgetKey === 'activities' ? null : 'activities')}
+                        >
+                          {editingBudgetKey === 'activities' ? (
+                            <>
+                              <Check size={12} strokeWidth={2.5} />
+                              <span>Xong</span>
+                            </>
+                          ) : (
+                            <>
+                              <Pencil size={12} strokeWidth={2} />
+                              <span>Sửa</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
                     </div>
-                    <span style={{ fontSize: '14px', fontWeight: '700', color: '#14283F' }}>
-                      {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.totalActivities)}đ
-                    </span>
+                    {editingBudgetKey === 'activities' && (
+                      <div className={styles.budgetInlineEditor}>
+                        <span className={styles.budgetInlineLabel}>Chi phí/người (đ):</span>
+                        <input
+                          type="number"
+                          min={0}
+                          step={50000}
+                          className={styles.budgetInlineInput}
+                          value={budgetBreakdown.totalActPerPerson}
+                          onFocus={(e) => e.target.select()}
+                          onChange={(e) => {
+                            const raw = e.target.value.replace(/^0+(?=\d)/, '');
+                            e.target.value = raw;
+                            const val = raw === '' ? 0 : Math.max(0, parseInt(raw, 10) || 0);
+                            setCustomBudgetRates((prev) => ({ ...prev, totalActPerPerson: val }));
+                          }}
+                        />
+                        <button
+                          type="button"
+                          className={styles.budgetPresetChip}
+                          onClick={() => setCustomBudgetRates((prev) => ({ ...prev, totalActPerPerson: 0 }))}
+                        >
+                          0đ (Miễn phí)
+                        </button>
+                        {customBudgetRates.totalActPerPerson != null && (
+                          <button
+                            type="button"
+                            className={styles.budgetPresetChip}
+                            onClick={() => setCustomBudgetRates((prev) => ({ ...prev, totalActPerPerson: null }))}
+                          >
+                            Mặc định ({new Intl.NumberFormat('vi-VN').format(budgetBreakdown.computedActPerPerson)}đ)
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '9px 12px', background: '#F8FAFD', borderRadius: '8px', border: '1px solid #EAF0F6' }}>
-                    <div>
-                      <span style={{ fontSize: '13px', fontWeight: '600', color: '#14283F', display: 'block' }}>Ăn uống ({daysCount} ngày)</span>
-                      <span style={{ fontSize: '11.5px', color: '#64748B' }}>
-                        {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.diningPerPersonDay)}đ/người/ngày × {daysCount}N × {budgetBreakdown.count} người
-                      </span>
+                  {/* Row 2: Dining */}
+                  <div className={`${styles.budgetItemCard} ${editingBudgetKey === 'dining' ? styles.budgetItemCardEditing : ''}`}>
+                    <div className={styles.budgetItemTopRow}>
+                      <div>
+                        <span style={{ fontSize: '13px', fontWeight: '600', color: '#14283F', display: 'block' }}>
+                          Ăn uống ({daysCount} ngày)
+                          {customBudgetRates.diningPerPersonDay != null && (
+                            <span className={styles.budgetCustomTag}>Đã tùy chỉnh</span>
+                          )}
+                        </span>
+                        <span style={{ fontSize: '11.5px', color: '#64748B' }}>
+                          {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.diningPerPersonDay)}đ/người/ngày × {daysCount}N × {budgetBreakdown.count} người
+                        </span>
+                      </div>
+                      <div className={styles.budgetItemRight}>
+                        <span style={{ fontSize: '14px', fontWeight: '700', color: '#14283F' }}>
+                          {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.totalDining)}đ
+                        </span>
+                        <button
+                          type="button"
+                          className={`${styles.budgetEditBtn} ${editingBudgetKey === 'dining' ? styles.budgetEditBtnActive : ''}`}
+                          onClick={() => setEditingBudgetKey(editingBudgetKey === 'dining' ? null : 'dining')}
+                        >
+                          {editingBudgetKey === 'dining' ? (
+                            <>
+                              <Check size={12} strokeWidth={2.5} />
+                              <span>Xong</span>
+                            </>
+                          ) : (
+                            <>
+                              <Pencil size={12} strokeWidth={2} />
+                              <span>Sửa</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
                     </div>
-                    <span style={{ fontSize: '14px', fontWeight: '700', color: '#14283F' }}>
-                      {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.totalDining)}đ
-                    </span>
+                    {editingBudgetKey === 'dining' && (
+                      <div className={styles.budgetInlineEditor}>
+                        <span className={styles.budgetInlineLabel}>Mức ăn/người/ngày (đ):</span>
+                        <input
+                          type="number"
+                          min={0}
+                          step={50000}
+                          className={styles.budgetInlineInput}
+                          value={budgetBreakdown.diningPerPersonDay}
+                          onFocus={(e) => e.target.select()}
+                          onChange={(e) => {
+                            const raw = e.target.value.replace(/^0+(?=\d)/, '');
+                            e.target.value = raw;
+                            const val = raw === '' ? 0 : Math.max(0, parseInt(raw, 10) || 0);
+                            setCustomBudgetRates((prev) => ({ ...prev, diningPerPersonDay: val }));
+                          }}
+                        />
+                        <button
+                          type="button"
+                          className={styles.budgetPresetChip}
+                          onClick={() => setCustomBudgetRates((prev) => ({ ...prev, diningPerPersonDay: 200000 }))}
+                        >
+                          200k
+                        </button>
+                        <button
+                          type="button"
+                          className={styles.budgetPresetChip}
+                          onClick={() => setCustomBudgetRates((prev) => ({ ...prev, diningPerPersonDay: 350000 }))}
+                        >
+                          350k
+                        </button>
+                        <button
+                          type="button"
+                          className={styles.budgetPresetChip}
+                          onClick={() => setCustomBudgetRates((prev) => ({ ...prev, diningPerPersonDay: 500000 }))}
+                        >
+                          500k
+                        </button>
+                      </div>
+                    )}
                   </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '9px 12px', background: '#F8FAFD', borderRadius: '8px', border: '1px solid #EAF0F6' }}>
-                    <div>
-                      <span style={{ fontSize: '13px', fontWeight: '600', color: '#14283F', display: 'block' }}>Di chuyển nội thành ({daysCount} ngày)</span>
-                      <span style={{ fontSize: '11.5px', color: '#64748B' }}>
-                        {budgetBreakdown.vehicleDescription} ({new Intl.NumberFormat('vi-VN').format(budgetBreakdown.dailyVehicleRate)}đ/ngày)
-                      </span>
+                  {/* Row 3: Local Transit */}
+                  <div className={`${styles.budgetItemCard} ${editingBudgetKey === 'transit' ? styles.budgetItemCardEditing : ''}`}>
+                    <div className={styles.budgetItemTopRow}>
+                      <div>
+                        <span style={{ fontSize: '13px', fontWeight: '600', color: '#14283F', display: 'block' }}>
+                          Di chuyển nội thành ({daysCount} ngày)
+                          {customBudgetRates.dailyVehicleRate != null && (
+                            <span className={styles.budgetCustomTag}>Đã tùy chỉnh</span>
+                          )}
+                        </span>
+                        <span style={{ fontSize: '11.5px', color: '#64748B' }}>
+                          {budgetBreakdown.vehicleDescription} ({new Intl.NumberFormat('vi-VN').format(budgetBreakdown.dailyVehicleRate)}đ/ngày)
+                        </span>
+                      </div>
+                      <div className={styles.budgetItemRight}>
+                        <span style={{ fontSize: '14px', fontWeight: '700', color: '#14283F' }}>
+                          {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.totalLocalTransport)}đ
+                        </span>
+                        <button
+                          type="button"
+                          className={`${styles.budgetEditBtn} ${editingBudgetKey === 'transit' ? styles.budgetEditBtnActive : ''}`}
+                          onClick={() => setEditingBudgetKey(editingBudgetKey === 'transit' ? null : 'transit')}
+                        >
+                          {editingBudgetKey === 'transit' ? (
+                            <>
+                              <Check size={12} strokeWidth={2.5} />
+                              <span>Xong</span>
+                            </>
+                          ) : (
+                            <>
+                              <Pencil size={12} strokeWidth={2} />
+                              <span>Sửa</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
                     </div>
-                    <span style={{ fontSize: '14px', fontWeight: '700', color: '#14283F' }}>
-                      {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.totalLocalTransport)}đ
-                    </span>
+                    {editingBudgetKey === 'transit' && (
+                      <div className={styles.budgetInlineEditor}>
+                        <span className={styles.budgetInlineLabel}>Chi phí xe/ngày (đ):</span>
+                        <input
+                          type="number"
+                          min={0}
+                          step={50000}
+                          className={styles.budgetInlineInput}
+                          value={budgetBreakdown.dailyVehicleRate}
+                          onFocus={(e) => e.target.select()}
+                          onChange={(e) => {
+                            const raw = e.target.value.replace(/^0+(?=\d)/, '');
+                            e.target.value = raw;
+                            const val = raw === '' ? 0 : Math.max(0, parseInt(raw, 10) || 0);
+                            setCustomBudgetRates((prev) => ({ ...prev, dailyVehicleRate: val }));
+                          }}
+                        />
+                        <button
+                          type="button"
+                          className={styles.budgetPresetChip}
+                          onClick={() => setCustomBudgetRates((prev) => ({ ...prev, dailyVehicleRate: 0 }))}
+                        >
+                          0đ (Xe cá nhân)
+                        </button>
+                        {customBudgetRates.dailyVehicleRate != null && (
+                          <button
+                            type="button"
+                            className={styles.budgetPresetChip}
+                            onClick={() => setCustomBudgetRates((prev) => ({ ...prev, dailyVehicleRate: null }))}
+                          >
+                            Mặc định ({new Intl.NumberFormat('vi-VN').format(budgetBreakdown.defaultVehicleRate)}đ)
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '9px 12px', background: '#F8FAFD', borderRadius: '8px', border: '1px solid #EAF0F6' }}>
-                    <div>
-                      <span style={{ fontSize: '13px', fontWeight: '600', color: '#14283F', display: 'block' }}>
-                        Khách sạn lưu trú ({budgetBreakdown.nights} đêm {budgetTier === 'economy' ? 'tiết kiệm' : budgetTier === 'luxury' ? 'cao cấp' : 'tiêu chuẩn'})
-                      </span>
-                      <span style={{ fontSize: '11.5px', color: '#64748B' }}>
-                        {budgetBreakdown.roomsNeeded} phòng đôi × {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.roomRatePerNight)}đ × {budgetBreakdown.nights} đêm
-                      </span>
+                  {/* Row 4: Lodging */}
+                  <div className={`${styles.budgetItemCard} ${editingBudgetKey === 'lodging' ? styles.budgetItemCardEditing : ''}`}>
+                    <div className={styles.budgetItemTopRow}>
+                      <div>
+                        <span style={{ fontSize: '13px', fontWeight: '600', color: '#14283F', display: 'block' }}>
+                          Khách sạn lưu trú ({budgetBreakdown.nights} đêm {budgetTier === 'economy' ? 'tiết kiệm' : budgetTier === 'luxury' ? 'cao cấp' : 'tiêu chuẩn'})
+                          {(customBudgetRates.roomRatePerNight != null || customBudgetRates.roomsNeeded != null) && (
+                            <span className={styles.budgetCustomTag}>Đã tùy chỉnh</span>
+                          )}
+                        </span>
+                        <span style={{ fontSize: '11.5px', color: '#64748B' }}>
+                          {budgetBreakdown.roomsNeeded} phòng đôi × {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.roomRatePerNight)}đ × {budgetBreakdown.nights} đêm
+                        </span>
+                      </div>
+                      <div className={styles.budgetItemRight}>
+                        <span style={{ fontSize: '14px', fontWeight: '700', color: '#14283F' }}>
+                          {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.totalLodging)}đ
+                        </span>
+                        <button
+                          type="button"
+                          className={`${styles.budgetEditBtn} ${editingBudgetKey === 'lodging' ? styles.budgetEditBtnActive : ''}`}
+                          onClick={() => setEditingBudgetKey(editingBudgetKey === 'lodging' ? null : 'lodging')}
+                        >
+                          {editingBudgetKey === 'lodging' ? (
+                            <>
+                              <Check size={12} strokeWidth={2.5} />
+                              <span>Xong</span>
+                            </>
+                          ) : (
+                            <>
+                              <Pencil size={12} strokeWidth={2} />
+                              <span>Sửa</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
                     </div>
-                    <span style={{ fontSize: '14px', fontWeight: '700', color: '#14283F' }}>
-                      {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.totalLodging)}đ
-                    </span>
+                    {editingBudgetKey === 'lodging' && (
+                      <div className={styles.budgetInlineEditor}>
+                        <span className={styles.budgetInlineLabel}>Số phòng:</span>
+                        <div className={styles.budgetStepper}>
+                          <button
+                            type="button"
+                            className={styles.budgetStepperBtn}
+                            onClick={() =>
+                              setCustomBudgetRates((prev) => ({
+                                ...prev,
+                                roomsNeeded: Math.max(1, budgetBreakdown.roomsNeeded - 1),
+                              }))
+                            }
+                          >
+                            −
+                          </button>
+                          <span style={{ fontSize: '12.5px', fontWeight: 700, minWidth: '18px', textAlign: 'center' }}>
+                            {budgetBreakdown.roomsNeeded}
+                          </span>
+                          <button
+                            type="button"
+                            className={styles.budgetStepperBtn}
+                            onClick={() =>
+                              setCustomBudgetRates((prev) => ({
+                                ...prev,
+                                roomsNeeded: budgetBreakdown.roomsNeeded + 1,
+                              }))
+                            }
+                          >
+                            +
+                          </button>
+                        </div>
+
+                        <span className={styles.budgetInlineLabel}>Giá/đêm (đ):</span>
+                        <input
+                          type="number"
+                          min={0}
+                          step={50000}
+                          className={styles.budgetInlineInput}
+                          value={budgetBreakdown.roomRatePerNight}
+                          onFocus={(e) => e.target.select()}
+                          onChange={(e) => {
+                            const raw = e.target.value.replace(/^0+(?=\d)/, '');
+                            e.target.value = raw;
+                            const val = raw === '' ? 0 : Math.max(0, parseInt(raw, 10) || 0);
+                            setCustomBudgetRates((prev) => ({ ...prev, roomRatePerNight: val }));
+                          }}
+                        />
+                        <button
+                          type="button"
+                          className={styles.budgetPresetChip}
+                          onClick={() => setCustomBudgetRates((prev) => ({ ...prev, roomRatePerNight: 350000 }))}
+                        >
+                          350k
+                        </button>
+                        <button
+                          type="button"
+                          className={styles.budgetPresetChip}
+                          onClick={() => setCustomBudgetRates((prev) => ({ ...prev, roomRatePerNight: 500000 }))}
+                        >
+                          500k
+                        </button>
+                        <button
+                          type="button"
+                          className={styles.budgetPresetChip}
+                          onClick={() => setCustomBudgetRates((prev) => ({ ...prev, roomRatePerNight: 850000 }))}
+                        >
+                          850k
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -3987,14 +8131,142 @@ export default function PlannerPage() {
         </div>
       )}
 
-      {/* 4. REAL SAVED ITINERARIES DRAWER */}
+      {/* 4. PLAN HISTORY DRAWER */}
+      {showHistoryDrawer && (
+        <div className={styles.drawerWrapper} onClick={() => setShowHistoryDrawer(false)}>
+          <div className={styles.drawerPanel} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.drawerHeader}>
+              <div>
+                <h3 className={styles.drawerTitle}>
+                  Lịch sử tạo lịch trình ({planHistoryList.length})
+                </h3>
+                <p className={styles.drawerSubtitle}>
+                  Tự động lưu lại mỗi khi sinh plan. Nhấn để mở lại bất cứ lúc nào.
+                </p>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {planHistoryList.length > 0 && (
+                  <button
+                    type="button"
+                    className={styles.btnClearAllHistory}
+                    onClick={handleClearAllHistory}
+                    title="Xóa toàn bộ lịch sử"
+                  >
+                    Dọn sạch
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className={styles.modalCloseBtn}
+                  onClick={() => setShowHistoryDrawer(false)}
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            <div className={styles.drawerBody}>
+              {planHistoryList.length === 0 ? (
+                <div className={styles.historyEmptyState}>
+                  <Clock size={40} strokeWidth={1.5} color="#94A3B8" />
+                  <h4>Chưa có lịch sử tạo plan</h4>
+                  <p>
+                    Khi bạn nhấn nút tạo lịch trình (bằng AI hoặc tất định), kế hoạch sẽ tự động được lưu vào đây để bạn dễ dàng xem lại.
+                  </p>
+                </div>
+              ) : (
+                <div className={styles.historyCardList}>
+                  {planHistoryList.map((rec) => {
+                    const photo =
+                      rec.photoUrl ||
+                      DESTINATION_LIST.find(
+                        (d) =>
+                          d.nameVi.toLowerCase() === rec.destination.toLowerCase() ||
+                          rec.destination.toLowerCase().includes(d.id)
+                      )?.photo ||
+                      DESTINATION_LIST[0].photo;
+
+                    return (
+                      <div key={rec.id} className={styles.historyCard}>
+                        <div className={styles.historyCardTop}>
+                          <img
+                            src={photo}
+                            alt={rec.destination}
+                            className={styles.historyCardPhoto}
+                          />
+                          <div className={styles.historyCardMain}>
+                            <h4 className={styles.historyCardTitle}>{rec.title}</h4>
+                            <div className={styles.historyCardTime}>
+                              <Clock size={12} />
+                              <span>{formatTimeAgo(rec.createdAt)}</span>
+                            </div>
+                            <div className={styles.historyCardCost}>
+                              Dự toán: {new Intl.NumberFormat('vi-VN').format(rec.totalEstimatedCost)}đ
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className={styles.historyCardMetaTags}>
+                          <span className={styles.historyTag}>
+                            {rec.totalDays}N · {rec.peopleCount} người
+                          </span>
+                          <span className={styles.historyTag}>
+                            {rec.budgetTier === 'economy'
+                              ? 'Tiết kiệm'
+                              : rec.budgetTier === 'luxury'
+                              ? 'Cao cấp'
+                              : 'Tiêu chuẩn'}
+                          </span>
+                          {rec.aiMetadata && !rec.aiMetadata.fallbackUsed ? (
+                            <span className={styles.historyTagAi}>⚡ AI Live</span>
+                          ) : (
+                            <span className={styles.historyTag}>Tất định VISTA</span>
+                          )}
+                          <span className={styles.historyTag}>
+                            {rec.itineraryDays.reduce((acc, d) => acc + (d.activities?.length || 0), 0)} điểm đến
+                          </span>
+                        </div>
+
+                        <div className={styles.historyCardActions}>
+                          <button
+                            type="button"
+                            className={styles.btnRestoreHistory}
+                            onClick={() => handleRestoreFromHistory(rec)}
+                          >
+                            <RotateCcw size={13} />
+                            <span>Mở lại lịch trình</span>
+                          </button>
+                          <button
+                            type="button"
+                            className={styles.btnDeleteHistoryItem}
+                            onClick={(e) => handleDeleteHistoryItem(rec.id, e)}
+                            title="Xóa khỏi lịch sử"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 5. REAL SAVED ITINERARIES DRAWER */}
       {showSavedDrawer && (
         <div className={styles.drawerWrapper} onClick={() => setShowSavedDrawer(false)}>
           <div className={styles.drawerPanel} onClick={(e) => e.stopPropagation()}>
             <div className={styles.drawerHeader}>
               <div>
-                <h3 className={styles.drawerTitle}>Lịch trình đã lưu của bạn</h3>
-                <p className={styles.drawerSubtitle}>Các kế hoạch đã được lưu lại để xem hoặc chỉnh sửa</p>
+                <h3 className={styles.drawerTitle}>
+                  Lịch trình đã lưu của bạn ({savedItinerariesList.length})
+                </h3>
+                <p className={styles.drawerSubtitle}>
+                  Các kế hoạch bạn đã bấm &quot;Lưu lịch trình&quot; để tra cứu
+                </p>
               </div>
               <button
                 type="button"
@@ -4006,60 +8278,83 @@ export default function PlannerPage() {
             </div>
 
             <div className={styles.drawerBody}>
-              <div
-                className={styles.alternativeCard}
-                onClick={() => {
-                  setDestination('Đà Nẵng');
-                  setDuration('3n2d');
-                  setItineraryDays(INITIAL_DANANG_DAYS);
-                  setShowSavedDrawer(false);
-                  triggerToast('Đã tải lịch trình Đà Nẵng 3N2Đ!');
-                }}
-              >
-                <img src='https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_bana_day.jpg' alt="Đà Nẵng" className={styles.alternativePhoto} />
-                <div className={styles.alternativeInfo}>
-                  <span className={styles.alternativeCategory}>3 ngày 2 đêm · 2 người</span>
-                  <h4 className={styles.alternativeTitle}>Đà Nẵng, đi là mê</h4>
-                  <span className={styles.alternativeCost}>Dự toán: 4.850.000đ</span>
-                  <button type="button" className={styles.btnSelectPlace}>Mở lại lịch trình này</button>
+              {savedItinerariesList.length === 0 ? (
+                <div className={styles.historyEmptyState}>
+                  <Bookmark size={40} strokeWidth={1.5} color="#94A3B8" />
+                  <h4>Chưa có lịch trình nào được lưu</h4>
+                  <p>
+                    Khi xem bất kỳ lịch trình nào bạn thích, bấm nút &quot;Lưu lịch trình&quot; để ghim vào danh sách yêu thích cá nhân tại đây.
+                  </p>
                 </div>
-              </div>
+              ) : (
+                <div className={styles.historyCardList}>
+                  {savedItinerariesList.map((rec) => {
+                    const photo =
+                      DESTINATION_LIST.find(
+                        (d) =>
+                          d.nameVi.toLowerCase() === rec.destination.toLowerCase() ||
+                          rec.destination.toLowerCase().includes(d.id)
+                      )?.photo || DESTINATION_LIST[0].photo;
 
-              <div
-                className={styles.alternativeCard}
-                onClick={() => {
-                  setDestination('Hội An');
-                  setDuration('2n1d');
-                  setShowSavedDrawer(false);
-                  handleGenerateClick();
-                }}
-              >
-                <img src='https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_panoramic_day.jpg' alt="Hội An" className={styles.alternativePhoto} />
-                <div className={styles.alternativeInfo}>
-                  <span className={styles.alternativeCategory}>2 ngày 1 đêm · 2 người</span>
-                  <h4 className={styles.alternativeTitle}>Phố cổ Hội An & Thả hoa đăng</h4>
-                  <span className={styles.alternativeCost}>Dự toán: 2.800.000đ</span>
-                  <button type="button" className={styles.btnSelectPlace}>Mở lại lịch trình này</button>
-                </div>
-              </div>
+                    return (
+                      <div key={rec.id} className={styles.historyCard}>
+                        <div className={styles.historyCardTop}>
+                          <img
+                            src={photo}
+                            alt={rec.destination}
+                            className={styles.historyCardPhoto}
+                          />
+                          <div className={styles.historyCardMain}>
+                            <h4 className={styles.historyCardTitle}>{rec.title}</h4>
+                            <div className={styles.historyCardTime}>
+                              <Calendar size={12} />
+                              <span>{rec.startDate} ({rec.durationLabel})</span>
+                            </div>
+                            <div className={styles.historyCardCost}>
+                              Dự toán: {new Intl.NumberFormat('vi-VN').format(rec.totalEstimatedCost)}đ
+                            </div>
+                          </div>
+                        </div>
 
-              <div
-                className={styles.alternativeCard}
-                onClick={() => {
-                  setDestination('Hà Nội');
-                  setDuration('2n1d');
-                  setShowSavedDrawer(false);
-                  handleGenerateClick();
-                }}
-              >
-                <img src='https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/halong_hanoi_day.jpg' alt="Hà Nội" className={styles.alternativePhoto} />
-                <div className={styles.alternativeInfo}>
-                  <span className={styles.alternativeCategory}>2 ngày 1 đêm · 2 người</span>
-                  <h4 className={styles.alternativeTitle}>Khám phá 36 phố phường Hà Nội</h4>
-                  <span className={styles.alternativeCost}>Dự toán: 3.200.000đ</span>
-                  <button type="button" className={styles.btnSelectPlace}>Mở lại lịch trình này</button>
+                        <div className={styles.historyCardMetaTags}>
+                          <span className={styles.historyTag}>
+                            {rec.totalDays}N · {rec.peopleCount} người
+                          </span>
+                          <span className={styles.historyTag}>
+                            {rec.budgetTier === 'economy'
+                              ? 'Tiết kiệm'
+                              : rec.budgetTier === 'luxury'
+                              ? 'Cao cấp'
+                              : 'Tiêu chuẩn'}
+                          </span>
+                          <span className={styles.historyTag}>
+                            {rec.days.reduce((acc, d) => acc + (d.activities?.length || 0), 0)} điểm đến
+                          </span>
+                        </div>
+
+                        <div className={styles.historyCardActions}>
+                          <button
+                            type="button"
+                            className={styles.btnRestoreHistory}
+                            onClick={() => handleRestoreSavedItinerary(rec)}
+                          >
+                            <Bookmark size={13} />
+                            <span>Mở lịch trình này</span>
+                          </button>
+                          <button
+                            type="button"
+                            className={styles.btnDeleteHistoryItem}
+                            onClick={(e) => handleDeleteSavedItinerary(rec.id, e)}
+                            title="Xóa khỏi danh sách lưu"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
@@ -4167,12 +8462,17 @@ export default function PlannerPage() {
         </div>
       )}
 
-      {/* 6. ADD ACTIVITY MODAL */}
+      {/* 6. ADD ACTIVITY MODAL WITH REAL PLACES RECOMMENDATIONS & CUSTOM INPUT */}
       {showAddActivityModal && (
         <div className={styles.overlayBackdrop} onClick={() => setShowAddActivityModal(false)}>
-          <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
+          <div className={`${styles.modalBox} ${styles.modalBoxAddActivity}`} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
-              <h3 className={styles.modalTitle}>Thêm hoạt động vào Ngày {activeDay}</h3>
+              <div>
+                <h3 className={styles.modalTitle}>Thêm hoạt động vào Ngày {activeDay}</h3>
+                <span style={{ fontSize: '12px', color: '#64748B' }}>
+                  Địa bàn: <strong>{cleanDestName}</strong> · Đề xuất thực tế &amp; Nhập tùy biến
+                </span>
+              </div>
               <button
                 type="button"
                 className={styles.modalCloseBtn}
@@ -4183,56 +8483,269 @@ export default function PlannerPage() {
             </div>
 
             <div className={styles.modalBody}>
-              <div>
-                <label className={styles.fieldLabel}>Tên hoạt động / địa điểm</label>
-                <input
-                  type="text"
-                  className={styles.wishesTextarea}
-                  style={{ minHeight: 'auto', padding: '10px 12px' }}
-                  placeholder="Ví dụ: Thưởng thức cà phê ngắm cảnh sông"
-                  value={newActTitle}
-                  onChange={(e) => setNewActTitle(e.target.value)}
-                />
+              {/* Mode Switch: Gợi ý tại thành phố vs Tự do nhập */}
+              <div className={styles.addActModeSwitch}>
+                <button
+                  type="button"
+                  className={`${styles.addActModeBtn} ${addActMode === 'suggested' ? styles.addActModeBtnActive : ''}`}
+                  onClick={() => setAddActMode('suggested')}
+                >
+                  <Sparkles size={14} />
+                  <span>Đề xuất tại {cleanDestName}</span>
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.addActModeBtn} ${addActMode === 'custom' ? styles.addActModeBtnActive : ''}`}
+                  onClick={() => setAddActMode('custom')}
+                >
+                  <MapPin size={14} />
+                  <span>Tự nhập theo ý bạn</span>
+                </button>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              {addActMode === 'suggested' ? (
+                /* TAB 1: GỢI Ý ĐỊA ĐIỂM TRONG PHẠM VI THÀNH PHỐ */
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {/* Search bar within city */}
+                  <div className={styles.addActSearchBar}>
+                    <Search size={15} color="#94A3B8" />
+                    <input
+                      type="text"
+                      className={styles.addActSearchInput}
+                      placeholder={`Tìm địa điểm, quán ăn tại ${cleanDestName}...`}
+                      value={addActSearchQuery}
+                      onChange={(e) => setAddActSearchQuery(e.target.value)}
+                    />
+                    {addActSearchQuery && (
+                      <button
+                        type="button"
+                        onClick={() => setAddActSearchQuery('')}
+                        style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#94A3B8', fontSize: '13px' }}
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Category Filter Pills */}
+                  <div className={styles.addActCategoryPills}>
+                    {[
+                      { id: 'all', label: 'Tất cả' },
+                      { id: 'Tham quan', label: '🏛️ Tham quan' },
+                      { id: 'Ẩm thực', label: '🍜 Ẩm thực' },
+                      { id: 'Check-in', label: '📸 Sống ảo & Check-in' },
+                    ].map((pill) => (
+                      <button
+                        key={pill.id}
+                        type="button"
+                        className={`${styles.addActCategoryPill} ${addActCategoryFilter === pill.id ? styles.addActCategoryPillActive : ''}`}
+                        onClick={() => setAddActCategoryFilter(pill.id)}
+                      >
+                        {pill.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* List of Suggested Places */}
+                  <div className={styles.addActSuggestedList}>
+                    {citySuggestedPlaces.length === 0 ? (
+                      <div style={{ textAlign: 'center', padding: '24px 10px', color: '#64748B', fontSize: '13px' }}>
+                        Không tìm thấy địa điểm khớp &quot;{addActSearchQuery}&quot; tại {cleanDestName}. Bạn có thể chuyển sang tab &quot;Tự nhập&quot; để thêm bất kỳ địa điểm nào.
+                      </div>
+                    ) : (
+                      <>
+                        {citySuggestedPlaces.slice(0, 24).map((place) => {
+                          const isSelected = selectedSuggestedPlace?.name === place.name || newActTitle === place.name;
+                          const costNum = place.priceMin || 0;
+                          const costText = costNum === 0 ? 'Miễn phí vé' : `${new Intl.NumberFormat('vi-VN').format(costNum)}đ`;
+                          return (
+                            <div
+                              key={place.name}
+                              className={`${styles.addActPlaceCard} ${isSelected ? styles.addActPlaceCardActive : ''}`}
+                              onClick={() => handleSelectSuggestedPlace(place)}
+                            >
+                              <img
+                                src={pickAuthenticPlacePhoto(place.image, citySuggestedPlaces, 0, activeDestObj.photo)}
+                                alt={place.name}
+                                className={styles.addActPlaceThumbnail}
+                                loading="lazy"
+                              />
+                              <div className={styles.addActPlaceInfo}>
+                                <div className={styles.addActPlaceTopRow}>
+                                  <h4 className={styles.addActPlaceName}>{place.name}</h4>
+                                  <span className={styles.addActPlaceBadge}>{place.category}</span>
+                                </div>
+                                <p className={styles.addActPlaceDesc}>{place.description}</p>
+                                <div className={styles.addActPlaceCostRow}>
+                                  <span className={styles.addActPlaceCost}>💰 {costText}</span>
+                                  {place.openingHours && (
+                                    <span style={{ color: '#94A3B8' }}>· ⏰ {place.openingHours}</span>
+                                  )}
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                className={styles.addActPlaceSelectBtn}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSelectSuggestedPlace(place);
+                                }}
+                              >
+                                {isSelected ? '✓ Đã chọn' : '+ Chọn'}
+                              </button>
+                            </div>
+                          );
+                        })}
+                        {citySuggestedPlaces.length > 24 && (
+                          <div style={{ textAlign: 'center', padding: '10px 8px', color: '#64748B', fontSize: '12px' }}>
+                            Đang hiển thị 24/{citySuggestedPlaces.length} địa điểm tiêu biểu. Gõ ô tìm kiếm ở trên để lọc chính xác điểm bạn muốn.
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+
+                  {selectedSuggestedPlace && (
+                    <div className={styles.addActSelectedPreview}>
+                      <span>
+                        ✨ Đang chọn: <strong>{selectedSuggestedPlace.name}</strong> ({selectedSuggestedPlace.category})
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedSuggestedPlace(null);
+                          setNewActTitle('');
+                          setNewActCost('0');
+                        }}
+                        style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#0284C7', fontWeight: 600, fontSize: '11.5px' }}
+                      >
+                        Bỏ chọn
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                /* TAB 2: TỰ DO NHẬP ĐỊA ĐIỂM RIÊNG CỦA NGƯỜI DÙNG */
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div className={styles.addActAutocompleteWrapper}>
+                    <label className={styles.fieldLabel}>Tên hoạt động / địa điểm mong muốn</label>
+                    <input
+                      type="text"
+                      className={styles.modalInput}
+                      placeholder="Ví dụ: Cà phê ngắm cảnh sông, Thăm bạn bè, Check-in quán quen..."
+                      value={newActTitle}
+                      onChange={(e) => {
+                        setNewActTitle(e.target.value);
+                        setShowActAutocomplete(true);
+                      }}
+                      onFocus={() => setShowActAutocomplete(true)}
+                    />
+
+                    {/* Live Autocomplete suggestions when typing in custom mode */}
+                    {showActAutocomplete && autocompleteMatches.length > 0 && (
+                      <div className={styles.addActAutocompleteDropdown}>
+                        <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748B', padding: '4px 8px' }}>
+                          💡 GỢI Ý ĐỊA ĐIỂM TẠI {cleanDestName.toUpperCase()}:
+                        </div>
+                        {autocompleteMatches.map((match) => (
+                          <div
+                            key={match.name}
+                            className={styles.addActAutocompleteItem}
+                            onClick={() => handleSelectSuggestedPlace(match)}
+                          >
+                            <img
+                              src={pickAuthenticPlacePhoto(match.image, citySuggestedPlaces, 0, activeDestObj.photo)}
+                              alt={match.name}
+                              style={{ width: '28px', height: '28px', borderRadius: '6px', objectFit: 'cover' }}
+                            />
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: '12.5px', fontWeight: 600, color: '#0F172A' }}>{match.name}</div>
+                              <div style={{ fontSize: '11px', color: '#64748B' }}>
+                                {match.category} · {match.priceMin === 0 ? 'Miễn phí' : `${new Intl.NumberFormat('vi-VN').format(match.priceMin)}đ`}
+                              </div>
+                            </div>
+                            <span style={{ fontSize: '11.5px', color: '#0284C7', fontWeight: 700 }}>Chọn</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* TÙY CHỈNH CHI TIẾT (KHUNG GIỜ, PHÂN LOẠI, CHI PHÍ) */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', borderTop: '1px solid #F1F5F9', paddingTop: '12px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div>
+                    <label className={styles.fieldLabel}>Khung giờ trải nghiệm</label>
+                    <input
+                      type="text"
+                      className={styles.modalInput}
+                      value={newActTime}
+                      onChange={(e) => setNewActTime(e.target.value)}
+                    />
+                    <div className={styles.addActQuickPresets}>
+                      {[
+                        { label: '🌅 08:30', time: '08:30–10:30' },
+                        { label: '☀️ 11:30', time: '11:30–13:00' },
+                        { label: '🌤️ 14:30', time: '14:30–16:30' },
+                        { label: '🌙 19:00', time: '19:00–21:00' },
+                      ].map((preset) => (
+                        <button
+                          key={preset.label}
+                          type="button"
+                          className={styles.addActQuickPresetBtn}
+                          onClick={() => setNewActTime(preset.time)}
+                        >
+                          {preset.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className={styles.fieldLabel}>Phân loại hoạt động</label>
+                    <select
+                      className={styles.modalInput}
+                      value={newActCategory}
+                      onChange={(e) => setNewActCategory(e.target.value)}
+                    >
+                      <option value="Tham quan">Tham quan</option>
+                      <option value="Ẩm thực">Ẩm thực</option>
+                      <option value="Biển & nghỉ dưỡng">Biển & nghỉ dưỡng</option>
+                      <option value="Giải trí">Giải trí</option>
+                      <option value="Check-in">Check-in</option>
+                    </select>
+                  </div>
+                </div>
+
                 <div>
-                  <label className={styles.fieldLabel}>Khung giờ</label>
+                  <label className={styles.fieldLabel}>Chi phí dự tính (VNĐ / người)</label>
                   <input
-                    type="text"
-                    className={styles.wishesTextarea}
-                    style={{ minHeight: 'auto', padding: '10px 12px' }}
-                    value={newActTime}
-                    onChange={(e) => setNewActTime(e.target.value)}
+                    type="number"
+                    className={styles.modalInput}
+                    value={newActCost}
+                    onChange={(e) => setNewActCost(e.target.value)}
+                    placeholder="0 (miễn phí)"
                   />
+                  <div className={styles.addActQuickPresets}>
+                    {[
+                      { label: 'Miễn phí', cost: '0' },
+                      { label: '30.000đ', cost: '30000' },
+                      { label: '50.000đ', cost: '50000' },
+                      { label: '100.000đ', cost: '100000' },
+                      { label: '200.000đ', cost: '200000' },
+                    ].map((preset) => (
+                      <button
+                        key={preset.label}
+                        type="button"
+                        className={styles.addActQuickPresetBtn}
+                        onClick={() => setNewActCost(preset.cost)}
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div>
-                  <label className={styles.fieldLabel}>Phân loại</label>
-                  <select
-                    className={styles.wishesTextarea}
-                    style={{ minHeight: 'auto', padding: '10px 12px' }}
-                    value={newActCategory}
-                    onChange={(e) => setNewActCategory(e.target.value)}
-                  >
-                    <option value="Tham quan">Tham quan</option>
-                    <option value="Ẩm thực">Ẩm thực</option>
-                    <option value="Biển & nghỉ dưỡng">Biển & nghỉ dưỡng</option>
-                    <option value="Giải trí">Giải trí</option>
-                    <option value="Check-in">Check-in</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className={styles.fieldLabel}>Chi phí ước tính (VNĐ)</label>
-                <input
-                  type="number"
-                  className={styles.wishesTextarea}
-                  style={{ minHeight: 'auto', padding: '10px 12px' }}
-                  value={newActCost}
-                  onChange={(e) => setNewActCost(e.target.value)}
-                  placeholder="0 (miễn phí)"
-                />
               </div>
             </div>
 
@@ -4240,7 +8753,11 @@ export default function PlannerPage() {
               <button
                 type="button"
                 className={styles.btnSecondary}
-                onClick={() => setShowAddActivityModal(false)}
+                onClick={() => {
+                  setShowAddActivityModal(false);
+                  setSelectedSuggestedPlace(null);
+                  setShowActAutocomplete(false);
+                }}
               >
                 Hủy
               </button>
@@ -4248,8 +8765,10 @@ export default function PlannerPage() {
                 type="button"
                 className={styles.btnCreateTripPrimary}
                 onClick={handleAddActivity}
+                disabled={!newActTitle.trim()}
+                style={{ opacity: newActTitle.trim() ? 1 : 0.6 }}
               >
-                Thêm vào lịch trình
+                + Thêm vào Ngày {activeDay}
               </button>
             </div>
           </div>

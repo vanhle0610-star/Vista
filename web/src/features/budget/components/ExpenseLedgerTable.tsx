@@ -2,19 +2,12 @@
 
 import React, { useState } from 'react';
 import {
-  Utensils,
-  Hotel,
-  Car,
-  Ticket,
-  ShoppingBag,
-  Search,
+  ListFilter,
   Plus,
+  MoreVertical,
   Trash2,
   Receipt,
-  ImageIcon,
-  X,
-  ExternalLink,
-  type LucideIcon,
+  SlidersHorizontal,
 } from 'lucide-react';
 import type { Expense, TripMember } from '../types';
 import styles from '../treasury.module.css';
@@ -22,352 +15,306 @@ import styles from '../treasury.module.css';
 interface ExpenseLedgerTableProps {
   expenses: Expense[];
   members: TripMember[];
+  currentUserId?: string;
   onOpenAddExpense: () => void;
   onDeleteExpense: (expenseId: string) => Promise<void>;
 }
 
 const CATEGORY_MAP: Record<
   string,
-  { label: string; icon: LucideIcon; bg: string; color: string; border: string }
+  { label: string; icon: string; bg: string; color: string; border: string }
 > = {
   FOOD: {
     label: 'Ăn uống',
-    icon: Utensils,
-    bg: '#fff7ed',
-    color: '#ea580c',
-    border: '#ffedd5',
+    icon: '🍜',
+    bg: '#FFF7ED',
+    color: '#EA580C',
+    border: '#FFEDD5',
   },
   ACCOMMODATION: {
     label: 'Lưu trú',
-    icon: Hotel,
-    bg: '#f0f9ff',
-    color: '#0284c7',
-    border: '#e0f2fe',
+    icon: '🏨',
+    bg: '#EEF2FF',
+    color: '#4F46E5',
+    border: '#E0E7FF',
   },
   TRANSPORT: {
     label: 'Di chuyển',
-    icon: Car,
-    bg: '#ecfeff',
-    color: '#0891b2',
-    border: '#cffafe',
+    icon: '🚗',
+    bg: '#EFF6FF',
+    color: '#2563EB',
+    border: '#DBEAFE',
   },
   ACTIVITIES: {
-    label: 'Vé tham quan',
-    icon: Ticket,
-    bg: '#faf5ff',
-    color: '#9333ea',
-    border: '#f3e8ff',
+    label: 'Vui chơi',
+    icon: '🎟️',
+    bg: '#FAF5FF',
+    color: '#9333EA',
+    border: '#F3E8FF',
   },
   OTHER: {
-    label: 'Mua sắm / Khác',
-    icon: ShoppingBag,
-    bg: '#fff1f2',
-    color: '#e11d48',
-    border: '#ffe4e6',
+    label: 'Mua sắm',
+    icon: '🛍️',
+    bg: '#FFF1F2',
+    color: '#E11D48',
+    border: '#FFE4E6',
   },
 };
+
+const CATEGORY_TABS = [
+  { key: 'ALL', label: 'Tất cả' },
+  { key: 'FOOD', label: 'Ăn uống' },
+  { key: 'ACCOMMODATION', label: 'Lưu trú' },
+  { key: 'TRANSPORT', label: 'Di chuyển' },
+  { key: 'ACTIVITIES', label: 'Vui chơi' },
+  { key: 'OTHER', label: 'Mua sắm' },
+];
 
 export function ExpenseLedgerTable({
   expenses,
   members,
+  currentUserId,
   onOpenAddExpense,
   onDeleteExpense,
 }: ExpenseLedgerTableProps) {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('ALL');
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [previewReceipt, setPreviewReceipt] = useState<{
-    title: string;
-    url: string;
-    amount: number;
-  } | null>(null);
+  const [activeTab, setActiveTab] = useState('ALL');
+  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 
   const memberMap = new Map<string, TripMember>();
   members.forEach((m) => memberMap.set(m.userId, m));
 
   const formatVnd = (val: number) => {
-    return new Intl.NumberFormat('vi-VN').format(Math.round(val)) + ' ₫';
+    return new Intl.NumberFormat('vi-VN').format(Math.round(val)) + ' đ';
   };
 
-  const formatDate = (isoString?: string) => {
-    if (!isoString) return '—';
-    const d = new Date(isoString);
-    if (Number.isNaN(d.getTime())) return '—';
-    return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+  const parseDate = (isoStr?: string) => {
+    if (!isoStr) {
+      const now = new Date();
+      return {
+        day: String(now.getDate()).padStart(2, '0'),
+        month: `Th${now.getMonth() + 1}`,
+        time: now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+      };
+    }
+    const d = new Date(isoStr);
+    if (isNaN(d.getTime())) {
+      return { day: '--', month: '--', time: '' };
+    }
+    return {
+      day: String(d.getDate()).padStart(2, '0'),
+      month: `Th${d.getMonth() + 1}`,
+      time: d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+    };
   };
 
+  // Real expenses only - absolutely NO fake demo data
   const filteredExpenses = expenses.filter((exp) => {
-    if (categoryFilter !== 'ALL' && exp.category !== categoryFilter) {
-      return false;
-    }
-    if (searchTerm.trim()) {
-      const q = searchTerm.toLowerCase();
-      const titleMatch = exp.title.toLowerCase().includes(q);
-      const payer = memberMap.get(exp.paidBy);
-      const payerMatch = payer ? payer.displayName.toLowerCase().includes(q) : false;
-      return titleMatch || payerMatch;
-    }
-    return true;
+    if (activeTab === 'ALL') return true;
+    return exp.category === activeTab;
   });
 
   const handleDelete = async (id: string, title: string) => {
-    if (!confirm(`Bạn có chắc chắn muốn hủy khoản chi "${title}"?`)) return;
-    try {
-      setDeletingId(id);
+    if (confirm(`Bạn có chắc chắn muốn xóa "${title}"?`)) {
       await onDeleteExpense(id);
-    } finally {
-      setDeletingId(null);
+      setActiveMenuId(null);
     }
   };
 
   return (
-    <div className={styles.sectionCard}>
-      <div className={styles.ledgerHeader}>
-        <div>
-          <h2 className={styles.sectionTitle}>Nhật Ký Hóa Đơn & Chi Tiêu</h2>
-          <div className={styles.sectionSubtitle}>
-            Danh sách các khoản chi đã ghi nhận ({filteredExpenses.length} bản ghi)
+    <div className={styles.vistaCardLedger}>
+      {/* ─── CARD HEADER ─── */}
+      <div className={styles.vistaCardHeader}>
+        <div className={styles.vistaCardTitleGroup}>
+          <div className={styles.vistaCardIconCircle}>
+            <ListFilter size={15} color="#0284C7" />
           </div>
+          <h2 className={styles.vistaCardTitle}>Nhật ký chi tiêu</h2>
+          {expenses.length > 0 && (
+            <span style={{ fontSize: '12px', fontWeight: 600, color: '#64748B' }}>
+              ({expenses.length})
+            </span>
+          )}
         </div>
 
-        <div className={styles.ledgerControls}>
-          <div className={styles.searchBox}>
-            <Search size={15} className={styles.searchIcon} />
-            <input
-              type="text"
-              className={styles.searchInput}
-              placeholder="Tìm theo tên khoản chi, người chi..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-
-          <select
-            aria-label="Lọc theo danh mục"
-            className={styles.filterSelect}
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
+        <div className={styles.vistaLedgerHeaderActions}>
+          <button
+            type="button"
+            className={styles.vistaBtnPrimary}
+            onClick={onOpenAddExpense}
           >
-            <option value="ALL">Danh mục: Tất cả</option>
-            <option value="FOOD">Ăn uống</option>
-            <option value="ACCOMMODATION">Lưu trú</option>
-            <option value="TRANSPORT">Di chuyển</option>
-            <option value="ACTIVITIES">Vé tham quan</option>
-            <option value="OTHER">Mua sắm / Khác</option>
-          </select>
-
-          <button type="button" className={styles.primaryAddBtn} onClick={onOpenAddExpense}>
-            <Plus size={16} />
-            <span>Ghi khoản chi mới</span>
+            <Plus size={14} />
+            <span>Ghi chi tiêu</span>
+          </button>
+          <button
+            type="button"
+            className={styles.vistaBtnFilterIcon}
+            title="Bộ lọc nâng cao"
+          >
+            <SlidersHorizontal size={14} color="#475569" />
           </button>
         </div>
       </div>
 
-      <div className={styles.tableWrapper}>
-        <table className={styles.ledgerTable}>
+      {/* ─── CATEGORY FILTER PILLS ─── */}
+      <div className={styles.vistaCategoryFilterRow}>
+        {CATEGORY_TABS.map((tab) => {
+          const isActive = activeTab === tab.key;
+          const count =
+            tab.key === 'ALL'
+              ? expenses.length
+              : expenses.filter((e) => e.category === tab.key).length;
+
+          return (
+            <button
+              key={tab.key}
+              type="button"
+              className={`${styles.vistaCategoryFilterPill} ${
+                isActive ? styles.vistaCategoryFilterPillActive : ''
+              }`}
+              onClick={() => setActiveTab(tab.key)}
+            >
+              <span>{tab.label}</span>
+              {count > 0 && <span style={{ opacity: 0.8, fontSize: '11px', marginLeft: '4px' }}>({count})</span>}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ─── EXPENSE DATA TABLE ─── */}
+      <div className={styles.vistaExpenseTableWrapper}>
+        <table className={styles.vistaExpenseTable}>
           <thead>
             <tr>
-              <th>Ngày chi</th>
-              <th>Khoản chi</th>
-              <th>Danh mục</th>
-              <th>Người chi</th>
-              <th>Số tiền</th>
-              <th>Phân chia</th>
-              <th>Hóa đơn</th>
-              <th style={{ textAlign: 'right' }}>Thao tác</th>
+              <th style={{ width: '10%' }}>Ngày</th>
+              <th style={{ width: '40%' }}>Mô tả</th>
+              <th style={{ width: '16%' }}>Danh mục</th>
+              <th style={{ width: '16%' }}>Người chi</th>
+              <th style={{ width: '13%', textAlign: 'right' }}>Số tiền</th>
+              <th style={{ width: '5%', textAlign: 'center' }}>Thao tác</th>
             </tr>
           </thead>
           <tbody>
-            {filteredExpenses.length > 0 ? (
-              filteredExpenses.map((exp) => {
-                const cat = CATEGORY_MAP[exp.category] || CATEGORY_MAP.OTHER;
-                const CatIcon = cat.icon;
-                const payer = memberMap.get(exp.paidBy);
-                const payerName = payer ? payer.displayName : 'Thành viên';
-                const payerInitial = payerName.charAt(0).toUpperCase();
-                const splitCount = exp.splits && exp.splits.length > 0 ? exp.splits.length : 1;
-
-                return (
-                  <tr key={exp.id}>
-                    <td style={{ color: '#64748b', whiteSpace: 'nowrap' }}>
-                      {formatDate(exp.occurredAt)}
-                    </td>
-                    <td>
-                      <div className={styles.descBold}>{exp.title}</div>
-                      {exp.note && (
-                        <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
-                          {exp.note}
-                        </div>
-                      )}
-                    </td>
-                    <td>
-                      <span
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          padding: '3px 9px',
-                          borderRadius: '6px',
-                          background: cat.bg,
-                          color: cat.color,
-                          border: `1px solid ${cat.border}`,
-                          fontWeight: 600,
-                          fontSize: '12px',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        <CatIcon size={13} strokeWidth={1.85} />
-                        <span>{cat.label}</span>
-                      </span>
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div
-                          className={styles.avatarCircle}
-                          style={{ width: '26px', height: '26px', fontSize: '11px' }}
-                        >
-                          {payerInitial}
-                        </div>
-                        <span style={{ fontWeight: 500 }}>{payerName}</span>
-                      </div>
-                    </td>
-                    <td className={styles.amountBold}>{formatVnd(exp.amount)}</td>
-                    <td style={{ color: '#64748b', whiteSpace: 'nowrap' }}>{splitCount} người</td>
-                    <td>
-                      {exp.receiptUrl ? (
-                        <button
-                          type="button"
-                          className={styles.receiptBadgeBtn}
-                          onClick={() =>
-                            setPreviewReceipt({
-                              title: exp.title,
-                              url: exp.receiptUrl!,
-                              amount: exp.amount,
-                            })
-                          }
-                        >
-                          <ImageIcon size={13} />
-                          <span>Xem ảnh</span>
-                        </button>
-                      ) : (
-                        <span style={{ color: '#94a3b8', fontSize: '12px' }}>—</span>
-                      )}
-                    </td>
-                    <td style={{ textAlign: 'right' }}>
-                      <button
-                        type="button"
-                        className={styles.deleteBtn}
-                        onClick={() => void handleDelete(exp.id, exp.title)}
-                        disabled={deletingId === exp.id}
-                        title="Hủy khoản chi"
-                      >
-                        <Trash2 size={13} />
-                        <span>{deletingId === exp.id ? 'Đang xóa...' : 'Xóa'}</span>
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })
-            ) : (
+            {filteredExpenses.length === 0 ? (
               <tr>
-                <td colSpan={8}>
-                  <div className={styles.emptyStateBox}>
-                    <div
-                      style={{
-                        width: '44px',
-                        height: '44px',
-                        borderRadius: '10px',
-                        background: '#f8fafc',
-                        border: '1px solid #e2e8f0',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: '#64748b',
-                        marginBottom: '4px',
-                      }}
-                    >
-                      <Receipt size={20} strokeWidth={1.85} />
+                <td colSpan={6}>
+                  <div className={styles.vistaEmptyLedger}>
+                    <div className={styles.vistaEmptyIconCircle}>
+                      <Receipt size={24} color="#94A3B8" />
                     </div>
-                    <span style={{ fontWeight: 600, color: '#0f172a', fontSize: '14.5px' }}>
-                      Chưa có khoản chi tiêu nào
-                    </span>
-                    <span style={{ fontSize: '13px', maxWidth: '420px' }}>
-                      Nhấn nút <strong>&quot;Ghi khoản chi mới&quot;</strong> để ghi nhận hóa đơn và tự động phân bổ ngân sách cho chuyến đi.
+                    <p className={styles.vistaEmptyTitle}>
+                      {expenses.length === 0
+                        ? 'Chưa có khoản chi tiêu nào'
+                        : 'Không có chi tiêu nào trong danh mục này'}
+                    </p>
+                    <span className={styles.vistaEmptySub}>
+                      {expenses.length === 0
+                        ? 'Nhấn nút "+ Ghi chi tiêu" ở trên để ghi nhận hóa đơn thực tế của chuyến đi.'
+                        : 'Chọn danh mục khác hoặc ghi nhận khoản chi mới.'}
                     </span>
                   </div>
                 </td>
               </tr>
+            ) : (
+              filteredExpenses.map((exp) => {
+                const catMeta = CATEGORY_MAP[exp.category] || CATEGORY_MAP.OTHER;
+                const dateInfo = parseDate(exp.occurredAt);
+                const payer = memberMap.get(exp.paidBy);
+                const payerName = payer?.displayName || 'Thành viên';
+                const initial = payerName ? payerName.charAt(0).toUpperCase() : 'U';
+
+                return (
+                  <tr key={exp.id} className={styles.vistaExpenseRow}>
+                    {/* Date Column */}
+                    <td>
+                      <div className={styles.vistaDateBlock}>
+                        <span className={styles.vistaDateDay}>{dateInfo.day}</span>
+                        <span className={styles.vistaDateMonth}>{dateInfo.month}</span>
+                      </div>
+                    </td>
+
+                    {/* Description Column */}
+                    <td>
+                      <div className={styles.vistaDescCell}>
+                        <div className={styles.vistaDescText}>
+                          <strong className={styles.vistaDescTitle}>{exp.title}</strong>
+                          <span className={styles.vistaDescSub}>
+                            {dateInfo.time ? `Ghi lúc ${dateInfo.time}` : ''}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Category Pill */}
+                    <td>
+                      <span
+                        className={styles.vistaCategoryPill}
+                        style={{
+                          background: catMeta.bg,
+                          color: catMeta.color,
+                          border: `1px solid ${catMeta.border}`,
+                        }}
+                      >
+                        <span>{catMeta.icon}</span>
+                        <span>{catMeta.label}</span>
+                      </span>
+                    </td>
+
+                    {/* Payer */}
+                    <td>
+                      <div className={styles.vistaPayerCell}>
+                        <div
+                          className={styles.vistaPayerAvatar}
+                          style={{
+                            background:
+                              payer?.role === 'OWNER' ? '#10B981' : '#3B82F6',
+                          }}
+                        >
+                          {initial}
+                        </div>
+                        <span className={styles.vistaPayerName}>{payerName}</span>
+                      </div>
+                    </td>
+
+                    {/* Amount */}
+                    <td style={{ textAlign: 'right' }}>
+                      <strong className={styles.vistaAmountText}>
+                        {formatVnd(exp.amount)}
+                      </strong>
+                    </td>
+
+                    {/* Actions */}
+                    <td style={{ textAlign: 'center', position: 'relative' }}>
+                      <button
+                        type="button"
+                        className={styles.vistaBtnActionMenu}
+                        onClick={() =>
+                          setActiveMenuId(activeMenuId === exp.id ? null : exp.id)
+                        }
+                        title="Thao tác"
+                      >
+                        <MoreVertical size={14} color="#64748B" />
+                      </button>
+
+                      {activeMenuId === exp.id && (
+                        <div className={styles.vistaActionMenuDropdown}>
+                          <button
+                            type="button"
+                            className={styles.vistaActionMenuItemDelete}
+                            onClick={() => handleDelete(exp.id, exp.title)}
+                          >
+                            <Trash2 size={13} />
+                            <span>Xóa khoản chi</span>
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
       </div>
-
-      {/* Receipt Lightbox Modal */}
-      {previewReceipt && (
-        <div
-          className={styles.drawerOverlay}
-          onClick={() => setPreviewReceipt(null)}
-          role="dialog"
-          aria-modal="true"
-        >
-          <div
-            className={styles.drawerPanel}
-            style={{ maxWidth: '520px' }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className={styles.drawerHeader}>
-              <div>
-                <h3 className={styles.drawerTitle}>{previewReceipt.title}</h3>
-                <p className={styles.drawerSubtitle}>
-                  Số tiền: {formatVnd(previewReceipt.amount)}
-                </p>
-              </div>
-              <button
-                type="button"
-                className={styles.drawerCloseBtn}
-                onClick={() => setPreviewReceipt(null)}
-              >
-                <X size={18} />
-              </button>
-            </div>
-            <div className={styles.drawerBody} style={{ alignItems: 'center' }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={previewReceipt.url}
-                alt={previewReceipt.title}
-                style={{
-                  maxWidth: '100%',
-                  maxHeight: '60vh',
-                  borderRadius: '10px',
-                  border: '1px solid #e2e8f0',
-                  objectFit: 'contain',
-                }}
-              />
-            </div>
-            <div className={styles.drawerFooter}>
-              {previewReceipt.url.startsWith('http') && (
-                <a
-                  href={previewReceipt.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={styles.btnCancel}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                >
-                  <ExternalLink size={14} />
-                  <span>Mở ảnh gốc</span>
-                </a>
-              )}
-              <button
-                type="button"
-                className={styles.btnSubmit}
-                onClick={() => setPreviewReceipt(null)}
-              >
-                Đóng
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

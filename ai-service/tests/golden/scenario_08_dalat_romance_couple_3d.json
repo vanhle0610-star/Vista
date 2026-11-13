@@ -1,0 +1,17 @@
+{
+  "destinationProvince": "Lâm Đồng",
+  "totalDays": 3,
+  "peopleCount": 2,
+  "budgetTier": "standard",
+  "interests": [
+    "Cà phê",
+    "Check-in"
+  ],
+  "expect": {
+    "expect_http_status": 200,
+    "must_not_contain_walking_load": [],
+    "min_days": 3,
+    "min_total_activities": 3,
+    "expected_province": "Lâm Đồng"
+  }
+}

@@ -25,12 +25,67 @@ export async function fetchMapDestinations(
     imageUrl: d.imageUrl || d.thumbnailUrl || '',
     thumbnailUrl: d.thumbnailUrl || d.imageUrl || '',
   }));
-  const backendIds = new Set<string>();
+  const backendIds = new Set<string>(destinations.map((d) => d.id));
   let rejected = 0;
   let missingIds = 0;
 
   // Phát tín hiệu trang đầu tiên ngay lập tức để giao diện hiển thị 1.000 điểm không cần đợi
   onPage?.({ destinations: [...destinations], rejected: 0 });
+
+  const seenNameProv = new Set<string>(
+    destinations.map((d) => `${d.name.trim().toLowerCase()}|${d.province.trim().toLowerCase()}`)
+  );
+
+  // 1.5. Tải toàn bộ 2.200+ địa điểm (Curated + OpenStreetMap thật) từ Python AI Engine
+  try {
+    const aiTimeout = AbortSignal.timeout(6000);
+    const aiRes = await fetch('/api/ai/destinations?province=all', {
+      signal: signal ? AbortSignal.any([signal, aiTimeout]) : aiTimeout,
+      headers: { Accept: 'application/json' },
+    });
+    if (aiRes.ok) {
+      const aiJson = await aiRes.json();
+      const aiItems = Array.isArray(aiJson?.destinations) ? aiJson.destinations : [];
+      let addedAi = 0;
+      for (const rawItem of aiItems) {
+        const item = rawItem as Record<string, any>;
+        if (!item || typeof item.id !== 'string' || !item.id.trim()) continue;
+        if (backendIds.has(item.id)) continue;
+        if (typeof item.name !== 'string' || !item.name.trim() || !validPoint({ latitude: item.latitude, longitude: item.longitude })) {
+          rejected++;
+          continue;
+        }
+        const lat = Number(item.latitude);
+        const lng = Number(item.longitude);
+        const prov = typeof item.province === 'string' ? item.province : '';
+        const itemName = String(item.name);
+        const nameProvKey = `${itemName.trim().toLowerCase()}|${prov.trim().toLowerCase()}`;
+        if (seenNameProv.has(nameProvKey)) continue;
+
+        backendIds.add(String(item.id));
+        seenNameProv.add(nameProvKey);
+        destinations.push({
+          id: String(item.id),
+          name: itemName,
+          province: prov,
+          category: typeof item.category === 'string' ? item.category : 'Tham quan',
+          latitude: lat,
+          longitude: lng,
+          description: item.description || '',
+          priceMin: item.priceMin ?? null,
+          priceMax: item.priceMax ?? null,
+          thumbnailUrl: item.photoUrl || '',
+          imageUrl: item.photoUrl || '',
+        });
+        addedAi++;
+      }
+      if (addedAi > 0) {
+        onPage?.({ destinations: [...destinations], rejected });
+      }
+    }
+  } catch {
+    // AI Service unavailable: tiếp tục thử backend API
+  }
 
   // 2. Tải toàn bộ các trang từ backend API (hỗ trợ đầy đủ 669+ địa điểm thực tế trong DB)
   try {

@@ -1,0 +1,17 @@
+{
+  "destinationProvince": "Hà Nội",
+  "totalDays": 2,
+  "peopleCount": 2,
+  "budgetTier": "economy",
+  "interests": [
+    "Bảo tàng",
+    "Phố cổ"
+  ],
+  "expect": {
+    "expect_http_status": 200,
+    "must_not_contain_walking_load": [],
+    "min_days": 2,
+    "min_total_activities": 2,
+    "expected_province": "Hà Nội"
+  }
+}

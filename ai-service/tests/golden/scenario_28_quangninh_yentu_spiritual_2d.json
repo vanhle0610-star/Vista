@@ -1,0 +1,17 @@
+{
+  "destinationProvince": "Quảng Ninh",
+  "totalDays": 2,
+  "peopleCount": 2,
+  "budgetTier": "standard",
+  "interests": [
+    "Tâm linh",
+    "Yên Tử"
+  ],
+  "expect": {
+    "expect_http_status": 200,
+    "must_not_contain_walking_load": [],
+    "min_days": 2,
+    "min_total_activities": 2,
+    "expected_province": "Quảng Ninh"
+  }
+}

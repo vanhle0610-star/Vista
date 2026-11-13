@@ -1,0 +1,1116 @@
+{
+  "generated_at": "2026-11-11T13:33:13.352534+00:00",
+  "csv_source": "C:\\Users\\Lenovo LEGION 5\\OneDrive\\Desktop\\VISTA\\backend\\src\\main\\resources\\db\\seed\\demo_destinations_seed.csv",
+  "total_destinations_scanned": 645,
+  "total_issues_found": 110,
+  "summary_by_issue_type": {
+    "CROSS_SEA_CLUSTER_IN_PROVINCE": 10,
+    "COORDINATE_PROVINCE_OUTLIER": 77,
+    "PRICE_OUTLIER_VS_CATEGORY_MEDIAN": 7,
+    "ZERO_PRICE_PAID_ATTRACTION": 7,
+    "PROVINCE_LANDMARK_MISMATCH": 7,
+    "SUSPICIOUSLY_LOW_THEME_PARK_PRICE": 2
+  },
+  "issues": [
+    {
+      "destination_id": "dest-d9448150",
+      "name": "Đảo Cù Lao Chàm",
+      "province": "Quảng Nam",
+      "category": "Khu dự trữ sinh quyển",
+      "issue_type": "CROSS_SEA_CLUSTER_IN_PROVINCE",
+      "severity": "HIGH",
+      "current_value": "cluster_id=ISLAND_CU_LAO_CHAM (1/17 điểm trong tỉnh Quảng Nam)",
+      "description": "Điểm 'Đảo Cù Lao Chàm' (ISLAND_CU_LAO_CHAM) bị ngăn cách địa lý/biển với đa số điểm còn lại trong tỉnh 'Quảng Nam'; tuyệt đối không được xếp chung ngày với cụm bên kia biển."
+    },
+    {
+      "destination_id": "dest-8b110ed9",
+      "name": "Địa đạo Củ Chi (Bến Dược & Bến Đình)",
+      "province": "TP. Hồ Chí Minh",
+      "category": "Di tích & Trải nghiệm",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(11.1432, 106.4633) - cách tâm tỉnh 48.2km",
+      "description": "Tọa độ của 'Địa đạo Củ Chi (Bến Dược & Bến Đình)' cách tâm trung vị tỉnh TP. Hồ Chí Minh tới 48.2km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-1e6dea3b",
+      "name": "Ga xe lửa Đà Lạt",
+      "province": "Lâm Đồng",
+      "category": "Di tích & Kiến trúc",
+      "issue_type": "PRICE_OUTLIER_VS_CATEGORY_MEDIAN",
+      "severity": "MEDIUM",
+      "current_value": "price_min=10,000đ (median=80,000đ)",
+      "description": "Giá của 'Ga xe lửa Đà Lạt' (10,000đ) lệch quá xa (<20% hoặc >5x) so với trung vị nhóm 'Di tích & Kiến trúc' (80,000đ)."
+    },
+    {
+      "destination_id": "dest-72f090bf",
+      "name": "Danh thắng Yên Tử",
+      "province": "Quảng Ninh",
+      "category": "Tâm linh & Lịch sử",
+      "issue_type": "CROSS_SEA_CLUSTER_IN_PROVINCE",
+      "severity": "HIGH",
+      "current_value": "cluster_id=OUTLIER_YEN_TU (2/19 điểm trong tỉnh Quảng Ninh)",
+      "description": "Điểm 'Danh thắng Yên Tử' (OUTLIER_YEN_TU) bị ngăn cách địa lý/biển với đa số điểm còn lại trong tỉnh 'Quảng Ninh'; tuyệt đối không được xếp chung ngày với cụm bên kia biển."
+    },
+    {
+      "destination_id": "dest-b6e9e892",
+      "name": "Vịnh Lan Hạ",
+      "province": "Hải Phòng",
+      "category": "Vịnh và đầm phá",
+      "issue_type": "CROSS_SEA_CLUSTER_IN_PROVINCE",
+      "severity": "HIGH",
+      "current_value": "cluster_id=ISLAND_CAT_BA (2/13 điểm trong tỉnh Hải Phòng)",
+      "description": "Điểm 'Vịnh Lan Hạ' (ISLAND_CAT_BA) bị ngăn cách địa lý/biển với đa số điểm còn lại trong tỉnh 'Hải Phòng'; tuyệt đối không được xếp chung ngày với cụm bên kia biển."
+    },
+    {
+      "destination_id": "dest-6a02f8cb",
+      "name": "Quần đảo Cát Bà",
+      "province": "Hải Phòng",
+      "category": "Biển và đảo",
+      "issue_type": "CROSS_SEA_CLUSTER_IN_PROVINCE",
+      "severity": "HIGH",
+      "current_value": "cluster_id=ISLAND_CAT_BA (2/13 điểm trong tỉnh Hải Phòng)",
+      "description": "Điểm 'Quần đảo Cát Bà' (ISLAND_CAT_BA) bị ngăn cách địa lý/biển với đa số điểm còn lại trong tỉnh 'Hải Phòng'; tuyệt đối không được xếp chung ngày với cụm bên kia biển."
+    },
+    {
+      "destination_id": "dest-52cb6248",
+      "name": "Thung lũng Tú Lệ",
+      "province": "Yên Bái",
+      "category": "Cảnh quan",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(22.2824, 103.8078) - cách tâm tỉnh 79.5km",
+      "description": "Tọa độ của 'Thung lũng Tú Lệ' cách tâm trung vị tỉnh Yên Bái tới 79.5km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-87643480",
+      "name": "Đỉnh Tà Chì Nhù",
+      "province": "Yên Bái",
+      "category": "Núi và cao nguyên",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(22.3184, 103.8258) - cách tâm tỉnh 81.3km",
+      "description": "Tọa độ của 'Đỉnh Tà Chì Nhù' cách tâm trung vị tỉnh Yên Bái tới 81.3km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-99c05fbe",
+      "name": "Tà Xùa",
+      "province": "Sơn La",
+      "category": "Núi và cao nguyên",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(21.3653, 104.4719) - cách tâm tỉnh 59.7km",
+      "description": "Tọa độ của 'Tà Xùa' cách tâm trung vị tỉnh Sơn La tới 59.7km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-6399deee",
+      "name": "Làng đá Khuổi Ky",
+      "province": "Cao Bằng",
+      "category": "Làng bản và văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(22.6667, 105.8640) - cách tâm tỉnh 47.1km",
+      "description": "Tọa độ của 'Làng đá Khuổi Ky' cách tâm trung vị tỉnh Cao Bằng tới 47.1km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-7c0890ec",
+      "name": "Vườn quốc gia Phia Oắc – Phia Đén",
+      "province": "Cao Bằng",
+      "category": "Vườn quốc gia và bảo tồn",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(22.7027, 105.8640) - cách tâm tỉnh 46.3km",
+      "description": "Tọa độ của 'Vườn quốc gia Phia Oắc – Phia Đén' cách tâm trung vị tỉnh Cao Bằng tới 46.3km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-4a2cb687",
+      "name": "Ruộng bậc thang Hoàng Su Phì",
+      "province": "Hà Giang",
+      "category": "Cảnh quan",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(22.7167, 104.6667) - cách tâm tỉnh 78.7km",
+      "description": "Tọa độ của 'Ruộng bậc thang Hoàng Su Phì' cách tâm trung vị tỉnh Hà Giang tới 78.7km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-8b5d2426",
+      "name": "Làng văn hóa du lịch Lũng Cẩm",
+      "province": "Hà Giang",
+      "category": "Làng bản và văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(21.7987, 105.1987) - cách tâm tỉnh 154.0km",
+      "description": "Tọa độ của 'Làng văn hóa du lịch Lũng Cẩm' cách tâm trung vị tỉnh Hà Giang tới 154.0km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-4fd427ab",
+      "name": "Chùa Keo",
+      "province": "Thái Bình",
+      "category": "Tôn giáo và tâm linh",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(20.6320, 106.0140) - cách tâm tỉnh 58.9km",
+      "description": "Tọa độ của 'Chùa Keo' cách tâm trung vị tỉnh Thái Bình tới 58.9km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-4d60170e",
+      "name": "Sun World Hạ Long",
+      "province": "Quảng Ninh",
+      "category": "Giải trí và công viên",
+      "issue_type": "PRICE_OUTLIER_VS_CATEGORY_MEDIAN",
+      "severity": "MEDIUM",
+      "current_value": "price_min=450,000đ (median=40,000đ)",
+      "description": "Giá của 'Sun World Hạ Long' (450,000đ) lệch quá xa (<20% hoặc >5x) so với trung vị nhóm 'Giải trí và công viên' (40,000đ)."
+    },
+    {
+      "destination_id": "dest-b67ccc69",
+      "name": "Đảo Cô Tô",
+      "province": "Quảng Ninh",
+      "category": "Biển và đảo",
+      "issue_type": "CROSS_SEA_CLUSTER_IN_PROVINCE",
+      "severity": "HIGH",
+      "current_value": "cluster_id=ISLAND_CO_TO (1/19 điểm trong tỉnh Quảng Ninh)",
+      "description": "Điểm 'Đảo Cô Tô' (ISLAND_CO_TO) bị ngăn cách địa lý/biển với đa số điểm còn lại trong tỉnh 'Quảng Ninh'; tuyệt đối không được xếp chung ngày với cụm bên kia biển."
+    },
+    {
+      "destination_id": "dest-dc3de184",
+      "name": "Khu danh thắng Yên Tử",
+      "province": "Quảng Ninh",
+      "category": "Tôn giáo và tâm linh",
+      "issue_type": "CROSS_SEA_CLUSTER_IN_PROVINCE",
+      "severity": "HIGH",
+      "current_value": "cluster_id=OUTLIER_YEN_TU (2/19 điểm trong tỉnh Quảng Ninh)",
+      "description": "Điểm 'Khu danh thắng Yên Tử' (OUTLIER_YEN_TU) bị ngăn cách địa lý/biển với đa số điểm còn lại trong tỉnh 'Quảng Ninh'; tuyệt đối không được xếp chung ngày với cụm bên kia biển."
+    },
+    {
+      "destination_id": "dest-796fc466",
+      "name": "Sun World Sầm Sơn",
+      "province": "Thanh Hóa",
+      "category": "Giải trí và công viên",
+      "issue_type": "PRICE_OUTLIER_VS_CATEGORY_MEDIAN",
+      "severity": "MEDIUM",
+      "current_value": "price_min=450,000đ (median=40,000đ)",
+      "description": "Giá của 'Sun World Sầm Sơn' (450,000đ) lệch quá xa (<20% hoặc >5x) so với trung vị nhóm 'Giải trí và công viên' (40,000đ)."
+    },
+    {
+      "destination_id": "dest-04a24190",
+      "name": "Mường Thanh Safari Land Diễn Lâm",
+      "province": "Nghệ An",
+      "category": "Giải trí và công viên",
+      "issue_type": "PRICE_OUTLIER_VS_CATEGORY_MEDIAN",
+      "severity": "MEDIUM",
+      "current_value": "price_min=450,000đ (median=40,000đ)",
+      "description": "Giá của 'Mường Thanh Safari Land Diễn Lâm' (450,000đ) lệch quá xa (<20% hoặc >5x) so với trung vị nhóm 'Giải trí và công viên' (40,000đ)."
+    },
+    {
+      "destination_id": "dest-7bdb854f",
+      "name": "Đồi cát Quảng Phú",
+      "province": "Quảng Bình",
+      "category": "Cảnh quan",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(16.8527, 107.0640) - cách tâm tỉnh 110.8km",
+      "description": "Tọa độ của 'Đồi cát Quảng Phú' cách tâm trung vị tỉnh Quảng Bình tới 110.8km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-06523732",
+      "name": "Bảo tàng Cổ vật Cung đình Huế",
+      "province": "Thừa Thiên Huế",
+      "category": "Bảo tàng",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "HIGH",
+      "current_value": "(15.9460, 107.9640) - cách tâm tỉnh 67.5km",
+      "description": "Tọa độ của 'Bảo tàng Cổ vật Cung đình Huế' cách tâm trung vị tỉnh Thừa Thiên Huế tới 67.5km (nghi sai lệch tọa độ điểm nội đô)."
+    },
+    {
+      "destination_id": "dest-511c7215",
+      "name": "Vịnh Lăng Cô",
+      "province": "Thừa Thiên Huế",
+      "category": "Vịnh và đầm phá",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(16.2306, 108.0064) - cách tâm tỉnh 49.9km",
+      "description": "Tọa độ của 'Vịnh Lăng Cô' cách tâm trung vị tỉnh Thừa Thiên Huế tới 49.9km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-327f28e9",
+      "name": "Rừng ngập mặn Rú Chá",
+      "province": "Thừa Thiên Huế",
+      "category": "Sinh thái và nghỉ dưỡng",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(16.0000, 107.9640) - cách tâm tỉnh 62.8km",
+      "description": "Tọa độ của 'Rừng ngập mặn Rú Chá' cách tâm trung vị tỉnh Thừa Thiên Huế tới 62.8km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-79d0b1e7",
+      "name": "Sông Hương",
+      "province": "Thừa Thiên Huế",
+      "category": "Sông và hồ",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "HIGH",
+      "current_value": "(16.0180, 107.9640) - cách tâm tỉnh 61.2km",
+      "description": "Tọa độ của 'Sông Hương' cách tâm trung vị tỉnh Thừa Thiên Huế tới 61.2km (nghi sai lệch tọa độ điểm nội đô)."
+    },
+    {
+      "destination_id": "dest-88d9765b",
+      "name": "Quần thể di tích Cố đô Huế",
+      "province": "Thừa Thiên Huế",
+      "category": "Di tích",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "HIGH",
+      "current_value": "(16.0360, 107.9640) - cách tâm tỉnh 59.7km",
+      "description": "Tọa độ của 'Quần thể di tích Cố đô Huế' cách tâm trung vị tỉnh Thừa Thiên Huế tới 59.7km (nghi sai lệch tọa độ điểm nội đô)."
+    },
+    {
+      "destination_id": "dest-4df25732",
+      "name": "Bãi biển Thuận An",
+      "province": "Thừa Thiên Huế",
+      "category": "Biển và đảo",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(16.0540, 107.9640) - cách tâm tỉnh 58.2km",
+      "description": "Tọa độ của 'Bãi biển Thuận An' cách tâm trung vị tỉnh Thừa Thiên Huế tới 58.2km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-635c9632",
+      "name": "Đầm Lập An",
+      "province": "Thừa Thiên Huế",
+      "category": "Sông và hồ",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(15.9460, 107.9820) - cách tâm tỉnh 68.7km",
+      "description": "Tọa độ của 'Đầm Lập An' cách tâm trung vị tỉnh Thừa Thiên Huế tới 68.7km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-1106ebf0",
+      "name": "Thánh địa Mỹ Sơn",
+      "province": "Quảng Nam",
+      "category": "Di tích",
+      "issue_type": "CROSS_SEA_CLUSTER_IN_PROVINCE",
+      "severity": "HIGH",
+      "current_value": "cluster_id=OUTLIER_MY_SON (1/17 điểm trong tỉnh Quảng Nam)",
+      "description": "Điểm 'Thánh địa Mỹ Sơn' (OUTLIER_MY_SON) bị ngăn cách địa lý/biển với đa số điểm còn lại trong tỉnh 'Quảng Nam'; tuyệt đối không được xếp chung ngày với cụm bên kia biển."
+    },
+    {
+      "destination_id": "dest-c38f97b0",
+      "name": "Công viên nước Mikazuki 365",
+      "province": "Đà Nẵng",
+      "category": "Giải trí và công viên",
+      "issue_type": "ZERO_PRICE_PAID_ATTRACTION",
+      "severity": "HIGH",
+      "current_value": "price_min=0, price_max=0",
+      "description": "Điểm 'Công viên nước Mikazuki 365' thuộc nhóm khu vui chơi/cáp treo/công viên có thu vé nhưng đang ghi giá 0đ. Cần con người xác minh lại bảng giá thực tế."
+    },
+    {
+      "destination_id": "dest-f26f602d",
+      "name": "Làng Kon K’Tu",
+      "province": "Kon Tum",
+      "category": "Làng bản và văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(15.1754, 108.7688) - cách tâm tỉnh 103.6km",
+      "description": "Tọa độ của 'Làng Kon K’Tu' cách tâm trung vị tỉnh Kon Tum tới 103.6km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-3a3dbea1",
+      "name": "Nhà rông Kon Trang Long Loi",
+      "province": "Kon Tum",
+      "category": "Làng bản và văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(15.1034, 108.7868) - cách tâm tỉnh 100.3km",
+      "description": "Tọa độ của 'Nhà rông Kon Trang Long Loi' cách tâm trung vị tỉnh Kon Tum tới 100.3km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-009242b1",
+      "name": "Trung tâm Khám phá Khoa học ExploraScience Quy Nhơn",
+      "province": "Bình Định",
+      "category": "Bảo tàng",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(13.9293, 107.9640) - cách tâm tỉnh 136.5km",
+      "description": "Tọa độ của 'Trung tâm Khám phá Khoa học ExploraScience Quy Nhơn' cách tâm trung vị tỉnh Bình Định tới 136.5km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-aad5320d",
+      "name": "Bảo tàng tổng hợp Bình Định",
+      "province": "Bình Định",
+      "category": "Bảo tàng",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(13.9653, 107.9820) - cách tâm tỉnh 134.9km",
+      "description": "Tọa độ của 'Bảo tàng tổng hợp Bình Định' cách tâm trung vị tỉnh Bình Định tới 134.9km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-b31504b6",
+      "name": "Vịnh Vĩnh Hy",
+      "province": "Ninh Thuận",
+      "category": "Vịnh và đầm phá",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(12.6500, 109.2000) - cách tâm tỉnh 64.7km",
+      "description": "Tọa độ của 'Vịnh Vĩnh Hy' cách tâm trung vị tỉnh Ninh Thuận tới 64.7km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-a2620701",
+      "name": "Hang Rái",
+      "province": "Ninh Thuận",
+      "category": "Cảnh quan",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(12.6167, 109.1833) - cách tâm tỉnh 60.5km",
+      "description": "Tọa độ của 'Hang Rái' cách tâm trung vị tỉnh Ninh Thuận tới 60.5km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-befbbd0a",
+      "name": "Tháp Po Klong Garai",
+      "province": "Ninh Thuận",
+      "category": "Di tích",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(13.9000, 108.9000) - cách tâm tỉnh 198.1km",
+      "description": "Tọa độ của 'Tháp Po Klong Garai' cách tâm trung vị tỉnh Ninh Thuận tới 198.1km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-98d8a5a8",
+      "name": "Mũi Dinh",
+      "province": "Khánh Hòa",
+      "category": "Cảnh quan",
+      "issue_type": "PROVINCE_LANDMARK_MISMATCH",
+      "severity": "HIGH",
+      "current_value": "province='Khánh Hòa' (thực tế thuộc 'Ninh Thuận')",
+      "description": "Điểm 'Mũi Dinh' đang được gán tỉnh 'Khánh Hòa' trong CSV nhưng thực tế địa lý thuộc tỉnh 'Ninh Thuận'."
+    },
+    {
+      "destination_id": "dest-f982cbf6",
+      "name": "Đồi cát Nam Cương",
+      "province": "Khánh Hòa",
+      "category": "Cảnh quan",
+      "issue_type": "PROVINCE_LANDMARK_MISMATCH",
+      "severity": "HIGH",
+      "current_value": "province='Khánh Hòa' (thực tế thuộc 'Ninh Thuận')",
+      "description": "Điểm 'Đồi cát Nam Cương' đang được gán tỉnh 'Khánh Hòa' trong CSV nhưng thực tế địa lý thuộc tỉnh 'Ninh Thuận'."
+    },
+    {
+      "destination_id": "dest-2bf73aac",
+      "name": "VinWonders Nha Trang",
+      "province": "Khánh Hòa",
+      "category": "Giải trí và công viên",
+      "issue_type": "SUSPICIOUSLY_LOW_THEME_PARK_PRICE",
+      "severity": "HIGH",
+      "current_value": "price_min=40,000đ",
+      "description": "Tổ hợp giải trí lớn 'VinWonders Nha Trang' có giá vé 40,000đ thấp bất thường so với mặt bằng vé cổng/cáp treo (>= 200.000đ)."
+    },
+    {
+      "destination_id": "dest-49a4c09b",
+      "name": "Bàu Trắng",
+      "province": "Lâm Đồng",
+      "category": "Cảnh quan",
+      "issue_type": "PROVINCE_LANDMARK_MISMATCH",
+      "severity": "HIGH",
+      "current_value": "province='Lâm Đồng' (thực tế thuộc 'Bình Thuận')",
+      "description": "Điểm 'Bàu Trắng' đang được gán tỉnh 'Lâm Đồng' trong CSV nhưng thực tế địa lý thuộc tỉnh 'Bình Thuận'."
+    },
+    {
+      "destination_id": "dest-d7251687",
+      "name": "Bàu Sen",
+      "province": "Lâm Đồng",
+      "category": "Sông và hồ",
+      "issue_type": "PROVINCE_LANDMARK_MISMATCH",
+      "severity": "HIGH",
+      "current_value": "province='Lâm Đồng' (thực tế thuộc 'Bình Thuận')",
+      "description": "Điểm 'Bàu Sen' đang được gán tỉnh 'Lâm Đồng' trong CSV nhưng thực tế địa lý thuộc tỉnh 'Bình Thuận'."
+    },
+    {
+      "destination_id": "dest-f621d59d",
+      "name": "Đồi cát đỏ Mũi Né",
+      "province": "Lâm Đồng",
+      "category": "Cảnh quan",
+      "issue_type": "PROVINCE_LANDMARK_MISMATCH",
+      "severity": "HIGH",
+      "current_value": "province='Lâm Đồng' (thực tế thuộc 'Bình Thuận')",
+      "description": "Điểm 'Đồi cát đỏ Mũi Né' đang được gán tỉnh 'Lâm Đồng' trong CSV nhưng thực tế địa lý thuộc tỉnh 'Bình Thuận'."
+    },
+    {
+      "destination_id": "dest-727b75fd",
+      "name": "Hồ Tà Đùng",
+      "province": "Lâm Đồng",
+      "category": "Sông và hồ",
+      "issue_type": "PROVINCE_LANDMARK_MISMATCH",
+      "severity": "HIGH",
+      "current_value": "province='Lâm Đồng' (thực tế thuộc 'Đắk Nông')",
+      "description": "Điểm 'Hồ Tà Đùng' đang được gán tỉnh 'Lâm Đồng' trong CSV nhưng thực tế địa lý thuộc tỉnh 'Đắk Nông'."
+    },
+    {
+      "destination_id": "dest-fcfc007e",
+      "name": "Hòn Rơm",
+      "province": "Lâm Đồng",
+      "category": "Biển và đảo",
+      "issue_type": "PROVINCE_LANDMARK_MISMATCH",
+      "severity": "HIGH",
+      "current_value": "province='Lâm Đồng' (thực tế thuộc 'Bình Thuận')",
+      "description": "Điểm 'Hòn Rơm' đang được gán tỉnh 'Lâm Đồng' trong CSV nhưng thực tế địa lý thuộc tỉnh 'Bình Thuận'."
+    },
+    {
+      "destination_id": "dest-72adc7c5",
+      "name": "Khu du lịch Đại Nam",
+      "province": "Bình Dương",
+      "category": "Giải trí và công viên",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(15.9460, 107.9640) - cách tâm tỉnh 568.6km",
+      "description": "Tọa độ của 'Khu du lịch Đại Nam' cách tâm trung vị tỉnh Bình Dương tới 568.6km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-8faf1d10",
+      "name": "Nhà tù Côn Đảo",
+      "province": "Bà Rịa - Vũng Tàu",
+      "category": "Di tích",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(8.6833, 106.6083) - cách tâm tỉnh 191.1km",
+      "description": "Tọa độ của 'Nhà tù Côn Đảo' cách tâm trung vị tỉnh Bà Rịa - Vũng Tàu tới 191.1km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-8faf1d10",
+      "name": "Nhà tù Côn Đảo",
+      "province": "Bà Rịa - Vũng Tàu",
+      "category": "Di tích",
+      "issue_type": "CROSS_SEA_CLUSTER_IN_PROVINCE",
+      "severity": "HIGH",
+      "current_value": "cluster_id=ISLAND_CON_DAO (1/6 điểm trong tỉnh Bà Rịa - Vũng Tàu)",
+      "description": "Điểm 'Nhà tù Côn Đảo' (ISLAND_CON_DAO) bị ngăn cách địa lý/biển với đa số điểm còn lại trong tỉnh 'Bà Rịa - Vũng Tàu'; tuyệt đối không được xếp chung ngày với cụm bên kia biển."
+    },
+    {
+      "destination_id": "dest-89194ba9",
+      "name": "Bạch Dinh",
+      "province": "TP. Hồ Chí Minh",
+      "category": "Di tích",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(16.0360, 107.9640) - cách tâm tỉnh 600.6km",
+      "description": "Tọa độ của 'Bạch Dinh' cách tâm trung vị tỉnh TP. Hồ Chí Minh tới 600.6km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-33b4642f",
+      "name": "Địa đạo Củ Chi",
+      "province": "TP. Hồ Chí Minh",
+      "category": "Di tích",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(16.0540, 107.9640) - cách tâm tỉnh 602.5km",
+      "description": "Tọa độ của 'Địa đạo Củ Chi' cách tâm trung vị tỉnh TP. Hồ Chí Minh tới 602.5km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-d4db4057",
+      "name": "Núi Bà Rá",
+      "province": "Bình Phước",
+      "category": "Núi và cao nguyên",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(10.9034, 106.8067) - cách tâm tỉnh 89.7km",
+      "description": "Tọa độ của 'Núi Bà Rá' cách tâm trung vị tỉnh Bình Phước tới 89.7km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-725a0780",
+      "name": "Khu bảo tồn văn hóa S’tiêng Sóc Bom Bo",
+      "province": "Bình Phước",
+      "category": "Làng bản và văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(10.9214, 106.8067) - cách tâm tỉnh 87.7km",
+      "description": "Tọa độ của 'Khu bảo tồn văn hóa S’tiêng Sóc Bom Bo' cách tâm trung vị tỉnh Bình Phước tới 87.7km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-4ba5568a",
+      "name": "Núi Bà Đen",
+      "province": "Tây Ninh",
+      "category": "Núi và cao nguyên",
+      "issue_type": "PRICE_OUTLIER_VS_CATEGORY_MEDIAN",
+      "severity": "MEDIUM",
+      "current_value": "price_min=450,000đ (median=40,000đ)",
+      "description": "Giá của 'Núi Bà Đen' (450,000đ) lệch quá xa (<20% hoặc >5x) so với trung vị nhóm 'Núi và cao nguyên' (40,000đ)."
+    },
+    {
+      "destination_id": "dest-7efc35c6",
+      "name": "Chùa Đất Sét",
+      "province": "Sóc Trăng",
+      "category": "Tôn giáo và tâm linh",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(10.0272, 105.7109) - cách tâm tỉnh 55.2km",
+      "description": "Tọa độ của 'Chùa Đất Sét' cách tâm trung vị tỉnh Sóc Trăng tới 55.2km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-071d04f7",
+      "name": "Chùa Khleang",
+      "province": "Sóc Trăng",
+      "category": "Tôn giáo và tâm linh",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(10.0452, 105.7109) - cách tâm tỉnh 56.9km",
+      "description": "Tọa độ của 'Chùa Khleang' cách tâm trung vị tỉnh Sóc Trăng tới 56.9km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-a3389903",
+      "name": "Kênh dừa Bến Tre",
+      "province": "Bến Tre",
+      "category": "Sinh thái và nghỉ dưỡng",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(10.1960, 105.9307) - cách tâm tỉnh 45.9km",
+      "description": "Tọa độ của 'Kênh dừa Bến Tre' cách tâm trung vị tỉnh Bến Tre tới 45.9km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-1691b094",
+      "name": "Cồn Thới Sơn",
+      "province": "Tiền Giang",
+      "category": "Sinh thái và nghỉ dưỡng",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(10.4847, 105.5973) - cách tâm tỉnh 85.4km",
+      "description": "Tọa độ của 'Cồn Thới Sơn' cách tâm trung vị tỉnh Tiền Giang tới 85.4km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-db9d7055",
+      "name": "VinWonders Phú Quốc",
+      "province": "Kiên Giang",
+      "category": "Giải trí và công viên",
+      "issue_type": "SUSPICIOUSLY_LOW_THEME_PARK_PRICE",
+      "severity": "HIGH",
+      "current_value": "price_min=20,000đ",
+      "description": "Tổ hợp giải trí lớn 'VinWonders Phú Quốc' có giá vé 20,000đ thấp bất thường so với mặt bằng vé cổng/cáp treo (>= 200.000đ)."
+    },
+    {
+      "destination_id": "dest-7aa754c7",
+      "name": "Hà Tiên",
+      "province": "Kiên Giang",
+      "category": "Đô thị và phố cổ",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(10.3939, 105.3825) - cách tâm tỉnh 156.8km",
+      "description": "Tọa độ của 'Hà Tiên' cách tâm trung vị tỉnh Kiên Giang tới 156.8km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-7aa754c7",
+      "name": "Hà Tiên",
+      "province": "Kiên Giang",
+      "category": "Đô thị và phố cổ",
+      "issue_type": "CROSS_SEA_CLUSTER_IN_PROVINCE",
+      "severity": "HIGH",
+      "current_value": "cluster_id=MAINLAND_KIEN_GIANG (1/7 điểm trong tỉnh Kiên Giang)",
+      "description": "Điểm 'Hà Tiên' (MAINLAND_KIEN_GIANG) bị ngăn cách địa lý/biển với đa số điểm còn lại trong tỉnh 'Kiên Giang'; tuyệt đối không được xếp chung ngày với cụm bên kia biển."
+    },
+    {
+      "destination_id": "dest-e48d425c",
+      "name": "Thủy cung Cung điện Hải Vương",
+      "province": "An Giang",
+      "category": "Giải trí và công viên",
+      "issue_type": "ZERO_PRICE_PAID_ATTRACTION",
+      "severity": "HIGH",
+      "current_value": "price_min=0, price_max=0",
+      "description": "Điểm 'Thủy cung Cung điện Hải Vương' thuộc nhóm khu vui chơi/cáp treo/công viên có thu vé nhưng đang ghi giá 0đ. Cần con người xác minh lại bảng giá thực tế."
+    },
+    {
+      "destination_id": "dest-8a48a0e8",
+      "name": "Mũi Cà Mau",
+      "province": "Cà Mau",
+      "category": "Cảnh quan",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(8.6167, 104.7167) - cách tâm tỉnh 74.4km",
+      "description": "Tọa độ của 'Mũi Cà Mau' cách tâm trung vị tỉnh Cà Mau tới 74.4km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-77c1ba56",
+      "name": "Rừng ngập mặn Cần Giờ",
+      "province": "TP. Hồ Chí Minh",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(10.4114, 106.9538) - cách tâm tỉnh 49.3km",
+      "description": "Tọa độ của 'Rừng ngập mặn Cần Giờ' cách tâm trung vị tỉnh TP. Hồ Chí Minh tới 49.3km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-9eefaed8",
+      "name": "Đảo Bạch Long Vĩ",
+      "province": "Hải Phòng",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(20.1311, 107.7311) - cách tâm tỉnh 137.6km",
+      "description": "Tọa độ của 'Đảo Bạch Long Vĩ' cách tâm trung vị tỉnh Hải Phòng tới 137.6km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-3d5efd21",
+      "name": "Đảo Minh Châu",
+      "province": "Quảng Ninh",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(20.9296, 107.5537) - cách tâm tỉnh 53.1km",
+      "description": "Tọa độ của 'Đảo Minh Châu' cách tâm trung vị tỉnh Quảng Ninh tới 53.1km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-dbe913e2",
+      "name": "Bãi biển Trà Cổ",
+      "province": "Quảng Ninh",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(21.4746, 108.0181) - cách tâm tỉnh 116.7km",
+      "description": "Tọa độ của 'Bãi biển Trà Cổ' cách tâm trung vị tỉnh Quảng Ninh tới 116.7km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-81947dec",
+      "name": "Đảo Cái Chiên",
+      "province": "Quảng Ninh",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(21.3230, 107.7693) - cách tâm tỉnh 86.0km",
+      "description": "Tọa độ của 'Đảo Cái Chiên' cách tâm trung vị tỉnh Quảng Ninh tới 86.0km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-84dd7636",
+      "name": "Thung Nham",
+      "province": "Ninh Bình",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "PRICE_OUTLIER_VS_CATEGORY_MEDIAN",
+      "severity": "MEDIUM",
+      "current_value": "price_min=250,000đ (median=40,000đ)",
+      "description": "Giá của 'Thung Nham' (250,000đ) lệch quá xa (<20% hoặc >5x) so với trung vị nhóm 'Tham quan & Văn hóa' (40,000đ)."
+    },
+    {
+      "destination_id": "dest-294731c6",
+      "name": "Bãi Đông Nghi Sơn",
+      "province": "Thanh Hóa",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(19.3265, 105.8241) - cách tâm tỉnh 52.0km",
+      "description": "Tọa độ của 'Bãi Đông Nghi Sơn' cách tâm trung vị tỉnh Thanh Hóa tới 52.0km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-fbf042ff",
+      "name": "Thác Khe Kèm",
+      "province": "Nghệ An",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(18.9704, 104.8007) - cách tâm tỉnh 94.8km",
+      "description": "Tọa độ của 'Thác Khe Kèm' cách tâm trung vị tỉnh Nghệ An tới 94.8km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-08362ce9",
+      "name": "Cánh đồng hoa hướng dương Nghĩa Đàn",
+      "province": "Nghệ An",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(19.4261, 105.4144) - cách tâm tỉnh 87.1km",
+      "description": "Tọa độ của 'Cánh đồng hoa hướng dương Nghĩa Đàn' cách tâm trung vị tỉnh Nghệ An tới 87.1km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-90e59d9a",
+      "name": "Đền Chế Thắng phu nhân Nguyễn Thị Bích Châu",
+      "province": "Hà Tĩnh",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(18.1138, 106.3473) - cách tâm tỉnh 56.2km",
+      "description": "Tọa độ của 'Đền Chế Thắng phu nhân Nguyễn Thị Bích Châu' cách tâm trung vị tỉnh Hà Tĩnh tới 56.2km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-f8101361",
+      "name": "Vũng Chùa Đảo Yến",
+      "province": "Quảng Bình",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(17.9116, 106.4949) - cách tâm tỉnh 48.9km",
+      "description": "Tọa độ của 'Vũng Chùa Đảo Yến' cách tâm trung vị tỉnh Quảng Bình tới 48.9km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-79126fb2",
+      "name": "Đảo Cồn Cỏ",
+      "province": "Quảng Trị",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(17.1607, 107.3405) - cách tâm tỉnh 45.4km",
+      "description": "Tọa độ của 'Đảo Cồn Cỏ' cách tâm trung vị tỉnh Quảng Trị tới 45.4km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-97f5a607",
+      "name": "Đồng muối Sa Huỳnh",
+      "province": "Quảng Ngãi",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(14.6898, 109.0648) - cách tâm tỉnh 52.3km",
+      "description": "Tọa độ của 'Đồng muối Sa Huỳnh' cách tâm trung vị tỉnh Quảng Ngãi tới 52.3km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-21d64b40",
+      "name": "Đảo Bé Lý Sơn",
+      "province": "Quảng Ngãi",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(15.4055, 109.0772) - cách tâm tỉnh 48.1km",
+      "description": "Tọa độ của 'Đảo Bé Lý Sơn' cách tâm trung vị tỉnh Quảng Ngãi tới 48.1km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-7d635701",
+      "name": "Đỉnh Pu Si Lung",
+      "province": "Lai Châu",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(22.6258, 102.7875) - cách tâm tỉnh 70.7km",
+      "description": "Tọa độ của 'Đỉnh Pu Si Lung' cách tâm trung vị tỉnh Lai Châu tới 70.7km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-8ee4d41e",
+      "name": "Làng gốm Bàu Trúc",
+      "province": "Ninh Thuận",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(11.5257, 108.9290) - cách tâm tỉnh 66.1km",
+      "description": "Tọa độ của 'Làng gốm Bàu Trúc' cách tâm trung vị tỉnh Ninh Thuận tới 66.1km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-c002543f",
+      "name": "Làng dệt Mỹ Nghiệp",
+      "province": "Ninh Thuận",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(11.5215, 108.9425) - cách tâm tỉnh 66.5km",
+      "description": "Tọa độ của 'Làng dệt Mỹ Nghiệp' cách tâm trung vị tỉnh Ninh Thuận tới 66.5km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-060b79e6",
+      "name": "Đồng cừu An Hòa",
+      "province": "Ninh Thuận",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(11.6690, 108.9710) - cách tâm tỉnh 50.1km",
+      "description": "Tọa độ của 'Đồng cừu An Hòa' cách tâm trung vị tỉnh Ninh Thuận tới 50.1km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-d29e9a34",
+      "name": "Đảo Phú Quý",
+      "province": "Bình Thuận",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(10.5333, 108.9500) - cách tâm tỉnh 98.8km",
+      "description": "Tọa độ của 'Đảo Phú Quý' cách tâm trung vị tỉnh Bình Thuận tới 98.8km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-d29e9a34",
+      "name": "Đảo Phú Quý",
+      "province": "Bình Thuận",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "CROSS_SEA_CLUSTER_IN_PROVINCE",
+      "severity": "HIGH",
+      "current_value": "cluster_id=ISLAND_PHU_QUY (1/5 điểm trong tỉnh Bình Thuận)",
+      "description": "Điểm 'Đảo Phú Quý' (ISLAND_PHU_QUY) bị ngăn cách địa lý/biển với đa số điểm còn lại trong tỉnh 'Bình Thuận'; tuyệt đối không được xếp chung ngày với cụm bên kia biển."
+    },
+    {
+      "destination_id": "dest-c26e462b",
+      "name": "Núi Tà Cú",
+      "province": "Bình Thuận",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "PRICE_OUTLIER_VS_CATEGORY_MEDIAN",
+      "severity": "MEDIUM",
+      "current_value": "price_min=250,000đ (median=40,000đ)",
+      "description": "Giá của 'Núi Tà Cú' (250,000đ) lệch quá xa (<20% hoặc >5x) so với trung vị nhóm 'Tham quan & Văn hóa' (40,000đ)."
+    },
+    {
+      "destination_id": "dest-8ca5a5c7",
+      "name": "Ngã ba Đông Dương",
+      "province": "Kon Tum",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(14.6861, 107.5565) - cách tâm tỉnh 51.9km",
+      "description": "Tọa độ của 'Ngã ba Đông Dương' cách tâm trung vị tỉnh Kon Tum tới 51.9km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-8d50538f",
+      "name": "Thác Liêng Nung",
+      "province": "Đắk Nông",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(11.9512, 107.7312) - cách tâm tỉnh 63.0km",
+      "description": "Tọa độ của 'Thác Liêng Nung' cách tâm trung vị tỉnh Đắk Nông tới 63.0km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-a162e845",
+      "name": "Núi Chứa Chan",
+      "province": "Đồng Nai",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(10.9373, 107.3766) - cách tâm tỉnh 60.3km",
+      "description": "Tọa độ của 'Núi Chứa Chan' cách tâm trung vị tỉnh Đồng Nai tới 60.3km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-a8c8fbe2",
+      "name": "Đá Ba Chồng Định Quán",
+      "province": "Đồng Nai",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(11.1908, 107.3483) - cách tâm tỉnh 63.2km",
+      "description": "Tọa độ của 'Đá Ba Chồng Định Quán' cách tâm trung vị tỉnh Đồng Nai tới 63.2km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-1b9b9c07",
+      "name": "Khu du lịch Suối Mơ Đồng Nai",
+      "province": "Đồng Nai",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "ZERO_PRICE_PAID_ATTRACTION",
+      "severity": "HIGH",
+      "current_value": "price_min=0, price_max=0",
+      "description": "Điểm 'Khu du lịch Suối Mơ Đồng Nai' thuộc nhóm khu vui chơi/cáp treo/công viên có thu vé nhưng đang ghi giá 0đ. Cần con người xác minh lại bảng giá thực tế."
+    },
+    {
+      "destination_id": "dest-1b9b9c07",
+      "name": "Khu du lịch Suối Mơ Đồng Nai",
+      "province": "Đồng Nai",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(11.2310, 107.4402) - cách tâm tỉnh 74.2km",
+      "description": "Tọa độ của 'Khu du lịch Suối Mơ Đồng Nai' cách tâm trung vị tỉnh Đồng Nai tới 74.2km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-cb1f1d74",
+      "name": "Vườn quốc gia Bù Gia Mập",
+      "province": "Bình Phước",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(12.0872, 107.1564) - cách tâm tỉnh 54.0km",
+      "description": "Tọa độ của 'Vườn quốc gia Bù Gia Mập' cách tâm trung vị tỉnh Bình Phước tới 54.0km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-4741cdd8",
+      "name": "Trảng cỏ Bù Lạch",
+      "province": "Bình Phước",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(11.8085, 107.3583) - cách tâm tỉnh 57.1km",
+      "description": "Tọa độ của 'Trảng cỏ Bù Lạch' cách tâm trung vị tỉnh Bình Phước tới 57.1km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-575a0a3e",
+      "name": "Động Xá Nhè",
+      "province": "Điện Biên",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(21.8817, 103.4127) - cách tâm tỉnh 72.7km",
+      "description": "Tọa độ của 'Động Xá Nhè' cách tâm trung vị tỉnh Điện Biên tới 72.7km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-f6007349",
+      "name": "Biển Tân Thành",
+      "province": "Tiền Giang",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(10.2917, 106.7812) - cách tâm tỉnh 45.8km",
+      "description": "Tọa độ của 'Biển Tân Thành' cách tâm trung vị tỉnh Tiền Giang tới 45.8km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-7de53c62",
+      "name": "Thác Dải Yếm",
+      "province": "Sơn La",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(20.8129, 104.5916) - cách tâm tỉnh 89.1km",
+      "description": "Tọa độ của 'Thác Dải Yếm' cách tâm trung vị tỉnh Sơn La tới 89.1km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-a2da1a4d",
+      "name": "Rừng thông bản Áng",
+      "province": "Sơn La",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(20.8268, 104.6308) - cách tâm tỉnh 91.6km",
+      "description": "Tọa độ của 'Rừng thông bản Áng' cách tâm trung vị tỉnh Sơn La tới 91.6km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-ffd2975a",
+      "name": "Thác Nàng Tiên Mộc Châu",
+      "province": "Sơn La",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(20.8438, 104.8244) - cách tâm tỉnh 107.9km",
+      "description": "Tọa độ của 'Thác Nàng Tiên Mộc Châu' cách tâm trung vị tỉnh Sơn La tới 107.9km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-90ac1dd5",
+      "name": "Khu du lịch Gáo Giồng",
+      "province": "Đồng Tháp",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "ZERO_PRICE_PAID_ATTRACTION",
+      "severity": "HIGH",
+      "current_value": "price_min=0, price_max=0",
+      "description": "Điểm 'Khu du lịch Gáo Giồng' thuộc nhóm khu vui chơi/cáp treo/công viên có thu vé nhưng đang ghi giá 0đ. Cần con người xác minh lại bảng giá thực tế."
+    },
+    {
+      "destination_id": "dest-455f2aee",
+      "name": "Ngọc Chiến",
+      "province": "Sơn La",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(21.5977, 104.2163) - cách tâm tỉnh 47.3km",
+      "description": "Tọa độ của 'Ngọc Chiến' cách tâm trung vị tỉnh Sơn La tới 47.3km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-a7bc167f",
+      "name": "Công viên giải trí Kittyd & Minnied",
+      "province": "Hậu Giang",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "ZERO_PRICE_PAID_ATTRACTION",
+      "severity": "HIGH",
+      "current_value": "price_min=0, price_max=0",
+      "description": "Điểm 'Công viên giải trí Kittyd & Minnied' thuộc nhóm khu vui chơi/cáp treo/công viên có thu vé nhưng đang ghi giá 0đ. Cần con người xác minh lại bảng giá thực tế."
+    },
+    {
+      "destination_id": "dest-e3d6fe73",
+      "name": "Đảo Hòn Khoai",
+      "province": "Cà Mau",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(8.4317, 104.8309) - cách tâm tỉnh 86.6km",
+      "description": "Tọa độ của 'Đảo Hòn Khoai' cách tâm trung vị tỉnh Cà Mau tới 86.6km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-6e3e6621",
+      "name": "Hồ Chiềng Khoi",
+      "province": "Sơn La",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(21.0127, 104.3156) - cách tâm tỉnh 52.9km",
+      "description": "Tọa độ của 'Hồ Chiềng Khoi' cách tâm trung vị tỉnh Sơn La tới 52.9km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-8df7638c",
+      "name": "Vinpearl Safari Phú Quốc",
+      "province": "Kiên Giang",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "ZERO_PRICE_PAID_ATTRACTION",
+      "severity": "HIGH",
+      "current_value": "price_min=0, price_max=0",
+      "description": "Điểm 'Vinpearl Safari Phú Quốc' thuộc nhóm khu vui chơi/cáp treo/công viên có thu vé nhưng đang ghi giá 0đ. Cần con người xác minh lại bảng giá thực tế."
+    },
+    {
+      "destination_id": "dest-2e2ebf98",
+      "name": "Búng Bình Thiên",
+      "province": "An Giang",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(10.9200, 105.0718) - cách tâm tỉnh 65.6km",
+      "description": "Tọa độ của 'Búng Bình Thiên' cách tâm trung vị tỉnh An Giang tới 65.6km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-6235f719",
+      "name": "Chợ Tịnh Biên",
+      "province": "An Giang",
+      "category": "Ẩm thực & Mua sắm",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(10.6060, 104.9446) - cách tâm tỉnh 52.4km",
+      "description": "Tọa độ của 'Chợ Tịnh Biên' cách tâm trung vị tỉnh An Giang tới 52.4km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-b783162f",
+      "name": "Hồ Thác Bà",
+      "province": "Yên Bái",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(21.7272, 105.0214) - cách tâm tỉnh 72.1km",
+      "description": "Tọa độ của 'Hồ Thác Bà' cách tâm trung vị tỉnh Yên Bái tới 72.1km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-c0c2cccb",
+      "name": "Chợ Bảo Lạc",
+      "province": "Cao Bằng",
+      "category": "Ẩm thực & Mua sắm",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(22.9471, 105.6807) - cách tâm tỉnh 68.0km",
+      "description": "Tọa độ của 'Chợ Bảo Lạc' cách tâm trung vị tỉnh Cao Bằng tới 68.0km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-24b41be7",
+      "name": "Thác Bản Ba",
+      "province": "Tuyên Quang",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(22.3407, 105.0640) - cách tâm tỉnh 59.5km",
+      "description": "Tọa độ của 'Thác Bản Ba' cách tâm trung vị tỉnh Tuyên Quang tới 59.5km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-883fdbbe",
+      "name": "Cọc Vài Phạ",
+      "province": "Tuyên Quang",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(22.5128, 105.3293) - cách tâm tỉnh 78.9km",
+      "description": "Tọa độ của 'Cọc Vài Phạ' cách tâm trung vị tỉnh Tuyên Quang tới 78.9km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-00e03f79",
+      "name": "Đền Mẫu Âu Cơ",
+      "province": "Phú Thọ",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(21.6044, 104.9144) - cách tâm tỉnh 45.3km",
+      "description": "Tọa độ của 'Đền Mẫu Âu Cơ' cách tâm trung vị tỉnh Phú Thọ tới 45.3km (điểm biệt lập/khác cụm địa lý)."
+    },
+    {
+      "destination_id": "dest-165ddcc3",
+      "name": "Khu du lịch Đảo Ngọc Xanh",
+      "province": "Phú Thọ",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "ZERO_PRICE_PAID_ATTRACTION",
+      "severity": "HIGH",
+      "current_value": "price_min=0, price_max=0",
+      "description": "Điểm 'Khu du lịch Đảo Ngọc Xanh' thuộc nhóm khu vui chơi/cáp treo/công viên có thu vé nhưng đang ghi giá 0đ. Cần con người xác minh lại bảng giá thực tế."
+    },
+    {
+      "destination_id": "dest-9976616f",
+      "name": "Hồ Cấm Sơn",
+      "province": "Bắc Giang",
+      "category": "Tham quan & Văn hóa",
+      "issue_type": "COORDINATE_PROVINCE_OUTLIER",
+      "severity": "MEDIUM",
+      "current_value": "(21.5361, 106.5672) - cách tâm tỉnh 46.9km",
+      "description": "Tọa độ của 'Hồ Cấm Sơn' cách tâm trung vị tỉnh Bắc Giang tới 46.9km (điểm biệt lập/khác cụm địa lý)."
+    }
+  ]
+}

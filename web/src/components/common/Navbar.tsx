@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
+import { apiRequest } from '@/lib/api';
 import styles from './Navbar.module.css';
 
 export interface NavbarProps {
@@ -60,6 +61,28 @@ export function Navbar({
   const [incomingInvitations, setIncomingInvitations] = useState<IncomingInvitation[]>([]);
   const [activeToast, setActiveToast] = useState<IncomingInvitation | null>(null);
   const [isProcessingAction, setIsProcessingAction] = useState<string | null>(null);
+
+  const getTreasuryDestination = useCallback(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        // 1. If currently inside a trip route (/trips/[tripId] or /trips/[tripId]/...), use current trip
+        if (pathname) {
+          const match = pathname.match(/\/trips\/([^/]+)/);
+          if (match && match[1] && /^[0-9a-f-]{36}$/i.test(match[1])) {
+            return `/trips/${match[1]}/treasury`;
+          }
+        }
+
+        // 2. Check recently active trip ID saved in localStorage
+        const lastTripId = localStorage.getItem('vista_last_trip_id');
+        if (lastTripId && /^[0-9a-f-]{36}$/i.test(lastTripId)) {
+          return `/trips/${lastTripId}/treasury`;
+        }
+      }
+    } catch {}
+
+    return '/trips';
+  }, [pathname]);
   const [treasuryHref, setTreasuryHref] = useState<string>('/trips');
   const [optimisticModule, setOptimisticModule] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -81,33 +104,74 @@ export function Navbar({
 
   const handleNavClick = (moduleId: string, href: string) => {
     setOptimisticModule(moduleId);
+    let targetHref = href;
+
+    if (moduleId === 'treasury') {
+      targetHref = getTreasuryDestination();
+      setTreasuryHref(targetHref);
+    }
+
     if (typeof window !== 'undefined') {
-      (window as any).__VISTA_TARGET_ROUTE__ = href;
+      (window as any).__VISTA_TARGET_ROUTE__ = targetHref;
       try {
-        sessionStorage.setItem('vista_target_route', href);
+        sessionStorage.setItem('vista_target_route', targetHref);
       } catch {}
-      window.dispatchEvent(new CustomEvent('vista-nav-change', { detail: href }));
+      window.dispatchEvent(new CustomEvent('vista-nav-change', { detail: targetHref }));
+    }
+
+    if (moduleId === 'treasury' && targetHref !== href) {
+      router.push(targetHref);
     }
   };
 
   useEffect(() => {
-    const resolveTreasuryLink = () => {
+    const resolveTreasuryLink = async () => {
+      const target = getTreasuryDestination();
+      setTreasuryHref(target);
+
       try {
-        const stored = localStorage.getItem('vista_custom_trips');
-        if (stored) {
-          const trips = JSON.parse(stored);
-          if (Array.isArray(trips) && trips.length > 0 && trips[0]?.id) {
-            setTreasuryHref(`/trips/${trips[0].id}/treasury`);
-            return;
+        if (typeof window !== 'undefined') {
+          const match = pathname?.match(/\/trips\/([^/]+)/);
+          if (match && match[1] && /^[0-9a-f-]{36}$/i.test(match[1])) {
+            localStorage.setItem('vista_last_trip_id', match[1]);
+          }
+
+          const token = localStorage.getItem('vista_token');
+          const savedTripId = localStorage.getItem('vista_last_trip_id');
+          const hasRealSavedTrip = !!savedTripId && /^[0-9a-f-]{36}$/i.test(savedTripId);
+          if (token && !hasRealSavedTrip) {
+            const serverTrips = await apiRequest<Array<{ id: string }>>('/trips');
+            if (serverTrips.length > 0 && serverTrips[0]?.id) {
+              const apiHref = `/trips/${serverTrips[0].id}/treasury`;
+              setTreasuryHref(apiHref);
+              localStorage.setItem('vista_last_trip_id', serverTrips[0].id);
+            }
           }
         }
       } catch {}
-      setTreasuryHref('/trips');
     };
 
     resolveTreasuryLink();
-    window.addEventListener('storage', resolveTreasuryLink);
 
+    const handleTripSelected = (e: any) => {
+      const tripId = e?.detail || (typeof window !== 'undefined' ? localStorage.getItem('vista_last_trip_id') : null);
+      if (tripId && /^[0-9a-f-]{36}$/i.test(tripId)) {
+        setTreasuryHref(`/trips/${tripId}/treasury`);
+      }
+    };
+
+    window.addEventListener('storage', resolveTreasuryLink);
+    window.addEventListener('vista-trip-selected', handleTripSelected);
+    window.addEventListener('vista_trip_changed', handleTripSelected);
+
+    return () => {
+      window.removeEventListener('storage', resolveTreasuryLink);
+      window.removeEventListener('vista-trip-selected', handleTripSelected);
+      window.removeEventListener('vista_trip_changed', handleTripSelected);
+    };
+  }, [pathname, getTreasuryDestination]);
+
+  useEffect(() => {
     const loadUser = () => {
       try {
         const token = localStorage.getItem('vista_token');
