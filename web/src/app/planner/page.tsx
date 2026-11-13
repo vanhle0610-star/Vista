@@ -1789,6 +1789,19 @@ export default function PlannerPage() {
       await Promise.resolve();
       if (typeof window !== 'undefined') {
         const params = new URLSearchParams(window.location.search);
+        if (params.get('clear') || params.get('reset')) {
+          try {
+            localStorage.removeItem('vista_active_planner_state');
+            localStorage.removeItem('vista_saved_itineraries');
+            localStorage.removeItem('vista_planner_history');
+            localStorage.removeItem('vista_selected_province');
+            localStorage.removeItem('vista_custom_trips');
+            localStorage.removeItem('vista_last_trip_id');
+          } catch {}
+          window.location.replace('/planner');
+          return;
+        }
+
         const tripIdParam = params.get('tripId');
         const destParam = params.get('dest') || params.get('destination');
         const tabParam = params.get('tab');
@@ -4470,32 +4483,67 @@ export default function PlannerPage() {
               <h2 className={styles.cardHeaderTitle}>Thiết lập chuyến đi</h2>
               <p className={styles.cardHeaderDesc}>Tùy chỉnh lịch trình thông minh cùng AI</p>
             </div>
-            {planHistoryList.length > 0 && (
+            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <button
                 type="button"
-                onClick={() => setShowHistoryDrawer(true)}
-                title="Xem các lịch trình đã lưu"
+                onClick={() => {
+                  if (typeof window !== 'undefined') {
+                    try {
+                      localStorage.removeItem('vista_active_planner_state');
+                      localStorage.removeItem('vista_saved_itineraries');
+                      localStorage.removeItem('vista_planner_history');
+                      localStorage.removeItem('vista_selected_province');
+                      localStorage.removeItem('vista_custom_trips');
+                    } catch {}
+                    window.location.href = '/planner?reset=1';
+                  }
+                }}
+                title="Xóa cache và làm mới bộ nhớ"
                 style={{
-                  marginLeft: 'auto',
-                  background: '#E0F2FE',
-                  border: '1px solid #BAE6FD',
-                  color: '#0284C7',
+                  background: '#F1F5F9',
+                  border: '1px solid #CBD5E1',
+                  color: '#475569',
                   borderRadius: '8px',
-                  padding: '5px 9px',
+                  padding: '5px 8px',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '4px',
-                  fontSize: '11.5px',
-                  fontWeight: 700,
+                  fontSize: '11px',
+                  fontWeight: 600,
                   transition: 'all 0.15s ease',
                   flexShrink: 0,
                 }}
               >
-                <Bookmark size={12} />
-                <span>Đã lưu ({planHistoryList.length})</span>
+                <RotateCcw size={11} />
+                <span>Xóa cache</span>
               </button>
-            )}
+              {planHistoryList.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setShowHistoryDrawer(true)}
+                  title="Xem các lịch trình đã lưu"
+                  style={{
+                    background: '#E0F2FE',
+                    border: '1px solid #BAE6FD',
+                    color: '#0284C7',
+                    borderRadius: '8px',
+                    padding: '5px 9px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    fontSize: '11.5px',
+                    fontWeight: 700,
+                    transition: 'all 0.15s ease',
+                    flexShrink: 0,
+                  }}
+                >
+                  <Bookmark size={12} />
+                  <span>Đã lưu ({planHistoryList.length})</span>
+                </button>
+              )}
+            </div>
           </div>
 
           {/* GROUP A — ĐIỂM ĐẾN & THỜI GIAN */}
