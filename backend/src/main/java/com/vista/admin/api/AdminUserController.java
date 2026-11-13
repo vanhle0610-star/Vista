@@ -79,11 +79,15 @@ public class AdminUserController {
       @Parameter(description = "Số trang (bắt đầu từ 0)") @RequestParam(defaultValue = "0")
           int page,
       @Parameter(description = "Số lượng bản ghi mỗi trang") @RequestParam(defaultValue = "10")
-          int size) {
+          int size,
+      @Parameter(description = "Số lượng bản ghi mỗi trang (alias limit)")
+          @RequestParam(required = false)
+          Integer limit) {
 
     String effectiveKeyword = (keyword != null && !keyword.isBlank()) ? keyword : q;
+    int effectiveSize = (limit != null && limit > 0) ? limit : size;
     AdminUserPageDto result =
-        adminUserService.searchUsers(effectiveKeyword, role, status, sortDir, page, size);
+        adminUserService.searchUsers(effectiveKeyword, role, status, sortDir, page, effectiveSize);
     return ResponseEntity.ok(result);
   }
 

@@ -281,7 +281,7 @@ function PlaceImage({ place }: { place: Place }) {
       {place.imageUrl && /^https?:\/\//.test(place.imageUrl) && !failed && <Image
         source={{ uri: place.imageUrl }}
         onError={() => setFailed(true)}
-        style={[ui.placeImage, StyleSheet.absoluteFillObject]}
+        style={[ui.placeImage, StyleSheet.absoluteFill]}
       />}
     </View>
   );

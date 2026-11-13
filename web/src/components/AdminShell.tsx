@@ -8,6 +8,7 @@ import {
   Globe,
   LayoutDashboard,
   MapPin,
+  Image,
   Users,
   ShieldCheck,
   Wallet,
@@ -29,6 +30,7 @@ const navItems: NavItem[] = [
   { href: '/', label: 'Cổng du lịch VISTA', icon: Globe, isPortalLink: true },
   { href: '/dashboard', label: 'Tổng quan hệ thống', icon: LayoutDashboard },
   { href: '/destinations', label: 'Quản lý điểm đến', icon: MapPin },
+  { href: '/image-manager', label: 'Quản lý hình ảnh AI', icon: Image },
   { href: '/users', label: 'Quản lý người dùng', icon: Users },
   { href: '/moderation', label: 'Hàng đợi kiểm duyệt', icon: ShieldCheck },
   {

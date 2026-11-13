@@ -280,9 +280,29 @@ const formatDate = (iso: string) => {
   }
 };
 
+interface AuditLogItem {
+  id: string;
+  actorId?: string | null;
+  action: string;
+  entityType: string;
+  entityId?: string | null;
+  metadataJson?: string;
+  createdAt: string;
+}
+
 export default function ModerationPage() {
-  // Top-level hub active tab: 'DESTINATIONS' | 'REPORTS'
-  const [hubTab, setHubTab] = useState<'DESTINATIONS' | 'REPORTS'>('DESTINATIONS');
+  // Top-level hub active tab: 'DESTINATIONS' | 'REPORTS' | 'AUDIT_LOGS'
+  const [hubTab, setHubTab] = useState<'DESTINATIONS' | 'REPORTS' | 'AUDIT_LOGS'>('DESTINATIONS');
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // STATE: AUDIT LOGS (W6-TV1-03 - ADMIN ONLY)
+  // ─────────────────────────────────────────────────────────────────────────
+  const [auditLogs, setAuditLogs] = useState<AuditLogItem[]>([]);
+  const [auditTotal, setAuditTotal] = useState<number>(0);
+  const [auditPage, setAuditPage] = useState<number>(0);
+  const [auditEntityFilter, setAuditEntityFilter] = useState<string>('');
+  const [auditLoading, setAuditLoading] = useState<boolean>(false);
+  const [auditError, setAuditError] = useState<string | null>(null);
 
   // ─────────────────────────────────────────────────────────────────────────
   // STATE: DESTINATIONS (TV1)
@@ -401,12 +421,52 @@ export default function ModerationPage() {
     }
   }, [statusFilter, page, size, searchKeyword, selectedProvince]);
 
-  useEffect(() => {
-    if (hubTab === 'DESTINATIONS') {
-      fetchQueue();
-      fetchStats();
+  const fetchAuditLogs = useCallback(async () => {
+    try {
+      setAuditLoading(true);
+      setAuditError(null);
+      const apiBase = getApiBase();
+      const params = new URLSearchParams({
+        page: String(auditPage),
+        size: '20',
+      });
+      if (auditEntityFilter) {
+        params.set('entityType', auditEntityFilter);
+      }
+      const res = await fetch(`${apiBase}/admin/audit-logs?${params.toString()}`, {
+        headers: getAuthHeaders(),
+        credentials: 'include',
+      });
+      if (res.status === 403) {
+        throw new Error(
+          '403 Forbidden: Chỉ tài khoản có vai trò ADMIN mới được phép xem Nhật ký quản trị (Audit Logs).'
+        );
+      }
+      if (!res.ok) {
+        throw new Error(`Không thể tải nhật ký quản trị (HTTP ${res.status})`);
+      }
+      const data = await res.json();
+      setAuditLogs(Array.isArray(data.items) ? data.items : []);
+      setAuditTotal(typeof data.total === 'number' ? data.total : 0);
+    } catch (err: unknown) {
+      setAuditError(err instanceof Error ? err.message : 'Lỗi tải Audit Logs');
+    } finally {
+      setAuditLoading(false);
     }
-  }, [hubTab, fetchQueue, fetchStats]);
+  }, [auditPage, auditEntityFilter]);
+
+  useEffect(() => {
+    const run = async () => {
+      await Promise.resolve();
+      if (hubTab === 'DESTINATIONS') {
+        fetchQueue();
+        fetchStats();
+      } else if (hubTab === 'AUDIT_LOGS') {
+        void fetchAuditLogs();
+      }
+    };
+    void run();
+  }, [hubTab, fetchQueue, fetchStats, fetchAuditLogs]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -551,9 +611,13 @@ export default function ModerationPage() {
   }, []);
 
   useEffect(() => {
-    if (hubTab === 'REPORTS') {
-      void loadReports(statusTab);
-    }
+    const run = async () => {
+      await Promise.resolve();
+      if (hubTab === 'REPORTS') {
+        void loadReports(statusTab);
+      }
+    };
+    void run();
   }, [hubTab, statusTab, loadReports]);
 
   const openConfirmDialog = (
@@ -646,6 +710,14 @@ export default function ModerationPage() {
         >
           <MessageSquareWarning size={18} />
           Báo cáo Bài viết Cộng đồng (TV4)
+        </button>
+        <button
+          type="button"
+          className={`${styles.hubTabBtn} ${hubTab === 'AUDIT_LOGS' ? styles.hubTabBtnActive : ''}`}
+          onClick={() => setHubTab('AUDIT_LOGS')}
+        >
+          <ShieldCheck size={18} />
+          Nhật ký Quản trị (Audit Logs - ADMIN)
         </button>
       </nav>
 
@@ -1638,6 +1710,116 @@ export default function ModerationPage() {
               }}
             >
               {reportToast}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ════════ VIEW 3: ADMIN AUDIT LOGS (W6-TV1-03 - ADMIN ONLY) ════════ */}
+      {hubTab === 'AUDIT_LOGS' && (
+        <div>
+          <div className={styles.headerRow}>
+            <div className={styles.titleArea}>
+              <div className={styles.cloudPill}>
+                <span className={styles.cloudDot} />
+                Bảo mật &amp; Phân quyền RBAC (W6-TV1-03)
+              </div>
+              <h1>Nhật ký Quản trị Hệ thống ({auditTotal})</h1>
+              <p className={styles.subtitle}>
+                Theo dõi toàn bộ thao tác duyệt địa điểm, xử lý báo cáo vi phạm và thay đổi dữ liệu.
+                Chỉ tài khoản có vai trò ADMIN mới được phép truy cập.
+              </p>
+            </div>
+            <div className={styles.actionArea}>
+              <select
+                value={auditEntityFilter}
+                onChange={(e) => {
+                  setAuditPage(0);
+                  setAuditEntityFilter(e.target.value);
+                }}
+                className={styles.selectInput}
+                aria-label="Lọc theo phân hệ"
+              >
+                <option value="">Tất cả đối tượng</option>
+                <option value="DESTINATION">DESTINATION (Địa điểm)</option>
+                <option value="POST">POST (Bài viết)</option>
+                <option value="REPORT">REPORT (Báo cáo)</option>
+                <option value="USER">USER (Người dùng)</option>
+              </select>
+              <button
+                type="button"
+                className={styles.btnSecondary}
+                onClick={() => void fetchAuditLogs()}
+                disabled={auditLoading}
+              >
+                <RefreshCw size={16} />
+                Làm mới
+              </button>
+            </div>
+          </div>
+
+          {auditError ? (
+            <div className={styles.stateBox}>
+              <ShieldAlert size={36} color="#dc2626" />
+              <div className={styles.stateTitle}>Từ chối truy cập hoặc lỗi tải nhật ký</div>
+              <div className={styles.stateDesc}>{auditError}</div>
+            </div>
+          ) : auditLoading ? (
+            <div className={styles.stateBox}>
+              <div className={styles.stateTitle}>Đang tải nhật ký quản trị...</div>
+            </div>
+          ) : auditLogs.length === 0 ? (
+            <div className={styles.stateBox}>
+              <Inbox size={36} color="#64748b" />
+              <div className={styles.stateTitle}>Chưa có bản ghi nhật ký nào</div>
+              <div className={styles.stateDesc}>
+                Các thao tác quản trị (duyệt/từ chối địa điểm, ẩn/khôi phục bài viết) sẽ được ghi lại tại đây.
+              </div>
+            </div>
+          ) : (
+            <div className={styles.tableCard}>
+              <div className={styles.tableWrapper}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Thời gian</th>
+                      <th>Hành động (Action)</th>
+                      <th>Đối tượng (Entity)</th>
+                      <th>Mã thực thể</th>
+                      <th>Chi tiết nhật ký</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {auditLogs.map((log) => (
+                      <tr key={log.id}>
+                        <td style={{ whiteSpace: 'nowrap', fontSize: '0.84rem', color: '#475569' }}>
+                          {formatDate(log.createdAt)}
+                        </td>
+                        <td>
+                          <span className={styles.categoryTag}>{log.action}</span>
+                        </td>
+                        <td style={{ fontWeight: 600 }}>{log.entityType}</td>
+                        <td style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: '#64748b' }}>
+                          {log.entityId ? `${log.entityId.slice(0, 8)}...` : '—'}
+                        </td>
+                        <td style={{ fontSize: '0.85rem', color: '#334155', maxWidth: 420 }}>
+                          {log.metadataJson || '—'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <PaginationBar
+                page={auditPage}
+                totalPages={Math.max(1, Math.ceil(auditTotal / 20))}
+                total={auditTotal}
+                size={20}
+                unitLabel="bản ghi nhật ký"
+                disabled={auditLoading}
+                onPageChange={(nextPage) => setAuditPage(nextPage)}
+                onSizeChange={() => {}}
+              />
             </div>
           )}
         </div>

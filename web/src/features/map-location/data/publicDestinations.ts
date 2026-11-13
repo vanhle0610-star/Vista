@@ -22,26 +22,27 @@ export async function fetchMapDestinations(
   // 1. Nạp sẵn 1.000 địa điểm chuẩn hóa toàn quốc kèm ảnh và tọa độ thực tế
   const destinations: DestinationMarker[] = VIETNAM_1000_DESTINATIONS.map((d: any) => ({
     ...d,
+    imageUrl: d.imageUrl || d.thumbnailUrl || '',
     thumbnailUrl: d.thumbnailUrl || d.imageUrl || '',
   }));
-  const ids = new Set<string>(destinations.map((d) => d.id));
+  const backendIds = new Set<string>();
   let rejected = 0;
   let missingIds = 0;
 
   // Phát tín hiệu trang đầu tiên ngay lập tức để giao diện hiển thị 1.000 điểm không cần đợi
   onPage?.({ destinations: [...destinations], rejected: 0 });
 
-  // 2. Tải thêm từ backend API nếu máy chủ đang chạy
+  // 2. Tải toàn bộ các trang từ backend API (hỗ trợ đầy đủ 669+ địa điểm thực tế trong DB)
   try {
-    for (let page = 0; page < 20; page++) {
-      const timeout = AbortSignal.timeout(5000);
-      const response = await fetch(`${base}/destinations?page=${page}&size=20`, {
+    for (let page = 0; page < 15; page++) {
+      const timeout = AbortSignal.timeout(6000);
+      const response = await fetch(`${base}/destinations?page=${page}&size=100`, {
         signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
         headers: { Accept: 'application/json' },
+        cache: 'no-store',
       });
 
       if (!response.ok) {
-        // Backend không có thêm dữ liệu hoặc trả về lỗi, dừng lặp và giữ nguyên 300 điểm
         break;
       }
 
@@ -58,15 +59,33 @@ export async function fetchMapDestinations(
           continue;
         }
 
-        if (ids.has(item.id)) {
-          const existing = destinations.find((d) => d.id === item.id);
-          if (existing && item.imageUrl) {
-            existing.imageUrl = item.imageUrl;
-            existing.thumbnailUrl = item.imageUrl;
+        backendIds.add(item.id);
+        const normItemName = (item.name || '').trim().toLowerCase();
+        const existingByIdOrName = destinations.find(
+          (d) => d.id === item.id || (normItemName && d.name.trim().toLowerCase() === normItemName)
+        );
+        if (existingByIdOrName) {
+          existingByIdOrName.id = item.id;
+          if (item.province) existingByIdOrName.province = item.province;
+          if (item.category) existingByIdOrName.category = item.category;
+          if (validPoint(item)) {
+            existingByIdOrName.latitude = item.latitude!;
+            existingByIdOrName.longitude = item.longitude!;
           }
+          if (typeof item.priceMin === 'number') existingByIdOrName.priceMin = item.priceMin;
+          if (typeof item.priceMax === 'number') existingByIdOrName.priceMax = item.priceMax;
+          if (
+            item.imageUrl &&
+            (item.imageUrl.startsWith('http://') ||
+              item.imageUrl.startsWith('https://') ||
+              item.imageUrl.startsWith('/images/'))
+          ) {
+            existingByIdOrName.imageUrl = item.imageUrl;
+            existingByIdOrName.thumbnailUrl = item.imageUrl;
+          }
+          added++;
           continue;
         }
-        ids.add(item.id);
 
         if (
           !validPoint(item) ||
@@ -80,7 +99,13 @@ export async function fetchMapDestinations(
           continue;
         }
 
-        const imgUrl = item.imageUrl || (item as any).thumbnailUrl || '';
+        const rawImg = item.imageUrl || (item as any).thumbnailUrl || '';
+        const imgUrl =
+          rawImg.startsWith('http://') ||
+          rawImg.startsWith('https://') ||
+          rawImg.startsWith('/images/')
+            ? rawImg
+            : '';
         destinations.push({
           id: item.id,
           name: item.name,
@@ -103,12 +128,12 @@ export async function fetchMapDestinations(
         onPage?.({ destinations: [...destinations], rejected });
       }
 
-      if (ids.size + missingIds >= data.total) {
+      if (backendIds.size + missingIds >= data.total || data.items.length < 100) {
         break;
       }
     }
   } catch {
-    // Không có mạng hoặc backend offline: Giữ nguyên 300 địa điểm đã nạp
+    // Không có mạng hoặc backend offline: Giữ nguyên danh sách địa điểm đã nạp
   }
 
   return { destinations, rejected };

@@ -23,7 +23,13 @@ export const CLOUD_IMAGE_BASE =
 export function getCloudImageUrl(path?: string | null): string {
   if (!path) return '';
   if (path.startsWith('http://') || path.startsWith('https://')) {
-    return path;
+    let cleanUrl = path.trim();
+    cleanUrl = cleanUrl.replace('https://thumb.wikimedia.org/', 'https://upload.wikimedia.org/');
+    cleanUrl = cleanUrl.replace('http://thumb.wikimedia.org/', 'https://upload.wikimedia.org/');
+    if (cleanUrl.includes('wikimedia.org') && cleanUrl.includes('?utm_source=')) {
+      cleanUrl = cleanUrl.substring(0, cleanUrl.indexOf('?utm_source='));
+    }
+    return cleanUrl;
   }
   if (path.startsWith('data:')) {
     return path;

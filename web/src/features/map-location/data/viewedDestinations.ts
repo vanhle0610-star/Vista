@@ -9,3 +9,10 @@ export function rememberDestination(detail: Detail) {
   if (viewed.size > 20) viewed.delete(viewed.keys().next().value!);
 }
 export function viewedDestination(id: string) { return viewed.get(id) ?? null; }
+export function clearViewedDestinationsCache(id?: string) {
+  if (id) {
+    viewed.delete(id);
+  } else {
+    viewed.clear();
+  }
+}

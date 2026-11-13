@@ -49,7 +49,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "06:00-18:00",
     "description": "Ngôi chùa linh thiêng với tượng Phật Bà Quan Âm cao 67m hướng ra biển Đông.",
-    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fe/Son-Tra-Peninsula_Da-Nang_Vietnam_Linh-Ung-Pagoda-01.jpg/960px-Son-Tra-Peninsula_Da-Nang_Vietnam_Linh-Ung-Pagoda-01.jpg?utm_source=vi.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Son-Tra-Peninsula_Da-Nang_Vietnam_Linh-Ung-Pagoda-01.jpg/960px-Son-Tra-Peninsula_Da-Nang_Vietnam_Linh-Ung-Pagoda-01.jpg"
   },
   {
     "name": "Bãi biển Mỹ Khê",
@@ -1057,7 +1057,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Fansipan là đỉnh cao nổi bật của dãy Hoàng Liên Sơn. Trải nghiệm lên đỉnh bằng hệ thống du lịch khác đáng kể với hành trình leo núi nhiều ngày qua rừng. Trải nghiệm nổi bật: Ngắm cảnh từ khu vực đỉnh Tìm hiểu không gian núi Hoàng Liên.",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/d/de/C%C3%A1p-treo-fansipan-17.jpg?utm_source=vi.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"
+    "image": "https://upload.wikimedia.org/wikipedia/commons/d/de/C%C3%A1p-treo-fansipan-17.jpg_unscaled"
   },
   {
     "name": "Chợ phiên Bắc Hà",
@@ -1069,7 +1069,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 0,
     "openingHours": "06:00 - 18:30",
     "description": "Chợ Bắc Hà là không gian trao đổi hàng hóa và gặp gỡ của cộng đồng vùng cao. Trang phục, nông sản và nhịp sinh hoạt chợ tạo nên trải nghiệm văn hóa đặc trưng. Trải nghiệm nổi bật: Quan sát sinh hoạt chợ phiên Khám phá nông sản và món ăn địa phương.",
-    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1f/B%E1%BA%AFc_H%C3%A0_Sunday_market%2C_Vietnam_-_20131027-16.JPG/960px-B%E1%BA%AFc_H%C3%A0_Sunday_market%2C_Vietnam_-_20131027-16.JPG?utm_source=vi.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/B%E1%BA%AFc_H%C3%A0_Sunday_market%2C_Vietnam_-_20131027-16.JPG/960px-B%E1%BA%AFc_H%C3%A0_Sunday_market%2C_Vietnam_-_20131027-16.JPG"
   },
   {
     "name": "Bản Cát Cát",
@@ -1081,7 +1081,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 50000,
     "openingHours": "07:30 - 18:00",
     "description": "Bản Cát Cát nằm trong thung lũng gần trung tâm Sa Pa, kết hợp cảnh quan suối với dấu ấn văn hóa Mông. Tuyến tham quan có nhiều đường dốc và điểm dịch vụ du lịch. Trải nghiệm nổi bật: Đi bộ qua cảnh quan bản Tìm hiểu nghề thủ công và nhà truyền thống.",
-    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/66/B%E1%BA%A3n_C%C3%A1t_C%C3%A1t.jpg/960px-B%E1%BA%A3n_C%C3%A1t_C%C3%A1t.jpg?utm_source=vi.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/B%E1%BA%A3n_C%C3%A1t_C%C3%A1t.jpg/960px-B%E1%BA%A3n_C%C3%A1t_C%C3%A1t.jpg"
   },
   {
     "name": "Tả Van Chư",
@@ -1093,7 +1093,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Tả Van Chư là vùng bản làng trên cao nguyên Bắc Hà, được biết đến với cảnh núi và những thời điểm có mây. Điểm đến phù hợp người muốn khám phá ngoài tuyến Sa Pa quen thuộc. Trải nghiệm nổi bật: Dạo cảnh quan cao nguyên Bắc Hà Chụp ảnh núi và bản làng.",
-    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3f/Vietnam_location_map.svg/960px-Vietnam_location_map.svg.png?utm_source=vi.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Vietnam_location_map.svg/960px-Vietnam_location_map.svg.png"
   },
   {
     "name": "Thác Tà Lâm",
@@ -1105,7 +1105,7 @@ export const REAL_VIETNAM_PLACES: RealPlace[] = [
     "priceMax": 120000,
     "openingHours": "07:30 - 18:00",
     "description": "Thác Tà Lâm ở vùng Mường Khương tạo nhiều tầng nước giữa cảnh quan núi rừng. Đây là điểm thiên nhiên có thể ghép vào hành trình khám phá khu vực biên giới Lào Cai. Trải nghiệm nổi bật: Quan sát các tầng thác Khám phá cảnh quan Mường Khương.",
-    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/37/Vietnam_relief_location_map.svg/960px-Vietnam_relief_location_map.svg.png?utm_source=vi.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Vietnam_relief_location_map.svg/960px-Vietnam_relief_location_map.svg.png"
   },
   {
     "name": "Khu bảo tồn thiên nhiên Hoàng Liên – Văn Bàn",

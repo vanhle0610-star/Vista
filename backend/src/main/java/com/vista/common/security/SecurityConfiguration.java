@@ -132,6 +132,8 @@ public class SecurityConfiguration {
                         // W4-TV3-03: preview lời mời — public (deep link / nhập mã)
                         "/api/v1/invitations/*/preview")
                     .permitAll()
+                    .requestMatchers("/api/v1/admin/audit-logs", "/api/v1/admin/audit-logs/**")
+                    .hasRole("ADMIN")
                     .requestMatchers("/api/v1/admin/**")
                     .hasAnyRole("ADMIN", "MODERATOR")
                     .anyRequest()
