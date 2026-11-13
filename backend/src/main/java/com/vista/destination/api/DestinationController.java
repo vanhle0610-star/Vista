@@ -77,7 +77,7 @@ public class DestinationController {
   @Operation(
       summary = "Tìm kiếm và lọc danh sách điểm đến published (FR-DEST-02, 03)",
       description =
-          "Trả về danh sách các điểm đến công khai theo từ khóa, tỉnh thành, loại hình hoặc khoảng giá")
+          "Trả về danh sách các điểm đến công khai theo từ khóa, tỉnh thành, loại hình, sở thích, khoảng giá và sắp xếp")
   public ResponseEntity<DestinationPageDto> listDestinations(
       @Parameter(description = "Từ khóa tìm kiếm tiếng Việt (có dấu hoặc không dấu)")
           @RequestParam(required = false)
@@ -85,20 +85,82 @@ public class DestinationController {
       @Parameter(description = "Tên tỉnh thành (ví dụ Đà Nẵng, Thừa Thiên Huế)")
           @RequestParam(required = false)
           String province,
+      @Parameter(description = "Tên thành phố/tỉnh (alias cho province)")
+          @RequestParam(required = false)
+          String city,
       @Parameter(description = "Danh mục (Cảnh quan, Di tích, Ẩm thực,...)")
           @RequestParam(required = false)
           String category,
+      @Parameter(description = "Sở thích du lịch (alias/mở rộng cho category hoặc từ khóa)")
+          @RequestParam(required = false)
+          String interest,
+      @Parameter(description = "Mức giá vé tối thiểu") @RequestParam(required = false)
+          BigDecimal priceMin,
       @Parameter(description = "Mức giá vé tối đa") @RequestParam(required = false)
           BigDecimal priceMax,
+      @Parameter(description = "Trường sắp xếp: createdAt, name, priceMin, priceMax, verifiedAt")
+          @RequestParam(required = false)
+          String sortBy,
+      @Parameter(description = "Chiều sắp xếp: asc hoặc desc") @RequestParam(required = false)
+          String sortDir,
       @Parameter(description = "Số trang (bắt đầu từ 0)") @RequestParam(defaultValue = "0")
           int page,
       @Parameter(description = "Số lượng bản ghi mỗi trang (tối đa 100)")
           @RequestParam(defaultValue = "20")
           int size) {
 
-    DestinationPageDto result =
-        destinationService.searchPublished(keyword, province, category, priceMax, page, size);
+    String effectiveProvince =
+        (province != null && !province.isBlank())
+            ? province
+            : (city != null && !city.isBlank() ? city : null);
+    String effectiveCategory =
+        (category != null && !category.isBlank())
+            ? category
+            : (interest != null && !interest.isBlank() ? interest : null);
+    String effectiveKeyword = keyword;
+    if ((category != null && !category.isBlank())
+        && (interest != null && !interest.isBlank())
+        && (effectiveKeyword == null || effectiveKeyword.isBlank())) {
+      effectiveKeyword = interest;
+    }
+
+    DestinationPageDto result;
+    if (priceMin == null
+        && (sortBy == null || sortBy.isBlank())
+        && (sortDir == null || sortDir.isBlank())) {
+      result =
+          destinationService.searchPublished(
+              effectiveKeyword, effectiveProvince, effectiveCategory, priceMax, page, size);
+    } else {
+      result =
+          destinationService.searchPublished(
+              effectiveKeyword,
+              effectiveProvince,
+              effectiveCategory,
+              priceMin,
+              priceMax,
+              sortBy,
+              sortDir,
+              page,
+              size);
+    }
     return ResponseEntity.ok(result);
+  }
+
+  @GetMapping("/categories")
+  @Operation(
+      summary = "Lấy danh sách danh mục địa điểm du lịch",
+      description = "Trả về toàn bộ danh mục điểm đến để hiển thị bộ lọc khám phá")
+  public ResponseEntity<List<java.util.Map<String, Object>>> listCategories() {
+    return ResponseEntity.ok(destinationService.listCategories());
+  }
+
+  @GetMapping("/provinces")
+  @Operation(
+      summary = "Lấy danh sách tỉnh/thành phố",
+      description = "Trả về toàn bộ tỉnh/thành phố để hiển thị bộ lọc địa lý")
+  public ResponseEntity<List<java.util.Map<String, Object>>> listProvinces() {
+    return ResponseEntity.ok(destinationService.listProvinces());
   }
 
   @GetMapping("/favorites")

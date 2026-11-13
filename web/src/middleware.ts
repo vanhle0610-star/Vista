@@ -12,6 +12,7 @@ export function middleware(request: NextRequest) {
   const protectedPaths = [
     '/dashboard',
     '/destinations',
+    '/image-manager',
     '/users',
     '/moderation',
   ];
@@ -25,6 +26,7 @@ export const config = {
   matcher: [
     '/dashboard/:path*',
     '/destinations/:path*',
+    '/image-manager/:path*',
     '/users/:path*',
     '/moderation/:path*',
   ],

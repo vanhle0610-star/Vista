@@ -769,6 +769,19 @@ export default function DestinationsAdminPage() {
         </div>
         <div className={styles.actionArea}>
           <Link
+            href="/image-manager"
+            className={styles.btnSecondary}
+            style={{
+              textDecoration: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+            }}
+          >
+            <Sparkles size={16} color="#0284c7" />
+            AI Image Manager
+          </Link>
+          <Link
             href="/moderation"
             className={styles.btnSecondary}
             style={{

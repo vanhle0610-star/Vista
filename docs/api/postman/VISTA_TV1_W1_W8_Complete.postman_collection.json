@@ -1,0 +1,550 @@
+{
+  "info": {
+    "_postman_id": "vista-tv1-w1-w8-complete-suite",
+    "name": "VISTA - TV1 Destination Discovery & Admin Moderation (W1-W8 Complete)",
+    "description": "Tập hợp Postman Collection kiểm thử tự động toàn diện 100% chức năng TV1 từ Tuần 1 đến Tuần 8.\nBao gồm: Khám phá điểm đến, Tìm kiếm không dấu, Lọc đa tiêu chí, Yêu thích người dùng, Lịch sử xem, Hàng đợi duyệt địa điểm, Báo cáo vi phạm bài viết, Kiểm duyệt tự động (URL/Trùng lặp/Tần suất), Nhật ký quản trị (Audit Logs) và Phân quyền RBAC (ADMIN, MODERATOR, USER).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8081/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "moderatorToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sampleDestinationId",
+      "value": "00000000-0000-0000-0000-000000000001",
+      "type": "string"
+    },
+    {
+      "key": "samplePostId",
+      "value": "00000000-0000-0000-0000-000000000002",
+      "type": "string"
+    },
+    {
+      "key": "sampleReportId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Khám phá điểm đến (Discovery & Filters)",
+      "item": [
+        {
+          "name": "1.1 Danh sách điểm đến xuất bản (Phân trang & Đếm tổng)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/destinations?page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["destinations"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Contains items, page, size, total', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('items');",
+                  "    pm.expect(json).to.have.property('page');",
+                  "    pm.expect(json).to.have.property('total');",
+                  "    pm.expect(json.items.length).to.be.greaterThan(0);",
+                  "    pm.collectionVariables.set('sampleDestinationId', json.items[0].id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.2 Tìm kiếm không phân biệt dấu tiếng Việt (Unaccented Search)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/destinations?keyword=da nang",
+              "host": ["{{baseUrl}}"],
+              "path": ["destinations"],
+              "query": [{ "key": "keyword", "value": "da nang" }]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Finds matching unaccented results', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.items.length).to.be.greaterThan(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.3 Lọc đa tiêu chí (Tỉnh thành, Thể loại, Khoảng giá)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/destinations?province=Đà Nẵng&category=Cảnh quan&priceMin=0&priceMax=500000",
+              "host": ["{{baseUrl}}"],
+              "path": ["destinations"],
+              "query": [
+                { "key": "province", "value": "Đà Nẵng" },
+                { "key": "category", "value": "Cảnh quan" },
+                { "key": "priceMin", "value": "0" },
+                { "key": "priceMax", "value": "500000" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.4 Sắp xếp danh sách (Sort by Price / Name)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/destinations?sortBy=priceMin&sortDir=asc",
+              "host": ["{{baseUrl}}"],
+              "path": ["destinations"],
+              "query": [
+                { "key": "sortBy", "value": "priceMin" },
+                { "key": "sortDir", "value": "asc" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.5 Danh sách Danh mục (Categories API)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/destinations/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["destinations", "categories"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Returns list of categories', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(Array.isArray(json)).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.6 Danh sách Tỉnh/Thành phố (Provinces API)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/destinations/provinces",
+              "host": ["{{baseUrl}}"],
+              "path": ["destinations", "provinces"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Returns list of provinces', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(Array.isArray(json)).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.7 Chi tiết điểm đến (Destination Detail)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/destinations/{{sampleDestinationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["destinations", "{{sampleDestinationId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Detail contains openingHours and price', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('name');",
+                  "    pm.expect(json).to.have.property('status', 'PUBLISHED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Yêu thích & Lịch sử (Favorites & History)",
+      "item": [
+        {
+          "name": "2.1 Lấy danh sách yêu thích người dùng hiện tại",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/me/favorites",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me", "favorites"]
+            }
+          }
+        },
+        {
+          "name": "2.2 Thêm điểm đến vào yêu thích (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/me/favorites/{{sampleDestinationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me", "favorites", "{{sampleDestinationId}}"]
+            }
+          }
+        },
+        {
+          "name": "2.3 Bỏ yêu thích điểm đến (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/me/favorites/{{sampleDestinationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me", "favorites", "{{sampleDestinationId}}"]
+            }
+          }
+        },
+        {
+          "name": "2.4 Ghi nhận lịch sử xem điểm đến",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/destinations/{{sampleDestinationId}}/history",
+              "host": ["{{baseUrl}}"],
+              "path": ["destinations", "{{sampleDestinationId}}", "history"]
+            }
+          }
+        },
+        {
+          "name": "2.5 Lấy lịch sử xem gần đây",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/destinations/history?limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["destinations", "history"],
+              "query": [{ "key": "limit", "value": "10" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Quản trị & Hàng đợi kiểm duyệt (Admin Moderation)",
+      "item": [
+        {
+          "name": "3.1 Lấy hàng đợi kiểm duyệt địa điểm (DRAFT)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/destinations?status=DRAFT",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "destinations"],
+              "query": [{ "key": "status", "value": "DRAFT" }]
+            }
+          }
+        },
+        {
+          "name": "3.2 Thống kê số lượng theo trạng thái kiểm duyệt",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/destinations/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "destinations", "stats"]
+            }
+          }
+        },
+        {
+          "name": "3.3 Phê duyệt xuất bản điểm đến (Approve)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"note\": \"Phê duyệt xuất bản điểm đến sau khi kiểm tra\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/destinations/{{sampleDestinationId}}/approve",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "destinations", "{{sampleDestinationId}}", "approve"]
+            }
+          }
+        },
+        {
+          "name": "3.4 Từ chối điểm đến kèm lý do (Reject)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"note\": \"Thông tin hình ảnh chưa rõ ràng, cần bổ sung ảnh thực tế\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/destinations/{{sampleDestinationId}}/reject",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "destinations", "{{sampleDestinationId}}", "reject"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Kiểm duyệt nội dung & Báo cáo vi phạm (W4, W5)",
+      "item": [
+        {
+          "name": "4.1 Báo cáo bài viết vi phạm (Report Post)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"targetType\": \"POST\", \"reason\": \"Bài viết quảng cáo spam không liên quan\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/community/posts/{{samplePostId}}/reports",
+              "host": ["{{baseUrl}}"],
+              "path": ["community", "posts", "{{samplePostId}}", "reports"]
+            }
+          }
+        },
+        {
+          "name": "4.2 Hàng đợi báo cáo vi phạm (Admin Reports Queue)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/reports?status=OPEN",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "reports"],
+              "query": [{ "key": "status", "value": "OPEN" }]
+            }
+          }
+        },
+        {
+          "name": "4.3 Đánh giá 3 quy tắc kiểm duyệt nội dung tự động (W5-TV1-03)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"targetType\": \"POST\", \"body\": \"Đăng nhập nhận voucher miễn phí tại https://bit.ly/fake-promo\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/moderation/evaluate",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "moderation", "evaluate"]
+            }
+          }
+        },
+        {
+          "name": "4.4 Danh sách sự kiện kiểm duyệt (moderation_events)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/moderation/events?limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "moderation", "events"],
+              "query": [{ "key": "limit", "value": "20" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Nhật ký Quản trị (Admin Audit Logs - Chỉ ROLE_ADMIN)",
+      "item": [
+        {
+          "name": "5.1 Lấy danh sách nhật ký quản trị (ADMIN thành công 200)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/audit-logs?page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "audit-logs"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK for ADMIN', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Contains items, total, totalPages', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('items');",
+                  "    pm.expect(json).to.have.property('total');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.2 Kiểm tra bảo mật: USER bị chặn xem Audit Logs (403 Forbidden)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/audit-logs",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "audit-logs"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 403 Forbidden for regular USER', function () { pm.response.to.have.status(403); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

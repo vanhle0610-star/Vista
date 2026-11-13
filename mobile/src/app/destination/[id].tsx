@@ -182,7 +182,7 @@ export default function DestinationDetailRoute() {
               <Image
                 source={{
                   uri: data.imageUrl.startsWith('http')
-                    ? data.imageUrl
+                    ? data.imageUrl.replace('://thumb.wikimedia.org/', '://upload.wikimedia.org/')
                     : 'https://images.unsplash.com/photo-1528127269322-539801943592?w=1000&q=80',
                 }}
                 style={styles.heroImage}
