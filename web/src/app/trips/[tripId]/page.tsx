@@ -479,46 +479,6 @@ export default function TripDetailPage() {
   const [checkedActivities, setCheckedActivities] = useState<Record<string, boolean>>({});
   const [highlightedActId, setHighlightedActId] = useState<string | null>(null);
 
-  const [invitationsList, setInvitationsList] = useState<Array<{
-    id: string;
-    email: string;
-    token: string;
-    status: 'PENDING' | 'ACCEPTED' | 'REVOKED' | 'EXPIRED';
-    expiresAt: string;
-  }>>([
-    {
-      id: 'inv-1',
-      email: 'nguyenvanb@gmail.com',
-      token: 'VISTA-NG2026',
-      status: 'PENDING',
-      expiresAt: '22/11/2026 (Còn 6 ngày)',
-    },
-    {
-      id: 'inv-2',
-      email: 'nguoithuhoi@gmail.com',
-      token: 'VISTA-REVOKED',
-      status: 'REVOKED',
-      expiresAt: 'Đã thu hồi bởi Owner',
-    },
-  ]);
-
-  // Invitation filter state (W4-TV3)
-  const [invitationFilter, setInvitationFilter] = useState<'ALL' | 'PENDING' | 'ACCEPTED' | 'REVOKED'>('ALL');
-
-  const invitationCounts = useMemo(() => {
-    return {
-      all: invitationsList.length,
-      pending: invitationsList.filter((i) => i.status === 'PENDING').length,
-      accepted: invitationsList.filter((i) => i.status === 'ACCEPTED').length,
-      revoked: invitationsList.filter((i) => i.status === 'REVOKED').length,
-    };
-  }, [invitationsList]);
-
-  const filteredInvitations = useMemo(() => {
-    if (invitationFilter === 'ALL') return invitationsList;
-    return invitationsList.filter((inv) => inv.status === invitationFilter);
-  }, [invitationsList, invitationFilter]);
-
   const isTripOwner = Boolean(
     currentUser && trip && (
       (trip.ownerId && (trip.ownerId === currentUser.id || (currentUser.email && trip.ownerId === currentUser.email))) ||
@@ -637,6 +597,23 @@ export default function TripDetailPage() {
       expiresAt: 'Đã thu hồi bởi Owner',
     },
   ]);
+
+  // Invitation filter state (W4-TV3)
+  const [invitationFilter, setInvitationFilter] = useState<'ALL' | 'PENDING' | 'ACCEPTED' | 'REVOKED'>('ALL');
+
+  const invitationCounts = useMemo(() => {
+    return {
+      all: invitationsList.length,
+      pending: invitationsList.filter((i) => i.status === 'PENDING').length,
+      accepted: invitationsList.filter((i) => i.status === 'ACCEPTED').length,
+      revoked: invitationsList.filter((i) => i.status === 'REVOKED').length,
+    };
+  }, [invitationsList]);
+
+  const filteredInvitations = useMemo(() => {
+    if (invitationFilter === 'ALL') return invitationsList;
+    return invitationsList.filter((inv) => inv.status === invitationFilter);
+  }, [invitationsList, invitationFilter]);
 
   // Proposals & Voting (W4-TV3-02)
   const [isVotingClosed, setIsVotingClosed] = useState(false);
