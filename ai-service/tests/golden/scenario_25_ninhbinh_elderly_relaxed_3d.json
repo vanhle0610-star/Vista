@@ -1,0 +1,16 @@
+{
+  "destinationProvince": "Ninh Bình",
+  "totalDays": 3,
+  "peopleCount": 2,
+  "hasElderly": true,
+  "budgetTier": "standard",
+  "expect": {
+    "expect_http_status": 200,
+    "must_not_contain_walking_load": [
+      "STRENUOUS"
+    ],
+    "min_days": 3,
+    "min_total_activities": 3,
+    "expected_province": "Ninh Bình"
+  }
+}

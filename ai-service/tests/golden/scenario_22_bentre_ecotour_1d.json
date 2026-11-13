@@ -1,0 +1,16 @@
+{
+  "destinationProvince": "Bến Tre",
+  "totalDays": 1,
+  "peopleCount": 2,
+  "budgetTier": "economy",
+  "interests": [
+    "Sinh thái"
+  ],
+  "expect": {
+    "expect_http_status": 200,
+    "must_not_contain_walking_load": [],
+    "min_days": 1,
+    "min_total_activities": 1,
+    "expected_province": "Bến Tre"
+  }
+}

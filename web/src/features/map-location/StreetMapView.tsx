@@ -36,6 +36,28 @@ const SATELLITE_STYLE: maplibre.StyleSpecification = {
   ],
 };
 
+function ensureRouteArrowImage(map: LibreMap) {
+  if (map.hasImage('vista-route-arrow')) return;
+  const size = 24;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  ctx.clearRect(0, 0, size, size);
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.96)';
+  ctx.lineWidth = 3.2;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.beginPath();
+  ctx.moveTo(8, 5);
+  ctx.lineTo(17, 12);
+  ctx.lineTo(8, 19);
+  ctx.stroke();
+  const imgData = ctx.getImageData(0, 0, size, size);
+  map.addImage('vista-route-arrow', imgData);
+}
+
 function getCategoryGlyph(category?: string): string {
   if (!category) return '📍';
   const c = category.toLowerCase();
@@ -187,9 +209,12 @@ export function MapViewAdapter(props: MapViewAdapterProps) {
   // Markers
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || status !== 'ready') return;
+    if (!map || status !== 'ready' || props.hideDestinationMarkers) return;
     const markers = destinations.filter((destination) => !props.routeStops?.some((stop) => stop.latitude === destination.latitude && stop.longitude === destination.longitude)).map((destination) => {
       const isSelected = destination.id === props.selectedDestinationId;
+      const host = document.createElement('div');
+      host.className = styles.markerHost;
+
       const button = document.createElement('button');
       button.type = 'button';
       button.className = `${styles.marker} ${isSelected ? styles.selectedMarker : ''}`;
@@ -209,7 +234,8 @@ export function MapViewAdapter(props: MapViewAdapterProps) {
       }
 
       button.addEventListener('click', () => select(destination));
-      return new maplibre.Marker({ element: button })
+      host.appendChild(button);
+      return new maplibre.Marker({ element: host, anchor: 'center' })
         .setLngLat([destination.longitude, destination.latitude])
         .addTo(map);
     });
@@ -217,10 +243,11 @@ export function MapViewAdapter(props: MapViewAdapterProps) {
     return () => {
       markers.forEach((marker) => marker.remove());
     };
-  }, [destinations, props.selectedDestinationId, props.routeStops, status, attempt, mapType]);
+  }, [destinations, props.selectedDestinationId, props.routeStops, props.hideDestinationMarkers, status, attempt, mapType]);
 
   // Ease to selected destination
   useEffect(() => {
+    if (props.disableAutoCenterOnSelect) return;
     if (selected && status === 'ready') {
       mapRef.current?.easeTo({
         center: [selected.longitude, selected.latitude],
@@ -229,17 +256,20 @@ export function MapViewAdapter(props: MapViewAdapterProps) {
         bearing: 0,
       });
     }
-  }, [selected, status]);
+  }, [selected, status, props.disableAutoCenterOnSelect]);
 
   // User location marker
   useEffect(() => {
     const map = mapRef.current;
     if (!map || status !== 'ready' || !props.userLocation || !validPoint(props.userLocation)) return;
+    const host = document.createElement('div');
+    host.className = styles.markerHost;
     const dot = document.createElement('span');
     dot.className = styles.userMarker;
     dot.setAttribute('role', 'img');
     dot.setAttribute('aria-label', 'Vị trí của bạn');
-    const marker = new maplibre.Marker({ element: dot })
+    host.appendChild(dot);
+    const marker = new maplibre.Marker({ element: host, anchor: 'center' })
       .setLngLat([props.userLocation.longitude, props.userLocation.latitude])
       .addTo(map);
     const accuracy = props.userLocation.accuracy;
@@ -286,7 +316,7 @@ export function MapViewAdapter(props: MapViewAdapterProps) {
     return () => { markers.forEach((marker) => marker.remove()); };
   }, [props.routeStops, status, attempt, mapType]);
 
-  // Route Polyline & Stops
+  // Route Polyline & Directional Arrows
   useEffect(() => {
     const map = mapRef.current;
     if (!map || status !== 'ready' || !props.routeGeometry?.length) return;
@@ -318,6 +348,7 @@ export function MapViewAdapter(props: MapViewAdapterProps) {
       }
 
       try {
+        ensureRouteArrowImage(map);
         const source = map.getSource('vista-route') as GeoJSONSource | undefined;
         if (source) {
           source.setData(data);
@@ -330,7 +361,7 @@ export function MapViewAdapter(props: MapViewAdapterProps) {
               type: 'line',
               source: 'vista-route',
               layout: { 'line-cap': 'round', 'line-join': 'round' },
-              paint: { 'line-color': '#24136a', 'line-width': ['interpolate', ['linear'], ['zoom'], 8, 5, 15, 8, 19, 10], 'line-opacity': 0.95 },
+              paint: { 'line-color': '#ffffff', 'line-width': ['interpolate', ['linear'], ['zoom'], 8, 5, 15, 8.5, 19, 10], 'line-opacity': 0.92 },
             });
           }
 
@@ -340,7 +371,24 @@ export function MapViewAdapter(props: MapViewAdapterProps) {
               type: 'line',
               source: 'vista-route',
               layout: { 'line-cap': 'round', 'line-join': 'round' },
-              paint: { 'line-color': '#6250ee', 'line-width': ['interpolate', ['linear'], ['zoom'], 8, 3, 15, 5, 19, 7], 'line-opacity': 0.95 },
+              paint: { 'line-color': '#0284c7', 'line-width': ['interpolate', ['linear'], ['zoom'], 8, 3, 15, 5, 19, 7], 'line-opacity': 0.96 },
+            });
+          }
+
+          if (!map.getLayer('vista-route-arrows') && map.hasImage('vista-route-arrow')) {
+            map.addLayer({
+              id: 'vista-route-arrows',
+              type: 'symbol',
+              source: 'vista-route',
+              layout: {
+                'symbol-placement': 'line',
+                'symbol-spacing': 75,
+                'icon-image': 'vista-route-arrow',
+                'icon-size': 0.72,
+                'icon-rotation-alignment': 'map',
+                'icon-allow-overlap': true,
+                'icon-ignore-placement': true,
+              },
             });
           }
         }
@@ -358,15 +406,268 @@ export function MapViewAdapter(props: MapViewAdapterProps) {
       map.off('style.load', applyRoute);
       if (mapRef.current === map) {
         try {
-          if (map.getLayer('vista-route-line')) map.removeLayer('vista-route-line');
-          if (map.getLayer('vista-route-casing')) map.removeLayer('vista-route-casing');
-          if (map.getSource('vista-route')) map.removeSource('vista-route');
+          if (map.isStyleLoaded()) {
+            if (map.getLayer('vista-route-arrows')) map.removeLayer('vista-route-arrows');
+            if (map.getLayer('vista-route-line')) map.removeLayer('vista-route-line');
+            if (map.getLayer('vista-route-casing')) map.removeLayer('vista-route-casing');
+            if (map.getSource('vista-route')) map.removeSource('vista-route');
+          }
         } catch {
           // ignore cleanup on style change
         }
       }
     };
   }, [props.routeGeometry, status, attempt, mapType]);
+
+  // Route Stop Markers (anchored cleanly via markerHost so zoom never drifts)
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || status !== 'ready' || !props.routeGeometry?.length) return;
+    const path = props.routeGeometry.filter(
+      (point) =>
+        point &&
+        Number.isFinite(point.lat) &&
+        Math.abs(point.lat) <= 90 &&
+        Number.isFinite(point.lng) &&
+        Math.abs(point.lng) <= 180
+    );
+    if (path.length < 2) return;
+
+    const stopMarkers: maplibre.Marker[] = [];
+
+    if (props.routeStops && props.routeStops.length > 0) {
+      props.routeStops.forEach((stop) => {
+        const isSelectedStop = Boolean(stop.id && stop.id === props.selectedDestinationId);
+        const host = document.createElement('div');
+        host.className = styles.markerHost;
+
+        const el = document.createElement('button');
+        el.type = 'button';
+        const typeClass =
+          stop.type === 'origin'
+            ? styles.endpointOrigin
+            : stop.type === 'destination'
+              ? styles.endpointDestination
+              : styles.endpointWaypoint;
+        el.className = `${styles.endpoint} ${typeClass} ${isSelectedStop ? styles.endpointSelected : ''}`;
+        if (stop.color) {
+          el.style.background = stop.color;
+        }
+        el.textContent = stop.tag ?? stop.role ?? '';
+
+        const tooltip = document.createElement('span');
+        tooltip.className = styles.endpointTooltip;
+        tooltip.textContent = `${stop.tag ?? stop.role ?? ''}: ${stop.label}`;
+        el.appendChild(tooltip);
+
+        if (stop.id) {
+          const matchedDest = destinations.find((d) => d.id === stop.id);
+          if (matchedDest) {
+            el.addEventListener('click', () => select(matchedDest));
+          }
+        }
+
+        host.appendChild(el);
+        const marker = new maplibre.Marker({ element: host, anchor: 'center' })
+          .setLngLat([stop.longitude, stop.latitude])
+          .addTo(map);
+        stopMarkers.push(marker);
+      });
+    } else {
+      // Fallback: Endpoints A & B from path
+      [path[0], path[path.length - 1]].forEach((p, index) => {
+        const host = document.createElement('div');
+        host.className = styles.markerHost;
+        const el = document.createElement('div');
+        el.className = `${styles.endpoint} ${index === 0 ? styles.endpointOrigin : styles.endpointDestination}`;
+        el.textContent = index === 0 ? 'A' : 'B';
+        host.appendChild(el);
+        const marker = new maplibre.Marker({ element: host, anchor: 'center' })
+          .setLngLat([p.lng, p.lat])
+          .addTo(map);
+        stopMarkers.push(marker);
+      });
+    }
+
+    return () => {
+      stopMarkers.forEach((marker) => marker.remove());
+    };
+  }, [props.routeGeometry, props.routeStops, props.selectedDestinationId, destinations, status]);
+
+  // Multi-Day Route Polylines & Directional Arrows ("Tất cả các ngày")
+  useEffect(() => {
+    const map = mapRef.current;
+    const routes = props.multiDayRoutes;
+    if (!map || status !== 'ready' || !routes || routes.length === 0) return;
+
+    let cancelled = false;
+    const addedLayerIds: string[] = [];
+    const addedSourceIds: string[] = [];
+
+    const applyMultiRoutes = () => {
+      if (cancelled || !mapRef.current) return;
+      if (!map.isStyleLoaded()) {
+        map.once('styledata', applyMultiRoutes);
+        return;
+      }
+
+      try {
+        ensureRouteArrowImage(map);
+      } catch {
+        // ignore arrow sprite draw issue
+      }
+
+      routes.forEach((dayRoute) => {
+        const path = (dayRoute.geometry || []).filter(
+          (p) => p && Number.isFinite(p.lat) && Math.abs(p.lat) <= 90 && Number.isFinite(p.lng) && Math.abs(p.lng) <= 180
+        );
+        if (path.length < 2) return;
+
+        const srcId = `vista-multiday-src-${dayRoute.dayNumber}`;
+        const casingId = `vista-multiday-casing-${dayRoute.dayNumber}`;
+        const lineId = `vista-multiday-line-${dayRoute.dayNumber}`;
+        const arrowId = `vista-multiday-arrows-${dayRoute.dayNumber}`;
+
+        const geoData: GeoJSON.Feature<GeoJSON.LineString> = {
+          type: 'Feature',
+          properties: { dayNumber: dayRoute.dayNumber },
+          geometry: { type: 'LineString', coordinates: path.map((p) => [p.lng, p.lat]) },
+        };
+
+        try {
+          const existingSrc = map.getSource(srcId) as GeoJSONSource | undefined;
+          if (existingSrc) {
+            existingSrc.setData(geoData);
+          } else {
+            map.addSource(srcId, { type: 'geojson', data: geoData });
+            addedSourceIds.push(srcId);
+          }
+          if (!map.getLayer(casingId)) {
+            map.addLayer({
+              id: casingId,
+              type: 'line',
+              source: srcId,
+              layout: { 'line-cap': 'round', 'line-join': 'round' },
+              paint: { 'line-color': '#ffffff', 'line-width': 7.5, 'line-opacity': 0.9 },
+            });
+            addedLayerIds.push(casingId);
+          }
+          if (!map.getLayer(lineId)) {
+            map.addLayer({
+              id: lineId,
+              type: 'line',
+              source: srcId,
+              layout: { 'line-cap': 'round', 'line-join': 'round' },
+              paint: { 'line-color': dayRoute.color, 'line-width': 4.5, 'line-opacity': 0.94 },
+            });
+            addedLayerIds.push(lineId);
+          }
+          if (!map.getLayer(arrowId) && map.hasImage('vista-route-arrow')) {
+            map.addLayer({
+              id: arrowId,
+              type: 'symbol',
+              source: srcId,
+              layout: {
+                'symbol-placement': 'line',
+                'symbol-spacing': 80,
+                'icon-image': 'vista-route-arrow',
+                'icon-size': 0.65,
+                'icon-rotation-alignment': 'map',
+                'icon-allow-overlap': true,
+                'icon-ignore-placement': true,
+              },
+            });
+            addedLayerIds.push(arrowId);
+          }
+        } catch (err) {
+          console.warn('Multi-day route layer note:', err);
+        }
+      });
+    };
+
+    applyMultiRoutes();
+
+    const bounds = new maplibre.LngLatBounds();
+    let hasBounds = false;
+    routes.forEach((dayRoute) => {
+      dayRoute.stops.forEach((stop) => {
+        if (!Number.isFinite(stop.latitude) || !Number.isFinite(stop.longitude)) return;
+        bounds.extend([stop.longitude, stop.latitude]);
+        hasBounds = true;
+      });
+    });
+
+    if (hasBounds) {
+      map.fitBounds(bounds, { padding: { top: 82, right: 65, bottom: 195, left: 60 }, maxZoom: 14.5 });
+    }
+
+    return () => {
+      cancelled = true;
+      map.off('styledata', applyMultiRoutes);
+      if (mapRef.current === map) {
+        try {
+          if (map.isStyleLoaded()) {
+            addedLayerIds.forEach((id) => {
+              if (map.getLayer(id)) map.removeLayer(id);
+            });
+            addedSourceIds.forEach((id) => {
+              if (map.getSource(id)) map.removeSource(id);
+            });
+          }
+        } catch {
+          // ignore
+        }
+      }
+    };
+  }, [props.multiDayRoutes, status]);
+
+  // Multi-Day Stop Markers (anchored cleanly via markerHost)
+  useEffect(() => {
+    const map = mapRef.current;
+    const routes = props.multiDayRoutes;
+    if (!map || status !== 'ready' || !routes || routes.length === 0) return;
+
+    const dayMarkers: maplibre.Marker[] = [];
+    routes.forEach((dayRoute) => {
+      dayRoute.stops.forEach((stop) => {
+        if (!Number.isFinite(stop.latitude) || !Number.isFinite(stop.longitude)) return;
+        const isSelectedStop = Boolean(stop.id && stop.id === props.selectedDestinationId);
+        const host = document.createElement('div');
+        host.className = styles.markerHost;
+
+        const el = document.createElement('button');
+        el.type = 'button';
+        el.className = `${styles.endpoint} ${isSelectedStop ? styles.endpointSelected : ''}`;
+        el.style.background = dayRoute.color;
+        el.style.width = '30px';
+        el.style.height = '30px';
+        el.style.fontSize = '11px';
+        el.textContent = stop.tag ?? stop.role ?? '';
+
+        const tooltip = document.createElement('span');
+        tooltip.className = styles.endpointTooltip;
+        tooltip.textContent = `Ngày ${dayRoute.dayNumber} · ${stop.label}`;
+        el.appendChild(tooltip);
+
+        if (stop.id) {
+          const matchedDest = destinations.find((d) => d.id === stop.id);
+          if (matchedDest) {
+            el.addEventListener('click', () => select(matchedDest));
+          }
+        }
+
+        host.appendChild(el);
+        const marker = new maplibre.Marker({ element: host, anchor: 'center' })
+          .setLngLat([stop.longitude, stop.latitude])
+          .addTo(map);
+        dayMarkers.push(marker);
+      });
+    });
+
+    return () => {
+      dayMarkers.forEach((m) => m.remove());
+    };
+  }, [props.multiDayRoutes, props.selectedDestinationId, destinations, status]);
 
   return (
     <div className={`${styles.root} ${props.className ?? ''}`}>
@@ -397,7 +698,7 @@ export function MapViewAdapter(props: MapViewAdapterProps) {
 
       {/* ─── TOP-LEFT: LOCATION BADGE PILL ─── */}
       <div className={styles.locationPill}>
-        <span className={styles.locationPillText}>Khu vực: <strong>{props.currentCityName || 'Toàn quốc'}</strong></span>
+        <span className={styles.locationPillText}>Khu vực: <strong>{props.locationBadgeLabel || props.currentCityName || 'Toàn quốc'}</strong></span>
       </div>
 
       {/* ─── TOP-RIGHT: MAP STYLE SWITCHER (Bản đồ / Vệ tinh) ─── */}

@@ -48,12 +48,22 @@ export interface DestinationMarker {
 export type Destination = DestinationMarker;
 
 export interface RouteStop {
+  id?: string;
   latitude: number;
   longitude: number;
   label: string;
-  id: string;
-  role: string;
+  role?: string;
+  tag?: string; // 'A', 'B', 'C', 'D' or '1', '2', '3'...
   type?: 'origin' | 'waypoint' | 'destination';
+  dayNumber?: number;
+  color?: string;
+}
+
+export interface MultiDayRoute {
+  dayNumber: number;
+  color: string;
+  geometry: { lat: number; lng: number }[];
+  stops: RouteStop[];
 }
 
 export interface MapViewAdapterProps {
@@ -63,6 +73,8 @@ export interface MapViewAdapterProps {
   userLocation?: Coordinates | null;
   routeGeometry?: { lat: number; lng: number }[];
   routeStops?: RouteStop[];
+  multiDayRoutes?: MultiDayRoute[];
+  hideDestinationMarkers?: boolean;
   onDirections?: (destination: DestinationMarker) => void;
   onRequestUserLocation?: () => void;
   gpsStatus?: GeolocationStatus;
@@ -77,4 +89,6 @@ export interface MapViewAdapterProps {
   currentCityName?: string;
   onOpenRouteDetail?: () => void;
   sidebarCollapsed?: boolean;
+  locationBadgeLabel?: string;
+  disableAutoCenterOnSelect?: boolean;
 }

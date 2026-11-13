@@ -2,14 +2,12 @@
 
 import React, { useState } from 'react';
 import {
-  Utensils,
-  Building2,
-  Car,
-  Ticket,
-  ShoppingBag,
+  ListFilter,
+  Plus,
+  MoreVertical,
   Trash2,
   Receipt,
-  Plus,
+  SlidersHorizontal,
 } from 'lucide-react';
 import type { Expense, TripMember } from '../types';
 import styles from '../treasury.module.css';
@@ -17,208 +15,302 @@ import styles from '../treasury.module.css';
 interface ExpenseLedgerTableProps {
   expenses: Expense[];
   members: TripMember[];
+  currentUserId?: string;
   onOpenAddExpense: () => void;
   onDeleteExpense: (expenseId: string) => Promise<void>;
 }
 
 const CATEGORY_MAP: Record<
   string,
-  { label: string; icon: React.ComponentType<{ size?: number }>; bg: string; color: string }
+  { label: string; icon: string; bg: string; color: string; border: string }
 > = {
-  FOOD: { label: 'Ăn uống', icon: Utensils, bg: '#ffedd5', color: '#ea580c' },
-  ACCOMMODATION: { label: 'Lưu trú', icon: Building2, bg: '#e0f2fe', color: '#0284c7' },
-  TRANSPORT: { label: 'Di chuyển', icon: Car, bg: '#cffafe', color: '#0891b2' },
-  ACTIVITIES: { label: 'Vé tham quan', icon: Ticket, bg: '#f3e8ff', color: '#9333ea' },
-  OTHER: { label: 'Mua sắm / Khác', icon: ShoppingBag, bg: '#ffe4e6', color: '#e11d48' },
+  FOOD: {
+    label: 'Ăn uống',
+    icon: '🍜',
+    bg: '#FFF7ED',
+    color: '#EA580C',
+    border: '#FFEDD5',
+  },
+  ACCOMMODATION: {
+    label: 'Lưu trú',
+    icon: '🏨',
+    bg: '#EEF2FF',
+    color: '#4F46E5',
+    border: '#E0E7FF',
+  },
+  TRANSPORT: {
+    label: 'Di chuyển',
+    icon: '🚗',
+    bg: '#EFF6FF',
+    color: '#2563EB',
+    border: '#DBEAFE',
+  },
+  ACTIVITIES: {
+    label: 'Vui chơi',
+    icon: '🎟️',
+    bg: '#FAF5FF',
+    color: '#9333EA',
+    border: '#F3E8FF',
+  },
+  OTHER: {
+    label: 'Mua sắm',
+    icon: '🛍️',
+    bg: '#FFF1F2',
+    color: '#E11D48',
+    border: '#FFE4E6',
+  },
 };
+
+const CATEGORY_TABS = [
+  { key: 'ALL', label: 'Tất cả' },
+  { key: 'FOOD', label: 'Ăn uống' },
+  { key: 'ACCOMMODATION', label: 'Lưu trú' },
+  { key: 'TRANSPORT', label: 'Di chuyển' },
+  { key: 'ACTIVITIES', label: 'Vui chơi' },
+  { key: 'OTHER', label: 'Mua sắm' },
+];
 
 export function ExpenseLedgerTable({
   expenses,
   members,
+  currentUserId,
   onOpenAddExpense,
   onDeleteExpense,
 }: ExpenseLedgerTableProps) {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('ALL');
-  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('ALL');
+  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 
   const memberMap = new Map<string, TripMember>();
   members.forEach((m) => memberMap.set(m.userId, m));
 
   const formatVnd = (val: number) => {
-    return new Intl.NumberFormat('vi-VN').format(Math.round(val)) + ' ₫';
+    return new Intl.NumberFormat('vi-VN').format(Math.round(val)) + ' đ';
   };
 
-  const parseDateBlock = (isoString?: string) => {
-    if (!isoString) return { day: '--', month: '--' };
-    const d = new Date(isoString);
+  const parseDate = (isoStr?: string) => {
+    if (!isoStr) {
+      const now = new Date();
+      return {
+        day: String(now.getDate()).padStart(2, '0'),
+        month: `Th${now.getMonth() + 1}`,
+        time: now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+      };
+    }
+    const d = new Date(isoStr);
+    if (isNaN(d.getTime())) {
+      return { day: '--', month: '--', time: '' };
+    }
     return {
       day: String(d.getDate()).padStart(2, '0'),
       month: `Th${d.getMonth() + 1}`,
+      time: d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
     };
   };
 
+  // Real expenses only - absolutely NO fake demo data
   const filteredExpenses = expenses.filter((exp) => {
-    if (categoryFilter !== 'ALL' && exp.category !== categoryFilter) {
-      return false;
-    }
-    if (searchTerm.trim()) {
-      const q = searchTerm.toLowerCase();
-      const titleMatch = exp.title.toLowerCase().includes(q);
-      const payer = memberMap.get(exp.paidBy);
-      const payerMatch = payer ? payer.displayName.toLowerCase().includes(q) : false;
-      return titleMatch || payerMatch;
-    }
-    return true;
+    if (activeTab === 'ALL') return true;
+    return exp.category === activeTab;
   });
 
   const handleDelete = async (id: string, title: string) => {
-    if (!confirm(`Bạn có chắc chắn muốn hủy khoản chi "${title}"?`)) return;
-    try {
-      setDeletingId(id);
+    if (confirm(`Bạn có chắc chắn muốn xóa "${title}"?`)) {
       await onDeleteExpense(id);
-    } finally {
-      setDeletingId(null);
+      setActiveMenuId(null);
     }
   };
 
   return (
-    <div className={styles.sectionCard} style={{ marginTop: '24px' }}>
-      <div className={styles.ledgerHeader}>
-        <h2 className={styles.sectionTitle}>Nhật Ký Hóa Đơn</h2>
+    <div className={styles.vistaCardLedger}>
+      {/* ─── CARD HEADER ─── */}
+      <div className={styles.vistaCardHeader}>
+        <div className={styles.vistaCardTitleGroup}>
+          <div className={styles.vistaCardIconCircle}>
+            <ListFilter size={15} color="#0284C7" />
+          </div>
+          <h2 className={styles.vistaCardTitle}>Nhật ký chi tiêu</h2>
+          {expenses.length > 0 && (
+            <span style={{ fontSize: '12px', fontWeight: 600, color: '#64748B' }}>
+              ({expenses.length})
+            </span>
+          )}
+        </div>
 
-        <div className={styles.ledgerControls}>
-          <input
-            type="text"
-            className={styles.searchInput}
-            placeholder="Tìm kiếm theo mô tả, người chi..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-
-          <select
-            className={styles.filterSelect}
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-          >
-            <option value="ALL">Tất cả danh mục ▾</option>
-            <option value="FOOD">Ăn uống</option>
-            <option value="ACCOMMODATION">Lưu trú</option>
-            <option value="TRANSPORT">Di chuyển</option>
-            <option value="ACTIVITIES">Vé tham quan</option>
-            <option value="OTHER">Mua sắm / Khác</option>
-          </select>
-
+        <div className={styles.vistaLedgerHeaderActions}>
           <button
             type="button"
-            className={styles.primaryAddBtn}
+            className={styles.vistaBtnPrimary}
             onClick={onOpenAddExpense}
           >
-            <Plus size={15} />
-            <span>Ghi Khoản Chi Mới</span>
+            <Plus size={14} />
+            <span>Ghi chi tiêu</span>
+          </button>
+          <button
+            type="button"
+            className={styles.vistaBtnFilterIcon}
+            title="Bộ lọc nâng cao"
+          >
+            <SlidersHorizontal size={14} color="#475569" />
           </button>
         </div>
       </div>
 
-      <div className={styles.tableWrapper}>
-        <table className={styles.ledgerTable}>
+      {/* ─── CATEGORY FILTER PILLS ─── */}
+      <div className={styles.vistaCategoryFilterRow}>
+        {CATEGORY_TABS.map((tab) => {
+          const isActive = activeTab === tab.key;
+          const count =
+            tab.key === 'ALL'
+              ? expenses.length
+              : expenses.filter((e) => e.category === tab.key).length;
+
+          return (
+            <button
+              key={tab.key}
+              type="button"
+              className={`${styles.vistaCategoryFilterPill} ${
+                isActive ? styles.vistaCategoryFilterPillActive : ''
+              }`}
+              onClick={() => setActiveTab(tab.key)}
+            >
+              <span>{tab.label}</span>
+              {count > 0 && <span style={{ opacity: 0.8, fontSize: '11px', marginLeft: '4px' }}>({count})</span>}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ─── EXPENSE DATA TABLE ─── */}
+      <div className={styles.vistaExpenseTableWrapper}>
+        <table className={styles.vistaExpenseTable}>
           <thead>
             <tr>
-              <th>Ngày</th>
-              <th>Mô tả</th>
-              <th>Danh mục</th>
-              <th>Người chi</th>
-              <th>Số tiền</th>
-              <th>Chia đều cho</th>
-              <th style={{ textAlign: 'right' }}>Thao tác</th>
+              <th style={{ width: '10%' }}>Ngày</th>
+              <th style={{ width: '40%' }}>Mô tả</th>
+              <th style={{ width: '16%' }}>Danh mục</th>
+              <th style={{ width: '16%' }}>Người chi</th>
+              <th style={{ width: '13%', textAlign: 'right' }}>Số tiền</th>
+              <th style={{ width: '5%', textAlign: 'center' }}>Thao tác</th>
             </tr>
           </thead>
           <tbody>
-            {filteredExpenses.length > 0 ? (
+            {filteredExpenses.length === 0 ? (
+              <tr>
+                <td colSpan={6}>
+                  <div className={styles.vistaEmptyLedger}>
+                    <div className={styles.vistaEmptyIconCircle}>
+                      <Receipt size={24} color="#94A3B8" />
+                    </div>
+                    <p className={styles.vistaEmptyTitle}>
+                      {expenses.length === 0
+                        ? 'Chưa có khoản chi tiêu nào'
+                        : 'Không có chi tiêu nào trong danh mục này'}
+                    </p>
+                    <span className={styles.vistaEmptySub}>
+                      {expenses.length === 0
+                        ? 'Nhấn nút "+ Ghi chi tiêu" ở trên để ghi nhận hóa đơn thực tế của chuyến đi.'
+                        : 'Chọn danh mục khác hoặc ghi nhận khoản chi mới.'}
+                    </span>
+                  </div>
+                </td>
+              </tr>
+            ) : (
               filteredExpenses.map((exp) => {
-                const cat = CATEGORY_MAP[exp.category] || CATEGORY_MAP.OTHER;
-                const IconComponent = cat.icon;
+                const catMeta = CATEGORY_MAP[exp.category] || CATEGORY_MAP.OTHER;
+                const dateInfo = parseDate(exp.occurredAt);
                 const payer = memberMap.get(exp.paidBy);
-                const payerName = payer ? payer.displayName : 'Thành viên';
-                const payerInitial = payerName.charAt(0).toUpperCase();
-                const splitCount = exp.splits ? exp.splits.length : 1;
-                const dateBlock = parseDateBlock(exp.occurredAt);
+                const payerName = payer?.displayName || 'Thành viên';
+                const initial = payerName ? payerName.charAt(0).toUpperCase() : 'U';
 
                 return (
-                  <tr key={exp.id} className={styles.receiptStubRow}>
-                    <td style={{ width: '60px' }}>
-                      <div className={styles.calendarDateBlock}>
-                        <span className={styles.calendarDay}>{dateBlock.day}</span>
-                        <span className={styles.calendarMonth}>{dateBlock.month}</span>
+                  <tr key={exp.id} className={styles.vistaExpenseRow}>
+                    {/* Date Column */}
+                    <td>
+                      <div className={styles.vistaDateBlock}>
+                        <span className={styles.vistaDateDay}>{dateInfo.day}</span>
+                        <span className={styles.vistaDateMonth}>{dateInfo.month}</span>
                       </div>
                     </td>
-                    <td className={styles.descBold}>{exp.title}</td>
+
+                    {/* Description Column */}
+                    <td>
+                      <div className={styles.vistaDescCell}>
+                        <div className={styles.vistaDescText}>
+                          <strong className={styles.vistaDescTitle}>{exp.title}</strong>
+                          <span className={styles.vistaDescSub}>
+                            {dateInfo.time ? `Ghi lúc ${dateInfo.time}` : ''}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Category Pill */}
                     <td>
                       <span
+                        className={styles.vistaCategoryPill}
                         style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '5px',
-                          padding: '3px 8px',
-                          borderRadius: '6px',
-                          background: cat.bg,
-                          color: cat.color,
-                          fontWeight: 700,
-                          fontSize: '11.5px',
+                          background: catMeta.bg,
+                          color: catMeta.color,
+                          border: `1px solid ${catMeta.border}`,
                         }}
                       >
-                        <IconComponent size={12} />
-                        <span>{cat.label}</span>
+                        <span>{catMeta.icon}</span>
+                        <span>{catMeta.label}</span>
                       </span>
                     </td>
+
+                    {/* Payer */}
                     <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div className={styles.vistaPayerCell}>
                         <div
-                          className={styles.avatarCircle}
-                          style={{ width: '24px', height: '24px', fontSize: '10.5px' }}
+                          className={styles.vistaPayerAvatar}
+                          style={{
+                            background:
+                              payer?.role === 'OWNER' ? '#10B981' : '#3B82F6',
+                          }}
                         >
-                          {payerInitial}
+                          {initial}
                         </div>
-                        <span style={{ fontWeight: 600, color: '#334155', fontSize: '12.5px' }}>{payerName}</span>
+                        <span className={styles.vistaPayerName}>{payerName}</span>
                       </div>
                     </td>
-                    <td className={styles.amountBold}>{formatVnd(exp.amount)}</td>
-                    <td style={{ color: '#64748b', fontSize: '12.5px' }}>{splitCount} người</td>
+
+                    {/* Amount */}
                     <td style={{ textAlign: 'right' }}>
+                      <strong className={styles.vistaAmountText}>
+                        {formatVnd(exp.amount)}
+                      </strong>
+                    </td>
+
+                    {/* Actions */}
+                    <td style={{ textAlign: 'center', position: 'relative' }}>
                       <button
                         type="button"
-                        className={styles.deleteBtn}
-                        onClick={() => handleDelete(exp.id, exp.title)}
-                        disabled={deletingId === exp.id}
-                        title="Hủy khoản chi"
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                        className={styles.vistaBtnActionMenu}
+                        onClick={() =>
+                          setActiveMenuId(activeMenuId === exp.id ? null : exp.id)
+                        }
+                        title="Thao tác"
                       >
-                        <Trash2 size={12} />
-                        <span>{deletingId === exp.id ? '...' : 'Xóa'}</span>
+                        <MoreVertical size={14} color="#64748B" />
                       </button>
+
+                      {activeMenuId === exp.id && (
+                        <div className={styles.vistaActionMenuDropdown}>
+                          <button
+                            type="button"
+                            className={styles.vistaActionMenuItemDelete}
+                            onClick={() => handleDelete(exp.id, exp.title)}
+                          >
+                            <Trash2 size={13} />
+                            <span>Xóa khoản chi</span>
+                          </button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 );
               })
-            ) : (
-              <tr>
-                <td colSpan={7}>
-                  <div className={styles.emptyStateBox}>
-                    <Receipt size={32} color="#94a3b8" />
-                    <span style={{ fontWeight: 700, color: '#334155', fontSize: '13.5px' }}>
-                      Chưa có khoản chi nào
-                    </span>
-                    <button
-                      type="button"
-                      className={styles.btnSecondary}
-                      onClick={onOpenAddExpense}
-                      style={{ marginTop: '8px' }}
-                    >
-                      <Plus size={14} /> Ghi khoản chi
-                    </button>
-                  </div>
-                </td>
-              </tr>
             )}
           </tbody>
         </table>

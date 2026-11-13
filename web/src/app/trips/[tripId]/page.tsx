@@ -414,17 +414,34 @@ export default function TripDetailPage() {
   const [activeTab, setActiveTab] = useState<'itinerary' | 'members' | 'treasury' | 'voting' | 'group-map'>('itinerary');
 
   useEffect(() => {
+    if (typeof window !== 'undefined' && tripId && tripId !== 'new') {
+      try {
+        localStorage.setItem('vista_last_trip_id', tripId);
+        window.dispatchEvent(new CustomEvent('vista-trip-selected', { detail: tripId }));
+      } catch {}
+    }
+  }, [tripId]);
+
+  useEffect(() => {
     const tabParam = searchParams?.get('tab');
-    if (tabParam && ['itinerary', 'members', 'treasury', 'voting', 'group-map'].includes(tabParam)) {
+    if (tabParam === 'treasury') {
+      router.replace(`/trips/${tripId}/treasury`);
+      return;
+    }
+    if (tabParam && ['itinerary', 'members', 'voting', 'group-map'].includes(tabParam)) {
       setActiveTab(tabParam as any);
     }
-  }, [searchParams]);
+  }, [searchParams, router, tripId]);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [copiedInvite, setCopiedInvite] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<ActivityItem | null>(null);
   const [showMembersModal, setShowMembersModal] = useState(false);
 
   const handleTabChange = (tab: 'itinerary' | 'members' | 'treasury' | 'voting' | 'group-map') => {
+    if (tab === 'treasury') {
+      router.push(`/trips/${tripId}/treasury`);
+      return;
+    }
     setActiveTab(tab);
     if (typeof window !== 'undefined') {
       try {

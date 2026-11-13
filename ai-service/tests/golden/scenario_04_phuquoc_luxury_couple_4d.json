@@ -1,0 +1,17 @@
+{
+  "destinationProvince": "Kiên Giang",
+  "totalDays": 4,
+  "peopleCount": 2,
+  "budgetTier": "premium",
+  "interests": [
+    "Nghỉ dưỡng",
+    "Biển"
+  ],
+  "expect": {
+    "expect_http_status": 200,
+    "must_not_contain_walking_load": [],
+    "min_days": 4,
+    "min_total_activities": 4,
+    "expected_province": "Kiên Giang"
+  }
+}

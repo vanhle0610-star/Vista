@@ -41,6 +41,7 @@ out/
 
 # 4. Logs & Temp
 *.log
+*.zip
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -59,10 +60,26 @@ Thumbs.db
 # 6. Personal & Local Workspace Files
 CV_Vanh/
 *.docx
+*.doc
 *.xlsx
 Vietnam_300_dia_diem*
 outputs/
+work/
+test_screenshot.bat
 stitch_vista_travel_expense_app_ui/
 
+# 7. Python Artifacts
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+scratch/
+**/scratch/
+ai-service/.env
+ai-service/.env.*
+!ai-service/.env.example
 
 artifacts/tv5-mobile/*.apk

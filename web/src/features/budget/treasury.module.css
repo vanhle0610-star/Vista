@@ -2266,11 +2266,12 @@
 
 /* ─── KHUNG 1: EDITORIAL TRAVEL HEADER WITH PASSPORT STAMP ─── */
 .editorialHeaderWrapper {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+  border: 1px solid rgba(186, 230, 253, 0.7);
+  border-top: 3px solid #0284c7;
   border-radius: 18px;
-  padding: 20px 24px;
-  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+  padding: 22px 26px;
+  box-shadow: 0 4px 20px -4px rgba(2, 132, 199, 0.08), 0 2px 6px rgba(15, 23, 42, 0.03);
   position: relative;
   overflow: hidden;
   display: flex;
@@ -2719,4 +2720,2388 @@
   background: #ffffff;
   color: #0284c7;
   box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+}
+
+/* ─── LUXURY POLISH & INTERACTIVE SEGMENTED FILTERS ─── */
+.cardIridescentSheen {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 140px;
+  height: 140px;
+  background: radial-gradient(circle at 100% 0%, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.cardChipGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cardContactlessIcon {
+  color: #94a3b8;
+  transform: rotate(90deg);
+}
+
+.emvChip {
+  width: 24px;
+  height: 18px;
+  background: linear-gradient(135deg, #d4af37 0%, #fef08a 50%, #b45309 100%);
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.emvInner {
+  width: 14px;
+  height: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  border-radius: 2px;
+}
+
+.cardUserMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ledgerCountBadge {
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid #e2e8f0;
+}
+
+.searchWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 10px;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.searchInputClean {
+  padding: 7px 28px 7px 30px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 12.5px;
+  outline: none;
+  background: #ffffff;
+  color: #0f172a;
+  transition: all 0.15s ease;
+  width: 240px;
+}
+
+.searchInputClean:focus {
+  border-color: #0284c7;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
+}
+
+.searchClearBtn {
+  position: absolute;
+  right: 8px;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 2px;
+}
+
+.searchClearBtn:hover {
+  color: #475569;
+}
+
+.segmentedFilterBar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 0 6px 0;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.segmentedFilterTab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.segmentedFilterTab:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.segmentedFilterActive {
+  background: #0284c7 !important;
+  border-color: #0284c7 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25);
+}
+
+.tabBadgeCount {
+  background: rgba(0, 0, 0, 0.06);
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+.segmentedFilterActive .tabBadgeCount {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+.segmentedTotalBox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #64748b;
+  margin-left: auto;
+}
+
+.segmentedTotalBox strong {
+  color: #0f172a;
+  font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── HEALTH STATUS PILL & PULSE ─── */
+.healthStatusPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.healthDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  animation: pulseHealth 2s infinite ease-in-out;
+}
+
+@keyframes pulseHealth {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.85); }
+}
+
+/* ─── ENHANCED KPISUB CARD VARIANTS & EMPTY DONUT STATE ─── */
+.subCardCredit {
+  background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%) !important;
+  border-color: #bbf7d0 !important;
+}
+
+.subCardDebit {
+  background: linear-gradient(135deg, #ffffff 0%, #fff7ed 100%) !important;
+  border-color: #fed7aa !important;
+}
+
+.subCardNeutral {
+  background: #ffffff;
+}
+
+.kpiSubStatusBadge {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.2px;
+}
+
+.kpiSubFooterRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.btnSubActionPrimary {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: #16a34a;
+  color: #ffffff;
+  border: none;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btnSubActionPrimary:hover {
+  background: #15803d;
+}
+
+.btnSubActionWarning {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: #ea580c;
+  color: #ffffff;
+  border: none;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btnSubActionWarning:hover {
+  background: #c2410c;
+}
+
+.emptyDonutState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 36px 20px;
+  text-align: center;
+  gap: 8px;
+}
+
+.emptyDonutCircle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2px;
+}
+
+.emptyDonutTitle {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #334155;
+}
+
+.emptyDonutSubtext {
+  font-size: 12px;
+  color: #94a3b8;
+  max-width: 260px;
+  line-height: 1.4;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BESPOKE EXPEDITION FINTECH: BOARDING PASS HERO & BENTO FEED
+   ══════════════════════════════════════════════════════════════ */
+
+.boardingPassHeroWrapper {
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.boardingPassCard {
+  display: flex;
+  position: relative;
+  background: #ffffff;
+  border-radius: 20px;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-top: 4px solid #0284c7;
+  box-shadow: 0 14px 40px -10px rgba(2, 132, 199, 0.12), 0 2px 8px rgba(15, 23, 42, 0.04);
+  overflow: hidden;
+}
+
+@media (max-width: 900px) {
+  .boardingPassCard {
+    flex-direction: column;
+  }
+}
+
+.airportWatermark {
+  position: absolute;
+  right: 36%;
+  top: 50%;
+  transform: translate(50%, -50%);
+  font-size: 130px;
+  font-weight: 900;
+  color: rgba(2, 132, 199, 0.06);
+  letter-spacing: -3px;
+  user-select: none;
+  pointer-events: none;
+  z-index: 0;
+  line-height: 1;
+}
+
+.boardingPassMain {
+  flex: 1;
+  padding: 26px 30px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f0f9ff 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+
+.bpTopMetaRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.bpFlightCodeBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 8px;
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.bpPlaneIcon {
+  color: #0284c7;
+}
+
+.bpHydroGaugeBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  background: #ffffff;
+  border: 1px solid #bae6fd;
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.08);
+  font-size: 12px;
+  font-weight: 700;
+  color: #334155;
+}
+
+.gaugeDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.bpPrimaryMetricBox {
+  margin-bottom: 16px;
+}
+
+.bpMetricLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.bpMetricValueRow {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.bpAmountNumber {
+  font-size: 34px;
+  font-weight: 900;
+  letter-spacing: -0.8px;
+  line-height: 1.1;
+  color: #0f172a;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+}
+
+.bpFuelRemainingPct {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 6px;
+  background: #ecfdf5;
+  color: #059669;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid #a7f3d0;
+}
+
+.bpFuelGaugeTrack {
+  width: 100%;
+  height: 10px;
+  border-radius: 9999px;
+  background: #e2e8f0;
+  display: flex;
+  overflow: hidden;
+  margin-bottom: 16px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.bpFuelSpentSegment {
+  height: 100%;
+  background: linear-gradient(90deg, #0284c7 0%, #38bdf8 100%);
+  box-shadow: 0 0 10px rgba(2, 132, 199, 0.35);
+  transition: width 0.4s ease;
+}
+
+.bpFuelAvailableSegment {
+  height: 100%;
+  background: #e2e8f0;
+}
+
+.bpMetaStrip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 12.5px;
+  color: #64748b;
+}
+
+.bpMetaItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bpMetaDotSpent {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #0284c7;
+}
+
+.bpMetaDotBudget {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #94a3b8;
+}
+
+.bpMetaDivider {
+  color: #cbd5e1;
+}
+
+/* Perforation Notch Divider */
+.ticketPerforationLine {
+  width: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  margin: 0 -16px;
+  z-index: 2;
+}
+
+@media (max-width: 900px) {
+  .ticketPerforationLine {
+    display: none;
+  }
+}
+
+.ticketNotchTop {
+  width: 26px;
+  height: 16px;
+  background: #f1f5f9;
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+  border: 1px solid #cbd5e1;
+  border-top: none;
+}
+
+.ticketDashedRuler {
+  flex: 1;
+  width: 0;
+  border-left: 2px dashed #cbd5e1;
+  margin: 6px 0;
+}
+
+.ticketNotchBottom {
+  width: 26px;
+  height: 16px;
+  background: #f1f5f9;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  border: 1px solid #cbd5e1;
+  border-bottom: none;
+}
+
+/* Boarding Pass Stub */
+.boardingPassStub {
+  width: 320px;
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  padding: 26px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-left: 1px solid #e2e8f0;
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+}
+
+.stubCreditor {
+  background: linear-gradient(180deg, #f0fdf4 0%, #dcfce7 100%);
+  border-left: 1px solid #86efac;
+}
+
+.stubDebtor {
+  background: linear-gradient(180deg, #fffbeb 0%, #ffedd5 100%);
+  border-left: 1px solid #fdba74;
+}
+
+.stubBalanced {
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  border-left: 1px solid #e2e8f0;
+}
+
+@media (max-width: 900px) {
+  .boardingPassStub {
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid #e2e8f0;
+  }
+}
+
+.stubPassengerHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 14px;
+}
+
+.stubPaxLabel {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #94a3b8;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.stubPaxName {
+  font-size: 15px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.2px;
+}
+
+.stubBalanceBox {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+
+.stubDeltaHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.stubDeltaLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.stubStatusChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.stubDeltaAmount {
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+}
+
+.stubSubNote {
+  font-size: 11.5px;
+  color: #64748b;
+  line-height: 1.3;
+}
+
+.stubActionArea {
+  margin-top: auto;
+}
+
+.stubBtnPrimary {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #0284c7;
+  color: #ffffff;
+  font-size: 12.5px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+}
+
+.stubBtnPrimary:hover {
+  background: #0369a1;
+  transform: translateY(-1px);
+}
+
+.stubBtnWarning {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #ea580c;
+  color: #ffffff;
+  font-size: 12.5px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 4px 12px rgba(234, 88, 12, 0.25);
+}
+
+.stubBtnWarning:hover {
+  background: #c2410c;
+  transform: translateY(-1px);
+}
+
+.stubBarcodeVisual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 0;
+}
+
+.barcodeLines {
+  display: flex;
+  align-items: stretch;
+  height: 32px;
+  gap: 2.5px;
+}
+
+.barcodeCaption {
+  font-size: 10px;
+  font-weight: 800;
+  color: #94a3b8;
+  letter-spacing: 2px;
+}
+
+/* ─── VIETQR POPUP MODAL ─── */
+.qrPopupContainer {
+  background: #ffffff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 420px;
+  overflow: hidden;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.3);
+  animation: modalPopIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.qrPopupHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.qrPopupTitleBox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.qrPopupTitle {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+
+.qrPopupBody {
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.qrImageFrame {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.qrImage {
+  width: 240px;
+  height: 240px;
+  object-fit: contain;
+  display: block;
+}
+
+.qrDetailsCard {
+  width: 100%;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12.5px;
+}
+
+.qrDetailRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.qrMemoCode {
+  background: #e2e8f0;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 11px;
+  color: #0f172a;
+}
+
+.btnConfirmQr {
+  width: 100%;
+  padding: 11px;
+  border-radius: 10px;
+  background: #0f172a;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 13.5px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btnConfirmQr:hover {
+  background: #1e293b;
+}
+
+/* ─── BENTO TICKET FEED & VIEW MODE TOGGLE ─── */
+.viewModeToggle {
+  display: inline-flex;
+  align-items: center;
+  background: #f1f5f9;
+  padding: 3px;
+  border-radius: 9px;
+}
+
+.viewToggleBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.viewToggleActive {
+  background: #ffffff;
+  color: #0f172a;
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.bentoFeedContainer {
+  margin-top: 14px;
+}
+
+.bentoTicketGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 14px;
+}
+
+.bentoTicketCard {
+  display: flex;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
+}
+
+.bentoTicketCard:hover {
+  border-color: #0284c7;
+  box-shadow: 0 8px 22px -6px rgba(2, 132, 199, 0.15);
+  transform: translateY(-2px);
+}
+
+.bentoTicketStub {
+  width: 60px;
+  background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%);
+  border-right: 1px dashed #bae6fd;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 12px 6px;
+  flex-shrink: 0;
+}
+
+.bentoTicketDay {
+  font-size: 18px;
+  font-weight: 900;
+  color: #0369a1;
+  line-height: 1;
+}
+
+.bentoTicketMonth {
+  font-size: 11px;
+  font-weight: 800;
+  color: #0284c7;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.bentoTicketNotchTop {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+}
+
+.bentoTicketNotchBottom {
+  position: absolute;
+  bottom: -6px;
+  right: -6px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+}
+
+.bentoTicketBody {
+  flex: 1;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+}
+
+.bentoTicketTopRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.bentoCategoryBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.bentoDeleteBtn {
+  background: transparent;
+  border: none;
+  color: #cbd5e1;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: all 0.15s;
+}
+
+.bentoDeleteBtn:hover {
+  color: #ef4444;
+  background: #fee2e2;
+}
+
+.bentoTicketTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 10px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bentoTicketBottomRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.bentoPayerTag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #475569;
+  font-weight: 600;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bentoPayerAvatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #0284c7;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.bentoSplitTag {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #94a3b8;
+  font-size: 11.5px;
+}
+
+.bentoTicketAmount {
+  font-size: 14.5px;
+  font-weight: 900;
+  color: #0f172a;
+  margin-left: auto;
+}
+
+.searchInputClean {
+  padding: 7px 12px 7px 32px;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  font-size: 13px;
+  outline: none;
+  background: #ffffff;
+  width: 220px;
+  transition: all 0.15s;
+}
+
+.searchInputClean:focus {
+  border-color: #0284c7;
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.12);
+  width: 260px;
+}
+
+.searchWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 10px;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.searchClearBtn {
+  position: absolute;
+  right: 8px;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 2px;
+}
+
+.primaryAddBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 9px;
+  background: #0284c7;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.2);
+}
+
+.primaryAddBtn:hover {
+  background: #0369a1;
+  transform: translateY(-1px);
+}
+
+.ledgerCountBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 9999px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+/* ─── SECTION CARDS COLOR ACCENTS (ĐIỂM NHẤN MÀU NỀN & VIỀN) ─── */
+
+.donutCardAccent {
+  border-top: 3.5px solid #0284c7 !important;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
+  box-shadow: 0 8px 24px -6px rgba(2, 132, 199, 0.08), 0 2px 6px rgba(15, 23, 42, 0.03) !important;
+}
+
+.matrixCardAccent {
+  border-top: 3.5px solid #10b981 !important;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
+  box-shadow: 0 8px 24px -6px rgba(16, 185, 129, 0.08), 0 2px 6px rgba(15, 23, 42, 0.03) !important;
+}
+
+.ledgerCardAccent {
+  border-top: 3.5px solid #6366f1 !important;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
+  box-shadow: 0 8px 24px -6px rgba(99, 102, 241, 0.08), 0 2px 6px rgba(15, 23, 42, 0.03) !important;
+}
+
+.allSettledMedallion {
+  text-align: center;
+  padding: 14px 20px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #047857;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border: 1px solid #6ee7b7;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.1);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   HỌA TIẾT VIỆT NAM & PANORAMIC DESTINATION HERO (CẦU RỒNG & THÁP CỔ)
+   ══════════════════════════════════════════════════════════════ */
+
+.panoramicBannerWrapper {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center right;
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  box-shadow: 0 10px 32px -8px rgba(15, 23, 42, 0.08);
+  margin-bottom: 22px;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.panoramicOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.98) 0%,
+    rgba(255, 255, 255, 0.92) 36%,
+    rgba(255, 255, 255, 0.5) 65%,
+    rgba(255, 255, 255, 0.08) 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.panoramicTopBar {
+  position: relative;
+  z-index: 2;
+  padding: 18px 24px 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.breadcrumbLinkWhite {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.breadcrumbLinkWhite:hover {
+  color: #0284c7;
+}
+
+.breadcrumbCurrentWhite {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.panoramicContent {
+  position: relative;
+  z-index: 2;
+  padding: 12px 24px 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 580px;
+}
+
+.panoramicStatusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #e2e8f0;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #0284c7;
+  backdrop-filter: blur(6px);
+  width: fit-content;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.panoramicTitle {
+  font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  font-size: 32px;
+  font-weight: 900;
+  color: #0f172a;
+  margin: 0;
+  letter-spacing: -0.6px;
+  line-height: 1.15;
+}
+
+.panoramicMetaRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.panoramicMetaItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.panoramicTaglineBox {
+  display: inline-flex;
+  flex-direction: column;
+  width: fit-content;
+  margin-top: 4px;
+}
+
+.panoramicTagline {
+  font-family: 'Dancing Script', 'Caveat', 'Segoe Script', cursive, sans-serif;
+  font-size: 18.5px;
+  font-weight: 700;
+  color: #1e293b;
+  font-style: italic;
+  letter-spacing: 0.2px;
+}
+
+.orangeBrushSwoop {
+  height: 3px;
+  background: linear-gradient(90deg, #f97316 0%, #fb923c 60%, transparent 100%);
+  border-radius: 9999px;
+  margin-top: 2px;
+  width: 90%;
+}
+
+.panoramicActionBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 13px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #e2e8f0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #334155;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.panoramicActionBtn:hover {
+  background: #ffffff;
+  color: #0f172a;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+}
+
+.panoramicPrimaryBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 15px;
+  border-radius: 8px;
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 12.5px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+}
+
+.panoramicPrimaryBtn:hover {
+  background: #1e293b;
+  transform: translateY(-1px);
+}
+
+/* Vietnamese Pagoda Landmark Pattern Wrappers */
+.vietnamesePagodaPatternWrapper {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+  opacity: 0.85;
+  overflow: hidden;
+}
+
+.donutPagodaWatermark {
+  position: absolute;
+  right: 6px;
+  bottom: 0;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+  opacity: 0.65;
+  overflow: hidden;
+}
+
+/* Ledger Table Rows with Thumbnails */
+.ledgerDescCell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ledgerRowThumbnail {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid #e2e8f0;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.ledgerDescTextGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.descBoldText {
+  font-weight: 700;
+  color: #0f172a;
+  font-size: 13px;
+}
+
+.descSubtitle {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   VISTA TREASURY DESIGN SYSTEM (MATCHING REFERENCE EXACTLY)
+   ══════════════════════════════════════════════════════════════════ */
+
+.vistaTreasuryPage {
+  min-height: 100vh;
+  background: #F4F6F9;
+  padding: 24px 32px 64px 32px;
+  box-sizing: border-box;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+@media (max-width: 768px) {
+  .vistaTreasuryPage {
+    padding: 16px 16px 48px 16px;
+  }
+}
+
+.vistaTreasuryContainer {
+  max-width: 1360px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ─── 1. TRIP PANORAMIC BANNER ─── */
+.vistaBannerCard {
+  position: relative;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+  min-height: 160px;
+  display: flex;
+  align-items: center;
+}
+
+.vistaBannerImage {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 58%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center right;
+  z-index: 1;
+}
+
+.vistaBannerOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(
+    90deg,
+    #FFFFFF 0%,
+    #FFFFFF 36%,
+    rgba(255, 255, 255, 0.88) 54%,
+    rgba(255, 255, 255, 0.3) 80%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+}
+
+.vistaBannerContent {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  padding: 26px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.vistaBannerLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 600px;
+}
+
+.vistaTagUpcoming {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #EFF6FF;
+  color: #2563EB;
+  border-radius: 16px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.vistaBannerTitle {
+  font-size: 32px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 6px 0 3px 0;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+.vistaBannerMeta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: #475569;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.vistaMetaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.vistaMetaDot {
+  color: #94A3B8;
+}
+
+.vistaTaglineWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: 4px;
+}
+
+.vistaBannerScript {
+  margin: 0;
+  font-size: 14.5px;
+  color: #1E293B;
+  font-style: italic;
+  font-family: 'Playfair Display', Georgia, 'Dancing Script', cursive, serif;
+  letter-spacing: 0.01em;
+}
+
+.vistaBrushStroke {
+  margin-top: 2px;
+  display: block;
+}
+
+.vistaBannerRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.vistaBtnSecondary {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.vistaBtnSecondary:hover {
+  background: #F8FAFC;
+  border-color: #CBD5E1;
+  color: #0F172A;
+}
+
+.vistaBtnPrimary {
+  background: #0F172A;
+  border: 1px solid #0F172A;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 650;
+  color: #FFFFFF;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
+}
+
+.vistaBtnPrimary:hover {
+  background: #1E293B;
+  border-color: #1E293B;
+}
+
+/* ─── 2. TOP GRID (BUDGET + SETTLEMENT) ─── */
+.vistaGridRowTop {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 20px;
+}
+
+@media (max-width: 960px) {
+  .vistaGridRowTop {
+    grid-template-columns: 1fr;
+  }
+}
+
+.vistaCardBudget,
+.vistaCardSettlement,
+.vistaCardLedger,
+.vistaCardDonut {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 22px 26px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.03);
+  box-sizing: border-box;
+}
+
+.vistaCardBudget {
+  display: flex;
+  flex-direction: column;
+}
+
+.vistaCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.vistaCardTitleGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vistaCardIconCircle {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: #EFF6FF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vistaCardTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.vistaCardDateBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 550;
+  color: #475569;
+}
+
+.vistaCardLinkAction {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #0284C7;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.15s ease;
+}
+
+.vistaCardLinkAction:hover {
+  color: #0369A1;
+}
+
+.vistaBudgetHeroAmount {
+  font-size: 38px;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.03em;
+  margin: 8px 0 14px 0;
+  line-height: 1.1;
+}
+
+.vistaProgressBarWrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  max-width: 480px;
+}
+
+.vistaProgressBarTrack {
+  flex: 1;
+  height: 6px;
+  background: #F1F5F9;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.vistaProgressBarFill {
+  height: 100%;
+  background: #0284C7;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.vistaProgressPctText {
+  font-size: 12px;
+  font-weight: 650;
+  color: #64748B;
+  min-width: 26px;
+}
+
+.vistaBudgetStatsRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  padding-top: 10px;
+  border-top: 1px solid #F1F5F9;
+  position: relative;
+  z-index: 2;
+}
+
+.vistaBudgetStatItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.vistaBudgetStatLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748B;
+}
+
+.vistaBudgetStatValue {
+  font-size: 15px;
+  font-weight: 750;
+  color: #0F172A;
+}
+
+.vistaBudgetPagodaWatermark {
+  position: absolute;
+  right: 18px;
+  bottom: 8px;
+  opacity: 0.88;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ─── SETTLEMENT CARD ─── */
+.vistaCardSettlement {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.vistaSettlementTableWrapper {
+  margin: 6px 0 12px 0;
+}
+
+.vistaSettlementTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.vistaSettlementTable th {
+  padding: 6px 0 10px 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748B;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.vistaSettlementTable td {
+  padding: 11px 0;
+  font-size: 13px;
+  border-bottom: 1px solid #F8FAFC;
+}
+
+.vistaMemberCell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.vistaMemberAvatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.vistaMemberName {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0F172A;
+}
+
+.vistaSettledAlertPill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #E8F8F0;
+  border: 1px solid #D1FAE5;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 650;
+  color: #059669;
+  margin-top: 8px;
+}
+
+.vistaPendingTransfersList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.vistaTransferItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  background: #FFF7ED;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.vistaTransferNames {
+  color: #9A3412;
+}
+
+.vistaTransferBadge {
+  font-size: 11px;
+  font-weight: 700;
+  color: #C2410C;
+  background: #FED7AA;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* ─── 3. BOTTOM GRID (EXPENSE LEDGER + CATEGORY DONUT) ─── */
+.vistaGridRowBottom {
+  display: grid;
+  grid-template-columns: 1.35fr 0.65fr;
+  gap: 20px;
+}
+
+@media (max-width: 960px) {
+  .vistaGridRowBottom {
+    grid-template-columns: 1fr;
+  }
+}
+
+.vistaLedgerHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vistaBtnFilterIcon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.vistaBtnFilterIcon:hover {
+  background: #F1F5F9;
+  border-color: #CBD5E1;
+}
+
+.vistaCategoryFilterRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  margin: 14px 0 16px 0;
+  padding-bottom: 2px;
+}
+
+.vistaCategoryFilterPill {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid transparent;
+  font-size: 12.5px;
+  font-weight: 600;
+  background: #F1F5F9;
+  color: #475569;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.vistaCategoryFilterPill:hover {
+  background: #E2E8F0;
+  color: #0F172A;
+}
+
+.vistaCategoryFilterPillActive {
+  background: #0F172A !important;
+  color: #FFFFFF !important;
+}
+
+/* Expense Table */
+.vistaExpenseTableWrapper {
+  overflow-x: auto;
+}
+
+.vistaExpenseTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.vistaExpenseTable th {
+  padding: 8px 4px 12px 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748B;
+  text-align: left;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.vistaExpenseRow {
+  border-bottom: 1px solid #F8FAFC;
+  transition: background 0.15s ease;
+}
+
+.vistaExpenseRow:hover {
+  background: #FAFCFF;
+}
+
+.vistaExpenseRow td {
+  padding: 12px 4px;
+  vertical-align: middle;
+}
+
+.vistaDateBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.1;
+}
+
+.vistaDateDay {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0F172A;
+}
+
+.vistaDateMonth {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748B;
+}
+
+.vistaDescCell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.vistaThumbnailImg {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.vistaDescText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.vistaDescTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0F172A;
+  line-height: 1.25;
+}
+
+.vistaDescSub {
+  font-size: 11px;
+  color: #94A3B8;
+  font-weight: 500;
+}
+
+.vistaCategoryPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11.5px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.vistaPayerCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vistaPayerAvatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #475569;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.vistaPayerName {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #1E293B;
+  white-space: nowrap;
+}
+
+.vistaAmountText {
+  font-size: 13.5px;
+  font-weight: 750;
+  color: #0F172A;
+  white-space: nowrap;
+}
+
+.vistaBtnActionMenu {
+  background: none;
+  border: none;
+  padding: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+}
+
+.vistaBtnActionMenu:hover {
+  background: #F1F5F9;
+}
+
+.vistaActionMenuDropdown {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+  padding: 4px;
+  z-index: 20;
+  min-width: 140px;
+}
+
+.vistaActionMenuItemDelete {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: none;
+  border: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: #DC2626;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.15s ease;
+}
+
+.vistaActionMenuItemDelete:hover {
+  background: #FEF2F2;
+}
+
+/* ─── 4. DONUT SUMMARY CARD ─── */
+.vistaCardDonut {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.vistaDonutRow {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin: 12px 0 16px 0;
+  position: relative;
+  z-index: 2;
+}
+
+.vistaDonutChartWrapper {
+  position: relative;
+  width: 128px;
+  height: 128px;
+  flex-shrink: 0;
+}
+
+.vistaDonutSvg {
+  width: 100%;
+  height: 100%;
+}
+
+.vistaDonutCenterText {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.vistaDonutCenterAmount {
+  font-size: 15px;
+  font-weight: 800;
+  color: #0F172A;
+  line-height: 1.1;
+}
+
+.vistaDonutCenterLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748B;
+  margin-top: 2px;
+}
+
+.vistaDonutLegendList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.vistaLegendItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12.5px;
+}
+
+.vistaLegendDotLabel {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.vistaLegendDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.vistaLegendLabel {
+  color: #475569;
+  font-weight: 550;
+}
+
+.vistaLegendAmount {
+  color: #0F172A;
+  font-weight: 700;
+}
+
+.vistaDonutFooter {
+  padding-top: 14px;
+  border-top: 1px solid #F1F5F9;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  position: relative;
+  z-index: 2;
+}
+
+.vistaRemainingLabel {
+  font-size: 12px;
+  color: #64748B;
+  font-weight: 500;
+}
+
+.vistaRemainingAmount {
+  font-size: 22px;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.02em;
+}
+
+.vistaDonutCornerWatermark {
+  position: absolute;
+  right: -10px;
+  bottom: -15px;
+  opacity: 0.78;
+  pointer-events: none;
+  z-index: 1;
+}
+
+
+/* Empty state for Expense Ledger */
+.vistaEmptyLedger {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+  gap: 8px;
+}
+
+.vistaEmptyIconCircle {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 6px;
+}
+
+.vistaEmptyTitle {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0;
+}
+
+.vistaEmptySub {
+  font-size: 12.5px;
+  color: #64748B;
+  max-width: 420px;
+  line-height: 1.45;
+}
+
+/* ─── 0. SUB-NAVBAR TOOLBAR (MATCHING REFERENCE EXACTLY) ─── */
+.vistaSubNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 8px 16px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.vistaSubNavTabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.vistaSubNavTab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.vistaSubNavTab:hover {
+  background: #F1F5F9;
+  color: #0F172A;
+}
+
+.vistaSubNavTabActive {
+  background: #2563EB !important;
+  color: #FFFFFF !important;
+}
+
+.vistaSubNavRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.vistaSubNavSearchWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.vistaSubNavSearchIcon {
+  position: absolute;
+  left: 10px;
+  color: #94A3B8;
+  pointer-events: none;
+}
+
+.vistaSubNavSearchInput {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 7px 12px 7px 32px;
+  font-size: 13px;
+  color: #0F172A;
+  outline: none;
+  width: 180px;
+  transition: all 0.15s ease;
+}
+
+.vistaSubNavSearchInput:focus {
+  background: #FFFFFF;
+  border-color: #0284C7;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
+  width: 210px;
+}
+
+.vistaSubNavBellBtn {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #475569;
+  transition: all 0.15s ease;
+}
+
+.vistaSubNavBellBtn:hover {
+  background: #F1F5F9;
+}
+
+.vistaSubNavBadge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #EF4444;
+  color: #FFFFFF;
+  font-size: 10px;
+  font-weight: 700;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #FFFFFF;
+}
+
+.vistaSubNavAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid #E2E8F0;
 }

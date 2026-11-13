@@ -4,6 +4,8 @@ export interface TripDetail {
   startDate: string;
   endDate: string;
   destinationSummary?: string;
+  description?: string;
+  coverImageUrl?: string;
   budgetTotal: number;
   currency: string;
   status: string;

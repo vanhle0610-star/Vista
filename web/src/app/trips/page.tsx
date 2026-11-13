@@ -841,8 +841,20 @@ export default function TripsPage() {
             }
           });
           setTripsList(merged);
+          if (merged.length > 0 && merged[0]?.id && typeof window !== 'undefined') {
+            try {
+              localStorage.setItem('vista_last_trip_id', merged[0].id);
+              window.dispatchEvent(new CustomEvent('vista-trip-selected', { detail: merged[0].id }));
+            } catch {}
+          }
         } else {
           setTripsList(DEFAULT_DEMO_TRIPS);
+          if (DEFAULT_DEMO_TRIPS.length > 0 && typeof window !== 'undefined') {
+            try {
+              localStorage.setItem('vista_last_trip_id', DEFAULT_DEMO_TRIPS[0].id);
+              window.dispatchEvent(new CustomEvent('vista-trip-selected', { detail: DEFAULT_DEMO_TRIPS[0].id }));
+            } catch {}
+          }
         }
 
         // Check if user just created a trip from Planner
