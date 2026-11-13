@@ -1906,13 +1906,13 @@ export default function TripsPage() {
                           <div className={styles.progressLabelRow}>
                             <span>Tổng chi tiêu hoàn tất</span>
                             <span className={styles.progressValueBold}>
-                              {trip.budgetSpent.toLocaleString('vi-VN')}đ / {trip.budgetTotal.toLocaleString('vi-VN')}đ
+                              {(trip.budgetSpent ?? 0).toLocaleString('vi-VN')}đ / {(trip.budgetTotal ?? 0).toLocaleString('vi-VN')}đ
                             </span>
                           </div>
                           <div className={styles.progressBarTrack}>
                             <div
                               className={styles.progressBarFillNavy}
-                              style={{ width: `${trip.progressPercent}%` }}
+                              style={{ width: `${trip.progressPercent ?? 100}%` }}
                             />
                           </div>
                         </>
@@ -1920,18 +1920,18 @@ export default function TripsPage() {
                         <>
                           <div className={styles.progressLabelRow}>
                             <span>Chi phí đã chi</span>
-                            <span className={styles.progressValueBold}>{trip.progressPercent}%</span>
+                            <span className={styles.progressValueBold}>{trip.progressPercent ?? 0}%</span>
                           </div>
                           <div className={styles.progressBarTrack}>
                             <div
                               className={styles.progressBarFillCyan}
-                              style={{ width: `${trip.progressPercent}%` }}
+                              style={{ width: `${trip.progressPercent ?? 0}%` }}
                             />
                           </div>
                           <div className={styles.progressLabelRow}>
                             <span>Ngân sách chuyến đi</span>
                             <span className={styles.progressValueBold}>
-                              {trip.budgetSpent.toLocaleString('vi-VN')}đ / {trip.budgetTotal.toLocaleString('vi-VN')}đ
+                              {(trip.budgetSpent ?? 0).toLocaleString('vi-VN')}đ / {(trip.budgetTotal ?? 0).toLocaleString('vi-VN')}đ
                             </span>
                           </div>
                         </>
