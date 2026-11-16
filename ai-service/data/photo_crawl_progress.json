@@ -1672,6 +1672,1917 @@
       "size_kb": 14,
       "source": "WIKIMEDIA_COMMONS",
       "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-06b007e3": {
+      "name": "Bánh mì Phượng Hội An",
+      "file": "dest-06b007e3.webp",
+      "size_kb": 146,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "dest-0ea27124": {
+      "name": "Nhà cổ Tấn Ký",
+      "file": "dest-0ea27124.webp",
+      "size_kb": 70,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-1dd9e818": {
+      "name": "Chợ đêm Hội An",
+      "file": "dest-1dd9e818.webp",
+      "size_kb": 103,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "dest-3e73dae3": {
+      "name": "Tháp Chăm Khương Mỹ",
+      "file": "dest-3e73dae3.webp",
+      "size_kb": 53,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-5a497625": {
+      "name": "Chợ Hội An",
+      "file": "dest-5a497625.webp",
+      "size_kb": 161,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "dest-5c26a2b4": {
+      "name": "Làng gốm Thanh Hà",
+      "file": "dest-5c26a2b4.webp",
+      "size_kb": 14,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-73e8466a": {
+      "name": "Phố cổ Hội An & Sông Hoài",
+      "file": "dest-73e8466a.webp",
+      "size_kb": 16,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-753ccc19": {
+      "name": "Bánh mì Madam Khánh",
+      "file": "dest-753ccc19.webp",
+      "size_kb": 114,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "dest-77c36fe9": {
+      "name": "Làng bích họa Tam Thanh",
+      "file": "dest-77c36fe9.webp",
+      "size_kb": 62,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-8151c00f": {
+      "name": "Bãi biển An Bàng",
+      "file": "dest-8151c00f.webp",
+      "size_kb": 32,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-9e644ffe": {
+      "name": "Cơm gà Bà Buội",
+      "file": "dest-9e644ffe.webp",
+      "size_kb": 81,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "dest-a87c5e95": {
+      "name": "Thánh địa Mỹ Sơn",
+      "file": "dest-a87c5e95.webp",
+      "size_kb": 308,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-ab06ac95": {
+      "name": "Đảo Cù Lao Chàm",
+      "file": "dest-ab06ac95.webp",
+      "size_kb": 14,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-c7e2eb8e": {
+      "name": "Chùa Cầu Hội An",
+      "file": "dest-c7e2eb8e.webp",
+      "size_kb": 242,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-d9aad693": {
+      "name": "Hội quán Phúc Kiến",
+      "file": "dest-d9aad693.webp",
+      "size_kb": 19,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-f3ad9c73": {
+      "name": "Làng rau Trà Quế",
+      "file": "dest-f3ad9c73.webp",
+      "size_kb": 118,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-f59b02fa": {
+      "name": "Rừng dừa Bảy Mẫu Cẩm Thanh",
+      "file": "dest-f59b02fa.webp",
+      "size_kb": 118,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-gen-quảng-nam-1000": {
+      "name": "Cà phê View Sông - Quảng Nam (Trung tâm)",
+      "file": "osm-gen-quảng-nam-1000.webp",
+      "size_kb": 177,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1001": {
+      "name": "Mì Quảng Ếch - Quảng Nam (Trung tâm)",
+      "file": "osm-gen-quảng-nam-1001.webp",
+      "size_kb": 106,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1002": {
+      "name": "Nhà hàng Cơm Niêu Cá Kho - Quảng Nam (Trung tâm)",
+      "file": "osm-gen-quảng-nam-1002.webp",
+      "size_kb": 109,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1003": {
+      "name": "Sơn Trà Retreat Villa - Quảng Nam (Trung tâm)",
+      "file": "osm-gen-quảng-nam-1003.webp",
+      "size_kb": 60,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1004": {
+      "name": "Đồi Vọng Cảnh Hoàng Hôn - Quảng Nam (Trung tâm)",
+      "file": "osm-gen-quảng-nam-1004.webp",
+      "size_kb": 14,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-gen-quảng-nam-1005": {
+      "name": "Cà phê Muối Chú Long - Quảng Nam (Cơ sở 2)",
+      "file": "osm-gen-quảng-nam-1005.webp",
+      "size_kb": 84,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1006": {
+      "name": "Bánh Canh Chả Cá - Quảng Nam (Cơ sở 2)",
+      "file": "osm-gen-quảng-nam-1006.webp",
+      "size_kb": 133,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1007": {
+      "name": "Bếp Xưa Ẩm thực Miền Trung - Quảng Nam (Cơ sở 2)",
+      "file": "osm-gen-quảng-nam-1007.webp",
+      "size_kb": 106,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1008": {
+      "name": "Nhà Của Gió Homestay - Quảng Nam (Cơ sở 2)",
+      "file": "osm-gen-quảng-nam-1008.webp",
+      "size_kb": 178,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1009": {
+      "name": "Làng Bích Họa Biển - Quảng Nam (Cơ sở 2)",
+      "file": "osm-gen-quảng-nam-1009.webp",
+      "size_kb": 14,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-gen-quảng-nam-1010": {
+      "name": "Góc Kỷ Niệm Cafe - Quảng Nam (Cơ sở 3)",
+      "file": "osm-gen-quảng-nam-1010.webp",
+      "size_kb": 239,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1011": {
+      "name": "Nem Lụi Nướng Than - Quảng Nam (Cơ sở 3)",
+      "file": "osm-gen-quảng-nam-1011.webp",
+      "size_kb": 105,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1012": {
+      "name": "Bếp Xưa Ẩm thực Miền Trung - Quảng Nam (Cơ sở 3)",
+      "file": "osm-gen-quảng-nam-1012.webp",
+      "size_kb": 139,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1013": {
+      "name": "Sơn Trà Retreat Villa - Quảng Nam (Cơ sở 3)",
+      "file": "osm-gen-quảng-nam-1013.webp",
+      "size_kb": 70,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1014": {
+      "name": "Đồi Vọng Cảnh Hoàng Hôn - Quảng Nam (Cơ sở 3)",
+      "file": "osm-gen-quảng-nam-1014.webp",
+      "size_kb": 14,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-gen-quảng-nam-1015": {
+      "name": "Cà phê Muối Chú Long - Quảng Nam (Cơ sở 4)",
+      "file": "osm-gen-quảng-nam-1015.webp",
+      "size_kb": 84,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1016": {
+      "name": "Bánh Bèo Nậm Lọc - Quảng Nam (Cơ sở 4)",
+      "file": "osm-gen-quảng-nam-1016.webp",
+      "size_kb": 182,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1017": {
+      "name": "Nhà hàng Cố Đô - Quảng Nam (Cơ sở 4)",
+      "file": "osm-gen-quảng-nam-1017.webp",
+      "size_kb": 173,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1018": {
+      "name": "Sơn Trà Retreat Villa - Quảng Nam (Cơ sở 4)",
+      "file": "osm-gen-quảng-nam-1018.webp",
+      "size_kb": 60,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1019": {
+      "name": "Bãi Đá Cực Đẹp - Quảng Nam (Cơ sở 4)",
+      "file": "osm-gen-quảng-nam-1019.webp",
+      "size_kb": 14,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-gen-quảng-nam-1020": {
+      "name": "Aroma Coffee Roastery - Quảng Nam (Cơ sở 5)",
+      "file": "osm-gen-quảng-nam-1020.webp",
+      "size_kb": 30,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1021": {
+      "name": "Mì Quảng Ếch - Quảng Nam (Cơ sở 5)",
+      "file": "osm-gen-quảng-nam-1021.webp",
+      "size_kb": 106,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1022": {
+      "name": "Nhà hàng Cơm Niêu Cá Kho - Quảng Nam (Cơ sở 5)",
+      "file": "osm-gen-quảng-nam-1022.webp",
+      "size_kb": 219,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1023": {
+      "name": "Sơn Trà Retreat Villa - Quảng Nam (Cơ sở 5)",
+      "file": "osm-gen-quảng-nam-1023.webp",
+      "size_kb": 60,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1024": {
+      "name": "Đường Hoa Biển - Quảng Nam (Cơ sở 5)",
+      "file": "osm-gen-quảng-nam-1024.webp",
+      "size_kb": 59,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-gen-quảng-nam-1025": {
+      "name": "Cà phê Dừa Biển - Quảng Nam (Cơ sở 6)",
+      "file": "osm-gen-quảng-nam-1025.webp",
+      "size_kb": 39,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1026": {
+      "name": "Bánh Xèo Tôm Nhảy - Quảng Nam (Cơ sở 6)",
+      "file": "osm-gen-quảng-nam-1026.webp",
+      "size_kb": 106,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1027": {
+      "name": "Nhà hàng Cố Đô - Quảng Nam (Cơ sở 6)",
+      "file": "osm-gen-quảng-nam-1027.webp",
+      "size_kb": 142,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1028": {
+      "name": "Sơn Trà Retreat Villa - Quảng Nam (Cơ sở 6)",
+      "file": "osm-gen-quảng-nam-1028.webp",
+      "size_kb": 70,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1029": {
+      "name": "Làng Bích Họa Biển - Quảng Nam (Cơ sở 6)",
+      "file": "osm-gen-quảng-nam-1029.webp",
+      "size_kb": 14,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-gen-quảng-nam-1030": {
+      "name": "The Workshop Cafe - Quảng Nam (Cơ sở 7)",
+      "file": "osm-gen-quảng-nam-1030.webp",
+      "size_kb": 76,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1031": {
+      "name": "Chè Hẻm Cung Đình - Quảng Nam (Cơ sở 7)",
+      "file": "osm-gen-quảng-nam-1031.webp",
+      "size_kb": 98,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1032": {
+      "name": "Quán Hải Sản Bờ Kè - Quảng Nam (Cơ sở 7)",
+      "file": "osm-gen-quảng-nam-1032.webp",
+      "size_kb": 128,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1033": {
+      "name": "Nhà Của Gió Homestay - Quảng Nam (Cơ sở 7)",
+      "file": "osm-gen-quảng-nam-1033.webp",
+      "size_kb": 178,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1034": {
+      "name": "Đường Hoa Biển - Quảng Nam (Cơ sở 7)",
+      "file": "osm-gen-quảng-nam-1034.webp",
+      "size_kb": 59,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-gen-quảng-nam-1035": {
+      "name": "Cà phê Dừa Biển - Quảng Nam (Cơ sở 8)",
+      "file": "osm-gen-quảng-nam-1035.webp",
+      "size_kb": 24,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1036": {
+      "name": "Bánh Tráng Cuốn Thịt Heo - Quảng Nam (Cơ sở 8)",
+      "file": "osm-gen-quảng-nam-1036.webp",
+      "size_kb": 124,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1037": {
+      "name": "Quán Hải Sản Bờ Kè - Quảng Nam (Cơ sở 8)",
+      "file": "osm-gen-quảng-nam-1037.webp",
+      "size_kb": 292,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1038": {
+      "name": "Sơn Trà Retreat Villa - Quảng Nam (Cơ sở 8)",
+      "file": "osm-gen-quảng-nam-1038.webp",
+      "size_kb": 60,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1039": {
+      "name": "Làng Bích Họa Biển - Quảng Nam (Cơ sở 8)",
+      "file": "osm-gen-quảng-nam-1039.webp",
+      "size_kb": 14,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-gen-quảng-nam-1040": {
+      "name": "Cà phê Muối Chú Long - Quảng Nam (Cơ sở 9)",
+      "file": "osm-gen-quảng-nam-1040.webp",
+      "size_kb": 84,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1041": {
+      "name": "Mì Quảng Ếch - Quảng Nam (Cơ sở 9)",
+      "file": "osm-gen-quảng-nam-1041.webp",
+      "size_kb": 106,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1042": {
+      "name": "Nhà hàng Hải Sản Tươi Sống - Quảng Nam (Cơ sở 9)",
+      "file": "osm-gen-quảng-nam-1042.webp",
+      "size_kb": 189,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1043": {
+      "name": "An Nhiên Garden Homestay - Quảng Nam (Cơ sở 9)",
+      "file": "osm-gen-quảng-nam-1043.webp",
+      "size_kb": 254,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1044": {
+      "name": "Làng Bích Họa Biển - Quảng Nam (Cơ sở 9)",
+      "file": "osm-gen-quảng-nam-1044.webp",
+      "size_kb": 14,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-gen-quảng-nam-1045": {
+      "name": "Cà phê View Sông - Quảng Nam (Cơ sở 10)",
+      "file": "osm-gen-quảng-nam-1045.webp",
+      "size_kb": 177,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1046": {
+      "name": "Bánh Tráng Cuốn Thịt Heo - Quảng Nam (Cơ sở 10)",
+      "file": "osm-gen-quảng-nam-1046.webp",
+      "size_kb": 121,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1047": {
+      "name": "Nhà hàng Hải Sản Tươi Sống - Quảng Nam (Cơ sở 10)",
+      "file": "osm-gen-quảng-nam-1047.webp",
+      "size_kb": 21,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1048": {
+      "name": "An Nhiên Garden Homestay - Quảng Nam (Cơ sở 10)",
+      "file": "osm-gen-quảng-nam-1048.webp",
+      "size_kb": 185,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1049": {
+      "name": "Đường Hoa Biển - Quảng Nam (Cơ sở 10)",
+      "file": "osm-gen-quảng-nam-1049.webp",
+      "size_kb": 59,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-gen-quảng-nam-1050": {
+      "name": "Góc Kỷ Niệm Cafe - Quảng Nam (Cơ sở 11)",
+      "file": "osm-gen-quảng-nam-1050.webp",
+      "size_kb": 239,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1051": {
+      "name": "Mì Quảng Ếch - Quảng Nam (Cơ sở 11)",
+      "file": "osm-gen-quảng-nam-1051.webp",
+      "size_kb": 98,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1052": {
+      "name": "Quán Hải Sản Bờ Kè - Quảng Nam (Cơ sở 11)",
+      "file": "osm-gen-quảng-nam-1052.webp",
+      "size_kb": 292,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1053": {
+      "name": "An Nhiên Garden Homestay - Quảng Nam (Cơ sở 11)",
+      "file": "osm-gen-quảng-nam-1053.webp",
+      "size_kb": 185,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1054": {
+      "name": "Đồi Vọng Cảnh Hoàng Hôn - Quảng Nam (Cơ sở 11)",
+      "file": "osm-gen-quảng-nam-1054.webp",
+      "size_kb": 14,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-gen-quảng-nam-1055": {
+      "name": "The Workshop Cafe - Quảng Nam (Cơ sở 12)",
+      "file": "osm-gen-quảng-nam-1055.webp",
+      "size_kb": 155,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1056": {
+      "name": "Chè Hẻm Cung Đình - Quảng Nam (Cơ sở 12)",
+      "file": "osm-gen-quảng-nam-1056.webp",
+      "size_kb": 98,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1057": {
+      "name": "Nhà hàng Cố Đô - Quảng Nam (Cơ sở 12)",
+      "file": "osm-gen-quảng-nam-1057.webp",
+      "size_kb": 144,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1058": {
+      "name": "Nhà Của Gió Homestay - Quảng Nam (Cơ sở 12)",
+      "file": "osm-gen-quảng-nam-1058.webp",
+      "size_kb": 43,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1059": {
+      "name": "Cầu Khóa Tình Yêu - Quảng Nam (Cơ sở 12)",
+      "file": "osm-gen-quảng-nam-1059.webp",
+      "size_kb": 55,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-gen-quảng-nam-1060": {
+      "name": "Góc Kỷ Niệm Cafe - Quảng Nam (Cơ sở 13)",
+      "file": "osm-gen-quảng-nam-1060.webp",
+      "size_kb": 126,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1061": {
+      "name": "Bánh Canh Chả Cá - Quảng Nam (Cơ sở 13)",
+      "file": "osm-gen-quảng-nam-1061.webp",
+      "size_kb": 71,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1062": {
+      "name": "Nhà hàng Cố Đô - Quảng Nam (Cơ sở 13)",
+      "file": "osm-gen-quảng-nam-1062.webp",
+      "size_kb": 141,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1063": {
+      "name": "An Nhiên Garden Homestay - Quảng Nam (Cơ sở 13)",
+      "file": "osm-gen-quảng-nam-1063.webp",
+      "size_kb": 254,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1064": {
+      "name": "Cầu Khóa Tình Yêu - Quảng Nam (Cơ sở 13)",
+      "file": "osm-gen-quảng-nam-1064.webp",
+      "size_kb": 55,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-gen-quảng-nam-1065": {
+      "name": "Góc Kỷ Niệm Cafe - Quảng Nam (Cơ sở 14)",
+      "file": "osm-gen-quảng-nam-1065.webp",
+      "size_kb": 239,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1066": {
+      "name": "Mì Quảng Ếch - Quảng Nam (Cơ sở 14)",
+      "file": "osm-gen-quảng-nam-1066.webp",
+      "size_kb": 103,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1067": {
+      "name": "Nhà hàng Cơm Niêu Cá Kho - Quảng Nam (Cơ sở 14)",
+      "file": "osm-gen-quảng-nam-1067.webp",
+      "size_kb": 109,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1068": {
+      "name": "An Nhiên Garden Homestay - Quảng Nam (Cơ sở 14)",
+      "file": "osm-gen-quảng-nam-1068.webp",
+      "size_kb": 185,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1069": {
+      "name": "Làng Bích Họa Biển - Quảng Nam (Cơ sở 14)",
+      "file": "osm-gen-quảng-nam-1069.webp",
+      "size_kb": 14,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-gen-quảng-nam-1070": {
+      "name": "Cà phê Dừa Biển - Quảng Nam (Cơ sở 15)",
+      "file": "osm-gen-quảng-nam-1070.webp",
+      "size_kb": 21,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1071": {
+      "name": "Bún Bò Giò Heo - Quảng Nam (Cơ sở 15)",
+      "file": "osm-gen-quảng-nam-1071.webp",
+      "size_kb": 104,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1072": {
+      "name": "Nhà hàng Hải Sản Tươi Sống - Quảng Nam (Cơ sở 15)",
+      "file": "osm-gen-quảng-nam-1072.webp",
+      "size_kb": 189,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1073": {
+      "name": "Nhà Của Gió Homestay - Quảng Nam (Cơ sở 15)",
+      "file": "osm-gen-quảng-nam-1073.webp",
+      "size_kb": 178,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1074": {
+      "name": "Bãi Đá Cực Đẹp - Quảng Nam (Cơ sở 15)",
+      "file": "osm-gen-quảng-nam-1074.webp",
+      "size_kb": 14,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-gen-quảng-nam-1075": {
+      "name": "Cà phê Góc Phố - Quảng Nam (Cơ sở 16)",
+      "file": "osm-gen-quảng-nam-1075.webp",
+      "size_kb": 91,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1076": {
+      "name": "Chè Hẻm Cung Đình - Quảng Nam (Cơ sở 16)",
+      "file": "osm-gen-quảng-nam-1076.webp",
+      "size_kb": 98,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1077": {
+      "name": "Quán Hải Sản Bờ Kè - Quảng Nam (Cơ sở 16)",
+      "file": "osm-gen-quảng-nam-1077.webp",
+      "size_kb": 292,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1078": {
+      "name": "Sơn Trà Retreat Villa - Quảng Nam (Cơ sở 16)",
+      "file": "osm-gen-quảng-nam-1078.webp",
+      "size_kb": 70,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1079": {
+      "name": "Cầu Khóa Tình Yêu - Quảng Nam (Cơ sở 16)",
+      "file": "osm-gen-quảng-nam-1079.webp",
+      "size_kb": 55,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-gen-quảng-nam-1080": {
+      "name": "Góc Kỷ Niệm Cafe - Quảng Nam (Cơ sở 17)",
+      "file": "osm-gen-quảng-nam-1080.webp",
+      "size_kb": 239,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1081": {
+      "name": "Bánh Xèo Tôm Nhảy - Quảng Nam (Cơ sở 17)",
+      "file": "osm-gen-quảng-nam-1081.webp",
+      "size_kb": 94,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1082": {
+      "name": "Nhà hàng Cố Đô - Quảng Nam (Cơ sở 17)",
+      "file": "osm-gen-quảng-nam-1082.webp",
+      "size_kb": 164,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1083": {
+      "name": "Biển Xanh Eco Lodge - Quảng Nam (Cơ sở 17)",
+      "file": "osm-gen-quảng-nam-1083.webp",
+      "size_kb": 254,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1084": {
+      "name": "Cầu Khóa Tình Yêu - Quảng Nam (Cơ sở 17)",
+      "file": "osm-gen-quảng-nam-1084.webp",
+      "size_kb": 55,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-gen-quảng-nam-1085": {
+      "name": "Cà phê Muối Chú Long - Quảng Nam (Cơ sở 18)",
+      "file": "osm-gen-quảng-nam-1085.webp",
+      "size_kb": 84,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1086": {
+      "name": "Nem Lụi Nướng Than - Quảng Nam (Cơ sở 18)",
+      "file": "osm-gen-quảng-nam-1086.webp",
+      "size_kb": 105,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1087": {
+      "name": "Quán Hải Sản Bờ Kè - Quảng Nam (Cơ sở 18)",
+      "file": "osm-gen-quảng-nam-1087.webp",
+      "size_kb": 292,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1088": {
+      "name": "Sơn Trà Retreat Villa - Quảng Nam (Cơ sở 18)",
+      "file": "osm-gen-quảng-nam-1088.webp",
+      "size_kb": 60,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1089": {
+      "name": "Cầu Khóa Tình Yêu - Quảng Nam (Cơ sở 18)",
+      "file": "osm-gen-quảng-nam-1089.webp",
+      "size_kb": 55,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-gen-quảng-nam-1090": {
+      "name": "Cà phê View Sông - Quảng Nam (Cơ sở 19)",
+      "file": "osm-gen-quảng-nam-1090.webp",
+      "size_kb": 177,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1091": {
+      "name": "Nem Lụi Nướng Than - Quảng Nam (Cơ sở 19)",
+      "file": "osm-gen-quảng-nam-1091.webp",
+      "size_kb": 99,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1092": {
+      "name": "Bếp Xưa Ẩm thực Miền Trung - Quảng Nam (Cơ sở 19)",
+      "file": "osm-gen-quảng-nam-1092.webp",
+      "size_kb": 139,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1093": {
+      "name": "Nhà Của Gió Homestay - Quảng Nam (Cơ sở 19)",
+      "file": "osm-gen-quảng-nam-1093.webp",
+      "size_kb": 43,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1094": {
+      "name": "Bãi Đá Cực Đẹp - Quảng Nam (Cơ sở 19)",
+      "file": "osm-gen-quảng-nam-1094.webp",
+      "size_kb": 14,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-gen-quảng-nam-1095": {
+      "name": "Cà phê Muối Chú Long - Quảng Nam (Cơ sở 20)",
+      "file": "osm-gen-quảng-nam-1095.webp",
+      "size_kb": 84,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1096": {
+      "name": "Bánh Tráng Cuốn Thịt Heo - Quảng Nam (Cơ sở 20)",
+      "file": "osm-gen-quảng-nam-1096.webp",
+      "size_kb": 69,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1097": {
+      "name": "Nhà hàng Cơm Niêu Cá Kho - Quảng Nam (Cơ sở 20)",
+      "file": "osm-gen-quảng-nam-1097.webp",
+      "size_kb": 109,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1098": {
+      "name": "An Nhiên Garden Homestay - Quảng Nam (Cơ sở 20)",
+      "file": "osm-gen-quảng-nam-1098.webp",
+      "size_kb": 185,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1099": {
+      "name": "Bãi Đá Cực Đẹp - Quảng Nam (Cơ sở 20)",
+      "file": "osm-gen-quảng-nam-1099.webp",
+      "size_kb": 14,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-gen-quảng-nam-1100": {
+      "name": "Cà phê Dừa Biển - Quảng Nam (Cơ sở 21)",
+      "file": "osm-gen-quảng-nam-1100.webp",
+      "size_kb": 32,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1101": {
+      "name": "Bánh Tráng Cuốn Thịt Heo - Quảng Nam (Cơ sở 21)",
+      "file": "osm-gen-quảng-nam-1101.webp",
+      "size_kb": 124,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1102": {
+      "name": "Bếp Xưa Ẩm thực Miền Trung - Quảng Nam (Cơ sở 21)",
+      "file": "osm-gen-quảng-nam-1102.webp",
+      "size_kb": 132,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1103": {
+      "name": "Nhà Của Gió Homestay - Quảng Nam (Cơ sở 21)",
+      "file": "osm-gen-quảng-nam-1103.webp",
+      "size_kb": 178,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1104": {
+      "name": "Đồi Vọng Cảnh Hoàng Hôn - Quảng Nam (Cơ sở 21)",
+      "file": "osm-gen-quảng-nam-1104.webp",
+      "size_kb": 14,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-gen-quảng-nam-1105": {
+      "name": "Góc Kỷ Niệm Cafe - Quảng Nam (Cơ sở 22)",
+      "file": "osm-gen-quảng-nam-1105.webp",
+      "size_kb": 239,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1106": {
+      "name": "Bún Bò Giò Heo - Quảng Nam (Cơ sở 22)",
+      "file": "osm-gen-quảng-nam-1106.webp",
+      "size_kb": 104,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1107": {
+      "name": "Bếp Xưa Ẩm thực Miền Trung - Quảng Nam (Cơ sở 22)",
+      "file": "osm-gen-quảng-nam-1107.webp",
+      "size_kb": 139,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1108": {
+      "name": "Hội An Memories Homestay - Quảng Nam (Cơ sở 22)",
+      "file": "osm-gen-quảng-nam-1108.webp",
+      "size_kb": 279,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1109": {
+      "name": "Đường Hoa Biển - Quảng Nam (Cơ sở 22)",
+      "file": "osm-gen-quảng-nam-1109.webp",
+      "size_kb": 59,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-gen-quảng-nam-1110": {
+      "name": "The Workshop Cafe - Quảng Nam (Cơ sở 23)",
+      "file": "osm-gen-quảng-nam-1110.webp",
+      "size_kb": 155,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1111": {
+      "name": "Bún Bò Giò Heo - Quảng Nam (Cơ sở 23)",
+      "file": "osm-gen-quảng-nam-1111.webp",
+      "size_kb": 104,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1112": {
+      "name": "Nhà hàng Hải Sản Tươi Sống - Quảng Nam (Cơ sở 23)",
+      "file": "osm-gen-quảng-nam-1112.webp",
+      "size_kb": 189,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1113": {
+      "name": "Biển Xanh Eco Lodge - Quảng Nam (Cơ sở 23)",
+      "file": "osm-gen-quảng-nam-1113.webp",
+      "size_kb": 113,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1114": {
+      "name": "Làng Bích Họa Biển - Quảng Nam (Cơ sở 23)",
+      "file": "osm-gen-quảng-nam-1114.webp",
+      "size_kb": 14,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-gen-quảng-nam-1115": {
+      "name": "Góc Kỷ Niệm Cafe - Quảng Nam (Cơ sở 24)",
+      "file": "osm-gen-quảng-nam-1115.webp",
+      "size_kb": 239,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1116": {
+      "name": "Nem Lụi Nướng Than - Quảng Nam (Cơ sở 24)",
+      "file": "osm-gen-quảng-nam-1116.webp",
+      "size_kb": 99,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1117": {
+      "name": "Nhà hàng Hải Sản Tươi Sống - Quảng Nam (Cơ sở 24)",
+      "file": "osm-gen-quảng-nam-1117.webp",
+      "size_kb": 189,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1118": {
+      "name": "Sơn Trà Retreat Villa - Quảng Nam (Cơ sở 24)",
+      "file": "osm-gen-quảng-nam-1118.webp",
+      "size_kb": 60,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1119": {
+      "name": "Làng Bích Họa Biển - Quảng Nam (Cơ sở 24)",
+      "file": "osm-gen-quảng-nam-1119.webp",
+      "size_kb": 14,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-gen-quảng-nam-1120": {
+      "name": "Góc Kỷ Niệm Cafe - Quảng Nam (Cơ sở 25)",
+      "file": "osm-gen-quảng-nam-1120.webp",
+      "size_kb": 239,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1121": {
+      "name": "Bún Bò Giò Heo - Quảng Nam (Cơ sở 25)",
+      "file": "osm-gen-quảng-nam-1121.webp",
+      "size_kb": 104,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1122": {
+      "name": "Quán Hải Sản Bờ Kè - Quảng Nam (Cơ sở 25)",
+      "file": "osm-gen-quảng-nam-1122.webp",
+      "size_kb": 128,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1123": {
+      "name": "Biển Xanh Eco Lodge - Quảng Nam (Cơ sở 25)",
+      "file": "osm-gen-quảng-nam-1123.webp",
+      "size_kb": 254,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1124": {
+      "name": "Cầu Khóa Tình Yêu - Quảng Nam (Cơ sở 25)",
+      "file": "osm-gen-quảng-nam-1124.webp",
+      "size_kb": 55,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-gen-quảng-nam-1125": {
+      "name": "Cà phê Góc Phố - Quảng Nam (Cơ sở 26)",
+      "file": "osm-gen-quảng-nam-1125.webp",
+      "size_kb": 91,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1126": {
+      "name": "Chè Hẻm Cung Đình - Quảng Nam (Cơ sở 26)",
+      "file": "osm-gen-quảng-nam-1126.webp",
+      "size_kb": 98,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1127": {
+      "name": "Quán Hải Sản Bờ Kè - Quảng Nam (Cơ sở 26)",
+      "file": "osm-gen-quảng-nam-1127.webp",
+      "size_kb": 292,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1128": {
+      "name": "Biển Xanh Eco Lodge - Quảng Nam (Cơ sở 26)",
+      "file": "osm-gen-quảng-nam-1128.webp",
+      "size_kb": 254,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-quảng-nam-1129": {
+      "name": "Cầu Khóa Tình Yêu - Quảng Nam (Cơ sở 26)",
+      "file": "osm-gen-quảng-nam-1129.webp",
+      "size_kb": 55,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-gen-quảng-nam-1130": {
+      "name": "Góc Kỷ Niệm Cafe - Quảng Nam (Cơ sở 27)",
+      "file": "osm-gen-quảng-nam-1130.webp",
+      "size_kb": 239,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-1997671803": {
+      "name": "Day & Night Café",
+      "file": "osm-node-1997671803.webp",
+      "size_kb": 142,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-2076855759": {
+      "name": "Banana Leaf",
+      "file": "osm-node-2076855759.webp",
+      "size_kb": 23,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-2076855765": {
+      "name": "Blue Dragon",
+      "file": "osm-node-2076855765.webp",
+      "size_kb": 150,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-2076855779": {
+      "name": "Can 화이트로즈 프ㅏ이드 완탕",
+      "file": "osm-node-2076855779.webp",
+      "size_kb": 76,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-2076855840": {
+      "name": "Green Mango",
+      "file": "osm-node-2076855840.webp",
+      "size_kb": 124,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-2076855866": {
+      "name": "Nhà cổ Đức An",
+      "file": "osm-node-2076855866.webp",
+      "size_kb": 37,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-node-2076855897": {
+      "name": "Hong Phuc II",
+      "file": "osm-node-2076855897.webp",
+      "size_kb": 76,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-2076855925": {
+      "name": "Kisetsu",
+      "file": "osm-node-2076855925.webp",
+      "size_kb": 59,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-2076855954": {
+      "name": "Nhà cổ Quân Thắng",
+      "file": "osm-node-2076855954.webp",
+      "size_kb": 41,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-node-2076856011": {
+      "name": "Tam Tam Cafe",
+      "file": "osm-node-2076856011.webp",
+      "size_kb": 120,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-2091401440": {
+      "name": "An Hoi",
+      "file": "osm-node-2091401440.webp",
+      "size_kb": 142,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-2091401442": {
+      "name": "Binh MI",
+      "file": "osm-node-2091401442.webp",
+      "size_kb": 133,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-2091401451": {
+      "name": "Hi Restaurant",
+      "file": "osm-node-2091401451.webp",
+      "size_kb": 206,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-2091401456": {
+      "name": "Man Nguyen",
+      "file": "osm-node-2091401456.webp",
+      "size_kb": 136,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-2091401478": {
+      "name": "Yellow Flower",
+      "file": "osm-node-2091401478.webp",
+      "size_kb": 142,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-2092582344": {
+      "name": "Huong Vien",
+      "file": "osm-node-2092582344.webp",
+      "size_kb": 126,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-2092582351": {
+      "name": "Old Garden",
+      "file": "osm-node-2092582351.webp",
+      "size_kb": 76,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-2092582383": {
+      "name": "The Pear Tree",
+      "file": "osm-node-2092582383.webp",
+      "size_kb": 150,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-2217387212": {
+      "name": "An Bang Beach Club",
+      "file": "osm-node-2217387212.webp",
+      "size_kb": 193,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-2217387213": {
+      "name": "Kim Cuc",
+      "file": "osm-node-2217387213.webp",
+      "size_kb": 176,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-2269957315": {
+      "name": "Miss Ly",
+      "file": "osm-node-2269957315.webp",
+      "size_kb": 142,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-2269957326": {
+      "name": "Golden Bridge",
+      "file": "osm-node-2269957326.webp",
+      "size_kb": 142,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-2461400746": {
+      "name": "Market",
+      "file": "osm-node-2461400746.webp",
+      "size_kb": 219,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-2617007574": {
+      "name": "Kazimierz Kwiatkowski",
+      "file": "osm-node-2617007574.webp",
+      "size_kb": 297,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-node-2904499001": {
+      "name": "Red Gecko Restaurant",
+      "file": "osm-node-2904499001.webp",
+      "size_kb": 94,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-3093689363": {
+      "name": "Café 43",
+      "file": "osm-node-3093689363.webp",
+      "size_kb": 136,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-3145009062": {
+      "name": "OM Cafe",
+      "file": "osm-node-3145009062.webp",
+      "size_kb": 76,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-3189923484": {
+      "name": "Sa Huynh",
+      "file": "osm-node-3189923484.webp",
+      "size_kb": 135,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-node-3640168109": {
+      "name": "Four Plates",
+      "file": "osm-node-3640168109.webp",
+      "size_kb": 129,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-3684699441": {
+      "name": "Mia Coffee",
+      "file": "osm-node-3684699441.webp",
+      "size_kb": 156,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-3688951425": {
+      "name": "Pho Reu",
+      "file": "osm-node-3688951425.webp",
+      "size_kb": 98,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-3812098704": {
+      "name": "Chez Cesar Restaurant",
+      "file": "osm-node-3812098704.webp",
+      "size_kb": 76,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-3887708818": {
+      "name": "Khách sạn Hội Phố",
+      "file": "osm-node-3887708818.webp",
+      "size_kb": 241,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-3888954278": {
+      "name": "Karma Waters",
+      "file": "osm-node-3888954278.webp",
+      "size_kb": 126,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-3893467764": {
+      "name": "UY VIET COFFEE BEAN",
+      "file": "osm-node-3893467764.webp",
+      "size_kb": 30,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-4041668788": {
+      "name": "Vina Ngon 2",
+      "file": "osm-node-4041668788.webp",
+      "size_kb": 76,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-4141060177": {
+      "name": "Facetime Cafe & Bar",
+      "file": "osm-node-4141060177.webp",
+      "size_kb": 76,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-4154752890": {
+      "name": "Cafe Sinh Thai",
+      "file": "osm-node-4154752890.webp",
+      "size_kb": 76,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-4158620489": {
+      "name": "Hidden Beach",
+      "file": "osm-node-4158620489.webp",
+      "size_kb": 76,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-4171925609": {
+      "name": "Thuan Tinh Island",
+      "file": "osm-node-4171925609.webp",
+      "size_kb": 139,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-node-4171964390": {
+      "name": "Thanh Ha Pottery Village",
+      "file": "osm-node-4171964390.webp",
+      "size_kb": 175,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-4171971289": {
+      "name": "Kim Bong Carpentry Village",
+      "file": "osm-node-4171971289.webp",
+      "size_kb": 84,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-node-4171971589": {
+      "name": "כפר הקדרים טאן הא",
+      "file": "osm-node-4171971589.webp",
+      "size_kb": 333,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-4253896690": {
+      "name": "The Espresso Station",
+      "file": "osm-node-4253896690.webp",
+      "size_kb": 150,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-4265463792": {
+      "name": "Tre cafe",
+      "file": "osm-node-4265463792.webp",
+      "size_kb": 144,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-4345292789": {
+      "name": "Lame Cafe",
+      "file": "osm-node-4345292789.webp",
+      "size_kb": 76,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-4369340191": {
+      "name": "Café Phú Lich",
+      "file": "osm-node-4369340191.webp",
+      "size_kb": 81,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-4452884989": {
+      "name": "cầu tre",
+      "file": "osm-node-4452884989.webp",
+      "size_kb": 41,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-node-4461175292": {
+      "name": "Rosies Cafe",
+      "file": "osm-node-4461175292.webp",
+      "size_kb": 126,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-4517387589": {
+      "name": "Triem Tay Village",
+      "file": "osm-node-4517387589.webp",
+      "size_kb": 7,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-node-4551757589": {
+      "name": "cà phê cường hiền",
+      "file": "osm-node-4551757589.webp",
+      "size_kb": 232,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-4631365689": {
+      "name": "KaTê café",
+      "file": "osm-node-4631365689.webp",
+      "size_kb": 198,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-4706268891": {
+      "name": "Google- Café Bar",
+      "file": "osm-node-4706268891.webp",
+      "size_kb": 76,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-4706290190": {
+      "name": "The on off - Café",
+      "file": "osm-node-4706290190.webp",
+      "size_kb": 76,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-4717672963": {
+      "name": "Hoi An Roastery",
+      "file": "osm-node-4717672963.webp",
+      "size_kb": 168,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-4725933789": {
+      "name": "Пицца,бургер название BricksStone",
+      "file": "osm-node-4725933789.webp",
+      "size_kb": 144,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-4873409223": {
+      "name": "Thuc Quyen Coffee",
+      "file": "osm-node-4873409223.webp",
+      "size_kb": 142,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-4905288125": {
+      "name": "Minh Dang",
+      "file": "osm-node-4905288125.webp",
+      "size_kb": 142,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-4937240922": {
+      "name": "Thanh mai",
+      "file": "osm-node-4937240922.webp",
+      "size_kb": 76,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-4955662821": {
+      "name": "Đài Kỷ Niệm Danh Nhân Chí Sĩ Quảng Nam",
+      "file": "osm-node-4955662821.webp",
+      "size_kb": 138,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-node-5276546923": {
+      "name": "Nguyen Duy Hieu",
+      "file": "osm-node-5276546923.webp",
+      "size_kb": 82,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-node-5403993021": {
+      "name": "Cua Dai Beach",
+      "file": "osm-node-5403993021.webp",
+      "size_kb": 78,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-node-5444684504": {
+      "name": "Café Tin;",
+      "file": "osm-node-5444684504.webp",
+      "size_kb": 76,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-node-5513474821": {
+      "name": "Terracotta Park",
+      "file": "osm-node-5513474821.webp",
+      "size_kb": 157,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-node-6099308589": {
+      "name": "Chợ Đêm",
+      "file": "osm-node-6099308589.webp",
+      "size_kb": 48,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-node-6372734486": {
+      "name": "Duy vinh",
+      "file": "osm-node-6372734486.webp",
+      "size_kb": 184,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-node-6627739386": {
+      "name": "Casa Tan my",
+      "file": "osm-node-6627739386.webp",
+      "size_kb": 93,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-16dbf348": {
+      "name": "Chợ Cồn",
+      "file": "dest-16dbf348.webp",
+      "size_kb": 156,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "dest-1a812708": {
+      "name": "Cầu Rồng Đà Nẵng",
+      "file": "dest-1a812708.webp",
+      "size_kb": 30,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-2b0c488a": {
+      "name": "Bảo tàng Điêu khắc Chăm",
+      "file": "dest-2b0c488a.webp",
+      "size_kb": 75,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-3980239b": {
+      "name": "Công viên nước Mikazuki 365",
+      "file": "dest-3980239b.webp",
+      "size_kb": 205,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "dest-4c6d2d3f": {
+      "name": "Bánh xèo Bà Dưỡng",
+      "file": "dest-4c6d2d3f.webp",
+      "size_kb": 158,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "dest-65f890a2": {
+      "name": "Danh thắng Ngũ Hành Sơn",
+      "file": "dest-65f890a2.webp",
+      "size_kb": 101,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-67469595": {
+      "name": "Bún chả cá Bà Lữ",
+      "file": "dest-67469595.webp",
+      "size_kb": 116,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "dest-695f67cb": {
+      "name": "Bảo tàng Đà Nẵng",
+      "file": "dest-695f67cb.webp",
+      "size_kb": 172,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-712fc86a": {
+      "name": "Đèo Hải Vân",
+      "file": "dest-712fc86a.webp",
+      "size_kb": 68,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-7a927aa3": {
+      "name": "Cầu Tình Yêu & Tượng Cá Chép Hóa Rồng",
+      "file": "dest-7a927aa3.webp",
+      "size_kb": 75,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-7b3f5f5c": {
+      "name": "Chợ Hàn Đà Nẵng",
+      "file": "dest-7b3f5f5c.webp",
+      "size_kb": 224,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "dest-9648da36": {
+      "name": "Bà Nà Hills",
+      "file": "dest-9648da36.webp",
+      "size_kb": 87,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "dest-ac8a1100": {
+      "name": "Bãi biển Mỹ Khê",
+      "file": "dest-ac8a1100.webp",
+      "size_kb": 67,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-c3bb243c": {
+      "name": "Suối khoáng nóng Núi Thần Tài",
+      "file": "dest-c3bb243c.webp",
+      "size_kb": 260,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "dest-dcc0475c": {
+      "name": "Bán đảo Sơn Trà & Chùa Linh Ứng",
+      "file": "dest-dcc0475c.webp",
+      "size_kb": 14,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-f9a2a116": {
+      "name": "Mì Quảng Bà Mua",
+      "file": "dest-f9a2a116.webp",
+      "size_kb": 140,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-đà-nẵng-1000": {
+      "name": "Aroma Coffee Roastery - Đà Nẵng (Trung tâm)",
+      "file": "osm-gen-đà-nẵng-1000.webp",
+      "size_kb": 148,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-đà-nẵng-1001": {
+      "name": "Mì Quảng Ếch - Đà Nẵng (Trung tâm)",
+      "file": "osm-gen-đà-nẵng-1001.webp",
+      "size_kb": 113,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-đà-nẵng-1002": {
+      "name": "Bếp Xưa Ẩm thực Miền Trung - Đà Nẵng (Trung tâm)",
+      "file": "osm-gen-đà-nẵng-1002.webp",
+      "size_kb": 88,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-đà-nẵng-1003": {
+      "name": "An Nhiên Garden Homestay - Đà Nẵng (Trung tâm)",
+      "file": "osm-gen-đà-nẵng-1003.webp",
+      "size_kb": 104,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-đà-nẵng-1004": {
+      "name": "Làng Bích Họa Biển - Đà Nẵng (Trung tâm)",
+      "file": "osm-gen-đà-nẵng-1004.webp",
+      "size_kb": 60,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-gen-đà-nẵng-1005": {
+      "name": "Cà phê View Sông - Đà Nẵng (Cơ sở 2)",
+      "file": "osm-gen-đà-nẵng-1005.webp",
+      "size_kb": 117,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-đà-nẵng-1006": {
+      "name": "Bánh Xèo Tôm Nhảy - Đà Nẵng (Cơ sở 2)",
+      "file": "osm-gen-đà-nẵng-1006.webp",
+      "size_kb": 106,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-đà-nẵng-1007": {
+      "name": "Nhà hàng Hải Sản Tươi Sống - Đà Nẵng (Cơ sở 2)",
+      "file": "osm-gen-đà-nẵng-1007.webp",
+      "size_kb": 123,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-đà-nẵng-1008": {
+      "name": "Nhà Của Gió Homestay - Đà Nẵng (Cơ sở 2)",
+      "file": "osm-gen-đà-nẵng-1008.webp",
+      "size_kb": 178,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-đà-nẵng-1009": {
+      "name": "Đồi Vọng Cảnh Hoàng Hôn - Đà Nẵng (Cơ sở 2)",
+      "file": "osm-gen-đà-nẵng-1009.webp",
+      "size_kb": 97,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-gen-đà-nẵng-1010": {
+      "name": "Cà phê Muối Chú Long - Đà Nẵng (Cơ sở 3)",
+      "file": "osm-gen-đà-nẵng-1010.webp",
+      "size_kb": 84,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-đà-nẵng-1011": {
+      "name": "Bánh Canh Chả Cá - Đà Nẵng (Cơ sở 3)",
+      "file": "osm-gen-đà-nẵng-1011.webp",
+      "size_kb": 110,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-đà-nẵng-1012": {
+      "name": "Nhà hàng Cơm Niêu Cá Kho - Đà Nẵng (Cơ sở 3)",
+      "file": "osm-gen-đà-nẵng-1012.webp",
+      "size_kb": 159,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-đà-nẵng-1013": {
+      "name": "Biển Xanh Eco Lodge - Đà Nẵng (Cơ sở 3)",
+      "file": "osm-gen-đà-nẵng-1013.webp",
+      "size_kb": 113,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-đà-nẵng-1014": {
+      "name": "Đường Hoa Biển - Đà Nẵng (Cơ sở 3)",
+      "file": "osm-gen-đà-nẵng-1014.webp",
+      "size_kb": 52,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-gen-đà-nẵng-1015": {
+      "name": "Cà phê Muối Chú Long - Đà Nẵng (Cơ sở 4)",
+      "file": "osm-gen-đà-nẵng-1015.webp",
+      "size_kb": 92,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-đà-nẵng-1016": {
+      "name": "Mì Quảng Ếch - Đà Nẵng (Cơ sở 4)",
+      "file": "osm-gen-đà-nẵng-1016.webp",
+      "size_kb": 103,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-đà-nẵng-1017": {
+      "name": "Bếp Xưa Ẩm thực Miền Trung - Đà Nẵng (Cơ sở 4)",
+      "file": "osm-gen-đà-nẵng-1017.webp",
+      "size_kb": 177,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-đà-nẵng-1018": {
+      "name": "Sơn Trà Retreat Villa - Đà Nẵng (Cơ sở 4)",
+      "file": "osm-gen-đà-nẵng-1018.webp",
+      "size_kb": 225,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-đà-nẵng-1019": {
+      "name": "Đường Hoa Biển - Đà Nẵng (Cơ sở 4)",
+      "file": "osm-gen-đà-nẵng-1019.webp",
+      "size_kb": 52,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-gen-đà-nẵng-1020": {
+      "name": "Aroma Coffee Roastery - Đà Nẵng (Cơ sở 5)",
+      "file": "osm-gen-đà-nẵng-1020.webp",
+      "size_kb": 148,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-đà-nẵng-1021": {
+      "name": "Bánh Bèo Nậm Lọc - Đà Nẵng (Cơ sở 5)",
+      "file": "osm-gen-đà-nẵng-1021.webp",
+      "size_kb": 182,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-đà-nẵng-1022": {
+      "name": "Quán Hải Sản Bờ Kè - Đà Nẵng (Cơ sở 5)",
+      "file": "osm-gen-đà-nẵng-1022.webp",
+      "size_kb": 239,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-đà-nẵng-1023": {
+      "name": "Sơn Trà Retreat Villa - Đà Nẵng (Cơ sở 5)",
+      "file": "osm-gen-đà-nẵng-1023.webp",
+      "size_kb": 225,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-đà-nẵng-1024": {
+      "name": "Đồi Vọng Cảnh Hoàng Hôn - Đà Nẵng (Cơ sở 5)",
+      "file": "osm-gen-đà-nẵng-1024.webp",
+      "size_kb": 97,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-gen-đà-nẵng-1025": {
+      "name": "Cà phê Dừa Biển - Đà Nẵng (Cơ sở 6)",
+      "file": "osm-gen-đà-nẵng-1025.webp",
+      "size_kb": 71,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-đà-nẵng-1026": {
+      "name": "Bánh Xèo Tôm Nhảy - Đà Nẵng (Cơ sở 6)",
+      "file": "osm-gen-đà-nẵng-1026.webp",
+      "size_kb": 106,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-đà-nẵng-1027": {
+      "name": "Quán Hải Sản Bờ Kè - Đà Nẵng (Cơ sở 6)",
+      "file": "osm-gen-đà-nẵng-1027.webp",
+      "size_kb": 239,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-đà-nẵng-1028": {
+      "name": "Nhà Của Gió Homestay - Đà Nẵng (Cơ sở 6)",
+      "file": "osm-gen-đà-nẵng-1028.webp",
+      "size_kb": 157,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-đà-nẵng-1029": {
+      "name": "Cầu Khóa Tình Yêu - Đà Nẵng (Cơ sở 6)",
+      "file": "osm-gen-đà-nẵng-1029.webp",
+      "size_kb": 45,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-gen-đà-nẵng-1030": {
+      "name": "Aroma Coffee Roastery - Đà Nẵng (Cơ sở 7)",
+      "file": "osm-gen-đà-nẵng-1030.webp",
+      "size_kb": 148,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-đà-nẵng-1031": {
+      "name": "Mì Quảng Ếch - Đà Nẵng (Cơ sở 7)",
+      "file": "osm-gen-đà-nẵng-1031.webp",
+      "size_kb": 103,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-đà-nẵng-1032": {
+      "name": "Nhà hàng Cố Đô - Đà Nẵng (Cơ sở 7)",
+      "file": "osm-gen-đà-nẵng-1032.webp",
+      "size_kb": 191,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-đà-nẵng-1033": {
+      "name": "Hội An Memories Homestay - Đà Nẵng (Cơ sở 7)",
+      "file": "osm-gen-đà-nẵng-1033.webp",
+      "size_kb": 255,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-đà-nẵng-1034": {
+      "name": "Cầu Khóa Tình Yêu - Đà Nẵng (Cơ sở 7)",
+      "file": "osm-gen-đà-nẵng-1034.webp",
+      "size_kb": 45,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-gen-đà-nẵng-1035": {
+      "name": "Cà phê Góc Phố - Đà Nẵng (Cơ sở 8)",
+      "file": "osm-gen-đà-nẵng-1035.webp",
+      "size_kb": 271,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-đà-nẵng-1036": {
+      "name": "Mì Quảng Ếch - Đà Nẵng (Cơ sở 8)",
+      "file": "osm-gen-đà-nẵng-1036.webp",
+      "size_kb": 113,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-đà-nẵng-1037": {
+      "name": "Nhà hàng Hải Sản Tươi Sống - Đà Nẵng (Cơ sở 8)",
+      "file": "osm-gen-đà-nẵng-1037.webp",
+      "size_kb": 239,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-đà-nẵng-1038": {
+      "name": "Hội An Memories Homestay - Đà Nẵng (Cơ sở 8)",
+      "file": "osm-gen-đà-nẵng-1038.webp",
+      "size_kb": 117,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-đà-nẵng-1039": {
+      "name": "Đường Hoa Biển - Đà Nẵng (Cơ sở 8)",
+      "file": "osm-gen-đà-nẵng-1039.webp",
+      "size_kb": 52,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "osm-gen-đà-nẵng-1040": {
+      "name": "Cà phê View Sông - Đà Nẵng (Cơ sở 9)",
+      "file": "osm-gen-đà-nẵng-1040.webp",
+      "size_kb": 117,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "osm-gen-đà-nẵng-1041": {
+      "name": "Bánh Bèo Nậm Lọc - Đà Nẵng (Cơ sở 9)",
+      "file": "osm-gen-đà-nẵng-1041.webp",
+      "size_kb": 86,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
     }
   },
   "failed_ids": {
@@ -1689,6 +3600,22 @@
     },
     "dest-pq-hon-mong-tay": {
       "name": "Hòn Móng Tay Phú Quốc",
+      "reason": "download_optimize_failed"
+    },
+    "osm-node-2091401443": {
+      "name": "Cava",
+      "reason": "download_optimize_failed"
+    },
+    "osm-node-3157491491": {
+      "name": "Tra Que Water Wheel",
+      "reason": "download_optimize_failed"
+    },
+    "osm-node-3647132544": {
+      "name": "The Kebab Shack",
+      "reason": "download_optimize_failed"
+    },
+    "osm-node-4171964292": {
+      "name": "Cua Dai",
       "reason": "download_optimize_failed"
     }
   }
