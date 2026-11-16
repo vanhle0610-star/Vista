@@ -1,0 +1,295 @@
+{
+  "processed_ids": {
+    "dest-18e41739": {
+      "name": "Bảo tàng Cội Nguồn Phú Quốc",
+      "file": "dest-18e41739.webp",
+      "size_kb": 68,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-19a26dd6": {
+      "name": "Quần đảo An Thới",
+      "file": "dest-19a26dd6.webp",
+      "size_kb": 57,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-2377e354": {
+      "name": "Đảo Hòn Sơn",
+      "file": "dest-2377e354.webp",
+      "size_kb": 136,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-2dc8c9c9": {
+      "name": "Chợ đêm Phú Quốc",
+      "file": "dest-2dc8c9c9.webp",
+      "size_kb": 142,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "dest-6c3cfdfb": {
+      "name": "Vinpearl Safari Phú Quốc",
+      "file": "dest-6c3cfdfb.webp",
+      "size_kb": 203,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-9d16ab5a": {
+      "name": "VinWonders Phú Quốc",
+      "file": "dest-9d16ab5a.webp",
+      "size_kb": 470,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-b506c9be": {
+      "name": "Hà Tiên",
+      "file": "dest-b506c9be.webp",
+      "size_kb": 190,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-d9b6891f": {
+      "name": "Quần đảo Nam Du",
+      "file": "dest-d9b6891f.webp",
+      "size_kb": 57,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-pq-banh-kheo-co-dung": {
+      "name": "Tiệm Bánh khéo Cô Dung (Đặc sản ăn vặt Phú Quốc)",
+      "file": "dest-pq-banh-kheo-co-dung.webp",
+      "size_kb": 128,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "dest-pq-be-noi-ham-ninh": {
+      "name": "Nhà bè nổi Hải sản Hàm Ninh",
+      "file": "dest-pq-be-noi-ham-ninh.webp",
+      "size_kb": 152,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "dest-pq-bun-quay-thanh-hung": {
+      "name": "Bún quậy Thanh Hùng (Đường 30/4)",
+      "file": "dest-pq-bun-quay-thanh-hung.webp",
+      "size_kb": 69,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "dest-pq-cafe-pho-bien": {
+      "name": "Cà phê Phố Biển Dinh Cậu",
+      "file": "dest-pq-cafe-pho-bien.webp",
+      "size_kb": 128,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "dest-pq-cho-dem-bach-dang": {
+      "name": "Chợ đêm Bạch Đằng Phú Quốc",
+      "file": "dest-pq-cho-dem-bach-dang.webp",
+      "size_kb": 263,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "dest-pq-chua-ho-quoc": {
+      "name": "Chùa Hộ Quốc (Thiền viện Trúc Lâm Hộ Quốc)",
+      "file": "dest-pq-chua-ho-quoc.webp",
+      "size_kb": 50,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-pq-chuon-chuon-bistro": {
+      "name": "Chuồn Chuồn Bistro & Sky Bar",
+      "file": "dest-pq-chuon-chuon-bistro.webp",
+      "size_kb": 83,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "dest-pq-com-tam-huynh-nhu": {
+      "name": "Quán Cơm tấm Huỳnh Nhu (Nguyễn Trãi)",
+      "file": "dest-pq-com-tam-huynh-nhu.webp",
+      "size_kb": 47,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "dest-pq-dinh-cau": {
+      "name": "Dinh Cậu Phú Quốc",
+      "file": "dest-pq-dinh-cau.webp",
+      "size_kb": 141,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-pq-gio-bien-ganh-dau": {
+      "name": "Nhà hàng Gió Biển Mũi Gành Dầu",
+      "file": "dest-pq-gio-bien-ganh-dau.webp",
+      "size_kb": 120,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "dest-pq-grand-world": {
+      "name": "Grand World Phú Quốc (Thành phố không ngủ)",
+      "file": "dest-pq-grand-world.webp",
+      "size_kb": 228,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-pq-hai-san-bup": {
+      "name": "Nhà hàng Hải sản Búp",
+      "file": "dest-pq-hai-san-bup.webp",
+      "size_kb": 189,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "dest-pq-hai-san-ra-khoi": {
+      "name": "Quán Hải sản Ra Khơi (Đường 30/4)",
+      "file": "dest-pq-hai-san-ra-khoi.webp",
+      "size_kb": 150,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "dest-pq-hai-san-xin-chao": {
+      "name": "Nhà hàng Xin Chào Phú Quốc",
+      "file": "dest-pq-hai-san-xin-chao.webp",
+      "size_kb": 134,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "dest-pq-hanh-nhung-luxury": {
+      "name": "Nhà hàng Hạnh Nhung Luxury Phú Quốc",
+      "file": "dest-pq-hanh-nhung-luxury.webp",
+      "size_kb": 53,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "dest-pq-hon-may-rut": {
+      "name": "Hòn Mây Rút (Tour 4 Đảo Nam Phú Quốc)",
+      "file": "dest-pq-hon-may-rut.webp",
+      "size_kb": 73,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-pq-hon-thom-cable": {
+      "name": "Cáp treo Hòn Thơm & Sun World Hon Thom",
+      "file": "dest-pq-hon-thom-cable.webp",
+      "size_kb": 49,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-pq-lang-chai-ham-ninh": {
+      "name": "Làng chài cổ Hàm Ninh",
+      "file": "dest-pq-lang-chai-ham-ninh.webp",
+      "size_kb": 58,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-pq-mui-ganh-dau": {
+      "name": "Mũi Gành Dầu Phú Quốc",
+      "file": "dest-pq-mui-ganh-dau.webp",
+      "size_kb": 85,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-pq-nha-thung-khai-hoan": {
+      "name": "Nhà thùng Nước mắm Khải Hoàn",
+      "file": "dest-pq-nha-thung-khai-hoan.webp",
+      "size_kb": 93,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-pq-nha-tu": {
+      "name": "Di tích Lịch sử Nhà tù Phú Quốc (Nhà lao Cây Dừa)",
+      "file": "dest-pq-nha-tu.webp",
+      "size_kb": 13,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-pq-ocsen-beach-bar": {
+      "name": "OCSEN Beach Bar & Club (Gối lười ngắm hoàng hôn)",
+      "file": "dest-pq-ocsen-beach-bar.webp",
+      "size_kb": 221,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "dest-pq-rach-vem": {
+      "name": "Làng chài Rạch Vẹm (Vương quốc Sao Biển)",
+      "file": "dest-pq-rach-vem.webp",
+      "size_kb": 99,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "dest-pq-sailing-club": {
+      "name": "Sailing Club Phú Quốc",
+      "file": "dest-pq-sailing-club.webp",
+      "size_kb": 154,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "dest-pq-shri-beach-club": {
+      "name": "Shri Beach Club & Bar Phú Quốc",
+      "file": "dest-pq-shri-beach-club.webp",
+      "size_kb": 124,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "dest-pq-sunset-sanato": {
+      "name": "Sunset Sanato Beach Club Phú Quốc",
+      "file": "dest-pq-sunset-sanato.webp",
+      "size_kb": 127,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "dest-pq-suoi-tranh": {
+      "name": "Khu du lịch Suối Tranh",
+      "file": "dest-pq-suoi-tranh.webp",
+      "size_kb": 149,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-pq-trang-trai-ngoc-hien": {
+      "name": "Trang trại Ngọc trai Ngọc Hiền",
+      "file": "dest-pq-trang-trai-ngoc-hien.webp",
+      "size_kb": 49,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-pq-vuon-tieu-suoi-da": {
+      "name": "Vườn tiêu Suối Đá Phú Quốc",
+      "file": "dest-pq-vuon-tieu-suoi-da.webp",
+      "size_kb": 49,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    },
+    "dest-pq-bun-ken-ut-luom": {
+      "name": "Bún kèn Út Lượm (Đặc sản ăn sáng/trưa)",
+      "file": "dest-pq-bun-ken-ut-luom.webp",
+      "size_kb": 74,
+      "source": "WEB_TRAVEL_CRAWLER",
+      "attribution": "Public Travel Review Index"
+    },
+    "dest-pq-hon-mong-tay": {
+      "name": "Hòn Móng Tay Phú Quốc",
+      "file": "dest-pq-hon-mong-tay.webp",
+      "size_kb": 156,
+      "source": "WIKIMEDIA_COMMONS",
+      "attribution": "Wikimedia Commons (CC-BY/Public Domain)"
+    }
+  },
+  "failed_ids": {
+    "dest-30d099ad": {
+      "name": "Thủy cung Cung điện Hải Vương",
+      "reason": "download_optimize_failed"
+    },
+    "dest-9ee35743": {
+      "name": "Bãi Khem Phú Quốc",
+      "reason": "download_optimize_failed"
+    },
+    "dest-pq-bun-ken-ut-luom": {
+      "name": "Bún kèn Út Lượm (Đặc sản ăn sáng/trưa)",
+      "reason": "download_optimize_failed"
+    },
+    "dest-pq-hon-mong-tay": {
+      "name": "Hòn Móng Tay Phú Quốc",
+      "reason": "download_optimize_failed"
+    }
+  }
+}
