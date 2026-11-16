@@ -1,6 +1,6 @@
 {
-  "total": 9482,
-  "total_destinations": 9482,
+  "total": 9606,
+  "total_destinations": 9606,
   "provinces_count": 63,
   "destinations_by_province": {
     "Đà Nẵng": 166,
@@ -46,7 +46,7 @@
     "Phú Yên": 158,
     "Đắk Lắk": 159,
     "Bình Dương": 133,
-    "Bà Rịa - Vũng Tàu": 9,
+    "Bà Rịa - Vũng Tàu": 133,
     "Bình Phước": 155,
     "Đồng Nai": 142,
     "Tây Ninh": 164,
@@ -76,9 +76,9 @@
   "price_min_gt_price_max": [],
   "coordinates_out_of_vietnam": [],
   "duplicate_names": [],
-  "auto_classified_count": 9482,
+  "auto_classified_count": 9606,
   "snack_price_abnormal": [],
   "anomalies_count": 0,
   "anomalies": [],
-  "generated_at": "2026-11-16T02:30:44.617083+00:00"
+  "generated_at": "2026-11-16T02:47:13.044554+00:00"
 }

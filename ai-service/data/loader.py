@@ -638,7 +638,10 @@ class DestinationDataLoader:
             return False
 
         # Reject raw multi-segment addresses like "Dong lang - khang cuong - yen khanh - ninh binh"
-        if n_low.count(" - ") >= 2 or n_low.count("-") >= 3:
+        # Be careful not to penalize hyphenated province names like "Bà Rịa - Vũng Tàu" or "Phan Rang - Tháp Chàm"
+        prov_norm = unicodedata.normalize("NFC", (province or "").lower().strip())
+        n_without_prov = n_low.replace(prov_norm, "")
+        if n_without_prov.count(" - ") >= 2 or n_without_prov.count("-") >= 3:
             return False
 
         junk_substrings = [
