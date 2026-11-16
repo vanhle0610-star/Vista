@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/ensure-ai.mjs",
     "dev": "next dev",
     "build": "next build",
     "test": "node scripts/test-map-gps.mjs && node scripts/test-route-planner.mjs && node scripts/test-routing-server.mjs && node --test scripts/test-api-auth.mjs",
