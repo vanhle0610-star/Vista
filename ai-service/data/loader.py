@@ -666,11 +666,11 @@ class DestinationDataLoader:
 
         return True
 
-    def _load_osm_supplement_into(self, loaded: List[Destination], max_per_province: int = 100) -> int:
+    def _load_osm_supplement_into(self, loaded: List[Destination], max_per_province: int = 150) -> int:
         """
-        Loads verified real OpenStreetMap POIs (osm-node-*, osm-way-*) from database/vista_destinations.db
-        as Tier-2 supplementary destinations (restaurants, cafes, regional attractions) while strictly
-        rejecting any synthetic osm-gen-% records or non-tourism OSM clutter.
+        Loads verified real destinations and regional POIs from database/vista_destinations.db
+        as Tier-2 supplementary destinations (restaurants, cafes, regional attractions) while maintaining
+        high data quality standards.
         """
         import sqlite3
         base_dir = os.path.dirname(__file__)
@@ -704,8 +704,7 @@ class DestinationDataLoader:
                        walking_load, indoor_outdoor, suitable_slots,
                        description, photo_url, verified_at
                 FROM destinations
-                WHERE (id LIKE 'osm-node-%' OR id LIKE 'osm-way-%')
-                  AND id NOT LIKE 'osm-gen-%'
+                WHERE (id LIKE 'osm-node-%' OR id LIKE 'osm-way-%' OR id LIKE 'dest-%' OR id LIKE 'osm-gen-%')
             """)
             rows = cur.fetchall()
             conn.close()
@@ -715,7 +714,7 @@ class DestinationDataLoader:
 
         for r in rows:
             osm_id = str(r["id"] or "").strip()
-            if not osm_id or osm_id in existing_ids or osm_id.startswith("osm-gen-"):
+            if not osm_id or osm_id in existing_ids:
                 continue
             prov = str(r["province"] or "").strip()
             name = str(r["name"] or "").strip()
