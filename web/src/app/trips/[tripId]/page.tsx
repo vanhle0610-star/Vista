@@ -4170,24 +4170,45 @@ export default function TripDetailPage() {
                   </div>
                 </div>
 
-                {/* HƯỚNG DẪN & LIÊN KẾT DỰ PHÒNG */}
-                <div style={{ marginBottom: '20px', padding: '12px 14px', background: '#F8FAFC', borderRadius: '12px', border: '1px dashed #CBD5E1' }}>
-                  <p style={{ margin: '0 0 6px 0', fontSize: '12px', color: '#475569', lineHeight: '1.5' }}>
-                    💡 <strong>Hoàn toàn tự động:</strong> Thư mời đã được gửi thẳng vào hòm thư người nhận. Bạn cũng có thể bấm sao chép liên kết ở trên để gửi nhanh qua Zalo, Messenger hoặc tin nhắn riêng.
+                {/* HƯỚNG DẪN & NÚT GỬI THẬT VÀO GMAIL KHI CHƯA CÓ SMTP */}
+                <div style={{ marginBottom: '20px', padding: '14px', background: '#FFF7ED', borderRadius: '14px', border: '1.5px solid #FFEDD5' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '16px' }}>⚡</span>
+                    <strong style={{ fontSize: '13px', color: '#C2410C' }}>
+                      Gửi thư thật vào Gmail người nhận:
+                    </strong>
+                  </div>
+                  <p style={{ margin: '0 0 12px 0', fontSize: '12px', color: '#9A3412', lineHeight: '1.5' }}>
+                    Ứng dụng đang chạy cục bộ (localhost). Để thư bay THẬT 100% vào hòm thư <strong>{createdInvitationInfo.email}</strong> ngay bây giờ bằng tab Gmail bạn đang mở, hãy bấm nút dưới đây:
                   </p>
+
                   <a
                     href={getGmailComposeUrl(createdInvitationInfo.email, createdInvitationInfo.token)}
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
-                      fontSize: '11.5px',
-                      color: '#64748B',
-                      textDecoration: 'underline',
-                      display: 'inline-block',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      padding: '12px 18px',
+                      background: 'linear-gradient(135deg, #EA4335 0%, #C5221F 100%)',
+                      color: '#FFFFFF',
+                      borderRadius: '10px',
+                      fontSize: '13.5px',
+                      fontWeight: 800,
+                      textDecoration: 'none',
+                      boxShadow: '0 4px 12px rgba(234, 67, 53, 0.3)',
+                      cursor: 'pointer',
+                      marginBottom: '8px',
                     }}
                   >
-                    Mở ứng dụng Gmail dự phòng (nếu hòm thư người nhận chặn thư hệ thống) ↗
+                    <span>✉️ Bấm để gửi thư thật vào Gmail ngay (Soạn sẵn 100%) ↗</span>
                   </a>
+
+                  <p style={{ margin: 0, fontSize: '11px', color: '#9A3412', textAlign: 'center', lineHeight: '1.4' }}>
+                    *(Nội dung, người nhận và liên kết mời đã được điền sẵn 100%, bạn chỉ cần nhấn Gửi)*
+                  </p>
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
