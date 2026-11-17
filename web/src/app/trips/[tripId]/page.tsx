@@ -3000,9 +3000,27 @@ export default function TripDetailPage() {
                           <div>
                             <span style={{ fontWeight: 700, fontSize: '13.5px', color: '#0F172A' }}>{inv.email}</span>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px', flexWrap: 'wrap' }}>
-                              <span style={{ fontFamily: 'monospace', fontSize: '12px', color: '#0284C7', background: '#E0F2FE', padding: '1px 6px', borderRadius: '4px', fontWeight: 800 }}>
-                                {inv.token}
-                              </span>
+                              <a
+                                href={`/invitations/${inv.token}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="Bấm để xem trước trang lời mời của người nhận"
+                                style={{
+                                  fontFamily: 'monospace',
+                                  fontSize: '12px',
+                                  color: '#0284C7',
+                                  background: '#E0F2FE',
+                                  padding: '2px 8px',
+                                  borderRadius: '6px',
+                                  fontWeight: 800,
+                                  textDecoration: 'none',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '3px',
+                                }}
+                              >
+                                {inv.token} <span style={{ fontSize: '10px' }}>↗</span>
+                              </a>
                               <span style={{ fontSize: '12px', color: '#64748B' }}>Hạn: {inv.expiresAt}</span>
                               {(inv.emailSent || inv.status === 'PENDING') && (
                                 <span style={{ fontSize: '11px', color: '#166534', background: '#DCFCE7', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>
@@ -3024,72 +3042,61 @@ export default function TripDetailPage() {
                               {inv.status}
                             </span>
 
-                            <Link
-                              href={`/invitations/${inv.token}`}
-                              target="_blank"
+                            {/* Nút Sao chép liên kết mời */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+                                const inviteLink = `${baseUrl}/invitations/${inv.token}`;
+                                if (navigator?.clipboard) {
+                                  navigator.clipboard.writeText(inviteLink);
+                                }
+                                showToast(`✓ Đã sao chép link mời cho ${inv.email}!`);
+                              }}
                               style={{
                                 fontSize: '12px',
                                 color: '#0284C7',
                                 fontWeight: 700,
-                                textDecoration: 'none',
                                 padding: '6px 12px',
-                                background: '#FFFFFF',
+                                background: '#F0F9FF',
                                 border: '1px solid #BAE6FD',
                                 borderRadius: '8px',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                cursor: 'pointer',
                               }}
-                              title="Mở link mời như người nhận (B)"
+                              title="Sao chép link mời để gửi qua Zalo / Facebook Messenger"
                             >
-                              Mở link mời ↗
-                            </Link>
+                              <span>📋 Sao chép link</span>
+                            </button>
 
+                            {/* Nút Gửi lại email tự động qua Google SMTP */}
                             {inv.status === 'PENDING' && (
-                              <>
-                                <button
-                                  type="button"
-                                  onClick={() => handleResendInviteEmail(inv)}
-                                  disabled={isResendingEmail === inv.token}
-                                  style={{
-                                    fontSize: '12px',
-                                    color: '#047857',
-                                    fontWeight: 700,
-                                    padding: '6px 12px',
-                                    background: '#ECFDF5',
-                                    border: '1px solid #A7F3D0',
-                                    borderRadius: '8px',
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '4px',
-                                    cursor: isResendingEmail === inv.token ? 'not-allowed' : 'pointer',
-                                  }}
-                                  title={`Tự động gửi lại email mời trực tiếp tới ${inv.email}`}
-                                >
-                                  <span>{isResendingEmail === inv.token ? '⏳ Đang gửi...' : '🔄 Gửi lại email'}</span>
-                                </button>
-
-                                <a
-                                  href={getGmailComposeUrl(inv.email, inv.token)}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  style={{
-                                    fontSize: '11.5px',
-                                    color: '#64748B',
-                                    fontWeight: 600,
-                                    textDecoration: 'none',
-                                    padding: '6px 10px',
-                                    background: '#F8FAFC',
-                                    border: '1px solid #E2E8F0',
-                                    borderRadius: '8px',
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '4px',
-                                  }}
-                                  title={`Mở Gmail dự phòng nếu người nhận chặn thư`}
-                                >
-                                  <span>Gmail dự phòng ↗</span>
-                                </a>
-                              </>
+                              <button
+                                type="button"
+                                onClick={() => handleResendInviteEmail(inv)}
+                                disabled={isResendingEmail === inv.token}
+                                style={{
+                                  fontSize: '12px',
+                                  color: '#047857',
+                                  fontWeight: 700,
+                                  padding: '6px 12px',
+                                  background: '#ECFDF5',
+                                  border: '1px solid #A7F3D0',
+                                  borderRadius: '8px',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  cursor: isResendingEmail === inv.token ? 'not-allowed' : 'pointer',
+                                }}
+                                title={`Tự động gửi lại email mời trực tiếp tới ${inv.email}`}
+                              >
+                                <span>{isResendingEmail === inv.token ? '⏳ Đang gửi...' : '🔄 Gửi lại email'}</span>
+                              </button>
                             )}
 
+                            {/* Nút Thu hồi lời mời (chỉ Trưởng nhóm) */}
                             {isTripOwner && inv.status === 'PENDING' && (
                               <button
                                 type="button"
