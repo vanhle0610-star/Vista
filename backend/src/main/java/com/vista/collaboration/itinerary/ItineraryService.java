@@ -68,6 +68,25 @@ public class ItineraryService {
           "Ngày số " + request.getDayNumber() + " đã tồn tại trong lịch trình chuyến đi");
     }
 
+    if (request.getTripDate() != null) {
+      tripRepository
+          .findById(tripId)
+          .ifPresent(
+              trip -> {
+                if ((trip.getStartDate() != null && request.getTripDate().isBefore(trip.getStartDate()))
+                    || (trip.getEndDate() != null && request.getTripDate().isAfter(trip.getEndDate()))) {
+                  throw new IllegalArgumentException(
+                      "Ngày "
+                          + request.getTripDate()
+                          + " nằm ngoài khoảng chuyến đi ("
+                          + trip.getStartDate()
+                          + " – "
+                          + trip.getEndDate()
+                          + ")");
+                }
+              });
+    }
+
     ItineraryDay day = new ItineraryDay(tripId, request.getDayNumber(), request.getTripDate());
     ItineraryDay saved = dayRepository.save(day);
 
@@ -90,6 +109,31 @@ public class ItineraryService {
       UUID dayId, UUID userId, CreateItineraryItemRequest request) {
     ItineraryDay day = findDayOrThrow(dayId);
     tripAccessService.requireMember(day.getTripId(), userId);
+
+    if (day.getTripDate() != null) {
+      tripRepository
+          .findById(day.getTripId())
+          .ifPresent(
+              trip -> {
+                if ((trip.getStartDate() != null && day.getTripDate().isBefore(trip.getStartDate()))
+                    || (trip.getEndDate() != null && day.getTripDate().isAfter(trip.getEndDate()))) {
+                  throw new IllegalArgumentException(
+                      "Ngày "
+                          + day.getTripDate()
+                          + " nằm ngoài khoảng chuyến đi ("
+                          + trip.getStartDate()
+                          + " – "
+                          + trip.getEndDate()
+                          + ")");
+                }
+              });
+    }
+
+    if (request.getStartTime() != null
+        && request.getEndTime() != null
+        && !request.getEndTime().isAfter(request.getStartTime())) {
+      throw new IllegalArgumentException("Giờ kết thúc phải sau giờ bắt đầu");
+    }
 
     ItineraryItem item =
         new ItineraryItem(

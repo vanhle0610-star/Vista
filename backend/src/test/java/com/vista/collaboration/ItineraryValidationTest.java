@@ -1,9 +1,12 @@
 package com.vista.collaboration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import com.vista.budget.infrastructure.ExpenseRepository;
+import com.vista.collaboration.itinerary.CreateItineraryDayRequest;
 import com.vista.collaboration.itinerary.ItineraryDay;
 import com.vista.collaboration.itinerary.ItineraryDayRepository;
 import com.vista.collaboration.itinerary.ItineraryItem;
@@ -393,5 +396,92 @@ class ItineraryValidationTest {
 
     assertThat(warnings.stream().map(ItineraryValidationWarning::code).toList())
         .containsExactlyInAnyOrder("OUT_OF_TRIP_DATE", "TIME_OVERLAP", "BUDGET_EXCEEDED");
+  }
+
+  // ── V-01 & V-02 BỔ SUNG ───────────────────────────────────────────────────
+
+  @Test
+  @DisplayName("V-01 createDay: ngày trước startDate → ném IllegalArgumentException bị chặn cứng")
+  void createDay_dayBeforeStartDate_throwsException() {
+    CreateItineraryDayRequest request = new CreateItineraryDayRequest(0, LocalDate.of(2026, 11, 8));
+    when(tripRepository.findById(TRIP_ID)).thenReturn(Optional.of(trip));
+
+    assertThatThrownBy(() -> itineraryService.createDay(TRIP_ID, USER_ID, request))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("nằm ngoài khoảng chuyến đi");
+  }
+
+  @Test
+  @DisplayName("V-01 createDay: ngày sau endDate → ném IllegalArgumentException bị chặn cứng")
+  void createDay_dayAfterEndDate_throwsException() {
+    CreateItineraryDayRequest request = new CreateItineraryDayRequest(4, LocalDate.of(2026, 11, 15));
+    when(tripRepository.findById(TRIP_ID)).thenReturn(Optional.of(trip));
+
+    assertThatThrownBy(() -> itineraryService.createDay(TRIP_ID, USER_ID, request))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("nằm ngoài khoảng chuyến đi");
+  }
+
+  @Test
+  @DisplayName("V-01 createDay: ngày đầu và ngày cuối của chuyến → hợp lệ lưu thành công")
+  void createDay_startAndEndDates_succeeds() {
+    CreateItineraryDayRequest reqStart =
+        new CreateItineraryDayRequest(1, LocalDate.of(2026, 11, 10));
+    when(tripRepository.findById(TRIP_ID)).thenReturn(Optional.of(trip));
+    when(dayRepository.existsByTripIdAndDayNumber(TRIP_ID, 1)).thenReturn(false);
+    when(dayRepository.save(any(ItineraryDay.class)))
+        .thenAnswer(inv -> inv.getArgument(0, ItineraryDay.class));
+
+    var res = itineraryService.createDay(TRIP_ID, USER_ID, reqStart);
+    assertThat(res).isNotNull();
+    assertThat(res.dayNumber()).isEqualTo(1);
+  }
+
+  @Test
+  @DisplayName("V-02 validate: một điểm nằm trọn trong điểm khác → có cảnh báo TIME_OVERLAP")
+  void validate_oneItemInsideAnother_returnsTimeOverlap() {
+    UUID dayId = UUID.randomUUID();
+    ItineraryDay day = makeDay(dayId, 1, LocalDate.of(2026, 11, 10));
+    // Điểm A: 08:00 - 12:00, Điểm B: 09:00 - 11:00 (nằm trọn trong A)
+    ItineraryItem itemA =
+        makeItem(UUID.randomUUID(), day, "Tour Đảo", LocalTime.of(8, 0), LocalTime.of(12, 0));
+    ItineraryItem itemB =
+        makeItem(UUID.randomUUID(), day, "Lặn ngắm san hô", LocalTime.of(9, 0), LocalTime.of(11, 0));
+
+    when(tripRepository.findById(TRIP_ID)).thenReturn(Optional.of(trip));
+    when(dayRepository.findByTripIdOrderByDayNumberAsc(TRIP_ID)).thenReturn(List.of(day));
+    when(itemRepository.findByDayIdOrderBySortOrderAsc(dayId)).thenReturn(List.of(itemA, itemB));
+
+    List<ItineraryValidationWarning> warnings =
+        itineraryService.validateItinerary(TRIP_ID, USER_ID);
+
+    assertThat(warnings).hasSize(1);
+    assertThat(warnings.get(0).code()).isEqualTo("TIME_OVERLAP");
+    assertThat(warnings.get(0).message()).contains("chồng giờ");
+  }
+
+  @Test
+  @DisplayName("V-02 validate: khác ngày dù cùng khung giờ → KHÔNG cảnh báo TIME_OVERLAP")
+  void validate_differentDays_noOverlap() {
+    UUID day1Id = UUID.randomUUID();
+    UUID day2Id = UUID.randomUUID();
+    ItineraryDay day1 = makeDay(day1Id, 1, LocalDate.of(2026, 11, 10));
+    ItineraryDay day2 = makeDay(day2Id, 2, LocalDate.of(2026, 11, 11));
+
+    // Cùng khung giờ 08:00 - 10:00 nhưng ở 2 ngày khác nhau
+    ItineraryItem itemDay1 =
+        makeItem(UUID.randomUUID(), day1, "Bảo tàng Chăm", LocalTime.of(8, 0), LocalTime.of(10, 0));
+    ItineraryItem itemDay2 =
+        makeItem(UUID.randomUUID(), day2, "Phố cổ Hội An", LocalTime.of(8, 0), LocalTime.of(10, 0));
+
+    when(tripRepository.findById(TRIP_ID)).thenReturn(Optional.of(trip));
+    when(dayRepository.findByTripIdOrderByDayNumberAsc(TRIP_ID)).thenReturn(List.of(day1, day2));
+    when(itemRepository.findByDayIdOrderBySortOrderAsc(day1Id)).thenReturn(List.of(itemDay1));
+    when(itemRepository.findByDayIdOrderBySortOrderAsc(day2Id)).thenReturn(List.of(itemDay2));
+
+    List<ItineraryValidationWarning> warnings =
+        itineraryService.validateItinerary(TRIP_ID, USER_ID);
+
+    assertThat(warnings).isEmpty();
   }
 }
