@@ -156,11 +156,15 @@ export async function POST(request: Request) {
     let messageId = `vista-mail-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
 
     // Try SMTP if configured in process.env
-    const smtpUser = process.env.SMTP_USER || process.env.GMAIL_USER;
-    const smtpPass = process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD;
+    const rawUser = process.env.SMTP_USER || process.env.GMAIL_USER || '';
+    const rawPass = process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD || '';
+    const smtpUser = rawUser.trim();
+    const smtpPass = rawPass.replace(/\s+/g, '').trim();
     const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com';
     const smtpPort = parseInt(process.env.SMTP_PORT || '465', 10);
     const smtpSecure = process.env.SMTP_SECURE === 'true' || smtpPort === 465;
+
+    let smtpErrorDetails: string | null = null;
 
     if (smtpUser && smtpPass) {
       try {
@@ -186,7 +190,8 @@ export async function POST(request: Request) {
         deliveredVia = 'SMTP_TRANSPORT';
         messageId = info.messageId || messageId;
       } catch (smtpErr: any) {
-        console.warn('SMTP delivery attempt failed, falling back to direct server dispatch:', smtpErr.message);
+        console.error('SMTP delivery attempt failed:', smtpErr);
+        smtpErrorDetails = smtpErr.message || 'Lỗi gửi SMTP';
         deliveredVia = 'DIRECT_DISPATCH_FALLBACK';
       }
     }
@@ -245,7 +250,10 @@ export async function POST(request: Request) {
       recipient: cleanEmail,
       deliveredAt: new Date().toISOString(),
       subject,
-      message: `Đã tự động gửi email lời mời trực tiếp đến hòm thư ${cleanEmail}!`,
+      smtpError: smtpErrorDetails,
+      message: deliveredVia === 'SMTP_TRANSPORT'
+        ? `Đã gửi email thật thành công qua Google SMTP tới ${cleanEmail}!`
+        : `Đã tự động gửi email lời mời trực tiếp đến hòm thư ${cleanEmail}!`,
     });
   } catch (error: any) {
     console.error('Error in send-email route:', error);
