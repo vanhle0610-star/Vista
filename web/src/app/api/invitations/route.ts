@@ -20,6 +20,10 @@ export interface StoredInvitation {
   acceptedAt?: string;
   acceptedBy?: any;
   action?: string;
+  emailSent?: boolean;
+  emailSentAt?: string;
+  emailMode?: string;
+  emailMessageId?: string;
 }
 
 const STORE_PATH = path.join(process.cwd(), '.invitations_store.json');
@@ -170,6 +174,10 @@ export async function POST(request: Request) {
         acceptedBy: isAccepted && body.user ? body.user : list[existingIndex].acceptedBy,
         email: cleanEmail || list[existingIndex].email || list[existingIndex].inviteeEmail,
         inviteeEmail: cleanEmail || list[existingIndex].inviteeEmail || list[existingIndex].email,
+        emailSent: body.emailSent !== undefined ? Boolean(body.emailSent) : list[existingIndex].emailSent,
+        emailSentAt: body.emailSentAt || list[existingIndex].emailSentAt,
+        emailMode: body.emailMode || list[existingIndex].emailMode,
+        emailMessageId: body.emailMessageId || list[existingIndex].emailMessageId,
       };
       list[existingIndex] = updated;
       writeStore(list);
@@ -238,6 +246,10 @@ export async function POST(request: Request) {
         acceptedBy: isAccepted && body.user ? body.user : undefined,
         expiresAt: body.expiresAt || 'Trong 7 ngày tới',
         createdAt: new Date().toISOString(),
+        emailSent: Boolean(body.emailSent),
+        emailSentAt: body.emailSentAt || (body.emailSent ? new Date().toISOString() : undefined),
+        emailMode: body.emailMode || (body.emailSent ? 'DIRECT_DISPATCH' : undefined),
+        emailMessageId: body.emailMessageId,
       };
       list.unshift(newItem);
       writeStore(list);
