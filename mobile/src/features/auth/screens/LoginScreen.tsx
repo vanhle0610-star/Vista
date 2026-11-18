@@ -10,6 +10,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Modal,
 } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -19,6 +20,8 @@ import { VietnamMobileScenery } from '../components/VietnamMobileScenery';
 import { MobileAnimatedAirplane } from '../components/MobileAnimatedAirplane';
 import { VistaCompassLogo } from '../components/VistaCompassLogo';
 import { authStorage } from '@/services/auth/authStorage';
+import { authApi } from '@/services/api/authApi';
+import { apiErrorMessage } from '@/services/api/client';
 
 export interface LoginScreenProps {
   initialRegister?: boolean;
@@ -31,6 +34,11 @@ export function LoginScreen({ initialRegister = false }: LoginScreenProps = {}) 
   const [showPassword, setShowPassword] = useState(false);
   const [focusedField, setFocusedField] = useState<'email' | 'password' | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Quên mật khẩu state
+  const [showForgotModal, setShowForgotModal] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
 
   const topInset = Math.max(insets.top, Platform.OS === 'web' ? 12 : 24);
 
@@ -53,44 +61,33 @@ export function LoginScreen({ initialRegister = false }: LoginScreenProps = {}) 
 
     setLoading(true);
     try {
-      const apiBase = (
-        process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:8081/api/v1'
-      ).replace(/\/+$/, '');
-
-      const response = await fetch(`${apiBase}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
+      const data = await authApi.login({
+        email: email.trim().toLowerCase(),
+        password,
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        await authStorage.setSession({
-          accessToken: data.accessToken,
-          refreshToken: data.refreshToken,
-          user: data.user,
-        });
-        if (Platform.OS === 'web') {
-          router.replace('/(tabs)/discover');
-        } else {
-          Alert.alert(
-            'Thành công',
-            'Đăng nhập thành công! Chào mừng bạn trở lại VISTA.',
-            [{ text: 'Khám phá ngay', onPress: () => router.replace('/(tabs)/discover') }]
-          );
-        }
+      await authStorage.setSession({
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+        user: {
+          id: data.id,
+          email: data.email,
+          displayName: data.displayName,
+          roles: data.roles || ['ROLE_USER'],
+        },
+      });
+
+      if (Platform.OS === 'web') {
+        router.replace('/(tabs)/discover');
       } else {
-        const errorData = await response.json().catch(() => null);
-        showAlert(
-          'Lỗi đăng nhập',
-          errorData?.detail || 'Email hoặc mật khẩu chưa chính xác.'
+        Alert.alert(
+          'Thành công',
+          'Đăng nhập thành công! Chào mừng bạn trở lại VISTA.',
+          [{ text: 'Khám phá ngay', onPress: () => router.replace('/(tabs)/discover') }]
         );
       }
-    } catch {
-      showAlert(
-        'Lỗi kết nối',
-        'Không thể kết nối đến máy chủ VISTA. Vui lòng kiểm tra mạng và thử lại sau.'
-      );
+    } catch (err: unknown) {
+      showAlert('Lỗi đăng nhập', apiErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -118,10 +115,31 @@ export function LoginScreen({ initialRegister = false }: LoginScreenProps = {}) 
   };
 
   const handleForgotPassword = () => {
-    showAlert(
-      'Quên mật khẩu',
-      'Vui lòng nhập email đăng ký tài khoản của bạn để nhận liên kết đặt lại mật khẩu.'
-    );
+    setForgotEmail(email.trim());
+    setShowForgotModal(true);
+  };
+
+  const handleSendForgotPassword = async () => {
+    if (!forgotEmail.trim()) {
+      showAlert('Thông báo', 'Vui lòng nhập địa chỉ email của bạn!');
+      return;
+    }
+
+    setForgotLoading(true);
+    try {
+      const res = await authApi.forgotPassword({
+        email: forgotEmail.trim().toLowerCase(),
+      });
+      setShowForgotModal(false);
+      showAlert(
+        'Yêu cầu thành công',
+        res.message || 'Mã xác nhận khôi phục mật khẩu đã được gửi tới email của bạn. Vui lòng kiểm tra hộp thư!'
+      );
+    } catch (err: unknown) {
+      showAlert('Không thể gửi yêu cầu', apiErrorMessage(err));
+    } finally {
+      setForgotLoading(false);
+    }
   };
 
   return (
@@ -401,12 +419,135 @@ export function LoginScreen({ initialRegister = false }: LoginScreenProps = {}) 
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
+
+        {/* ================= FORGOT PASSWORD MODAL ================= */}
+        <Modal
+          visible={showForgotModal}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowForgotModal(false)}
+        >
+          <KeyboardAvoidingView
+            style={styles.modalOverlay}
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          >
+            <View style={styles.modalCard}>
+              <Text style={styles.modalTitle}>Khôi phục mật khẩu</Text>
+              <Text style={styles.modalDesc}>
+                Nhập email đăng ký tài khoản VISTA của bạn để nhận liên kết và mã khôi phục mật khẩu.
+              </Text>
+
+              <TextInput
+                style={styles.modalInput}
+                value={forgotEmail}
+                onChangeText={setForgotEmail}
+                placeholder="name@example.com"
+                placeholderTextColor="#94a3b8"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                editable={!forgotLoading}
+              />
+
+              <View style={styles.modalActionRow}>
+                <TouchableOpacity
+                  style={styles.modalCancelBtn}
+                  onPress={() => setShowForgotModal(false)}
+                  disabled={forgotLoading}
+                >
+                  <Text style={styles.modalCancelText}>Hủy</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.modalSubmitBtn}
+                  onPress={handleSendForgotPassword}
+                  disabled={forgotLoading}
+                >
+                  {forgotLoading ? (
+                    <ActivityIndicator size="small" color="#ffffff" />
+                  ) : (
+                    <Text style={styles.modalSubmitText}>Gửi yêu cầu</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </View>
+          </KeyboardAvoidingView>
+        </Modal>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.65)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalCard: {
+    width: '100%',
+    maxWidth: 380,
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: 24,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.15,
+    shadowRadius: 24,
+    elevation: 8,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#0f172a',
+    marginBottom: 8,
+  },
+  modalDesc: {
+    fontSize: 13.5,
+    color: '#64748b',
+    lineHeight: 20,
+    marginBottom: 18,
+  },
+  modalInput: {
+    height: 48,
+    borderWidth: 1.5,
+    borderColor: '#e2e8f0',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    fontSize: 14.5,
+    color: '#0f172a',
+    backgroundColor: '#f8fafc',
+    marginBottom: 20,
+  },
+  modalActionRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 12,
+  },
+  modalCancelBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    backgroundColor: '#f1f5f9',
+  },
+  modalCancelText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#64748b',
+  },
+  modalSubmitBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    borderRadius: 10,
+    backgroundColor: '#0284c7',
+  },
+  modalSubmitText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#ffffff',
+  },
   outerScreen: {
     flex: 1,
     backgroundColor: Platform.OS === 'web' ? '#0f172a' : '#ffffff',
