@@ -19,6 +19,8 @@ import { VietnamMobileScenery } from '../components/VietnamMobileScenery';
 import { MobileAnimatedAirplane } from '../components/MobileAnimatedAirplane';
 import { VistaCompassLogo } from '../components/VistaCompassLogo';
 import { authStorage } from '@/services/auth/authStorage';
+import { authApi } from '@/services/api/authApi';
+import { apiErrorMessage } from '@/services/api/client';
 
 export function RegisterScreen() {
   const insets = useSafeAreaInsets();
@@ -69,49 +71,35 @@ export function RegisterScreen() {
 
     setLoading(true);
     try {
-      const apiBase = (
-        process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:8081/api/v1'
-      ).replace(/\/+$/, '');
-
-      const response = await fetch(`${apiBase}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          displayName: displayName.trim(),
-          email: email.trim().toLowerCase(),
-          password,
-          phoneNumber: phoneNumber.trim() ? phoneNumber.trim().replace(/[\s.-]/g, '') : undefined,
-        }),
+      const data = await authApi.register({
+        displayName: displayName.trim(),
+        email: email.trim().toLowerCase(),
+        password,
+        phoneNumber: phoneNumber.trim() ? phoneNumber.trim().replace(/[\s.-]/g, '') : undefined,
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        await authStorage.setSession({
-          accessToken: data.accessToken,
-          refreshToken: data.refreshToken,
-          user: data.user,
-        });
-        if (Platform.OS === 'web') {
-          router.replace('/(tabs)/discover');
-        } else {
-          Alert.alert(
-            'Đăng ký thành công',
-            'Chào mừng bạn gia nhập VISTA! Hãy bắt đầu hành trình khám phá Việt Nam.',
-            [{ text: 'Bắt đầu ngay', onPress: () => router.replace('/(tabs)/discover') }]
-          );
-        }
+      await authStorage.setSession({
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+        user: {
+          id: data.id,
+          email: data.email,
+          displayName: data.displayName,
+          roles: data.roles || ['ROLE_USER'],
+        },
+      });
+
+      if (Platform.OS === 'web') {
+        router.replace('/(tabs)/discover');
       } else {
-        const errorData = await response.json().catch(() => null);
-        showAlert(
-          'Đăng ký không thành công',
-          errorData?.detail || 'Email này có thể đã được đăng ký trên hệ thống.'
+        Alert.alert(
+          'Đăng ký thành công',
+          'Chào mừng bạn gia nhập VISTA! Hãy bắt đầu hành trình khám phá Việt Nam.',
+          [{ text: 'Bắt đầu ngay', onPress: () => router.replace('/(tabs)/discover') }]
         );
       }
-    } catch {
-      showAlert(
-        'Lỗi kết nối',
-        'Không thể kết nối đến máy chủ VISTA. Vui lòng kiểm tra kết nối mạng và thử lại sau.'
-      );
+    } catch (err: unknown) {
+      showAlert('Đăng ký không thành công', apiErrorMessage(err));
     } finally {
       setLoading(false);
     }

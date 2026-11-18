@@ -1,4 +1,4 @@
-import { create, isAxiosError } from 'axios';
+import axios, { create, isAxiosError, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { authStorage } from '../auth/authStorage';
@@ -65,13 +65,115 @@ api.interceptors.request.use(async (config) => {
   return config;
 });
 
+// ─── SILENT REFRESH TOKEN (AXIOS RESPONSE INTERCEPTOR) ──────────────────────
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (token: string) => void;
+  reject: (error: unknown) => void;
+}> = [];
+
+const processQueue = (error: unknown, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else if (token) {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error: AxiosError) => {
+    const originalRequest = error.config as
+      | (InternalAxiosRequestConfig & { _retry?: boolean })
+      | undefined;
+
+    if (!originalRequest) {
+      return Promise.reject(error);
+    }
+
+    const status = error.response?.status;
+    const isAuthUrl =
+      originalRequest.url?.includes('/auth/login') ||
+      originalRequest.url?.includes('/auth/register') ||
+      originalRequest.url?.includes('/auth/refresh');
+
+    // Chỉ tự động refresh khi gặp HTTP 401 trên các API nghiệp vụ
+    if (status === 401 && !originalRequest._retry && !isAuthUrl) {
+      if (isRefreshing) {
+        return new Promise<string>((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then((token) => {
+            if (originalRequest.headers) {
+              originalRequest.headers['Authorization'] = `Bearer ${token}`;
+            }
+            return api(originalRequest);
+          })
+          .catch((err) => Promise.reject(err));
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        const storedRefreshToken = await authStorage.getRefreshToken();
+        if (!storedRefreshToken) {
+          await authStorage.clearSession();
+          return Promise.reject(error);
+        }
+
+        const refreshBase = (api.defaults.baseURL ?? defaultBaseUrl).replace(/\/+$/, '');
+        const refreshRes = await axios.post(`${refreshBase}/auth/refresh`, {
+          refreshToken: storedRefreshToken,
+        });
+
+        const data = refreshRes.data;
+        const newAccessToken = data.accessToken;
+        const newRefreshToken = data.refreshToken;
+
+        await authStorage.setSession({
+          accessToken: newAccessToken,
+          refreshToken: newRefreshToken,
+          user: {
+            id: data.id,
+            email: data.email,
+            displayName: data.displayName,
+            roles: data.roles || ['ROLE_USER'],
+          },
+        });
+
+        if (originalRequest.headers) {
+          originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
+        }
+
+        processQueue(null, newAccessToken);
+        return api(originalRequest);
+      } catch (refreshErr) {
+        processQueue(refreshErr, null);
+        await authStorage.clearSession();
+        return Promise.reject(refreshErr);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
 export function apiErrorMessage(reason: unknown) {
   if (isAxiosError(reason)) {
-    const data = reason.response?.data as { detail?: string } | undefined;
+    const data = reason.response?.data as { detail?: string; message?: string } | undefined;
     return (
       data?.detail ??
+      data?.message ??
       (reason.code === 'ECONNABORTED'
         ? 'Máy chủ phản hồi quá lâu.'
+        : reason.code === 'ERR_NETWORK' || reason.message?.includes('Network Error')
+        ? 'Không thể kết nối máy chủ VISTA. Vui lòng kiểm tra kết nối mạng và đảm bảo máy chủ backend đang chạy.'
         : 'Không thể kết nối máy chủ.')
     );
   }
