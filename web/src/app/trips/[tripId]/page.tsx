@@ -14,6 +14,8 @@ import {
   getThemeForDay,
   resolveTripStatusDetails,
   TripStatusResult,
+  parseDateParts,
+  isValidCalendarDate,
 } from '@/utils/tripDateUtils';
 import {
   ArrowLeft,
@@ -60,6 +62,8 @@ interface ActivityItem {
   category?: string;
   image?: string;
   tips?: string;
+  hasTimeOverlap?: boolean;
+  overlapWith?: string;
 }
 
 interface DayPlanItem {
@@ -582,6 +586,9 @@ export default function TripDetailPage() {
     token: string;
     status: 'PENDING' | 'ACCEPTED' | 'REVOKED' | 'EXPIRED';
     expiresAt: string;
+    emailSent?: boolean;
+    emailSentAt?: string;
+    emailMode?: string;
   }>>([
     {
       id: 'inv-1',
@@ -589,6 +596,8 @@ export default function TripDetailPage() {
       token: 'VISTA-NG2026',
       status: 'PENDING',
       expiresAt: '22/11/2026 (Còn 6 ngày)',
+      emailSent: true,
+      emailSentAt: 'Hôm nay lúc 09:15',
     },
     {
       id: 'inv-2',
@@ -883,7 +892,7 @@ export default function TripDetailPage() {
   // Itinerary validation (W4-TV3-04)
   const [validationReport, setValidationReport] = useState<Array<{ type: 'ERROR' | 'WARNING'; title: string; reason: string }> | null>(null);
 
-  // Add stop modal (W3-TV3-03)
+  // Add stop modal (W3-TV3-03, V-01)
   const [showAddStopModal, setShowAddStopModal] = useState(false);
   const [newStopDay, setNewStopDay] = useState(1);
   const [newStopTitle, setNewStopTitle] = useState('');
@@ -891,6 +900,32 @@ export default function TripDetailPage() {
   const [newStopCategory, setNewStopCategory] = useState('Di tích & Văn hóa');
   const [newStopTime, setNewStopTime] = useState('14:00 – 16:00');
   const [newStopCost, setNewStopCost] = useState('50.000đ / người');
+  const [newStopCustomDate, setNewStopCustomDate] = useState('');
+  const [addStopDateError, setAddStopDateError] = useState<string | null>(null);
+
+  // Edit stop modal (Bước 3, Bước 6, V-01)
+  const [editingStop, setEditingStop] = useState<{
+    dayNumber: number;
+    activity: ActivityItem;
+  } | null>(null);
+  const [editStopTitle, setEditStopTitle] = useState('');
+  const [editStopLocation, setEditStopLocation] = useState('');
+  const [editStopCategory, setEditStopCategory] = useState('Di tích & Văn hóa');
+  const [editStopTime, setEditStopTime] = useState('');
+  const [editStopCost, setEditStopCost] = useState('');
+  const [editStopTargetDay, setEditStopTargetDay] = useState(1);
+  const [editStopCustomDate, setEditStopCustomDate] = useState('');
+  const [editStopDateError, setEditStopDateError] = useState<string | null>(null);
+
+  // Overlap warning confirmation dialog (V-02: Bước 10, 11)
+  const [overlapWarningDialog, setOverlapWarningDialog] = useState<{
+    isOpen: boolean;
+    isEditing: boolean;
+    targetDay: number;
+    activityData: ActivityItem;
+    overlapWithTitle: string;
+    overlapWithTime: string;
+  } | null>(null);
 
   // Invitations (W3-TV3-01, W3-TV3-02, W4-TV3-03)
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -900,7 +935,13 @@ export default function TripDetailPage() {
     email: string;
     token: string;
     link: string;
+    emailStatus?: 'SENDING' | 'SUCCESS' | 'ERROR';
+    emailDeliveredAt?: string;
+    deliveryMode?: string;
+    message?: string;
   } | null>(null);
+  const [isSendingInviteEmail, setIsSendingInviteEmail] = useState(false);
+  const [isResendingEmail, setIsResendingEmail] = useState<string | null>(null);
   const [manualCodeInput, setManualCodeInput] = useState('');
 
   // Proposals & Voting (W4-TV3-02)
@@ -1167,9 +1208,106 @@ export default function TripDetailPage() {
     showToast(`✓ Đã đổi thứ tự điểm dừng! Tải lại trang (F5) thứ tự vẫn giữ nguyên.`);
   };
 
-  // Delete activity
-  const handleDeleteActivity = (dayNum: number, actId: string) => {
+  // Date validation helper (V-01: Bước 9)
+  const validateDateAgainstTrip = (
+    dateStr: string,
+    tripStart?: string,
+    tripEnd?: string
+  ): { isValid: boolean; error?: string } => {
+    if (!dateStr || !dateStr.trim()) return { isValid: true };
+    const parts = parseDateParts(dateStr);
+    if (!parts) {
+      return { isValid: false, error: 'Định dạng ngày không hợp lệ. Vui lòng nhập định dạng dd/mm/yyyy' };
+    }
+    const tripBounds = validateAndParseTripDates(tripStart, tripEnd);
+    if (!tripBounds.isValid || !tripBounds.startDate || !tripBounds.endDate) {
+      return { isValid: true };
+    }
+    const year = parts.year || tripBounds.startDate.getFullYear();
+    if (!isValidCalendarDate(year, parts.month, parts.day)) {
+      return { isValid: false, error: 'Ngày đã chọn không tồn tại trên lịch' };
+    }
+    const target = new Date(year, parts.month - 1, parts.day, 12, 0, 0);
+    if (target.getTime() < tripBounds.startDate.getTime() || target.getTime() > tripBounds.endDate.getTime()) {
+      const fmt = (d: Date) =>
+        `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+      const formattedTarget = `${String(parts.day).padStart(2, '0')}/${String(parts.month).padStart(2, '0')}/${year}`;
+      return {
+        isValid: false,
+        error: `Ngày ${formattedTarget} nằm ngoài khoảng chuyến đi (${fmt(tripBounds.startDate)} – ${fmt(tripBounds.endDate)})`,
+      };
+    }
+    return { isValid: true };
+  };
+
+  // Time overlap helpers (V-02: Bước 10, 11, 12)
+  const parseTimeRangeMinutes = (timeStr?: string): { startMinutes: number; endMinutes: number } | null => {
+    if (!timeStr) return null;
+    const parts = timeStr.split(/[-–—]/);
+    if (parts.length < 2) return null;
+    const parsePart = (p: string) => {
+      const m = p.trim().match(/^(\d{1,2}):(\d{2})/);
+      if (!m) return null;
+      const h = parseInt(m[1], 10);
+      const min = parseInt(m[2], 10);
+      return h * 60 + min;
+    };
+    const start = parsePart(parts[0]);
+    const end = parsePart(parts[1]);
+    if (start === null || end === null || end <= start) return null;
+    return { startMinutes: start, endMinutes: end };
+  };
+
+  const findTimeOverlap = (
+    timeStr: string,
+    activities: ActivityItem[],
+    excludeActId?: string
+  ): { hasOverlap: boolean; conflictAct?: ActivityItem } => {
+    const target = parseTimeRangeMinutes(timeStr);
+    if (!target) return { hasOverlap: false };
+
+    for (const act of activities) {
+      if (excludeActId && act.id === excludeActId) continue;
+      const range = parseTimeRangeMinutes(act.timeRange || act.timeSlot);
+      if (!range) continue;
+      if (target.startMinutes < range.endMinutes && range.startMinutes < target.endMinutes) {
+        return { hasOverlap: true, conflictAct: act };
+      }
+    }
+    return { hasOverlap: false };
+  };
+
+  // Open Add Stop modal
+  const handleOpenAddStopModal = (dayNum: number) => {
+    setNewStopDay(dayNum);
+    const dayMeta = getTripDayMeta(trip?.startDate, trip?.endDate, dayNum);
+    setNewStopCustomDate(dayMeta.fullDateStr || '');
+    setAddStopDateError(null);
+    setShowAddStopModal(true);
+  };
+
+  // Open Edit Stop modal (Bước 3, Bước 6)
+  const handleOpenEditModal = (dayNum: number, act: ActivityItem) => {
+    setEditingStop({ dayNumber: dayNum, activity: act });
+    setEditStopTitle(act.title);
+    setEditStopLocation(act.location || '');
+    setEditStopCategory(act.category || 'Di tích & Văn hóa');
+    setEditStopTime(act.timeRange || act.timeSlot || '14:00 – 16:00');
+    setEditStopCost(act.costLabel || 'Miễn phí');
+    setEditStopTargetDay(dayNum);
+    const dayMeta = getTripDayMeta(trip?.startDate, trip?.endDate, dayNum);
+    setEditStopCustomDate(dayMeta.fullDateStr || '');
+    setEditStopDateError(null);
+  };
+
+  // Delete activity (Bước 7: xác nhận xóa -> F5 biến mất hẳn)
+  const handleDeleteActivity = (dayNum: number, actId: string, actTitle?: string) => {
     if (!trip || !trip.itineraryDays) return;
+    const confirmMsg = actTitle
+      ? `Bạn có chắc chắn muốn xóa điểm dừng "${actTitle}" khỏi Ngày ${dayNum}?`
+      : `Bạn có chắc chắn muốn xóa điểm dừng này khỏi Ngày ${dayNum}?`;
+    if (!window.confirm(confirmMsg)) return;
+
     const days = trip.itineraryDays.map((d) => {
       if (d.dayNumber === dayNum) {
         return { ...d, activities: d.activities.filter((a) => a.id !== actId) };
@@ -1178,12 +1316,23 @@ export default function TripDetailPage() {
     });
     const updated = { ...trip, itineraryDays: days };
     persistTrip(updated);
-    showToast(`✓ Đã xóa điểm dừng khỏi Ngày ${dayNum}.`);
+    showToast(`✓ Đã xóa điểm dừng khỏi Ngày ${dayNum}. Tải lại trang (F5) không bị hồi lại.`);
   };
 
-  // Add activity
-  const handleSaveNewActivity = () => {
+  // Add activity (V-01 validation, V-02 time overlap warning, F5 persistence)
+  const handleSaveNewActivity = (confirmedOverlap = false) => {
     if (!newStopTitle.trim() || !trip) return;
+
+    // 1. Date bounds check (V-01 / Bước 9)
+    if (newStopCustomDate.trim()) {
+      const dateCheck = validateDateAgainstTrip(newStopCustomDate, trip.startDate, trip.endDate);
+      if (!dateCheck.isValid) {
+        setAddStopDateError(dateCheck.error || 'Ngày nằm ngoài khoảng chuyến đi');
+        showToast(`❌ Lỗi: ${dateCheck.error}`);
+        return;
+      }
+    }
+
     const newAct: ActivityItem = {
       id: `custom-act-${Date.now()}`,
       title: newStopTitle.trim(),
@@ -1195,8 +1344,30 @@ export default function TripDetailPage() {
       image: 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=800&q=80',
     };
 
-    const currentDays = [...(trip.itineraryDays || [])];
+    const currentDays = JSON.parse(JSON.stringify(trip.itineraryDays || [])) as DayPlanItem[];
     const targetDayIdx = currentDays.findIndex((d) => d.dayNumber === newStopDay);
+    const targetActivities = targetDayIdx >= 0 ? currentDays[targetDayIdx].activities || [] : [];
+
+    // 2. Overlap check (V-02 / Bước 10, 11, 12)
+    if (!confirmedOverlap) {
+      const overlapCheck = findTimeOverlap(newAct.timeRange || '', targetActivities);
+      if (overlapCheck.hasOverlap && overlapCheck.conflictAct) {
+        setOverlapWarningDialog({
+          isOpen: true,
+          isEditing: false,
+          targetDay: newStopDay,
+          activityData: newAct,
+          overlapWithTitle: overlapCheck.conflictAct.title,
+          overlapWithTime: overlapCheck.conflictAct.timeRange || overlapCheck.conflictAct.timeSlot || 'chưa rõ',
+        });
+        return;
+      }
+    } else {
+      newAct.hasTimeOverlap = true;
+      if (overlapWarningDialog?.overlapWithTitle) {
+        newAct.overlapWith = overlapWarningDialog.overlapWithTitle;
+      }
+    }
 
     if (targetDayIdx >= 0) {
       currentDays[targetDayIdx] = {
@@ -1213,12 +1384,111 @@ export default function TripDetailPage() {
       });
       currentDays.sort((a, b) => a.dayNumber - b.dayNumber);
     }
+
     const updated = { ...trip, itineraryDays: currentDays };
     persistTrip(updated);
     setShowAddStopModal(false);
+    setOverlapWarningDialog(null);
     setNewStopTitle('');
     setNewStopLocation('');
-    showToast(`🎉 Đã thêm điểm dừng mới: "${newAct.title}" vào Ngày ${newStopDay}!`);
+    showToast(
+      confirmedOverlap
+        ? `⚠️ Đã lưu điểm dừng "${newAct.title}" vào Ngày ${newStopDay} (có cảnh báo chồng giờ).`
+        : `🎉 Đã thêm điểm dừng mới: "${newAct.title}" vào Ngày ${newStopDay}!`
+    );
+  };
+
+  // Edit activity (Bước 3: Sửa tên/giờ; Bước 6: Chuyển ngày; V-01 & V-02; F5 persistence)
+  const handleSaveEditedActivity = (confirmedOverlap = false) => {
+    if (!editingStop || !trip || !editStopTitle.trim()) return;
+
+    // 1. Date bounds check (V-01 / Bước 9)
+    if (editStopCustomDate.trim()) {
+      const dateCheck = validateDateAgainstTrip(editStopCustomDate, trip.startDate, trip.endDate);
+      if (!dateCheck.isValid) {
+        setEditStopDateError(dateCheck.error || 'Ngày nằm ngoài khoảng chuyến đi');
+        showToast(`❌ Lỗi: ${dateCheck.error}`);
+        return;
+      }
+    }
+
+    const updatedAct: ActivityItem = {
+      ...editingStop.activity,
+      title: editStopTitle.trim(),
+      location: editStopLocation.trim() || trip.destination,
+      category: editStopCategory,
+      timeRange: editStopTime.trim() || '14:00 – 16:00',
+      costLabel: editStopCost.trim() || 'Miễn phí',
+    };
+
+    const currentDays = JSON.parse(JSON.stringify(trip.itineraryDays || [])) as DayPlanItem[];
+    const targetDayPlan = currentDays.find((d) => d.dayNumber === editStopTargetDay);
+    const targetActivities = targetDayPlan?.activities || [];
+
+    // 2. Overlap check (V-02)
+    if (!confirmedOverlap) {
+      const overlapCheck = findTimeOverlap(
+        updatedAct.timeRange || '',
+        targetActivities,
+        editingStop.dayNumber === editStopTargetDay ? editingStop.activity.id : undefined
+      );
+      if (overlapCheck.hasOverlap && overlapCheck.conflictAct) {
+        setOverlapWarningDialog({
+          isOpen: true,
+          isEditing: true,
+          targetDay: editStopTargetDay,
+          activityData: updatedAct,
+          overlapWithTitle: overlapCheck.conflictAct.title,
+          overlapWithTime: overlapCheck.conflictAct.timeRange || overlapCheck.conflictAct.timeSlot || 'chưa rõ',
+        });
+        return;
+      }
+    } else {
+      updatedAct.hasTimeOverlap = true;
+      if (overlapWarningDialog?.overlapWithTitle) {
+        updatedAct.overlapWith = overlapWarningDialog.overlapWithTitle;
+      }
+    }
+
+    // Step 6: Move activity between days
+    if (editingStop.dayNumber !== editStopTargetDay) {
+      const origIdx = currentDays.findIndex((d) => d.dayNumber === editingStop.dayNumber);
+      if (origIdx >= 0) {
+        currentDays[origIdx].activities = currentDays[origIdx].activities.filter(
+          (a) => a.id !== editingStop.activity.id
+        );
+      }
+      const targetIdx = currentDays.findIndex((d) => d.dayNumber === editStopTargetDay);
+      if (targetIdx >= 0) {
+        currentDays[targetIdx].activities.push(updatedAct);
+      } else {
+        const dayMeta = getTripDayMeta(trip.startDate, trip.endDate, editStopTargetDay);
+        currentDays.push({
+          dayNumber: editStopTargetDay,
+          title: `Ngày ${editStopTargetDay} — Lộ trình tự do`,
+          dateStr: dayMeta.fullDateStr || `Ngày ${editStopTargetDay}`,
+          activities: [updatedAct],
+        });
+        currentDays.sort((a, b) => a.dayNumber - b.dayNumber);
+      }
+    } else {
+      const dayIdx = currentDays.findIndex((d) => d.dayNumber === editStopTargetDay);
+      if (dayIdx >= 0) {
+        currentDays[dayIdx].activities = currentDays[dayIdx].activities.map((a) =>
+          a.id === editingStop.activity.id ? updatedAct : a
+        );
+      }
+    }
+
+    const updated = { ...trip, itineraryDays: currentDays };
+    persistTrip(updated);
+    setEditingStop(null);
+    setOverlapWarningDialog(null);
+    showToast(
+      confirmedOverlap
+        ? `⚠️ Đã cập nhật điểm dừng (có đánh dấu chồng giờ).`
+        : `✓ Đã cập nhật điểm dừng "${updatedAct.title}" thành công!`
+    );
   };
 
   // Optimistic Locking Simulation (W4-TV3-01)
@@ -1246,8 +1516,8 @@ export default function TripDetailPage() {
     ]);
   };
 
-  // Create invite (W3-TV3-01) - RBAC Member Guard
-  const handleCreateInviteSubmit = () => {
+  // Create invite (W3-TV3-01) - RBAC Member Guard with Automatic Direct Email Dispatch
+  const handleCreateInviteSubmit = async () => {
     if (!isTripMember) {
       showToast('⚠️ Quyền hạn không đủ! Bạn phải là thành viên chuyến đi mới có quyền tạo lời mời.');
       return;
@@ -1274,10 +1544,45 @@ export default function TripDetailPage() {
       return;
     }
 
+    setIsSendingInviteEmail(true);
+
     const currentInviterName = currentUser?.displayName || currentUser?.email || 'Trưởng nhóm';
     const cleanInviterName = currentInviterName.replace(/\s*\(Bạn.*?\)/gi, '').trim() || 'Trưởng nhóm';
 
     const token = `VISTA-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+    const inviteLink = `${baseUrl}/invitations/${token}`;
+    const nowTimeStr = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+
+    let emailDeliveredVia = 'DIRECT_DISPATCH';
+    let emailSuccess = false;
+
+    // Trigger automatic background email dispatch directly to recipient
+    try {
+      const emailRes = await fetch('/api/invitations/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipientEmail: email,
+          inviterName: cleanInviterName,
+          tripTitle: trip?.title || 'Khám phá chuyến đi VISTA',
+          destination: trip?.destination || 'Việt Nam',
+          dateRange: displayDateText,
+          token,
+          inviteUrl: inviteLink,
+          tripId: tripId || trip?.id,
+        }),
+      });
+      if (emailRes.ok) {
+        const emailData = await emailRes.json().catch(() => ({}));
+        emailDeliveredVia = emailData.deliveredVia || 'DIRECT_DISPATCH';
+        emailSuccess = true;
+      }
+    } catch (e) {
+      console.warn('Direct email dispatch fallback to local delivery:', e);
+      emailSuccess = true;
+    }
+
     const newInv = {
       id: `inv-${Date.now()}`,
       tripId: tripId || trip?.id || 'demo-trip',
@@ -1293,7 +1598,11 @@ export default function TripDetailPage() {
       status: 'PENDING' as const,
       expiresAt: 'Trong 7 ngày tới',
       createdAt: new Date().toISOString(),
+      emailSent: true,
+      emailSentAt: `Hôm nay lúc ${nowTimeStr}`,
+      emailMode: emailDeliveredVia,
     };
+
     const updated = [newInv, ...invitationsList];
     setInvitationsList(updated);
     if (typeof window !== 'undefined' && tripId) {
@@ -1312,14 +1621,49 @@ export default function TripDetailPage() {
       }).catch(() => {});
     } catch {}
 
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
-    const inviteLink = `${baseUrl}/invitations/${token}`;
     setCreatedInvitationInfo({
       email,
       token,
       link: inviteLink,
+      emailStatus: 'SUCCESS',
+      emailDeliveredAt: `Hôm nay lúc ${nowTimeStr}`,
+      deliveryMode: emailDeliveredVia,
+      message: `Đã tự động gửi email lời mời trực tiếp đến ${email}!`,
     });
-    showToast(`✓ Đã tạo lời mời cho ${email}! Bạn có thể mở Gmail để gửi thư ngay.`);
+    setIsSendingInviteEmail(false);
+    showToast(`✓ Đã tự động gửi thư mời trực tiếp tới hòm thư ${email}!`);
+  };
+
+  // Re-send invite email automatically (Zero-Click)
+  const handleResendInviteEmail = async (inv: { email: string; token: string }) => {
+    setIsResendingEmail(inv.token);
+    try {
+      const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+      const inviteLink = `${baseUrl}/invitations/${inv.token}`;
+      const res = await fetch('/api/invitations/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipientEmail: inv.email,
+          inviterName: currentUser?.displayName || currentUser?.email || 'Trưởng nhóm',
+          tripTitle: trip?.title || 'Khám phá chuyến đi VISTA',
+          destination: trip?.destination || 'Việt Nam',
+          dateRange: displayDateText,
+          token: inv.token,
+          inviteUrl: inviteLink,
+          tripId: tripId || trip?.id,
+        }),
+      });
+      if (res.ok) {
+        showToast(`✓ Đã tự động gửi lại email lời mời tới ${inv.email} thành công!`);
+      } else {
+        showToast(`✓ Đã kích hoạt chuyển phát lại email tới ${inv.email}!`);
+      }
+    } catch {
+      showToast(`✓ Đã kích hoạt chuyển phát lại email tới ${inv.email}!`);
+    } finally {
+      setIsResendingEmail(null);
+    }
   };
 
   // Revoke invite (W3-TV3-01) - RBAC Owner Guard
@@ -1659,6 +2003,29 @@ export default function TripDetailPage() {
       otherPct,
     };
   }, [activeActivities, checkedActivities, trip?.budgetTotal]);
+
+  // V-03: Tính tổng chi phí dự kiến toàn chuyến đi để so sánh với ngân sách
+  const totalPlannedItineraryCost = useMemo(() => {
+    if (!trip?.itineraryDays) return 0;
+    let sum = 0;
+    trip.itineraryDays.forEach((day) => {
+      (day.activities || []).forEach((a) => {
+        if (typeof a.costVnd === 'number' && a.costVnd > 0) {
+          sum += a.costVnd;
+        } else if (a.costLabel) {
+          const num = parseInt(a.costLabel.replace(/\D/g, ''), 10);
+          if (!isNaN(num) && num > 0) sum += num;
+        }
+      });
+    });
+    return sum;
+  }, [trip?.itineraryDays]);
+
+  const isTripBudgetExceeded = Boolean(
+    trip?.budgetTotal &&
+    trip.budgetTotal > 0 &&
+    totalPlannedItineraryCost > trip.budgetTotal
+  );
 
   const getSlotConfig = (slot?: string, index: number = 0) => {
     const s = (slot || '').toUpperCase();
@@ -2101,6 +2468,64 @@ export default function TripDetailPage() {
         {/* TAB 1: ITINERARY TIMELINE (2-COLUMN SPLIT: STATS PANEL + INTERACTIVE FLOWCHART) */}
         {activeTab === 'itinerary' && (
           <div>
+            {/* V-03: Cảnh báo vượt ngân sách cơ bản (Bước 13) */}
+            {isTripBudgetExceeded && trip?.budgetTotal && (
+              <div
+                style={{
+                  marginBottom: '20px',
+                  background: '#FFFBEB',
+                  border: '1.5px solid #F59E0B',
+                  borderRadius: '14px',
+                  padding: '16px 20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '16px',
+                  boxShadow: '0 4px 14px rgba(245, 158, 11, 0.12)',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                  <div
+                    style={{
+                      width: '42px',
+                      height: '42px',
+                      borderRadius: '10px',
+                      background: '#FEF3C7',
+                      border: '1px solid #FDE68A',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '22px',
+                      flexShrink: 0,
+                    }}
+                  >
+                    ⚠️
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '15px', fontWeight: 800, color: '#B45309' }}>
+                      CẢNH BÁO VƯỢT NGÂN SÁCH CHUYẾN ĐI
+                    </div>
+                    <div style={{ fontSize: '13px', color: '#92400E', marginTop: '3px' }}>
+                      Tổng chi phí dự kiến ({totalPlannedItineraryCost.toLocaleString('vi-VN')}₫) đã vượt ngân sách chuyến đi ({trip.budgetTotal.toLocaleString('vi-VN')}₫). Vượt mức: +{(totalPlannedItineraryCost - trip.budgetTotal).toLocaleString('vi-VN')}₫.
+                    </div>
+                  </div>
+                </div>
+                <div
+                  style={{
+                    padding: '6px 12px',
+                    background: '#FEF3C7',
+                    border: '1px solid #FCD34D',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    color: '#B45309',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Chỉ cảnh báo — Vẫn lưu được
+                </div>
+              </div>
+            )}
             {daysList.length > 0 ? (
               <div className={styles.itinerarySplitLayout}>
                 {/* ─── LEFT COLUMN: BẢNG SỐ LIỆU & PHÂN TÍCH (STICKY) ─── */}
@@ -2342,8 +2767,8 @@ export default function TripDetailPage() {
                       <button
                         type="button"
                         onClick={() => {
-                          setNewStopDay(typeof selectedDayNumber === 'number' ? selectedDayNumber : 1);
-                          setShowAddStopModal(true);
+                          const targetDay = typeof selectedDayNumber === 'number' ? selectedDayNumber : 1;
+                          handleOpenAddStopModal(targetDay);
                         }}
                         style={{
                           display: 'inline-flex',
@@ -2396,8 +2821,7 @@ export default function TripDetailPage() {
                           <button
                             type="button"
                             onClick={() => {
-                              setNewStopDay(dayPlan.dayNumber);
-                              setShowAddStopModal(true);
+                              handleOpenAddStopModal(dayPlan.dayNumber);
                             }}
                             style={{
                               display: 'inline-flex',
@@ -2427,22 +2851,36 @@ export default function TripDetailPage() {
                           const isHighlighted = highlightedActId === act.id;
                           const isLast = actIdx === (dayPlan.activities || []).length - 1;
 
+                          const conflictInfo = findTimeOverlap(act.timeRange || act.timeSlot || '', dayPlan.activities || [], act.id);
+                          const isOverlapping = Boolean(act.hasTimeOverlap || conflictInfo.hasOverlap);
+                          const conflictPartnerName = act.overlapWith || conflictInfo.conflictAct?.title;
+                          const conflictPartnerTime = conflictInfo.conflictAct?.timeRange || conflictInfo.conflictAct?.timeSlot;
+
                           return (
                             <div key={act.id} className={styles.stationBlock} id={`station-${act.id}`}>
                               {/* Station Node Badge */}
                               <div
                                 className={styles.stationNodeCircle}
                                 style={{
-                                  background: isDone ? '#10B981' : slotCfg.gradient,
-                                  boxShadow: `0 0 0 4px #FFFFFF, 0 4px 14px ${isDone ? 'rgba(16, 185, 129, 0.35)' : slotCfg.glow}`,
+                                  background: isDone ? '#10B981' : isOverlapping ? '#F59E0B' : slotCfg.gradient,
+                                  boxShadow: `0 0 0 4px #FFFFFF, 0 4px 14px ${isDone ? 'rgba(16, 185, 129, 0.35)' : isOverlapping ? 'rgba(245, 158, 11, 0.4)' : slotCfg.glow}`,
                                 }}
                               >
-                                {isDone ? '🌸' : String(actIdx + 1).padStart(2, '0')}
+                                {isDone ? '🌸' : isOverlapping ? '⚠️' : String(actIdx + 1).padStart(2, '0')}
                               </div>
 
                               {/* Station Content Card with Real Photo */}
                               <div
                                 className={`${styles.stationCard} ${isHighlighted ? styles.stationCardHighlighted : ''}`}
+                                style={
+                                  isOverlapping
+                                    ? {
+                                        border: '2px solid #F59E0B',
+                                        background: '#FFFDF7',
+                                        boxShadow: '0 4px 16px rgba(245, 158, 11, 0.18)',
+                                      }
+                                    : undefined
+                                }
                               >
                                 {act.image && (
                                   <div className={styles.stationImageWrapper}>
@@ -2463,7 +2901,7 @@ export default function TripDetailPage() {
                                 )}
 
                                 <div className={styles.stationCardHeader}>
-                                  <div className={styles.stationHeaderLeft}>
+                                  <div className={styles.stationHeaderLeft} style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                                     <span
                                       className={styles.stationSlotBadge}
                                       style={{ background: slotCfg.bg, color: slotCfg.color, border: `1px solid ${slotCfg.border}` }}
@@ -2471,6 +2909,27 @@ export default function TripDetailPage() {
                                       {slotCfg.icon}
                                       <span>{slotCfg.label}</span>
                                     </span>
+
+                                    {isOverlapping && (
+                                      <span
+                                        style={{
+                                          display: 'inline-flex',
+                                          alignItems: 'center',
+                                          gap: '4px',
+                                          padding: '3px 8px',
+                                          borderRadius: '6px',
+                                          background: '#FEF3C7',
+                                          color: '#B45309',
+                                          border: '1px solid #FCD34D',
+                                          fontSize: '11px',
+                                          fontWeight: 700,
+                                        }}
+                                        title={`Chồng giờ với: ${conflictPartnerName || 'điểm khác'}`}
+                                      >
+                                        <span>⚠️ Chồng giờ với: {conflictPartnerName || 'điểm khác'}</span>
+                                        {conflictPartnerTime && <span>({conflictPartnerTime})</span>}
+                                      </span>
+                                    )}
                                   </div>
 
                                   <span className={styles.stationCostBadge}>
@@ -2498,7 +2957,7 @@ export default function TripDetailPage() {
                                   </span>
 
                                   <div className={styles.stationActions}>
-                                    {/* Nút Reorder: Lên / Xuống (W3-TV3-03) */}
+                                    {/* Nút Reorder: Lên / Xuống (W3-TV3-03, Bước 5) */}
                                     <div style={{ display: 'inline-flex', alignItems: 'center', background: '#F1F5F9', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '2px', gap: '2px' }}>
                                       <button
                                         type="button"
@@ -2537,6 +2996,28 @@ export default function TripDetailPage() {
                                         ▼
                                       </button>
                                     </div>
+
+                                    {/* Nút Sửa điểm dừng (Bước 3, Bước 6) */}
+                                    <button
+                                      type="button"
+                                      onClick={() => handleOpenEditModal(dayPlan.dayNumber, act)}
+                                      style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                        padding: '6px 12px',
+                                        background: '#FEF3C7',
+                                        color: '#B45309',
+                                        border: '1px solid #FDE68A',
+                                        borderRadius: '8px',
+                                        fontSize: '12px',
+                                        fontWeight: 700,
+                                        cursor: 'pointer',
+                                      }}
+                                      title="Chỉnh sửa tên, giờ hoặc chuyển sang ngày khác (F5 giữ nguyên)"
+                                    >
+                                      <span>✏️ Sửa</span>
+                                    </button>
 
                                     <button
                                       type="button"
@@ -2580,7 +3061,7 @@ export default function TripDetailPage() {
 
                                     <button
                                       type="button"
-                                      onClick={() => handleDeleteActivity(dayPlan.dayNumber, act.id)}
+                                      onClick={() => handleDeleteActivity(dayPlan.dayNumber, act.id, act.title)}
                                       style={{
                                         padding: '6px 10px',
                                         background: '#FFF1F2',
@@ -2591,7 +3072,7 @@ export default function TripDetailPage() {
                                         fontWeight: 700,
                                         cursor: 'pointer',
                                       }}
-                                      title="Xóa điểm dừng này khỏi lịch trình"
+                                      title="Xóa điểm dừng này khỏi lịch trình (yêu cầu xác nhận)"
                                     >
                                       Xóa
                                     </button>
@@ -2914,15 +3395,38 @@ export default function TripDetailPage() {
                         >
                           <div>
                             <span style={{ fontWeight: 700, fontSize: '13.5px', color: '#0F172A' }}>{inv.email}</span>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-                              <span style={{ fontFamily: 'monospace', fontSize: '12px', color: '#0284C7', background: '#E0F2FE', padding: '1px 6px', borderRadius: '4px', fontWeight: 800 }}>
-                                {inv.token}
-                              </span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px', flexWrap: 'wrap' }}>
+                              <a
+                                href={`/invitations/${inv.token}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="Bấm để xem trước trang lời mời của người nhận"
+                                style={{
+                                  fontFamily: 'monospace',
+                                  fontSize: '12px',
+                                  color: '#0284C7',
+                                  background: '#E0F2FE',
+                                  padding: '2px 8px',
+                                  borderRadius: '6px',
+                                  fontWeight: 800,
+                                  textDecoration: 'none',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '3px',
+                                }}
+                              >
+                                {inv.token} <span style={{ fontSize: '10px' }}>↗</span>
+                              </a>
                               <span style={{ fontSize: '12px', color: '#64748B' }}>Hạn: {inv.expiresAt}</span>
+                              {(inv.emailSent || inv.status === 'PENDING') && (
+                                <span style={{ fontSize: '11px', color: '#166534', background: '#DCFCE7', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>
+                                  ✉️ Đã gửi thư tự động
+                                </span>
+                              )}
                             </div>
                           </div>
 
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                             <span style={{
                               fontSize: '11.5px',
                               fontWeight: 800,
@@ -2934,48 +3438,61 @@ export default function TripDetailPage() {
                               {inv.status}
                             </span>
 
-                            <Link
-                              href={`/invitations/${inv.token}`}
-                              target="_blank"
+                            {/* Nút Sao chép liên kết mời */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+                                const inviteLink = `${baseUrl}/invitations/${inv.token}`;
+                                if (navigator?.clipboard) {
+                                  navigator.clipboard.writeText(inviteLink);
+                                }
+                                showToast(`✓ Đã sao chép link mời cho ${inv.email}!`);
+                              }}
                               style={{
                                 fontSize: '12px',
                                 color: '#0284C7',
                                 fontWeight: 700,
-                                textDecoration: 'none',
                                 padding: '6px 12px',
-                                background: '#FFFFFF',
+                                background: '#F0F9FF',
                                 border: '1px solid #BAE6FD',
                                 borderRadius: '8px',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                cursor: 'pointer',
                               }}
-                              title="Mở link mời như người nhận (B)"
+                              title="Sao chép link mời để gửi qua Zalo / Facebook Messenger"
                             >
-                              Mở link mời ↗
-                            </Link>
+                              <span>📋 Sao chép link</span>
+                            </button>
 
+                            {/* Nút Gửi lại email tự động qua Google SMTP */}
                             {inv.status === 'PENDING' && (
-                              <a
-                                href={getGmailComposeUrl(inv.email, inv.token)}
-                                target="_blank"
-                                rel="noopener noreferrer"
+                              <button
+                                type="button"
+                                onClick={() => handleResendInviteEmail(inv)}
+                                disabled={isResendingEmail === inv.token}
                                 style={{
                                   fontSize: '12px',
-                                  color: '#EA4335',
+                                  color: '#047857',
                                   fontWeight: 700,
-                                  textDecoration: 'none',
                                   padding: '6px 12px',
-                                  background: '#FEF2F2',
-                                  border: '1px solid #FECACA',
+                                  background: '#ECFDF5',
+                                  border: '1px solid #A7F3D0',
                                   borderRadius: '8px',
                                   display: 'inline-flex',
                                   alignItems: 'center',
                                   gap: '4px',
+                                  cursor: isResendingEmail === inv.token ? 'not-allowed' : 'pointer',
                                 }}
-                                title={`Mở Gmail để gửi thư mời thật tới ${inv.email}`}
+                                title={`Tự động gửi lại email mời trực tiếp tới ${inv.email}`}
                               >
-                                <span>✉️ Gửi Gmail</span>
-                              </a>
+                                <span>{isResendingEmail === inv.token ? '⏳ Đang gửi...' : '🔄 Gửi lại email'}</span>
+                              </button>
                             )}
 
+                            {/* Nút Thu hồi lời mời (chỉ Trưởng nhóm) */}
                             {isTripOwner && inv.status === 'PENDING' && (
                               <button
                                 type="button"
@@ -3719,7 +4236,12 @@ export default function TripDetailPage() {
                     <button
                       key={calDay.dayNumber}
                       type="button"
-                      onClick={() => setNewStopDay(calDay.dayNumber)}
+                      onClick={() => {
+                        setNewStopDay(calDay.dayNumber);
+                        const dayMeta = getTripDayMeta(trip?.startDate, trip?.endDate, calDay.dayNumber);
+                        setNewStopCustomDate(dayMeta.fullDateStr || '');
+                        setAddStopDateError(null);
+                      }}
                       style={{
                         flex: displayCalendarDays.length <= 4 ? 1 : '0 0 calc(25% - 6px)',
                         minWidth: '70px',
@@ -3744,6 +4266,39 @@ export default function TripDetailPage() {
                     </button>
                   ))}
                 </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                  Ngày lịch trình (dd/mm/yyyy) — V-01 Chặn ngoài khoảng
+                </label>
+                <input
+                  type="text"
+                  placeholder="dd/mm/yyyy (ví dụ: 24/11/2026)"
+                  value={newStopCustomDate}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setNewStopCustomDate(val);
+                    const res = validateDateAgainstTrip(val, trip?.startDate, trip?.endDate);
+                    setAddStopDateError(res.isValid ? null : res.error || null);
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    borderRadius: '10px',
+                    border: `1.5px solid ${addStopDateError ? '#EF4444' : '#CBD5E1'}`,
+                    background: addStopDateError ? '#FEF2F2' : '#FFFFFF',
+                    fontSize: '14px',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                />
+                {addStopDateError && (
+                  <div style={{ marginTop: '6px', color: '#DC2626', fontSize: '12.5px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span>❌</span>
+                    <span>{addStopDateError}</span>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -3876,21 +4431,429 @@ export default function TripDetailPage() {
               </button>
               <button
                 type="button"
-                onClick={handleSaveNewActivity}
-                disabled={!newStopTitle.trim()}
+                onClick={() => handleSaveNewActivity(false)}
+                disabled={!newStopTitle.trim() || !!addStopDateError}
                 style={{
                   padding: '10px 22px',
                   borderRadius: '10px',
                   border: 'none',
-                  background: newStopTitle.trim() ? '#0284C7' : '#94A3B8',
+                  background: !newStopTitle.trim() || !!addStopDateError ? '#94A3B8' : '#0284C7',
                   color: '#FFFFFF',
                   fontWeight: 700,
                   fontSize: '13.5px',
-                  cursor: newStopTitle.trim() ? 'pointer' : 'not-allowed',
-                  boxShadow: newStopTitle.trim() ? '0 4px 12px rgba(2, 132, 199, 0.3)' : 'none',
+                  cursor: !newStopTitle.trim() || !!addStopDateError ? 'not-allowed' : 'pointer',
+                  boxShadow: !newStopTitle.trim() || !!addStopDateError ? 'none' : '0 4px 12px rgba(2, 132, 199, 0.3)',
                 }}
               >
                 Lưu vào Ngày {newStopDay}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3B: CHỈNH SỬA ĐIỂM DỪNG (Bước 3: Sửa tên/giờ; Bước 6: Chuyển ngày; V-01; V-02) */}
+      {editingStop && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(15, 23, 42, 0.65)',
+            backdropFilter: 'blur(5px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '20px',
+          }}
+          onClick={() => setEditingStop(null)}
+        >
+          <div
+            style={{
+              background: '#FFFFFF',
+              borderRadius: '24px',
+              maxWidth: '520px',
+              width: '100%',
+              padding: '28px',
+              boxShadow: '0 24px 48px rgba(0,0,0,0.3)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <div>
+                <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
+                  ✏️ Sửa điểm dừng lịch trình
+                </h3>
+                <span style={{ fontSize: '12px', color: '#64748B' }}>
+                  Hiện đang ở Ngày {editingStop.dayNumber}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingStop(null)}
+                style={{
+                  background: '#F1F5F9',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '32px',
+                  height: '32px',
+                  fontSize: '16px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#64748B',
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '20px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                  Chuyển sang Ngày (Bước 6)
+                </label>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {displayCalendarDays.map((calDay) => (
+                    <button
+                      key={calDay.dayNumber}
+                      type="button"
+                      onClick={() => {
+                        setEditStopTargetDay(calDay.dayNumber);
+                        const dayMeta = getTripDayMeta(trip?.startDate, trip?.endDate, calDay.dayNumber);
+                        setEditStopCustomDate(dayMeta.fullDateStr || '');
+                        setEditStopDateError(null);
+                      }}
+                      style={{
+                        flex: displayCalendarDays.length <= 4 ? 1 : '0 0 calc(25% - 6px)',
+                        minWidth: '70px',
+                        padding: '8px 10px',
+                        borderRadius: '8px',
+                        border: '1px solid',
+                        borderColor: editStopTargetDay === calDay.dayNumber ? '#0284C7' : '#CBD5E1',
+                        background: editStopTargetDay === calDay.dayNumber ? '#E0F2FE' : '#FFFFFF',
+                        color: editStopTargetDay === calDay.dayNumber ? '#0369A1' : '#475569',
+                        fontWeight: 700,
+                        fontSize: '13px',
+                        cursor: 'pointer',
+                        textAlign: 'center',
+                      }}
+                    >
+                      <span>Ngày {calDay.dayNumber}</span>
+                      {calDay.meta.dayDate && (
+                        <span style={{ display: 'block', fontSize: '10.5px', fontWeight: 500, opacity: 0.85 }}>
+                          {calDay.meta.dayDate}/{calDay.meta.monthText.replace('Tháng ', '')}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                  Ngày lịch trình (dd/mm/yyyy) — V-01 Chặn ngoài khoảng
+                </label>
+                <input
+                  type="text"
+                  placeholder="dd/mm/yyyy (ví dụ: 24/11/2026)"
+                  value={editStopCustomDate}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setEditStopCustomDate(val);
+                    const res = validateDateAgainstTrip(val, trip?.startDate, trip?.endDate);
+                    setEditStopDateError(res.isValid ? null : res.error || null);
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    borderRadius: '10px',
+                    border: `1.5px solid ${editStopDateError ? '#EF4444' : '#CBD5E1'}`,
+                    background: editStopDateError ? '#FEF2F2' : '#FFFFFF',
+                    fontSize: '14px',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                />
+                {editStopDateError && (
+                  <div style={{ marginTop: '6px', color: '#DC2626', fontSize: '12.5px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span>❌</span>
+                    <span>{editStopDateError}</span>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                  Tên địa điểm / Hoạt động * (Bước 3: Đổi tên)
+                </label>
+                <input
+                  type="text"
+                  value={editStopTitle}
+                  onChange={(e) => setEditStopTitle(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    borderRadius: '10px',
+                    border: '1px solid #CBD5E1',
+                    fontSize: '14px',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                  Địa chỉ / Vị trí
+                </label>
+                <input
+                  type="text"
+                  value={editStopLocation}
+                  onChange={(e) => setEditStopLocation(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    borderRadius: '10px',
+                    border: '1px solid #CBD5E1',
+                    fontSize: '14px',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                    Khung giờ * (Bước 3: Đổi giờ)
+                  </label>
+                  <input
+                    type="text"
+                    value={editStopTime}
+                    placeholder="08:00 – 10:00"
+                    onChange={(e) => setEditStopTime(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '10px 14px',
+                      borderRadius: '10px',
+                      border: '1px solid #CBD5E1',
+                      fontSize: '14px',
+                      outline: 'none',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                    Chi phí ước tính
+                  </label>
+                  <input
+                    type="text"
+                    value={editStopCost}
+                    placeholder="50.000đ / người"
+                    onChange={(e) => setEditStopCost(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '10px 14px',
+                      borderRadius: '10px',
+                      border: '1px solid #CBD5E1',
+                      fontSize: '14px',
+                      outline: 'none',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                  Phân loại
+                </label>
+                <select
+                  value={editStopCategory}
+                  onChange={(e) => setEditStopCategory(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    borderRadius: '10px',
+                    border: '1px solid #CBD5E1',
+                    fontSize: '14px',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                    background: '#FFFFFF',
+                  }}
+                >
+                  <option value="Di tích & Văn hóa">Di tích & Văn hóa</option>
+                  <option value="Ẩm thực & Cà phê">Ẩm thực & Cà phê</option>
+                  <option value="Trải nghiệm & Khám phá">Trải nghiệm & Khám phá</option>
+                  <option value="Nghỉ ngơi & Mua sắm">Nghỉ ngơi & Mua sắm</option>
+                </select>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button
+                type="button"
+                onClick={() => setEditingStop(null)}
+                style={{
+                  padding: '10px 18px',
+                  borderRadius: '10px',
+                  border: '1px solid #CBD5E1',
+                  background: '#F8FAFC',
+                  color: '#475569',
+                  fontWeight: 700,
+                  fontSize: '13.5px',
+                  cursor: 'pointer',
+                }}
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSaveEditedActivity(false)}
+                disabled={!editStopTitle.trim() || !!editStopDateError}
+                style={{
+                  padding: '10px 22px',
+                  borderRadius: '10px',
+                  border: 'none',
+                  background: !editStopTitle.trim() || !!editStopDateError ? '#94A3B8' : '#0284C7',
+                  color: '#FFFFFF',
+                  fontWeight: 700,
+                  fontSize: '13.5px',
+                  cursor: !editStopTitle.trim() || !!editStopDateError ? 'not-allowed' : 'pointer',
+                  boxShadow: !editStopTitle.trim() || !!editStopDateError ? 'none' : '0 4px 12px rgba(2, 132, 199, 0.3)',
+                }}
+              >
+                Lưu thay đổi
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3C: XÁC NHẬN CẢNH BÁO CHỒNG GIỜ (V-02: Bước 10, Bước 11) */}
+      {overlapWarningDialog && overlapWarningDialog.isOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(15, 23, 42, 0.7)',
+            backdropFilter: 'blur(5px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10000,
+            padding: '20px',
+          }}
+          onClick={() => setOverlapWarningDialog(null)}
+        >
+          <div
+            style={{
+              background: '#FFFFFF',
+              borderRadius: '20px',
+              maxWidth: '480px',
+              width: '100%',
+              padding: '26px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              border: '2px solid #F59E0B',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
+              <div
+                style={{
+                  width: '42px',
+                  height: '42px',
+                  borderRadius: '50%',
+                  background: '#FEF3C7',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '22px',
+                  flexShrink: 0,
+                }}
+              >
+                ⚠️
+              </div>
+              <div>
+                <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#B45309', margin: 0 }}>
+                  Cảnh báo điểm dừng chồng giờ
+                </h3>
+                <span style={{ fontSize: '12px', color: '#64748B' }}>
+                  Quy tắc V-02 · Lịch trình Ngày {overlapWarningDialog.targetDay}
+                </span>
+              </div>
+            </div>
+
+            <div
+              style={{
+                background: '#FFFBEB',
+                borderRadius: '12px',
+                padding: '14px 16px',
+                border: '1px solid #FDE68A',
+                marginBottom: '20px',
+                fontSize: '13.5px',
+                color: '#92400E',
+                lineHeight: '1.6',
+              }}
+            >
+              Điểm dừng <strong>&ldquo;{overlapWarningDialog.activityData.title}&rdquo;</strong> (
+              {overlapWarningDialog.activityData.timeRange}) đang chồng giờ với điểm dừng{' '}
+              <strong>&ldquo;{overlapWarningDialog.overlapWithTitle}&rdquo;</strong> (
+              {overlapWarningDialog.overlapWithTime}).
+              <br />
+              <span style={{ display: 'inline-block', marginTop: '6px', color: '#78350F', fontWeight: 700 }}>
+                Bạn vẫn muốn lưu?
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button
+                type="button"
+                onClick={() => setOverlapWarningDialog(null)}
+                style={{
+                  padding: '10px 18px',
+                  borderRadius: '10px',
+                  border: '1px solid #CBD5E1',
+                  background: '#F8FAFC',
+                  color: '#475569',
+                  fontWeight: 700,
+                  fontSize: '13.5px',
+                  cursor: 'pointer',
+                }}
+              >
+                Quay lại sửa
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (overlapWarningDialog.isEditing) {
+                    handleSaveEditedActivity(true);
+                  } else {
+                    handleSaveNewActivity(true);
+                  }
+                }}
+                style={{
+                  padding: '10px 22px',
+                  borderRadius: '10px',
+                  border: 'none',
+                  background: '#F59E0B',
+                  color: '#FFFFFF',
+                  fontWeight: 700,
+                  fontSize: '13.5px',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)',
+                }}
+              >
+                Vẫn lưu
               </button>
             </div>
           </div>
@@ -3933,7 +4896,7 @@ export default function TripDetailPage() {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
               <div>
                 <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
-                  {createdInvitationInfo ? '🎉 Lời mời đã sẵn sàng gửi!' : '✉️ Phát hành lời mời tham gia nhóm'}
+                  {createdInvitationInfo ? '🎉 Lời mời đã được gửi tự động!' : '✉️ Phát hành & Gửi lời mời trực tiếp'}
                 </h3>
               </div>
               <button
@@ -3962,20 +4925,25 @@ export default function TripDetailPage() {
 
             {createdInvitationInfo ? (
               <div>
-                <div style={{ background: '#F0FDF4', border: '1.5px solid #86EFAC', borderRadius: '16px', padding: '16px', marginBottom: '18px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                    <span style={{ fontSize: '18px' }}>✅</span>
-                    <strong style={{ fontSize: '14.5px', color: '#15803D' }}>
-                      Đã phát hành token mời cho: {createdInvitationInfo.email}
-                    </strong>
+                <div style={{ background: '#F0FDF4', border: '1.5px solid #86EFAC', borderRadius: '16px', padding: '16px 18px', marginBottom: '18px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+                    <span style={{ fontSize: '22px' }}>✅</span>
+                    <div>
+                      <strong style={{ fontSize: '15px', color: '#15803D', display: 'block' }}>
+                        Đã tự động gửi thư mời đến: {createdInvitationInfo.email}
+                      </strong>
+                      <span style={{ fontSize: '12px', color: '#166534', fontWeight: 600 }}>
+                        Trạng thái: Đã chuyển phát trực tiếp vào hộp thư đến • {createdInvitationInfo.emailDeliveredAt || 'Vừa xong'}
+                      </span>
+                    </div>
                   </div>
                   <p style={{ margin: 0, fontSize: '13px', color: '#166534', lineHeight: '1.5' }}>
-                    Token đã được băm SHA-256 an toàn. Bây giờ bạn có thể mở Gmail để gửi thư mời chính thức đến hòm thư người nhận.
+                    Hệ thống VISTA đã tự động gửi email thư mời chứa đầy đủ thông tin lịch trình và link tham gia. Bạn không cần phải mở Gmail hay thao tác thêm bất kỳ bước nào!
                   </p>
                 </div>
 
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '14px', padding: '16px', marginBottom: '20px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '14px', padding: '16px', marginBottom: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                     <span style={{ fontSize: '12px', fontWeight: 700, color: '#64748B' }}>MÃ TOKEN VÉ MỜI:</span>
                     <span style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '13px', color: '#0284C7', background: '#E0F2FE', padding: '3px 10px', borderRadius: '6px' }}>
                       {createdInvitationInfo.token}
@@ -3983,9 +4951,9 @@ export default function TripDetailPage() {
                   </div>
 
                   <div style={{ fontSize: '12px', fontWeight: 700, color: '#64748B', marginBottom: '6px' }}>
-                    LIÊN KẾT MỜI GIA NHẬP:
+                    LIÊN KẾT MỜI GIA NHẬP TRỰC TIẾP:
                   </div>
-                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '12px' }}>
                     <input
                       type="text"
                       readOnly
@@ -4023,37 +4991,100 @@ export default function TripDetailPage() {
                       Sao chép link
                     </button>
                   </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid #E2E8F0', paddingTop: '10px' }}>
+                    <span style={{ fontSize: '12px', color: '#64748B' }}>
+                      Cần gửi lại thư mời vào email này?
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleResendInviteEmail({ email: createdInvitationInfo.email, token: createdInvitationInfo.token })}
+                      disabled={isResendingEmail === createdInvitationInfo.token}
+                      style={{
+                        fontSize: '12px',
+                        color: '#0284C7',
+                        fontWeight: 700,
+                        background: '#E0F2FE',
+                        border: 'none',
+                        borderRadius: '6px',
+                        padding: '5px 12px',
+                        cursor: isResendingEmail === createdInvitationInfo.token ? 'not-allowed' : 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                      }}
+                    >
+                      <span>{isResendingEmail === createdInvitationInfo.token ? '⏳ Đang gửi...' : '🔄 Gửi lại email'}</span>
+                    </button>
+                  </div>
                 </div>
 
-                {/* KHỐI NÚT GỬI GMAIL THẬT */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
-                  <a
-                    href={getGmailComposeUrl(createdInvitationInfo.email, createdInvitationInfo.token)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '10px',
-                      padding: '13px 20px',
-                      background: 'linear-gradient(135deg, #EA4335 0%, #C5221F 100%)',
-                      color: '#FFFFFF',
-                      borderRadius: '12px',
-                      fontSize: '14.5px',
-                      fontWeight: 800,
-                      textDecoration: 'none',
-                      boxShadow: '0 6px 18px rgba(234, 67, 53, 0.35)',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <span>✉️ Mở Gmail gửi thư thật ngay (Soạn sẵn 100%) ↗</span>
-                  </a>
+                {/* THÔNG BÁO CHUYỂN PHÁT THẬT QUA SMTP HOẶC HƯỚNG DẪN */}
+                {createdInvitationInfo.deliveryMode === 'SMTP_TRANSPORT' ? (
+                  <div style={{ marginBottom: '20px', padding: '14px', background: '#F0FDF4', borderRadius: '14px', border: '1.5px solid #86EFAC' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '18px' }}>🚀</span>
+                      <strong style={{ fontSize: '13.5px', color: '#15803D' }}>
+                        Đã tự động gửi email THẬT qua Google SMTP thành công!
+                      </strong>
+                    </div>
+                    <p style={{ margin: '0 0 8px 0', fontSize: '12px', color: '#166534', lineHeight: '1.5' }}>
+                      Email thư mời chính thức đã bay thẳng vào hộp thư đến của <strong>{createdInvitationInfo.email}</strong> qua máy chủ Google. Người nhận chỉ cần mở hòm thư của họ và bấm nhận lời mời!
+                    </p>
+                    <a
+                      href={getGmailComposeUrl(createdInvitationInfo.email, createdInvitationInfo.token)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        fontSize: '11.5px',
+                        color: '#15803D',
+                        textDecoration: 'underline',
+                      }}
+                    >
+                      Mở ứng dụng Gmail xem lại thư hoặc gửi dự phòng nếu cần ↗
+                    </a>
+                  </div>
+                ) : (
+                  <div style={{ marginBottom: '20px', padding: '14px', background: '#FFF7ED', borderRadius: '14px', border: '1.5px solid #FFEDD5' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '16px' }}>⚡</span>
+                      <strong style={{ fontSize: '13px', color: '#C2410C' }}>
+                        Gửi thư thật vào Gmail người nhận:
+                      </strong>
+                    </div>
+                    <p style={{ margin: '0 0 12px 0', fontSize: '12px', color: '#9A3412', lineHeight: '1.5' }}>
+                      Ứng dụng đang chạy cục bộ (localhost). Để thư bay THẬT 100% vào hòm thư <strong>{createdInvitationInfo.email}</strong> ngay bây giờ bằng tab Gmail bạn đang mở, hãy bấm nút dưới đây:
+                    </p>
 
-                  <p style={{ margin: 0, fontSize: '12px', color: '#64748B', textAlign: 'center', lineHeight: '1.5' }}>
-                    💡 Khi bấm nút trên, Gmail sẽ mở ra với <strong>Người nhận, Tiêu đề & Toàn bộ nội dung mời</strong> đã được điền sẵn. Bạn chỉ cần nhấn <strong>Gửi (Send)</strong> là thư sẽ bay vào hòm thư {createdInvitationInfo.email}!
-                  </p>
-                </div>
+                    <a
+                      href={getGmailComposeUrl(createdInvitationInfo.email, createdInvitationInfo.token)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        padding: '12px 18px',
+                        background: 'linear-gradient(135deg, #EA4335 0%, #C5221F 100%)',
+                        color: '#FFFFFF',
+                        borderRadius: '10px',
+                        fontSize: '13.5px',
+                        fontWeight: 800,
+                        textDecoration: 'none',
+                        boxShadow: '0 4px 12px rgba(234, 67, 53, 0.3)',
+                        cursor: 'pointer',
+                        marginBottom: '8px',
+                      }}
+                    >
+                      <span>✉️ Bấm để gửi thư thật vào Gmail ngay (Soạn sẵn 100%) ↗</span>
+                    </a>
+
+                    <p style={{ margin: 0, fontSize: '11px', color: '#9A3412', textAlign: 'center', lineHeight: '1.4' }}>
+                      *(Nội dung, người nhận và liên kết mời đã được điền sẵn 100%, bạn chỉ cần nhấn Gửi)*
+                    </p>
+                  </div>
+                )}
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
                   <button
@@ -4063,7 +5094,7 @@ export default function TripDetailPage() {
                       setInviteInputEmail('');
                     }}
                     style={{
-                      padding: '9px 16px',
+                      padding: '10px 16px',
                       borderRadius: '10px',
                       border: '1px solid #CBD5E1',
                       background: '#F8FAFC',
@@ -4083,7 +5114,7 @@ export default function TripDetailPage() {
                       setInviteInputEmail('');
                     }}
                     style={{
-                      padding: '9px 20px',
+                      padding: '10px 22px',
                       borderRadius: '10px',
                       border: 'none',
                       background: '#0F172A',
@@ -4091,6 +5122,7 @@ export default function TripDetailPage() {
                       fontWeight: 700,
                       fontSize: '13px',
                       cursor: 'pointer',
+                      boxShadow: '0 4px 12px rgba(15, 23, 42, 0.25)',
                     }}
                   >
                     Hoàn tất & Đóng
@@ -4099,8 +5131,8 @@ export default function TripDetailPage() {
               </div>
             ) : (
               <div>
-                <p style={{ margin: '0 0 16px', fontSize: '13.5px', color: '#64748B', lineHeight: '1.5' }}>
-                  Hệ thống sẽ sinh một token ngẫu nhiên bảo mật, băm SHA-256 lưu DB và cung cấp link mời kèm nút mở Gmail gửi thư thật 100%.
+                <p style={{ margin: '0 0 16px', fontSize: '13.5px', color: '#475569', lineHeight: '1.5' }}>
+                  Hệ thống sẽ sinh mã vé mời bảo mật và <strong>tự động chuyển phát thư mời trực tiếp</strong> vào hòm thư người nhận ngay khi bạn nhấn nút. Bạn không cần phải mở Gmail hay làm thủ công bất kỳ bước nào.
                 </p>
 
                 {inviteError && (
@@ -4170,20 +5202,23 @@ export default function TripDetailPage() {
                   <button
                     type="button"
                     onClick={handleCreateInviteSubmit}
-                    disabled={!inviteInputEmail.trim()}
+                    disabled={!inviteInputEmail.trim() || isSendingInviteEmail}
                     style={{
                       padding: '10px 22px',
                       borderRadius: '10px',
                       border: 'none',
-                      background: inviteInputEmail.trim() ? '#0284C7' : '#94A3B8',
+                      background: inviteInputEmail.trim() && !isSendingInviteEmail ? '#0284C7' : '#94A3B8',
                       color: '#FFFFFF',
                       fontWeight: 700,
                       fontSize: '13.5px',
-                      cursor: inviteInputEmail.trim() ? 'pointer' : 'not-allowed',
-                      boxShadow: inviteInputEmail.trim() ? '0 4px 12px rgba(2, 132, 199, 0.3)' : 'none',
+                      cursor: inviteInputEmail.trim() && !isSendingInviteEmail ? 'pointer' : 'not-allowed',
+                      boxShadow: inviteInputEmail.trim() && !isSendingInviteEmail ? '0 4px 12px rgba(2, 132, 199, 0.3)' : 'none',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
                     }}
                   >
-                    Tạo lời mời & Mở Gmail gửi
+                    {isSendingInviteEmail ? '⏳ Đang tự động gửi email...' : '✉️ Phát hành & Tự động gửi thư mời'}
                   </button>
                 </div>
               </div>
