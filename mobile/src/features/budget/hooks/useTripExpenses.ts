@@ -3,32 +3,42 @@ import {
   expenseApi,
   ApiExpense,
   TripExpenseSummaryDto,
+  SettlementAccountDto,
   CreateExpensePayload,
   UpdateExpensePayload,
 } from '../../../services/api/expenseApi';
 import { apiErrorMessage } from '../../../services/api/client';
 
 export function useTripExpenses(
-  tripId: string,
+  tripId?: string,
   budgetTarget: number = 5000000,
 ) {
   const [expenses, setExpenses] = useState<ApiExpense[]>([]);
   const [summary, setSummary] = useState<TripExpenseSummaryDto | null>(null);
+  const [settlementAccounts, setSettlementAccounts] = useState<SettlementAccountDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const loadExpenses = useCallback(async () => {
-    if (!tripId) return;
+    if (!tripId) {
+      setExpenses([]);
+      setSummary(null);
+      setSettlementAccounts([]);
+      setIsLoading(false);
+      return;
+    }
     setIsLoading(true);
     setError(null);
     try {
-      const [list, sum] = await Promise.all([
+      const [list, sum, accounts] = await Promise.all([
         expenseApi.fetchTripExpenses(tripId),
         expenseApi.fetchTripExpenseSummary(tripId, budgetTarget),
+        expenseApi.fetchSettlementAccounts(tripId).catch(() => []),
       ]);
       setExpenses(list);
       setSummary(sum);
+      setSettlementAccounts(accounts);
     } catch (err) {
       setError(apiErrorMessage(err));
     } finally {
@@ -45,6 +55,7 @@ export function useTripExpenses(
 
   const addExpense = useCallback(
     async (payload: CreateExpensePayload) => {
+      if (!tripId) throw new Error('Chưa chọn chuyến đi');
       setIsSubmitting(true);
       setError(null);
       try {
@@ -66,6 +77,7 @@ export function useTripExpenses(
 
   const removeExpense = useCallback(
     async (expenseId: string) => {
+      if (!tripId) throw new Error('Chưa chọn chuyến đi');
       try {
         await expenseApi.deleteTripExpense(tripId, expenseId);
         setExpenses((prev) => prev.filter((e) => e.id !== expenseId));
@@ -80,6 +92,7 @@ export function useTripExpenses(
 
   const updateExpense = useCallback(
     async (expenseId: string, payload: UpdateExpensePayload) => {
+      if (!tripId) throw new Error('Chưa chọn chuyến đi');
       setIsSubmitting(true);
       setError(null);
       try {
@@ -106,6 +119,7 @@ export function useTripExpenses(
   return {
     expenses,
     summary,
+    settlementAccounts,
     isLoading,
     isSubmitting,
     error,

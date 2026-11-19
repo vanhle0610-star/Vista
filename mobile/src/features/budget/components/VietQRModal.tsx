@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Modal,
   View,
@@ -45,11 +45,19 @@ export function VietQRModal({
 }: VietQRModalProps) {
   const [imageError, setImageError] = useState(false);
 
-  const hasValidAccount = Boolean(accountNumber && accountNumber.trim().length >= 4);
+  useEffect(() => {
+    setImageError(false);
+  }, [visible, bankCode, accountNumber]);
 
-  const finalBankCode = bankCode || bankName || 'MB';
+  // Phân biệt rõ ràng giữa mã ngân hàng (bankCode/BIN) và tên đầy đủ (bankName).
+  // VietQR Gateway (img.vietqr.io) chỉ chấp nhận mã ngắn Napas (VCB, MB, TCB...) hoặc BIN 6 số, không nhận tên ngân hàng đầy đủ.
+  const finalBankCode = (bankCode || '').trim().toUpperCase();
+  const hasValidBankCode = Boolean(finalBankCode.length >= 2 && !finalBankCode.includes(' '));
+  const hasValidAccountNumber = Boolean(accountNumber && accountNumber.trim().length >= 4);
+  const hasValidAccount = hasValidBankCode && hasValidAccountNumber;
+
   const qrUrl = hasValidAccount
-    ? `https://img.vietqr.io/image/${finalBankCode}-${accountNumber}-compact2.png?amount=${Math.round(
+    ? `https://img.vietqr.io/image/${finalBankCode}-${accountNumber!.trim()}-compact2.png?amount=${Math.round(
         amount
       )}&addInfo=${encodeURIComponent(memo)}&accountName=${encodeURIComponent(receiverName || '')}`
     : '';
@@ -87,8 +95,11 @@ export function VietQRModal({
               <Text style={styles.unverifiedIcon}>⚠️</Text>
               <Text style={styles.unverifiedTitle}>Người nhận chưa thiết lập tài khoản nhận tiền</Text>
               <Text style={styles.unverifiedDesc}>
-                Thành viên này chưa liên kết tài khoản ngân hàng đã xác minh trong hệ thống VISTA.
-                Vui lòng thông báo cho thành viên cập nhật thông tin tài khoản trước khi tạo mã QR chuyển khoản.
+                {!hasValidAccountNumber && !hasValidBankCode
+                  ? 'Thành viên này chưa liên kết tài khoản ngân hàng và mã ngân hàng thụ hưởng trong hệ thống VISTA.'
+                  : !hasValidAccountNumber
+                  ? 'Thành viên này chưa liên kết tài khoản ngân hàng đã xác minh trong hệ thống VISTA. Vui lòng thông báo cho thành viên cập nhật thông tin tài khoản trước khi tạo mã QR chuyển khoản.'
+                  : 'Chưa xác định được mã ngân hàng hợp lệ (Napas Bank Code) của thành viên nhận tiền. Vui lòng yêu cầu thành viên cập nhật ngân hàng thụ hưởng hợp lệ trong phần Hồ sơ.'}
               </Text>
               <TouchableOpacity style={styles.closeSecondaryBtn} onPress={onClose} activeOpacity={0.8}>
                 <Text style={styles.closeSecondaryBtnText}>Đóng</Text>
