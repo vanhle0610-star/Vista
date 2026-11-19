@@ -59,9 +59,15 @@ export function DestinationCard({
 
         {/* Row 2: Star Rating */}
         <div className={styles.ratingRow}>
-          <IconStar size={12} className={styles.starIcon} />
-          <strong className={styles.ratingScore}>{stats.rating}</strong>
-          <span className={styles.reviewCount}>({stats.reviewCount} đánh giá)</span>
+          {stats.hasReviews && stats.rating ? (
+            <>
+              <IconStar size={12} className={styles.starIcon} />
+              <strong className={styles.ratingScore}>{stats.rating}</strong>
+              <span className={styles.reviewCount}>({stats.reviewCount} đánh giá)</span>
+            </>
+          ) : (
+            <span className={styles.noRatingText}>Chưa có đánh giá</span>
+          )}
         </div>
 
         {/* Row 3: Distance or District */}

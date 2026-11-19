@@ -1,4 +1,4 @@
-import { create, isAxiosError } from 'axios';
+import axios, { create, isAxiosError, AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { authStorage } from '../auth/authStorage';
@@ -65,18 +65,18 @@ api.interceptors.request.use(async (config) => {
   return config;
 });
 
-// Single-flight refresh lock to avoid repeated or infinite refresh loops
+// ─── SILENT REFRESH TOKEN (AXIOS RESPONSE INTERCEPTOR) ──────────────────────
 let isRefreshing = false;
 let failedQueue: Array<{
-  resolve: (value?: unknown) => void;
-  reject: (reason?: unknown) => void;
+  resolve: (token: string) => void;
+  reject: (error: unknown) => void;
 }> = [];
 
 const processQueue = (error: unknown, token: string | null = null) => {
   failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
-    } else {
+    } else if (token) {
       prom.resolve(token);
     }
   });
@@ -85,26 +85,31 @@ const processQueue = (error: unknown, token: string | null = null) => {
 
 api.interceptors.response.use(
   (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-    if (!originalRequest || !error.response) {
+  async (error: AxiosError) => {
+    const originalRequest = error.config as
+      | (InternalAxiosRequestConfig & { _retry?: boolean })
+      | undefined;
+
+    if (!originalRequest) {
       return Promise.reject(error);
     }
 
-    const isAuthRoute =
+    const status = error.response?.status;
+    const isAuthUrl =
       originalRequest.url?.includes('/auth/login') ||
       originalRequest.url?.includes('/auth/register') ||
       originalRequest.url?.includes('/auth/refresh') ||
       originalRequest.url?.includes('/auth/refresh-token');
 
-    if (error.response.status === 401 && !originalRequest._retry && !isAuthRoute) {
+    // Chỉ tự động refresh khi gặp HTTP 401 trên các API nghiệp vụ
+    if (status === 401 && !originalRequest._retry && !isAuthUrl) {
       if (isRefreshing) {
-        return new Promise((resolve, reject) => {
+        return new Promise<string>((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         })
-          .then((newToken) => {
-            if (originalRequest.headers && newToken) {
-              originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
+          .then((token) => {
+            if (originalRequest.headers) {
+              originalRequest.headers['Authorization'] = `Bearer ${token}`;
             }
             return api(originalRequest);
           })
@@ -115,29 +120,36 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const refreshToken = await authStorage.getRefreshToken();
-        if (!refreshToken) {
-          throw new Error('No refresh token available');
+        const storedRefreshToken = await authStorage.getRefreshToken();
+        if (!storedRefreshToken) {
+          await authStorage.clearSession();
+          return Promise.reject(error);
         }
 
-        const refreshRes = await api.post<{
-          accessToken: string;
-          refreshToken?: string;
-          user?: unknown;
-        }>('/auth/refresh', { refreshToken });
+        const refreshBase = (api.defaults.baseURL ?? defaultBaseUrl).replace(/\/+$/, '');
+        const refreshRes = await axios.post(`${refreshBase}/auth/refresh`, {
+          refreshToken: storedRefreshToken,
+        });
 
-        const newAccessToken = refreshRes.data.accessToken;
-        const newRefreshToken = refreshRes.data.refreshToken ?? refreshToken;
+        const data = refreshRes.data;
+        const newAccessToken = data.accessToken;
+        const newRefreshToken = data.refreshToken;
 
         await authStorage.setSession({
           accessToken: newAccessToken,
           refreshToken: newRefreshToken,
-          user: refreshRes.data.user,
+          user: {
+            id: data.id,
+            email: data.email,
+            displayName: data.displayName,
+            roles: data.roles || ['ROLE_USER'],
+          },
         });
 
         if (originalRequest.headers) {
           originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
         }
+
         processQueue(null, newAccessToken);
         return api(originalRequest);
       } catch (refreshErr) {
@@ -169,6 +181,8 @@ export function apiErrorMessage(reason: unknown) {
 
     return reason.code === 'ECONNABORTED'
       ? 'Máy chủ phản hồi quá lâu (quá thời gian chờ).'
+      : reason.code === 'ERR_NETWORK' || reason.message?.includes('Network Error')
+      ? 'Không thể kết nối máy chủ VISTA. Vui lòng kiểm tra kết nối mạng và đảm bảo máy chủ backend đang chạy.'
       : 'Không thể kết nối máy chủ. Kiểm tra địa chỉ API và kết nối mạng.';
   }
   if (reason instanceof Error) {

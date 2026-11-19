@@ -676,3 +676,73 @@ export async function fetchAllDestinationsWeather(): Promise<Record<string, Real
     return FALLBACK_DESTINATIONS_WEATHER;
   }
 }
+
+/**
+ * Fetch realtime live weather for any GPS coordinates in Vietnam
+ */
+export async function fetchLiveWeatherByCoords(
+  lat: number,
+  lon: number,
+  locationName = ''
+): Promise<RealtimeWeather> {
+  const cacheKey = `vista_weather_${lat.toFixed(3)}_${lon.toFixed(3)}`;
+  if (typeof window !== 'undefined') {
+    try {
+      const cachedStr = localStorage.getItem(cacheKey);
+      if (cachedStr) {
+        const cached: { data: RealtimeWeather; timestamp: number } = JSON.parse(cachedStr);
+        if (Date.now() - cached.timestamp < CACHE_TTL_MS) {
+          return cached.data;
+        }
+      }
+    } catch {}
+  }
+
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m&timezone=Asia%2FBangkok`;
+  const res = await fetch(url, { headers: { Accept: 'application/json' } });
+  if (!res.ok) throw new Error(`Open-Meteo HTTP error: ${res.status}`);
+  const payload = await res.json();
+  const cur = payload.current;
+  if (!cur) throw new Error('No current weather in response');
+
+  const temp = Math.round(cur.temperature_2m);
+  const apparentTemp = Math.round(cur.apparent_temperature ?? temp);
+  const humidity = Math.round(cur.relative_humidity_2m ?? 70);
+  const windSpeed = Math.round(cur.wind_speed_10m ?? 10);
+  const precipitation = cur.precipitation ?? 0;
+  const isDay = cur.is_day === 1;
+  const weatherCode = cur.weather_code ?? 0;
+
+  const wmo = interpretWmoCode(weatherCode, isDay);
+  const advice = generateTravelAdvice(temp, weatherCode);
+  const nowFormatted = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+
+  const result: RealtimeWeather = {
+    locationId: `${lat},${lon}`,
+    nameVi: locationName || 'Điểm đến',
+    nameEn: locationName || 'Destination',
+    temp,
+    tempFormatted: `${temp}°C`,
+    apparentTemp,
+    humidity,
+    windSpeed,
+    precipitation,
+    isDay,
+    weatherCode,
+    icon: wmo.icon,
+    statusVi: wmo.statusVi,
+    statusEn: wmo.statusEn,
+    adviceVi: advice.adviceVi,
+    adviceEn: advice.adviceEn,
+    updatedTime: `${nowFormatted} (Realtime)`,
+    isLive: true,
+  };
+
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem(cacheKey, JSON.stringify({ data: result, timestamp: Date.now() }));
+    } catch {}
+  }
+
+  return result;
+}

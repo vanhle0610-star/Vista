@@ -3,6 +3,15 @@
 import React, { useEffect, useState, useCallback, use } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import {
+  Home,
+  BookOpen,
+  Scale,
+  Compass,
+  BarChart3,
+  Search,
+  Bell,
+} from 'lucide-react';
 import { apiRequest } from '@/lib/api';
 import type {
   TripDetail,
@@ -53,9 +62,12 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
 
   // UI State
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string>('u-me');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeNavTab, setActiveNavTab] = useState<'OVERVIEW' | 'LEDGER' | 'DEBT' | 'REPORT'>('OVERVIEW');
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -148,140 +160,115 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
     [tripId]
   );
 
-  // Load Real Data synchronized with local storage & backend
+  // Load treasury data exclusively from the backend/database.
   const loadTreasuryData = useCallback(async () => {
     try {
       setLoading(true);
+      setLoadError(null);
 
       // 1. Get current logged in user
       let myId = 'u-me';
-      let myName = 'Bạn';
-      let myEmail = 'ban@vista.vn';
       try {
         const userStr = localStorage.getItem('vista_user');
         if (userStr) {
           const u = JSON.parse(userStr);
           if (u.id) myId = u.id;
-          if (u.displayName) myName = u.displayName;
-          if (u.email) myEmail = u.email;
         }
-      } catch {}
+      } catch { }
       setCurrentUserId(myId);
 
-      // 2. Lookup trip in vista_custom_trips
-      let activeTrip: TripDetail | null = null;
-      let activeMembers: TripMember[] = [];
+      // Persisted trip IDs are UUIDs. Legacy/demo IDs must never be rendered.
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tripId);
+      if (!isUuid) throw new Error('Chuyến đi này không tồn tại trong database.');
 
-      try {
-        const customTripsStr = localStorage.getItem('vista_custom_trips');
-        const customTrips = customTripsStr ? JSON.parse(customTripsStr) : [];
+      const [serverTrip, serverMembers, apiExpenses] = await Promise.all([
+        apiRequest<any>(`/trips/${tripId}`),
+        apiRequest<any[]>(`/trips/${tripId}/members`),
+        apiRequest<any[]>(`/trips/${tripId}/expenses`),
+      ]);
 
-        // Match current tripId or pick first trip
-        let matched = customTrips.find((t: any) => t.id === tripId);
-        if (!matched && customTrips.length > 0) {
-          matched = customTrips[0];
-          // Keep browser address bar in exact sync with loaded trip
-          if (matched && matched.id !== tripId) {
-            router.replace(`/trips/${matched.id}/treasury`);
-          }
-        }
-
-        if (matched) {
-          const budget = matched.budgetTotal || 20000000;
-          activeTrip = {
-            id: matched.id,
-            title: matched.title || 'Hành trình VISTA',
-            startDate: matched.startDate || '15/11',
-            endDate: matched.endDate || '18/11/2026',
-            destinationSummary: matched.destination || 'Việt Nam',
-            budgetTotal: budget,
-            currency: 'VND',
-            status: matched.status || 'ACTIVE',
-            ownerId: matched.ownerId || matched.members?.[0]?.userId || myId,
-          };
-
-          if (Array.isArray(matched.members) && matched.members.length > 0) {
-            activeMembers = matched.members.map((m: any, idx: number) => {
-              const rawName = m.displayName || m.name || '';
-              const cleanName = rawName.replace(/\s*\(Bạn\)/g, '').trim() || (idx === 0 ? myName : `Thành viên ${idx + 1}`);
-              const isOwnerMember = idx === 0;
-              const isMe = (m.userId && m.userId === myId) || cleanName.toLowerCase() === myName.toLowerCase() || (m.email && m.email.toLowerCase() === myEmail.toLowerCase());
-              const memberId = isMe ? myId : (m.userId || (isOwnerMember ? (matched.ownerId || `u-${cleanName}`) : `mem-${idx}`));
-              return {
-                userId: memberId,
-                displayName: cleanName,
-                email: isMe ? myEmail : (m.email || `${cleanName.toLowerCase().replace(/\s+/g, '')}@vista.vn`),
-                role: m.role || (isOwnerMember ? 'OWNER' : 'MEMBER'),
-                budgetShare: Math.round(budget / matched.members.length),
-              };
-            });
-          }
-        }
-      } catch {}
-
-      // Fallback: If no custom trip exists, create a clean default trip for the current user
-      if (!activeTrip) {
-        activeTrip = {
-          id: tripId,
-          title: `Chuyến đi của ${myName}`,
-          startDate: '15/11/2026',
-          endDate: '18/11/2026',
-          destinationSummary: 'Đà Nẵng & Hội An',
-          budgetTotal: 20000000,
-          currency: 'VND',
-          status: 'ACTIVE',
-          ownerId: myId,
-        };
-
-        activeMembers = [
-          {
-            userId: myId,
-            displayName: myName,
-            email: myEmail,
-            role: 'OWNER',
-            budgetShare: 10000000,
-          },
-          {
-            userId: 'mem-2',
-            displayName: 'Bạn đồng hành',
-            email: 'donghanh@vista.vn',
-            role: 'MEMBER',
-            budgetShare: 10000000,
-          },
-        ];
-      }
-
-      if (activeMembers.length === 0) {
-        activeMembers = [
-          {
-            userId: myId,
-            displayName: myName,
-            email: myEmail,
-            role: 'OWNER',
-            budgetShare: activeTrip.budgetTotal,
-          },
-        ];
-      }
+      const activeTrip: TripDetail = {
+        id: String(serverTrip.id),
+        title: serverTrip.title || '',
+        startDate: serverTrip.startDate || '',
+        endDate: serverTrip.endDate || '',
+        destinationSummary: serverTrip.destinationSummary || '',
+        budgetTotal: Number(serverTrip.budgetTotal) || 0,
+        currency: serverTrip.currency || 'VND',
+        status: serverTrip.status || '',
+        ownerId: String(serverTrip.ownerId || ''),
+        coverImageUrl: serverTrip.coverImageUrl,
+        description: serverTrip.description,
+      };
+      const activeMembers: TripMember[] = Array.isArray(serverMembers)
+        ? serverMembers.map((m: any) => ({
+            userId: String(m.userId),
+            displayName: m.displayName || '',
+            email: m.email || '',
+            role: m.role === 'OWNER' ? 'OWNER' : 'MEMBER',
+            budgetShare: Number(m.budgetShare) || 0,
+          }))
+        : [];
 
       setTrip(activeTrip);
       setMembers(activeMembers);
 
-      // 3. Load Real Expenses for this trip
-      let loadedExpenses: Expense[] = [];
+      if (typeof window !== 'undefined' && activeTrip?.id) {
+        try {
+          localStorage.setItem('vista_last_trip_id', activeTrip.id);
+          window.dispatchEvent(new CustomEvent('vista-trip-selected', { detail: activeTrip.id }));
+        } catch { }
+      }
+
+      // 3. Map expense rows returned by the database-backed API.
+      const loadedExpenses: Expense[] = Array.isArray(apiExpenses) ? apiExpenses.map((e: any) => ({
+        id: String(e.id), tripId: String(e.tripId), title: String(e.title), amount: Number(e.amount),
+        currency: e.currency || 'VND', paidBy: String(e.paidBy), category: e.category || 'OTHER',
+        occurredAt: e.occurredAt || '', status: e.status || '', createdAt: e.createdAt || '',
+        splits: Array.isArray(e.splits) ? e.splits.map((s: any) => ({
+          id: String(s.id), userId: String(s.userId), shareAmount: Number(s.shareAmount),
+          settledStatus: s.settledStatus || 'UNSETTLED',
+        })) : [], version: e.version,
+      })) : [];
+      let loadedBackendSummary: TripExpenseSummary | null = null;
       try {
-        const storedExpensesStr = localStorage.getItem(`vista_expenses_${activeTrip.id}`);
-        if (storedExpensesStr) {
-          loadedExpenses = JSON.parse(storedExpensesStr);
+        const apiSum = await apiRequest<any>(`/trips/${activeTrip.id}/expenses/summary`);
+        if (apiSum) {
+              loadedBackendSummary = {
+                tripId: activeTrip.id,
+                totalSpent: Number(apiSum.totalSpent) || 0,
+                budgetTotal: Number(apiSum.budgetTotal) || activeTrip.budgetTotal,
+                remainingBudget: Number(apiSum.remainingBudget) || 0,
+                spentPercentage: Number(apiSum.spentPercentage) || 0,
+                currency: apiSum.currency || 'VND',
+                settlementDeltas: apiSum.settlementDeltas || {},
+                suggestedTransfers: Array.isArray(apiSum.suggestedTransfers)
+                  ? apiSum.suggestedTransfers.map((t: any) => ({
+                    fromUserId: String(t.fromUserId),
+                    toUserId: String(t.toUserId),
+                    amount: Number(t.amount),
+                  }))
+                  : [],
+              };
         }
-      } catch {}
+      } catch { /* The local calculation still uses only database rows. */ }
 
       setExpenses(loadedExpenses);
 
-      // 4. Compute real summary
-      const sum = computeSummary(loadedExpenses, activeTrip.budgetTotal, activeMembers);
-      setSummary(sum);
+      // 4. Set summary: Prioritize backend calculated summary if available, else compute locally
+      if (loadedBackendSummary) {
+        setSummary(loadedBackendSummary);
+      } else {
+        const sum = computeSummary(loadedExpenses, activeTrip.budgetTotal, activeMembers);
+        setSummary(sum);
+      }
     } catch (err) {
-      console.error('Error loading treasury data:', err);
+      console.warn('Notice: Could not load treasury data from backend:', err);
+      setTrip(null);
+      setMembers([]);
+      setExpenses([]);
+      setSummary(null);
+      setLoadError(err instanceof Error ? err.message : 'Không thể kết nối đến máy chủ Thủ quỹ.');
     } finally {
       setLoading(false);
     }
@@ -294,158 +281,29 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
   // Handle Create Expense
   const handleCreateExpense = async (payload: CreateExpensePayload) => {
     if (!trip) return;
-
-    const payer = payload.paidBy || currentUserId;
-    const participants =
-      payload.participantIds && payload.participantIds.length > 0
-        ? payload.participantIds
-        : members.map((m) => m.userId);
-
-    let splits: any[] = [];
-    if (payload.splitType === 'EXACT' && payload.exactShares) {
-      splits = Object.entries(payload.exactShares).map(([uid, share], idx) => ({
-        id: `split-${idx}-${Date.now()}`,
-        userId: uid,
-        shareAmount: Number(share) || 0,
-        settledStatus: uid === payer ? 'SETTLED' : 'UNSETTLED',
-      }));
-    } else {
-      const perShare = Math.round(payload.amount / Math.max(1, participants.length));
-      splits = participants.map((uid, idx) => ({
-        id: `split-${idx}-${Date.now()}`,
-        userId: uid,
-        shareAmount: perShare,
-        settledStatus: uid === payer ? 'SETTLED' : 'UNSETTLED',
-      }));
-    }
-
-    const newExpense: Expense = {
-      id: `exp-${Date.now()}`,
-      tripId: trip.id,
-      title: payload.title,
-      amount: payload.amount,
-      currency: 'VND',
-      paidBy: payer,
-      category: payload.category,
-      occurredAt: payload.occurredAt || new Date().toISOString(),
-      status: 'ACTIVE',
-      createdAt: new Date().toISOString(),
-      splits,
-    };
-
-    const updatedExpenses = [newExpense, ...expenses];
-    setExpenses(updatedExpenses);
-
-    // Persist to localStorage
-    try {
-      localStorage.setItem(`vista_expenses_${trip.id}`, JSON.stringify(updatedExpenses));
-
-      // Update budgetSpent in vista_custom_trips
-      const customTripsStr = localStorage.getItem('vista_custom_trips');
-      if (customTripsStr) {
-        const list = JSON.parse(customTripsStr);
-        const idx = list.findIndex((t: any) => t.id === trip.id);
-        if (idx !== -1) {
-          const totalSpent = updatedExpenses.reduce((acc, curr) => acc + curr.amount, 0);
-          list[idx].budgetSpent = totalSpent;
-          list[idx].progressPercent = trip.budgetTotal > 0
-            ? Math.min(100, Math.round((totalSpent / trip.budgetTotal) * 100))
-            : 0;
-          localStorage.setItem('vista_custom_trips', JSON.stringify(list));
-        }
-      }
-    } catch (e) {
-      console.warn('Storage save error:', e);
-    }
-
-    // Try optional backend sync if authenticated
     try {
       await apiRequest(`/trips/${trip.id}/expenses`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
       });
-    } catch {
-      // Ignore if offline / mock mode
+      await loadTreasuryData();
+      setIsDrawerOpen(false);
+      showToast(`Đã lưu khoản chi "${payload.title}" vào database.`);
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Không thể lưu khoản chi vào database.');
     }
-
-    const updatedSummary = computeSummary(updatedExpenses, trip.budgetTotal, members);
-    setSummary(updatedSummary);
-    setIsDrawerOpen(false);
-    showToast(`Đã thêm khoản chi "${payload.title}" thành công!`);
   };
 
   // Handle Delete Expense
   const handleDeleteExpense = async (expenseId: string) => {
     if (!trip) return;
 
-    const updatedExpenses = expenses.filter((e) => e.id !== expenseId);
-    setExpenses(updatedExpenses);
-
     try {
-      localStorage.setItem(`vista_expenses_${trip.id}`, JSON.stringify(updatedExpenses));
-
-      // Update budgetSpent in vista_custom_trips
-      const customTripsStr = localStorage.getItem('vista_custom_trips');
-      if (customTripsStr) {
-        const list = JSON.parse(customTripsStr);
-        const idx = list.findIndex((t: any) => t.id === trip.id);
-        if (idx !== -1) {
-          const totalSpent = updatedExpenses.reduce((acc, curr) => acc + curr.amount, 0);
-          list[idx].budgetSpent = totalSpent;
-          list[idx].progressPercent = trip.budgetTotal > 0
-            ? Math.min(100, Math.round((totalSpent / trip.budgetTotal) * 100))
-            : 0;
-          localStorage.setItem('vista_custom_trips', JSON.stringify(list));
-        }
-      }
-    } catch (e) {
-      console.warn('Storage save error:', e);
+      await apiRequest(`/trips/${trip.id}/expenses/${expenseId}`, { method: 'DELETE' });
+      await loadTreasuryData();
+      showToast('Đã xóa khoản chi khỏi database.');
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Không thể xóa khoản chi khỏi database.');
     }
-
-    const updatedSummary = computeSummary(updatedExpenses, trip.budgetTotal, members);
-    setSummary(updatedSummary);
-    showToast('Đã xóa khoản chi thành công!');
-  };
-
-  // Handle Add Member
-  const handleAddMember = (newMemberName: string) => {
-    if (!trip) return;
-    const newMemberId = `mem-${Date.now()}`;
-    const updatedMembers: TripMember[] = [
-      ...members,
-      {
-        userId: newMemberId,
-        displayName: newMemberName,
-        email: `${newMemberName.toLowerCase().replace(/\s+/g, '')}@vista.vn`,
-        role: 'MEMBER',
-        budgetShare: Math.round(trip.budgetTotal / (members.length + 1)),
-      },
-    ];
-    setMembers(updatedMembers);
-
-    // Persist to vista_custom_trips
-    try {
-      const customTripsStr = localStorage.getItem('vista_custom_trips');
-      if (customTripsStr) {
-        const list = JSON.parse(customTripsStr);
-        const idx = list.findIndex((t: any) => t.id === trip.id);
-        if (idx !== -1) {
-          list[idx].members = updatedMembers.map((m) => ({
-            id: m.userId,
-            name: m.displayName,
-            avatar: m.displayName.slice(0, 2).toUpperCase(),
-          }));
-          localStorage.setItem('vista_custom_trips', JSON.stringify(list));
-        }
-      }
-    } catch (e) {
-      console.warn('Error saving members:', e);
-    }
-
-    const updatedSummary = computeSummary(expenses, trip.budgetTotal, updatedMembers);
-    setSummary(updatedSummary);
-    showToast(`Đã thêm bạn đồng hành "${newMemberName}" thành công!`);
   };
 
   if (isAuthenticated !== true) {
@@ -464,65 +322,205 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
     );
   }
 
+  // Filter expenses matching search input
+  const filteredExpenses = expenses.filter((e) => {
+    if (!searchTerm.trim()) return true;
+    const q = searchTerm.toLowerCase();
+    const payer = members.find((m) => m.userId === e.paidBy)?.displayName || '';
+    return (
+      e.title.toLowerCase().includes(q) ||
+      payer.toLowerCase().includes(q) ||
+      e.category.toLowerCase().includes(q)
+    );
+  });
+
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#f8fafc' }}>
-      {/* ─── 2. MAIN FULL-WIDTH TREASURY WORKSPACE (NO SECOND SIDEBAR) ── */}
-      <div className={styles.treasuryLayout}>
-        <main className={styles.mainContainer}>
-          {loading ? (
-            <>
-              <SkeletonKpiGrid />
-              <SkeletonTableRows count={5} />
-            </>
-          ) : (
-            <>
-          {trip && (
-            <TripHeader
-              trip={trip}
-              memberCount={members.length}
-              onOpenAddExpense={() => setIsDrawerOpen(true)}
-            />
-          )}
+    <div className={styles.vistaTreasuryPage}>
+      <div className={styles.vistaTreasuryContainer}>
+        {/* 0. Secondary Sub-Navbar Toolbar (Matching Reference Design) */}
+        <div className={styles.vistaSubNav}>
+          <div className={styles.vistaSubNavTabs}>
+            <button
+              type="button"
+              className={`${styles.vistaSubNavTab} ${activeNavTab === 'OVERVIEW' ? styles.vistaSubNavTabActive : ''
+                }`}
+              onClick={() => {
+                setActiveNavTab('OVERVIEW');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            >
+              <Home size={14} />
+              <span>Tổng quan</span>
+            </button>
 
-          {/* 3. 4 Financial KPI Cards */}
-          {summary && (
-            <FinancialKpiCards
-              summary={summary}
-              memberCount={members.length}
-              currentUserId={currentUserId}
-            />
-          )}
+            <button
+              type="button"
+              className={`${styles.vistaSubNavTab} ${activeNavTab === 'LEDGER' ? styles.vistaSubNavTabActive : ''
+                }`}
+              onClick={() => {
+                setActiveNavTab('LEDGER');
+                document
+                  .getElementById('nhat-ky-chi-tieu')
+                  ?.scrollIntoView({ behavior: 'smooth' });
+              }}
+            >
+              <BookOpen size={14} />
+              <span>Nhật ký chi tiêu</span>
+            </button>
 
-          {/* 4. Middle Section: Category Donut + Debt Settlement Matrix */}
-          <div className={styles.twoColSection}>
-            <ExpenseCategoryDonut
-              expenses={expenses}
-              totalSpent={summary?.totalSpent ?? 0}
-            />
+            <button
+              type="button"
+              className={`${styles.vistaSubNavTab} ${activeNavTab === 'DEBT' ? styles.vistaSubNavTabActive : ''
+                }`}
+              onClick={() => {
+                setActiveNavTab('DEBT');
+                document
+                  .getElementById('doi-soat-cong-no')
+                  ?.scrollIntoView({ behavior: 'smooth' });
+              }}
+            >
+              <Scale size={14} />
+              <span>Đối soát công nợ</span>
+            </button>
 
-            {summary && (
-              <DebtSettlementMatrix
-                summary={summary}
-                members={members}
-                currentUserId={currentUserId}
-                tripId={trip?.id || 'VISTA'}
-                onAddMember={handleAddMember}
-              />
-            )}
+            <Link
+              href={`/trips/${tripId}`}
+              className={styles.vistaSubNavTab}
+              title="Xem lịch trình chi tiết"
+            >
+              <Compass size={14} />
+              <span>Lịch trình</span>
+            </Link>
+
+            <button
+              type="button"
+              className={`${styles.vistaSubNavTab} ${activeNavTab === 'REPORT' ? styles.vistaSubNavTabActive : ''
+                }`}
+              onClick={() => {
+                setActiveNavTab('REPORT');
+                document
+                  .getElementById('tong-quan-chuyen-di')
+                  ?.scrollIntoView({ behavior: 'smooth' });
+              }}
+            >
+              <BarChart3 size={14} />
+              <span>Báo cáo</span>
+            </button>
           </div>
 
-          {/* 5. Bottom Section: Expense Ledger Table */}
-          <ExpenseLedgerTable
-            expenses={expenses}
-            members={members}
-            onOpenAddExpense={() => setIsDrawerOpen(true)}
-            onDeleteExpense={handleDeleteExpense}
-          />
-            </>
-          )}
-        </main>
+          <div className={styles.vistaSubNavRight}>
+            <div className={styles.vistaSubNavSearchWrapper}>
+              <Search size={14} className={styles.vistaSubNavSearchIcon} />
+              <input
+                type="text"
+                className={styles.vistaSubNavSearchInput}
+                placeholder="Tìm kiếm..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
 
-        {/* 6. Slide-Over Add Expense Drawer */}
+            <button
+              type="button"
+              className={styles.vistaSubNavBellBtn}
+              title="Thông báo chuyến đi"
+            >
+              <Bell size={15} />
+            </button>
+          </div>
+        </div>
+
+        {loading ? (
+          <>
+            <SkeletonKpiGrid />
+            <SkeletonTableRows count={5} />
+          </>
+        ) : loadError ? (
+          <div style={{ padding: '48px 24px', textAlign: 'center', color: '#475569' }}>
+            <h2 style={{ color: '#0f172a', marginBottom: 8 }}>Chưa thể tải sổ quỹ</h2>
+            <p style={{ marginBottom: 20 }}>
+              Vui lòng kiểm tra kết nối và thử lại sau ít phút.
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                className={styles.vistaBtnPrimary}
+                onClick={loadTreasuryData}
+              >
+                Thử lại
+              </button>
+              <Link href="/trips" className={styles.vistaBtnPrimary}>
+                Quay lại chuyến đi
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* 1. Trip Panoramic Banner */}
+            {trip && (
+              <TripHeader
+                trip={trip}
+                memberCount={members.length}
+                expenses={expenses}
+                members={members}
+                onOpenAddExpense={() => setIsDrawerOpen(true)}
+              />
+            )}
+
+            {/* 2. Top Row: Ngân sách chuyến đi (Left) & Đối soát công nợ (Right) */}
+            {summary && (
+              <div className={styles.vistaGridRowTop}>
+                <FinancialKpiCards
+                  summary={summary}
+                  memberCount={members.length}
+                  currentUserId={currentUserId}
+                  members={members}
+                  tripTitle={trip?.title}
+                  tripDates={
+                    trip?.startDate && trip?.endDate
+                      ? `${trip.startDate} – ${trip.endDate}`
+                      : 'Chưa thiết lập ngày'
+                  }
+                />
+                <div id="doi-soat-cong-no">
+                  <DebtSettlementMatrix
+                    summary={summary}
+                    members={members}
+                    currentUserId={currentUserId}
+                    tripId={trip?.id || 'VISTA'}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* 3. Bottom Row: Nhật ký chi tiêu (Left) & Tổng quan chuyến đi (Right) */}
+            <div className={styles.vistaGridRowBottom}>
+              <div id="nhat-ky-chi-tieu">
+                <ExpenseLedgerTable
+                  expenses={filteredExpenses}
+                  members={members}
+                  currentUserId={currentUserId}
+                  onOpenAddExpense={() => setIsDrawerOpen(true)}
+                  onDeleteExpense={handleDeleteExpense}
+                />
+              </div>
+              {summary && (
+                <div id="tong-quan-chuyen-di">
+                  <ExpenseCategoryDonut
+                    expenses={expenses}
+                    totalSpent={summary.totalSpent ?? 0}
+                    remainingBudget={
+                      summary.remainingBudget ??
+                      ((trip?.budgetTotal || 0) - (summary.totalSpent ?? 0))
+                    }
+                  />
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* 4. Slide-Over Add Expense Drawer */}
         <AddExpenseDrawer
           isOpen={isDrawerOpen}
           onClose={() => setIsDrawerOpen(false)}
@@ -531,7 +529,7 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
           onSubmit={handleCreateExpense}
         />
 
-        {/* 7. Toast Notification */}
+        {/* 5. Toast Notification */}
         {toastMessage && (
           <div className={styles.toastNotification}>
             <span>{toastMessage}</span>

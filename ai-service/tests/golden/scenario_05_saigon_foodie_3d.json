@@ -1,0 +1,17 @@
+{
+  "destinationProvince": "TP. Hồ Chí Minh",
+  "totalDays": 3,
+  "peopleCount": 3,
+  "budgetTier": "standard",
+  "interests": [
+    "Ẩm thực",
+    "Mua sắm"
+  ],
+  "expect": {
+    "expect_http_status": 200,
+    "must_not_contain_walking_load": [],
+    "min_days": 3,
+    "min_total_activities": 3,
+    "expected_province": "TP. Hồ Chí Minh"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "destinationProvince": "Lào Cai",
+  "totalDays": 3,
+  "peopleCount": 2,
+  "budgetTier": "standard",
+  "interests": [
+    "Bản làng",
+    "Núi"
+  ],
+  "expect": {
+    "expect_http_status": 200,
+    "must_not_contain_walking_load": [],
+    "min_days": 3,
+    "min_total_activities": 3,
+    "expected_province": "Lào Cai"
+  }
+}

@@ -20,58 +20,82 @@ export const REGIONS_PROVINCES = [
     provinces: [
       'Hà Nội',
       'Quảng Ninh',
+      'Hải Phòng',
       'Ninh Bình',
       'Lào Cai',
-      'Hải Phòng',
-      'Điện Biên',
-      'Sơn La',
-      'Lai Châu',
+      'Hà Giang',
       'Cao Bằng',
-      'Lạng Sơn',
-      'Tuyên Quang',
-      'Thái Nguyên',
+      'Bắc Kạn',
+      'Sơn La',
+      'Điện Biên',
+      'Lai Châu',
+      'Hòa Bình',
       'Phú Thọ',
+      'Vĩnh Phúc',
       'Bắc Ninh',
+      'Bắc Giang',
+      'Thái Nguyên',
+      'Tuyên Quang',
+      'Lạng Sơn',
+      'Yên Bái',
+      'Hải Dương',
       'Hưng Yên',
+      'Thái Bình',
+      'Hà Nam',
+      'Nam Định',
     ],
   },
   {
-    region: 'Miền Trung & Tây Nguyên',
+    region: 'Miền Trung',
     provinces: [
       'Đà Nẵng',
       'Thừa Thiên Huế',
       'Quảng Nam',
-      'Khánh Hòa',
-      'Lâm Đồng',
-      'Đắk Lắk',
-      'Gia Lai',
+      'Quảng Bình',
+      'Quảng Trị',
       'Thanh Hóa',
       'Nghệ An',
       'Hà Tĩnh',
-      'Quảng Trị',
       'Quảng Ngãi',
       'Bình Định',
       'Phú Yên',
+      'Khánh Hòa',
       'Ninh Thuận',
       'Bình Thuận',
+    ],
+  },
+  {
+    region: 'Tây Nguyên',
+    provinces: [
+      'Lâm Đồng',
+      'Đắk Lắk',
+      'Gia Lai',
       'Kon Tum',
+      'Đắk Nông',
     ],
   },
   {
     region: 'Miền Nam & Miền Tây',
     provinces: [
       'TP. Hồ Chí Minh',
+      'Bà Rịa - Vũng Tàu',
+      'Bình Dương',
+      'Đồng Nai',
+      'Tây Ninh',
+      'Bình Phước',
       'Cần Thơ',
       'Kiên Giang',
-      'Tây Ninh',
-      'Đồng Nai',
-      'Vĩnh Long',
-      'Đồng Tháp',
       'An Giang',
-      'Cà Mau',
-      'Bà Rịa - Vũng Tàu',
-      'Bến Tre',
       'Tiền Giang',
+      'Bến Tre',
+      'Đồng Tháp',
+      'Vĩnh Long',
+      'Long An',
+      'Trà Vinh',
+      'Hậu Giang',
+      'Sóc Trăng',
+      'Bạc Liêu',
+      'Cà Mau',
     ],
   },
 ];
@@ -228,7 +252,9 @@ export function DestinationList({
       list.sort((a, b) => {
         const statsA = getDestinationStats(a);
         const statsB = getDestinationStats(b);
-        return parseFloat(statsB.rating) - parseFloat(statsA.rating);
+        const rA = statsA.rating ? parseFloat(statsA.rating) : 0;
+        const rB = statsB.rating ? parseFloat(statsB.rating) : 0;
+        return rB - rA;
       });
     } else if (sortBy === 'name') {
       list.sort((a, b) => a.name.localeCompare(b.name, 'vi'));
@@ -434,9 +460,15 @@ export function DestinationList({
                     </div>
 
                     <div className={styles.ratingRow}>
-                      <IconStar size={12} className={styles.starIconSvg} />
-                      <strong className={styles.ratingScore}>{stats.rating}</strong>
-                      <span className={styles.reviewCount}>({stats.reviewCount} đánh giá)</span>
+                      {stats.hasReviews && stats.rating ? (
+                        <>
+                          <IconStar size={12} className={styles.starIconSvg} />
+                          <strong className={styles.ratingScore}>{stats.rating}</strong>
+                          <span className={styles.reviewCount}>({stats.reviewCount} đánh giá)</span>
+                        </>
+                      ) : (
+                        <span className={styles.noRatingText}>Chưa có đánh giá</span>
+                      )}
                     </div>
                   </div>
                 </div>

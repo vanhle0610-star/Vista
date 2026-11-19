@@ -1,15 +1,16 @@
 import type { components } from '@/types/api.generated';
 import type { DestinationMarker } from '../types';
 import { validPoint } from '../coordinates';
-import { VIETNAM_300_DESTINATIONS } from './vietnam300Destinations';
+import { VIETNAM_1000_DESTINATIONS } from './vietnam1000Destinations';
 
 export { validPoint } from '../coordinates';
+export { VIETNAM_1000_DESTINATIONS };
 
 type Page = components['schemas']['DestinationPage'];
 
 /**
  * Tải danh sách điểm đến hiển thị trên bản đồ VISTA:
- * - Khởi tạo ngay lập tức với kho 300+ địa điểm chuẩn hóa khắp 63 tỉnh thành Việt Nam (0ms chờ).
+ * - Khởi tạo ngay lập tức với kho 1.000 địa điểm chuẩn hóa khắp 63 tỉnh thành Việt Nam (0ms chờ).
  * - Cố gắng kết nối backend để tải thêm các địa điểm mới do người dùng tạo (nếu có).
  */
 export async function fetchMapDestinations(
@@ -18,8 +19,8 @@ export async function fetchMapDestinations(
 ) {
   const base = (process.env.NEXT_PUBLIC_API_URL ?? '/api/v1').replace(/\/+$/, '');
 
-  // 1. Nạp sẵn 300+ địa điểm chuẩn hóa toàn quốc kèm ảnh và tọa độ thực tế
-  const destinations: DestinationMarker[] = VIETNAM_300_DESTINATIONS.map((d: any) => ({
+  // 1. Nạp sẵn 1.000 địa điểm chuẩn hóa toàn quốc kèm ảnh và tọa độ thực tế
+  const destinations: DestinationMarker[] = VIETNAM_1000_DESTINATIONS.map((d: any) => ({
     ...d,
     thumbnailUrl: d.thumbnailUrl || d.imageUrl || '',
   }));
@@ -27,8 +28,62 @@ export async function fetchMapDestinations(
   let rejected = 0;
   let missingIds = 0;
 
-  // Phát tín hiệu trang đầu tiên ngay lập tức để giao diện hiển thị 300 điểm không cần đợi
+  // Phát tín hiệu trang đầu tiên ngay lập tức để giao diện hiển thị 1.000 điểm không cần đợi
   onPage?.({ destinations: [...destinations], rejected: 0 });
+
+  const seenNameProv = new Set<string>(
+    destinations.map((d) => `${d.name.trim().toLowerCase()}|${d.province.trim().toLowerCase()}`)
+  );
+
+  // 1.5. Tải toàn bộ 2.200+ địa điểm (Curated + OpenStreetMap thật) từ Python AI Engine
+  try {
+    const aiTimeout = AbortSignal.timeout(6000);
+    const aiRes = await fetch('/api/ai/destinations?province=all', {
+      signal: signal ? AbortSignal.any([signal, aiTimeout]) : aiTimeout,
+      headers: { Accept: 'application/json' },
+    });
+    if (aiRes.ok) {
+      const aiJson = await aiRes.json();
+      const aiItems = Array.isArray(aiJson?.destinations) ? aiJson.destinations : [];
+      let addedAi = 0;
+      for (const rawItem of aiItems) {
+        const item = rawItem as Record<string, any>;
+        if (!item || typeof item.id !== 'string' || !item.id.trim()) continue;
+        if (ids.has(item.id)) continue;
+        if (typeof item.name !== 'string' || !item.name.trim() || !validPoint({ latitude: item.latitude, longitude: item.longitude })) {
+          rejected++;
+          continue;
+        }
+        const lat = Number(item.latitude);
+        const lng = Number(item.longitude);
+        const prov = typeof item.province === 'string' ? item.province : '';
+        const itemName = String(item.name);
+        const nameProvKey = `${itemName.trim().toLowerCase()}|${prov.trim().toLowerCase()}`;
+        if (seenNameProv.has(nameProvKey)) continue;
+
+        ids.add(String(item.id));
+        seenNameProv.add(nameProvKey);
+        destinations.push({
+          id: String(item.id),
+          name: itemName,
+          province: prov,
+          category: typeof item.category === 'string' ? item.category : 'Tham quan',
+          latitude: lat,
+          longitude: lng,
+          description: item.description || '',
+          priceMin: item.priceMin ?? null,
+          priceMax: item.priceMax ?? null,
+          thumbnailUrl: item.photoUrl || '',
+        });
+        addedAi++;
+      }
+      if (addedAi > 0) {
+        onPage?.({ destinations: [...destinations], rejected });
+      }
+    }
+  } catch {
+    // AI Service unavailable: tiếp tục thử backend API
+  }
 
   // 2. Tải thêm từ backend API nếu máy chủ đang chạy
   try {
@@ -57,7 +112,14 @@ export async function fetchMapDestinations(
           continue;
         }
 
-        if (ids.has(item.id)) continue;
+        if (ids.has(item.id)) {
+          const existing = destinations.find((d) => d.id === item.id);
+          if (existing && item.imageUrl) {
+            existing.imageUrl = item.imageUrl;
+            existing.thumbnailUrl = item.imageUrl;
+          }
+          continue;
+        }
         ids.add(item.id);
 
         if (
@@ -72,6 +134,7 @@ export async function fetchMapDestinations(
           continue;
         }
 
+        const imgUrl = item.imageUrl || (item as any).thumbnailUrl || '';
         destinations.push({
           id: item.id,
           name: item.name,
@@ -82,6 +145,10 @@ export async function fetchMapDestinations(
           description: (item as any).description || '',
           priceMin: item.priceMin,
           priceMax: item.priceMax,
+          imageUrl: imgUrl,
+          thumbnailUrl: imgUrl,
+          rating: (item as any).rating ?? null,
+          reviewCount: (item as any).reviewCount ?? 0,
         });
         added++;
       }

@@ -360,10 +360,22 @@
 }
 
 /* ─── MODERN PIN MARKERS ─── */
+.markerHost {
+  width: 0;
+  height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+  cursor: pointer;
+}
+
 .marker {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   border: 2px solid #ffffff;
   border-radius: 50%;
   background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
@@ -379,14 +391,14 @@
 }
 
 .marker:hover {
-  transform: scale(1.25) translateY(-2px);
+  transform: scale(1.26) translateY(-2px);
   box-shadow: 0 6px 16px rgba(2, 132, 199, 0.6);
   z-index: 10;
 }
 
 .selectedMarker {
   background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
-  transform: scale(1.3) translateY(-3px) !important;
+  transform: scale(1.3) translateY(-2px) !important;
   outline: 3px solid rgba(186, 230, 253, 0.9);
   box-shadow: 0 8px 24px rgba(2, 132, 199, 0.6) !important;
   z-index: 30;
@@ -435,6 +447,7 @@
 
 .userMarker {
   display: block;
+  flex-shrink: 0;
   width: 20px;
   height: 20px;
   background: #0284c7;
@@ -443,8 +456,6 @@
   box-shadow: 0 0 0 7px rgba(2, 132, 199, 0.35);
 }
 
-.endpoint { width:44px; height:44px; min-height:44px; border:0; padding:0; background:transparent; display:grid; place-items:center; cursor:pointer; }
-.endpoint:hover { background:transparent; }
 .endpointCircle { width:14px; height:14px; box-sizing:border-box; border:3px solid #334155; border-radius:50%; background:#fff; box-shadow:0 0 0 2px #fff; }
 .endpointPin { position:absolute; bottom:0; left:10px; width:24px; height:28px; }
 .endpoint:focus-visible { outline:2px solid #0284c7; outline-offset:-3px; border-radius:8px; }
@@ -454,12 +465,161 @@
 .controlTooltip { position:absolute; right:calc(100% + 10px); top:7px; padding:8px 12px; border-radius:6px; background:#172b3a; color:white; font-size:12px; font-weight:500; width:max-content; max-width:220px; opacity:0; visibility:hidden; pointer-events:none; }
 .mapControlBtn:hover .controlTooltip,.mapControlBtn:focus-visible .controlTooltip { opacity:1; visibility:visible; }
 .gpsError { position:absolute; top:68px; left:12px; right:70px; max-height:calc(100% - 90px); overflow:auto; z-index:25; background:#fff; color:#9f1239; border:1px solid #fecdd3; padding:12px; border-radius:10px; font-size:12px; line-height:1.5; box-shadow:0 4px 12px #0f172a20; }
-@media (max-width: 768px) {
-  .locationPill {
-    top: 10px;
-    left: 10px;
-    padding: 6px 12px;
-    font-size: 12px;
+
+.endpoint {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  min-height: 0;
+  padding: 0;
+  color: #ffffff;
+  border: 2.5px solid #ffffff;
+  border-radius: 50%;
+  font-weight: 800;
+  font-size: 13.5px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+  z-index: 25;
+}
+
+.endpoint:hover {
+  transform: scale(1.18);
+  z-index: 30;
+}
+
+.endpointSelected {
+  transform: scale(1.24);
+  outline: 3px solid rgba(186, 230, 253, 0.95);
+  box-shadow: 0 6px 20px rgba(2, 132, 199, 0.55);
+  z-index: 35;
+}
+
+.endpointOrigin {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.45);
+}
+
+.endpointWaypoint {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.45);
+}
+
+.endpointDestination {
+  background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.45);
+}
+
+.endpointTooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 23, 42, 0.95);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  transform: translate(-50%, 4px);
+}
+
+.endpointTooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(15, 23, 42, 0.95);
+}
+
+.endpoint:hover .endpointTooltip {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* ─── STYLE SWITCHER ─── */
+.styleSwitcherContainer {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 5;
+}
+
+.styleToggleBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  border-radius: 12px;
+  cursor: pointer;
+  color: #1e293b;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.styleToggleBtn:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  transform: translateY(-1px);
+}
+
+.styleDropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 130px;
+  z-index: 10;
+}
+
+.styleOption {
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 500;
+  color: #334155;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.styleOption:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.styleOptionActive {
+  background: #e0f2fe !important;
+  color: #0284c7 !important;
+  font-weight: 700;
+}
+
+@media (max-width: 540px) {
+  .notice {
+    padding: 24px 16px 160px;
   }
   .mapTypeSwitcher {
     top: 10px;

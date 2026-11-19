@@ -6,6 +6,7 @@ import com.vista.destination.api.dto.CreateDestinationRequest;
 import com.vista.destination.api.dto.DestinationDetailDto;
 import com.vista.destination.api.dto.DestinationPageDto;
 import com.vista.destination.api.dto.DestinationSummaryDto;
+import com.vista.destination.service.DestinationInUseException;
 import com.vista.destination.service.DestinationNotFoundException;
 import com.vista.destination.service.DestinationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -60,8 +61,15 @@ public class DestinationController {
 
   @DeleteMapping("/{id}")
   @Operation(summary = "Xóa điểm đến du lịch (Admin)", description = "Xóa điểm đến khỏi hệ thống")
-  public ResponseEntity<Void> deleteDestination(@PathVariable UUID id) {
-    destinationService.deleteDestination(id);
+  public ResponseEntity<Void> deleteDestination(
+      @PathVariable UUID id, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+    UUID actorId =
+        userPrincipal != null
+            ? userPrincipal.getId()
+            : currentUserProvider != null
+                ? currentUserProvider.findCurrentUserId().orElse(null)
+                : null;
+    destinationService.deleteDestination(id, actorId);
     return ResponseEntity.noContent().build();
   }
 
@@ -193,6 +201,19 @@ public class DestinationController {
     problem.setTitle("Destination Not Found");
     problem.setInstance(URI.create(request.getRequestURI()));
     problem.setProperty("code", "DESTINATION_NOT_FOUND");
+    problem.setProperty("requestId", MDC.get("requestId"));
+    return problem;
+  }
+
+  @ExceptionHandler(DestinationInUseException.class)
+  public ProblemDetail handleDestinationInUse(
+      DestinationInUseException ex, HttpServletRequest request) {
+    ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+    problem.setType(URI.create("https://vista.example/errors/conflict"));
+    problem.setTitle("Destination In Use");
+    problem.setInstance(URI.create(request.getRequestURI()));
+    problem.setProperty("code", "DESTINATION_ARCHIVED");
+    problem.setProperty("destinationStatus", "ARCHIVED");
     problem.setProperty("requestId", MDC.get("requestId"));
     return problem;
   }

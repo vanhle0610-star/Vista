@@ -4,7 +4,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -18,6 +20,8 @@ import com.vista.destination.api.dto.DestinationDetailDto;
 import com.vista.destination.api.dto.DestinationPageDto;
 import com.vista.destination.api.dto.DestinationStatusUpdateRequest;
 import com.vista.destination.api.dto.DestinationSummaryDto;
+import com.vista.destination.api.dto.UpdateDestinationRequest;
+import com.vista.destination.service.DestinationInUseException;
 import com.vista.destination.service.DestinationNotFoundException;
 import com.vista.destination.service.DestinationService;
 import java.math.BigDecimal;
@@ -280,5 +284,50 @@ class AdminDestinationControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"note\":\"Hack\"}"))
         .andExpect(status().isForbidden());
+  }
+
+  @Test
+  @WithMockUser(roles = "ADMIN")
+  @DisplayName("PUT /api/v1/admin/destinations/{id}: Updates destination and returns 200")
+  void updateDestinationAsAdminReturns200() throws Exception {
+    UUID id = UUID.randomUUID();
+    var updated = createSampleDetailDto(id, "PUBLISHED");
+    when(destinationService.updateDestination(eq(id), any(UpdateDestinationRequest.class), any()))
+        .thenReturn(updated);
+
+    mvc.perform(
+            put("/api/v1/admin/destinations/" + id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "name": "Chùa Linh Ứng Bãi Bụt",
+                      "province": "Đà Nẵng",
+                      "category": "Tâm linh & Cảnh quan",
+                      "priceMin": 0,
+                      "priceMax": 0,
+                      "openingHours": { "mon": "06:00-21:00" }
+                    }
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(id.toString()))
+        .andExpect(jsonPath("$.name").value("Chùa Linh Ứng Bãi Bụt"));
+  }
+
+  @Test
+  @WithMockUser(roles = "ADMIN")
+  @DisplayName(
+      "DELETE /api/v1/admin/destinations/{id}: In-use destination returns 409 ProblemDetail")
+  void deleteInUseDestinationReturns409() throws Exception {
+    UUID id = UUID.randomUUID();
+    doThrow(
+            new DestinationInUseException(
+                "Địa điểm đang được tham chiếu, đã chuyển sang trạng thái Lưu trữ (Archived)"))
+        .when(destinationService)
+        .deleteDestination(eq(id), any());
+
+    mvc.perform(delete("/api/v1/admin/destinations/" + id))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.code").value("DESTINATION_ARCHIVED"));
   }
 }

@@ -39,9 +39,26 @@ ON CONFLICT (trip_id, user_id) DO NOTHING;
 -- 4. Sample Expenses (Budget)
 INSERT INTO expenses (id, trip_id, title, amount, currency, paid_by, category, occurred_at, status, created_at)
 VALUES
-  ('e0000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000001', 'Đặt phòng khách sạn Đà Nẵng', 4500000.00, 'VND', 'a0000000-0000-0000-0000-000000000001', 'LODGING', now(), 'ACTIVE', now()),
+  ('e0000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000001', 'Đặt phòng khách sạn Đà Nẵng', 4500000.00, 'VND', 'a0000000-0000-0000-0000-000000000001', 'ACCOMMODATION', now(), 'ACTIVE', now()),
   ('e0000000-0000-0000-0000-000000000002', 'd0000000-0000-0000-0000-000000000001', 'Ăn tối hải sản Mỹ Khê', 1200000.00, 'VND', 'b0000000-0000-0000-0000-000000000002', 'FOOD', now(), 'ACTIVE', now())
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE SET category = EXCLUDED.category, title = EXCLUDED.title;
+UPDATE expenses SET category = 'ACCOMMODATION' WHERE category = 'LODGING';
+
+-- 4b. Sample Expense Splits (VND Equal Split)
+INSERT INTO expense_splits (id, expense_id, user_id, share_amount, settled_status)
+VALUES
+  ('ba000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001', 2250000.00, 'SETTLED'),
+  ('ba000000-0000-0000-0000-000000000002', 'e0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000002', 2250000.00, 'UNSETTLED'),
+  ('ba000000-0000-0000-0000-000000000003', 'e0000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000001', 600000.00, 'UNSETTLED'),
+  ('ba000000-0000-0000-0000-000000000004', 'e0000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000002', 600000.00, 'SETTLED')
+ON CONFLICT (expense_id, user_id) DO NOTHING;
+
+-- 4c. Sample Verified Payout Accounts for VietQR Settlement
+INSERT INTO payout_accounts (id, user_id, bank_code, account_number, account_name, is_default, verification_status)
+VALUES
+  ('ca000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001', 'VCB', '9876543210', 'NGUYEN VAN A', true, 'VERIFIED'),
+  ('ca000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000002', 'MB', '0987654321', 'TRAN THI B', true, 'VERIFIED')
+ON CONFLICT (user_id, bank_code, account_number) DO NOTHING;
 
 -- 5. Sample Trip Tasks (trip_tasks)
 INSERT INTO trip_tasks (id, trip_id, title, assignee_id, is_completed, created_at)

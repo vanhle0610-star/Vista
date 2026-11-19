@@ -1,6 +1,20 @@
 'use client';
 
 import React, { useState } from 'react';
+import {
+  Utensils,
+  Building2,
+  Car,
+  Ticket,
+  ShoppingBag,
+  ScanLine,
+  Users,
+  User,
+  Sparkles,
+  X,
+  CheckCircle2,
+  RotateCcw,
+} from 'lucide-react';
 import type { CreateExpensePayload, TripMember } from '../types';
 import styles from '../treasury.module.css';
 
@@ -15,13 +29,15 @@ interface AddExpenseDrawerProps {
 const CATEGORIES: Array<{
   id: 'FOOD' | 'TRANSPORT' | 'ACCOMMODATION' | 'ACTIVITIES' | 'OTHER';
   label: string;
-  icon: string;
+  icon: React.ComponentType<{ size?: number; color?: string }>;
+  color: string;
+  bg: string;
 }> = [
-  { id: 'FOOD', label: 'Ăn uống', icon: '🍜' },
-  { id: 'ACCOMMODATION', label: 'Lưu trú', icon: '🛏️' },
-  { id: 'TRANSPORT', label: 'Di chuyển', icon: '🚗' },
-  { id: 'ACTIVITIES', label: 'Vé tham quan', icon: '🎟️' },
-  { id: 'OTHER', label: 'Mua sắm / Khác', icon: '🛍️' },
+  { id: 'FOOD', label: 'Ăn uống', icon: Utensils, color: '#ea580c', bg: '#ffedd5' },
+  { id: 'ACCOMMODATION', label: 'Lưu trú', icon: Building2, color: '#0284c7', bg: '#e0f2fe' },
+  { id: 'TRANSPORT', label: 'Di chuyển', icon: Car, color: '#0891b2', bg: '#cffafe' },
+  { id: 'ACTIVITIES', label: 'Vé vui chơi', icon: Ticket, color: '#9333ea', bg: '#f3e8ff' },
+  { id: 'OTHER', label: 'Mua sắm', icon: ShoppingBag, color: '#e11d48', bg: '#ffe4e6' },
 ];
 
 export function AddExpenseDrawer({
@@ -44,12 +60,23 @@ export function AddExpenseDrawer({
   });
   const [note, setNote] = useState('');
 
-  // Tab 2: Split state
+  // Split state
   const [splitType, setSplitType] = useState<'EQUAL' | 'EXACT'>('EQUAL');
   const [selectedParticipants, setSelectedParticipants] = useState<string[]>(() =>
     members.map((m) => m.userId)
   );
+  const [weights, setWeights] = useState<Record<string, number>>(() => {
+    const init: Record<string, number> = {};
+    members.forEach((m) => {
+      init[m.userId] = 1;
+    });
+    return init;
+  });
   const [exactShares, setExactShares] = useState<Record<string, string>>({});
+
+  // OCR state
+  const [isOcrScanning, setIsOcrScanning] = useState(false);
+  const [ocrSuccessMsg, setOcrSuccessMsg] = useState<string | null>(null);
 
   // Submission state
   const [submitting, setSubmitting] = useState(false);
@@ -58,6 +85,34 @@ export function AddExpenseDrawer({
   if (!isOpen) return null;
 
   const numericAmount = parseFloat(rawAmount.replace(/\D/g, '')) || 0;
+
+  // Add quick denomination
+  const handleAddDenomination = (addValue: number) => {
+    const current = parseFloat(rawAmount.replace(/\D/g, '')) || 0;
+    const next = current + addValue;
+    setRawAmount(new Intl.NumberFormat('vi-VN').format(next));
+  };
+
+  const handleClearAmount = () => {
+    setRawAmount('');
+  };
+
+  // Simulate AI OCR
+  const handleTriggerOcr = (fileName = 'HoaDon_BeMan.jpg') => {
+    setIsOcrScanning(true);
+    setOcrSuccessMsg(null);
+    setErrorMsg(null);
+
+    setTimeout(() => {
+      setIsOcrScanning(false);
+      setTitle('Hải sản Bé Mặn');
+      const formatted = new Intl.NumberFormat('vi-VN').format(1200000);
+      setRawAmount(formatted);
+      setCategory('FOOD');
+      setNote(`Quét từ: ${fileName}`);
+      setOcrSuccessMsg('Đã nhận diện: 1.200.000 ₫ (Hải sản Bé Mặn)');
+    }, 700);
+  };
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value.replace(/\D/g, '');
@@ -83,6 +138,21 @@ export function AddExpenseDrawer({
     }
   };
 
+  const setMemberWeight = (userId: string, weight: number) => {
+    setWeights((prev) => ({ ...prev, [userId]: weight }));
+  };
+
+  const totalActiveWeight = selectedParticipants.reduce(
+    (sum, uid) => sum + (weights[uid] || 1),
+    0
+  );
+
+  const getMemberCalculatedShare = (userId: string) => {
+    if (numericAmount <= 0 || totalActiveWeight <= 0) return 0;
+    const w = weights[userId] || 1;
+    return Math.round((numericAmount * w) / totalActiveWeight);
+  };
+
   const equalSharePerPerson =
     selectedParticipants.length > 0 && numericAmount > 0
       ? Math.round(numericAmount / selectedParticipants.length)
@@ -93,17 +163,17 @@ export function AddExpenseDrawer({
     setErrorMsg(null);
 
     if (!title.trim()) {
-      setErrorMsg('Vui lòng nhập mô tả khoản chi.');
+      setErrorMsg('Vui lòng nhập tên khoản chi.');
       setActiveTab('info');
       return;
     }
     if (numericAmount <= 0) {
-      setErrorMsg('Vui lòng nhập số tiền hợp lệ (> 0 ₫).');
+      setErrorMsg('Vui lòng nhập số tiền.');
       setActiveTab('info');
       return;
     }
     if (selectedParticipants.length === 0) {
-      setErrorMsg('Vui lòng chọn ít nhất 1 thành viên để phân chia chi phí.');
+      setErrorMsg('Chọn ít nhất 1 người chia tiền.');
       setActiveTab('split');
       return;
     }
@@ -119,21 +189,31 @@ export function AddExpenseDrawer({
       participantIds: selectedParticipants,
     };
 
-    if (splitType === 'EXACT') {
+    const hasNonUniformWeights = selectedParticipants.some((uid) => (weights[uid] || 1) !== 1);
+
+    if (splitType === 'EXACT' || hasNonUniformWeights) {
       const parsedExact: Record<string, number> = {};
       let totalExact = 0;
-      for (const uid of selectedParticipants) {
-        const val = parseFloat((exactShares[uid] || '0').replace(/\D/g, '')) || 0;
-        parsedExact[uid] = val;
-        totalExact += val;
+      if (splitType === 'EXACT') {
+        for (const uid of selectedParticipants) {
+          const val = parseFloat((exactShares[uid] || '0').replace(/\D/g, '')) || 0;
+          parsedExact[uid] = val;
+          totalExact += val;
+        }
+        if (Math.abs(totalExact - numericAmount) > 1) {
+          setErrorMsg(
+            `Tổng tiền lẻ (${new Intl.NumberFormat('vi-VN').format(totalExact)} ₫) chưa khớp tổng chi (${new Intl.NumberFormat('vi-VN').format(numericAmount)} ₫).`
+          );
+          setActiveTab('split');
+          return;
+        }
+      } else {
+        // Compute exact weighted shares
+        for (const uid of selectedParticipants) {
+          parsedExact[uid] = getMemberCalculatedShare(uid);
+        }
       }
-      if (Math.abs(totalExact - numericAmount) > 1) {
-        setErrorMsg(
-          `Tổng số tiền chia lẻ (${new Intl.NumberFormat('vi-VN').format(totalExact)} ₫) chưa khớp với tổng chi (${new Intl.NumberFormat('vi-VN').format(numericAmount)} ₫).`
-        );
-        setActiveTab('split');
-        return;
-      }
+      payload.splitType = 'EXACT';
       payload.exactShares = parsedExact;
     }
 
@@ -142,7 +222,7 @@ export function AddExpenseDrawer({
       await onSubmit(payload);
       onClose();
     } catch (err: unknown) {
-      setErrorMsg(err instanceof Error ? err.message : 'Lỗi khi lưu khoản chi');
+      setErrorMsg(err instanceof Error ? err.message : 'Lỗi lưu khoản chi');
     } finally {
       setSubmitting(false);
     }
@@ -151,11 +231,11 @@ export function AddExpenseDrawer({
   return (
     <div className={styles.drawerOverlay} onClick={onClose}>
       <div className={styles.drawerPanel} onClick={(e) => e.stopPropagation()}>
-        {/* Drawer Header */}
+        {/* Header */}
         <div className={styles.drawerHeader}>
-          <h2 className={styles.drawerTitle}>Ghi Khoản Chi Mới</h2>
+          <h2 className={styles.drawerTitle}>Ghi Khoản Chi</h2>
           <button type="button" className={styles.drawerCloseBtn} onClick={onClose}>
-            ✕
+            <X size={18} />
           </button>
         </div>
 
@@ -166,7 +246,7 @@ export function AddExpenseDrawer({
             className={`${styles.drawerTabBtn} ${activeTab === 'info' ? styles.drawerTabActive : ''}`}
             onClick={() => setActiveTab('info')}
           >
-            Thông tin khoản chi
+            Thông tin
           </button>
           <button
             type="button"
@@ -177,146 +257,195 @@ export function AddExpenseDrawer({
           </button>
         </div>
 
-        {/* Drawer Body Form */}
+        {/* Body */}
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
           <div className={styles.drawerBody}>
             {errorMsg && (
-              <div
-                style={{
-                  background: '#fef2f2',
-                  border: '1px solid #fecaca',
-                  color: '#ef4444',
-                  padding: '10px 14px',
-                  borderRadius: '8px',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                }}
-              >
-                ⚠️ {errorMsg}
+              <div className={styles.errorAlertPill}>
+                {errorMsg}
               </div>
             )}
 
             {activeTab === 'info' ? (
               <>
+                {/* ─── GIANT AMOUNT HERO INPUT ─── */}
+                <div className={styles.giantAmountHeroBox}>
+                  <div className={styles.giantAmountRow}>
+                    <input
+                      type="text"
+                      className={styles.giantAmountInput}
+                      placeholder="0"
+                      value={rawAmount}
+                      onChange={handleAmountChange}
+                      autoFocus
+                    />
+                    <span className={styles.giantCurrencySuffix}>₫</span>
+                  </div>
+
+                  {/* Quick Denomination Chips */}
+                  <div className={styles.quickChipsBar}>
+                    <button
+                      type="button"
+                      className={styles.quickChip}
+                      onClick={() => handleAddDenomination(50000)}
+                    >
+                      +50k
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.quickChip}
+                      onClick={() => handleAddDenomination(100000)}
+                    >
+                      +100k
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.quickChip}
+                      onClick={() => handleAddDenomination(200000)}
+                    >
+                      +200k
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.quickChip}
+                      onClick={() => handleAddDenomination(500000)}
+                    >
+                      +500k
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.quickChip}
+                      onClick={() => handleAddDenomination(1000000)}
+                    >
+                      +1Tr
+                    </button>
+                    {rawAmount && (
+                      <button
+                        type="button"
+                        className={`${styles.quickChip} ${styles.quickChipClear}`}
+                        onClick={handleClearAmount}
+                        title="Xóa số tiền"
+                      >
+                        <RotateCcw size={12} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Compact AI OCR Scanner Bar */}
+                <div className={styles.compactOcrBar}>
+                  <div className={styles.ocrBarLeft}>
+                    <ScanLine size={15} color="#0284c7" />
+                    <span className={styles.ocrBarLabel}>Quét hóa đơn AI</span>
+                  </div>
+                  <div className={styles.ocrBarActions}>
+                    <button
+                      type="button"
+                      className={styles.btnTryOcrDemo}
+                      onClick={() => handleTriggerOcr()}
+                      disabled={isOcrScanning}
+                    >
+                      <Sparkles size={13} />
+                      {isOcrScanning ? 'Đang đọc...' : 'Quét bill mẫu'}
+                    </button>
+                    <label htmlFor="billFileInputCompact" className={styles.btnUploadCompact}>
+                      Tải ảnh
+                    </label>
+                    <input
+                      type="file"
+                      id="billFileInputCompact"
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleTriggerOcr(file.name);
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {ocrSuccessMsg && (
+                  <div className={styles.ocrSuccessBanner}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <CheckCircle2 size={15} color="#16a34a" />
+                      <span>{ocrSuccessMsg}</span>
+                    </div>
+                  </div>
+                )}
+
                 {/* Tiêu đề */}
                 <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>
-                    Mô tả khoản chi <span className={styles.formRequired}>*</span>
-                  </label>
+                  <label className={styles.formLabel}>Tên khoản chi</label>
                   <input
                     type="text"
                     className={styles.formInput}
-                    placeholder="VD: Ăn tối đặc sản Hội An, Vé cáp treo..."
+                    placeholder="VD: Ăn trưa hải sản, Vé cáp treo..."
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     required
                   />
                 </div>
 
-                {/* Số tiền */}
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>
-                    Số tiền (VNĐ) <span className={styles.formRequired}>*</span>
-                  </label>
-                  <div className={styles.moneyInputBox}>
-                    <input
-                      type="text"
-                      className={`${styles.formInput} ${styles.moneyInput}`}
-                      placeholder="0"
-                      value={rawAmount}
-                      onChange={handleAmountChange}
-                      required
-                    />
-                    <span className={styles.currencySuffix}>₫</span>
-                  </div>
-                </div>
-
                 {/* Danh mục */}
                 <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>
-                    Danh mục <span className={styles.formRequired}>*</span>
-                  </label>
+                  <label className={styles.formLabel}>Danh mục</label>
                   <div className={styles.categoryPillGrid}>
-                    {CATEGORIES.map((cat) => (
-                      <button
-                        key={cat.id}
-                        type="button"
-                        className={`${styles.categorySelectPill} ${
-                          category === cat.id ? styles.categoryPillSelected : ''
-                        }`}
-                        onClick={() => setCategory(cat.id)}
-                      >
-                        <span>{cat.icon}</span>
-                        <span>{cat.label}</span>
-                      </button>
-                    ))}
+                    {CATEGORIES.map((cat) => {
+                      const IconComponent = cat.icon;
+                      const isSelected = category === cat.id;
+                      return (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          className={`${styles.categorySelectPill} ${
+                            isSelected ? styles.categoryPillSelected : ''
+                          }`}
+                          onClick={() => setCategory(cat.id)}
+                        >
+                          <IconComponent size={14} />
+                          <span>{cat.label}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
-                {/* Ngày chi */}
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>
-                    Ngày chi <span className={styles.formRequired}>*</span>
-                  </label>
-                  <input
-                    type="date"
-                    className={styles.formInput}
-                    value={occurredAtDate}
-                    onChange={(e) => setOccurredAtDate(e.target.value)}
-                    required
-                  />
-                </div>
+                {/* Người chi & Ngày chi (2 cột gọn gàng) */}
+                <div className={styles.formTwoCols}>
+                  <div className={styles.formGroup} style={{ flex: 1 }}>
+                    <label className={styles.formLabel}>Người trả</label>
+                    <select
+                      className={styles.formSelect}
+                      value={paidBy}
+                      onChange={(e) => setPaidBy(e.target.value)}
+                    >
+                      {members.map((m) => (
+                        <option key={m.userId} value={m.userId}>
+                          {m.userId === currentUserId ? `Bạn (${m.displayName})` : m.displayName}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-                {/* Người chi */}
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>
-                    Người chi <span className={styles.formRequired}>*</span>
-                  </label>
-                  <select
-                    className={styles.formSelect}
-                    value={paidBy}
-                    onChange={(e) => setPaidBy(e.target.value)}
-                  >
-                    {members.map((m) => (
-                      <option key={m.userId} value={m.userId}>
-                        {m.userId === currentUserId ? `Bạn (${m.displayName})` : m.displayName}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Đính kèm hóa đơn */}
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Hình ảnh hóa đơn</label>
-                  <label className={styles.uploadZone} style={{ cursor: 'pointer' }}>
+                  <div className={styles.formGroup} style={{ flex: 1 }}>
+                    <label className={styles.formLabel}>Ngày</label>
                     <input
-                      type="file"
-                      accept="image/png,image/jpeg,image/webp,image/heic"
-                      style={{ display: 'none' }}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          setNote((prev: string) => prev ? `${prev} (Hóa đơn: ${file.name})` : `Hóa đơn: ${file.name}`);
-                        }
-                      }}
+                      type="date"
+                      className={styles.formInput}
+                      value={occurredAtDate}
+                      onChange={(e) => setOccurredAtDate(e.target.value)}
+                      required
                     />
-                    <div className={styles.uploadIcon}>🖼️</div>
-                    <div className={styles.uploadPrompt}>
-                      Kéo thả ảnh vào đây hoặc <span className={styles.uploadLink}>Chọn ảnh từ thiết bị</span>
-                    </div>
-                    <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>
-                      Hỗ trợ JPG, PNG, HEIC (tối đa 5MB)
-                    </div>
-                  </label>
+                  </div>
                 </div>
 
                 {/* Ghi chú */}
                 <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Ghi chú (tùy chọn)</label>
-                  <textarea
-                    rows={2}
-                    className={styles.formTextarea}
-                    placeholder="Thêm ghi chú nếu cần..."
+                  <label className={styles.formLabel}>Ghi chú</label>
+                  <input
+                    type="text"
+                    className={styles.formInput}
+                    placeholder="Tùy chọn..."
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
                   />
@@ -324,26 +453,23 @@ export function AddExpenseDrawer({
               </>
             ) : (
               <>
-                {/* Tab 2: Chia tiền */}
+                {/* ─── TAB 2: CHIA TIỀN MA TRẬN ─── */}
                 <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Chế độ phân chia</label>
-                  <div style={{ display: 'flex', gap: '8px' }}>
+                  <div className={styles.splitModeSwitcher}>
                     <button
                       type="button"
-                      className={`${styles.categorySelectPill} ${
-                        splitType === 'EQUAL' ? styles.categoryPillSelected : ''
+                      className={`${styles.splitModeBtn} ${
+                        splitType === 'EQUAL' ? styles.splitModeBtnActive : ''
                       }`}
-                      style={{ flex: 1 }}
                       onClick={() => setSplitType('EQUAL')}
                     >
-                      Chia đều ({selectedParticipants.length} người)
+                      Chia đều
                     </button>
                     <button
                       type="button"
-                      className={`${styles.categorySelectPill} ${
-                        splitType === 'EXACT' ? styles.categoryPillSelected : ''
+                      className={`${styles.splitModeBtn} ${
+                        splitType === 'EXACT' ? styles.splitModeBtnActive : ''
                       }`}
-                      style={{ flex: 1 }}
                       onClick={() => setSplitType('EXACT')}
                     >
                       Tùy chỉnh số tiền
@@ -351,33 +477,34 @@ export function AddExpenseDrawer({
                   </div>
                 </div>
 
-                {/* Select All */}
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '8px 12px',
-                    background: '#f8fafc',
-                    borderRadius: '8px',
-                  }}
-                >
-                  <span style={{ fontSize: '13px', fontWeight: 600, color: '#334155' }}>
-                    Áp dụng cho thành viên:
-                  </span>
+                {/* Preset Chips */}
+                <div className={styles.splitPresetRow}>
                   <button
                     type="button"
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: '#0284c7',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                    }}
+                    className={`${styles.splitPresetBtn} ${
+                      selectedParticipants.length === members.length ? styles.splitPresetActive : ''
+                    }`}
+                    onClick={() => setSelectedParticipants(members.map((m) => m.userId))}
+                  >
+                    <Users size={12} /> Cả đoàn ({members.length})
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.splitPresetBtn} ${
+                      selectedParticipants.length === 1 && selectedParticipants.includes(currentUserId || '')
+                        ? styles.splitPresetActive
+                        : ''
+                    }`}
+                    onClick={() => setSelectedParticipants(currentUserId ? [currentUserId] : [members[0]?.userId])}
+                  >
+                    <User size={12} /> Chỉ mình tôi
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.splitPresetBtn}
                     onClick={toggleAllParticipants}
                   >
-                    {selectedParticipants.length === members.length ? 'Bỏ chọn tất cả' : 'Chọn tất cả'}
+                    {selectedParticipants.length === members.length ? 'Bỏ chọn' : 'Tất cả'}
                   </button>
                 </div>
 
@@ -386,7 +513,12 @@ export function AddExpenseDrawer({
                   {members.map((m) => {
                     const isChecked = selectedParticipants.includes(m.userId);
                     return (
-                      <div key={m.userId} className={styles.splitMemberRow}>
+                      <div
+                        key={m.userId}
+                        className={`${styles.splitMemberRow} ${
+                          !isChecked ? styles.splitMemberRowExcluded : ''
+                        }`}
+                      >
                         <div className={styles.splitMemberLeft}>
                           <input
                             type="checkbox"
@@ -394,34 +526,42 @@ export function AddExpenseDrawer({
                             checked={isChecked}
                             onChange={() => toggleParticipant(m.userId)}
                           />
-                          <div
-                            className={styles.avatarCircle}
-                            style={{ width: '28px', height: '28px', fontSize: '11px' }}
-                          >
+                          <div className={styles.avatarCircle}>
                             {m.displayName.charAt(0).toUpperCase()}
                           </div>
-                          <span style={{ fontSize: '13px', fontWeight: 600 }}>
+                          <span className={styles.splitMemberName}>
                             {m.userId === currentUserId ? `Bạn (${m.displayName})` : m.displayName}
                           </span>
                         </div>
 
-                        {isChecked && (
-                          <div>
-                            {splitType === 'EQUAL' ? (
-                              <span className={styles.splitShareText}>
-                                {new Intl.NumberFormat('vi-VN').format(equalSharePerPerson)} ₫
-                              </span>
+                        <div>
+                          {isChecked ? (
+                            splitType === 'EQUAL' ? (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                {/* Weight selector [Khung 9] */}
+                                <div className={styles.weightSelector}>
+                                  {[0.5, 1, 1.5, 2].map((w) => (
+                                    <button
+                                      key={w}
+                                      type="button"
+                                      className={`${styles.weightChip} ${
+                                        (weights[m.userId] || 1) === w ? styles.weightChipActive : ''
+                                      }`}
+                                      onClick={() => setMemberWeight(m.userId, w)}
+                                      title={`Trọng số ${w}x`}
+                                    >
+                                      {w}x
+                                    </button>
+                                  ))}
+                                </div>
+                                <span className={styles.splitShareText}>
+                                  {new Intl.NumberFormat('vi-VN').format(getMemberCalculatedShare(m.userId))} ₫
+                                </span>
+                              </div>
                             ) : (
                               <input
                                 type="text"
-                                style={{
-                                  width: '110px',
-                                  padding: '4px 8px',
-                                  fontSize: '13px',
-                                  textAlign: 'right',
-                                  border: '1px solid #cbd5e1',
-                                  borderRadius: '6px',
-                                }}
+                                className={styles.exactShareInput}
                                 placeholder="0 ₫"
                                 value={exactShares[m.userId] || ''}
                                 onChange={(e) => {
@@ -430,21 +570,41 @@ export function AddExpenseDrawer({
                                   setExactShares({ ...exactShares, [m.userId]: f });
                                 }}
                               />
-                            )}
-                          </div>
-                        )}
+                            )
+                          ) : (
+                            <span className={styles.splitExcludedBadge}>0 ₫</span>
+                          )}
+                        </div>
                       </div>
                     );
                   })}
+                </div>
+
+                {/* Bottom Live Split Summary */}
+                <div className={styles.splitSummaryCard}>
+                  <div className={styles.splitSummaryItem}>
+                    <span>Tổng chi</span>
+                    <strong>{new Intl.NumberFormat('vi-VN').format(numericAmount)} ₫</strong>
+                  </div>
+                  <div className={styles.splitSummaryItem}>
+                    <span>Người chia</span>
+                    <strong>{selectedParticipants.length} / {members.length}</strong>
+                  </div>
+                  <div className={styles.splitSummaryItem}>
+                    <span>Bình quân</span>
+                    <strong style={{ color: '#0284c7' }}>
+                      {new Intl.NumberFormat('vi-VN').format(equalSharePerPerson)} ₫
+                    </strong>
+                  </div>
                 </div>
               </>
             )}
           </div>
 
-          {/* Drawer Footer Buttons */}
+          {/* Drawer Footer */}
           <div className={styles.drawerFooter}>
             <button type="button" className={styles.btnCancel} onClick={onClose} disabled={submitting}>
-              Hủy
+              Đóng
             </button>
             {activeTab === 'info' ? (
               <button
@@ -452,7 +612,7 @@ export function AddExpenseDrawer({
                 className={styles.btnSubmit}
                 onClick={() => setActiveTab('split')}
               >
-                Tiếp tục (Chia tiền) →
+                Chia tiền ({selectedParticipants.length}) →
               </button>
             ) : (
               <button type="submit" className={styles.btnSubmit} disabled={submitting}>

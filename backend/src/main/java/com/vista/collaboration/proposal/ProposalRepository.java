@@ -11,4 +11,6 @@ public interface ProposalRepository extends JpaRepository<Proposal, UUID> {
   List<Proposal> findByTripIdOrderByCreatedAtDesc(UUID tripId);
 
   List<Proposal> findByTripIdAndStatus(UUID tripId, ProposalStatus status);
+
+  boolean existsByDestinationId(UUID destinationId);
 }

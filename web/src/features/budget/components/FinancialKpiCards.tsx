@@ -1,129 +1,113 @@
 'use client';
 
 import React from 'react';
-import { Wallet, Receipt, Target, Scale } from 'lucide-react';
-import type { TripExpenseSummary } from '../types';
+import {
+  CreditCard,
+  Calendar,
+} from 'lucide-react';
+import { VietnamesePagodaIllustration } from './VietnamesePagodaIllustration';
+import type { TripExpenseSummary, TripMember } from '../types';
 import styles from '../treasury.module.css';
 
 interface FinancialKpiCardsProps {
   summary: TripExpenseSummary;
   memberCount: number;
   currentUserId?: string;
+  members?: TripMember[];
+  tripTitle?: string;
+  tripDates?: string;
 }
 
 export function FinancialKpiCards({
   summary,
   memberCount,
-  currentUserId,
+  currentUserId = 'u-me',
+  members = [],
+  tripTitle = 'VISTA',
+  tripDates = 'Chưa thiết lập ngày',
 }: FinancialKpiCardsProps) {
-  const budget = summary.budgetTotal ?? 25000000;
-  const spent = summary.totalSpent ?? 0;
-  const remaining = summary.remainingBudget ?? (budget - spent);
+  const budget = Number(summary.budgetTotal) || 0;
+  const spent = Number(summary.totalSpent) || 0;
+  const remaining = budget > 0 ? (summary.remainingBudget ?? (budget - spent)) : 0;
 
   const spentPct = budget > 0 ? Math.min(100, Math.round((spent / budget) * 100)) : 0;
-  const remainingPct = Math.max(0, 100 - spentPct);
 
-  // User's net balance delta from summary.settlementDeltas
+  // User's net balance delta
   const myDelta =
     currentUserId && summary.settlementDeltas && summary.settlementDeltas[currentUserId] !== undefined
       ? summary.settlementDeltas[currentUserId]
       : 0;
 
+  const isCreditor = myDelta > 1000;
+  const isDebtor = myDelta < -1000;
+
   const formatVnd = (val: number) => {
-    return new Intl.NumberFormat('vi-VN').format(Math.abs(Math.round(val))) + ' ₫';
+    return new Intl.NumberFormat('vi-VN').format(Math.abs(Math.round(val))) + ' đ';
   };
 
   return (
-    <div className={styles.kpiGrid}>
-      {/* 1. Ngân Quỹ Còn Lại */}
-      <div className={styles.kpiCard}>
-        <div className={styles.kpiHeader}>
-          <div className={`${styles.kpiIconCircle} ${styles.kpiIconBlue}`}>
-            <Wallet size={19} />
+    <div className={styles.vistaCardBudget}>
+      {/* ─── CARD HEADER ─── */}
+      <div className={styles.vistaCardHeader}>
+        <div className={styles.vistaCardTitleGroup}>
+          <div className={styles.vistaCardIconCircle}>
+            <CreditCard size={15} color="#0284C7" />
           </div>
-          <span className={styles.kpiLabel}>Ngân Quỹ Còn Lại</span>
+          <h2 className={styles.vistaCardTitle}>Ngân sách chuyến đi</h2>
         </div>
-        <div className={styles.kpiMetric} style={{ color: remaining >= 0 ? '#0284c7' : '#ef4444' }}>
-          {formatVnd(remaining)}
-        </div>
-        <div className={styles.kpiProgressBarTrack}>
-          <div
-            className={styles.kpiProgressBarFill}
-            style={{ width: `${remainingPct}%`, background: '#0284c7' }}
-          />
-        </div>
-        <div className={styles.kpiSubtext}>Còn {remainingPct}% so với dự toán</div>
-      </div>
 
-      {/* 2. Tổng Tiền Đã Chi */}
-      <div className={styles.kpiCard}>
-        <div className={styles.kpiHeader}>
-          <div className={`${styles.kpiIconCircle} ${styles.kpiIconCoral}`}>
-            <Receipt size={19} />
-          </div>
-          <span className={styles.kpiLabel}>Tổng Tiền Đã Chi</span>
-        </div>
-        <div className={styles.kpiMetric}>{formatVnd(spent)}</div>
-        <div className={styles.kpiProgressBarTrack}>
-          <div
-            className={styles.kpiProgressBarFill}
-            style={{ width: `${spentPct}%`, background: spentPct > 90 ? '#ef4444' : '#ea580c' }}
-          />
-        </div>
-        <div className={styles.kpiSubtext}>Đã chi {spentPct}% ngân sách</div>
-      </div>
-
-      {/* 3. Dự Toán Ban Đầu */}
-      <div className={styles.kpiCard}>
-        <div className={styles.kpiHeader}>
-          <div className={`${styles.kpiIconCircle} ${styles.kpiIconPurple}`}>
-            <Target size={19} />
-          </div>
-          <span className={styles.kpiLabel}>Dự Toán Ban Đầu</span>
-        </div>
-        <div className={styles.kpiMetric}>{formatVnd(budget)}</div>
-        <div className={styles.kpiProgressBarTrack}>
-          <div
-            className={styles.kpiProgressBarFill}
-            style={{ width: '100%', background: '#94a3b8' }}
-          />
-        </div>
-        <div className={styles.kpiSubtext}>
-          Dành cho {memberCount} thành viên ({formatVnd(Math.round(budget / Math.max(1, memberCount)))}/người)
+        <div className={styles.vistaCardDateBadge}>
+          <Calendar size={13} color="#64748B" />
+          <span>{tripDates}</span>
         </div>
       </div>
 
-      {/* 4. Vị Thế Ròng Của Bạn */}
-      <div className={styles.kpiCard}>
-        <div className={styles.kpiHeader}>
-          <div className={`${styles.kpiIconCircle} ${styles.kpiIconGreen}`}>
-            <Scale size={19} />
-          </div>
-          <span className={styles.kpiLabel}>Vị Thế Ròng Của Bạn</span>
-        </div>
-        <div
-          className={styles.kpiMetric}
-          style={{ color: myDelta > 0 ? '#0284c7' : myDelta < 0 ? '#ef4444' : '#0f172a' }}
-        >
-          {myDelta > 0 ? `+${formatVnd(myDelta)}` : myDelta < 0 ? `-${formatVnd(myDelta)}` : '0 ₫'}
-        </div>
-        <div className={styles.kpiProgressBarTrack}>
+      {/* ─── MAIN HERO AMOUNT ─── */}
+      <div className={styles.vistaBudgetHeroAmount}>
+        {formatVnd(budget)}
+      </div>
+
+      {/* ─── THIN PROGRESS BAR ─── */}
+      <div className={styles.vistaProgressBarWrapper}>
+        <div className={styles.vistaProgressBarTrack}>
           <div
-            className={styles.kpiProgressBarFill}
-            style={{
-              width: myDelta !== 0 ? '100%' : '0%',
-              background: myDelta >= 0 ? '#10b981' : '#ef4444',
-            }}
+            className={styles.vistaProgressBarFill}
+            style={{ width: `${Math.max(0, spentPct)}%` }}
           />
         </div>
-        <div className={styles.kpiSubtext}>
-          {myDelta > 0
-            ? 'Bạn được nhóm hoàn lại'
-            : myDelta < 0
-            ? 'Bạn cần đóng thêm vào quỹ'
-            : 'Đã cân bằng chi phí'}
+        <span className={styles.vistaProgressPctText}>{spentPct}%</span>
+      </div>
+
+      {/* ─── 3 STATS COLUMNS ─── */}
+      <div className={styles.vistaBudgetStatsRow}>
+        <div className={styles.vistaBudgetStatItem}>
+          <span className={styles.vistaBudgetStatLabel}>Đã chi</span>
+          <strong className={styles.vistaBudgetStatValue}>{formatVnd(spent)}</strong>
+        </div>
+
+        <div className={styles.vistaBudgetStatItem}>
+          <span className={styles.vistaBudgetStatLabel}>Còn lại</span>
+          <strong className={styles.vistaBudgetStatValue} style={{ color: remaining >= 0 ? '#0F172A' : '#DC2626' }}>
+            {formatVnd(remaining)}
+          </strong>
+        </div>
+
+        <div className={styles.vistaBudgetStatItem}>
+          <span className={styles.vistaBudgetStatLabel}>Dự toán</span>
+          <strong className={styles.vistaBudgetStatValue}>{formatVnd(budget)}</strong>
         </div>
       </div>
+
+      {/* ─── VIETNAMESE PAGODA WATERMARK ─── */}
+      <div className={styles.vistaBudgetPagodaWatermark}>
+        <VietnamesePagodaIllustration
+          width={240}
+          height={180}
+          color="#0284c7"
+          accentColor="#bae6fd"
+        />
+      </div>
+
     </div>
   );
 }

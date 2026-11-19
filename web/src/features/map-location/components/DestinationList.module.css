@@ -393,6 +393,12 @@
   color: #64748b;
 }
 
+.noRatingText {
+  color: #64748b;
+  font-style: italic;
+  font-size: 11px;
+}
+
 /* Middle: 2-line Description */
 .cardDescription {
   margin: 0;

@@ -1,0 +1,14 @@
+{
+  "destinationProvince": "Hà Nội",
+  "totalDays": 1,
+  "peopleCount": 2,
+  "departureTime": "21:00",
+  "budgetTier": "standard",
+  "expect": {
+    "expect_http_status": 200,
+    "must_not_contain_walking_load": [],
+    "min_days": 1,
+    "min_total_activities": 1,
+    "expected_province": "Hà Nội"
+  }
+}

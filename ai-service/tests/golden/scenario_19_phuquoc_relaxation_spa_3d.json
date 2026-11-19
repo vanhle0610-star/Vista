@@ -1,0 +1,16 @@
+{
+  "destinationProvince": "Kiên Giang",
+  "totalDays": 3,
+  "peopleCount": 2,
+  "budgetTier": "premium",
+  "hasElderly": true,
+  "expect": {
+    "expect_http_status": 200,
+    "must_not_contain_walking_load": [
+      "STRENUOUS"
+    ],
+    "min_days": 3,
+    "min_total_activities": 3,
+    "expected_province": "Kiên Giang"
+  }
+}

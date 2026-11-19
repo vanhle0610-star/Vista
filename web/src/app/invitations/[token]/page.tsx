@@ -23,14 +23,52 @@ export default function InvitationAcceptPage() {
   const [testState, setTestState] = useState<'PENDING' | 'REVOKED' | 'EXPIRED' | 'ACCEPTED'>('PENDING');
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isDeclined, setIsDeclined] = useState(false);
+  const [showDeclineConfirm, setShowDeclineConfirm] = useState(false);
+  const [invitationData, setInvitationData] = useState<{
+    tripId?: string;
+    tripTitle?: string;
+    destination?: string;
+    inviterName?: string;
+    startDate?: string;
+    endDate?: string;
+  } | null>(null);
 
-  // Parse simulated status from token if encoded
+  // Load real invitation details and status from server store or fallback
   useEffect(() => {
-    if (token.toLowerCase().includes('revoked')) {
-      setTestState('REVOKED');
-    } else if (token.toLowerCase().includes('expired')) {
-      setTestState('EXPIRED');
-    }
+    const fetchInvitation = async () => {
+      try {
+        const res = await fetch(`/api/invitations?token=${encodeURIComponent(token)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.status) {
+            setTestState(data.status);
+            setInvitationData(data);
+            if (data.status === 'REVOKED') {
+              setIsDeclined(true);
+              setStatusMessage('❌ Lời mời này đã bị Trưởng nhóm (Owner) thu hồi hoặc bạn đã từ chối!');
+            } else if (data.status === 'EXPIRED') {
+              setStatusMessage('❌ Lời mời này đã quá thời hạn và bị hết hạn! Vui lòng xin mã mời mới.');
+            } else if (data.status === 'ACCEPTED') {
+              setIsSuccess(true);
+              setStatusMessage('🎉 Lời mời này đã được chấp nhận và tham gia thành công!');
+            }
+            return;
+          }
+        }
+      } catch {
+        // Fallback to local check below
+      }
+
+      if (token.toLowerCase().includes('revoked')) {
+        setTestState('REVOKED');
+        setIsDeclined(true);
+      } else if (token.toLowerCase().includes('expired')) {
+        setTestState('EXPIRED');
+      }
+    };
+
+    fetchInvitation();
   }, [token]);
 
   const handleAccept = () => {
@@ -77,31 +115,33 @@ export default function InvitationAcceptPage() {
       email: currentUser.email || '',
     };
 
+    const targetTripId = invitationData?.tripId || 'trip-1794386330666';
+    const targetTripTitle = invitationData?.tripTitle || 'Khám phá chuyến đi VISTA';
+    const targetDest = invitationData?.destination || 'Việt Nam';
+    const targetStartDate = invitationData?.startDate || '11/11/2026';
+    const targetEndDate = invitationData?.endDate || '15/11/2026';
+
     // Success: Add real logged in user to local storage trip data
     try {
       const stored = localStorage.getItem('vista_custom_trips');
       let trips = stored ? JSON.parse(stored) : [];
-      let trip = trips.find((t: any) => t.id === 'trip-danang-2026');
+      let trip = trips.find((t: any) => t.id === targetTripId);
 
       if (!trip) {
         trip = {
-          id: 'trip-danang-2026',
-          title: 'Khám phá Đà Nẵng - Hội An 4N3Đ',
-          destination: 'Đà Nẵng & Quảng Nam',
-          startDate: '15/11/2026',
-          endDate: '18/11/2026',
+          id: targetTripId,
+          title: targetTripTitle,
+          destination: targetDest,
+          startDate: targetStartDate,
+          endDate: targetEndDate,
           members: [
-            { name: 'Lê Vân Anh (Trưởng nhóm)', avatar: 'VA', color: '#0284c7', role: 'Trưởng nhóm' },
-            { name: 'Trần Minh Tuấn', avatar: 'MT', color: '#10b981', role: 'Thành viên' },
-            { name: 'Nguyễn Hoàng Nam', avatar: 'HN', color: '#f59e0b', role: 'Thành viên' },
+            { name: invitationData?.inviterName || 'Trưởng nhóm', avatar: 'TN', color: '#0284c7', role: 'Trưởng nhóm' },
             newMember,
           ],
         };
         trips.push(trip);
       } else {
         if (!trip.members) trip.members = [];
-        // Clean up any fake dummy member previously inserted
-        trip.members = trip.members.filter((m: any) => !m?.name?.includes('Nguyễn Văn B'));
         const alreadyIn = trip.members.some(
           (m: any) =>
             (m.userId && m.userId === newMember.userId) ||
@@ -113,105 +153,72 @@ export default function InvitationAcceptPage() {
         }
       }
       localStorage.setItem('vista_custom_trips', JSON.stringify(trips));
+      window.dispatchEvent(new CustomEvent('vista-trips-change'));
+      window.dispatchEvent(new Event('storage'));
     } catch {
       // ignore
     }
+
+    // Notify server about ACCEPT and update trips store synchronously
+    try {
+      fetch('/api/invitations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'ACCEPT',
+          status: 'ACCEPTED',
+          token,
+          user: newMember,
+          tripId: targetTripId,
+          email: currentUser.email || (invitationData as any)?.inviteeEmail || '',
+        }),
+      }).catch(() => {});
+
+      fetch('/api/trips', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: targetTripId,
+          members: [newMember],
+        }),
+      }).catch(() => {});
+    } catch {}
 
     setIsSuccess(true);
     setTestState('ACCEPTED');
     setStatusMessage(`🎉 Chúc mừng ${cleanName}! Bạn đã chấp nhận lời mời và trở thành thành viên chính thức của chuyến đi.`);
 
     setTimeout(() => {
-      router.push('/trips/trip-danang-2026?tab=members');
+      router.push(`/trips/${targetTripId}?tab=members`);
     }, 1800);
   };
 
-  const handleDecline = () => {
-    setStatusMessage('⚠️ Bạn đã chọn TỪ CHỐI lời mời. Bạn không được thêm vào danh sách thành viên của nhóm.');
+  const handleStartDecline = () => {
+    setShowDeclineConfirm(true);
+  };
+
+  const handleCancelDecline = () => {
+    setShowDeclineConfirm(false);
+  };
+
+  const handleConfirmDecline = () => {
+    setShowDeclineConfirm(false);
+    setIsDeclined(true);
+    setTestState('REVOKED');
+    setStatusMessage('❌ Bạn đã chọn TỪ CHỐI lời mời. Bạn không tham gia chuyến đi này.');
+
+    try {
+      fetch('/api/invitations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'REVOKE', token }),
+      }).catch(() => {});
+    } catch {}
   };
 
   return (
     <div style={{ minHeight: '100vh', background: '#F8FAFC', color: '#0F172A', paddingBottom: '80px' }}>
       <main style={{ maxWidth: '640px', margin: '40px auto 0', padding: '0 20px' }}>
-        {/* Banner kiểm thử Tuần 3 / Tuần 4 */}
-        <div style={{ background: '#EFF6FF', border: '1.5px solid #BFDBFE', borderRadius: '16px', padding: '14px 18px', marginBottom: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-            <span style={{ fontSize: '20px' }}>🎯</span>
-            <strong style={{ fontSize: '14px', color: '#1E40AF' }}>
-              Trạng thái kiểm tra Lời mời
-            </strong>
-          </div>
-          <p style={{ margin: '0 0 10px', fontSize: '13px', color: '#334155', lineHeight: '1.5' }}>
-            Chọn trường hợp muốn thử nghiệm bên dưới để kiểm tra phản hồi của hệ thống:
-          </p>
-          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-            <button
-              type="button"
-              onClick={() => { setTestState('PENDING'); setStatusMessage(null); }}
-              style={{
-                padding: '6px 12px',
-                borderRadius: '8px',
-                fontSize: '12px',
-                fontWeight: 700,
-                border: '1px solid #93C5FD',
-                background: testState === 'PENDING' ? '#0284C7' : '#FFFFFF',
-                color: testState === 'PENDING' ? '#FFFFFF' : '#0369A1',
-                cursor: 'pointer',
-              }}
-            >
-              1. Hợp lệ (PENDING)
-            </button>
-            <button
-              type="button"
-              onClick={() => { setTestState('REVOKED'); setStatusMessage(null); }}
-              style={{
-                padding: '6px 12px',
-                borderRadius: '8px',
-                fontSize: '12px',
-                fontWeight: 700,
-                border: '1px solid #FECACA',
-                background: testState === 'REVOKED' ? '#DC2626' : '#FFFFFF',
-                color: testState === 'REVOKED' ? '#FFFFFF' : '#B91C1C',
-                cursor: 'pointer',
-              }}
-            >
-              2. Đã thu hồi (REVOKED)
-            </button>
-            <button
-              type="button"
-              onClick={() => { setTestState('EXPIRED'); setStatusMessage(null); }}
-              style={{
-                padding: '6px 12px',
-                borderRadius: '8px',
-                fontSize: '12px',
-                fontWeight: 700,
-                border: '1px solid #FED7AA',
-                background: testState === 'EXPIRED' ? '#EA580C' : '#FFFFFF',
-                color: testState === 'EXPIRED' ? '#FFFFFF' : '#C2410C',
-                cursor: 'pointer',
-              }}
-            >
-              3. Hết hạn (EXPIRED)
-            </button>
-            <button
-              type="button"
-              onClick={() => { setTestState('ACCEPTED'); setStatusMessage(null); }}
-              style={{
-                padding: '6px 12px',
-                borderRadius: '8px',
-                fontSize: '12px',
-                fontWeight: 700,
-                border: '1px solid #CBD5E1',
-                background: testState === 'ACCEPTED' ? '#475569' : '#FFFFFF',
-                color: testState === 'ACCEPTED' ? '#FFFFFF' : '#334155',
-                cursor: 'pointer',
-              }}
-            >
-              4. Dùng lại (ACCEPTED - 409)
-            </button>
-          </div>
-        </div>
-
         {/* Thẻ Lời Mời Chính */}
         <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 12px 32px rgba(15, 23, 42, 0.06)' }}>
           {/* Header thiệp mời */}
@@ -223,7 +230,7 @@ export default function InvitationAcceptPage() {
               Lời mời tham gia chuyến đi
             </h2>
             <p style={{ margin: 0, opacity: 0.9, fontSize: '14px' }}>
-              Trưởng nhóm <strong>Lê Vân Anh</strong> đã mời bạn cùng đồng hành!
+              Trưởng nhóm <strong>{invitationData?.inviterName || 'Lê Vân Anh'}</strong> đã mời bạn cùng đồng hành!
             </p>
           </div>
 
@@ -236,27 +243,35 @@ export default function InvitationAcceptPage() {
                 <span style={{ fontFamily: 'monospace', fontWeight: 800, color: '#0284C7', background: '#E0F2FE', padding: '2px 8px', borderRadius: '6px' }}>
                   {token}
                 </span>
-                <span style={{ marginLeft: 'auto', fontSize: '11.5px', fontWeight: 800, padding: '3px 8px', borderRadius: '999px', background: testState === 'PENDING' ? '#DCFCE7' : '#FEE2E2', color: testState === 'PENDING' ? '#15803D' : '#991B1B' }}>
-                  {testState}
+                <span style={{
+                  marginLeft: 'auto',
+                  fontSize: '11.5px',
+                  fontWeight: 800,
+                  padding: '3px 8px',
+                  borderRadius: '999px',
+                  background: isDeclined || testState === 'REVOKED' ? '#FEE2E2' : testState === 'ACCEPTED' ? '#E0F2FE' : testState === 'EXPIRED' ? '#FFEDD5' : '#DCFCE7',
+                  color: isDeclined || testState === 'REVOKED' ? '#991B1B' : testState === 'ACCEPTED' ? '#0369A1' : testState === 'EXPIRED' ? '#C2410C' : '#15803D'
+                }}>
+                  {isDeclined ? 'Đã từ chối' : testState === 'REVOKED' ? 'Đã thu hồi' : testState === 'ACCEPTED' ? 'Đã tham gia' : testState === 'EXPIRED' ? 'Hết hạn' : 'Có hiệu lực'}
                 </span>
               </div>
 
               <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', margin: '0 0 12px' }}>
-                Khám phá Đà Nẵng - Hội An 4N3Đ
+                {invitationData?.tripTitle || 'Khám phá Đà Nẵng - Hội An 4N3Đ'}
               </h3>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', fontSize: '13.5px', color: '#475569' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <MapPin size={15} style={{ color: '#0EA5E9' }} />
-                  <span>Đà Nẵng & Hội An</span>
+                  <span>{invitationData?.destination || 'Đà Nẵng & Hội An'}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <Calendar size={15} style={{ color: '#6366F1' }} />
-                  <span>15 – 18/11/2026</span>
+                  <span>{invitationData?.startDate && invitationData?.endDate ? `${invitationData.startDate} – ${invitationData.endDate}` : '15 – 18/11/2026'}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <Users size={15} style={{ color: '#F59E0B' }} />
-                  <span>3 thành viên đang chờ</span>
+                  <span>Thành viên đang chờ</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <ShieldCheck size={15} style={{ color: '#10B981' }} />
@@ -282,8 +297,65 @@ export default function InvitationAcceptPage() {
               </div>
             )}
 
-            {/* Các nút hành động */}
-            {!isSuccess && (
+            {/* Hộp xác nhận khi nhấn Từ chối */}
+            {showDeclineConfirm && (
+              <div style={{
+                background: '#FFF1F2',
+                border: '1.5px solid #FECDD3',
+                borderRadius: '16px',
+                padding: '18px 20px',
+                marginBottom: '20px',
+                boxShadow: '0 4px 14px rgba(225, 29, 72, 0.08)',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '20px' }}>⚠️</span>
+                  <strong style={{ fontSize: '15px', color: '#9F1239' }}>
+                    Bạn có muốn từ chối lời mời này không?
+                  </strong>
+                </div>
+                <p style={{ margin: '0 0 16px', fontSize: '13px', color: '#881337', lineHeight: '1.5' }}>
+                  Nếu chọn <strong>"Có, từ chối"</strong>, lời mời sẽ bị hủy bỏ và bạn sẽ không thể tham gia chuyến đi bằng mã này nữa.
+                </p>
+                <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    onClick={handleCancelDecline}
+                    style={{
+                      padding: '10px 18px',
+                      borderRadius: '10px',
+                      border: '1.5px solid #CBD5E1',
+                      background: '#FFFFFF',
+                      color: '#475569',
+                      fontSize: '13.5px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Không, giữ lại
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleConfirmDecline}
+                    style={{
+                      padding: '10px 20px',
+                      borderRadius: '10px',
+                      border: 'none',
+                      background: '#E11D48',
+                      color: '#FFFFFF',
+                      fontSize: '13.5px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 12px rgba(225, 29, 72, 0.3)',
+                    }}
+                  >
+                    Có, từ chối
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Các nút hành động chính: MẤT ĐI khi đã từ chối (isDeclined) hoặc đã chấp nhận (isSuccess) */}
+            {!isSuccess && !isDeclined && testState === 'PENDING' && !showDeclineConfirm && (
               <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                 <button
                   type="button"
@@ -312,7 +384,7 @@ export default function InvitationAcceptPage() {
 
                 <button
                   type="button"
-                  onClick={handleDecline}
+                  onClick={handleStartDecline}
                   style={{
                     padding: '13px 20px',
                     background: '#FFFFFF',
@@ -330,25 +402,55 @@ export default function InvitationAcceptPage() {
               </div>
             )}
 
+            {/* Sau khi đã chấp nhận: Nút dẫn vào nhóm */}
             {isSuccess && (
               <div style={{ textAlign: 'center' }}>
                 <Link
-                  href="/trips/trip-danang-2026?tab=members"
+                  href={`/trips/${invitationData?.tripId || 'demo-danang-2026'}?tab=members`}
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
+                    justifyContent: 'center',
                     gap: '8px',
-                    padding: '12px 24px',
+                    padding: '13px 24px',
                     background: '#0284C7',
                     color: '#FFFFFF',
                     borderRadius: '12px',
-                    fontSize: '14px',
+                    fontSize: '14.5px',
                     fontWeight: 700,
                     textDecoration: 'none',
+                    width: '100%',
+                    boxShadow: '0 4px 14px rgba(2, 132, 199, 0.3)',
                   }}
                 >
                   <span>Xem danh sách thành viên chuyến đi</span>
                   <ArrowRight size={16} />
+                </Link>
+              </div>
+            )}
+
+            {/* Sau khi đã từ chối: Nút biến mất, hiện nút quay về trang chủ */}
+            {(isDeclined || testState === 'REVOKED' || testState === 'EXPIRED') && !isSuccess && (
+              <div style={{ textAlign: 'center' }}>
+                <Link
+                  href="/"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    padding: '13px 24px',
+                    background: '#F1F5F9',
+                    color: '#334155',
+                    border: '1px solid #CBD5E1',
+                    borderRadius: '12px',
+                    fontSize: '14px',
+                    fontWeight: 700,
+                    textDecoration: 'none',
+                    width: '100%',
+                  }}
+                >
+                  <span>← Quay về Trang chủ</span>
                 </Link>
               </div>
             )}

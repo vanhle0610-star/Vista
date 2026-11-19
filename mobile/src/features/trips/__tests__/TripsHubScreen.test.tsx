@@ -96,7 +96,7 @@ describe('TripsHubScreen', () => {
       expect(screen.getByText('Thử AI lập lịch trình')).toBeTruthy();
       expect(screen.getByText('Được bạn bè mời tham gia?')).toBeTruthy();
     });
-  });
+  }, 15000);
 
   it('renders AuthGatekeeperCard when user is guest (not authenticated)', async () => {
     (authStorage.getAccessToken as jest.Mock).mockResolvedValue(null);

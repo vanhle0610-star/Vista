@@ -12,6 +12,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import jakarta.persistence.Version;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -80,6 +81,8 @@ public class Destination {
   @Version
   @Column(nullable = false)
   private Long version = 0L;
+
+  @Transient private String rejectionReason;
 
   @OneToMany(
       mappedBy = "destination",
@@ -238,5 +241,13 @@ public class Destination {
   public void addImage(String storagePath, String altText, Integer sortOrder) {
     var img = new DestinationImage(this, storagePath, altText, sortOrder);
     this.images.add(img);
+  }
+
+  public String getRejectionReason() {
+    return rejectionReason;
+  }
+
+  public void setRejectionReason(String rejectionReason) {
+    this.rejectionReason = rejectionReason;
   }
 }

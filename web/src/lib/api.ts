@@ -85,7 +85,15 @@ export async function apiRequest<T>(path: string, init?: RequestInit): Promise<T
     credentials: init?.credentials ?? 'include',
     headers,
   });
-  let response = await request();
+  let response: Response;
+  try {
+    response = await request();
+  } catch (netErr: any) {
+    if (netErr instanceof TypeError && (netErr.message.includes('fetch') || netErr.message.includes('NetworkError') || netErr.message.includes('Failed'))) {
+      throw new Error(`Không thể kết nối đến máy chủ Backend (${baseUrl}). Vui lòng kiểm tra backend Java Spring Boot đã được khởi động chưa.`);
+    }
+    throw netErr;
+  }
 
   const isAuthAction = /^\/auth\/(?:login|register|google|refresh(?:-token)?|logout)(?:[/?]|$)/.test(path);
   if (response.status === 401 && sessionToken && !isAuthAction) {
