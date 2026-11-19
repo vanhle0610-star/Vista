@@ -414,7 +414,8 @@ class ItineraryValidationTest {
   @Test
   @DisplayName("V-01 createDay: ngày sau endDate → ném IllegalArgumentException bị chặn cứng")
   void createDay_dayAfterEndDate_throwsException() {
-    CreateItineraryDayRequest request = new CreateItineraryDayRequest(4, LocalDate.of(2026, 11, 15));
+    CreateItineraryDayRequest request =
+        new CreateItineraryDayRequest(4, LocalDate.of(2026, 11, 15));
     when(tripRepository.findById(TRIP_ID)).thenReturn(Optional.of(trip));
 
     assertThatThrownBy(() -> itineraryService.createDay(TRIP_ID, USER_ID, request))
@@ -446,7 +447,8 @@ class ItineraryValidationTest {
     ItineraryItem itemA =
         makeItem(UUID.randomUUID(), day, "Tour Đảo", LocalTime.of(8, 0), LocalTime.of(12, 0));
     ItineraryItem itemB =
-        makeItem(UUID.randomUUID(), day, "Lặn ngắm san hô", LocalTime.of(9, 0), LocalTime.of(11, 0));
+        makeItem(
+            UUID.randomUUID(), day, "Lặn ngắm san hô", LocalTime.of(9, 0), LocalTime.of(11, 0));
 
     when(tripRepository.findById(TRIP_ID)).thenReturn(Optional.of(trip));
     when(dayRepository.findByTripIdOrderByDayNumberAsc(TRIP_ID)).thenReturn(List.of(day));

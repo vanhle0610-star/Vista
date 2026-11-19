@@ -73,8 +73,10 @@ public class ItineraryService {
           .findById(tripId)
           .ifPresent(
               trip -> {
-                if ((trip.getStartDate() != null && request.getTripDate().isBefore(trip.getStartDate()))
-                    || (trip.getEndDate() != null && request.getTripDate().isAfter(trip.getEndDate()))) {
+                if ((trip.getStartDate() != null
+                        && request.getTripDate().isBefore(trip.getStartDate()))
+                    || (trip.getEndDate() != null
+                        && request.getTripDate().isAfter(trip.getEndDate()))) {
                   throw new IllegalArgumentException(
                       "Ngày "
                           + request.getTripDate()
@@ -116,7 +118,8 @@ public class ItineraryService {
           .ifPresent(
               trip -> {
                 if ((trip.getStartDate() != null && day.getTripDate().isBefore(trip.getStartDate()))
-                    || (trip.getEndDate() != null && day.getTripDate().isAfter(trip.getEndDate()))) {
+                    || (trip.getEndDate() != null
+                        && day.getTripDate().isAfter(trip.getEndDate()))) {
                   throw new IllegalArgumentException(
                       "Ngày "
                           + day.getTripDate()

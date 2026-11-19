@@ -244,22 +244,45 @@ public final class TravelScheduler {
 
         // Chi phí ăn trưa / ẩm thực ước tính
         long perPersonDining = 70000L;
-        String activityDesc = "Dừng chân ăn trưa, nạp lại năng lượng và thưởng thức món ngon đặc sản trong không gian mát mẻ.";
-        String timeSlotReason = "Khung giờ trưa (" + actualLunchStart.format(TIME_FMT) + " – " + actualLunchEnd.format(TIME_FMT) + ") nắng gắt nhất trong ngày, hoàn hảo để dừng chân ăn uống và hồi phục thể lực.";
-        String whyVisitReason = "Đặc sản chuẩn vị truyền thống của vùng đất " + request.destinationProvince() + " với giá cả hợp lý và không khí ấm cúng.";
+        String activityDesc =
+            "Dừng chân ăn trưa, nạp lại năng lượng và thưởng thức món ngon đặc sản trong không gian mát mẻ.";
+        String timeSlotReason =
+            "Khung giờ trưa ("
+                + actualLunchStart.format(TIME_FMT)
+                + " – "
+                + actualLunchEnd.format(TIME_FMT)
+                + ") nắng gắt nhất trong ngày, hoàn hảo để dừng chân ăn uống và hồi phục thể lực.";
+        String whyVisitReason =
+            "Đặc sản chuẩn vị truyền thống của vùng đất "
+                + request.destinationProvince()
+                + " với giá cả hợp lý và không khí ấm cúng.";
 
         if (foodCand != null) {
-          String lowerName = (foodCand.name() != null ? foodCand.name() : "").toLowerCase(Locale.ROOT);
-          boolean isCheShop = lowerName.startsWith("chè ") || lowerName.contains(" chè ") || lowerName.contains("chè hẻm");
-          boolean isDrinkShop = lowerName.contains("cà phê") || lowerName.contains("cafe") || lowerName.contains("trà đá");
+          String lowerName =
+              (foodCand.name() != null ? foodCand.name() : "").toLowerCase(Locale.ROOT);
+          boolean isCheShop =
+              lowerName.startsWith("chè ")
+                  || lowerName.contains(" chè ")
+                  || lowerName.contains("chè hẻm");
+          boolean isDrinkShop =
+              lowerName.contains("cà phê")
+                  || lowerName.contains("cafe")
+                  || lowerName.contains("trà đá");
           long pMin = foodCand.priceMin() != null ? foodCand.priceMin().longValue() : 0L;
 
           if (isCheShop) {
             // Chè chỉ từ 12.000đ - 20.000đ / ly (bình quân 16.000đ)
             perPersonDining = (pMin >= 10000 && pMin <= 25000) ? pMin : 16000L;
-            activityDesc = "Thưởng thức các loại chè đặc sản nức tiếng thanh mát, ngọt dịu (giá chỉ từ 12.000đ – 20.000đ/ly).";
-            timeSlotReason = "Khung giờ trưa (" + actualLunchStart.format(TIME_FMT) + " – " + actualLunchEnd.format(TIME_FMT) + ") tráng miệng thanh mát với ly chè ngọt lành giải nhiệt cực đã.";
-            whyVisitReason = "Thương hiệu chè trứ danh với hàng chục món chè cung đình và dân dã (chè bột lọc bọc heo quay, chè hạt sen, chè môn sáp...) chuẩn vị truyền thống (12k - 20k/ly).";
+            activityDesc =
+                "Thưởng thức các loại chè đặc sản nức tiếng thanh mát, ngọt dịu (giá chỉ từ 12.000đ – 20.000đ/ly).";
+            timeSlotReason =
+                "Khung giờ trưa ("
+                    + actualLunchStart.format(TIME_FMT)
+                    + " – "
+                    + actualLunchEnd.format(TIME_FMT)
+                    + ") tráng miệng thanh mát với ly chè ngọt lành giải nhiệt cực đã.";
+            whyVisitReason =
+                "Thương hiệu chè trứ danh với hàng chục món chè cung đình và dân dã (chè bột lọc bọc heo quay, chè hạt sen, chè môn sáp...) chuẩn vị truyền thống (12k - 20k/ly).";
           } else if (isDrinkShop) {
             perPersonDining = (pMin > 0 && pMin <= 45000) ? pMin : 30000L;
             activityDesc = "Nghỉ chân thưởng thức cà phê, thức uống đặc sản và thư giãn giữa ngày.";
@@ -687,8 +710,19 @@ public final class TravelScheduler {
 
     for (DestinationSummary cand : pool) {
       if (usedIds.contains(cand.id())) continue;
-      String text = ((cand.name() != null ? cand.name() : "") + " " + (cand.categoryName() != null ? cand.categoryName() : "")).toLowerCase(Locale.ROOT);
-      boolean isFood = text.contains("ẩm thực") || text.contains("chợ") || text.contains("quán") || text.contains("bún") || text.contains("cơm") || text.contains("bánh") || text.contains("chè");
+      String text =
+          ((cand.name() != null ? cand.name() : "")
+                  + " "
+                  + (cand.categoryName() != null ? cand.categoryName() : ""))
+              .toLowerCase(Locale.ROOT);
+      boolean isFood =
+          text.contains("ẩm thực")
+              || text.contains("chợ")
+              || text.contains("quán")
+              || text.contains("bún")
+              || text.contains("cơm")
+              || text.contains("bánh")
+              || text.contains("chè");
       if (!isFood) continue;
 
       OpeningHoursHelper.ScheduleWindow window =
@@ -705,7 +739,10 @@ public final class TravelScheduler {
       if (text.contains("chè") || text.contains("cafe") || text.contains("trà")) {
         score += 35.0; // Ưu tiên các món ăn no chính (cơm, bún, bánh...) cho bữa trưa trước
       }
-      if (text.contains("cơm") || text.contains("bún") || text.contains("phở") || text.contains("bánh")) {
+      if (text.contains("cơm")
+          || text.contains("bún")
+          || text.contains("phở")
+          || text.contains("bánh")) {
         score -= 15.0; // Ưu tiên các món ăn no chính
       }
 
