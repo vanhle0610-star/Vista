@@ -3,7 +3,6 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "dependencies": {
-    "@expo/ui": "~57.0.25",
     "@hookform/resolvers": "^5.9.1",
     "@maplibre/maplibre-react-native": "^11.5.0",
     "@tanstack/react-query": "^5.104.3",

@@ -140,8 +140,12 @@ export default function NativeMap({
             <View
               accessible
               accessibilityLabel="Vị trí của bạn"
-              style={styles.user}
-            />
+              style={styles.userHaloContainer}
+              pointerEvents="none"
+            >
+              <View style={styles.userAccuracyCircle} />
+              <View style={styles.userDot} />
+            </View>
           </ViewAnnotation>
         )}
         {route.length > 1 && (
@@ -198,13 +202,16 @@ export default function NativeMap({
 const styles = StyleSheet.create({
   attribution: {
     position: 'absolute',
-    left: 6,
-    bottom: 6,
-    paddingHorizontal: 4,
-    paddingVertical: 2,
-    backgroundColor: '#ffffffec',
+    left: 8,
+    bottom: 74,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    backgroundColor: 'rgba(255, 255, 255, 0.88)',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
-  attributionText: { fontSize: 10, color: '#17324d' },
+  attributionText: { fontSize: 10, color: '#17324d', fontWeight: '500' },
   container: {
     minHeight: 320,
     flex: 1,
@@ -230,13 +237,46 @@ const styles = StyleSheet.create({
     borderColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 4,
   },
   selected: {
     backgroundColor: tokens.colors.primaryDark,
     borderColor: tokens.colors.cyan,
     borderWidth: 4,
   },
-  pinText: { color: '#fff' },
+  pinText: { color: '#fff', fontSize: 13 },
+  userHaloContainer: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  userAccuracyCircle: {
+    position: 'absolute',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(2, 132, 199, 0.22)',
+    borderWidth: 1,
+    borderColor: 'rgba(2, 132, 199, 0.45)',
+  },
+  userDot: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#0284C7',
+    borderWidth: 2.5,
+    borderColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+    elevation: 4,
+  },
   user: {
     width: 20,
     height: 20,

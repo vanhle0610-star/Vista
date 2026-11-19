@@ -18,8 +18,9 @@ import { ItineraryTimeline } from '../../features/itinerary/components/Itinerary
 import { ProposalList } from '../../features/voting/components/ProposalList';
 import { CalendarIcon, WalletIcon } from '../../components/icons/StitchIcons';
 import { authStorage } from '@/services/auth/authStorage';
+import { TripSafetyTools } from '@/features/safety';
 
-type TabKey = 'ITINERARY' | 'VOTING' | 'MEMBERS';
+type TabKey = 'ITINERARY' | 'VOTING' | 'MEMBERS' | 'SAFETY';
 
 export default function TripDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -207,6 +208,20 @@ export default function TripDetailScreen() {
             Thành viên ({trip?.members?.length || 1})
           </Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.tabItem, activeTab === 'SAFETY' && styles.tabItemActive]}
+          onPress={() => setActiveTab('SAFETY')}
+        >
+          <Text
+            style={[
+              styles.tabItemText,
+              activeTab === 'SAFETY' && styles.tabItemTextActive,
+            ]}
+          >
+            An toàn
+          </Text>
+        </TouchableOpacity>
       </View>
 
       {/* Tab Content */}
@@ -230,6 +245,11 @@ export default function TripDetailScreen() {
               refetchProposals();
               refetchTrip();
             }}
+          />
+        ) : activeTab === 'SAFETY' ? (
+          <TripSafetyTools
+            tripId={id as string}
+            isOwner={trip?.members?.some((m) => m.role === 'OWNER')}
           />
         ) : (
           <ScrollView contentContainerStyle={styles.membersContainer}>
