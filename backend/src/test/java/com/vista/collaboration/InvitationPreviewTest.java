@@ -17,6 +17,8 @@ import com.vista.trip.application.TripAccessService;
 import com.vista.trip.domain.TripEntity;
 import com.vista.trip.domain.TripMemberRepository;
 import com.vista.trip.domain.TripRepository;
+import com.vista.user.domain.UserEntity;
+import com.vista.user.infrastructure.UserRepository;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -29,7 +31,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * W4-TV3-03: Test luồng deep link / nhập mã mời. - previewInvitation: xem trước thông tin chuyến đi
@@ -43,6 +47,7 @@ class InvitationPreviewTest {
   @Mock private TripRepository tripRepository;
   @Mock private TripMemberRepository tripMemberRepository;
   @Mock private TripAccessService tripAccessService;
+  @Mock private UserRepository userRepository;
 
   @InjectMocks private InvitationService invitationService;
 
@@ -126,6 +131,8 @@ class InvitationPreviewTest {
   @Test
   @DisplayName("W4-03 Tài khoản INVITEE accept lời mời qua token → thành công (ACCEPTED)")
   void acceptInvitation_byInvitee_succeeds() {
+    UserEntity mockUser = new UserEntity(EMAIL, "hash", "Invitee");
+    when(userRepository.findById(INVITEE_ID)).thenReturn(Optional.of(mockUser));
     when(invitationRepository.findByTokenHash(TOKEN_HASH))
         .thenReturn(Optional.of(pendingInvitation));
     when(tripRepository.findById(TRIP_ID)).thenReturn(Optional.of(trip));
@@ -140,19 +147,17 @@ class InvitationPreviewTest {
   }
 
   @Test
-  @DisplayName("W4-03 Tài khoản OWNER accept lời mời của người khác → thành công (không bị chặn)")
-  void acceptInvitation_byDifferentAccount_succeeds() {
+  @DisplayName("W7-01 Tài khoản khác accept lời mời của người khác → 403 Forbidden")
+  void acceptInvitation_byDifferentAccount_throws403() {
     UUID anotherUser = UUID.randomUUID();
+    UserEntity differentUser = new UserEntity("other@domain.com", "hash", "Other User");
     when(invitationRepository.findByTokenHash(TOKEN_HASH))
         .thenReturn(Optional.of(pendingInvitation));
-    when(tripRepository.findById(TRIP_ID)).thenReturn(Optional.of(trip));
-    when(tripMemberRepository.findByTripIdAndUserId(TRIP_ID, anotherUser))
-        .thenReturn(Optional.empty());
-    when(tripMemberRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
-    when(invitationRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+    when(userRepository.findById(anotherUser)).thenReturn(Optional.of(differentUser));
 
-    InvitationResponse response = invitationService.acceptInvitation(RAW_TOKEN, anotherUser);
-    assertThat(response.status()).isEqualTo(InvitationStatus.ACCEPTED);
+    assertThatThrownBy(() -> invitationService.acceptInvitation(RAW_TOKEN, anotherUser))
+        .isInstanceOf(ResponseStatusException.class)
+        .matches(ex -> ((ResponseStatusException) ex).getStatusCode() == HttpStatus.FORBIDDEN);
   }
 
   @Test

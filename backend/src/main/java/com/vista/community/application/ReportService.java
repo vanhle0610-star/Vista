@@ -56,10 +56,16 @@ public class ReportService {
     Objects.requireNonNull(postId, "postId must not be null");
 
     // 1. Kiểm tra bài viết có tồn tại và chưa bị tác giả xóa không
-    var postRows = db.queryForList("SELECT id, status, deleted_at FROM posts WHERE id = ?", postId);
+    var postRows = db.queryForList("SELECT id, author_id, status, deleted_at FROM posts WHERE id = ?", postId);
     if (postRows.isEmpty() || postRows.getFirst().get("deleted_at") != null) {
       throw of(
           NOT_FOUND, "POST_NOT_FOUND", "Không tìm thấy bài viết cần báo cáo hoặc bài đã bị xóa.");
+    }
+
+    // 1.1 Không cho phép tác giả tự báo cáo bài viết của chính mình
+    Object authorIdVal = postRows.getFirst().get("author_id");
+    if (authorIdVal != null && reporterId.toString().equalsIgnoreCase(authorIdVal.toString())) {
+      throw of(BAD_REQUEST, "SELF_REPORT_NOT_ALLOWED", "Bạn không thể tự báo cáo bài viết của chính mình.");
     }
 
     // 2. Kiểm tra chống spam báo cáo lặp từ cùng một người dùng

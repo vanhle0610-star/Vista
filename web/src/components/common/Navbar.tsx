@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
+import { apiRequest } from '@/lib/api';
 import styles from './Navbar.module.css';
 
 export interface NavbarProps {
@@ -32,13 +33,15 @@ export interface IncomingInvitation {
   id: string;
   tripId: string;
   tripTitle?: string;
+  destinationSummary?: string;
   destination?: string;
   startDate?: string;
   endDate?: string;
   inviterEmail?: string;
   inviterName?: string;
-  inviteeEmail: string;
-  token: string;
+  inviterAvatar?: string;
+  inviteeEmail?: string;
+  token?: string;
   status: 'PENDING' | 'ACCEPTED' | 'REVOKED' | 'EXPIRED';
   expiresAt?: string;
   createdAt?: string;
@@ -92,13 +95,10 @@ export function Navbar({
   useEffect(() => {
     const resolveTreasuryLink = () => {
       try {
-        const stored = localStorage.getItem('vista_custom_trips');
-        if (stored) {
-          const trips = JSON.parse(stored);
-          if (Array.isArray(trips) && trips.length > 0 && trips[0]?.id) {
-            setTreasuryHref(`/trips/${trips[0].id}/treasury`);
-            return;
-          }
+        const lastTripId = localStorage.getItem('vista_last_trip_id');
+        if (lastTripId && /^[0-9a-f-]{36}$/i.test(lastTripId)) {
+          setTreasuryHref(`/trips/${lastTripId}/treasury`);
+          return;
         }
       } catch {}
       setTreasuryHref('/trips');
@@ -147,39 +147,35 @@ export function Navbar({
     };
   }, []);
 
-  // Poll and listen for incoming invitations for currentUser in real-time
+  // Poll and listen for incoming invitations for currentUser directly from Spring Boot Database
   useEffect(() => {
     if (!currentUser?.email) {
       setIncomingInvitations([]);
       return;
     }
-    const email = currentUser.email.trim().toLowerCase();
 
     const fetchInvites = async () => {
       try {
-        const res = await fetch(`/api/invitations?email=${encodeURIComponent(email)}`);
-        if (!res.ok) return;
-        const list = await res.json();
+        const token = localStorage.getItem('vista_token');
+        if (!token) {
+          setIncomingInvitations([]);
+          return;
+        }
+        const list = await apiRequest<IncomingInvitation[]>('/invitations/my-pending');
         if (Array.isArray(list)) {
-          const pending = list.filter(
-            (inv: IncomingInvitation) =>
-              inv.inviteeEmail &&
-              inv.inviteeEmail.toLowerCase() === email &&
-              inv.status === 'PENDING'
-          );
-
           // If a new invitation arrives that wasn't previously known, trigger toast
-          pending.forEach((p) => {
-            if (!knownTokensRef.current.has(p.token)) {
-              knownTokensRef.current.add(p.token);
+          list.forEach((p) => {
+            const key = p.id;
+            if (!knownTokensRef.current.has(key)) {
+              knownTokensRef.current.add(key);
               setActiveToast(p);
               setTimeout(() => {
-                setActiveToast((curr) => (curr?.token === p.token ? null : curr));
+                setActiveToast((curr) => (curr?.id === p.id ? null : curr));
               }, 7000);
             }
           });
 
-          setIncomingInvitations(pending);
+          setIncomingInvitations(list);
         }
       } catch {
         // silent
@@ -187,7 +183,7 @@ export function Navbar({
     };
 
     fetchInvites();
-    const interval = setInterval(fetchInvites, 3500);
+    const interval = setInterval(fetchInvites, 5000);
 
     const onCustomChange = () => fetchInvites();
     window.addEventListener('vista-invitations-change', onCustomChange);
@@ -203,71 +199,22 @@ export function Navbar({
   }, [currentUser?.email]);
 
   const handleAcceptInvite = async (inv: IncomingInvitation) => {
-    setIsProcessingAction(inv.token);
+    setIsProcessingAction(inv.id);
     try {
-      await fetch('/api/invitations', {
+      await apiRequest(`/invitations/${inv.id}/accept-by-id`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: inv.token, status: 'ACCEPTED' }),
       });
 
-      const currentUserMember = {
-        name: currentUser?.displayName || currentUser?.email?.split('@')[0] || 'Thành viên',
-        avatar: (currentUser?.displayName || currentUser?.email || 'TV').slice(0, 2).toUpperCase(),
-        color: '#10B981',
-        role: 'Thành viên',
-        userId: currentUser?.id || 'member-stub',
-      };
-
-      const newJoinedTrip = {
-        id: inv.tripId || `trip-joined-${Date.now()}`,
-        title: inv.tripTitle || 'Chuyến đi tham gia qua lời mời',
-        destination: inv.destination || 'Việt Nam',
-        durationBadge: '4 ngày',
-        startDate: inv.startDate || 'Sắp tới',
-        endDate: inv.endDate || '2026',
-        status: 'PLANNING',
-        role: 'MEMBER',
-        budgetTotal: 15000000,
-        budgetSpent: 0,
-        progressPercent: 20,
-        members: [
-          {
-            name: inv.inviterName || 'Trưởng nhóm',
-            avatar: (inv.inviterName || 'TN').slice(0, 2).toUpperCase(),
-            color: '#0070BA',
-            role: 'Trưởng nhóm',
-            userId: 'owner-stub',
-          },
-          currentUserMember,
-        ],
-        image: 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=1200&q=80',
-        treasuryPath: `/trips/${inv.tripId || 'demo-danang-2026'}/treasury`,
-        alertType: 'BLUE',
-        alertText: `Bạn đã tham gia qua lời mời từ ${inv.inviterName || 'Trưởng nhóm'}`,
-        quickActions: [
-          { label: 'Lịch trình', actionType: 'PLAN' },
-          { label: 'Thành viên', actionType: 'MEMBERS' },
-        ],
-      };
-
-      try {
-        const stored = localStorage.getItem('vista_custom_trips');
-        const list = stored ? JSON.parse(stored) : [];
-        if (!list.some((t: any) => t.id === newJoinedTrip.id)) {
-          list.unshift(newJoinedTrip);
-          localStorage.setItem('vista_custom_trips', JSON.stringify(list));
-        }
-      } catch {}
-
-      setIncomingInvitations((prev) => prev.filter((i) => i.token !== inv.token));
+      setIncomingInvitations((prev) => prev.filter((i) => i.id !== inv.id));
       setNotificationsOpen(false);
       setActiveToast(null);
 
-      window.dispatchEvent(new CustomEvent('vista-invitations-change'));
-      window.dispatchEvent(new Event('storage'));
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('vista_last_trip_id', inv.tripId);
+        window.dispatchEvent(new CustomEvent('vista-trips-change'));
+      }
 
-      router.push(`/trips/${newJoinedTrip.id}`);
+      router.push(`/trips/${inv.tripId}`);
     } catch (err) {
       console.error('Accept invite error:', err);
     } finally {
@@ -276,15 +223,15 @@ export function Navbar({
   };
 
   const handleDeclineInvite = async (inv: IncomingInvitation) => {
-    setIsProcessingAction(inv.token);
+    setIsProcessingAction(inv.id);
     try {
-      await fetch('/api/invitations', {
+      await apiRequest(`/invitations/${inv.id}/decline-by-id`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: inv.token, status: 'REVOKED' }),
       });
-      setIncomingInvitations((prev) => prev.filter((i) => i.token !== inv.token));
-      setActiveToast(null);
+      setIncomingInvitations((prev) => prev.filter((i) => i.id !== inv.id));
+      if (activeToast?.id === inv.id) {
+        setActiveToast(null);
+      }
       window.dispatchEvent(new CustomEvent('vista-invitations-change'));
     } catch (err) {
       console.error('Decline invite error:', err);
@@ -541,7 +488,7 @@ export function Navbar({
                       </div>
                     ) : (
                       incomingInvitations.map((inv) => (
-                        <div key={inv.token} className={styles.notificationItem}>
+                        <div key={inv.id} className={styles.notificationItem}>
                           <div className={styles.notificationItemHeader}>
                             <div className={styles.notificationTripIcon}>✈️</div>
                             <div className={styles.notificationTripInfo}>
@@ -552,9 +499,9 @@ export function Navbar({
                                 Người mời: <strong style={{ color: '#0284C7' }}>{inv.inviterName || inv.inviterEmail || 'Trưởng nhóm'}</strong>
                               </div>
                               <div className={styles.notificationMeta}>
-                                <span>📍 {inv.destination || 'Việt Nam'}</span>
+                                <span>📍 {inv.destinationSummary || inv.destination || 'Việt Nam'}</span>
                                 <span>•</span>
-                                <span>⏳ {inv.expiresAt || 'Trong 7 ngày'}</span>
+                                <span>⏳ {inv.expiresAt ? new Date(inv.expiresAt).toLocaleDateString('vi-VN') : 'Trong 7 ngày'}</span>
                               </div>
                             </div>
                           </div>
@@ -563,21 +510,21 @@ export function Navbar({
                             <button
                               type="button"
                               className={styles.btnAcceptInvite}
-                              disabled={isProcessingAction === inv.token}
+                              disabled={isProcessingAction === inv.id}
                               onClick={() => handleAcceptInvite(inv)}
                             >
-                              <span>{isProcessingAction === inv.token ? 'Đang vào nhóm...' : '✓ Chấp nhận'}</span>
+                              <span>{isProcessingAction === inv.id ? 'Đang vào nhóm...' : '✓ Chấp nhận'}</span>
                             </button>
                             <button
                               type="button"
                               className={styles.btnDeclineInvite}
-                              disabled={isProcessingAction === inv.token}
+                              disabled={isProcessingAction === inv.id}
                               onClick={() => handleDeclineInvite(inv)}
                             >
                               Từ chối
                             </button>
                             <Link
-                              href={`/invitations/${inv.token}`}
+                              href={`/trips/${inv.tripId}`}
                               onClick={() => setNotificationsOpen(false)}
                               style={{
                                 fontSize: '11.5px',
@@ -880,7 +827,7 @@ export function Navbar({
             </button>
           </div>
           <p style={{ margin: '0 0 12px', fontSize: '12.5px', color: '#475569', lineHeight: '1.45' }}>
-            <strong>{activeToast.inviterName || activeToast.inviterEmail || 'Trưởng nhóm'}</strong> vừa mời bạn tham gia <strong>"{activeToast.tripTitle || 'Khám phá chuyến đi'}"</strong> ({activeToast.destination || 'Việt Nam'}).
+            <strong>{activeToast.inviterName || activeToast.inviterEmail || 'Trưởng nhóm'}</strong> vừa mời bạn tham gia <strong>"{activeToast.tripTitle || 'Khám phá chuyến đi'}"</strong> ({activeToast.destinationSummary || activeToast.destination || 'Việt Nam'}).
           </p>
           <div style={{ display: 'flex', gap: '8px' }}>
             <button

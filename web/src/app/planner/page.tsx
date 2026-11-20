@@ -9,7 +9,7 @@ import { apiRequest } from '@/lib/api';
 import { SkeletonAiGenerating, SkeletonBox } from '@/components/common/Skeleton';
 import type { DestinationMarker, RouteStop, MultiDayRoute } from '@/features/map-location/types';
 import { computeVistaRoute } from '@/features/map-location/routing/routes';
-import { getRealPlacesByProvince, type RealPlace } from '@/data/realDestinationsData';
+import { getRealPlacesByProvince, REAL_VIETNAM_PLACES, type RealPlace } from '@/data/realDestinationsData';
 import {
   VIETNAM_63_PROVINCES,
   matchProvince,
@@ -66,7 +66,9 @@ import {
   Car,
   Bike,
   Footprints,
+  SlidersHorizontal,
 } from 'lucide-react';
+import { PlannerSetupView } from './components/PlannerSetupView';
 import {
   getPlanHistory,
   savePlanToHistory,
@@ -766,17 +768,71 @@ function formatVietnameseDateStr(startDateIso: string, dayOffset: number): strin
 function pickAuthenticPlacePhoto(
   preferredUrl: string | undefined | null,
   places: RealPlace[],
-  indexSeed: number,
-  provinceFallback: string
+  placeNameOrMatchedPlace: string | RealPlace | undefined,
+  _provinceFallbackIgnored?: string,
+  usedPhotos?: Set<string>
 ): string {
-  const isGenuine = (url?: string | null): url is string =>
-    Boolean(url && !url.includes('unsplash.com') && !url.includes('location_map.svg'));
-  if (isGenuine(preferredUrl)) return preferredUrl;
-  const realPool = places.filter((p) => isGenuine(p.image));
-  if (realPool.length > 0) {
-    return realPool[Math.abs(indexSeed) % realPool.length].image;
+  const rawPref = typeof preferredUrl === 'string' ? preferredUrl.trim() : '';
+
+  const isInvalidOrGeneric = (url: string): boolean => {
+    if (!url) return true;
+    if (url.includes('unsplash.com')) return true;
+    if (url.includes('location_map.svg') || url.includes('relief_location_map.svg')) return true;
+    if (
+      url.includes('hue_real.jpg') ||
+      url.includes('danang_real.jpg') ||
+      url.includes('hanoi_real.jpg') ||
+      url.includes('dalat_real.jpg') ||
+      url.includes('halong_real.jpg') ||
+      url.includes('vietnam_panoramic_day.jpg') ||
+      url.includes('saigon_south_day.jpg') ||
+      url.includes('tay_nguyen_highlands.jpg') ||
+      url.includes('danang_bana_night.jpg')
+    ) {
+      return true;
+    }
+    return false;
+  };
+
+  // 1. If preferredUrl is authentic and genuine
+  if (rawPref && !isInvalidOrGeneric(rawPref)) {
+    if (!usedPhotos || !usedPhotos.has(rawPref)) {
+      usedPhotos?.add(rawPref);
+      return rawPref;
+    }
   }
-  return provinceFallback;
+
+  // 2. If a specific matched place was provided and has a genuine image
+  if (placeNameOrMatchedPlace && typeof placeNameOrMatchedPlace === 'object' && placeNameOrMatchedPlace.image) {
+    const pImg = placeNameOrMatchedPlace.image.trim();
+    if (!isInvalidOrGeneric(pImg) && (!usedPhotos || !usedPhotos.has(pImg))) {
+      usedPhotos?.add(pImg);
+      return pImg;
+    }
+  }
+
+  // 3. If placeName is a string, check if there is an exact name match in real places
+  if (typeof placeNameOrMatchedPlace === 'string' && placeNameOrMatchedPlace.trim()) {
+    const q = placeNameOrMatchedPlace.toLowerCase().trim();
+    const exact =
+      places.find((p) => {
+        const pn = p.name.toLowerCase().trim();
+        return pn === q || pn.includes(q) || q.includes(pn);
+      }) ||
+      REAL_VIETNAM_PLACES.find((p) => {
+        const pn = p.name.toLowerCase().trim();
+        return pn === q || pn.includes(q) || q.includes(pn);
+      });
+    if (exact && exact.image && !isInvalidOrGeneric(exact.image)) {
+      if (!usedPhotos || !usedPhotos.has(exact.image)) {
+        usedPhotos?.add(exact.image);
+        return exact.image;
+      }
+    }
+  }
+
+  // 4. "ko có ảnh thì ko để ảnh thôi đừng bỏ đại" -> Tuyệt đối không gán đại ảnh khác!
+  return '';
 }
 
 function generateDistinctDayPlan(
@@ -899,6 +955,21 @@ function generateDistinctDayPlan(
       const aCost = afternoonPlace.priceMin || 60000;
       const eCost = eveningPlace.priceMin || 120000;
 
+      const isAuthenticPlacePhoto = (url?: string) =>
+        Boolean(
+          url &&
+          !url.includes('unsplash.com') &&
+          !url.includes('location_map.svg') &&
+          !url.includes('danang_real.jpg') &&
+          !url.includes('hue_real.jpg') &&
+          !url.includes('hanoi_real.jpg') &&
+          !url.includes('dalat_real.jpg') &&
+          !url.includes('vietnam_panoramic_day.jpg') &&
+          !url.includes('saigon_south_day.jpg') &&
+          !url.includes('tay_nguyen_highlands.jpg') &&
+          !url.includes('danang_bana_night.jpg')
+        );
+
       activities = [
         {
           id: `act-${d}-1`,
@@ -911,7 +982,7 @@ function generateDistinctDayPlan(
           costVnd: mCost,
           costLabel: mCost === 0 ? 'Miễn phí' : `${new Intl.NumberFormat('vi-VN').format(mCost)}đ / người`,
           tip: 'Nên khởi hành sớm vào buổi sáng để tận hưởng ánh sáng đẹp và không khí trong lành.',
-          photoUrl: photoUrl || 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_panoramic_day.jpg',
+          photoUrl: isAuthenticPlacePhoto(morningPlace.image) ? morningPlace.image : '',
           transferTimeAfter: 'Di chuyển khoảng 15 phút',
           latitude: morningPlace.latitude,
           longitude: morningPlace.longitude,
@@ -926,7 +997,7 @@ function generateDistinctDayPlan(
           location: `${noonPlace.name}, ${destName}`,
           costVnd: nCost,
           costLabel: isNoonChe ? `~${new Intl.NumberFormat('vi-VN').format(nCost)}đ (12k–20k/ly)` : `${new Intl.NumberFormat('vi-VN').format(nCost)}đ / nhóm`,
-          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/saigon_south_day.jpg',
+          photoUrl: isAuthenticPlacePhoto(noonPlace.image) ? noonPlace.image : '',
           transferTimeAfter: 'Di chuyển khoảng 15 phút',
           latitude: noonPlace.latitude,
           longitude: noonPlace.longitude,
@@ -942,7 +1013,7 @@ function generateDistinctDayPlan(
           costVnd: aCost,
           costLabel: aCost === 0 ? 'Miễn phí' : `${new Intl.NumberFormat('vi-VN').format(aCost)}đ / người`,
           tip: 'Không gian lý tưởng để chụp ảnh lưu niệm và tìm hiểu văn hóa bản xứ.',
-          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/tay_nguyen_highlands.jpg',
+          photoUrl: isAuthenticPlacePhoto(afternoonPlace.image) ? afternoonPlace.image : '',
           transferTimeAfter: 'Di chuyển khoảng 20 phút',
           latitude: afternoonPlace.latitude,
           longitude: afternoonPlace.longitude,
@@ -957,7 +1028,7 @@ function generateDistinctDayPlan(
           location: `${eveningPlace.name}, ${destName}`,
           costVnd: eCost,
           costLabel: eCost === 0 ? 'Miễn phí' : `${new Intl.NumberFormat('vi-VN').format(eCost)}đ / nhóm`,
-          photoUrl: 'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_bana_night.jpg',
+          photoUrl: isAuthenticPlacePhoto(eveningPlace.image) ? eveningPlace.image : '',
           latitude: eveningPlace.latitude,
           longitude: eveningPlace.longitude,
         },
@@ -1044,6 +1115,7 @@ export default function PlannerPage() {
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [hasPlanGenerated, setHasPlanGenerated] = useState<boolean>(false);
   const [showHistoryDrawer, setShowHistoryDrawer] = useState<boolean>(false);
+  const [showEditSettingsDrawer, setShowEditSettingsDrawer] = useState<boolean>(false);
   const [planHistoryList, setPlanHistoryList] = useState<PlanHistoryRecord[]>([]);
 
   useEffect(() => {
@@ -1074,7 +1146,7 @@ export default function PlannerPage() {
   }>({});
 
   // Preference Form Inputs
-  const [destination, setDestination] = useState<string>('Đà Nẵng');
+  const [destination, setDestination] = useState<string>('Hà Nội');
   const [planWarnings, setPlanWarnings] = useState<string[]>([]);
 
   const changeDestination = (newDest: string) => {
@@ -1134,7 +1206,7 @@ export default function PlannerPage() {
     }
   };
   const [duration, setDuration] = useState<string>('3n2d');
-  const [selectedStyles, setSelectedStyles] = useState<string[]>(['beach', 'cuisine']);
+  const [selectedStyles, setSelectedStyles] = useState<string[]>(['heritage', 'foodie', 'cafe_checkin']);
   const [showAllStyles, setShowAllStyles] = useState<boolean>(false);
 
   // Balanced styles: show top 6 by default, plus any item user currently selected
@@ -1391,68 +1463,67 @@ export default function PlannerPage() {
   const HERO_FEATURED = useMemo(
     () => [
       {
-        province: 'Đà Nẵng',
+        province: 'TP. Hồ Chí Minh',
         countryTag: 'Việt Nam',
-        title: 'Đà Nẵng',
-        subtitle: 'đang chờ bạn khám phá',
-        image:
-          'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_golden_bridge.jpg',
+        title: 'TP. Hồ Chí Minh',
+        subtitle: 'Khám phá Dinh Độc Lập · Nhà thờ Đức Bà Sài Gòn · Bưu điện Trung tâm',
+        image: '/destinations/dest-ff3fa74a.webp',
       },
       {
         province: 'Hà Nội',
         countryTag: 'Việt Nam',
         title: 'Hà Nội',
-        subtitle: 'nghìn năm văn hiến',
-        image:
-          'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/hanoi_real.jpg',
+        subtitle: 'Thủ đô nghìn năm văn hiến · 36 phố phường rêu phong',
+        image: '/destinations/dest-0098ba1b.webp',
+      },
+      {
+        province: 'Đà Nẵng',
+        countryTag: 'Việt Nam',
+        title: 'Đà Nẵng',
+        subtitle: 'Cầu Vàng Bà Nà Hills · Bán đảo Sơn Trà & Biển Mỹ Khê',
+        image: '/destinations/dest-9648da36.webp',
       },
       {
         province: 'Phú Quốc',
         countryTag: 'Việt Nam',
         title: 'Phú Quốc',
-        subtitle: 'thiên đường biển ngọc',
-        image:
-          'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/phuquoc_beach.jpg',
+        subtitle: 'Đảo ngọc thiên đường · Hoàng hôn Bãi Trường & ẩm thực biển',
+        image: '/destinations/dest-pq-chuon-chuon-bistro.webp',
       },
       {
         province: 'Hội An',
         countryTag: 'Việt Nam',
         title: 'Hội An',
-        subtitle: 'phố cổ đèn lồng lung linh',
-        image:
-          'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/hoian_ancient_town.jpg',
+        subtitle: 'Phố cổ đèn lồng lung linh · Sông Hoài thơ mộng',
+        image: '/destinations/dest-65f890a2.webp',
       },
       {
         province: 'Nha Trang (Khánh Hòa)',
         countryTag: 'Việt Nam',
         title: 'Nha Trang',
         subtitle: 'Nhà thờ Núi · Chùa Long Sơn · Biển đảo & đặc sản vịnh ngọc',
-        image:
-          'https://statics.vinpearl.com/nha%20tho%20da%2C%20nha%20tho%20nui%20nha%20trang_1681984462.jpg',
+        image: '/destinations/dest-ff3fa74a.webp',
       },
       {
         province: 'Đà Lạt (Lâm Đồng)',
         countryTag: 'Việt Nam',
         title: 'Đà Lạt',
         subtitle: 'Đồi chè Cầu Đất · Hồ Tuyền Lâm · Rừng thông sương mờ',
-        image:
-          'https://statics.vinpearl.com/doi-che-cau-dat-01_1688736872.jpg',
+        image: '/destinations/dest-9648da36.webp',
       },
       {
         province: 'Thừa Thiên Huế',
         countryTag: 'Việt Nam',
         title: 'Cố đô Huế',
         subtitle: 'Đại Nội · Chùa Thiên Mụ · Lăng Khải Định & Vịnh Lăng Cô',
-        image:
-          'https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/C%E1%BB%95ng_Ng%E1%BB%8D_M%C3%B4n_Hu%E1%BA%BF.jpg/800px-C%E1%BB%95ng_Ng%E1%BB%8D_M%C3%B4n_Hu%E1%BA%BF.jpg',
+        image: '/destinations/dest-0098ba1b.webp',
       },
       {
         province: 'Sa Pa',
         countryTag: 'Việt Nam',
         title: 'Sa Pa',
         subtitle: 'Đỉnh Fansipan · Bản Cát Cát · Sương mờ miền sơn cước',
-        image:
-          'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/sapa_real.jpg',
+        image: '/destinations/dest-27317922.webp',
       },
     ],
     []
@@ -1555,8 +1626,7 @@ export default function PlannerPage() {
           durationBadge: '3N2Đ',
           timeInfo: '3 ngày 2 đêm',
           destInfo: 'Đà Nẵng',
-          image:
-            'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/danang_real.jpg',
+          image: '/destinations/dest-9648da36.webp',
           styles: ['beach', 'culture'],
         },
         {
@@ -1568,8 +1638,7 @@ export default function PlannerPage() {
           durationBadge: '2N1Đ',
           timeInfo: '2 ngày 1 đêm',
           destInfo: 'Đà Nẵng',
-          image:
-            'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Da_Nang_Cathedral_2019.jpg/800px-Da_Nang_Cathedral_2019.jpg',
+          image: '/destinations/dest-1a812708.webp',
           styles: ['culture', 'cuisine'],
         },
         {
@@ -1581,8 +1650,7 @@ export default function PlannerPage() {
           durationBadge: '4N3Đ',
           timeInfo: '4 ngày 3 đêm',
           destInfo: 'Đà Nẵng',
-          image:
-            'https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/My_Khe_Beach%2C_Da_Nang.jpg/800px-My_Khe_Beach%2C_Da_Nang.jpg',
+          image: '/destinations/dest-65f890a2.webp',
           styles: ['culture', 'beach'],
         },
       ];
@@ -1598,8 +1666,7 @@ export default function PlannerPage() {
           durationBadge: '3N2Đ',
           timeInfo: '3 ngày 2 đêm',
           destInfo: 'Hà Nội',
-          image:
-            'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/ninhbinh_trangan.jpg',
+          image: '/destinations/dest-0098ba1b.webp',
           styles: ['culture', 'nature'],
         },
         {
@@ -1611,8 +1678,7 @@ export default function PlannerPage() {
           durationBadge: '2N1Đ',
           timeInfo: '2 ngày 1 đêm',
           destInfo: 'Hà Nội',
-          image:
-            'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/hanoi_real.jpg',
+          image: '/destinations/dest-27317922.webp',
           styles: ['culture', 'cuisine'],
         },
         {
@@ -1624,9 +1690,48 @@ export default function PlannerPage() {
           durationBadge: '4N3Đ',
           timeInfo: '4 ngày 3 đêm',
           destInfo: 'Hà Nội',
-          image:
-            'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/halong_bay.jpg',
+          image: '/destinations/dest-27f91bc9.webp',
           styles: ['nature', 'culture'],
+        },
+      ];
+    }
+    if (dLower.includes('hồ chí minh') || dLower.includes('ho chi minh') || dLower.includes('sài gòn') || dLower.includes('saigon')) {
+      return [
+        {
+          id: 'hcm-1',
+          title: 'Dinh Độc Lập – Nhà thờ Đức Bà Sài Gòn',
+          subtitle: 'Tham quan di tích nổi tiếng · Check-in Dinh Độc Lập & đặc sản trưa',
+          themeBadge: '🏛️ Biểu tượng & Văn hóa',
+          duration: '3n2d',
+          durationBadge: '3N2Đ',
+          timeInfo: '3 ngày 2 đêm',
+          destInfo: 'TP. Hồ Chí Minh',
+          image: '/destinations/dest-ff3fa74a.webp',
+          styles: ['culture', 'photo'],
+        },
+        {
+          id: 'hcm-2',
+          title: 'Food Tour Chợ Bến Thành · Phố ẩm thực Vĩnh Khánh',
+          subtitle: 'Thưởng thức đặc sản bản địa tại Chợ Bến Thành kết hợp dạo chơi cuối tuần',
+          themeBadge: '🍜 Food Tour Bản Địa',
+          duration: '2n1d',
+          durationBadge: '2N1Đ',
+          timeInfo: '2 ngày 1 đêm',
+          destInfo: 'TP. Hồ Chí Minh',
+          image: '/destinations/dest-e57463fe.webp',
+          styles: ['cuisine', 'culture'],
+        },
+        {
+          id: 'hcm-3',
+          title: 'Bưu điện Trung tâm Sài Gòn · Nghỉ dưỡng & Chill TP. Hồ Chí Minh',
+          subtitle: 'Lịch trình thảnh thơi, cà phê chiều & góc sống ảo ít người biết',
+          themeBadge: '🌿 Thảnh thơi & Check-in',
+          duration: '4n3d',
+          durationBadge: '4N3Đ',
+          timeInfo: '4 ngày 3 đêm',
+          destInfo: 'TP. Hồ Chí Minh',
+          image: '/destinations/dest-3950cfbf.webp',
+          styles: ['photo', 'entertainment'],
         },
       ];
     }
@@ -1634,41 +1739,38 @@ export default function PlannerPage() {
       return [
         {
           id: 'pq-1',
-          title: 'Thiên đường biển đảo & Sunset Sanato',
-          subtitle: 'Bãi Sao · Hoàng hôn Sunset Sanato · Chợ đêm Dương Đông',
+          title: 'Thiên đường biển đảo & Chuồn Chuồn Bistro',
+          subtitle: 'Bãi Sao · Hoàng hôn view đỉnh đồi · Chợ đêm Dương Đông',
           themeBadge: '🌅 Hoàng hôn & Biển',
           duration: '3n2d',
           durationBadge: '3N2Đ',
           timeInfo: '3 ngày 2 đêm',
           destInfo: 'Phú Quốc (Kiên Giang)',
-          image:
-            'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/phuquoc_beach.jpg',
+          image: '/destinations/dest-pq-chuon-chuon-bistro.webp',
           styles: ['beach', 'photo'],
         },
         {
           id: 'pq-2',
-          title: 'Grand World & Vinpearl Safari cuối tuần',
-          subtitle: 'Thành phố không ngủ · Vườn thú mở & ẩm thực hải sản',
-          themeBadge: '🎡 Giải trí & Gia đình',
+          title: 'OCSEN Beach Bar & Bãi Trường cuối tuần',
+          subtitle: 'Gối lười ngắm hoàng hôn · Đốt lửa trại & hải sản tươi',
+          themeBadge: '🎡 Giải trí & Biển',
           duration: '2n1d',
           durationBadge: '2N1Đ',
           timeInfo: '2 ngày 1 đêm',
           destInfo: 'Phú Quốc (Kiên Giang)',
-          image:
-            'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/phuquoc_real.jpg',
+          image: '/destinations/dest-pq-ocsen-beach-bar.webp',
           styles: ['entertainment', 'beach'],
         },
         {
           id: 'pq-3',
-          title: 'Nam đảo · Cáp treo Hòn Thơm & Bãi Khem',
-          subtitle: 'Cáp treo vượt biển · Lặn ngắm san hô & nghỉ dưỡng',
-          themeBadge: '🏝️ Tour 4 Đảo',
+          title: 'Nam đảo · Sailing Club & Bãi Khem',
+          subtitle: 'Beach club Địa Trung Hải · Lặn ngắm san hô & nghỉ dưỡng',
+          themeBadge: '🏝️ Nghỉ dưỡng cao cấp',
           duration: '4n3d',
           durationBadge: '4N3Đ',
           timeInfo: '4 ngày 3 đêm',
           destInfo: 'Phú Quốc (Kiên Giang)',
-          image:
-            'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/phuquoc_sunset_sanato.jpg',
+          image: '/destinations/dest-pq-sailing-club.webp',
           styles: ['beach', 'entertainment'],
         },
       ];
@@ -1680,17 +1782,18 @@ export default function PlannerPage() {
       return t.includes('ẩm thực') || t.includes('chợ') || t.includes('quán') || t.includes('nem') || t.includes('bún') || t.includes('cơm') || t.includes('bánh');
     };
     const isGenuineImg = (url?: string) =>
-      Boolean(url && !url.includes('unsplash.com') && !url.includes('location_map.svg') && !url.includes('danang_real.jpg'));
+      Boolean(url && url.startsWith('/destinations/') && !url.includes('location_map.svg'));
 
     const sightPlaces = provinceRealPlaces.filter((p) => !isFoodCat(p.category, p.name));
     const foodPlaces = provinceRealPlaces.filter((p) => isFoodCat(p.category, p.name));
 
     const usedImgs = new Set<string>();
     const fallbackGallery = [
-      'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_panoramic_day.jpg',
-      'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/hoian_ancient_town.jpg',
-      'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_lungcu_hero.jpg',
-      'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/hue_real.jpg',
+      '/destinations/dest-ff3fa74a.webp',
+      '/destinations/dest-0098ba1b.webp',
+      '/destinations/dest-9648da36.webp',
+      '/destinations/dest-27317922.webp',
+      '/destinations/dest-1a812708.webp',
     ];
 
     const pickUniqueImg = (candidates: RealPlace[]): string => {
@@ -1789,14 +1892,23 @@ export default function PlannerPage() {
       await Promise.resolve();
       if (typeof window !== 'undefined') {
         const params = new URLSearchParams(window.location.search);
-        if (params.get('clear') || params.get('reset')) {
+        if (params.get('clear') || params.get('reset') || params.get('cache')) {
           try {
-            localStorage.removeItem('vista_active_planner_state');
-            localStorage.removeItem('vista_saved_itineraries');
-            localStorage.removeItem('vista_planner_history');
-            localStorage.removeItem('vista_selected_province');
-            localStorage.removeItem('vista_custom_trips');
-            localStorage.removeItem('vista_last_trip_id');
+            const keysToRemove = [
+              'vista_active_planner_state',
+              'vista_saved_itineraries',
+              'vista_planner_history',
+              'vista_selected_province',
+              'vista_custom_trips',
+              'vista_last_trip_id',
+            ];
+            keysToRemove.forEach((k) => localStorage.removeItem(k));
+            Object.keys(localStorage).forEach((key) => {
+              if (key.startsWith('vista_') && !key.includes('token') && !key.includes('auth')) {
+                localStorage.removeItem(key);
+              }
+            });
+            sessionStorage.clear();
           } catch {}
           window.location.replace('/planner');
           return;
@@ -2391,8 +2503,7 @@ export default function PlannerPage() {
               photoUrl: pickAuthenticPlacePhoto(
                 a.photoUrl || matchedP?.image,
                 realPlacesForDest,
-                (d.dayNumber || 1) * 5 + actIdx,
-                activeDestObj.photo
+                matchedP || a.destinationName
               ),
               tip: a.tip || '',
               durationMin: a.durationMin,
@@ -2904,7 +3015,7 @@ export default function PlannerPage() {
         description: place.description,
         costLabel,
         costVnd: costVal,
-        photoUrl: pickAuthenticPlacePhoto(place.image, getRealPlacesByProvince(destination), i, activeDestObj.photo),
+        photoUrl: pickAuthenticPlacePhoto(place.image, getRealPlacesByProvince(destination), place),
         latitude: place.latitude,
         longitude: place.longitude,
         openingHours: place.openingHours,
@@ -3098,6 +3209,7 @@ export default function PlannerPage() {
 
       if (data && data.days && Array.isArray(data.days) && data.days.length > 0) {
         const responseDays = data.days as unknown as Record<string, unknown>[];
+        const tripUsedPhotos = new Set<string>();
         const transformedDays: DayPlan[] = responseDays.map((dayItem, idx: number) => {
           const dayNum = (dayItem.dayNumber as number) || idx + 1;
           const latOffset = (aIdx: number) => activeDestObj.lat + Math.sin(dayNum * 1.8 + aIdx * 1.2) * 0.02;
@@ -3238,11 +3350,18 @@ export default function PlannerPage() {
               }
             }
 
+            const preferredPhoto =
+              (act.photoUrl as string) ||
+              (act.photo_url as string) ||
+              (act.image_url as string) ||
+              (act.image as string) ||
+              matchedPlace?.image;
             const photoUrl = pickAuthenticPlacePhoto(
-              matchedPlace?.image,
+              preferredPhoto,
               realPlaces,
-              (dayNum - 1) * 5 + actIdx,
-              activeDestObj.photo
+              matchedPlace || placeTitle,
+              undefined,
+              tripUsedPhotos
             );
             const actLat = typeof act.latitude === 'number' ? act.latitude : (matchedPlace?.latitude || latOffset(actIdx));
             const actLng = typeof act.longitude === 'number' ? act.longitude : (matchedPlace?.longitude || lngOffset(actIdx));
@@ -3679,8 +3798,7 @@ export default function PlannerPage() {
               photoUrl: pickAuthenticPlacePhoto(
                 a.photoUrl,
                 getRealPlacesByProvince(destination),
-                (d.dayNumber || 1) * 5 + actIdx,
-                activeDestObj.photo
+                a.destinationName || a.title
               ),
               timeSlotReason: a.timeSlotReason || a.rationale || undefined,
               whyVisitReason: a.whyVisitReason || undefined,
@@ -4002,7 +4120,7 @@ export default function PlannerPage() {
             costVnd: costVal * peopleCount,
             costStatus: costVal === 0 ? 'FREE' : 'PAID',
             costLabel,
-            photoUrl: pickAuthenticPlacePhoto(bestCand.image, realPool, targetIdx, oldAct.photoUrl),
+            photoUrl: pickAuthenticPlacePhoto(bestCand.image, realPool, bestCand),
             latitude: bestCand.latitude || oldAct.latitude,
             longitude: bestCand.longitude || oldAct.longitude,
             whyVisitReason: customWhy,
@@ -4064,8 +4182,7 @@ export default function PlannerPage() {
           photoUrl: pickAuthenticPlacePhoto(
             suggestedDest.image,
             getRealPlacesByProvince(destination),
-            d.activities.length,
-            activeDestObj.photo
+            suggestedDest
           ),
           latitude: suggestedDest.latitude,
           longitude: suggestedDest.longitude,
@@ -4135,28 +4252,11 @@ export default function PlannerPage() {
       setSavedCount(list.length);
       setIsSaved(true);
 
-      // If linked to an existing trip, update that trip's itinerary and cost in vista_custom_trips
       if (linkedTripId) {
-        try {
-          const storedTrips = localStorage.getItem('vista_custom_trips');
-          if (storedTrips) {
-            const tripList: Array<{ id: string; itineraryDays?: DayPlan[]; budgetTotal?: number; alertText?: string }> =
-              JSON.parse(storedTrips);
-            const idx = tripList.findIndex((t) => t.id === linkedTripId);
-            if (idx !== -1) {
-              tripList[idx].itineraryDays = itineraryDays;
-              tripList[idx].budgetTotal = totalEstimatedCost;
-              tripList[idx].alertText = `Lịch trình đã được cập nhật (${itineraryDays.reduce((acc, d) => acc + d.activities.length, 0)} hoạt động)`;
-              localStorage.setItem('vista_custom_trips', JSON.stringify(tripList));
-            }
-          }
-        } catch {
-          // ignore
-        }
         triggerToast(
           isBackendTripId(linkedTripId)
             ? `Đã đồng bộ lịch trình chính thức vào chuyến đi "${linkedTripTitle}"!`
-            : `Đã lưu lịch trình vào chuyến đi cục bộ "${linkedTripTitle}"!`,
+            : `Đã lưu lịch trình vào chuyến đi "${linkedTripTitle}"!`,
         );
       } else {
         triggerToast(`Đã lưu lịch trình "${destination}" vào bộ sưu tập cá nhân.`);
@@ -4201,25 +4301,6 @@ export default function PlannerPage() {
         localStorage.setItem('vista_last_trip_id', realTripId);
         window.dispatchEvent(new CustomEvent('vista-trip-selected', { detail: realTripId }));
         window.dispatchEvent(new CustomEvent('vista_trip_changed', { detail: realTripId }));
-
-        try {
-          const storedTrips = localStorage.getItem('vista_custom_trips');
-          const customList = storedTrips ? JSON.parse(storedTrips) : [];
-          const newTripObj = {
-            id: realTripId,
-            title: tripTitle,
-            destination: destName,
-            startDate: startIso,
-            endDate: endIso,
-            itineraryDays,
-            budgetTotal: totalEstimatedCost || 15000000,
-            updatedAt: Date.now(),
-          };
-          const updatedList = [newTripObj, ...customList.filter((t: any) => t.id !== realTripId)];
-          localStorage.setItem('vista_custom_trips', JSON.stringify(updatedList));
-        } catch (e) {
-          console.warn('Failed to save to vista_custom_trips:', e);
-        }
       }
 
       setLinkedTripId(realTripId);
@@ -4327,8 +4408,7 @@ export default function PlannerPage() {
       photoUrl: pickAuthenticPlacePhoto(
         selectedSuggestedPlace?.image,
         getRealPlacesByProvince(destination),
-        0,
-        activeDestObj.photo
+        selectedSuggestedPlace || undefined
       ),
       latitude: selectedSuggestedPlace?.latitude,
       longitude: selectedSuggestedPlace?.longitude,
@@ -4358,45 +4438,6 @@ export default function PlannerPage() {
 
   return (
     <div className={styles.plannerPage}>
-      {/* Decorative Sky Plane & Flight Path (As shown in mockup) */}
-      <div className={styles.decorativeSkyPlane} aria-hidden="true">
-        <svg width="220" height="110" viewBox="0 0 220 110" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path
-            d="M10 85 C 60 95, 90 40, 130 65 C 160 85, 175 40, 195 25"
-            stroke="#93C5FD"
-            strokeWidth="2"
-            strokeDasharray="5 5"
-            strokeLinecap="round"
-          />
-          <path
-            d="M130 65 C 145 75, 155 70, 150 55 C 145 42, 132 50, 130 65"
-            stroke="#93C5FD"
-            strokeWidth="2"
-            strokeDasharray="4 4"
-            strokeLinecap="round"
-          />
-          <g transform="translate(192, 15) rotate(22)">
-            <path
-              d="M21 16 L28 10 L28 12 L23 16 L23 20 L28 22 L28 24 L21 21 L13 26 L12 24 L16 19 L16 16 L6 13 L6 10 L16 13 L16 8 L13 5 L13 3 L18 5 L21 16 Z"
-              fill="#0284C7"
-            />
-          </g>
-        </svg>
-      </div>
-
-      {/* Decorative Tropical Palms at bottom right */}
-      <div className={styles.decorativePalms} aria-hidden="true">
-        <svg width="260" height="200" viewBox="0 0 260 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M260 120 C 200 130, 160 170, 140 200 L260 200 Z" fill="#E0F2FE" opacity="0.6" />
-          <path d="M260 80 C 180 95, 130 150, 100 200 L260 200 Z" fill="#BAE6FD" opacity="0.4" />
-          <g stroke="#93C5FD" strokeWidth="2.5" strokeLinecap="round" opacity="0.7">
-            <path d="M260 150 Q 210 130 175 160 Q 210 145 260 150" fill="#BAE6FD" />
-            <path d="M260 120 Q 200 100 155 135 Q 195 115 260 120" fill="#BAE6FD" />
-            <path d="M260 90 Q 220 70 180 95 Q 215 80 260 90" fill="#93C5FD" />
-          </g>
-        </svg>
-      </div>
-
       {/* ─── LINKED TRIP BANNER (BIDIRECTIONAL CONNECTION) ─── */}
       {linkedTripTitle && (
         <div style={{
@@ -4468,946 +4509,70 @@ export default function PlannerPage() {
         </div>
       )}
 
-      {/* ─── 3. TWO-COLUMN PLANNING WORKSPACE ─── */}
-      <main className={styles.workspaceContainer}>
-        {/* ════════════════════════════════════════════════════════════════════
-            LEFT COLUMN — TRIP PREFERENCES FORM CARD
-            ════════════════════════════════════════════════════════════════════ */}
-        <aside className={styles.preferencesCard} aria-label="Thiết lập chuyến đi">
-          {/* Card Header */}
-          <div className={styles.cardHeader}>
-            <div className={styles.cardHeaderIcon}>
-              <Sparkles size={18} />
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <h2 className={styles.cardHeaderTitle}>Thiết lập chuyến đi</h2>
-              <p className={styles.cardHeaderDesc}>Tùy chỉnh lịch trình thông minh cùng AI</p>
-            </div>
-            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <button
-                type="button"
-                onClick={() => {
-                  if (typeof window !== 'undefined') {
-                    try {
-                      localStorage.removeItem('vista_active_planner_state');
-                      localStorage.removeItem('vista_saved_itineraries');
-                      localStorage.removeItem('vista_planner_history');
-                      localStorage.removeItem('vista_selected_province');
-                      localStorage.removeItem('vista_custom_trips');
-                    } catch {}
-                    window.location.href = '/planner?reset=1';
-                  }
-                }}
-                title="Xóa cache và làm mới bộ nhớ"
-                style={{
-                  background: '#F1F5F9',
-                  border: '1px solid #CBD5E1',
-                  color: '#475569',
-                  borderRadius: '8px',
-                  padding: '5px 8px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  transition: 'all 0.15s ease',
-                  flexShrink: 0,
-                }}
-              >
-                <RotateCcw size={11} />
-                <span>Xóa cache</span>
-              </button>
-              {planHistoryList.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setShowHistoryDrawer(true)}
-                  title="Xem các lịch trình đã lưu"
-                  style={{
-                    background: '#E0F2FE',
-                    border: '1px solid #BAE6FD',
-                    color: '#0284C7',
-                    borderRadius: '8px',
-                    padding: '5px 9px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    fontSize: '11.5px',
-                    fontWeight: 700,
-                    transition: 'all 0.15s ease',
-                    flexShrink: 0,
-                  }}
-                >
-                  <Bookmark size={12} />
-                  <span>Đã lưu ({planHistoryList.length})</span>
-                </button>
-              )}
-            </div>
-          </div>
+      {/* ─── SETUP VIEW (WHEN NO PLAN GENERATED) MATCHING EXACT SENIOR DESIGNER MOCKUP ─── */}
+      {!hasPlanGenerated ? (
+        <PlannerSetupView
+          destination={destination}
+          onChangeDestination={(dest) => changeDestination(dest)}
+          startDate={startDate}
+          onChangeStartDate={(date) => setStartDate(date)}
+          duration={duration}
+          onChangeDuration={(dur) => setDuration(dur)}
+          peopleCount={peopleCount}
+          onChangePeopleCount={(count) => setPeopleCount(count)}
+          budgetTier={budgetTier === 'budget' ? 'BUDGET' : budgetTier === 'luxury' ? 'LUXURY' : 'STANDARD'}
+          onChangeBudgetTier={(tier) => setBudgetTier(tier.toLowerCase() as any)}
+          travelPace={activePace}
+          onChangeTravelPace={(pace) => setActivePace(pace)}
+          selectedStyles={selectedStyles}
+          onToggleStyle={(styleId) => {
+            markDirty();
+            setSelectedStyles((prev) =>
+              prev.includes(styleId) ? prev.filter((s) => s !== styleId) : [...prev, styleId]
+            );
+          }}
+          wishesText={wishesText}
+          onChangeWishesText={(text) => setWishesText(text)}
+          isGenerating={isGenerating}
+          onGenerate={handleGenerateClick}
+          onApplyTemplate={(templateId) => {
+            if (templateId === 'hanoi-nostalgia-3n2d') {
+              setDestination('Hà Nội');
+              setDuration('3n2d');
+            } else if (templateId === 'hanoi-halong-yentu-4n3d') {
+              setDestination('Hà Nội');
+              setDuration('4n3d');
+            } else if (templateId === 'food-tour-48h') {
+              setDestination('Hà Nội');
+              setDuration('2n1d');
+            }
+            handleGenerateClick();
+          }}
+          savedTrips={planHistoryList.map((p) => ({
+            id: p.id,
+            title: p.title || `Chuyến đi ${p.destination}`,
+            destination: p.destination,
+            durationLabel: p.durationLabel || `${p.itineraryDays?.length || 3} ngày`,
+            peopleCount: p.peopleCount || 2,
+            startDate: p.startDate || '20/10/2026',
+          }))}
+          onOpenSavedTrip={(tripId) => {
+            const found = planHistoryList.find((p) => p.id === tripId);
+            if (found) handleRestoreFromHistory(found);
+          }}
+          allDestinations={DESTINATION_LIST}
+          weatherData={realtimeWeather}
+          weatherInsight={destWeatherInsight}
+        />
+      ) : (
+        /* ─── 3. RESULTS WORKSPACE (FULL WIDTH, CLEAN 65% TIMELINE + 35% MAP/BUDGET) ─── */
+        <main className={styles.workspaceContainerResult}>
+          <section className={styles.itineraryWorkspace} style={{ width: '100%', maxWidth: '100%' }} aria-label="Lịch trình gợi ý">
+            {/* ─── REAL GENERATING LOADING SKELETON ─── */}
+            {isGenerating && <SkeletonAiGenerating />}
 
-          {/* GROUP A — ĐIỂM ĐẾN & THỜI GIAN */}
-          <div className={styles.formGroup}>
-            <div className={styles.groupTitleWithBar}>Điểm đến & Lịch trình</div>
-
-            {/* 1. Điểm đến (Đầy đủ 63 tỉnh thành & Tìm kiếm thông minh không dấu) */}
-            <div className={styles.destinationSelectWrapper} ref={destDropdownRef}>
-              <label className={styles.fieldLabel} htmlFor="dest-search-input">
-                Điểm đến
-              </label>
-              <div
-                className={`${styles.destinationInputWrapper} ${showDestDropdown ? styles.destinationInputWrapperActive : ''}`}
-                onClick={() => setShowDestDropdown((prev) => !prev)}
-              >
-                <svg className={styles.destinationIcon} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                  <circle cx="12" cy="10" r="3" />
-                </svg>
-                <input
-                  id="dest-search-input"
-                  type="text"
-                  className={styles.destinationInput}
-                  placeholder="Nhập hoặc tìm kiếm 63 tỉnh thành..."
-                  value={showDestDropdown ? destSearchQuery : cleanDestName}
-                  onChange={(e) => {
-                    setDestSearchQuery(e.target.value);
-                    setShowDestDropdown(true);
-                  }}
-                  onFocus={() => {
-                    setShowDestDropdown(true);
-                    if (!destSearchQuery) setDestSearchQuery('');
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      if (filteredDestinations.length > 0) {
-                        const top = filteredDestinations[0].nameVi;
-                        changeDestination(top);
-                        setShowDestDropdown(false);
-                        setDestSearchQuery('');
-                        triggerToast(`Đã chọn điểm đến: ${top}`);
-                      } else if (destSearchQuery.trim()) {
-                        const custom = destSearchQuery.trim();
-                        changeDestination(custom);
-                        setShowDestDropdown(false);
-                        setDestSearchQuery('');
-                        triggerToast(`Đã chọn điểm đến: ${custom}`);
-                      }
-                    }
-                  }}
-                />
-                {destSearchQuery && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setDestSearchQuery('');
-                    }}
-                    style={{
-                      border: 'none',
-                      background: 'none',
-                      cursor: 'pointer',
-                      color: '#94A3B8',
-                      fontSize: '13px',
-                      padding: '2px 6px',
-                    }}
-                    title="Xóa tìm kiếm"
-                  >
-                    ✕
-                  </button>
-                )}
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  style={{
-                    cursor: 'pointer',
-                    transform: showDestDropdown ? 'rotate(180deg)' : 'none',
-                    transition: 'transform 0.2s',
-                  }}
-                >
-                  <polyline points="6 9 12 15 18 9" />
-                </svg>
-              </div>
-
-              {/* Destination Dropdown (Hỗ trợ 63 tỉnh thành & Tìm kiếm không dấu) */}
-              {showDestDropdown && (
-                <div className={styles.destinationDropdown}>
-                  {/* Quick selection chips for top destinations */}
-                  <div style={{ padding: '8px 12px', borderBottom: '1px solid #E2E8F0', background: '#F8FAFC' }}>
-                    <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 700, marginBottom: '6px' }}>
-                      🌟 ĐIỂM ĐẾN PHỔ BIẾN NHẤT:
-                    </div>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                      {[
-                        'Đà Nẵng',
-                        'Hà Nội',
-                        'TP. Hồ Chí Minh',
-                        'Phú Quốc (Kiên Giang)',
-                        'Đà Lạt (Lâm Đồng)',
-                        'Nha Trang (Khánh Hòa)',
-                        'Hội An (Quảng Nam)',
-                        'Hà Tĩnh',
-                        'Sa Pa (Lào Cai)',
-                        'Ninh Bình',
-                      ].map((popularName) => (
-                        <button
-                          key={popularName}
-                          type="button"
-                          onClick={() => {
-                            changeDestination(popularName);
-                            setShowDestDropdown(false);
-                            setDestSearchQuery('');
-                            triggerToast(`Đã chọn điểm đến: ${popularName}`);
-                          }}
-                          style={{
-                            fontSize: '11px',
-                            padding: '3px 8px',
-                            borderRadius: '999px',
-                            border: destination === popularName ? '1px solid #0284C7' : '1px solid #CBD5E1',
-                            background: destination === popularName ? '#E0F2FE' : '#FFFFFF',
-                            color: destination === popularName ? '#0284C7' : '#334155',
-                            fontWeight: destination === popularName ? 700 : 500,
-                            cursor: 'pointer',
-                          }}
-                        >
-                          {popularName.replace(/\s*\(.*\)/, '')}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Count status */}
-                  <div style={{ padding: '6px 12px', fontSize: '11px', color: '#64748B', fontWeight: 600, borderBottom: '1px solid #F1F5F9', background: '#FFFFFF' }}>
-                    {filteredDestinations.length > 0
-                      ? `Có ${filteredDestinations.length} điểm đến khớp tìm kiếm (Đầy đủ 63 tỉnh thành)`
-                      : `Không tìm thấy tỉnh thành có tên "${destSearchQuery}"`}
-                  </div>
-
-                  {/* Empty state: allow selecting typed string or resetting */}
-                  {filteredDestinations.length === 0 && (
-                    <div style={{ padding: '14px 12px', textAlign: 'center', background: '#FFFFFF' }}>
-                      <p style={{ fontSize: '12.5px', color: '#64748B', margin: '0 0 10px 0' }}>
-                        Bạn có thể dùng <strong>&quot;{destSearchQuery}&quot;</strong> làm điểm đến hoặc xem lại danh sách:
-                      </p>
-                      <div style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const customName = destSearchQuery.trim();
-                            if (customName) {
-                              changeDestination(customName);
-                              setShowDestDropdown(false);
-                              setDestSearchQuery('');
-                              triggerToast(`Đã chọn điểm đến: ${customName}`);
-                            }
-                          }}
-                          style={{
-                            fontSize: '12px',
-                            fontWeight: 700,
-                            color: '#FFFFFF',
-                            background: '#0284C7',
-                            border: 'none',
-                            borderRadius: '6px',
-                            padding: '6px 12px',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          ✓ Dùng &quot;{destSearchQuery}&quot;
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setDestSearchQuery('')}
-                          style={{
-                            fontSize: '12px',
-                            fontWeight: 600,
-                            color: '#475569',
-                            background: '#F1F5F9',
-                            border: '1px solid #CBD5E1',
-                            borderRadius: '6px',
-                            padding: '6px 12px',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          Xem tất cả 63 tỉnh thành
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Destination List Items */}
-                  {filteredDestinations.map((d) => (
-                    <div
-                      key={d.id}
-                      className={`${styles.destinationItem} ${destination === d.nameVi || destination === d.province ? styles.destinationItemActive : ''}`}
-                      onClick={() => {
-                        const chosen = d.nameVi;
-                        changeDestination(chosen);
-                        setShowDestDropdown(false);
-                        setDestSearchQuery('');
-                        if (hasPlanGenerated) {
-                          if (d.id === 'phuquoc' || chosen.includes('Phú Quốc')) {
-                            setItineraryDays(INITIAL_PHUQUOC_DAYS);
-                            setActiveDay(1);
-                            setNewTripTitle(`Chuyến đi Phú Quốc ${daysCount} ngày`);
-                            triggerToast('Đã tải lịch trình thông minh cho Phú Quốc!');
-                          } else if (d.id === 'danang' || chosen.includes('Đà Nẵng')) {
-                            setItineraryDays(INITIAL_DANANG_DAYS);
-                            setActiveDay(1);
-                            setNewTripTitle(`Chuyến đi Đà Nẵng ${daysCount} ngày`);
-                            triggerToast('Đã tải lịch trình thông minh cho Đà Nẵng!');
-                          } else {
-                            const customPlan = generateDistinctDayPlan(
-                              chosen,
-                              daysCount,
-                              isLateEveningDeparture,
-                              budgetTier,
-                              selectedStyles,
-                              d.lat,
-                              d.lng,
-                              d.photo
-                            );
-                            setItineraryDays(customPlan);
-                            setActiveDay(1);
-                            setNewTripTitle(`Chuyến đi ${chosen} ${daysCount} ngày`);
-                            triggerToast(`Đã tải lịch trình thông minh cho ${chosen}!`);
-                          }
-                        } else {
-                          triggerToast(`Đã chọn điểm đến: ${chosen}`);
-                        }
-                      }}
-                    >
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                        <span style={{ fontWeight: 600 }}>{d.nameVi}</span>
-                        <span style={{ fontSize: '11px', color: '#64748B' }}>{d.province} · Miền {d.region}</span>
-                      </div>
-                      <span style={{ fontSize: '11px', padding: '2px 6px', borderRadius: '4px', background: '#F1F5F9', color: '#475569', fontWeight: 600 }}>
-                        {d.region === 'Bắc' ? 'Miền Bắc' : d.region === 'Trung' ? 'Miền Trung' : 'Miền Nam'}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* 2. Ngày khởi hành (Smart Departure Cockpit) */}
-            <div>
-              <label className={styles.fieldLabel} htmlFor="start-date-input">
-                Ngày khởi hành
-              </label>
-
-              <div className={styles.dateCockpitCard}>
-                <div
-                  className={styles.dateCockpitMain}
-                  onClick={handleOpenDatePicker}
-                  role="button"
-                  tabIndex={0}
-                  title="Bấm để mở lịch chọn ngày"
-                >
-                  <div className={styles.dateStampBox}>
-                    <span className={styles.dateStampDayOfWeek}>{departureDateInfo.shortDayOfWeek}</span>
-                    <span className={styles.dateStampNumber}>{departureDateInfo.dayNumber}</span>
-                  </div>
-                  <div className={styles.dateCockpitDetails}>
-                    <span className={styles.dateCockpitTitle}>
-                      {departureDateInfo.dayOfWeek}, {departureDateInfo.dayNumber} {departureDateInfo.monthYear}
-                    </span>
-                    <div className={styles.dateCockpitSubRow}>
-                      {departureDateInfo.relativeText && (
-                        <span className={styles.dateCockpitBadge}>{departureDateInfo.relativeText}</span>
-                      )}
-                      <span className={styles.dateCockpitHint}>Bấm mở lịch</span>
-                    </div>
-                  </div>
-                  <div className={styles.dateCockpitCalendarIcon}>
-                    <Calendar size={17} strokeWidth={2.2} />
-                  </div>
-                  <input
-                    ref={startDateInputRef}
-                    id="start-date-input"
-                    type="date"
-                    min={getTodayIso()}
-                    className={styles.dateCockpitHiddenInput}
-                    value={startDate}
-                    onChange={(e) => {
-                      const chosen = e.target.value;
-                      if (chosen && chosen < getTodayIso()) {
-                        triggerToast('Không thể chọn ngày trong quá khứ!');
-                        return;
-                      }
-                      setStartDate(chosen);
-                      markDirty();
-                    }}
-                  />
-                </div>
-
-                {/* Quick Date Segmented Bar */}
-                <div className={styles.dateSegmentedCapsule}>
-                  <button
-                    type="button"
-                    className={`${styles.dateSegmentBtn} ${startDate === getTodayIso() ? styles.dateSegmentBtnActive : ''}`}
-                    onClick={() => {
-                      setStartDate(getTodayIso());
-                      markDirty();
-                    }}
-                  >
-                    Hôm nay
-                  </button>
-                  <button
-                    type="button"
-                    className={`${styles.dateSegmentBtn} ${startDate === getFutureDateIso(1) ? styles.dateSegmentBtnActive : ''}`}
-                    onClick={() => {
-                      setStartDate(getFutureDateIso(1));
-                      markDirty();
-                    }}
-                  >
-                    Ngày mai
-                  </button>
-                  <button
-                    type="button"
-                    className={`${styles.dateSegmentBtn} ${startDate === getWeekendIso() ? styles.dateSegmentBtnActive : ''}`}
-                    onClick={() => {
-                      setStartDate(getWeekendIso());
-                      markDirty();
-                    }}
-                  >
-                    Cuối tuần
-                  </button>
-                </div>
-              </div>
-
-              {/* Weather Widget Strip — Clean Typography, No Emoticon Clutter */}
-              <div
-                className={styles.weatherCockpitStrip}
-                onClick={() =>
-                  triggerToast(
-                    realtimeWeather
-                      ? `Thời tiết thực tế tại ${cleanDestName} (${realtimeWeather.updatedTime}): ${realtimeWeather.tempFormatted} - ${realtimeWeather.statusVi}. Độ ẩm: ${realtimeWeather.humidity}%, Gió: ${realtimeWeather.windSpeed} km/h. Lời khuyên VISTA: ${realtimeWeather.adviceVi}`
-                      : `Thời tiết ${cleanDestName} hôm nay: ${destWeatherInsight.temp} - ${destWeatherInsight.text}`
-                  )
-                }
-                role="button"
-                tabIndex={0}
-                title="Bấm để xem chi tiết thời tiết realtime"
-              >
-                <div className={styles.weatherCockpitLeft}>
-                  <span className={styles.weatherCockpitDot} />
-                  <span className={styles.weatherCockpitLocation}>
-                    {cleanDestName} · {realtimeWeather ? realtimeWeather.tempFormatted : (destWeatherInsight.temp.split('–')[0].trim() || '24°C')}
-                  </span>
-                  {realtimeWeather?.isLive && (
-                    <span className={styles.weatherLiveBadge}>Live</span>
-                  )}
-                </div>
-                <span className={styles.weatherCockpitDesc}>
-                  {realtimeWeather ? realtimeWeather.statusVi : 'Nhiều mây, trời dịu'}
-                </span>
-              </div>
-
-              {/* Smart Night-Shift Mode (T1) — High-tech Minimalist Slate */}
-              {isLateEveningDeparture && (
-                <div className={styles.nightShiftCard}>
-                  <div className={styles.nightShiftHeader}>
-                    <span className={styles.nightShiftBadge}>LỘ TRÌNH ĐÊM</span>
-                    <span className={styles.nightShiftTime}>Sau 20:00</span>
-                  </div>
-                  <div className={styles.nightShiftBody}>
-                    <div className={styles.nightShiftTitle}>Tự động điều chỉnh Ngày 1</div>
-                    <div className={styles.nightShiftSteps}>
-                      <span className={styles.nightShiftStep}>1. Nhận phòng</span>
-                      <span className={styles.nightShiftArrow}>→</span>
-                      <span className={styles.nightShiftStep}>2. Ăn tối muộn</span>
-                      <span className={styles.nightShiftArrow}>→</span>
-                      <span className={styles.nightShiftStep}>3. Dạo đêm</span>
-                    </div>
-                    <p className={styles.nightShiftDesc}>
-                      Đã tối ưu lược bỏ các hoạt động sáng & chiều không khả thi.
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* 3. Thời lượng */}
-            <div>
-              <label className={styles.fieldLabel}>Thời lượng</label>
-              <div className={styles.durationChips}>
-                {DURATION_CHIPS.map((chip) => (
-                  <button
-                    key={chip.id}
-                    type="button"
-                    className={`${styles.chipBtn} ${duration === chip.id ? styles.chipBtnActive : ''}`}
-                    onClick={() => {
-                      setDuration(chip.id);
-                      markDirty();
-                    }}
-                  >
-                    {chip.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* GROUP B — PHONG CÁCH CHUYẾN ĐI (Compact & Refined Style Pills) */}
-          <div className={styles.formGroup}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-              <div className={styles.groupTitleWithBar} style={{ margin: 0 }}>Sở thích trải nghiệm</div>
-              <span style={{ fontSize: '11px', color: '#0284C7', fontWeight: 700, background: '#E0F2FE', padding: '2px 8px', borderRadius: '99px' }}>
-                {selectedStyles.length} đã chọn (Ưu tiên 2–3)
-              </span>
-            </div>
-
-            <div className={styles.stylesPillsGrid}>
-              {displayedStyles.map((st) => {
-                const isSelected = selectedStyles.includes(st.id);
-                const priorityRank = selectedStyles.indexOf(st.id);
-                const IconCmp = st.icon;
-                return (
-                  <button
-                    key={st.id}
-                    type="button"
-                    className={`${styles.stylePillBtn} ${isSelected ? styles.stylePillBtnActive : ''}`}
-                    onClick={() => toggleStyle(st.id)}
-                    title={st.label}
-                  >
-                    <div className={styles.stylePillLeft}>
-                      <div
-                        className={styles.stylePillIconBox}
-                        style={{
-                          backgroundColor: isSelected ? st.activeBg : st.bg,
-                          color: st.color,
-                        }}
-                      >
-                        <IconCmp size={14} strokeWidth={2.2} />
-                      </div>
-                      <span className={styles.stylePillLabel}>{st.label}</span>
-                    </div>
-                    {isSelected && (
-                      <div
-                        className={styles.stylePillCheckCircle}
-                        title={priorityRank < 3 ? `Sở thích ưu tiên #${priorityRank + 1}` : 'Đã chọn'}
-                        style={priorityRank < 3 ? { width: 'auto', padding: '0 5px', borderRadius: '99px', fontSize: '9.5px', fontWeight: 700 } : undefined}
-                      >
-                        {priorityRank < 3 ? `#${priorityRank + 1}` : <Check size={10} strokeWidth={3} />}
-                      </div>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-
-            {hasPlanGenerated && hasUnsavedChanges && (
-              <button
-                type="button"
-                onClick={() => handleGenerateClick()}
-                style={{
-                  marginTop: '8px',
-                  width: '100%',
-                  minHeight: '36px',
-                  padding: '8px 12px',
-                  borderRadius: '8px',
-                  background: 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)',
-                  color: '#FFFFFF',
-                  border: 'none',
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px',
-                  boxShadow: '0 4px 12px rgba(2, 132, 199, 0.25)',
-                }}
-              >
-                <span>🔄 Áp dụng sở thích mới & Cập nhật lịch trình ngay</span>
-              </button>
-            )}
-
-            <button
-              type="button"
-              className={styles.btnToggleMoreStyles}
-              onClick={() => setShowAllStyles((prev) => !prev)}
-            >
-              {showAllStyles ? (
-                <>
-                  <span>Thu gọn bớt</span>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="18 15 12 9 6 15" /></svg>
-                </>
-              ) : (
-                <>
-                  <span>Xem thêm +{TRAVEL_STYLES.length - 6} phong cách khác</span>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9" /></svg>
-                </>
-              )}
-            </button>
-          </div>
-
-          {/* GROUP C — THÀNH VIÊN & NGÂN SÁCH */}
-          <div className={styles.formGroup}>
-            <div className={styles.groupTitleWithBar}>Thành viên & Ngân sách</div>
-
-            {/* Unified Card for Group C */}
-            <div className={styles.groupCUnifiedCard}>
-              {/* Row 1: Số người tham gia */}
-              <div className={styles.groupCFieldRow}>
-                <div className={styles.groupCFieldMeta}>
-                  <label className={styles.groupCLabel}>Số người tham gia</label>
-                  <span className={styles.groupCSubLabel}>Người lớn & trẻ em</span>
-                </div>
-                <div className={styles.counterControlModern}>
-                  <button
-                    type="button"
-                    className={styles.counterBtnModern}
-                    disabled={peopleCount <= 1}
-                    onClick={() => {
-                      setPeopleCount((p) => Math.max(1, p - 1));
-                      markDirty();
-                    }}
-                    aria-label="Giảm số người"
-                  >
-                    –
-                  </button>
-                  <span className={styles.counterValueModern}>{peopleCount} người</span>
-                  <button
-                    type="button"
-                    className={styles.counterBtnModern}
-                    onClick={() => {
-                      setPeopleCount((p) => p + 1);
-                      markDirty();
-                    }}
-                    aria-label="Tăng số người"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-
-              <div className={styles.groupCDivider} />
-
-              {/* Row 2: Hạng mức chi tiêu (Segmented Capsule Bar) */}
-              <div className={styles.groupCSection}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <label className={styles.groupCLabel}>Hạng mức chi tiêu</label>
-                  <span style={{ fontSize: '11px', color: '#0284C7', fontWeight: 600 }}>
-                    {budgetTier === 'economy' ? 'Tiết kiệm' : budgetTier === 'luxury' ? 'Cao cấp' : 'Tiêu chuẩn'}
-                  </span>
-                </div>
-                <div className={styles.segmentedCapsuleBar}>
-                  {BUDGET_OPTIONS.map((b) => (
-                    <button
-                      key={b.id}
-                      type="button"
-                      className={`${styles.segmentedCapsuleBtn} ${budgetTier === b.id ? styles.segmentedCapsuleBtnActive : ''}`}
-                      onClick={() => {
-                        setBudgetTier(b.id);
-                        markDirty();
-                      }}
-                    >
-                      {b.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className={styles.groupCDivider} />
-
-              {/* Row 2.5: Nhịp độ chuyến đi (Pace Selector) */}
-              <div className={styles.groupCSection}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <label className={styles.groupCLabel}>Nhịp độ di chuyển</label>
-                  <span style={{ fontSize: '11px', color: '#059669', fontWeight: 600 }}>
-                    {activePace === 'RELAXED' ? '🌿 Thư thả' : activePace === 'INTENSIVE' ? '⚡ Đi nhiều' : '⚖️ Cân bằng'}
-                  </span>
-                </div>
-                <div className={styles.segmentedCapsuleBar}>
-                  {[
-                    { id: 'RELAXED', label: '🌿 Thư thả' },
-                    { id: 'MODERATE', label: '⚖️ Cân bằng' },
-                    { id: 'INTENSIVE', label: '⚡ Đi nhiều' },
-                  ].map((p) => (
-                    <button
-                      key={p.id}
-                      type="button"
-                      className={`${styles.segmentedCapsuleBtn} ${activePace === p.id ? styles.segmentedCapsuleBtnActive : ''}`}
-                      onClick={() => {
-                        setActivePace(p.id as any);
-                        markDirty();
-                        if (hasPlanGenerated) {
-                          executeStructuredReplan(`Đổi nhịp độ sang ${p.label}`, { action: 'CHANGE_PACE', pace: p.id });
-                        }
-                      }}
-                    >
-                      {p.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className={styles.groupCDivider} />
-
-              {/* Row 3: Thêm mong muốn riêng */}
-              <div className={styles.groupCSection}>
-                <button
-                  type="button"
-                  className={`${styles.wishesTriggerPillModern} ${showWishes ? styles.wishesTriggerPillModernActive : ''}`}
-                  onClick={() => setShowWishes((prev) => !prev)}
-                  aria-expanded={showWishes}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
-                    <span style={{ fontSize: '13px' }}>✨</span>
-                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#142D4E', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {wishesText ? `Mong muốn: ${wishesText}` : '+ Thêm mong muốn riêng'}
-                    </span>
-                  </div>
-                  <ChevronRight
-                    size={14}
-                    style={{
-                      transform: showWishes ? 'rotate(90deg)' : 'none',
-                      transition: 'transform 0.2s ease',
-                      color: '#0284C7',
-                      flexShrink: 0,
-                    }}
-                  />
-                </button>
-
-                {showWishes && (
-                  <div className={styles.wishesExpandContainerModern}>
-                    <textarea
-                      className={styles.wishesTextareaModern}
-                      placeholder="Ví dụ: ít đi bộ, ưu tiên ẩm thực bản địa, có người lớn tuổi hoặc trẻ em..."
-                      value={wishesText}
-                      rows={2}
-                      onChange={(e) => {
-                        setWishesText(e.target.value);
-                        markDirty();
-                      }}
-                    />
-                    <div className={styles.wishesQuickTagsRow}>
-                      {[
-                        { label: '🌿 Món chay', val: 'Ưu tiên ẩm thực chay' },
-                        { label: '👶 Có trẻ nhỏ', val: 'Lịch trình nhẹ nhàng cho trẻ nhỏ' },
-                        { label: '👴 Người lớn tuổi', val: 'Ít bậc thang, nghỉ ngơi thoải mái' },
-                        { label: '📸 Sống ảo', val: 'Ưu tiên các góc check-in đẹp' },
-                      ].map((tag) => (
-                        <button
-                          key={tag.label}
-                          type="button"
-                          className={styles.wishesQuickTagBtn}
-                          onClick={() => {
-                            const newText = wishesText
-                              ? `${wishesText.replace(/[,.]\s*$/, '')}, ${tag.val}`
-                              : tag.val;
-                            setWishesText(newText);
-                            markDirty();
-                          }}
-                        >
-                          {tag.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <p className={styles.fieldHintModern}>
-              <span style={{ color: '#0284C7' }}>ⓘ</span> Chi phí & tuyến đường được AI tự động cân đối theo số người và hạng mức.
-            </p>
-
-            <div style={{ textAlign: 'center', marginTop: '4px' }}>
-              <button
-                type="button"
-                onClick={() => setShowAdvancedOptions((p) => !p)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#65758A',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  padding: '4px 8px',
-                  borderRadius: '6px',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                }}
-              >
-                <span>{showAdvancedOptions ? 'Thu gọn tùy chọn khác' : 'Mở rộng tùy chọn khác'}</span>
-                <span style={{ fontSize: '10px' }}>{showAdvancedOptions ? '⌃' : '⌵'}</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Sticky CTA Action Dock — Always easily accessible */}
-          <div className={styles.sidebarStickyCta}>
-            {hasUnsavedChanges && (
-              <div className={styles.dirtyIndicator}>
-                <Clock size={13} className={styles.dirtyIndicatorIcon} />
-                <span>Có thiết lập mới chưa áp dụng</span>
-              </div>
-            )}
-
-            <button
-              type="button"
-              className={styles.btnPrimaryAction}
-              onClick={handleGenerateClick}
-              disabled={isGenerating}
-            >
-              {isGenerating ? (
-                <div className={styles.spinnerBlue} style={{ width: '18px', height: '18px', borderWidth: '2px', borderColor: '#FFFFFF', borderTopColor: 'transparent' }} />
-              ) : (
-                <Sparkles size={16} />
-              )}
-              <span>{isGenerating ? 'Đang tạo lịch trình...' : 'Tạo lịch trình với AI'}</span>
-            </button>
-
-            <p className={styles.formActionSubtext}>
-              Tối ưu hóa hành trình bằng AI & dữ liệu hơn 2.000 điểm đến thực tế.
-            </p>
-          </div>
-        </aside>
-
-        {/* ════════════════════════════════════════════════════════════════════
-            RIGHT COLUMN — REAL GENERATED ITINERARY WORKSPACE
-            ════════════════════════════════════════════════════════════════════ */}
-        <section className={styles.itineraryWorkspace} aria-label="Lịch trình gợi ý">
-          {/* ─── REAL GENERATING LOADING SKELETON ─── */}
-          {isGenerating && <SkeletonAiGenerating />}
-
-          {/* ─── CLEAN INITIAL STATE: HERO SHOWCASE & SUGGESTED CARDS (AS IN MOCKUP) ─── */}
-          {!isGenerating && !hasPlanGenerated && (
-            <div className={styles.cleanWorkspaceWrapper}>
-              {/* Top Hero Destination Showcase Banner */}
-              <div className={styles.emptyHeroShowcase}>
-                <img
-                  src={activeHero.image}
-                  alt={activeHero.title}
-                  onError={(e) => {
-                    (e.currentTarget as HTMLImageElement).src =
-                      'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_panoramic_day.jpg';
-                  }}
-                  style={{
-                    position: 'absolute',
-                    inset: 0,
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    zIndex: 0,
-                  }}
-                />
-                <div className={styles.emptyHeroOverlay} />
-                <div className={styles.emptyHeroContent}>
-                  <span className={styles.emptyHeroTag}>
-                    <MapPin size={13} color="#0088CC" />
-                    <span>{activeHero.countryTag}</span>
-                  </span>
-                  <h2 className={styles.emptyHeroTitle}>{activeHero.title}</h2>
-                  <p className={styles.emptyHeroSubtitle}>{activeHero.subtitle}</p>
-                </div>
-
-                {/* Carousel Navigation Buttons */}
-                <div className={styles.emptyHeroNav}>
-                  <button
-                    type="button"
-                    className={styles.emptyHeroNavBtn}
-                    onClick={handlePrevHero}
-                    aria-label="Điểm đến trước"
-                    title="Điểm đến trước"
-                  >
-                    <ChevronLeft size={18} color="#0F172A" />
-                  </button>
-                  <button
-                    type="button"
-                    className={styles.emptyHeroNavBtn}
-                    onClick={handleNextHero}
-                    aria-label="Điểm đến tiếp theo"
-                    title="Điểm đến tiếp theo"
-                  >
-                    <ChevronRight size={18} color="#0F172A" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Suggested Itineraries Section */}
-              <div className={styles.suggestedSection}>
-                <div className={styles.suggestedHeader}>
-                  <h3 className={styles.suggestedHeaderTitle}>
-                    <Sparkles size={18} color="#F59E0B" />
-                    <span>Lịch trình gợi ý cho bạn</span>
-                  </h3>
-                  <button
-                    type="button"
-                    className={styles.suggestedHeaderLink}
-                    onClick={() => setShowSavedDrawer(true)}
-                  >
-                    <span>Xem tất cả</span>
-                    <ArrowRight size={14} />
-                  </button>
-                </div>
-
-                {/* 3 Responsive Cards Grid */}
-                <div className={styles.suggestedGrid}>
-                  {suggestedCards.map((card) => (
-                    <div
-                      key={card.id}
-                      className={styles.suggestedCard}
-                      onClick={() => handleApplyTemplate(card)}
-                      role="button"
-                      tabIndex={0}
-                      title={`Xem lịch trình ${card.title}`}
-                    >
-                      <div className={styles.suggestedCardImageWrapper}>
-                        <img
-                          src={card.image}
-                          alt={card.title}
-                          className={styles.suggestedCardImage}
-                          onError={(e) => {
-                            (e.currentTarget as HTMLImageElement).src =
-                              'https://cyqvqehhjpvwovdzscxm.supabase.co/storage/v1/object/public/vista-media/images/vietnam_panoramic_day.jpg';
-                          }}
-                        />
-                        <span className={styles.suggestedCardBadge}>
-                          {card.durationBadge}
-                        </span>
-                        {(card as any).themeBadge && (
-                          <span className={styles.suggestedCardThemeBadge}>
-                            {(card as any).themeBadge}
-                          </span>
-                        )}
-                      </div>
-
-                      <div className={styles.suggestedCardBody}>
-                        <h4 className={styles.suggestedCardTitle}>{card.title}</h4>
-                        {(card as any).subtitle && (
-                          <p className={styles.suggestedCardSubtitle}>{(card as any).subtitle}</p>
-                        )}
-                        <div className={styles.suggestedCardFooter}>
-                          <div className={styles.suggestedCardMeta}>
-                            <Clock size={12} />
-                            <span>
-                              {card.timeInfo} · <MapPin size={11} style={{ display: 'inline', margin: '0 1px' }} /> {card.destInfo}
-                            </span>
-                          </div>
-                          <div className={styles.suggestedCardArrow}>
-                            <ChevronRight size={15} />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ─── GENERATED ITINERARY VIEW (LIVE PRODUCT) ─── */}
-          {!isGenerating && hasPlanGenerated && (
-            <>
+            {!isGenerating && hasPlanGenerated && (
+              <>
               {/* 1. DESTINATION HERO BANNER (Top of Itinerary Workspace) */}
               <div
                 className={styles.destinationHeroBanner}
@@ -5441,6 +4606,12 @@ export default function PlannerPage() {
 
                 <div className={styles.heroStatsGlass}>
                   <div className={styles.heroStatRow}>
+                    <span>Thời tiết</span>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: '#FEF08A', color: '#B45309', padding: '2px 8px', borderRadius: '99px', fontWeight: 800, fontSize: '11.5px', boxShadow: '0 1px 4px rgba(245, 158, 11, 0.25)' }}>
+                      ☀️ {realtimeWeather?.tempFormatted || '28°C'} · {realtimeWeather?.statusVi || 'Nắng đẹp'}
+                    </span>
+                  </div>
+                  <div className={styles.heroStatRow}>
                     <span>Thời lượng</span>
                     <span className={styles.heroStatValue}>
                       {daysCount}N{Math.max(0, daysCount - 1)}Đ · {peopleCount} khách
@@ -5450,12 +4621,6 @@ export default function PlannerPage() {
                     <span>Tổng dự toán</span>
                     <span className={styles.heroStatHighlight}>
                       ~{new Intl.NumberFormat('vi-VN').format(budgetBreakdown.totalBaseline)}đ
-                    </span>
-                  </div>
-                  <div className={styles.heroStatRow}>
-                    <span>Động cơ AI</span>
-                    <span className={styles.heroStatValue} style={{ color: '#059669' }}>
-                      {isApiKeyMode ? '✨ Gemini Engine' : '⚙️ Thuật toán tối ưu'}
                     </span>
                   </div>
                 </div>
@@ -5630,6 +4795,16 @@ export default function PlannerPage() {
                   >
                     <Bookmark size={15} />
                     <span>Lưu</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className={styles.btnOutlineAction}
+                    onClick={() => setShowEditSettingsDrawer(true)}
+                    title="Chỉnh sửa thiết lập chuyến đi"
+                  >
+                    <SlidersHorizontal size={15} />
+                    <span>Chỉnh thiết lập</span>
                   </button>
 
                   <button
@@ -6288,17 +5463,17 @@ export default function PlannerPage() {
                               </div>
 
                               <div className={styles.activityCard}>
-                                <img
-                                  src={act.photoUrl || activeDestObj.photo}
-                                  alt={act.title}
-                                  className={styles.activityThumb}
-                                  onError={(e) => {
-                                    const img = e.currentTarget as HTMLImageElement;
-                                    if (img.src !== activeDestObj.photo) {
-                                      img.src = activeDestObj.photo;
-                                    }
-                                  }}
-                                />
+                                {act.photoUrl ? (
+                                  <img
+                                    src={act.photoUrl}
+                                    alt={act.title}
+                                    className={styles.activityThumb}
+                                    onError={(e) => {
+                                      // "ko có ảnh thì ko để ảnh thôi đừng bỏ đại" -> Ẩn ảnh nếu tải lỗi, không bỏ đại ảnh tỉnh vào
+                                      (e.currentTarget as HTMLImageElement).style.display = 'none';
+                                    }}
+                                  />
+                                ) : null}
                                 <div className={styles.activityContent}>
                                   <div className={styles.activityTitleRow}>
                                     <h5 className={styles.activityTitle}>
@@ -7015,17 +6190,16 @@ export default function PlannerPage() {
                     {/* Floating Glassmorphic Stop Preview Card */}
                     {currentDayPlan?.activities?.[selectedMapPin - 1] && (
                       <div className={styles.mapPreviewCard}>
-                        <img
-                          src={currentDayPlan.activities[selectedMapPin - 1].photoUrl || activeDestObj.photo}
-                          alt={currentDayPlan.activities[selectedMapPin - 1].title}
-                          className={styles.mapPreviewPhoto}
-                          onError={(e) => {
-                            const img = e.currentTarget as HTMLImageElement;
-                            if (img.src !== activeDestObj.photo) {
-                              img.src = activeDestObj.photo;
-                            }
-                          }}
-                        />
+                        {currentDayPlan.activities[selectedMapPin - 1].photoUrl ? (
+                          <img
+                            src={currentDayPlan.activities[selectedMapPin - 1].photoUrl}
+                            alt={currentDayPlan.activities[selectedMapPin - 1].title}
+                            className={styles.mapPreviewPhoto}
+                            onError={(e) => {
+                              (e.currentTarget as HTMLImageElement).style.display = 'none';
+                            }}
+                          />
+                        ) : null}
                         <div className={styles.mapPreviewDetails}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
                             <span className={styles.mapPreviewCategory}>
@@ -7495,6 +6669,7 @@ export default function PlannerPage() {
 
         </section>
       </main>
+      )}
 
       {/* ════════════════════════════════════════════════════════════════════
           OVERLAYS & REAL INTERACTION DIALOGS
@@ -8179,6 +7354,225 @@ export default function PlannerPage() {
         </div>
       )}
 
+      {/* ─── EDIT SETTINGS DRAWER ─── */}
+      {showEditSettingsDrawer && (
+        <div className={styles.drawerWrapper} onClick={() => setShowEditSettingsDrawer(false)}>
+          <div className={styles.drawerPanel} onClick={(e) => e.stopPropagation()} style={{ maxWidth: '480px' }}>
+            <div className={styles.drawerHeader}>
+              <div>
+                <h3 className={styles.drawerTitle}>Chỉnh sửa thiết lập chuyến đi</h3>
+                <p className={styles.drawerSubtitle}>
+                  Cập nhật các thông số để AI tính toán và đồng bộ lại lịch trình.
+                </p>
+              </div>
+              <button
+                type="button"
+                className={styles.modalCloseBtn}
+                onClick={() => setShowEditSettingsDrawer(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className={styles.drawerBody} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div>
+                <label className={styles.fieldLabel}>Điểm đến</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', background: '#F8FAFC', borderRadius: '8px', border: '1px solid #E2E8F0', fontWeight: 700 }}>
+                  <MapPin size={16} color="#0088CC" />
+                  <span>{destination}</span>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label className={styles.fieldLabel}>Ngày khởi hành</label>
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                  />
+                </div>
+                <div>
+                  <label className={styles.fieldLabel}>Số lượng khách</label>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', border: '1px solid #CBD5E1', borderRadius: '8px' }}>
+                    <span style={{ fontSize: '13px', fontWeight: 700 }}>{peopleCount} người</span>
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                      <button
+                        type="button"
+                        onClick={() => setPeopleCount(Math.max(1, peopleCount - 1))}
+                        style={{ width: '26px', height: '26px', borderRadius: '4px', border: 'none', background: '#F1F5F9', cursor: 'pointer' }}
+                      >
+                        -
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPeopleCount(peopleCount + 1)}
+                        style={{ width: '26px', height: '26px', borderRadius: '4px', border: 'none', background: '#F1F5F9', cursor: 'pointer' }}
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className={styles.fieldLabel}>Thời lượng</label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '6px' }}>
+                  {[
+                    { id: '1n', label: '1N' },
+                    { id: '2n1d', label: '2N1Đ' },
+                    { id: '3n2d', label: '3N2Đ' },
+                    { id: '4n3d', label: '4N3Đ' },
+                    { id: '5n4d', label: '5N4Đ' },
+                  ].map((dur) => (
+                    <button
+                      key={dur.id}
+                      type="button"
+                      onClick={() => setDuration(dur.id)}
+                      style={{
+                        padding: '6px 4px',
+                        borderRadius: '6px',
+                        border: duration === dur.id ? '2px solid #0088CC' : '1px solid #CBD5E1',
+                        background: duration === dur.id ? '#0088CC' : '#FFFFFF',
+                        color: duration === dur.id ? '#FFFFFF' : '#334155',
+                        fontWeight: duration === dur.id ? 700 : 500,
+                        fontSize: '11.5px',
+                        cursor: 'pointer',
+                        textAlign: 'center',
+                      }}
+                    >
+                      {dur.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className={styles.fieldLabel}>Mức chi tiêu</label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                  {(['budget', 'standard', 'luxury'] as const).map((tier) => (
+                    <button
+                      key={tier}
+                      type="button"
+                      onClick={() => setBudgetTier(tier)}
+                      style={{
+                        padding: '8px 4px',
+                        borderRadius: '8px',
+                        border: budgetTier === tier ? '2px solid #0088CC' : '1px solid #CBD5E1',
+                        background: budgetTier === tier ? '#F0F9FF' : '#FFFFFF',
+                        color: budgetTier === tier ? '#0088CC' : '#334155',
+                        fontWeight: budgetTier === tier ? 700 : 500,
+                        fontSize: '12px',
+                        cursor: 'pointer',
+                        textAlign: 'center',
+                      }}
+                    >
+                      {tier === 'budget' ? 'Tiết kiệm' : tier === 'luxury' ? 'Cao cấp' : 'Tiêu chuẩn'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className={styles.fieldLabel}>Nhịp độ di chuyển</label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                  {(['RELAXED', 'MODERATE', 'INTENSIVE'] as const).map((pace) => (
+                    <button
+                      key={pace}
+                      type="button"
+                      onClick={() => setActivePace(pace)}
+                      style={{
+                        padding: '8px 4px',
+                        borderRadius: '8px',
+                        border: activePace === pace ? '2px solid #0088CC' : '1px solid #CBD5E1',
+                        background: activePace === pace ? '#F0F9FF' : '#FFFFFF',
+                        color: activePace === pace ? '#0088CC' : '#334155',
+                        fontWeight: activePace === pace ? 700 : 500,
+                        fontSize: '12px',
+                        cursor: 'pointer',
+                        textAlign: 'center',
+                      }}
+                    >
+                      {pace === 'RELAXED' ? 'Thư thả' : pace === 'INTENSIVE' ? 'Đi nhiều' : 'Cân bằng'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className={styles.fieldLabel}>Yêu cầu riêng</label>
+                <textarea
+                  rows={2}
+                  value={wishesText}
+                  onChange={(e) => setWishesText(e.target.value)}
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '12.5px', resize: 'none' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', marginTop: '12px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowEditSettingsDrawer(false)}
+                  style={{
+                    flex: 1,
+                    padding: '10px',
+                    borderRadius: '8px',
+                    border: '1px solid #CBD5E1',
+                    background: '#FFFFFF',
+                    color: '#64748B',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Quay lại
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowEditSettingsDrawer(false);
+                    handleGenerateClick();
+                  }}
+                  style={{
+                    flex: 1.5,
+                    padding: '10px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: '#0088CC',
+                    color: '#FFFFFF',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Áp dụng thay đổi
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setShowEditSettingsDrawer(false);
+                  setHasPlanGenerated(false);
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#0088CC',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                  marginTop: '4px',
+                }}
+              >
+                ← Quay lại màn hình thiết lập ban đầu
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 4. PLAN HISTORY DRAWER */}
       {showHistoryDrawer && (
         <div className={styles.drawerWrapper} onClick={() => setShowHistoryDrawer(false)}>
@@ -8612,12 +8006,15 @@ export default function PlannerPage() {
                               className={`${styles.addActPlaceCard} ${isSelected ? styles.addActPlaceCardActive : ''}`}
                               onClick={() => handleSelectSuggestedPlace(place)}
                             >
-                              <img
-                                src={pickAuthenticPlacePhoto(place.image, citySuggestedPlaces, 0, activeDestObj.photo)}
-                                alt={place.name}
-                                className={styles.addActPlaceThumbnail}
-                                loading="lazy"
-                              />
+                              {place.image && !place.image.includes('unsplash.com') && !place.image.includes('location_map.svg') ? (
+                                <img
+                                  src={place.image}
+                                  alt={place.name}
+                                  className={styles.addActPlaceThumbnail}
+                                  loading="lazy"
+                                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                                />
+                              ) : null}
                               <div className={styles.addActPlaceInfo}>
                                 <div className={styles.addActPlaceTopRow}>
                                   <h4 className={styles.addActPlaceName}>{place.name}</h4>
@@ -8701,11 +8098,14 @@ export default function PlannerPage() {
                             className={styles.addActAutocompleteItem}
                             onClick={() => handleSelectSuggestedPlace(match)}
                           >
-                            <img
-                              src={pickAuthenticPlacePhoto(match.image, citySuggestedPlaces, 0, activeDestObj.photo)}
-                              alt={match.name}
-                              style={{ width: '28px', height: '28px', borderRadius: '6px', objectFit: 'cover' }}
-                            />
+                            {match.image && !match.image.includes('unsplash.com') && !match.image.includes('location_map.svg') ? (
+                              <img
+                                src={match.image}
+                                alt={match.name}
+                                style={{ width: '28px', height: '28px', borderRadius: '6px', objectFit: 'cover' }}
+                                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                              />
+                            ) : null}
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ fontSize: '12.5px', fontWeight: 600, color: '#0F172A' }}>{match.name}</div>
                               <div style={{ fontSize: '11px', color: '#64748B' }}>

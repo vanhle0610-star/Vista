@@ -143,28 +143,38 @@
 
 /* ─── MAIN TWO-COLUMN WORKSPACE CONTAINER ─── */
 .workspaceContainer {
-  max-width: 1560px;
+  max-width: 1480px;
   width: 100%;
   margin: 0 auto;
   padding: 24px 32px 48px;
   display: grid;
-  grid-template-columns: minmax(340px, 360px) minmax(0, 1fr);
-  gap: 28px;
+  grid-template-columns: minmax(0, 1.45fr) minmax(380px, 1fr);
+  gap: 32px;
   align-items: start;
 }
 
-/* ══════════════════════════════════════════════════════════════════════════════
-   LEFT SIDEBAR — THIẾT LẬP CHUYẾN ĐI (#F0F8FC)
-   ══════════════════════════════════════════════════════════════════════════════ */
-.preferencesCard {
-  background-color: #F0F8FC;
-  border: 1px solid #E2EAF0;
-  border-radius: 16px;
-  padding: 22px 20px;
-  box-shadow: 0 4px 16px rgba(20, 45, 78, 0.03);
+.workspaceContainerResult {
+  max-width: 1560px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px 32px 48px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   LEFT SIDEBAR — THIẾT LẬP CHUYẾN ĐI (CHỈN CHU, SÁNG RÕ, PHÂN CẤP TỰ NHIÊN)
+   ══════════════════════════════════════════════════════════════════════════════ */
+.preferencesCard {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 18px;
+  padding: 26px 24px;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
   position: relative;
   height: auto;
 }
@@ -1840,6 +1850,8 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+  position: sticky;
+  top: 24px;
 }
 
 .suggestedSection {
@@ -1847,6 +1859,7 @@
   border: 1px solid #E2EAF0;
   border-radius: 16px;
   padding: 20px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.03);
 }
 
 .suggestedHeader {
@@ -1880,7 +1893,7 @@
 
 .suggestedGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr;
   gap: 16px;
 }
 
@@ -1902,10 +1915,10 @@
 }
 
 .suggestedCardImageWrapper {
-  height: 140px;
+  height: 150px;
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%);
+  background: #F1F5F9;
 }
 
 .suggestedCardImage {
@@ -1998,6 +2011,91 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.useTemplateBtn {
+  background: #0088CC;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s ease;
+}
+
+.useTemplateBtn:hover {
+  background: #0284C7;
+  transform: translateY(-1px);
+}
+
+.setupIntroSection {
+  max-width: 1480px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 24px 32px 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.setupIntroLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 780px;
+}
+
+.setupBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #0088CC;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.setupMainHeading {
+  font-size: 26px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.setupSubHeading {
+  font-size: 14px;
+  color: #64748B;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.setupWeatherWidget {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 10px 16px;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+}
+
+.weatherTempBadge {
+  background: #E0F2FE;
+  color: #0088CC;
+  font-size: 11.5px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 99px;
 }
 
 /* ─── AI SMART PROMPT BOX ─── */

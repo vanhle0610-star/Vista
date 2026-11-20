@@ -8,6 +8,11 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
+  // Never intercept static assets, images, or media files
+  if (/\.[a-zA-Z0-9]+$/.test(pathname)) {
+    return NextResponse.next();
+  }
+
   // Protected paths requiring active administrator session
   const protectedPaths = [
     '/dashboard',
@@ -17,7 +22,23 @@ export function middleware(request: NextRequest) {
   ];
   const isProtected = protectedPaths.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 
-  // In local/dev environment, allow all navigation to protected routes
+  if (isProtected) {
+    const token = request.cookies.get('vista_token')?.value;
+    if (!token) {
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('redirect', pathname + search);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    // Verify token format (standard JWT has 3 dot-separated base64url parts)
+    const parts = token.split('.');
+    if (parts.length !== 3) {
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('redirect', pathname + search);
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+
   return NextResponse.next();
 }
 

@@ -164,7 +164,7 @@ class InvitationControllerTest {
   @Test
   @DisplayName("W3-02 POST /invitations/{token}/accept - Token hết hạn → 409")
   void acceptInvitation_expiredToken_returns409() throws Exception {
-    when(invitationService.acceptInvitation(eq(RAW_TOKEN), any()))
+    when(invitationService.acceptInvitation(eq(RAW_TOKEN), any(), any()))
         .thenThrow(new ConflictException("Lời mời tham gia chuyến đi đã hết hạn"));
 
     mockMvc
@@ -176,7 +176,7 @@ class InvitationControllerTest {
   @Test
   @DisplayName("W3-02 POST /invitations/{token}/accept - Lời mời đã REVOKED → 409")
   void acceptInvitation_revokedToken_returns409() throws Exception {
-    when(invitationService.acceptInvitation(eq(RAW_TOKEN), any()))
+    when(invitationService.acceptInvitation(eq(RAW_TOKEN), any(), any()))
         .thenThrow(new ConflictException("Lời mời không ở trạng thái PENDING (hiện tại: REVOKED)"));
 
     mockMvc
@@ -188,7 +188,7 @@ class InvitationControllerTest {
   @Test
   @DisplayName("W3-02 POST /invitations/{token}/accept - Token đã ACCEPTED → 409")
   void acceptInvitation_alreadyAccepted_returns409() throws Exception {
-    when(invitationService.acceptInvitation(eq(RAW_TOKEN), any()))
+    when(invitationService.acceptInvitation(eq(RAW_TOKEN), any(), any()))
         .thenThrow(
             new ConflictException("Lời mời không ở trạng thái PENDING (hiện tại: ACCEPTED)"));
 
@@ -201,7 +201,7 @@ class InvitationControllerTest {
   @Test
   @DisplayName("W3-02 POST /invitations/{token}/accept - Token không tồn tại → 404")
   void acceptInvitation_unknownToken_returns404() throws Exception {
-    when(invitationService.acceptInvitation(eq("unknowntoken"), any()))
+    when(invitationService.acceptInvitation(eq("unknowntoken"), any(), any()))
         .thenThrow(new ResourceNotFoundException("Token lời mời không tồn tại"));
 
     mockMvc
@@ -224,7 +224,7 @@ class InvitationControllerTest {
             null,
             null);
 
-    when(invitationService.acceptInvitation(eq(RAW_TOKEN), eq(MEMBER_ID))).thenReturn(accepted);
+    when(invitationService.acceptInvitation(eq(RAW_TOKEN), eq(MEMBER_ID), any())).thenReturn(accepted);
 
     mockMvc
         .perform(post("/api/v1/invitations/{token}/accept", RAW_TOKEN))
@@ -235,7 +235,7 @@ class InvitationControllerTest {
   @Test
   @DisplayName("W3-02 POST /invitations/{token}/decline - Lời mời không PENDING → 409")
   void declineInvitation_notPending_returns409() throws Exception {
-    when(invitationService.declineInvitation(eq(RAW_TOKEN), any()))
+    when(invitationService.declineInvitation(eq(RAW_TOKEN), any(), any()))
         .thenThrow(
             new ConflictException("Lời mời không ở trạng thái PENDING (hiện tại: ACCEPTED)"));
 
@@ -259,7 +259,7 @@ class InvitationControllerTest {
             null,
             null);
 
-    when(invitationService.declineInvitation(eq(RAW_TOKEN), eq(MEMBER_ID))).thenReturn(declined);
+    when(invitationService.declineInvitation(eq(RAW_TOKEN), eq(MEMBER_ID), any())).thenReturn(declined);
 
     mockMvc
         .perform(post("/api/v1/invitations/{token}/decline", RAW_TOKEN))

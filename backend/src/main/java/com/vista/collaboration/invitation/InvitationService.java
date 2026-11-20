@@ -11,12 +11,15 @@ import com.vista.trip.domain.TripMemberRepository;
 import com.vista.trip.domain.TripMemberRole;
 import com.vista.trip.domain.TripMemberStatus;
 import com.vista.trip.domain.TripRepository;
+import com.vista.user.domain.UserEntity;
 import com.vista.user.infrastructure.UserRepository;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
@@ -151,6 +154,10 @@ public class InvitationService {
   // ── W3-TV3-02: Chấp nhận lời mời + thêm vào trip_members ─────────────────
 
   public InvitationResponse acceptInvitation(String rawToken, UUID userId) {
+    return acceptInvitation(rawToken, userId, null);
+  }
+
+  public InvitationResponse acceptInvitation(String rawToken, UUID userId, String userEmail) {
     Invitation invitation = findByTokenOrThrow(rawToken);
 
     // W6-TV3-03: Kiểm tra đã bị thu hồi
@@ -173,6 +180,9 @@ public class InvitationService {
       throw new ConflictException(
           "Lời mời không ở trạng thái PENDING (hiện tại: " + invitation.getStatus() + ")");
     }
+
+    // Kiểm tra người dùng khớp với inviteeEmail
+    verifyInviteeEmail(invitation, userId, userEmail);
 
     // Thêm user vào trip_members với vai trò MEMBER
     UUID tripId = invitation.getTripId();
@@ -244,12 +254,17 @@ public class InvitationService {
   // ── W3-TV3-02: Từ chối lời mời ───────────────────────────────────────────
 
   public InvitationResponse declineInvitation(String rawToken, UUID userId) {
+    return declineInvitation(rawToken, userId, null);
+  }
+
+  public InvitationResponse declineInvitation(String rawToken, UUID userId, String userEmail) {
     Invitation invitation = findByTokenOrThrow(rawToken);
 
     if (invitation.getStatus() != InvitationStatus.PENDING) {
       throw new ConflictException(
           "Lời mời không ở trạng thái PENDING (hiện tại: " + invitation.getStatus() + ")");
     }
+    verifyInviteeEmail(invitation, userId, userEmail);
     invitation.setStatus(InvitationStatus.DECLINED);
     return InvitationResponse.from(invitationRepository.save(invitation));
   }
@@ -269,6 +284,156 @@ public class InvitationService {
       }
     }
     return list.stream().map(InvitationResponse::from).toList();
+  }
+
+  // ── W7-SSOT: Lấy danh sách lời mời đang chờ của người dùng hiện tại ─────────
+
+  @Transactional(readOnly = true)
+  public List<MyPendingInvitationResponse> getMyPendingInvitations(UUID currentUserId, String email) {
+    String searchEmail = email;
+    if (searchEmail == null || searchEmail.isBlank()) {
+      if (userRepository != null) {
+        searchEmail = userRepository.findById(currentUserId).map(UserEntity::getEmail).orElse(null);
+      }
+    }
+    if (searchEmail == null || searchEmail.isBlank()) {
+      return List.of();
+    }
+
+    List<Invitation> list =
+        invitationRepository.findByInviteeEmailIgnoreCaseAndStatusOrderByCreatedAtDesc(
+            searchEmail.trim(), InvitationStatus.PENDING);
+    Instant now = Instant.now();
+    List<MyPendingInvitationResponse> result = new ArrayList<>();
+
+    for (Invitation inv : list) {
+      if (inv.getExpiresAt() != null && inv.getExpiresAt().isBefore(now)) {
+        continue;
+      }
+      TripEntity trip = tripRepository.findById(inv.getTripId()).orElse(null);
+      String tripTitle = trip != null ? trip.getTitle() : "Chuyến đi VISTA";
+      String destSummary = trip != null ? trip.getDestinationSummary() : null;
+      LocalDate startDate = trip != null ? trip.getStartDate() : null;
+      LocalDate endDate = trip != null ? trip.getEndDate() : null;
+
+      String inviterName = "Trưởng nhóm";
+      String inviterAvatar = null;
+      if (userRepository != null) {
+        UserEntity inviter = userRepository.findById(inv.getInvitedBy()).orElse(null);
+        if (inviter != null) {
+          inviterName = inviter.getDisplayName();
+          inviterAvatar = inviter.getAvatarUrl();
+        }
+      }
+
+      result.add(
+          new MyPendingInvitationResponse(
+              inv.getId(),
+              inv.getTripId(),
+              tripTitle,
+              destSummary,
+              startDate,
+              endDate,
+              inv.getInvitedBy(),
+              inviterName,
+              inviterAvatar,
+              inv.getStatus(),
+              inv.getExpiresAt(),
+              inv.getCreatedAt()));
+    }
+
+    return result;
+  }
+
+  // ── W7-SSOT: Chấp nhận lời mời trực tiếp bằng ID (từ Navbar) ───────────────
+
+  public InvitationResponse acceptInvitationById(UUID invitationId, UUID userId) {
+    return acceptInvitationById(invitationId, userId, null);
+  }
+
+  public InvitationResponse acceptInvitationById(UUID invitationId, UUID userId, String userEmail) {
+    Invitation invitation = findOrThrow(invitationId);
+
+    if (invitation.getStatus() != InvitationStatus.PENDING) {
+      throw new ConflictException(
+          "Lời mời không ở trạng thái PENDING (hiện tại: " + invitation.getStatus() + ")");
+    }
+    if (invitation.getExpiresAt() != null && invitation.getExpiresAt().isBefore(Instant.now())) {
+      invitation.setStatus(InvitationStatus.EXPIRED);
+      invitationRepository.save(invitation);
+      throw new ConflictException("Lời mời đã hết hạn");
+    }
+
+    verifyInviteeEmail(invitation, userId, userEmail);
+
+    UUID tripId = invitation.getTripId();
+    addTripMember(tripId, userId);
+
+    invitation.setStatus(InvitationStatus.ACCEPTED);
+    Invitation saved = invitationRepository.save(invitation);
+
+    if (notificationService != null) {
+      TripEntity trip = tripRepository.findById(tripId).orElse(null);
+      String tripTitle = trip != null ? trip.getTitle() : "chuyến đi";
+
+      notificationService.sendInAppNotification(
+          invitation.getInvitedBy(),
+          "Lời mời đã được chấp nhận",
+          "Thành viên mới đã chấp nhận lời mời tham gia '" + tripTitle + "'",
+          NotificationType.INVITE_ACCEPTED.name(),
+          Map.of("tripId", tripId.toString(), "acceptedBy", userId.toString()));
+
+      notificationService.notifyTripMembers(
+          tripId,
+          "Thành viên mới gia nhập",
+          "Một thành viên mới đã tham gia chuyến đi '" + tripTitle + "'",
+          NotificationType.INVITE_ACCEPTED.name(),
+          userId);
+    }
+
+    return InvitationResponse.from(saved);
+  }
+
+  // ── W7-SSOT: Từ chối lời mời bằng ID (từ Navbar) ───────────────────────────
+
+  public InvitationResponse declineInvitationById(UUID invitationId, UUID userId) {
+    return declineInvitationById(invitationId, userId, null);
+  }
+
+  public InvitationResponse declineInvitationById(UUID invitationId, UUID userId, String userEmail) {
+    Invitation invitation = findOrThrow(invitationId);
+
+    if (invitation.getStatus() != InvitationStatus.PENDING) {
+      throw new ConflictException(
+          "Lời mời không ở trạng thái PENDING (hiện tại: " + invitation.getStatus() + ")");
+    }
+    verifyInviteeEmail(invitation, userId, userEmail);
+    invitation.setStatus(InvitationStatus.DECLINED);
+    return InvitationResponse.from(invitationRepository.save(invitation));
+  }
+
+  /**
+   * Kiểm tra người thao tác (userId / email) có phải đúng là người được mời (inviteeEmail).
+   * Nếu không khớp -> trả HTTP 403 Forbidden theo nguyên tắc bảo mật RBAC.
+   */
+  public void verifyInviteeEmail(Invitation invitation, UUID userId, String explicitEmail) {
+    String inviteeEmail = invitation.getInviteeEmail();
+    if (inviteeEmail == null || inviteeEmail.isBlank()) {
+      return;
+    }
+    String userEmail = explicitEmail != null && !explicitEmail.isBlank() ? explicitEmail.trim() : null;
+    if (userEmail == null && userRepository != null && userId != null) {
+      userEmail = userRepository.findById(userId).map(UserEntity::getEmail).orElse(null);
+    }
+    if (userEmail == null || !inviteeEmail.trim().equalsIgnoreCase(userEmail.trim())) {
+      throw new ResponseStatusException(
+          HttpStatus.FORBIDDEN,
+          "Lời mời này được gửi đến "
+              + inviteeEmail
+              + ". Bạn đang đăng nhập bằng "
+              + (userEmail != null ? userEmail : "tài khoản khác")
+              + ", không có quyền thực hiện thao tác này.");
+    }
   }
 
   // ── Private helpers ────────────────────────────────────────────────────────

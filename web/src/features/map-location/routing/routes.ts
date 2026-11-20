@@ -109,14 +109,30 @@ export async function computeVistaRoute(input: RouteInput): Promise<RouteResult 
       signal: AbortSignal.timeout(5000),
     });
 
-    if (response.ok) {
-      const data = await response.text();
-      if (data) {
-        return JSON.parse(data) as RouteResult;
+    if (!response.ok) {
+      let errorMsg = 'Chưa cấu hình dịch vụ chỉ đường';
+      try {
+        const errJson = await response.json();
+        errorMsg = errJson.detail || errJson.message || errorMsg;
+      } catch {
+        const text = await response.text();
+        if (text) errorMsg = text;
       }
+      if (response.status === 503 || errorMsg.includes('Chưa cấu hình')) {
+        throw new Error(errorMsg);
+      }
+    } else {
+      const data = await response.json() as RouteResult;
+      if (!data.legs || data.legs.length === 0) {
+        throw new Error('Dữ liệu chỉ đường không có đủ các chặng');
+      }
+      return data;
     }
-  } catch {
-    // Backend chưa cấu hình ORS_API_KEY hoặc offline -> chuyển sang OpenStreetMap OSRM
+  } catch (err: any) {
+    if (err?.message?.includes('Chưa cấu hình') || err?.message?.includes('đủ các chặng')) {
+      throw err;
+    }
+    // Backend offline / network error -> chuyển sang OpenStreetMap OSRM
   }
 
   // 3. OpenStreetMap OSRM Free Routing Service (Miễn phí 100%, không cần key)

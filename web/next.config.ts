@@ -6,8 +6,11 @@ const backendBase = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/a
   .replace(/\/+$/, '');
 
 const nextConfig: NextConfig = {
+  experimental: {
+    agentUpgrade: "security" as any,
+  },
   turbopack: {
-    root: path.resolve(__dirname),
+    root: path.resolve(process.cwd()),
   },
   async rewrites() {
     return [
