@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 
 import com.vista.budget.api.dto.CreateExpenseRequest;
 import com.vista.budget.api.dto.ExpenseResponse;
+import com.vista.budget.api.dto.SettlementAccountResponse;
 import com.vista.budget.api.dto.TripExpenseSummaryResponse;
 import com.vista.budget.api.dto.UpdateExpenseRequest;
 import com.vista.budget.application.ExpenseCalculationService.SettlementTransfer;
@@ -22,6 +23,8 @@ import com.vista.budget.infrastructure.ExpenseRepository;
 import com.vista.budget.infrastructure.ExpenseSplitRepository;
 import com.vista.common.audit.AuditLogService;
 import com.vista.trip.application.TripAccessService;
+import com.vista.user.domain.UserEntity;
+import com.vista.user.infrastructure.UserRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -37,6 +40,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(MockitoExtension.class)
@@ -47,6 +51,7 @@ class ExpenseServiceTest {
   @Mock private ExpenseSplitRepository expenseSplitRepository;
   @Mock private ExpenseCalculationService calculationService;
   @Mock private AuditLogService auditLogService;
+  @Mock private UserRepository userRepository;
 
   @InjectMocks private ExpenseService expenseService;
 
@@ -438,5 +443,76 @@ class ExpenseServiceTest {
         .isInstanceOf(ResponseStatusException.class)
         .matches(e -> ((ResponseStatusException) e).getStatusCode() == HttpStatus.FORBIDDEN);
     assertThat(expense.getStatus()).isEqualTo("ACTIVE");
+  }
+
+  @Test
+  @DisplayName("14. Lấy tài khoản quyết toán: Thành viên được trả thông tin ngân hàng của người nhận")
+  void getSettlementAccounts_withCreditor_returnsBankDetails() {
+    ExpenseEntity expense =
+        new ExpenseEntity(
+            tripId,
+            "Khách sạn",
+            BigDecimal.valueOf(1000000),
+            "VND",
+            partnerId,
+            ExpenseCategory.ACCOMMODATION,
+            Instant.now());
+
+    when(expenseRepository.findByTripIdAndStatusOrderByOccurredAtDesc(tripId, "ACTIVE"))
+        .thenReturn(List.of(expense));
+    when(expenseRepository.sumAmountByTripId(tripId)).thenReturn(BigDecimal.valueOf(1000000));
+    when(calculationService.calculateSettlementDeltas(any(), any()))
+        .thenReturn(
+            Map.of(
+                currentUserId, BigDecimal.valueOf(-500000),
+                partnerId, BigDecimal.valueOf(500000)));
+    when(calculationService.simplifyDebts(any()))
+        .thenReturn(List.of(new SettlementTransfer(currentUserId, partnerId, BigDecimal.valueOf(500000))));
+
+    UserEntity creditorUser = new UserEntity("partner@vista.vn", "hash", "Partner A");
+    ReflectionTestUtils.setField(creditorUser, "id", partnerId);
+    creditorUser.setBankCode("MB");
+    creditorUser.setBankBin("970422");
+    creditorUser.setBankAccountNumber("0984838888");
+    creditorUser.setBankAccountName("PARTNER A");
+
+    when(userRepository.findAllById(any())).thenReturn(List.of(creditorUser));
+
+    List<SettlementAccountResponse> accounts =
+        expenseService.getSettlementAccounts(tripId, currentUserId);
+
+    assertThat(accounts).hasSize(1);
+    SettlementAccountResponse res = accounts.get(0);
+    assertThat(res.bankCode()).isEqualTo("MB");
+    assertThat(res.bankBin()).isEqualTo("970422");
+    assertThat(res.bankAccountNumber()).isEqualTo("0984838888");
+    assertThat(res.bankAccountName()).isEqualTo("PARTNER A");
+  }
+
+  @Test
+  @DisplayName("15. Lấy tài khoản quyết toán: Người ngoài nhóm bị ném lỗi AccessDeniedException")
+  void getSettlementAccounts_nonMember_throwsAccessDenied() {
+    doThrow(new AccessDeniedException("Forbidden"))
+        .when(tripAccessService)
+        .requireMember(tripId, currentUserId);
+
+    assertThatThrownBy(() -> expenseService.getSettlementAccounts(tripId, currentUserId))
+        .isInstanceOf(AccessDeniedException.class);
+  }
+
+  @Test
+  @DisplayName("16. Lấy tài khoản quyết toán: Khi không có gợi ý chuyển tiền trả về danh sách rỗng")
+  void getSettlementAccounts_noTransfers_returnsEmptyList() {
+    when(expenseRepository.findByTripIdAndStatusOrderByOccurredAtDesc(tripId, "ACTIVE"))
+        .thenReturn(List.of());
+    when(expenseRepository.sumAmountByTripId(tripId)).thenReturn(BigDecimal.ZERO);
+    when(calculationService.calculateSettlementDeltas(any(), any())).thenReturn(Map.of());
+    when(calculationService.simplifyDebts(any())).thenReturn(List.of());
+
+    List<SettlementAccountResponse> accounts =
+        expenseService.getSettlementAccounts(tripId, currentUserId);
+
+    assertThat(accounts).isEmpty();
+    verify(userRepository, never()).findAllById(any());
   }
 }

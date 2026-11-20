@@ -3,6 +3,7 @@ package com.vista.budget.application;
 import com.vista.budget.api.dto.CreateExpenseRequest;
 import com.vista.budget.api.dto.ExpenseResponse;
 import com.vista.budget.api.dto.ExpenseSplitResponse;
+import com.vista.budget.api.dto.SettlementAccountResponse;
 import com.vista.budget.api.dto.SettlementTransferResponse;
 import com.vista.budget.api.dto.TripExpenseSummaryResponse;
 import com.vista.budget.api.dto.UpdateExpenseRequest;
@@ -13,6 +14,8 @@ import com.vista.budget.infrastructure.ExpenseRepository;
 import com.vista.budget.infrastructure.ExpenseSplitRepository;
 import com.vista.common.audit.AuditLogService;
 import com.vista.trip.application.TripAccessService;
+import com.vista.user.domain.UserEntity;
+import com.vista.user.infrastructure.UserRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
@@ -25,6 +28,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -45,6 +49,7 @@ public class ExpenseService {
   private final ExpenseSplitRepository expenseSplitRepository;
   private final ExpenseCalculationService calculationService;
   private final AuditLogService auditLogService;
+  private final UserRepository userRepository;
 
   @Autowired
   public ExpenseService(
@@ -52,12 +57,14 @@ public class ExpenseService {
       ExpenseRepository expenseRepository,
       ExpenseSplitRepository expenseSplitRepository,
       ExpenseCalculationService calculationService,
-      AuditLogService auditLogService) {
+      AuditLogService auditLogService,
+      UserRepository userRepository) {
     this.tripAccessService = tripAccessService;
     this.expenseRepository = expenseRepository;
     this.expenseSplitRepository = expenseSplitRepository;
     this.calculationService = calculationService;
     this.auditLogService = auditLogService;
+    this.userRepository = userRepository;
   }
 
   public ExpenseService(
@@ -65,7 +72,16 @@ public class ExpenseService {
       ExpenseRepository expenseRepository,
       ExpenseSplitRepository expenseSplitRepository,
       ExpenseCalculationService calculationService) {
-    this(tripAccessService, expenseRepository, expenseSplitRepository, calculationService, null);
+    this(tripAccessService, expenseRepository, expenseSplitRepository, calculationService, null, null);
+  }
+
+  public ExpenseService(
+      TripAccessService tripAccessService,
+      ExpenseRepository expenseRepository,
+      ExpenseSplitRepository expenseSplitRepository,
+      ExpenseCalculationService calculationService,
+      AuditLogService auditLogService) {
+    this(tripAccessService, expenseRepository, expenseSplitRepository, calculationService, auditLogService, null);
   }
 
   public ExpenseResponse createExpense(
@@ -308,6 +324,52 @@ public class ExpenseService {
         "VND",
         balances,
         suggestedTransfers);
+  }
+
+  /**
+   * Lấy thông tin tài khoản ngân hàng thụ hưởng phục vụ quyết toán (TV4).
+   * Chỉ các thành viên hợp lệ của chuyến đi mới được phép truy cập.
+   * Chỉ trả về tài khoản của những thành viên thực sự cần nhận tiền từ kết quả settlement.
+   */
+  @Transactional(readOnly = true)
+  public List<SettlementAccountResponse> getSettlementAccounts(UUID tripId, UUID currentUserId) {
+    tripAccessService.requireMember(tripId, currentUserId);
+
+    TripExpenseSummaryResponse summary = getTripExpenseSummary(tripId, currentUserId, null);
+    if (summary.suggestedTransfers() == null || summary.suggestedTransfers().isEmpty()) {
+      return List.of();
+    }
+
+    Set<UUID> receiverIds =
+        summary.suggestedTransfers().stream()
+            .map(SettlementTransferResponse::toUserId)
+            .collect(Collectors.toCollection(LinkedHashSet::new));
+
+    if (receiverIds.isEmpty()) {
+      return List.of();
+    }
+
+    List<UserEntity> receivers =
+        userRepository != null ? userRepository.findAllById(receiverIds) : List.of();
+    Map<UUID, UserEntity> userMap =
+        receivers.stream().collect(Collectors.toMap(UserEntity::getId, u -> u));
+
+    return receiverIds.stream()
+        .map(
+            id -> {
+              UserEntity user = userMap.get(id);
+              if (user == null) {
+                return new SettlementAccountResponse(id, null, null, null, null, null);
+              }
+              return new SettlementAccountResponse(
+                  user.getId(),
+                  user.getDisplayName() != null ? user.getDisplayName() : user.getEmail(),
+                  user.getBankCode(),
+                  user.getBankBin(),
+                  user.getBankAccountNumber(),
+                  user.getBankAccountName());
+            })
+        .toList();
   }
 
   public void deleteExpense(UUID tripId, UUID expenseId, UUID currentUserId) {

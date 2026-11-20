@@ -76,7 +76,7 @@ describe('AiPlannerScreen', () => {
     });
   });
 
-  it('gracefully degrades to offline curated fallback if API call fails', async () => {
+  it('shows error state with retry button and does not inject mock data when API call fails', async () => {
     (expenseApi.fetchAiQuickPlan as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
     (expenseApi.fetchAiItinerarySuggestions as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
 
@@ -86,8 +86,10 @@ describe('AiPlannerScreen', () => {
     fireEvent.press(generateBtn);
 
     await waitFor(() => {
-      expect(screen.getByText('⚡ Lộ trình chuẩn hóa')).toBeTruthy();
-      expect(screen.getByText(/Ngày 1:/)).toBeTruthy();
+      expect(screen.getByText(/Không thể kết nối hoặc khởi tạo lịch trình AI lúc này/)).toBeTruthy();
+      expect(screen.getByText('🔄 Thử lại')).toBeTruthy();
+      // Ensure no mock data leaked
+      expect(screen.queryByText('⚡ Lộ trình chuẩn hóa')).toBeNull();
     });
   });
 });

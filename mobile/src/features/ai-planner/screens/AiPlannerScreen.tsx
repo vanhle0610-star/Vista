@@ -28,10 +28,52 @@ import {
 
 export interface AiPlannerScreenProps {
   tripId?: string;
+  defaultProvince?: string;
 }
 
-export function AiPlannerScreen({ tripId = '11111111-1111-1111-1111-111111111111' }: AiPlannerScreenProps) {
-  const [province, setProvince] = useState('Đà Nẵng');
+function getProvinceClimate(provinceName: string): { temp: string; desc: string } {
+  const p = provinceName.toLowerCase();
+  if (p.includes('đà lạt') || p.includes('da lat') || p.includes('sapa') || p.includes('hà giang')) {
+    return {
+      temp: '18°C',
+      desc: 'Không khí se lạnh vùng cao, sương mù nhẹ buổi sớm, rất thích hợp dạo bộ và thưởng thức ẩm thực nóng hổi.',
+    };
+  }
+  if (p.includes('hà nội') || p.includes('hạ long') || p.includes('ninh bình')) {
+    return {
+      temp: '23°C',
+      desc: 'Thời tiết mùa thu dịu mát, nắng nhẹ, độ ẩm dễ chịu, lý tưởng tham quan di tích và thắng cảnh thiên nhiên.',
+    };
+  }
+  if (
+    p.includes('phú quốc') ||
+    p.includes('nha trang') ||
+    p.includes('vũng tàu') ||
+    p.includes('sài gòn') ||
+    p.includes('hồ chí minh')
+  ) {
+    return {
+      temp: '31°C',
+      desc: 'Nắng ấm miền nhiệt đới, biển êm sóng lặng, rất thuận lợi cho các hoạt động tắm biển, lặn ngắm san hô và chèo SUP.',
+    };
+  }
+  return {
+    temp: '27°C',
+    desc: 'Thời tiết nắng ráo, gió biển ôn hòa, rất lý tưởng cho các hoạt động ngoài trời, dạo phố và khám phá ẩm thực.',
+  };
+}
+
+function getTransitEstimate(actIdx: number): string {
+  if (actIdx === 0) return 'Xuất phát di chuyển khoảng 15 – 20 phút bằng taxi/xe máy';
+  if (actIdx === 1) return 'Chặng kế tiếp cách khoảng 3 – 5 km (khoảng 10 – 15 phút di chuyển)';
+  return 'Di chuyển về khu trung tâm / điểm tiếp theo (khoảng 15 – 25 phút)';
+}
+
+export function AiPlannerScreen({
+  tripId,
+  defaultProvince = 'Đà Nẵng',
+}: AiPlannerScreenProps = {}) {
+  const [province, setProvince] = useState(defaultProvince);
   const [days, setDays] = useState('3');
   const [budgetLevel, setBudgetLevel] = useState<'LOW' | 'MEDIUM' | 'HIGH'>('MEDIUM');
   const [travelerCount, setTravelerCount] = useState(4);
@@ -39,10 +81,50 @@ export function AiPlannerScreen({ tripId = '11111111-1111-1111-1111-111111111111
   const [selectedStyles, setSelectedStyles] = useState<string[]>(['Biển & Chill', 'Ẩm thực']);
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
 
+  const climate = React.useMemo(() => getProvinceClimate(province), [province]);
+
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [itineraryData, setItineraryData] = useState<AiItineraryResponse | null>(null);
+
+  const aiCostBreakdown = React.useMemo(() => {
+    if (!itineraryData || !itineraryData.days || itineraryData.days.length === 0) {
+      return { hotelAndTicketPct: 45, diningPct: 35, transitPct: 20 };
+    }
+    let hotelAndTicket = 0;
+    let dining = 0;
+    let other = 0;
+
+    itineraryData.days.forEach((d) => {
+      d.activities.forEach((a) => {
+        const cat = (a.category || '').toLowerCase();
+        const cost = a.estimatedCost || 0;
+        if (cat.includes('ẩm thực') || cat.includes('ăn')) {
+          dining += cost;
+        } else if (
+          cat.includes('lưu trú') ||
+          cat.includes('vé') ||
+          cat.includes('khách sạn') ||
+          cat.includes('di tích') ||
+          cat.includes('tâm linh')
+        ) {
+          hotelAndTicket += cost;
+        } else {
+          other += cost;
+        }
+      });
+    });
+
+    const total = hotelAndTicket + dining + other;
+    if (total <= 0) {
+      return { hotelAndTicketPct: 45, diningPct: 35, transitPct: 20 };
+    }
+    const hPct = Math.max(10, Math.round((hotelAndTicket / total) * 100));
+    const dPct = Math.max(10, Math.round((dining / total) * 100));
+    const tPct = Math.max(10, 100 - (hPct + dPct));
+    return { hotelAndTicketPct: hPct, diningPct: dPct, transitPct: tPct };
+  }, [itineraryData]);
 
   const toggleStyle = (styleName: string) => {
     setSelectedStyles((prev) =>
@@ -58,15 +140,24 @@ export function AiPlannerScreen({ tripId = '11111111-1111-1111-1111-111111111111
 
     try {
       let response: AiItineraryResponse;
-      try {
+      if (tripId) {
+        try {
+          response = await expenseApi.fetchAiItinerarySuggestions(tripId, {
+            destinationProvince: province.trim() || 'Đà Nẵng',
+            totalDays,
+            budgetLevel,
+            interests: selectedStyles,
+          });
+        } catch {
+          response = await expenseApi.fetchAiQuickPlan({
+            destinationProvince: province.trim() || 'Đà Nẵng',
+            totalDays,
+            budgetLevel,
+            interests: selectedStyles,
+          });
+        }
+      } else {
         response = await expenseApi.fetchAiQuickPlan({
-          destinationProvince: province.trim() || 'Đà Nẵng',
-          totalDays,
-          budgetLevel,
-          interests: selectedStyles,
-        });
-      } catch {
-        response = await expenseApi.fetchAiItinerarySuggestions(tripId, {
           destinationProvince: province.trim() || 'Đà Nẵng',
           totalDays,
           budgetLevel,
@@ -82,72 +173,11 @@ export function AiPlannerScreen({ tripId = '11111111-1111-1111-1111-111111111111
           '⚠️ Bạn đã sử dụng hết 5 lượt gợi ý AI trong ngày hôm nay. Vui lòng quay lại vào ngày mai.'
         );
       } else {
-        // Fallback demo mock so screen never breaks
-        setItineraryData({
-          destinationProvince: province,
-          totalDays,
-          budgetLevel,
-          estimatedTotalCost: 3500000,
-          isMockData: true,
-          days: [
-            {
-              dayNumber: 1,
-              dateLabel: 'Ngày 1: Biển Mỹ Khê & Bán đảo Sơn Trà',
-              activities: [
-                {
-                  timeSlot: '08:00 – 10:30',
-                  destinationName: 'Bán đảo Sơn Trà & Chùa Linh Ứng',
-                  estimatedCost: 0,
-                  category: 'Tâm linh & Cảnh quan',
-                  note: 'Ngắm tượng Phật Bà Quan Âm cao 67m hướng biển',
-                },
-                {
-                  timeSlot: '11:30 – 13:00',
-                  destinationName: 'Mì Quảng Ếch Bếp Trang',
-                  estimatedCost: 65000,
-                  category: 'Ẩm thực',
-                  note: 'Thưởng thức mì Quảng ếch niêu đất đặc sản',
-                },
-                {
-                  timeSlot: '15:00 – 18:00',
-                  destinationName: 'Bãi biển Mỹ Khê & Chèo SUP',
-                  estimatedCost: 150000,
-                  category: 'Biển & Thư giãn',
-                  note: 'Tắm biển cát trắng, chèo ván SUP ngắm hoàng hôn',
-                },
-              ],
-            },
-            {
-              dayNumber: 2,
-              dateLabel: 'Ngày 2: Danh thắng Ngũ Hành Sơn & Phố Cổ Hội An',
-              activities: [
-                {
-                  timeSlot: '08:30 – 11:00',
-                  destinationName: 'Danh thắng Ngũ Hành Sơn',
-                  estimatedCost: 40000,
-                  category: 'Di tích & Khám phá',
-                  note: 'Khám phá Động Huyền Không và ngọn Thủy Sơn',
-                },
-                {
-                  timeSlot: '14:00 – 17:00',
-                  destinationName: 'Rừng dừa Bảy Mẫu Cẩm Thanh',
-                  estimatedCost: 200000,
-                  category: 'Trải nghiệm',
-                  note: 'Chèo thuyền thúng xoay vòng độc đáo',
-                },
-                {
-                  timeSlot: '18:00 – 21:30',
-                  destinationName: 'Phố cổ Hội An & Thả hoa đăng',
-                  estimatedCost: 250000,
-                  category: 'Di sản & Văn hóa',
-                  note: 'Ngắm đèn lồng lung linh và chèo thuyền sông Hoài',
-                },
-              ],
-            },
-          ],
-        });
-        setSelectedDayIndex(0);
+        setErrorMessage(
+          '⚠️ Không thể kết nối hoặc khởi tạo lịch trình AI lúc này. Vui lòng kiểm tra kết nối mạng và nhấn "Thử lại".'
+        );
       }
+      setItineraryData(null);
     } finally {
       setIsLoading(false);
     }
@@ -259,14 +289,14 @@ export function AiPlannerScreen({ tripId = '11111111-1111-1111-1111-111111111111
           </View>
           <View style={styles.weatherTextWrapper}>
             <View style={styles.weatherHeaderRow}>
-              <Text style={styles.weatherLocation}>{province} · 28°C</Text>
+              <Text style={styles.weatherLocation}>
+                {province} · {climate.temp}
+              </Text>
               <View style={styles.weatherMonthTag}>
                 <Text style={styles.weatherMonthText}>Khí tượng trực tiếp</Text>
               </View>
             </View>
-            <Text style={styles.weatherDesc}>
-              Thời tiết lý tưởng cho các hoạt động ngoài trời, bãi biển và chụp ảnh khám phá ẩm thực.
-            </Text>
+            <Text style={styles.weatherDesc}>{climate.desc}</Text>
           </View>
         </View>
 
@@ -472,6 +502,13 @@ export function AiPlannerScreen({ tripId = '11111111-1111-1111-1111-111111111111
         {errorMessage && (
           <View style={styles.errorCard}>
             <Text style={styles.errorText}>{errorMessage}</Text>
+            <TouchableOpacity
+              style={styles.retryButton}
+              onPress={handleGenerate}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.retryButtonText}>🔄 Thử lại</Text>
+            </TouchableOpacity>
           </View>
         )}
 
@@ -574,7 +611,7 @@ export function AiPlannerScreen({ tripId = '11111111-1111-1111-1111-111111111111
                       <View style={styles.transitIndicator}>
                         <CarIcon size={14} color="#006a67" style={{ marginRight: 6 }} />
                         <Text style={styles.transitText}>
-                          Di chuyển khoảng 15 – 20 phút bằng taxi/xe máy
+                          {getTransitEstimate(actIdx)}
                         </Text>
                       </View>
                     )}
@@ -587,22 +624,43 @@ export function AiPlannerScreen({ tripId = '11111111-1111-1111-1111-111111111111
             <View style={styles.budgetDistCard}>
               <Text style={styles.budgetDistTitle}>Phân bổ chi phí ước tính</Text>
               <View style={styles.distBarTrack}>
-                <View style={[styles.distBarPart, { flex: 45, backgroundColor: '#006C75' }]} />
-                <View style={[styles.distBarPart, { flex: 35, backgroundColor: '#006a67' }]} />
-                <View style={[styles.distBarPart, { flex: 20, backgroundColor: '#6b38d4' }]} />
+                <View
+                  style={[
+                    styles.distBarPart,
+                    { flex: aiCostBreakdown.hotelAndTicketPct, backgroundColor: '#006C75' },
+                  ]}
+                />
+                <View
+                  style={[
+                    styles.distBarPart,
+                    { flex: aiCostBreakdown.diningPct, backgroundColor: '#006a67' },
+                  ]}
+                />
+                <View
+                  style={[
+                    styles.distBarPart,
+                    { flex: aiCostBreakdown.transitPct, backgroundColor: '#6b38d4' },
+                  ]}
+                />
               </View>
               <View style={styles.distLegendRow}>
                 <View style={styles.distLegendItem}>
                   <View style={[styles.distDot, { backgroundColor: '#006C75' }]} />
-                  <Text style={styles.distLegendText}>Khách sạn & Vé (45%)</Text>
+                  <Text style={styles.distLegendText}>
+                    Khách sạn & Vé ({aiCostBreakdown.hotelAndTicketPct}%)
+                  </Text>
                 </View>
                 <View style={styles.distLegendItem}>
                   <View style={[styles.distDot, { backgroundColor: '#006a67' }]} />
-                  <Text style={styles.distLegendText}>Ăn uống (35%)</Text>
+                  <Text style={styles.distLegendText}>
+                    Ăn uống ({aiCostBreakdown.diningPct}%)
+                  </Text>
                 </View>
                 <View style={styles.distLegendItem}>
                   <View style={[styles.distDot, { backgroundColor: '#6b38d4' }]} />
-                  <Text style={styles.distLegendText}>Trải nghiệm (20%)</Text>
+                  <Text style={styles.distLegendText}>
+                    Trải nghiệm & Khác ({aiCostBreakdown.transitPct}%)
+                  </Text>
                 </View>
               </View>
             </View>
@@ -986,6 +1044,19 @@ const styles = StyleSheet.create({
     color: '#dc2626',
     fontSize: 13,
     lineHeight: 18,
+  },
+  retryButton: {
+    marginTop: 8,
+    alignSelf: 'flex-start',
+    backgroundColor: '#dc2626',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '700',
   },
   previewContainer: {
     marginHorizontal: 16,

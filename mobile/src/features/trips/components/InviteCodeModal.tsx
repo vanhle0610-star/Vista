@@ -80,10 +80,14 @@ export function InviteCodeModal({
     }
   };
 
+  const getFallbackInviteLink = () => {
+    const webBaseUrl = process.env.EXPO_PUBLIC_WEB_URL || 'https://vista.travel';
+    const code = invitation?.token || invitation?.rawToken || tripId?.slice(0, 6).toUpperCase() || '';
+    return `${webBaseUrl}/trips/join?code=${code}`;
+  };
+
   const handleCopyLink = () => {
-    const link =
-      invitation?.inviteLink ||
-      `https://vista.travel/trips/join?code=${invitation?.token || invitation?.rawToken || tripId?.slice(0, 6).toUpperCase()}`;
+    const link = invitation?.inviteLink || getFallbackInviteLink();
     Clipboard.setString(link);
     setCopied(true);
     Alert.alert('Đã sao chép liên kết mời', link);
@@ -91,9 +95,7 @@ export function InviteCodeModal({
   };
 
   const handleShare = async () => {
-    const link =
-      invitation?.inviteLink ||
-      `https://vista.travel/trips/join?code=${invitation?.token || invitation?.rawToken || tripId?.slice(0, 6).toUpperCase()}`;
+    const link = invitation?.inviteLink || getFallbackInviteLink();
     try {
       await Share.share({
         message: `Tham gia chuyến đi "${tripTitle || 'VISTA'}" cùng tôi trên VISTA: ${link}`,

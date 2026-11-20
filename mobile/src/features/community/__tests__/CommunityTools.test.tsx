@@ -34,7 +34,9 @@ beforeEach(() => {
     .mockResolvedValue(permission(false));
   jest
     .mocked(Location.requestForegroundPermissionsAsync)
-    .mockResolvedValue({ ...permission(false), status: Location.PermissionStatus.DENIED });
+    jest
+      .mocked(Location.requestForegroundPermissionsAsync)
+      .mockResolvedValue({ ...permission(false), status: Location.PermissionStatus.DENIED });
   jest.mocked(Location.hasServicesEnabledAsync).mockResolvedValue(true);
   jest.mocked(api.get).mockResolvedValue({
     data: {
