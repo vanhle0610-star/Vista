@@ -68,7 +68,7 @@ import {
   Footprints,
   SlidersHorizontal,
 } from 'lucide-react';
-import { PlannerSetupView } from './components/PlannerSetupView';
+import { PlannerSetupView, type CuratedTemplateItem } from './components/PlannerSetupView';
 import {
   getPlanHistory,
   savePlanToHistory,
@@ -1613,7 +1613,7 @@ export default function PlannerPage() {
   }, [activeDestObj?.lat, activeDestObj?.lng, destination]);
 
   // Suggested itinerary cards: Curated unique highlights & distinct photography for ALL 63 provinces
-  const suggestedCards = useMemo(() => {
+  const suggestedCards = useMemo<CuratedTemplateItem[]>(() => {
     const dLower = destination.toLowerCase();
     if (dLower.includes('đà nẵng') || dLower.includes('danang')) {
       return [
@@ -1628,6 +1628,26 @@ export default function PlannerPage() {
           destInfo: 'Đà Nẵng',
           image: '/destinations/dest-9648da36.webp',
           styles: ['beach', 'culture'],
+          rating: 4.9,
+          usedCount: '1.8k lượt dùng',
+          priceFormatted: '4.250.000đ',
+          dailyHighlights: [
+            {
+              dayNumber: 1,
+              title: 'Trái tim Sơn Trà & Biển Mỹ Khê',
+              stops: 'Bán đảo Sơn Trà · Chùa Linh Ứng · Bãi Bụt · Cầu Rồng phun lửa',
+            },
+            {
+              dayNumber: 2,
+              title: 'Kỳ quan Bà Nà Hills',
+              stops: 'Cầu Vàng bàn tay khổng lồ · Làng Pháp · Cáp treo kỷ lục · Buffet đỉnh núi',
+            },
+            {
+              dayNumber: 3,
+              title: 'Phố cổ Hội An hoài niệm',
+              stops: 'Chùa Cầu · Thuyền hoa đăng sông Hoài · Chợ đêm Nguyễn Hoàng · Cơm gà Phố Hội',
+            },
+          ],
         },
         {
           id: 'dn-2',
@@ -1640,6 +1660,21 @@ export default function PlannerPage() {
           destInfo: 'Đà Nẵng',
           image: '/destinations/dest-1a812708.webp',
           styles: ['culture', 'cuisine'],
+          rating: 4.9,
+          usedCount: '950 lượt dùng',
+          priceFormatted: '1.250.000đ',
+          dailyHighlights: [
+            {
+              dayNumber: 1,
+              title: 'Chợ Hàn & Đặc sản miền Trung',
+              stops: 'Chợ Hàn · Mì Quảng ếch Bếp Trang · Cà phê ven sông Hàn · Biển Mỹ Khê',
+            },
+            {
+              dayNumber: 2,
+              title: 'Phố ẩm thực & Check-in',
+              stops: 'Bún chả cá Bà Phiến · Bánh tráng cuốn thịt heo · Nhà thờ Con Gà · Chả bò Đà Nẵng',
+            },
+          ],
         },
         {
           id: 'dn-3',
@@ -1652,6 +1687,31 @@ export default function PlannerPage() {
           destInfo: 'Đà Nẵng',
           image: '/destinations/dest-65f890a2.webp',
           styles: ['culture', 'beach'],
+          rating: 4.8,
+          usedCount: '1.1k lượt dùng',
+          priceFormatted: '3.800.000đ',
+          dailyHighlights: [
+            {
+              dayNumber: 1,
+              title: 'Ngũ Hành Sơn huyền ảo',
+              stops: 'Động Huyền Không · Chùa Linh Ứng Ngũ Hành Sơn · Làng đá Non Nước',
+            },
+            {
+              dayNumber: 2,
+              title: 'Bảo tàng Chăm & Sông Hàn',
+              stops: 'Bảo tàng Điêu khắc Chăm · Du thuyền sông Hàn · Cầu Tình Yêu',
+            },
+            {
+              dayNumber: 3,
+              title: 'Hội An phố cổ về đêm',
+              stops: 'Rừng dừa Bảy Mẫu chèo thuyền thúng · Chùa Cầu · Thả hoa đăng sông Hoài',
+            },
+            {
+              dayNumber: 4,
+              title: 'Nghỉ dưỡng & Thư thái',
+              stops: 'Biển An Bàng · Thưởng thức hải sản tươi sống & tạm biệt Đà Nẵng',
+            },
+          ],
         },
       ];
     }
@@ -1659,7 +1719,7 @@ export default function PlannerPage() {
       return [
         {
           id: 'hn-1',
-          title: 'Hà Nội – Văn Miếu – Tràng An',
+          title: 'Hà Nội hoài niệm: Văn Miếu, Phố cổ & Cà phê Trứng',
           subtitle: 'Hồ Gươm · Văn Miếu Quốc Tử Giám · Di sản Tràng An',
           themeBadge: '🏛️ Di sản ngàn năm',
           duration: '3n2d',
@@ -1668,6 +1728,26 @@ export default function PlannerPage() {
           destInfo: 'Hà Nội',
           image: '/destinations/dest-0098ba1b.webp',
           styles: ['culture', 'nature'],
+          rating: 4.9,
+          usedCount: '1.2k lượt dùng',
+          priceFormatted: '2.850.000đ',
+          dailyHighlights: [
+            {
+              dayNumber: 1,
+              title: 'Khám phá Trái tim',
+              stops: 'Hồ Hoàn Kiếm · Đền Ngọc Sơn · Cà phê Giảng · Ẩm thực đêm Tạ Hiện',
+            },
+            {
+              dayNumber: 2,
+              title: 'Văn hóa & Thắng cảnh',
+              stops: 'Lăng Bác · Văn Miếu Quốc Tử Giám · Chùa Trấn Quốc · Hoàng hôn Hồ Tây',
+            },
+            {
+              dayNumber: 3,
+              title: 'Dấu ấn Kinh kỳ',
+              stops: 'Hoàng Thành Thăng Long · Phố bích họa Phùng Hưng · Mua quà Ô mai Hàng Đường',
+            },
+          ],
         },
         {
           id: 'hn-2',
@@ -1680,11 +1760,26 @@ export default function PlannerPage() {
           destInfo: 'Hà Nội',
           image: '/destinations/dest-27317922.webp',
           styles: ['culture', 'cuisine'],
+          rating: 4.9,
+          usedCount: '1.5k lượt dùng',
+          priceFormatted: '950.000đ',
+          dailyHighlights: [
+            {
+              dayNumber: 1,
+              title: 'Phố cổ & Cà phê Trứng',
+              stops: 'Phở Bát Đàn · Cà phê Đinh / Giảng · Hồ Gươm · Phố bia Tạ Hiện',
+            },
+            {
+              dayNumber: 2,
+              title: 'Ẩm thực ngõ ngách',
+              stops: 'Bún chả Hàng Quạt · Bánh cuốn Thanh Trì · Chợ Đồng Xuân mua quà đặc sản',
+            },
+          ],
         },
         {
           id: 'hn-3',
-          title: 'Hà Nội – Vịnh Hạ Long – Yên Tử',
-          subtitle: 'Thủ đô · Du thuyền Vịnh Hạ Long & Non thiêng Yên Tử',
+          title: 'Hà Nội – Vịnh Hạ Long – Yên Tử kỳ vĩ',
+          subtitle: 'Hành trình di sản tâm linh & kỳ quan thiên nhiên thế giới kết hợp văn hóa Đất kinh kỳ.',
           themeBadge: '⛵ Kỳ quan & Tâm linh',
           duration: '4n3d',
           durationBadge: '4N3Đ',
@@ -1692,15 +1787,45 @@ export default function PlannerPage() {
           destInfo: 'Hà Nội',
           image: '/destinations/dest-27f91bc9.webp',
           styles: ['nature', 'culture'],
+          rating: 4.8,
+          usedCount: '820 lượt dùng',
+          priceFormatted: '12.800.000đ',
+          dailyHighlights: [
+            {
+              dayNumber: 1,
+              title: 'Thủ đô ngàn năm văn hiến',
+              stops: 'Hồ Hoàn Kiếm · Văn Miếu Quốc Tử Giám · 36 Phố Phường',
+            },
+            {
+              dayNumber: 2,
+              title: 'Kỳ quan Vịnh Hạ Long',
+              stops: 'Cảng Tuần Châu · Du thuyền Hạ Long ngắm Hòn Trống Mái · Hang Sửng Sốt',
+            },
+            {
+              dayNumber: 3,
+              title: 'Non thiêng Yên Tử',
+              stops: 'Cáp treo Yên Tử · Chùa Đồng trên đỉnh Phù Vân · Rừng trúc thanh tịnh',
+            },
+            {
+              dayNumber: 4,
+              title: 'Trở về & Trải nghiệm',
+              stops: 'Làng gốm Bát Tràng · Thưởng thức chả cá Lã Vọng & tạm biệt Hà Nội',
+            },
+          ],
         },
       ];
     }
-    if (dLower.includes('hồ chí minh') || dLower.includes('ho chi minh') || dLower.includes('sài gòn') || dLower.includes('saigon')) {
+    if (
+      dLower.includes('hồ chí minh') ||
+      dLower.includes('ho chi minh') ||
+      dLower.includes('sài gòn') ||
+      dLower.includes('saigon')
+    ) {
       return [
         {
           id: 'hcm-1',
-          title: 'Dinh Độc Lập – Nhà thờ Đức Bà Sài Gòn',
-          subtitle: 'Tham quan di tích nổi tiếng · Check-in Dinh Độc Lập & đặc sản trưa',
+          title: 'Sài Gòn Năng Động & Ẩm Thực Đêm',
+          subtitle: 'Dinh Độc Lập · Bưu điện Trung tâm · Chợ Bến Thành · Cà phê vợt',
           themeBadge: '🏛️ Biểu tượng & Văn hóa',
           duration: '3n2d',
           durationBadge: '3N2Đ',
@@ -1708,11 +1833,31 @@ export default function PlannerPage() {
           destInfo: 'TP. Hồ Chí Minh',
           image: '/destinations/dest-ff3fa74a.webp',
           styles: ['culture', 'photo'],
+          rating: 4.9,
+          usedCount: '2.1k lượt dùng',
+          priceFormatted: '3.150.000đ',
+          dailyHighlights: [
+            {
+              dayNumber: 1,
+              title: 'Khám phá Trái tim Sài Gòn',
+              stops: 'Dinh Độc Lập · Bưu điện Trung tâm · Chợ Bến Thành · Cà phê vợt Ba Lù',
+            },
+            {
+              dayNumber: 2,
+              title: 'Văn hóa & Thắng cảnh',
+              stops: 'Chùa Bửu Long · Bảo tàng Mỹ thuật · Ngắm hoàng hôn bến Bạch Đằng',
+            },
+            {
+              dayNumber: 3,
+              title: 'Sài Gòn Đêm sôi động',
+              stops: 'Chợ hoa Hồ Thị Kỷ · Hẻm ẩm thực Cô Giang · Landmark 81 Skyview',
+            },
+          ],
         },
         {
           id: 'hcm-2',
           title: 'Food Tour Chợ Bến Thành · Phố ẩm thực Vĩnh Khánh',
-          subtitle: 'Thưởng thức đặc sản bản địa tại Chợ Bến Thành kết hợp dạo chơi cuối tuần',
+          subtitle: 'Thưởng thức 10+ đặc sản bản địa tại Chợ Bến Thành kết hợp dạo chơi cuối tuần',
           themeBadge: '🍜 Food Tour Bản Địa',
           duration: '2n1d',
           durationBadge: '2N1Đ',
@@ -1720,10 +1865,25 @@ export default function PlannerPage() {
           destInfo: 'TP. Hồ Chí Minh',
           image: '/destinations/dest-e57463fe.webp',
           styles: ['cuisine', 'culture'],
+          rating: 4.9,
+          usedCount: '1.4k lượt dùng',
+          priceFormatted: '1.100.000đ',
+          dailyHighlights: [
+            {
+              dayNumber: 1,
+              title: 'Chợ Bến Thành & Cơm tấm',
+              stops: 'Chợ Bến Thành · Cơm tấm Ba Ghiền · Phố đi bộ Nguyễn Huệ · Phố ốc Vĩnh Khánh',
+            },
+            {
+              dayNumber: 2,
+              title: 'Hủ tiếu & Cà phê chung cư',
+              stops: 'Hủ tiếu Nam Vang · Chung cư cà phê 42 Nguyễn Huệ · Bánh mì Huỳnh Hoa',
+            },
+          ],
         },
         {
           id: 'hcm-3',
-          title: 'Bưu điện Trung tâm Sài Gòn · Nghỉ dưỡng & Chill TP. Hồ Chí Minh',
+          title: 'Bưu điện Trung tâm Sài Gòn · Nghỉ dưỡng & Chill',
           subtitle: 'Lịch trình thảnh thơi, cà phê chiều & góc sống ảo ít người biết',
           themeBadge: '🌿 Thảnh thơi & Check-in',
           duration: '4n3d',
@@ -1732,10 +1892,35 @@ export default function PlannerPage() {
           destInfo: 'TP. Hồ Chí Minh',
           image: '/destinations/dest-3950cfbf.webp',
           styles: ['photo', 'entertainment'],
+          rating: 4.8,
+          usedCount: '980 lượt dùng',
+          priceFormatted: '4.500.000đ',
+          dailyHighlights: [
+            {
+              dayNumber: 1,
+              title: 'Di sản kiến trúc Pháp',
+              stops: 'Nhà thờ Đức Bà · Bưu điện Trung tâm · Nhà hát Thành phố',
+            },
+            {
+              dayNumber: 2,
+              title: 'Nghệ thuật & Check-in',
+              stops: 'Bảo tàng Mỹ thuật · Thảo Cầm Viên · Cà phê rooftop view sông Sài Gòn',
+            },
+            {
+              dayNumber: 3,
+              title: 'Sinh thái ngoại ô',
+              stops: 'Khu du lịch Suối Tiên / Địa đạo Củ Chi · Bến Bình Đông',
+            },
+            {
+              dayNumber: 4,
+              title: 'Mua sắm & Tạm biệt',
+              stops: 'Saigon Centre · Mua quà cà phê phin đặc sản & tạm biệt Sài Gòn',
+            },
+          ],
         },
       ];
     }
-    if (dLower.includes('phú quốc') || dLower.includes('phuquoc')) {
+    if (dLower.includes('phú quốc') || dLower.includes('phuquoc') || dLower.includes('kiên giang')) {
       return [
         {
           id: 'pq-1',
@@ -1748,6 +1933,26 @@ export default function PlannerPage() {
           destInfo: 'Phú Quốc (Kiên Giang)',
           image: '/destinations/dest-pq-chuon-chuon-bistro.webp',
           styles: ['beach', 'photo'],
+          rating: 4.9,
+          usedCount: '1.7k lượt dùng',
+          priceFormatted: '5.600.000đ',
+          dailyHighlights: [
+            {
+              dayNumber: 1,
+              title: 'Nam đảo biển ngọc',
+              stops: 'Bãi Sao cát trắng · Chuồn Chuồn Bistro đỉnh đồi · Chợ đêm Dương Đông',
+            },
+            {
+              dayNumber: 2,
+              title: 'Tour 4 đảo lặn ngắm san hô',
+              stops: 'Cáp treo Hòn Thơm · Lặn san hô Hòn Gầm Ghì · Hoàng hôn OCSEN Beach Bar',
+            },
+            {
+              dayNumber: 3,
+              title: 'Khám phá Bắc đảo hoang sơ',
+              stops: 'Làng chài Rạch Vẹm sao biển đỏ · Mũi Gành Dầu · Mua tiêu & nước mắm',
+            },
+          ],
         },
         {
           id: 'pq-2',
@@ -1760,6 +1965,21 @@ export default function PlannerPage() {
           destInfo: 'Phú Quốc (Kiên Giang)',
           image: '/destinations/dest-pq-ocsen-beach-bar.webp',
           styles: ['entertainment', 'beach'],
+          rating: 4.9,
+          usedCount: '1.3k lượt dùng',
+          priceFormatted: '2.200.000đ',
+          dailyHighlights: [
+            {
+              dayNumber: 1,
+              title: 'Hoàng hôn Bãi Trường',
+              stops: 'Bãi Trường · Check-in OCSEN Beach Bar · Tiệc BBQ hải sản nướng',
+            },
+            {
+              dayNumber: 2,
+              title: 'Dinh Cậu & Ẩm thực đảo',
+              stops: 'Dinh Cậu · Bún quậy Kiến Xây · Mua quà đặc sản ngọc trai & tiêu chín',
+            },
+          ],
         },
         {
           id: 'pq-3',
@@ -1772,14 +1992,347 @@ export default function PlannerPage() {
           destInfo: 'Phú Quốc (Kiên Giang)',
           image: '/destinations/dest-pq-sailing-club.webp',
           styles: ['beach', 'entertainment'],
+          rating: 4.8,
+          usedCount: '750 lượt dùng',
+          priceFormatted: '8.900.000đ',
+          dailyHighlights: [
+            {
+              dayNumber: 1,
+              title: 'Thiên đường Bãi Khem',
+              stops: 'Bãi Khem cát trắng mịn · Sailing Club Phu Quoc · Hồ bơi vô cực view biển',
+            },
+            {
+              dayNumber: 2,
+              title: 'Thị trấn Hoàng Hôn Sunset Town',
+              stops: 'Cầu Hôn (Kiss Bridge) · Cáp treo vượt biển · Show nhạc nước Kiss The Stars',
+            },
+            {
+              dayNumber: 3,
+              title: 'Lặn ngắm san hô chuyên sâu',
+              stops: 'Hòn Móng Tay · Hòn Mây Rút · Trải nghiệm đi bộ dưới đáy biển',
+            },
+            {
+              dayNumber: 4,
+              title: 'Thư thái & Tạm biệt đảo ngọc',
+              stops: 'Suối Tranh mùa nước · Mua rượu sim rừng & hải sản tươi tại cảng',
+            },
+          ],
+        },
+      ];
+    }
+    if (dLower.includes('huế') || dLower.includes('hue') || dLower.includes('thừa thiên')) {
+      return [
+        {
+          id: 'hue-1',
+          title: 'Cố Đô Huế – Đại Nội Hoàng Gia & Lăng Tẩm',
+          subtitle: 'Đại Nội Huế · Ngọ Môn · Lăng Khải Định & Sông Hương',
+          themeBadge: '🏛️ Di sản Cố Đô',
+          duration: '3n2d',
+          durationBadge: '3N2Đ',
+          timeInfo: '3 ngày 2 đêm',
+          destInfo: 'Thừa Thiên Huế',
+          image: '/destinations/dest-0cd39242.webp',
+          styles: ['culture', 'nature'],
+          rating: 4.9,
+          usedCount: '1.1k lượt dùng',
+          priceFormatted: '2.450.000đ',
+          dailyHighlights: [
+            {
+              dayNumber: 1,
+              title: 'Trái tim Hoàng thành',
+              stops: 'Đại Nội Huế · Ngọ Môn · Điện Thái Hòa · Cà phê muối & Bún bò mụ Rơi',
+            },
+            {
+              dayNumber: 2,
+              title: 'Kiến trúc Lăng tẩm đỉnh cao',
+              stops: 'Lăng Khải Định · Lăng Tự Đức · Làng hương Thủy Xuân check-in sống ảo',
+            },
+            {
+              dayNumber: 3,
+              title: 'Sông Hương êm đềm & Chợ cổ',
+              stops: 'Chùa Thiên Mụ cổ kính · Du thuyền nghe ca Huế · Chợ Đông Ba mua mè xửng',
+            },
+          ],
+        },
+        {
+          id: 'hue-2',
+          title: 'Food Tour Cố Đô: Tinh hoa Ẩm thực Cung đình',
+          subtitle: 'Bánh bèo, nậm, lọc · Cơm hến Cồn Hến · Chè heo quay độc đáo',
+          themeBadge: '🍜 Ẩm thực Cố Đô',
+          duration: '2n1d',
+          durationBadge: '2N1Đ',
+          timeInfo: '2 ngày 1 đêm',
+          destInfo: 'Thừa Thiên Huế',
+          image: '/destinations/dest-115a08a8.webp',
+          styles: ['cuisine', 'culture'],
+          rating: 4.9,
+          usedCount: '1.6k lượt dùng',
+          priceFormatted: '790.000đ',
+          dailyHighlights: [
+            {
+              dayNumber: 1,
+              title: 'Bánh Huế & Cơm hến Cồn Hến',
+              stops: 'Bánh bèo nậm lọc bà Đỏ · Cơm hến hoa chuối · Chè hẻm 20 món',
+            },
+            {
+              dayNumber: 2,
+              title: 'Bún bò & Đặc sản quà tặng',
+              stops: 'Bún bò O Cương chú Điệp · Nem lụi chợ Đông Ba · Mè xửng Thiên Hương',
+            },
+          ],
+        },
+        {
+          id: 'hue-3',
+          title: 'Huế – Phá Tam Giang – Đầm Chuồn hoàng hôn',
+          subtitle: 'Hành trình sinh thái đầm phá lớn nhất Đông Nam Á & thưởng thức hải sản đầm',
+          themeBadge: '🌿 Sinh thái & Thư thái',
+          duration: '4n3d',
+          durationBadge: '4N3Đ',
+          timeInfo: '4 ngày 3 đêm',
+          destInfo: 'Thừa Thiên Huế',
+          image: '/destinations/dest-25eee0b6.webp',
+          styles: ['nature', 'photo'],
+          rating: 4.8,
+          usedCount: '620 lượt dùng',
+          priceFormatted: '2.100.000đ',
+          dailyHighlights: [
+            {
+              dayNumber: 1,
+              title: 'Di sản & Cầu Trường Tiền',
+              stops: 'Đại Nội Huế · Cầu Trường Tiền · Phố đi bộ Hoàng Thành về đêm',
+            },
+            {
+              dayNumber: 2,
+              title: 'Hoàng hôn Đầm Chuồn',
+              stops: 'Phá Tam Giang chèo thuyền ngư dân · Bánh khoái cá kình tươi đầm',
+            },
+            {
+              dayNumber: 3,
+              title: 'Đồi Vọng Cảnh & Rừng thông',
+              stops: 'Đồi Vọng Cảnh ngắm sông Hương · Lăng Thiệu Trị · Thiền viện Trúc Lâm',
+            },
+            {
+              dayNumber: 4,
+              title: 'Thư thái & Tạm biệt',
+              stops: 'Biển Thuận An ngắm bình minh · Chợ Cống thưởng thức bánh ướt thịt nướng',
+            },
+          ],
+        },
+      ];
+    }
+    if (dLower.includes('đà lạt') || dLower.includes('da lat') || dLower.includes('lâm đồng')) {
+      return [
+        {
+          id: 'dl-1',
+          title: 'Đà Lạt Mộng Mơ – Săn Mây & Cà Phê Đồi',
+          subtitle: 'Đồi chè Cầu Đất · Ga Đà Lạt · Thác Datanla & Hồ Tuyền Lâm',
+          themeBadge: '🌸 Xứ Sở Sương Mù',
+          duration: '3n2d',
+          durationBadge: '3N2Đ',
+          timeInfo: '3 ngày 2 đêm',
+          destInfo: 'Lâm Đồng',
+          image: '/destinations/dest-1316b375.webp',
+          styles: ['nature', 'photo'],
+          rating: 4.9,
+          usedCount: '2.5k lượt dùng',
+          priceFormatted: '3.400.000đ',
+          dailyHighlights: [
+            {
+              dayNumber: 1,
+              title: 'Săn mây & Rừng thông',
+              stops: 'Đồi chè Cầu Đất săn mây sáng sớm · Tiệm cà phê sườn đồi view thung lũng · Chợ đêm Đà Lạt',
+            },
+            {
+              dayNumber: 2,
+              title: 'Danh thắng & Trải nghiệm',
+              stops: 'Ga Đà Lạt cổ kính · Thác Datanla trượt máng dài nhất ĐNÁ · Dinh 1 Bảo Đại',
+            },
+            {
+              dayNumber: 3,
+              title: 'Ngoại ô thanh bình',
+              stops: 'Hồ Tuyền Lâm chèo SUP sương sớm · Thiền viện Trúc Lâm · Vườn dâu tây công nghệ cao',
+            },
+          ],
+        },
+        {
+          id: 'dl-2',
+          title: 'Food Tour 48h: Lẩu Gà Lá É & Bánh Tráng Nướng',
+          subtitle: 'Lẩu bò Ba Toa · Bánh ướt lòng gà · Sữa đậu nành nóng hổi góc chợ',
+          themeBadge: '🍜 Ẩm thực Phố Núi',
+          duration: '2n1d',
+          durationBadge: '2N1Đ',
+          timeInfo: '2 ngày 1 đêm',
+          destInfo: 'Lâm Đồng',
+          image: '/destinations/dest-15e25697.webp',
+          styles: ['cuisine', 'entertainment'],
+          rating: 4.9,
+          usedCount: '1.9k lượt dùng',
+          priceFormatted: '1.150.000đ',
+          dailyHighlights: [
+            {
+              dayNumber: 1,
+              title: 'Đặc sản đêm lạnh',
+              stops: 'Lẩu gà lá é Tao Ngộ · Bánh tráng nướng Dì Đinh · Sữa đậu nành Tăng Bạt Hổ',
+            },
+            {
+              dayNumber: 2,
+              title: 'Bữa sáng phố hoa',
+              stops: 'Bánh mì xíu mại Hoàng Diệu · Bánh ướt lòng gà Trang · Kem bơ Thanh Thảo',
+            },
+          ],
+        },
+        {
+          id: 'dl-3',
+          title: 'Đà Lạt – Glamping sương mù & Chill rừng thông',
+          subtitle: 'Cắm trại sang chảnh giữa rừng thông cổ thụ, đốt lửa trại & nướng BBQ',
+          themeBadge: '⛺ Glamping & Chill',
+          duration: '4n3d',
+          durationBadge: '4N3Đ',
+          timeInfo: '4 ngày 3 đêm',
+          destInfo: 'Lâm Đồng',
+          image: '/destinations/dest-1b6b3f4a.webp',
+          styles: ['nature', 'entertainment'],
+          rating: 4.8,
+          usedCount: '1.2k lượt dùng',
+          priceFormatted: '4.800.000đ',
+          dailyHighlights: [
+            {
+              dayNumber: 1,
+              title: 'Khởi hành & Dạo Hồ Xuân Hương',
+              stops: 'Hồ Xuân Hương ngắm hoàng hôn · Quảng trường Lâm Viên hoa atiso',
+            },
+            {
+              dayNumber: 2,
+              title: 'Glamping & Tiệc nướng BBQ',
+              stops: 'Camp giữa rừng thông ven hồ · Chèo kayak · Đốt lửa trại acoustic',
+            },
+            {
+              dayNumber: 3,
+              title: 'Làng Cù Lần & Đỉnh Langbiang',
+              stops: 'Trekking đỉnh Langbiang huyền thoại · Thung lũng Tình Yêu',
+            },
+            {
+              dayNumber: 4,
+              title: 'Vườn hoa & Tạm biệt phố núi',
+              stops: 'Vườn hoa Cẩm Tú Cầu Trại Mát · Mua hồng treo gió & mứt dâu',
+            },
+          ],
+        },
+      ];
+    }
+    if (dLower.includes('quảng nam') || dLower.includes('hội an') || dLower.includes('hoi an')) {
+      return [
+        {
+          id: 'qn-1',
+          title: 'Phố Cổ Hội An – Làng Nghề & Biển An Bàng',
+          subtitle: 'Chùa Cầu · Rừng dừa Bảy Mẫu · Làng gốm Thanh Hà & Biển An Bàng',
+          themeBadge: '🏮 Di sản UNESCO',
+          duration: '3n2d',
+          durationBadge: '3N2Đ',
+          timeInfo: '3 ngày 2 đêm',
+          destInfo: 'Quảng Nam',
+          image: '/destinations/dest-30bf9cbc.webp',
+          styles: ['culture', 'beach'],
+          rating: 4.9,
+          usedCount: '1.9k lượt dùng',
+          priceFormatted: '3.200.000đ',
+          dailyHighlights: [
+            {
+              dayNumber: 1,
+              title: 'Di sản Phố Cổ lung linh',
+              stops: 'Chùa Cầu · Nhà cổ Tấn Ký · Thả hoa đăng sông Hoài · Cơm gà Bà Buội',
+            },
+            {
+              dayNumber: 2,
+              title: 'Sông nước & Làng nghề truyền thống',
+              stops: 'Rừng dừa Bảy Mẫu chèo thuyền thúng · Làng gốm Thanh Hà · Hoàng hôn biển An Bàng',
+            },
+            {
+              dayNumber: 3,
+              title: 'Đồng quê thanh bình Cẩm Thanh',
+              stops: 'Làng rau Trà Quế · Đạp xe đồng lúa · Thưởng thức trà Mót & mua quà lưu niệm',
+            },
+          ],
+        },
+        {
+          id: 'qn-2',
+          title: 'Food Tour 48h: Cao Lầu, Bánh Mì Phượng & Nước Mót',
+          subtitle: 'Hương vị ẩm thực phố Hoài trăm năm: Bánh đập hến xào, chè bắp Cẩm Nam',
+          themeBadge: '🍜 Ẩm thực Phố Hoài',
+          duration: '2n1d',
+          durationBadge: '2N1Đ',
+          timeInfo: '2 ngày 1 đêm',
+          destInfo: 'Quảng Nam',
+          image: '/destinations/dest-385d5da8.webp',
+          styles: ['cuisine', 'culture'],
+          rating: 4.9,
+          usedCount: '1.8k lượt dùng',
+          priceFormatted: '850.000đ',
+          dailyHighlights: [
+            {
+              dayNumber: 1,
+              title: 'Đặc sản trứ danh phố cổ',
+              stops: 'Bánh mì Phượng · Nước Mót sả chanh · Cao lầu Thanh · Chè xí mà phủ',
+            },
+            {
+              dayNumber: 2,
+              title: 'Ẩm thực ven sông Hoài',
+              stops: 'Bánh đập hến xào Cồn Hến · Mì Quảng ông Hai · Bánh hoa hồng trắng',
+            },
+          ],
+        },
+        {
+          id: 'qn-3',
+          title: 'Hội An – Cù Lao Chàm lặn ngắm san hô',
+          subtitle: 'Khu dự trữ sinh quyển thế giới Cù Lao Chàm, lặn ngắm san hô & hải sản ốc vú nàng',
+          themeBadge: '🏝️ Đảo ngọc sinh thái',
+          duration: '4n3d',
+          durationBadge: '4N3Đ',
+          timeInfo: '4 ngày 3 đêm',
+          destInfo: 'Quảng Nam',
+          image: '/destinations/dest-3aaec741.webp',
+          styles: ['beach', 'nature'],
+          rating: 4.8,
+          usedCount: '1.0k lượt dùng',
+          priceFormatted: '3.600.000đ',
+          dailyHighlights: [
+            {
+              dayNumber: 1,
+              title: 'Phố Hội đèn lồng',
+              stops: 'Phố cổ Hội An · Chùa Cầu · Nghe hát bài chòi dân gian',
+            },
+            {
+              dayNumber: 2,
+              title: 'Cù Lao Chàm biển xanh',
+              stops: 'Cano siêu tốc ra đảo Cù Lao Chàm · Lặn san hô Bãi Chồng · Hải sản ốc vú nàng',
+            },
+            {
+              dayNumber: 3,
+              title: 'Làng chài & Biển An Bàng',
+              stops: 'Bãi Bìm Cù Lao Chàm · Trở về bờ ngắm hoàng hôn An Bàng Beach Club',
+            },
+            {
+              dayNumber: 4,
+              title: 'Thư thái & Mua quà',
+              stops: 'Làng gốm Thanh Hà làm gốm thủ công · Mua đèn lồng & lụa tơ tằm',
+            },
+          ],
         },
       ];
     }
 
-    // Dynamic curated builder for ALL remaining 60 provinces: 3 unique photos & 3 distinct local themes
+    // Dynamic curated builder for ALL remaining provinces: 3 unique photos & 3 distinct local themes
     const isFoodCat = (cat: string, name: string) => {
       const t = `${cat} ${name}`.toLowerCase();
-      return t.includes('ẩm thực') || t.includes('chợ') || t.includes('quán') || t.includes('nem') || t.includes('bún') || t.includes('cơm') || t.includes('bánh');
+      return (
+        t.includes('ẩm thực') ||
+        t.includes('chợ') ||
+        t.includes('quán') ||
+        t.includes('nem') ||
+        t.includes('bún') ||
+        t.includes('cơm') ||
+        t.includes('bánh')
+      );
     };
     const isGenuineImg = (url?: string) =>
       Boolean(url && url.startsWith('/destinations/') && !url.includes('location_map.svg'));
@@ -1803,7 +2356,11 @@ export default function PlannerPage() {
           return p.image;
         }
       }
-      if (activeDestObj.photo && !usedImgs.has(activeDestObj.photo) && !activeDestObj.photo.includes('danang_real.jpg')) {
+      if (
+        activeDestObj.photo &&
+        !usedImgs.has(activeDestObj.photo) &&
+        !activeDestObj.photo.includes('danang_real.jpg')
+      ) {
         usedImgs.add(activeDestObj.photo);
         return activeDestObj.photo;
       }
@@ -1844,6 +2401,14 @@ export default function PlannerPage() {
         destInfo: destination,
         image: img1,
         styles: ['culture', 'nature'],
+        rating: 4.9,
+        usedCount: '920 lượt dùng',
+        priceFormatted: '2.650.000đ',
+        dailyHighlights: [
+          { dayNumber: 1, title: 'Khám phá Trái tim', stops: `${s1} · Check-in trung tâm & ẩm thực địa phương` },
+          { dayNumber: 2, title: 'Văn hóa & Thắng cảnh', stops: `${s2 || s1} · Tham quan danh lam thắng cảnh & ngắm cảnh hoàng hôn` },
+          { dayNumber: 3, title: 'Dấu ấn Bản địa', stops: `${foodPlaces[0]?.name || s1} · Khám phá chợ truyền thống & mua quà đặc sản` },
+        ],
       },
       {
         id: 'prov-2',
@@ -1856,6 +2421,13 @@ export default function PlannerPage() {
         destInfo: destination,
         image: img2,
         styles: ['cuisine', 'culture'],
+        rating: 4.9,
+        usedCount: '680 lượt dùng',
+        priceFormatted: '950.000đ',
+        dailyHighlights: [
+          { dayNumber: 1, title: 'Đặc sản & Phố chiều', stops: `${f1} · Trải nghiệm ẩm thực nổi tiếng & dạo phố đêm` },
+          { dayNumber: 2, title: 'Hương vị Bản địa', stops: `${f2 || f1} · Cà phê sáng ngắm phố & mua đặc sản làm quà` },
+        ],
       },
       {
         id: 'prov-3',
@@ -1868,17 +2440,29 @@ export default function PlannerPage() {
         destInfo: destination,
         image: img3,
         styles: ['nature', 'photo'],
+        rating: 4.8,
+        usedCount: '510 lượt dùng',
+        priceFormatted: '3.800.000đ',
+        dailyHighlights: [
+          { dayNumber: 1, title: 'Khởi hành & Dạo trung tâm', stops: `${s1} · Nghỉ ngơi & thưởng thức món ngon chào mừng` },
+          { dayNumber: 2, title: 'Danh thắng tiêu biểu', stops: `${s2 || s1} · Trải nghiệm trọn vẹn điểm đến nổi tiếng` },
+          { dayNumber: 3, title: 'Nghỉ dưỡng & Khám phá', stops: `${s3 || s1} · Góc ngắm cảnh thư thái & bình yên` },
+          { dayNumber: 4, title: 'Tạm biệt & Check-in', stops: `${cleanDestName} · Mua quà lưu niệm & tạm biệt chuyến đi` },
+        ],
       },
     ];
   }, [destination, cleanDestName, activeDestObj, provinceRealPlaces]);
 
-  const handleApplyTemplate = (card: typeof suggestedCards[0]) => {
-    setDestination(card.destInfo);
+  const handleApplyTemplate = (card: CuratedTemplateItem) => {
+    setDestination(card.destInfo || destination);
     setDuration(card.duration);
     if (card.styles) setSelectedStyles(card.styles);
+    if (card.title) {
+      setWishesText(`Lịch trình trải nghiệm ${card.title}, ưu tiên điểm đến hợp lý.`);
+    }
     if (typeof window !== 'undefined') {
       try {
-        localStorage.setItem('vista_selected_province', card.destInfo);
+        localStorage.setItem('vista_selected_province', card.destInfo || destination);
       } catch {
         // ignore
       }
@@ -4536,17 +5120,16 @@ export default function PlannerPage() {
           isGenerating={isGenerating}
           onGenerate={handleGenerateClick}
           onApplyTemplate={(templateId) => {
-            if (templateId === 'hanoi-nostalgia-3n2d') {
-              setDestination('Hà Nội');
-              setDuration('3n2d');
-            } else if (templateId === 'hanoi-halong-yentu-4n3d') {
-              setDestination('Hà Nội');
-              setDuration('4n3d');
-            } else if (templateId === 'food-tour-48h') {
-              setDestination('Hà Nội');
-              setDuration('2n1d');
+            const found = suggestedCards.find((c) => c.id === templateId);
+            if (found) {
+              handleApplyTemplate(found);
+            } else {
+              handleGenerateClick();
             }
-            handleGenerateClick();
+          }}
+          curatedTemplates={suggestedCards}
+          onApplyTemplateItem={(item) => {
+            handleApplyTemplate(item);
           }}
           savedTrips={planHistoryList.map((p) => ({
             id: p.id,

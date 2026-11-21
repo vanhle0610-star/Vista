@@ -21,6 +21,27 @@ import {
   Footprints,
 } from 'lucide-react';
 
+export interface CuratedTemplateItem {
+  id: string;
+  title: string;
+  subtitle: string;
+  themeBadge?: string;
+  duration: string;
+  durationBadge?: string;
+  timeInfo?: string;
+  destInfo?: string;
+  image: string;
+  styles?: string[];
+  rating?: number | string;
+  usedCount?: string;
+  priceFormatted?: string;
+  dailyHighlights?: Array<{
+    dayNumber: number;
+    title: string;
+    stops: string;
+  }>;
+}
+
 export interface PlannerSetupProps {
   destination: string;
   onChangeDestination: (dest: string) => void;
@@ -41,6 +62,8 @@ export interface PlannerSetupProps {
   isGenerating: boolean;
   onGenerate: () => void;
   onApplyTemplate: (templateId: string) => void;
+  curatedTemplates?: CuratedTemplateItem[];
+  onApplyTemplateItem?: (template: CuratedTemplateItem) => void;
   savedTrips?: Array<{
     id: string;
     title: string;
@@ -104,6 +127,8 @@ export function PlannerSetupView({
   isGenerating,
   onGenerate,
   onApplyTemplate,
+  curatedTemplates = [],
+  onApplyTemplateItem,
   savedTrips = [],
   onOpenSavedTrip,
   allDestinations = [],
@@ -712,7 +737,7 @@ export function PlannerSetupView({
               className={`${styles.rightTabBtn} ${activeRightTab === 'TEMPLATES' ? styles.rightTabBtnActive : ''}`}
               onClick={() => setActiveRightTab('TEMPLATES')}
             >
-              Lịch trình Mẫu tuyển chọn (3)
+              Lịch trình Mẫu tuyển chọn ({curatedTemplates.length || 3})
             </button>
             <button
               type="button"
@@ -725,148 +750,219 @@ export function PlannerSetupView({
 
           {activeRightTab === 'TEMPLATES' ? (
             <>
-              {/* Card 1: Featured Hero Showcase Card */}
-              <div className={styles.heroShowcaseCard}>
-                <div className={styles.showcaseImgBox}>
-                  <img
-                    src={destination.includes('Hồ Chí Minh') ? '/destinations/dest-ff3fa74a.webp' : '/destinations/dest-0098ba1b.webp'}
-                    alt="Lịch trình đề xuất VISTA"
-                    className={styles.showcaseImg}
-                  />
-                  <div className={styles.showcaseOverlay}>
-                    <div className={styles.showcaseTopRow}>
-                      <span className={styles.showcaseTag}>Khuyên dùng nhiều nhất</span>
-                      <span className={styles.showcaseRating}>⭐ 4.9 (1.2k lượt dùng)</span>
-                    </div>
-                    <div className={styles.showcaseTitle}>
-                      {destination.includes('Hồ Chí Minh')
-                        ? 'Lịch trình đề xuất 3N2Đ: Sài Gòn Năng Động & Ẩm Thực Đêm'
-                        : 'Lịch trình đề xuất 3N2Đ: Hà Nội hoài niệm: Văn Miếu, Phố cổ & Cà phê Trứng'}
-                    </div>
-                  </div>
-                </div>
+              {(() => {
+                const heroTemplate: CuratedTemplateItem =
+                  curatedTemplates && curatedTemplates.length > 0
+                    ? curatedTemplates[0]
+                    : {
+                        id: destination.includes('Hồ Chí Minh') ? 'hcm-hero' : 'hn-hero',
+                        title: destination.includes('Hồ Chí Minh')
+                          ? 'Sài Gòn Năng Động & Ẩm Thực Đêm'
+                          : 'Hà Nội hoài niệm: Văn Miếu, Phố cổ & Cà phê Trứng',
+                        subtitle: 'Lịch trình tuyển chọn tối ưu điểm dừng và văn hóa bản địa',
+                        themeBadge: 'Khuyên dùng nhiều nhất',
+                        duration: '3n2d',
+                        durationBadge: '3N2Đ',
+                        timeInfo: '3 ngày 2 đêm',
+                        destInfo: destination,
+                        image: destination.includes('Hồ Chí Minh')
+                          ? '/destinations/dest-ff3fa74a.webp'
+                          : '/destinations/dest-0098ba1b.webp',
+                        rating: 4.9,
+                        usedCount: '1.2k lượt dùng',
+                        dailyHighlights: destination.includes('Hồ Chí Minh')
+                          ? [
+                              {
+                                dayNumber: 1,
+                                title: 'Khám phá Trái tim',
+                                stops: 'Dinh Độc Lập · Bưu điện Trung tâm · Chợ Bến Thành · Cà phê vợt',
+                              },
+                              {
+                                dayNumber: 2,
+                                title: 'Văn hóa & Thắng cảnh',
+                                stops: 'Chùa Bửu Long · Bảo tàng Mỹ thuật · Hoàng hôn bến Bạch Đằng',
+                              },
+                              {
+                                dayNumber: 3,
+                                title: 'Dấu ấn Sài Gòn',
+                                stops: 'Chợ hoa Hồ Thị Kỷ · Hẻm ẩm thực Sài Gòn · Mua đặc sản làm quà',
+                              },
+                            ]
+                          : [
+                              {
+                                dayNumber: 1,
+                                title: 'Khám phá Trái tim',
+                                stops: 'Hồ Hoàn Kiếm · Đền Ngọc Sơn · Cà phê Giảng · Ẩm thực đêm Tạ Hiện',
+                              },
+                              {
+                                dayNumber: 2,
+                                title: 'Văn hóa & Thắng cảnh',
+                                stops: 'Lăng Bác · Văn Miếu Quốc Tử Giám · Chùa Trấn Quốc · Hoàng hôn Hồ Tây',
+                              },
+                              {
+                                dayNumber: 3,
+                                title: 'Dấu ấn Kinh kỳ',
+                                stops: 'Hoàng Thành Thăng Long · Phố bích họa Phùng Hưng · Mua quà Ô mai Hàng Đường',
+                              },
+                            ],
+                      };
 
-                {/* Day breakdown */}
-                <div className={styles.dailyStopsBox}>
-                  {destination.includes('Hồ Chí Minh') ? (
-                    <>
-                      <div className={styles.dailyStopRow}>
-                        <span className={styles.stopDayBadge}>N1</span>
-                        <span>
-                          <strong>Khám phá Trái tim:</strong> Dinh Độc Lập · Bưu điện Trung tâm · Chợ Bến Thành · Cà phê vợt
-                        </span>
-                      </div>
-                      <div className={styles.dailyStopRow}>
-                        <span className={styles.stopDayBadge}>N2</span>
-                        <span>
-                          <strong>Văn hóa & Thắng cảnh:</strong> Chùa Bửu Long · Bảo tàng Mỹ thuật · Hoàng hôn bến Bạch Đằng
-                        </span>
-                      </div>
-                      <div className={styles.dailyStopRow}>
-                        <span className={styles.stopDayBadge}>N3</span>
-                        <span>
-                          <strong>Dấu ấn Kinh kỳ:</strong> Chợ Hồ Thị Kỷ · Hẻm ẩm thực Sài Gòn · Mua đặc sản làm quà
-                        </span>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className={styles.dailyStopRow}>
-                        <span className={styles.stopDayBadge}>N1</span>
-                        <span>
-                          <strong>Khám phá Trái tim:</strong> Hồ Hoàn Kiếm · Đền Ngọc Sơn · Cà phê Giảng · Ẩm thực đêm Tạ Hiện
-                        </span>
-                      </div>
-                      <div className={styles.dailyStopRow}>
-                        <span className={styles.stopDayBadge}>N2</span>
-                        <span>
-                          <strong>Văn hóa & Thắng cảnh:</strong> Lăng Bác · Văn Miếu Quốc Tử Giám · Chùa Trấn Quốc · Hoàng hôn Hồ Tây
-                        </span>
-                      </div>
-                      <div className={styles.dailyStopRow}>
-                        <span className={styles.stopDayBadge}>N3</span>
-                        <span>
-                          <strong>Dấu ấn Kinh kỳ:</strong> Hoàng Thành Thăng Long · Phố bích họa Phùng Hưng · Mua quà Ô mai Hàng Đường
-                        </span>
-                      </div>
-                    </>
-                  )}
-                </div>
+                const compactList: CuratedTemplateItem[] =
+                  curatedTemplates && curatedTemplates.length > 1
+                    ? curatedTemplates.slice(1, 3)
+                    : [
+                        {
+                          id: 'hanoi-halong-yentu-4n3d',
+                          title: 'Hà Nội - Hạ Long - Yên Tử kỳ vĩ',
+                          subtitle:
+                            'Hành trình di sản tâm linh & kỳ quan thiên nhiên thế giới kết hợp văn hóa Đất kinh kỳ.',
+                          duration: '4n3d',
+                          durationBadge: '4N3Đ',
+                          timeInfo: '4 ngày 3 đêm',
+                          destInfo: 'Hà Nội',
+                          image: '/destinations/dest-9648da36.webp',
+                          rating: 4.8,
+                          priceFormatted: '12.800.000đ',
+                        },
+                        {
+                          id: 'food-tour-48h',
+                          title: 'Food Tour 48h: Tinh hoa Ẩm thực',
+                          subtitle:
+                            'Trải nghiệm 12 món ăn đường phố nổi tiếng: Phở Bát Đàn, Bún chả Hàng Quạt, Chè Gỗ Lộ Trọng...',
+                          duration: '2n1d',
+                          durationBadge: '2N1Đ',
+                          timeInfo: '2 ngày 1 đêm',
+                          destInfo: 'Hà Nội',
+                          image: '/destinations/dest-ff3fa74a.webp',
+                          rating: 4.9,
+                          priceFormatted: '950.000đ',
+                        },
+                      ];
 
-                <div className={styles.showcaseActionRow}>
-                  <button
-                    type="button"
-                    className={styles.outlineBtnSm}
-                    onClick={() => onApplyTemplate('hanoi-nostalgia-3n2d')}
-                  >
-                    Xem chi tiết
-                  </button>
-                  <button
-                    type="button"
-                    className={styles.applyBtnSm}
-                    onClick={() => onApplyTemplate('hanoi-nostalgia-3n2d')}
-                  >
-                    <Check size={13} />
-                    <span>Dùng mẫu này</span>
-                  </button>
-                </div>
-              </div>
+                return (
+                  <>
+                    {/* Card 1: Featured Hero Showcase Card */}
+                    <div className={styles.heroShowcaseCard}>
+                      <div className={styles.showcaseImgBox}>
+                        <img
+                          src={heroTemplate.image}
+                          alt={heroTemplate.title}
+                          className={styles.showcaseImg}
+                        />
+                        <div className={styles.showcaseOverlay}>
+                          <div className={styles.showcaseTopRow}>
+                            <span className={styles.showcaseTag}>
+                              {heroTemplate.themeBadge || 'Khuyên dùng nhiều nhất'}
+                            </span>
+                            <span className={styles.showcaseRating}>
+                              ⭐ {heroTemplate.rating || '4.9'} ({heroTemplate.usedCount || '1.2k lượt dùng'})
+                            </span>
+                          </div>
+                          <div className={styles.showcaseTitle}>
+                            {heroTemplate.title.startsWith('Lịch trình đề xuất')
+                              ? heroTemplate.title
+                              : `Lịch trình đề xuất ${heroTemplate.durationBadge || '3N2Đ'}: ${heroTemplate.title}`}
+                          </div>
+                        </div>
+                      </div>
 
-              {/* Card 2: Compact Curated Card 1 */}
-              <div
-                className={styles.compactCard}
-                onClick={() => onApplyTemplate('hanoi-halong-yentu-4n3d')}
-              >
-                <img
-                  src="/destinations/dest-9648da36.webp"
-                  alt="Hà Nội - Hạ Long - Yên Tử kỳ vĩ"
-                  className={styles.compactThumb}
-                />
-                <div className={styles.compactBody}>
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '10.5px', color: '#64748B' }}>
-                      <span>4 ngày 3 đêm</span>
-                      <span style={{ color: '#D97706', fontWeight: 700 }}>★ 4.8</span>
-                    </div>
-                    <div className={styles.compactTitle}>Hà Nội - Hạ Long - Yên Tử kỳ vĩ</div>
-                    <div className={styles.compactDesc}>
-                      Hành trình di sản tâm linh & kỳ quan thiên nhiên thế giới kết hợp văn hóa Đất kinh kỳ.
-                    </div>
-                  </div>
-                  <div className={styles.compactFooter}>
-                    <span className={styles.compactPrice}>12.800.000đ</span>
-                    <span style={{ color: '#0088CC', fontWeight: 600 }}>Chi tiết &gt;</span>
-                  </div>
-                </div>
-              </div>
+                      {/* Day breakdown */}
+                      <div className={styles.dailyStopsBox}>
+                        {heroTemplate.dailyHighlights && heroTemplate.dailyHighlights.length > 0 ? (
+                          heroTemplate.dailyHighlights.map((dh) => (
+                            <div key={dh.dayNumber} className={styles.dailyStopRow}>
+                              <span className={styles.stopDayBadge}>N{dh.dayNumber}</span>
+                              <span>
+                                <strong>{dh.title}:</strong> {dh.stops}
+                              </span>
+                            </div>
+                          ))
+                        ) : (
+                          <div className={styles.dailyStopRow}>
+                            <span className={styles.stopDayBadge}>N1-N3</span>
+                            <span>{heroTemplate.subtitle}</span>
+                          </div>
+                        )}
+                      </div>
 
-              {/* Card 3: Compact Curated Card 2 */}
-              <div
-                className={styles.compactCard}
-                onClick={() => onApplyTemplate('food-tour-48h')}
-              >
-                <img
-                  src="/destinations/dest-ff3fa74a.webp"
-                  alt="Food Tour 48h: Tinh hoa Ẩm thực"
-                  className={styles.compactThumb}
-                />
-                <div className={styles.compactBody}>
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '10.5px', color: '#64748B' }}>
-                      <span>2 ngày 1 đêm</span>
-                      <span style={{ color: '#D97706', fontWeight: 700 }}>★ 4.9</span>
+                      <div className={styles.showcaseActionRow}>
+                        <button
+                          type="button"
+                          className={styles.outlineBtnSm}
+                          onClick={() => {
+                            if (onApplyTemplateItem) onApplyTemplateItem(heroTemplate);
+                            else onApplyTemplate(heroTemplate.id);
+                          }}
+                        >
+                          Xem chi tiết
+                        </button>
+                        <button
+                          type="button"
+                          className={styles.applyBtnSm}
+                          onClick={() => {
+                            if (onApplyTemplateItem) onApplyTemplateItem(heroTemplate);
+                            else onApplyTemplate(heroTemplate.id);
+                          }}
+                        >
+                          <Check size={13} />
+                          <span>Dùng mẫu này</span>
+                        </button>
+                      </div>
                     </div>
-                    <div className={styles.compactTitle}>Food Tour 48h: Tinh hoa Ẩm thực</div>
-                    <div className={styles.compactDesc}>
-                      Trải nghiệm 12 món ăn đường phố nổi tiếng: Phở Bát Đàn, Bún chả Hàng Quạt, Chè Gỗ Lộ Trọng...
-                    </div>
-                  </div>
-                  <div className={styles.compactFooter}>
-                    <span className={styles.compactPrice}>950.000đ</span>
-                    <span style={{ color: '#0088CC', fontWeight: 600 }}>Chi tiết &gt;</span>
-                  </div>
-                </div>
-              </div>
+
+                    {/* Compact Curated Cards */}
+                    {compactList.map((card) => (
+                      <div
+                        key={card.id}
+                        className={styles.compactCard}
+                        onClick={() => {
+                          if (onApplyTemplateItem) onApplyTemplateItem(card);
+                          else onApplyTemplate(card.id);
+                        }}
+                      >
+                        <img
+                          src={card.image}
+                          alt={card.title}
+                          className={styles.compactThumb}
+                        />
+                        <div className={styles.compactBody}>
+                          <div>
+                            <div
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                fontSize: '10.5px',
+                                color: '#64748B',
+                              }}
+                            >
+                              <span>
+                                {card.timeInfo ||
+                                  (card.duration === '2n1d'
+                                    ? '2 ngày 1 đêm'
+                                    : card.duration === '4n3d'
+                                    ? '4 ngày 3 đêm'
+                                    : '3 ngày 2 đêm')}
+                              </span>
+                              <span style={{ color: '#D97706', fontWeight: 700 }}>
+                                ★ {card.rating || '4.8'}
+                              </span>
+                            </div>
+                            <div className={styles.compactTitle}>{card.title}</div>
+                            <div className={styles.compactDesc}>{card.subtitle}</div>
+                          </div>
+                          <div className={styles.compactFooter}>
+                            <span className={styles.compactPrice}>
+                              {card.priceFormatted || '950.000đ'}
+                            </span>
+                            <span style={{ color: '#0088CC', fontWeight: 600 }}>Chi tiết &gt;</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                );
+              })()}
             </>
           ) : null}
 
