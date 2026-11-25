@@ -2891,7 +2891,8 @@ export default function TripDetailPage() {
                                       }}
                                       title="Chỉnh sửa tên, giờ hoặc chuyển sang ngày khác (F5 giữ nguyên)"
                                     >
-                                      <span>✏️ Sửa</span>
+                                      <Pencil size={14} />
+                                      <span>Sửa</span>
                                     </button>
 
                                     <button
@@ -2912,7 +2913,8 @@ export default function TripDetailPage() {
                                       }}
                                       title="Bấm để xem chi tiết địa điểm này"
                                     >
-                                      <span>🔍 Xem chi tiết</span>
+                                      <Eye size={14} />
+                                      <span>Xem chi tiết</span>
                                     </button>
 
                                     <Link
@@ -2931,7 +2933,7 @@ export default function TripDetailPage() {
                                       style={!isTripMember ? { opacity: 0.75, cursor: 'not-allowed' } : undefined}
                                     >
                                       <Check size={13} />
-                                      <span>{isDone ? 'Đã vi vu 🌸' : 'Check-in'}</span>
+                                      <span>{isDone ? 'Đã đến' : 'Check-in'}</span>
                                     </button>
 
                                     <button
@@ -3070,7 +3072,8 @@ export default function TripDetailPage() {
                     }}
                     title="Rời khỏi chuyến đi này"
                   >
-                    <span>🚪 Rời nhóm</span>
+                    <LogOut size={16} />
+                    <span>Rời nhóm</span>
                   </button>
                 )}
               </div>
@@ -3128,7 +3131,8 @@ export default function TripDetailPage() {
                             }}
                             title={`Chuyển quyền trưởng nhóm cho ${name}`}
                           >
-                            <span>👑 Chuyển quyền</span>
+                            <Crown size={14} />
+                            <span>Chuyển quyền</span>
                           </button>
                         )}
                       </div>
@@ -3201,8 +3205,9 @@ export default function TripDetailPage() {
               <div className={styles.invitationListCard}>
                 <div className={styles.invitationListHeader}>
                   <div className={styles.invitationHeaderTitleRow}>
-                    <h4 style={{ fontSize: '16px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
-                      ✉️ Danh sách lời mời đã phát hành
+                    <h4 style={{ fontSize: '16px', fontWeight: 800, color: '#0F172A', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Mail size={16} />
+                      <span>Danh sách lời mời đã phát hành</span>
                     </h4>
                     <span className={styles.invitationCountBadge}>
                       {invitationsList.length} lời mời
@@ -3294,8 +3299,9 @@ export default function TripDetailPage() {
                               </a>
                               <span style={{ fontSize: '12px', color: '#64748B' }}>Hạn: {inv.expiresAt}</span>
                               {(inv.emailSent || inv.status === 'PENDING') && (
-                                <span style={{ fontSize: '11px', color: '#166534', background: '#DCFCE7', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>
-                                  ✉️ Đã gửi thư tự động
+                                <span style={{ fontSize: '11px', color: '#166534', background: '#DCFCE7', padding: '1px 6px', borderRadius: '4px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                  <MailCheck size={13} />
+                                  <span>Đã gửi thư tự động</span>
                                 </span>
                               )}
                             </div>
@@ -3339,7 +3345,8 @@ export default function TripDetailPage() {
                               }}
                               title="Sao chép link mời để gửi qua Zalo / Facebook Messenger"
                             >
-                              <span>📋 Sao chép link</span>
+                              <Copy size={14} />
+                              <span>Sao chép link</span>
                             </button>
 
                             {/* Nút Gửi lại email tự động qua Google SMTP */}
@@ -3363,7 +3370,12 @@ export default function TripDetailPage() {
                                 }}
                                 title={`Tự động gửi lại email mời trực tiếp tới ${inv.email}`}
                               >
-                                <span>{isResendingEmail === inv.token ? '⏳ Đang gửi...' : '🔄 Gửi lại email'}</span>
+                                {isResendingEmail === inv.token ? (
+                                  <Loader2 size={14} className="animate-spin" />
+                                ) : (
+                                  <Mail size={14} />
+                                )}
+                                <span>{isResendingEmail === inv.token ? 'Đang gửi...' : 'Gửi lại email'}</span>
                               </button>
                             )}
 
@@ -3689,7 +3701,8 @@ export default function TripDetailPage() {
                     }}
                     title="Đóng / mở biểu quyết"
                   >
-                    <span>{isVotingClosed ? '🔓 Mở lại biểu quyết' : '🔒 Đóng biểu quyết (Chỉ Owner)'}</span>
+                    {isVotingClosed ? <Unlock size={15} /> : <Lock size={15} />}
+                    <span>{isVotingClosed ? 'Mở lại biểu quyết' : 'Đóng biểu quyết (Chỉ Owner)'}</span>
                   </button>
                 )}
               </div>
@@ -3717,8 +3730,9 @@ export default function TripDetailPage() {
                       {prop.category}
                     </span>
                     {isVotingClosed && (
-                      <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>
-                        🔒 Đã khóa kết quả
+                      <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <Lock size={12} />
+                        <span>Đã khóa kết quả</span>
                       </span>
                     )}
                   </div>
@@ -4007,8 +4021,9 @@ export default function TripDetailPage() {
                       <span style={{ fontSize: '12px', color: '#64748B' }}>{role}</span>
                     </div>
                     {idx === 0 && (
-                      <span style={{ fontSize: '11.5px', background: '#FEF3C7', color: '#B45309', fontWeight: 700, padding: '3px 8px', borderRadius: '6px' }}>
-                        👑 Trưởng nhóm
+                      <span style={{ fontSize: '11.5px', background: '#FEF3C7', color: '#B45309', fontWeight: 700, padding: '3px 8px', borderRadius: '6px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <Crown size={13} />
+                        <span>Trưởng nhóm</span>
                       </span>
                     )}
                   </div>
@@ -4359,8 +4374,9 @@ export default function TripDetailPage() {
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
               <div>
-                <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
-                  ✏️ Sửa điểm dừng lịch trình
+                <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Pencil size={18} style={{ color: '#0284C7' }} />
+                  <span>Sửa điểm dừng lịch trình</span>
                 </h3>
                 <span style={{ fontSize: '12px', color: '#64748B' }}>
                   Hiện đang ở Ngày {editingStop.dayNumber}
@@ -4770,8 +4786,18 @@ export default function TripDetailPage() {
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
               <div>
-                <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
-                  {createdInvitationInfo ? '🎉 Lời mời đã được gửi tự động!' : '✉️ Phát hành & Gửi lời mời trực tiếp'}
+                <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  {createdInvitationInfo ? (
+                    <>
+                      <Sparkles size={20} style={{ color: '#16A34A' }} />
+                      <span>Lời mời đã được gửi tự động!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Mail size={20} style={{ color: '#0284C7' }} />
+                      <span>Phát hành & Gửi lời mời trực tiếp</span>
+                    </>
+                  )}
                 </h3>
               </div>
               <button
@@ -4802,7 +4828,7 @@ export default function TripDetailPage() {
               <div>
                 <div style={{ background: '#F0FDF4', border: '1.5px solid #86EFAC', borderRadius: '16px', padding: '16px 18px', marginBottom: '18px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-                    <span style={{ fontSize: '22px' }}>✅</span>
+                    <CheckCircle2 size={22} style={{ color: '#16A34A', flexShrink: 0 }} />
                     <div>
                       <strong style={{ fontSize: '15px', color: '#15803D', display: 'block' }}>
                         Đã tự động gửi thư mời đến: {createdInvitationInfo.email}
@@ -4889,7 +4915,12 @@ export default function TripDetailPage() {
                         gap: '4px',
                       }}
                     >
-                      <span>{isResendingEmail === createdInvitationInfo.token ? '⏳ Đang gửi...' : '🔄 Gửi lại email'}</span>
+                      {isResendingEmail === createdInvitationInfo.token ? (
+                        <Loader2 size={13} className="animate-spin" />
+                      ) : (
+                        <Mail size={13} />
+                      )}
+                      <span>{isResendingEmail === createdInvitationInfo.token ? 'Đang gửi...' : 'Gửi lại email'}</span>
                     </button>
                   </div>
                 </div>
@@ -4952,7 +4983,8 @@ export default function TripDetailPage() {
                         marginBottom: '8px',
                       }}
                     >
-                      <span>✉️ Bấm để gửi thư thật vào Gmail ngay (Soạn sẵn 100%) ↗</span>
+                      <Mail size={16} />
+                      <span>Bấm để gửi thư thật vào Gmail ngay (Soạn sẵn 100%) ↗</span>
                     </a>
 
                     <p style={{ margin: 0, fontSize: '11px', color: '#9A3412', textAlign: 'center', lineHeight: '1.4' }}>
@@ -5093,7 +5125,17 @@ export default function TripDetailPage() {
                       gap: '8px',
                     }}
                   >
-                    {isSendingInviteEmail ? '⏳ Đang tự động gửi email...' : '✉️ Phát hành & Tự động gửi thư mời'}
+                    {isSendingInviteEmail ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin" />
+                        <span>Đang tự động gửi email...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Mail size={16} />
+                        <span>Phát hành & Tự động gửi thư mời</span>
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
@@ -5134,8 +5176,9 @@ export default function TripDetailPage() {
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
               <div>
-                <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
-                  🗳️ Thêm đề xuất biểu quyết nhóm
+                <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Vote size={20} style={{ color: '#0284C7' }} />
+                  <span>Thêm đề xuất biểu quyết nhóm</span>
                 </h3>
               </div>
               <button
