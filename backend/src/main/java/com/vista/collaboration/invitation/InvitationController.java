@@ -114,4 +114,20 @@ public class InvitationController {
     String userEmail = currentUserProvider.getCurrentUser().map(up -> up.getEmail()).orElse(null);
     return ResponseEntity.ok(invitationService.declineInvitationById(id, userId, userEmail));
   }
+
+  @PostMapping("/invitations/sync-membership")
+  @Operation(summary = "Đồng bộ thành viên khi chấp nhận lời mời từ Web (TV3)")
+  public ResponseEntity<java.util.Map<String, Object>> syncMembership(
+      @RequestBody java.util.Map<String, String> body) {
+    UUID userId = currentUserProvider.getCurrentUserId();
+    String tripIdStr = body.get("tripId");
+    if (tripIdStr != null && !tripIdStr.isBlank()) {
+      UUID tripId = UUID.fromString(tripIdStr.trim());
+      invitationService.addTripMember(tripId, userId);
+      return ResponseEntity.ok(
+          java.util.Map.of(
+              "status", "SUCCESS", "tripId", tripId.toString(), "userId", userId.toString()));
+    }
+    return ResponseEntity.badRequest().build();
+  }
 }

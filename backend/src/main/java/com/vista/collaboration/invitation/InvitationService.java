@@ -445,7 +445,7 @@ public class InvitationService {
    * Thêm user vào trip_members với role MEMBER. Dùng TripMemberRepository trực tiếp (TV2 đã expose
    * qua domain layer). Nếu đã là member (ACTIVE) thì bỏ qua. Nếu bị REMOVED thì kích hoạt lại.
    */
-  private void addTripMember(UUID tripId, UUID userId) {
+  public void addTripMember(UUID tripId, UUID userId) {
     TripEntity trip =
         tripRepository
             .findById(tripId)

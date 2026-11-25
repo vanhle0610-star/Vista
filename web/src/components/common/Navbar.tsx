@@ -282,6 +282,18 @@ export function Navbar({
         if (res.ok) accepted = true;
       }
 
+      // Đảm bảo đồng bộ thành viên vào trip_members của Spring Boot database
+      if (inv.tripId && /^[0-9a-f-]{36}$/i.test(inv.tripId)) {
+        try {
+          await apiRequest('/invitations/sync-membership', {
+            method: 'POST',
+            body: JSON.stringify({ tripId: inv.tripId }),
+          });
+        } catch (e) {
+          console.warn('Membership sync to backend:', e);
+        }
+      }
+
       setIncomingInvitations((prev) =>
         prev.filter((i) => i.id !== inv.id && (i as any).token !== (inv as any).token)
       );
@@ -321,6 +333,18 @@ export function Navbar({
           }),
         });
       }
+      // Đảm bảo đồng bộ thành viên vào trip_members của Spring Boot database
+      if (inv.tripId && /^[0-9a-f-]{36}$/i.test(inv.tripId)) {
+        try {
+          await apiRequest('/invitations/sync-membership', {
+            method: 'POST',
+            body: JSON.stringify({ tripId: inv.tripId }),
+          });
+        } catch (e) {
+          console.warn('Membership sync to backend:', e);
+        }
+      }
+
       setIncomingInvitations((prev) =>
         prev.filter((i) => i.id !== inv.id && (i as any).token !== (inv as any).token)
       );

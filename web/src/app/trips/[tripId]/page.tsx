@@ -890,6 +890,22 @@ export default function TripDetailPage() {
         ]);
 
         if (!serverTrip) {
+          // Tự động đồng bộ thành viên vào backend nếu người dùng vừa nhận lời mời
+          try {
+            const syncRes = await apiRequest<any>('/invitations/sync-membership', {
+              method: 'POST',
+              body: JSON.stringify({ tripId }),
+            }).catch(() => null);
+
+            if (syncRes && syncRes.status === 'SUCCESS') {
+              const retryTrip = await apiRequest<any>(`/trips/${tripId}`).catch(() => null);
+              if (retryTrip) {
+                window.location.reload();
+                return;
+              }
+            }
+          } catch {}
+
           setTripNotFound(true);
           setTripErrorMessage('Không tìm thấy chuyến đi này trong cơ sở dữ liệu (404 Not Found) hoặc bạn không có quyền truy cập (403 Forbidden).');
           setIsLoadingTrip(false);
