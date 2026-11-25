@@ -46,6 +46,19 @@ import {
   Ticket,
   Lock,
   ShieldAlert,
+  ChevronUp,
+  ChevronDown,
+  LogOut,
+  Crown,
+  Mail,
+  MailCheck,
+  Pencil,
+  Eye,
+  AlertTriangle,
+  Lightbulb,
+  Vote,
+  Unlock,
+  Loader2,
 } from 'lucide-react';
 import { SkeletonTripsPage, SkeletonTimeline, SkeletonTaskList } from '@/components/common/Skeleton';
 import { GroupMapTab } from '@/features/trip-location/components/GroupMapTab';
@@ -63,11 +76,13 @@ interface ActivityItem {
   category?: string;
   image?: string;
   tips?: string;
+  sortOrder?: number;
   hasTimeOverlap?: boolean;
   overlapWith?: string;
 }
 
 interface DayPlanItem {
+  id?: string;
   dayNumber: number;
   dateStr?: string;
   title: string;
@@ -806,6 +821,11 @@ export default function TripDetailPage() {
 
   const persistTrip = (updatedTrip: TripDetailData) => {
     setTrip(updatedTrip);
+    try {
+      if (tripId && updatedTrip.itineraryDays) {
+        localStorage.setItem(`vista_trip_itinerary_${tripId}`, JSON.stringify(updatedTrip.itineraryDays));
+      }
+    } catch {}
   };
 
   useEffect(() => {
@@ -862,10 +882,11 @@ export default function TripDetailPage() {
       }
 
       try {
-        const [serverTrip, serverMembers, serverProposals] = await Promise.all([
+        const [serverTrip, serverMembers, serverProposals, serverItineraryDays] = await Promise.all([
           apiRequest<any>(`/trips/${tripId}`).catch(() => null),
           apiRequest<any[]>(`/trips/${tripId}/members`).catch(() => []),
           apiRequest<any[]>(`/trips/${tripId}/proposals`).catch(() => []),
+          apiRequest<any[]>(`/trips/${tripId}/itinerary/days`).catch(() => []),
         ]);
 
         if (!serverTrip) {
@@ -917,10 +938,43 @@ export default function TripDetailPage() {
         else if (serverTrip.status === 'CANCELLED') mappedStatus = 'CANCELLED';
         else mappedStatus = 'PLANNING';
 
-        // SSOT: Do NOT inject fake sample itineraries into real database trips
-        const itinerary = Array.isArray(serverTrip.itineraryDays) && serverTrip.itineraryDays.length > 0
-          ? serverTrip.itineraryDays
-          : (isDemoMode ? getSampleItineraryForDestination(dest, serverTrip.startDate) : []);
+        // Map backend itinerary days if available
+        let mappedDays: DayPlanItem[] = [];
+        if (Array.isArray(serverItineraryDays) && serverItineraryDays.length > 0) {
+          mappedDays = serverItineraryDays.map((d: any) => ({
+            id: d.id,
+            dayNumber: d.dayNumber,
+            dateStr: d.tripDate ? d.tripDate.split('-').reverse().join('/') : undefined,
+            title: d.title || `Ngày ${d.dayNumber}`,
+            activities: (d.items || []).map((item: any) => ({
+              id: item.id,
+              timeSlot: item.startTime ? `${item.startTime.slice(0, 5)}${item.endTime ? ` – ${item.endTime.slice(0, 5)}` : ''}` : undefined,
+              timeRange: item.startTime ? `${item.startTime.slice(0, 5)}${item.endTime ? ` – ${item.endTime.slice(0, 5)}` : ''}` : undefined,
+              title: item.customStopName || 'Điểm dừng',
+              description: item.note || '',
+              location: item.location || '',
+              costVnd: item.costVnd || 0,
+              costLabel: item.costVnd ? `${item.costVnd.toLocaleString('vi-VN')}₫` : 'Miễn phí',
+              category: item.category || 'Địa điểm',
+              sortOrder: item.sortOrder,
+            })).sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)),
+          }));
+        }
+
+        let persistedItinerary: DayPlanItem[] | null = null;
+        try {
+          const stored = localStorage.getItem(`vista_trip_itinerary_${tripId}`);
+          if (stored) persistedItinerary = JSON.parse(stored);
+        } catch {}
+
+        // SSOT: Priority: mappedDays > persistedItinerary > serverTrip.itineraryDays > sample
+        const itinerary = mappedDays.length > 0
+          ? mappedDays
+          : (persistedItinerary && persistedItinerary.length > 0)
+            ? persistedItinerary
+            : (Array.isArray(serverTrip.itineraryDays) && serverTrip.itineraryDays.length > 0)
+              ? serverTrip.itineraryDays
+              : (isDemoMode ? getSampleItineraryForDestination(dest, serverTrip.startDate) : []);
 
         setTrip({
           id: String(serverTrip.id),
@@ -962,8 +1016,8 @@ export default function TripDetailPage() {
     };
   }, [tripId, currentUser?.id]);
 
-  // Reorder activities
-  const handleReorderActivity = (dayNum: number, actIdx: number, direction: 'UP' | 'DOWN') => {
+  // Reorder activities (W-01)
+  const handleReorderActivity = async (dayNum: number, actIdx: number, direction: 'UP' | 'DOWN') => {
     if (!trip || !trip.itineraryDays) return;
     const days = [...trip.itineraryDays];
     const dayIndex = days.findIndex((d) => d.dayNumber === dayNum);
@@ -973,14 +1027,43 @@ export default function TripDetailPage() {
     const targetIdx = direction === 'UP' ? actIdx - 1 : actIdx + 1;
     if (targetIdx < 0 || targetIdx >= acts.length) return;
 
+    const previousTrip = trip;
     const temp = acts[actIdx];
     acts[actIdx] = acts[targetIdx];
     acts[targetIdx] = temp;
 
+    // Update sortOrder
+    acts.forEach((act, i) => {
+      act.sortOrder = i;
+    });
+
     days[dayIndex] = { ...days[dayIndex], activities: acts };
     const updated = { ...trip, itineraryDays: days };
     persistTrip(updated);
-    showToast(`✓ Đã đổi thứ tự điểm dừng! Tải lại trang (F5) thứ tự vẫn giữ nguyên.`);
+
+    const dayId = days[dayIndex].id;
+    const isUuidStr = (str?: string) =>
+      Boolean(str && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str));
+
+    if (dayId && isUuidStr(dayId)) {
+      try {
+        const orderedItemIds = acts.map((a) => a.id).filter((id) => isUuidStr(id));
+        if (orderedItemIds.length === acts.length) {
+          await apiRequest(`/itinerary/days/${dayId}/items/reorder`, {
+            method: 'PUT',
+            body: JSON.stringify({ orderedItemIds }),
+          });
+        }
+        showToast('✓ Đã đổi thứ tự điểm dừng! Tải lại trang (F5) thứ tự vẫn giữ nguyên.');
+      } catch (err) {
+        console.error('Lỗi khi đổi thứ tự trạm dừng qua API:', err);
+        // Rollback on error
+        persistTrip(previousTrip);
+        showToast('Không đổi được thứ tự, vui lòng thử lại');
+      }
+    } else {
+      showToast('✓ Đã đổi thứ tự điểm dừng! Tải lại trang (F5) thứ tự vẫn giữ nguyên.');
+    }
   };
 
   // Date validation helper (V-01: Bước 9)
@@ -2737,43 +2820,55 @@ export default function TripDetailPage() {
                                   </span>
 
                                   <div className={styles.stationActions}>
-                                    {/* Nút Reorder: Lên / Xuống (W3-TV3-03, Bước 5) */}
+                                    {/* Nút Reorder: Lên / Xuống (W-01) */}
                                     <div style={{ display: 'inline-flex', alignItems: 'center', background: '#F1F5F9', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '2px', gap: '2px' }}>
                                       <button
                                         type="button"
                                         disabled={actIdx === 0}
                                         onClick={() => handleReorderActivity(dayPlan.dayNumber, actIdx, 'UP')}
                                         style={{
-                                          padding: '4px 7px',
+                                          width: '32px',
+                                          height: '32px',
+                                          minWidth: '32px',
+                                          minHeight: '32px',
+                                          display: 'inline-flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
                                           background: actIdx === 0 ? 'transparent' : '#FFFFFF',
                                           color: actIdx === 0 ? '#CBD5E1' : '#0F172A',
                                           border: 'none',
                                           borderRadius: '6px',
                                           cursor: actIdx === 0 ? 'not-allowed' : 'pointer',
-                                          fontSize: '11px',
-                                          fontWeight: 800,
+                                          opacity: actIdx === 0 ? 0.35 : 1,
                                         }}
-                                        title="Chuyển điểm dừng lên trước"
+                                        title="Lên"
+                                        aria-label="Lên"
                                       >
-                                        ▲
+                                        <ChevronUp size={16} />
                                       </button>
                                       <button
                                         type="button"
                                         disabled={isLast}
                                         onClick={() => handleReorderActivity(dayPlan.dayNumber, actIdx, 'DOWN')}
                                         style={{
-                                          padding: '4px 7px',
+                                          width: '32px',
+                                          height: '32px',
+                                          minWidth: '32px',
+                                          minHeight: '32px',
+                                          display: 'inline-flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
                                           background: isLast ? 'transparent' : '#FFFFFF',
                                           color: isLast ? '#CBD5E1' : '#0F172A',
                                           border: 'none',
                                           borderRadius: '6px',
                                           cursor: isLast ? 'not-allowed' : 'pointer',
-                                          fontSize: '11px',
-                                          fontWeight: 800,
+                                          opacity: isLast ? 0.35 : 1,
                                         }}
-                                        title="Chuyển điểm dừng xuống sau"
+                                        title="Xuống"
+                                        aria-label="Xuống"
                                       >
-                                        ▼
+                                        <ChevronDown size={16} />
                                       </button>
                                     </div>
 
