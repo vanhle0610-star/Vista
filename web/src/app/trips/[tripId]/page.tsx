@@ -4925,32 +4925,8 @@ export default function TripDetailPage() {
                   </div>
                 </div>
 
-                {/* THÔNG BÁO CHUYỂN PHÁT THẬT QUA SMTP HOẶC HƯỚNG DẪN */}
-                {createdInvitationInfo.deliveryMode === 'SMTP_TRANSPORT' ? (
-                  <div style={{ marginBottom: '20px', padding: '14px', background: '#F0FDF4', borderRadius: '14px', border: '1.5px solid #86EFAC' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                      <span style={{ fontSize: '18px' }}>🚀</span>
-                      <strong style={{ fontSize: '13.5px', color: '#15803D' }}>
-                        Đã tự động gửi email THẬT qua Google SMTP thành công!
-                      </strong>
-                    </div>
-                    <p style={{ margin: '0 0 8px 0', fontSize: '12px', color: '#166534', lineHeight: '1.5' }}>
-                      Email thư mời chính thức đã bay thẳng vào hộp thư đến của <strong>{createdInvitationInfo.email}</strong> qua máy chủ Google. Người nhận chỉ cần mở hòm thư của họ và bấm nhận lời mời!
-                    </p>
-                    <a
-                      href={getGmailComposeUrl(createdInvitationInfo.email, createdInvitationInfo.token)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        fontSize: '11.5px',
-                        color: '#15803D',
-                        textDecoration: 'underline',
-                      }}
-                    >
-                      Mở ứng dụng Gmail xem lại thư hoặc gửi dự phòng nếu cần ↗
-                    </a>
-                  </div>
-                ) : (
+                {/* THÔNG BÁO HƯỚNG DẪN DỰ PHÒNG CHO LOCALHOST (NẾU CHƯA CÓ SMTP) */}
+                {createdInvitationInfo.deliveryMode !== 'SMTP_TRANSPORT' && (
                   <div style={{ marginBottom: '20px', padding: '14px', background: '#FFF7ED', borderRadius: '14px', border: '1.5px solid #FFEDD5' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                       <span style={{ fontSize: '16px' }}>⚡</span>
