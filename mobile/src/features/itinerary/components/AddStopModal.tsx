@@ -13,6 +13,7 @@ import Svg, { Path } from 'react-native-svg';
 import { tokens } from '@/theme/tokens';
 import { AppText } from '@/components/ui/AppText';
 import { AppButton } from '@/components/ui/AppButton';
+import { ItineraryItem } from '../types';
 import { itineraryApi } from '../api';
 
 interface AddStopModalProps {
@@ -20,8 +21,10 @@ interface AddStopModalProps {
   dayId: string;
   dayNumber: number;
   currentStopsCount: number;
+  existingStops?: ItineraryItem[];
   onClose: () => void;
   onSuccess: () => void;
+  onReviewStop?: (savedItem: ItineraryItem) => void;
 }
 
 export function AddStopModal({
@@ -29,8 +32,10 @@ export function AddStopModal({
   dayId,
   dayNumber,
   currentStopsCount,
+  existingStops,
   onClose,
   onSuccess,
+  onReviewStop,
 }: AddStopModalProps) {
   const [stopName, setStopName] = useState('');
   const [startTime, setStartTime] = useState('09:00');
@@ -46,7 +51,7 @@ export function AddStopModal({
 
     setSubmitting(true);
     try {
-      await itineraryApi.createItem(dayId, {
+      const createdItem = await itineraryApi.createItem(dayId, {
         customStopName: stopName.trim(),
         startTime: startTime.trim() ? (startTime.includes(':') && startTime.length === 5 ? `${startTime.trim()}:00` : startTime.trim()) : null,
         endTime: endTime.trim() ? (endTime.includes(':') && endTime.length === 5 ? `${endTime.trim()}:00` : endTime.trim()) : null,
@@ -54,11 +59,72 @@ export function AddStopModal({
         sortOrder: currentStopsCount,
       });
 
-      Alert.alert('Thành công', 'Đã thêm điểm dừng mới vào lịch trình.');
-      setStopName('');
-      setNote('');
-      onClose();
-      onSuccess();
+      // Kiểm tra cảnh báo trùng giờ (V-02: M-01)
+      const resWarnings = (createdItem as any)?.warnings as Array<{ code?: string; message?: string }> | undefined;
+      const apiOverlapWarning = resWarnings?.find(
+        (w) => w.code === 'TIME_OVERLAP' || (w.message && w.message.toLowerCase().includes('trùng'))
+      );
+
+      let clientOverlapPartner: string | null = null;
+      if (!apiOverlapWarning && existingStops && existingStops.length > 0 && startTime && endTime) {
+        const toMinutes = (timeStr: string) => {
+          const parts = timeStr.split(':').map(Number);
+          return parts[0] * 60 + parts[1];
+        };
+        const s1 = toMinutes(startTime.slice(0, 5));
+        const e1 = toMinutes(endTime.slice(0, 5));
+        if (s1 < e1) {
+          const conflicting = existingStops.find((st) => {
+            if (!st.startTime || !st.endTime) return false;
+            const s2 = toMinutes(st.startTime.slice(0, 5));
+            const e2 = toMinutes(st.endTime.slice(0, 5));
+            return Math.max(s1, s2) < Math.min(e1, e2);
+          });
+          if (conflicting) {
+            clientOverlapPartner = conflicting.customStopName || 'Điểm dừng khác';
+          }
+        }
+      }
+
+      const overlapPartnerName = apiOverlapWarning?.message
+        ? apiOverlapWarning.message.replace(/^.*trùng với\s*/i, '').trim() || apiOverlapWarning.message
+        : clientOverlapPartner;
+
+      if (apiOverlapWarning || clientOverlapPartner) {
+        Alert.alert(
+          'Cảnh báo trùng giờ',
+          `Điểm dừng đã lưu, nhưng đang trùng giờ với ${overlapPartnerName}. Bạn có muốn kiểm tra lại không?`,
+          [
+            {
+              text: 'Để nguyên',
+              style: 'default',
+              onPress: () => {
+                setStopName('');
+                setNote('');
+                onClose();
+                onSuccess();
+              },
+            },
+            {
+              text: 'Kiểm tra lại',
+              style: 'cancel',
+              onPress: () => {
+                onClose();
+                onSuccess();
+                if (onReviewStop) {
+                  onReviewStop(createdItem);
+                }
+              },
+            },
+          ]
+        );
+      } else {
+        Alert.alert('Thành công', 'Đã thêm điểm dừng mới vào lịch trình.');
+        setStopName('');
+        setNote('');
+        onClose();
+        onSuccess();
+      }
     } catch (err: any) {
       const msg = err?.response?.data?.detail || 'Không thể tạo điểm dừng mới.';
       Alert.alert('Lỗi', msg);

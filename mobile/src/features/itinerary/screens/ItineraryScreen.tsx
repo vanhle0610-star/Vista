@@ -721,6 +721,7 @@ export function ItineraryScreen({ tripId }: { tripId: string }) {
         item={selectedStop}
         dayNumber={activeDay?.dayNumber || 1}
         tripDate={activeDay?.tripDate}
+        existingStops={activeStops}
         onClose={() => {
           setIsDetailModalVisible(false);
           setSelectedStop(null);
@@ -734,8 +735,13 @@ export function ItineraryScreen({ tripId }: { tripId: string }) {
           dayId={activeDay.id}
           dayNumber={activeDay.dayNumber}
           currentStopsCount={activeStops.length}
+          existingStops={activeStops}
           onClose={() => setIsAddStopModalVisible(false)}
           onSuccess={loadData}
+          onReviewStop={(savedItem) => {
+            setSelectedStop(savedItem);
+            setIsDetailModalVisible(true);
+          }}
         />
       ) : null}
 
