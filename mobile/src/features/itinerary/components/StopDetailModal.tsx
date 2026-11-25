@@ -59,6 +59,7 @@ export function StopDetailModal({
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [note, setNote] = useState('');
+  const [cost, setCost] = useState('0');
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -68,6 +69,7 @@ export function StopDetailModal({
       setStartTime(item.startTime ? item.startTime.slice(0, 5) : '09:00');
       setEndTime(item.endTime ? item.endTime.slice(0, 5) : '11:00');
       setNote(item.note || '');
+      setCost(item.costVnd != null ? String(item.costVnd) : '0');
       setIsEditing(false);
     }
   }, [item]);
@@ -83,11 +85,13 @@ export function StopDetailModal({
 
     setSaving(true);
     try {
+      const parsedCost = parseInt(cost.replace(/[^0-9]/g, ''), 10);
       const updatedItem = await itineraryApi.updateItem(item.id, {
         customStopName: stopName.trim(),
         startTime: startTime.trim() ? (startTime.includes(':') && startTime.length === 5 ? `${startTime.trim()}:00` : startTime.trim()) : null,
         endTime: endTime.trim() ? (endTime.includes(':') && endTime.length === 5 ? `${endTime.trim()}:00` : endTime.trim()) : null,
         note: note.trim() || undefined,
+        costVnd: isNaN(parsedCost) ? 0 : parsedCost,
         expected_updated_at: item.updatedAt,
       });
 
@@ -274,6 +278,18 @@ export function StopDetailModal({
                       maxLength={5}
                     />
                   </View>
+                </View>
+
+                <View style={styles.inputGroup}>
+                  <AppText style={styles.inputLabel}>Chi phí dự kiến (₫)</AppText>
+                  <TextInput
+                    style={styles.textInput}
+                    value={cost}
+                    onChangeText={setCost}
+                    placeholder="VD: 150000"
+                    placeholderTextColor={tokens.colors.textDisabled}
+                    keyboardType="numeric"
+                  />
                 </View>
 
                 <View style={styles.inputGroup}>

@@ -181,6 +181,12 @@ export function ItineraryScreen({ tripId }: { tripId: string }) {
     };
   }, [activeStops, trip?.budgetTotal]);
 
+  // Dòng tổng chi phí dự kiến theo ngày (M-03 / V-03)
+  const dayTotalEstimatedCost = useMemo(() => {
+    if (!activeStops || activeStops.length === 0) return 0;
+    return activeStops.reduce((sum, item) => sum + (Number(item.costVnd) || 0), 0);
+  }, [activeStops]);
+
   // Reorder items (Move item up / down)
   const handleMoveStop = async (currentIndex: number, direction: 'UP' | 'DOWN') => {
     if (!activeDay || activeStops.length <= 1) return;
@@ -359,6 +365,10 @@ export function ItineraryScreen({ tripId }: { tripId: string }) {
                 </>
               ) : null}
             </View>
+            {/* Dòng tổng chi phí dự kiến theo ngày (M-03 / V-03) */}
+            <AppText style={styles.dayTotalCostLine}>
+              Tổng chi phí dự kiến ngày: {dayTotalEstimatedCost.toLocaleString('vi-VN')}₫
+            </AppText>
           </View>
 
           {/* Map Link Pill */}
@@ -927,6 +937,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: tokens.colors.textMuted,
     lineHeight: 16,
+  },
+  dayTotalCostLine: {
+    fontSize: tokens.font.caption,
+    fontWeight: '600',
+    color: tokens.colors.textSecondary,
+    marginTop: tokens.spacing.xs,
   },
   metaDot: {
     color: tokens.colors.textDisabled,

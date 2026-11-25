@@ -41,6 +41,7 @@ export function AddStopModal({
   const [startTime, setStartTime] = useState('09:00');
   const [endTime, setEndTime] = useState('11:00');
   const [note, setNote] = useState('');
+  const [cost, setCost] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const handleAdd = async () => {
@@ -51,11 +52,13 @@ export function AddStopModal({
 
     setSubmitting(true);
     try {
+      const parsedCost = parseInt(cost.replace(/[^0-9]/g, ''), 10);
       const createdItem = await itineraryApi.createItem(dayId, {
         customStopName: stopName.trim(),
         startTime: startTime.trim() ? (startTime.includes(':') && startTime.length === 5 ? `${startTime.trim()}:00` : startTime.trim()) : null,
         endTime: endTime.trim() ? (endTime.includes(':') && endTime.length === 5 ? `${endTime.trim()}:00` : endTime.trim()) : null,
         note: note.trim() || undefined,
+        costVnd: isNaN(parsedCost) ? 0 : parsedCost,
         sortOrder: currentStopsCount,
       });
 
@@ -189,6 +192,18 @@ export function AddStopModal({
                   maxLength={5}
                 />
               </View>
+            </View>
+
+            <View style={styles.formGroup}>
+              <AppText style={styles.inputLabel}>Chi phí dự kiến (₫, tùy chọn)</AppText>
+              <TextInput
+                style={styles.textInput}
+                value={cost}
+                onChangeText={setCost}
+                placeholder="VD: 150000"
+                placeholderTextColor={tokens.colors.textDisabled}
+                keyboardType="numeric"
+              />
             </View>
 
             <View style={styles.formGroup}>
