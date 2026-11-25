@@ -8,6 +8,7 @@ export interface ItineraryItem {
   sortOrder: number;
   note?: string | null;
   source?: string | null;
+  costVnd?: number | null;
   version?: number;
   updatedAt?: string;
   updatedBy?: string;
@@ -38,6 +39,7 @@ export interface CreateItemPayload {
   endTime?: string | null;
   sortOrder?: number;
   note?: string;
+  costVnd?: number | null;
 }
 
 export interface UpdateItemPayload {
@@ -47,6 +49,7 @@ export interface UpdateItemPayload {
   endTime?: string | null;
   sortOrder?: number;
   note?: string;
+  costVnd?: number | null;
   expected_updated_at?: string;
 }
 

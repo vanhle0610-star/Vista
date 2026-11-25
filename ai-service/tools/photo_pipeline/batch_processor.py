@@ -82,6 +82,15 @@ def process_destinations(province: str = "Kiên Giang", id_prefix: str = None, l
             FROM destinations
             ORDER BY id ASC
         """)
+    elif "," in province:
+        prov_list = [p.strip() for p in province.split(",") if p.strip()]
+        placeholders = ",".join(["?"] * len(prov_list))
+        cur.execute(f"""
+            SELECT id, name, province, category, photo_url
+            FROM destinations
+            WHERE province IN ({placeholders})
+            ORDER BY province ASC, id ASC
+        """, tuple(prov_list))
     else:
         cur.execute("""
             SELECT id, name, province, category, photo_url

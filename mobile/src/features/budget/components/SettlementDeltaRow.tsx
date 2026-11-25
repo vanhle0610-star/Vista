@@ -17,6 +17,8 @@ export interface SettlementTransferItem {
   toAvatar?: string;
   amount: number;
   bankAccount?: string;
+  bankCode?: string;
+  bankName?: string;
 }
 
 export interface SettlementDeltaRowProps {

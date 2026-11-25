@@ -1,6 +1,15 @@
 import json
 import os
 import sys
+
+# Ensure UTF-8 output on Windows consoles to prevent cp1252 charmap encoding crash
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 import hmac
 import logging
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -19,7 +28,7 @@ class VistaAiRequestHandler(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Internal-Token")
 
     def _check_auth(self) -> bool:
-        if config.DEV or not config.INTERNAL_TOKEN:
+        if not config.INTERNAL_TOKEN:
             return True
         token = self.headers.get("X-Internal-Token", "")
         return hmac.compare_digest(token, config.INTERNAL_TOKEN)

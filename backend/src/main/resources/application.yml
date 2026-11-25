@@ -74,7 +74,7 @@ vista:
       client-id: ${GOOGLE_CLIENT_ID:}
   jwt:
     secret: ${JWT_SECRET:vista-local-dev-super-secure-key-2026-minimum-256-bits-random!}
-    access-token-expiration-ms: ${JWT_ACCESS_EXPIRATION_MS:604800000}
+    access-token-expiration-ms: ${JWT_ACCESS_EXPIRATION_MS:3600000}
     refresh-token-expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:604800000}
 logging:
   pattern:

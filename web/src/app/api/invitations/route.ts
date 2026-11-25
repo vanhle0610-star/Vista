@@ -1,6 +1,8 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+
+const BACKEND_URL = (process.env.BACKEND_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081/api/v1').replace(/\/+$/, '');
 
 export interface StoredInvitation {
   id: string;
@@ -28,7 +30,6 @@ export interface StoredInvitation {
 
 const STORE_PATH = path.join(process.cwd(), '.invitations_store.json');
 
-// In-memory fallback in case of read error
 let memoryStore: StoredInvitation[] = [
   {
     id: 'inv-seed-1',
@@ -73,16 +74,33 @@ function writeStore(items: StoredInvitation[]) {
   }
 }
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
+  const authHeader = request.headers.get('authorization');
   const { searchParams } = new URL(request.url);
   const token = searchParams.get('token');
-  const email = searchParams.get('email');
   const tripId = searchParams.get('tripId');
+  const email = searchParams.get('email');
 
-  const list = readStore();
-
-  // Find by token (case-insensitive and tolerant of 0 vs O ambiguity)
+  // Try Backend first if applicable
   if (token) {
+    try {
+      const res = await fetch(`${BACKEND_URL}/invitations/${token}/preview`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(authHeader ? { Authorization: authHeader } : {}),
+        },
+        cache: 'no-store',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return NextResponse.json(data);
+      }
+    } catch {
+      // Fallback to local store
+    }
+
+    const list = readStore();
     const clean = token.trim().toUpperCase();
     const cleanNo0 = clean.replace(/0/g, 'O');
     const cleanNoO = clean.replace(/O/g, '0');
@@ -99,76 +117,147 @@ export async function GET(request: Request) {
       );
     });
     if (!found) {
-      return NextResponse.json({ message: 'Không tìm thấy lời mời', token }, { status: 404 });
+      return NextResponse.json({ message: 'Không tìm thấy lời mời' }, { status: 404 });
     }
     return NextResponse.json(found);
   }
 
-  // Filter by invitee or inviter email
-  if (email) {
-    const cleanEmail = email.trim().toLowerCase();
-    const filtered = list.filter(
-      (it) =>
-        it.inviteeEmail.toLowerCase() === cleanEmail ||
-        (it.inviterEmail && it.inviterEmail.toLowerCase() === cleanEmail)
-    );
-    return NextResponse.json(filtered);
-  }
-
-  // Filter by tripId
   if (tripId) {
+    try {
+      const res = await fetch(`${BACKEND_URL}/trips/${tripId}/invitations`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(authHeader ? { Authorization: authHeader } : {}),
+        },
+        cache: 'no-store',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return NextResponse.json(data);
+      }
+    } catch {
+      // Fallback
+    }
+
+    const list = readStore();
     const filtered = list.filter((it) => it.tripId === tripId);
     return NextResponse.json(filtered);
   }
 
-  // Return all
+  // Pending invitations for current user
+  if (authHeader) {
+    try {
+      const res = await fetch(`${BACKEND_URL}/invitations/my-pending`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: authHeader,
+        },
+        cache: 'no-store',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return NextResponse.json(data);
+      }
+    } catch {
+      // Fallback
+    }
+  }
+
+  const list = readStore();
+  if (email) {
+    const cleanEmail = email.trim().toLowerCase();
+    const filtered = list.filter(
+      (it) =>
+        (it.inviteeEmail || '').toLowerCase() === cleanEmail ||
+        (it.email || '').toLowerCase() === cleanEmail
+    );
+    return NextResponse.json(filtered);
+  }
+
   return NextResponse.json(list);
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  const authHeader = request.headers.get('authorization');
   try {
     const body = await request.json();
-    const list = readStore();
+    const token = body.token ? String(body.token).trim() : '';
+    const id = body.id;
+    const status = body.status;
 
-    // Handle user leaving trip
-    if (body.action === 'LEAVE') {
-      const tripId = body.tripId;
-      const cleanEmail = (body.email || body.inviteeEmail || '').toLowerCase().trim();
-      let modified = false;
-      const updatedList = list.map((it) => {
-        const itEmail = (it.email || it.inviteeEmail || '').toLowerCase().trim();
-        if (it.tripId === tripId && (!cleanEmail || itEmail === cleanEmail)) {
-          modified = true;
-          return {
-            ...it,
-            status: 'REVOKED' as const,
-          };
+    // Backend forward logic
+    let backendSuccess = false;
+    let backendResult = null;
+
+    if (id && status === 'ACCEPTED') {
+      try {
+        const res = await fetch(`${BACKEND_URL}/invitations/${id}/accept-by-id`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(authHeader ? { Authorization: authHeader } : {}),
+          },
+          body: JSON.stringify(body),
+        });
+        if (res.ok) {
+          backendSuccess = true;
+          backendResult = await res.json().catch(() => ({}));
         }
-        return it;
-      });
-      if (modified) {
-        writeStore(updatedList);
+      } catch {
+        // Fall through
       }
-      return NextResponse.json({ message: 'Đã hủy lời mời do rời nhóm', count: modified ? 1 : 0 });
+    } else if (token && status === 'ACCEPTED') {
+      try {
+        const res = await fetch(`${BACKEND_URL}/invitations/${token}/accept`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(authHeader ? { Authorization: authHeader } : {}),
+          },
+          body: JSON.stringify(body),
+        });
+        if (res.ok) {
+          backendSuccess = true;
+          backendResult = await res.json().catch(() => ({}));
+        }
+      } catch {
+        // Fall through
+      }
+    } else if (token && (status === 'DECLINED' || status === 'REVOKED')) {
+      try {
+        const res = await fetch(`${BACKEND_URL}/invitations/${token}/decline`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(authHeader ? { Authorization: authHeader } : {}),
+          },
+          body: JSON.stringify(body),
+        });
+        if (res.ok) {
+          backendSuccess = true;
+          backendResult = await res.json().catch(() => ({}));
+        }
+      } catch {
+        // Fall through
+      }
     }
 
-    if (!body.token) {
-      return NextResponse.json({ message: 'Token là bắt buộc' }, { status: 400 });
-    }
-
-    const cleanToken = body.token.trim().toUpperCase();
+    // Always keep local store in sync
+    const list = readStore();
+    const cleanToken = token.toUpperCase();
     const existingIndex = list.findIndex((it) => it.token.toUpperCase() === cleanToken);
-
     const cleanEmail = (body.email || body.inviteeEmail || '').toLowerCase().trim();
-    const isAccepted = body.action === 'ACCEPT' || body.status === 'ACCEPTED';
-    const isRevoked = body.action === 'REVOKE' || body.status === 'REVOKED';
+    const isAccepted = body.action === 'ACCEPT' || status === 'ACCEPTED';
+    const isRevoked = body.action === 'REVOKE' || status === 'REVOKED';
 
+    let localResult = null;
     if (existingIndex >= 0) {
-      // Update existing
-      const updated = {
+      const updated: StoredInvitation = {
         ...list[existingIndex],
         ...body,
-        token: cleanToken,
+        token: cleanToken || list[existingIndex].token,
         status: isAccepted ? 'ACCEPTED' : (isRevoked ? 'REVOKED' : (body.status || list[existingIndex].status)),
         acceptedAt: isAccepted ? new Date().toISOString() : list[existingIndex].acceptedAt,
         acceptedBy: isAccepted && body.user ? body.user : list[existingIndex].acceptedBy,
@@ -181,8 +270,8 @@ export async function POST(request: Request) {
       };
       list[existingIndex] = updated;
       writeStore(list);
+      localResult = updated;
 
-      // Immediately sync new member into trips store if accepted
       if (isAccepted && updated.tripId) {
         try {
           const tripsStorePath = path.join(process.cwd(), '.trips_store.json');
@@ -225,10 +314,7 @@ export async function POST(request: Request) {
           console.error('Error syncing member to trips_store from invitations route:', e);
         }
       }
-
-      return NextResponse.json(updated);
-    } else {
-      // Create new
+    } else if (cleanToken || cleanEmail) {
       const newItem: StoredInvitation = {
         id: body.id || `inv-${Date.now()}`,
         tripId: body.tripId || 'demo-danang-2026',
@@ -253,10 +339,17 @@ export async function POST(request: Request) {
       };
       list.unshift(newItem);
       writeStore(list);
-      return NextResponse.json(newItem, { status: 201 });
+      localResult = newItem;
     }
+
+    if (backendSuccess && backendResult) {
+      return NextResponse.json(backendResult);
+    }
+    if (localResult) {
+      return NextResponse.json(localResult, { status: existingIndex >= 0 ? 200 : 201 });
+    }
+    return NextResponse.json({ message: 'Thành công' }, { status: 200 });
   } catch (err: any) {
     return NextResponse.json({ message: err.message || 'Lỗi xử lý lời mời' }, { status: 500 });
   }
 }
-

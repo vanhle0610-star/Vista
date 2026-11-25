@@ -707,7 +707,8 @@ class DestinationDataLoader:
                        walking_load, indoor_outdoor, suitable_slots,
                        description, photo_url, verified_at
                 FROM destinations
-                WHERE (id LIKE 'osm-node-%' OR id LIKE 'osm-way-%' OR id LIKE 'dest-%' OR id LIKE 'osm-gen-%')
+                WHERE (id LIKE 'osm-node-%' OR id LIKE 'osm-way-%' OR id LIKE 'dest-%')
+                AND id NOT LIKE 'osm-gen-%'
             """)
             rows = cur.fetchall()
             conn.close()
@@ -728,6 +729,8 @@ class DestinationDataLoader:
 
             norm_n = normalize_text(name)
             ascii_n = self._strip_accents_key(name)
+            if "(co so" in ascii_n or "(cơ sở" in name.lower() or "cơ sở " in name.lower():
+                continue
             if norm_n in seen_prov_names.get(prov, set()) or ascii_n in seen_prov_ascii.get(prov, set()):
                 continue
 

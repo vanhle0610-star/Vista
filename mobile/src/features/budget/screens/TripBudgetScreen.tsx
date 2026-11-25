@@ -20,9 +20,10 @@ import { tokens } from '../../../theme/tokens';
 import { BudgetSummaryCard } from '../components/BudgetSummaryCard';
 import { SettlementDeltaRow, SettlementTransferItem } from '../components/SettlementDeltaRow';
 import { ExpenseItem, ExpenseCategoryKey } from '../components/ExpenseItem';
-import { AddExpenseModal, AddExpensePayload } from '../components/AddExpenseModal';
+import { AddExpenseModal, AddExpensePayload, PayerMember } from '../components/AddExpenseModal';
 import { VietQRModal } from '../components/VietQRModal';
 import { useTripExpenses } from '../hooks/useTripExpenses';
+import { tripApi, TripMemberDto } from '@/services/api/tripApi';
 import {
   FoodIcon,
   HotelIcon,
@@ -47,70 +48,12 @@ export interface LedgerExpense {
   dateGroup: 'TODAY' | 'YESTERDAY' | 'EARLIER';
 }
 
-const INITIAL_EXPENSES: LedgerExpense[] = [
-  {
-    id: '1',
-    title: 'Hải sản Bé Mặn',
-    amount: 1250000,
-    paidById: 'va',
-    paidByName: 'Vân Anh',
-    category: 'FOOD',
-    splitType: 'Chia đều 4',
-    occurredAt: '2026-11-16T18:30:00Z',
-    participantIds: ['va', 'tu', 'hn', 'th'],
-    dateGroup: 'TODAY',
-  },
-  {
-    id: '2',
-    title: 'Vé Cầu Vàng Bà Nà Hills',
-    amount: 3600000,
-    paidById: 'qb',
-    paidByName: 'Quốc Bảo',
-    category: 'ACTIVITIES',
-    splitType: '4 vé trọn gói',
-    occurredAt: '2026-11-16T09:00:00Z',
-    participantIds: ['va', 'tu', 'hn', 'th'],
-    dateGroup: 'TODAY',
-  },
-  {
-    id: '3',
-    title: 'Cà phê Muối Hội An',
-    amount: 180000,
-    paidById: 'hn',
-    paidByName: 'Hoàng Nam',
-    category: 'FOOD',
-    splitType: 'Cá nhân chi',
-    occurredAt: '2026-11-15T15:20:00Z',
-    participantIds: ['va', 'tu', 'hn', 'th'],
-    dateGroup: 'YESTERDAY',
-  },
-  {
-    id: '4',
-    title: 'Khách sạn Novotel Bạch Đằng',
-    amount: 5000000,
-    paidById: 'va',
-    paidByName: 'Vân Anh',
-    category: 'ACCOMMODATION',
-    splitType: 'Chia đều 4',
-    occurredAt: '2026-11-15T14:00:00Z',
-    participantIds: ['va', 'tu', 'hn', 'th'],
-    dateGroup: 'YESTERDAY',
-  },
-];
-
 const CATEGORY_FILTERS = [
   { key: 'ALL', label: 'TẤT CẢ' },
   { key: 'FOOD', label: 'ẨM THỰC' },
   { key: 'ACCOMMODATION', label: 'LƯU TRÚ' },
   { key: 'TRANSPORT', label: 'DI CHUYỂN' },
   { key: 'ACTIVITIES', label: 'VÉ THAM QUAN' },
-];
-
-const MEMBERS = [
-  { id: 'va', name: 'Vân Anh', initials: 'VA' },
-  { id: 'hn', name: 'Hoàng Nam', initials: 'HN' },
-  { id: 'qb', name: 'Quốc Bảo', initials: 'QB' },
-  { id: 'mt', name: 'Minh Thư', initials: 'MT' },
 ];
 
 function formatVnd(val: number): string {
@@ -120,17 +63,31 @@ function formatVnd(val: number): string {
 export interface TripBudgetScreenProps {
   tripId?: string;
   budgetTotal?: number;
+  tripTitle?: string;
+  startDate?: string;
+  endDate?: string;
+  status?: string;
 }
 
 export function TripBudgetScreen({
-  tripId = '00000000-0000-0000-0000-000000000001',
+  tripId,
   budgetTotal = 25000000,
+  tripTitle,
+  startDate,
+  endDate,
+  status = 'ACTIVE',
 }: TripBudgetScreenProps) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [members, setMembers] = useState<TripMemberDto[]>([]);
 
   const checkAuth = useCallback(async () => {
     const token = await authStorage.getAccessToken();
     setIsAuthenticated(!!token);
+    if (token) {
+      const u = await authStorage.getUser<{ id?: string; sub?: string }>();
+      setCurrentUserId(u?.id || u?.sub || null);
+    }
   }, []);
 
   useEffect(() => {
@@ -142,16 +99,60 @@ export function TripBudgetScreen({
       checkAuth();
     }, [checkAuth])
   );
+
+  // Fetch real trip members from backend
+  useEffect(() => {
+    let active = true;
+    setVietQrItem(null);
+    setLocalExpenses([]);
+    if (tripId) {
+      tripApi.fetchTripMembers(tripId)
+        .then((m: TripMemberDto[]) => {
+          if (active && m) setMembers(m);
+        })
+        .catch(() => {
+          if (active) setMembers([]);
+        });
+    } else {
+      setMembers([]);
+    }
+    return () => {
+      active = false;
+    };
+  }, [tripId]);
+
+  const memberMap = useMemo(() => {
+    const map = new Map<string, string>();
+    members.forEach((m) => {
+      map.set(m.userId, m.displayName || m.email || 'Thành viên');
+    });
+    return map;
+  }, [members]);
+
+  const payerMembers: PayerMember[] = useMemo(() => {
+    if (members.length > 0) {
+      return members.map((m) => ({
+        id: m.userId,
+        name: m.displayName || m.email || 'Thành viên',
+        initials: (m.displayName || 'TV').slice(0, 2).toUpperCase(),
+      }));
+    }
+    return [
+      { id: currentUserId || 'va', name: 'Bạn (Thành viên)', initials: 'ME' },
+    ];
+  }, [members, currentUserId]);
+
   const {
     expenses: apiExpenses,
     summary,
+    settlementAccounts = [],
     isLoading,
     reload,
     addExpense: addExpenseApi,
   } = useTripExpenses(tripId, budgetTotal);
 
   const [activeTab, setActiveTab] = useState<TreasuryTab>('OVERVIEW');
-  const [localExpenses, setLocalExpenses] = useState<LedgerExpense[]>(INITIAL_EXPENSES);
+  const [localExpenses, setLocalExpenses] = useState<LedgerExpense[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [vietQrItem, setVietQrItem] = useState<SettlementTransferItem | null>(null);
@@ -165,28 +166,40 @@ export function TripBudgetScreen({
   };
 
   const handleCopyAccount = (item: SettlementTransferItem) => {
-    showToast(`Đã sao chép STK của ${item.toName}: ${item.bankAccount}`);
+    if (item.bankAccount) {
+      showToast(`Đã sao chép STK của ${item.toName}: ${item.bankAccount}`);
+    } else {
+      showToast(`${item.toName} chưa thiết lập số tài khoản nhận tiền.`);
+    }
   };
 
-  // Combine local and API expenses
+  // Combine dynamic backend expenses and freshly added local expenses
   const allExpenses = useMemo(() => {
     if (apiExpenses && apiExpenses.length > 0) {
-      return apiExpenses.map((e, index) => ({
-        id: e.id,
-        title: e.title,
-        amount: e.amount,
-        paidById: e.paidBy,
-        paidByName: e.paidBy === '00000000-0000-0000-0000-000000000001' ? 'Vân Anh' : 'Quốc Bảo',
-        category: e.category || 'OTHER',
-        splitType: 'Chia đều',
-        occurredAt: e.occurredAt,
-        participantIds: ['va', 'hn', 'qb', 'mt'],
-        imageUrl: undefined as string | undefined,
-        dateGroup: (index < 2 ? 'TODAY' : 'YESTERDAY') as LedgerExpense['dateGroup'],
-      }));
+      return apiExpenses.map((e, index) => {
+        const payerName =
+          memberMap.get(e.paidBy) ||
+          (e.paidBy === currentUserId ? 'Bạn' : 'Thành viên');
+        return {
+          id: e.id,
+          title: e.title,
+          amount: e.amount,
+          paidById: e.paidBy,
+          paidByName: payerName,
+          category: e.category || 'OTHER',
+          splitType: 'Chia đều',
+          occurredAt: e.occurredAt,
+          participantIds:
+            e.splits && e.splits.length > 0
+              ? e.splits.map((s) => s.userId)
+              : members.map((m) => m.userId),
+          imageUrl: undefined as string | undefined,
+          dateGroup: (index < 2 ? 'TODAY' : 'YESTERDAY') as LedgerExpense['dateGroup'],
+        };
+      });
     }
     return localExpenses;
-  }, [apiExpenses, localExpenses]);
+  }, [apiExpenses, localExpenses, memberMap, currentUserId, members]);
 
   // Filtered by category
   const filteredExpenses = useMemo(() => {
@@ -204,6 +217,136 @@ export function TripBudgetScreen({
   const totalSpent = useMemo(() => {
     return allExpenses.reduce((acc, curr) => acc + curr.amount, 0);
   }, [allExpenses]);
+
+  // Dynamic Category breakdown & Donut SVG calculations
+  const categoryBreakdown = useMemo(() => {
+    const totals = {
+      FOOD: 0,
+      ACCOMMODATION: 0,
+      TRANSPORT: 0,
+      ACTIVITIES: 0,
+      OTHER: 0,
+    };
+
+    allExpenses.forEach((e) => {
+      const cat = (e.category || '').toUpperCase();
+      if (cat === 'FOOD' || cat === 'DINING') totals.FOOD += e.amount;
+      else if (cat === 'ACCOMMODATION' || cat === 'LODGING') totals.ACCOMMODATION += e.amount;
+      else if (cat === 'TRANSPORT' || cat === 'TRANSIT') totals.TRANSPORT += e.amount;
+      else if (cat === 'ACTIVITIES' || cat === 'EXPERIENCE') totals.ACTIVITIES += e.amount;
+      else totals.OTHER += e.amount;
+    });
+
+    const total = Object.values(totals).reduce((a, b) => a + b, 0);
+    const totalSafe = total > 0 ? total : 1;
+
+    const C = 238.76;
+    const dash = {
+      ACCOMMODATION: (totals.ACCOMMODATION / totalSafe) * C,
+      FOOD: (totals.FOOD / totalSafe) * C,
+      TRANSPORT: (totals.TRANSPORT / totalSafe) * C,
+      ACTIVITIES: (totals.ACTIVITIES / totalSafe) * C,
+      OTHER: (totals.OTHER / totalSafe) * C,
+    };
+
+    const offset = {
+      ACCOMMODATION: 0,
+      FOOD: -dash.ACCOMMODATION,
+      TRANSPORT: -(dash.ACCOMMODATION + dash.FOOD),
+      ACTIVITIES: -(dash.ACCOMMODATION + dash.FOOD + dash.TRANSPORT),
+      OTHER: -(dash.ACCOMMODATION + dash.FOOD + dash.TRANSPORT + dash.ACTIVITIES),
+    };
+
+    const pct = {
+      ACCOMMODATION: total > 0 ? Math.round((totals.ACCOMMODATION / total) * 100) : 0,
+      FOOD: total > 0 ? Math.round((totals.FOOD / total) * 100) : 0,
+      TRANSPORT: total > 0 ? Math.round((totals.TRANSPORT / total) * 100) : 0,
+      ACTIVITIES: total > 0 ? Math.round((totals.ACTIVITIES / total) * 100) : 0,
+      OTHER:
+        total > 0
+          ? Math.max(
+              0,
+              100 -
+                (Math.round((totals.ACCOMMODATION / total) * 100) +
+                  Math.round((totals.FOOD / total) * 100) +
+                  Math.round((totals.TRANSPORT / total) * 100) +
+                  Math.round((totals.ACTIVITIES / total) * 100))
+            )
+          : 0,
+    };
+
+    return { totals, total, dash, offset, pct };
+  }, [allExpenses]);
+
+  // Personal net financial balance
+  const myDelta = useMemo(() => {
+    if (
+      currentUserId &&
+      summary?.settlementDeltas &&
+      summary.settlementDeltas[currentUserId] !== undefined
+    ) {
+      return summary.settlementDeltas[currentUserId];
+    }
+    return 0;
+  }, [currentUserId, summary]);
+
+  // Dynamic suggested transfers from backend Min-Cash-Flow algorithm
+  const suggestedTransfers = summary?.suggestedTransfers || [];
+  const totalTransferAmount = suggestedTransfers.reduce((acc, t) => acc + t.amount, 0);
+
+  const memberBankMap = useMemo(() => {
+    const map = new Map<
+      string,
+      {
+        bankCode?: string;
+        bankBin?: string;
+        bankName?: string;
+        bankAccount?: string;
+        bankAccountName?: string;
+      }
+    >();
+
+    // Seed with trip members
+    members.forEach((m) => {
+      map.set(m.userId, {
+        bankCode: m.bankCode || undefined,
+        bankName: m.bankName || undefined,
+        bankAccount: m.bankAccountNumber || undefined,
+      });
+    });
+
+    // Overlay real bank accounts returned by GET /settlement-accounts
+    settlementAccounts.forEach((sa) => {
+      const prev = map.get(sa.userId) || {};
+      map.set(sa.userId, {
+        ...prev,
+        bankCode: sa.bankCode || prev.bankCode,
+        bankBin: sa.bankBin || undefined,
+        bankAccount: sa.bankAccountNumber || prev.bankAccount,
+        bankAccountName: sa.bankAccountName || undefined,
+      });
+    });
+
+    return map;
+  }, [members, settlementAccounts]);
+
+  const mappedTransfers: SettlementTransferItem[] = useMemo(() => {
+    if (suggestedTransfers.length > 0) {
+      return suggestedTransfers.map((t, idx) => {
+        const toBank = memberBankMap.get(t.toUserId);
+        return {
+          id: String(idx + 1),
+          fromName: memberMap.get(t.fromUserId) || 'Thành viên',
+          toName: memberMap.get(t.toUserId) || 'Người nhận',
+          amount: t.amount,
+          bankAccount: toBank?.bankAccount,
+          bankCode: toBank?.bankCode || toBank?.bankBin,
+          bankName: toBank?.bankName,
+        };
+      });
+    }
+    return [];
+  }, [suggestedTransfers, memberMap, memberBankMap]);
 
   // Split into Today and Yesterday groups
   const todayExpenses = useMemo(() => {
@@ -301,13 +444,24 @@ export function TripBudgetScreen({
     );
   }
 
+  const dateRangeDisplay =
+    startDate && endDate ? `${startDate} – ${endDate}` : 'Thời gian đang cập nhật';
+  const memberCountDisplay =
+    members.length > 0 ? `👥 ${members.length} thành viên` : '👥 1 thành viên';
+  const statusDisplay =
+    status === 'ACTIVE'
+      ? 'Đang diễn ra'
+      : status === 'COMPLETED'
+      ? 'Đã hoàn thành'
+      : 'Đang lên kế hoạch';
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor="#faf8ff" />
 
       {/* Main Container - Constrained to 440px on web */}
       <View style={styles.container}>
-        {/* 1. Top Header Bar (matching Stitch th_qu_nh_m_t_ng_quan) */}
+        {/* 1. Top Header Bar */}
         <View style={styles.topAppBar}>
           <View style={styles.topAppBarLeft}>
             <TouchableOpacity
@@ -322,7 +476,9 @@ export function TripBudgetScreen({
               <View style={styles.vistaBadge}>
                 <Text style={styles.vistaBadgeText}>◆ VISTA</Text>
               </View>
-              <Text style={styles.appBarTitle} numberOfLines={1}>Trip Detail</Text>
+              <Text style={styles.appBarTitle} numberOfLines={1}>
+                {tripTitle || 'Sổ quỹ & Chi tiêu'}
+              </Text>
             </View>
           </View>
           <TouchableOpacity
@@ -345,9 +501,9 @@ export function TripBudgetScreen({
             <View style={styles.statusPillGroup}>
               <View style={styles.liveBadge}>
                 <View style={styles.liveDot} />
-                <Text style={styles.liveBadgeText}>Đang diễn ra</Text>
+                <Text style={styles.liveBadgeText}>{statusDisplay}</Text>
               </View>
-              <Text style={styles.membersText}>👥 4 thành viên</Text>
+              <Text style={styles.membersText}>{memberCountDisplay}</Text>
             </View>
             <TouchableOpacity
               style={styles.moreOptionsBtn}
@@ -359,8 +515,8 @@ export function TripBudgetScreen({
           </View>
 
           <View style={styles.tripTitleRow}>
-            <Text style={styles.tripTitle}>Đà Nẵng – Hội An</Text>
-            <Text style={styles.tripDateRange}>15 – 18/11/2026</Text>
+            <Text style={styles.tripTitle}>{tripTitle || 'Chuyến đi của bạn'}</Text>
+            <Text style={styles.tripDateRange}>{dateRangeDisplay}</Text>
           </View>
         </View>
 
@@ -399,16 +555,34 @@ export function TripBudgetScreen({
               <Text style={styles.metricCardSub}>{allExpenses.length} khoản giao dịch</Text>
             </View>
 
-            {/* Net Personal Balance Mini Card */}
+            {/* Net Personal Balance Mini Card (Dynamic) */}
             <View style={styles.metricCard}>
               <View style={styles.metricCardHeader}>
-                <View style={styles.metricIconGreen}>
-                  <Text style={styles.metricIconText}>📥</Text>
+                <View style={myDelta >= 0 ? styles.metricIconGreen : styles.metricIconRed}>
+                  <Text style={styles.metricIconText}>{myDelta >= 0 ? '📥' : '📤'}</Text>
                 </View>
-                <Text style={styles.metricCardLabel}>Bạn được nhận</Text>
+                <Text style={styles.metricCardLabel}>
+                  {myDelta >= 0 ? 'Bạn được nhận' : 'Bạn cần trả'}
+                </Text>
               </View>
-              <Text style={styles.metricCardGreenValue}>+500.000 đ</Text>
-              <Text style={styles.metricCardGreenSub}>Sau đối soát tạm tính</Text>
+              <Text
+                style={
+                  myDelta >= 0 ? styles.metricCardGreenValue : styles.metricCardValue
+                }
+              >
+                {myDelta > 0
+                  ? `+${formatVnd(myDelta)}`
+                  : myDelta < 0
+                  ? `-${formatVnd(Math.abs(myDelta))}`
+                  : '0 đ'}
+              </Text>
+              <Text
+                style={
+                  myDelta >= 0 ? styles.metricCardGreenSub : styles.metricCardSub
+                }
+              >
+                {myDelta === 0 ? 'Cán cân đã cân bằng' : 'Sau đối soát tạm tính'}
+              </Text>
             </View>
           </View>
 
@@ -465,7 +639,7 @@ export function TripBudgetScreen({
                 >
                   Đối soát
                 </Text>
-                <View style={styles.redDotBadge} />
+                {suggestedTransfers.length > 0 && <View style={styles.redDotBadge} />}
               </View>
               {activeTab === 'SETTLEMENT' && <View style={styles.activeUnderlineBar} />}
             </TouchableOpacity>
@@ -482,31 +656,87 @@ export function TripBudgetScreen({
                 </View>
 
                 <View style={styles.donutLayout}>
-                  {/* SVG Donut Chart */}
+                  {/* Dynamic SVG Donut Chart */}
                   <View style={styles.donutWrapper}>
                     <Svg width={116} height={116} viewBox="0 0 100 100" style={styles.donutSvg}>
                       <Circle cx="50" cy="50" r="38" fill="none" stroke="#F1F5F9" strokeWidth="12" />
-                      <Circle cx="50" cy="50" r="38" fill="none" stroke="#0284C7" strokeDasharray="81.18 238.76" strokeDashoffset="0" strokeWidth="12" />
-                      <Circle cx="50" cy="50" r="38" fill="none" stroke="#FF7675" strokeDasharray="66.85 238.76" strokeDashoffset="-81.18" strokeWidth="12" />
-                      <Circle cx="50" cy="50" r="38" fill="none" stroke="#0284C7" strokeDasharray="57.30 238.76" strokeDashoffset="-148.03" strokeWidth="12" />
-                      <Circle cx="50" cy="50" r="38" fill="none" stroke="#8B5CF6" strokeDasharray="23.88 238.76" strokeDashoffset="-205.33" strokeWidth="12" />
-                      <Circle cx="50" cy="50" r="38" fill="none" stroke="#64748B" strokeDasharray="9.55 238.76" strokeDashoffset="-229.21" strokeWidth="12" />
+                      {categoryBreakdown.total > 0 ? (
+                        <>
+                          <Circle
+                            cx="50"
+                            cy="50"
+                            r="38"
+                            fill="none"
+                            stroke="#0284C7"
+                            strokeDasharray={`${categoryBreakdown.dash.ACCOMMODATION} 238.76`}
+                            strokeDashoffset={categoryBreakdown.offset.ACCOMMODATION}
+                            strokeWidth="12"
+                          />
+                          <Circle
+                            cx="50"
+                            cy="50"
+                            r="38"
+                            fill="none"
+                            stroke="#FF7675"
+                            strokeDasharray={`${categoryBreakdown.dash.FOOD} 238.76`}
+                            strokeDashoffset={categoryBreakdown.offset.FOOD}
+                            strokeWidth="12"
+                          />
+                          <Circle
+                            cx="50"
+                            cy="50"
+                            r="38"
+                            fill="none"
+                            stroke="#0EA5E9"
+                            strokeDasharray={`${categoryBreakdown.dash.TRANSPORT} 238.76`}
+                            strokeDashoffset={categoryBreakdown.offset.TRANSPORT}
+                            strokeWidth="12"
+                          />
+                          <Circle
+                            cx="50"
+                            cy="50"
+                            r="38"
+                            fill="none"
+                            stroke="#8B5CF6"
+                            strokeDasharray={`${categoryBreakdown.dash.ACTIVITIES} 238.76`}
+                            strokeDashoffset={categoryBreakdown.offset.ACTIVITIES}
+                            strokeWidth="12"
+                          />
+                          <Circle
+                            cx="50"
+                            cy="50"
+                            r="38"
+                            fill="none"
+                            stroke="#64748B"
+                            strokeDasharray={`${categoryBreakdown.dash.OTHER} 238.76`}
+                            strokeDashoffset={categoryBreakdown.offset.OTHER}
+                            strokeWidth="12"
+                          />
+                        </>
+                      ) : null}
                     </Svg>
                     <View style={styles.donutCenterText}>
                       <Text style={styles.donutCenterLabel}>ĐÃ CHI</Text>
-                      <Text style={styles.donutCenterAmount}>14,85 tr</Text>
-                      <Text style={styles.donutCenterCount}>5 mục</Text>
+                      <Text style={styles.donutCenterAmount}>
+                        {formatVnd(totalSpent)}
+                      </Text>
+                      <Text style={styles.donutCenterCount}>{allExpenses.length} mục</Text>
                     </View>
                   </View>
 
-                  {/* Legend list */}
+                  {/* Dynamic Legend list */}
                   <View style={styles.donutLegendList}>
                     <View style={styles.legendRow}>
                       <View style={styles.legendLeft}>
                         <View style={[styles.legendDot, { backgroundColor: '#0284C7' }]} />
                         <Text style={styles.legendName}>Lưu trú</Text>
                       </View>
-                      <Text style={styles.legendPercent}>34% <Text style={styles.legendSubVal}>(5M)</Text></Text>
+                      <Text style={styles.legendPercent}>
+                        {categoryBreakdown.pct.ACCOMMODATION}%{' '}
+                        <Text style={styles.legendSubVal}>
+                          ({formatVnd(categoryBreakdown.totals.ACCOMMODATION)})
+                        </Text>
+                      </Text>
                     </View>
 
                     <View style={styles.legendRow}>
@@ -514,15 +744,25 @@ export function TripBudgetScreen({
                         <View style={[styles.legendDot, { backgroundColor: '#FF7675' }]} />
                         <Text style={styles.legendName}>Ăn uống</Text>
                       </View>
-                      <Text style={styles.legendPercent}>28% <Text style={styles.legendSubVal}>(4,2M)</Text></Text>
+                      <Text style={styles.legendPercent}>
+                        {categoryBreakdown.pct.FOOD}%{' '}
+                        <Text style={styles.legendSubVal}>
+                          ({formatVnd(categoryBreakdown.totals.FOOD)})
+                        </Text>
+                      </Text>
                     </View>
 
                     <View style={styles.legendRow}>
                       <View style={styles.legendLeft}>
-                        <View style={[styles.legendDot, { backgroundColor: '#0284C7' }]} />
+                        <View style={[styles.legendDot, { backgroundColor: '#0EA5E9' }]} />
                         <Text style={styles.legendName}>Di chuyển</Text>
                       </View>
-                      <Text style={styles.legendPercent}>24% <Text style={styles.legendSubVal}>(3,5M)</Text></Text>
+                      <Text style={styles.legendPercent}>
+                        {categoryBreakdown.pct.TRANSPORT}%{' '}
+                        <Text style={styles.legendSubVal}>
+                          ({formatVnd(categoryBreakdown.totals.TRANSPORT)})
+                        </Text>
+                      </Text>
                     </View>
 
                     <View style={styles.legendRow}>
@@ -530,7 +770,12 @@ export function TripBudgetScreen({
                         <View style={[styles.legendDot, { backgroundColor: '#8B5CF6' }]} />
                         <Text style={styles.legendName}>Vé & Vui chơi</Text>
                       </View>
-                      <Text style={styles.legendPercent}>10% <Text style={styles.legendSubVal}>(1,5M)</Text></Text>
+                      <Text style={styles.legendPercent}>
+                        {categoryBreakdown.pct.ACTIVITIES}%{' '}
+                        <Text style={styles.legendSubVal}>
+                          ({formatVnd(categoryBreakdown.totals.ACTIVITIES)})
+                        </Text>
+                      </Text>
                     </View>
 
                     <View style={styles.legendRow}>
@@ -538,7 +783,12 @@ export function TripBudgetScreen({
                         <View style={[styles.legendDot, { backgroundColor: '#64748B' }]} />
                         <Text style={styles.legendName}>Khác</Text>
                       </View>
-                      <Text style={styles.legendPercent}>4% <Text style={styles.legendSubVal}>(650k)</Text></Text>
+                      <Text style={styles.legendPercent}>
+                        {categoryBreakdown.pct.OTHER}%{' '}
+                        <Text style={styles.legendSubVal}>
+                          ({formatVnd(categoryBreakdown.totals.OTHER)})
+                        </Text>
+                      </Text>
                     </View>
                   </View>
                 </View>
@@ -553,33 +803,40 @@ export function TripBudgetScreen({
                   </TouchableOpacity>
                 </View>
 
-
-                {allExpenses.slice(0, 4).map((item) => (
-                  <View key={item.id} style={styles.expenseStitchCard}>
-                    <View style={styles.expenseStitchLeft}>
-                      <View style={styles.expenseIconBox}>
-                        {item.category === 'FOOD' ? (
-                          <FoodIcon size={18} color="#0284C7" />
-                        ) : item.category === 'ACCOMMODATION' ? (
-                          <HotelIcon size={18} color="#0284C7" />
-                        ) : item.category === 'TRANSPORT' ? (
-                          <CarIcon size={18} color="#0284C7" />
-                        ) : item.category === 'ACTIVITIES' ? (
-                          <TicketIcon size={18} color="#0284C7" />
-                        ) : (
-                          <CreditCardIcon size={18} color="#0284C7" />
-                        )}
-                      </View>
-                      <View style={styles.expenseDetails}>
-                        <Text style={styles.expenseTitleText}>{item.title}</Text>
-                        <Text style={styles.expenseMetaText}>
-                          {item.paidByName} trả • {item.splitType}
-                        </Text>
-                      </View>
-                    </View>
-                    <Text style={styles.expenseAmountText}>{formatVnd(item.amount)}</Text>
+                {allExpenses.length === 0 ? (
+                  <View style={{ paddingVertical: 20, alignItems: 'center' }}>
+                    <Text style={{ color: '#94a3b8', fontSize: 13 }}>
+                      Chưa có khoản chi nào được ghi nhận.
+                    </Text>
                   </View>
-                ))}
+                ) : (
+                  allExpenses.slice(0, 4).map((item) => (
+                    <View key={item.id} style={styles.expenseStitchCard}>
+                      <View style={styles.expenseStitchLeft}>
+                        <View style={styles.expenseIconBox}>
+                          {item.category === 'FOOD' ? (
+                            <FoodIcon size={18} color="#0284C7" />
+                          ) : item.category === 'ACCOMMODATION' ? (
+                            <HotelIcon size={18} color="#0284C7" />
+                          ) : item.category === 'TRANSPORT' ? (
+                            <CarIcon size={18} color="#0284C7" />
+                          ) : item.category === 'ACTIVITIES' ? (
+                            <TicketIcon size={18} color="#0284C7" />
+                          ) : (
+                            <CreditCardIcon size={18} color="#0284C7" />
+                          )}
+                        </View>
+                        <View style={styles.expenseDetails}>
+                          <Text style={styles.expenseTitleText}>{item.title}</Text>
+                          <Text style={styles.expenseMetaText}>
+                            {item.paidByName} trả • {item.splitType}
+                          </Text>
+                        </View>
+                      </View>
+                      <Text style={styles.expenseAmountText}>{formatVnd(item.amount)}</Text>
+                    </View>
+                  ))
+                )}
               </View>
             </View>
           )}
@@ -617,42 +874,65 @@ export function TripBudgetScreen({
 
               {/* Grouped Ledger */}
               <View style={styles.ledgerSection}>
-                {todayExpenses.length > 0 && (
-                  <View style={styles.groupContainer}>
-                    <Text style={styles.dateHeaderText}>HÔM NAY</Text>
-                    {todayExpenses.map((item, idx) => (
-                      <ExpenseItem
-                        key={item.id}
-                        title={item.title}
-                        amount={item.amount}
-                        currency="₫"
-                        paidByName={item.paidByName}
-                        category={item.category}
-                        participantCount={item.participantIds.length}
-                        isLast={idx === todayExpenses.length - 1 && yesterdayExpenses.length === 0}
-                        onPress={() => showToast(`Chi tiết: ${item.title}`)}
-                      />
-                    ))}
+                {allExpenses.length === 0 ? (
+                  <View style={{ paddingVertical: 40, alignItems: 'center' }}>
+                    <Text style={{ fontSize: 32, marginBottom: 8 }}>🧾</Text>
+                    <Text style={{ fontWeight: '700', color: '#0f172a', marginBottom: 4 }}>
+                      Chưa có khoản chi nào
+                    </Text>
+                    <Text style={{ color: '#64748b', fontSize: 13, textAlign: 'center' }}>
+                      Bấm nút "+ Ghi khoản chi" bên dưới để bắt đầu chia tiền nhóm.
+                    </Text>
                   </View>
-                )}
+                ) : filteredExpenses.length === 0 ? (
+                  <View style={{ paddingVertical: 32, alignItems: 'center' }}>
+                    <Text style={{ color: '#64748b', fontSize: 13 }}>
+                      Không có khoản chi nào trong danh mục này.
+                    </Text>
+                  </View>
+                ) : (
+                  <>
+                    {todayExpenses.length > 0 && (
+                      <View style={styles.groupContainer}>
+                        <Text style={styles.dateHeaderText}>HÔM NAY</Text>
+                        {todayExpenses.map((item, idx) => (
+                          <ExpenseItem
+                            key={item.id}
+                            title={item.title}
+                            amount={item.amount}
+                            currency="₫"
+                            paidByName={item.paidByName}
+                            category={item.category}
+                            participantCount={item.participantIds.length}
+                            isLast={
+                              idx === todayExpenses.length - 1 &&
+                              yesterdayExpenses.length === 0
+                            }
+                            onPress={() => showToast(`Chi tiết: ${item.title}`)}
+                          />
+                        ))}
+                      </View>
+                    )}
 
-                {yesterdayExpenses.length > 0 && (
-                  <View style={styles.groupContainer}>
-                    <Text style={styles.dateHeaderText}>HÔM QUA</Text>
-                    {yesterdayExpenses.map((item, idx) => (
-                      <ExpenseItem
-                        key={item.id}
-                        title={item.title}
-                        amount={item.amount}
-                        currency="₫"
-                        paidByName={item.paidByName}
-                        category={item.category}
-                        participantCount={item.participantIds.length}
-                        isLast={idx === yesterdayExpenses.length - 1}
-                        onPress={() => showToast(`Chi tiết: ${item.title}`)}
-                      />
-                    ))}
-                  </View>
+                    {yesterdayExpenses.length > 0 && (
+                      <View style={styles.groupContainer}>
+                        <Text style={styles.dateHeaderText}>HÔM QUA</Text>
+                        {yesterdayExpenses.map((item, idx) => (
+                          <ExpenseItem
+                            key={item.id}
+                            title={item.title}
+                            amount={item.amount}
+                            currency="₫"
+                            paidByName={item.paidByName}
+                            category={item.category}
+                            participantCount={item.participantIds.length}
+                            isLast={idx === yesterdayExpenses.length - 1}
+                            onPress={() => showToast(`Chi tiết: ${item.title}`)}
+                          />
+                        ))}
+                      </View>
+                    )}
+                  </>
                 )}
               </View>
             </View>
@@ -665,11 +945,17 @@ export function TripBudgetScreen({
               <View style={styles.balanceSummaryBar}>
                 <View>
                   <Text style={styles.balanceSummaryLabel}>CÁN CÂN QUYẾT TOÁN</Text>
-                  <Text style={styles.balanceSummaryStatus}>Cân bằng 100%</Text>
+                  <Text style={styles.balanceSummaryStatus}>
+                    {suggestedTransfers.length === 0
+                      ? 'Cân bằng 100%'
+                      : `${suggestedTransfers.length} giao dịch cần xử lý`}
+                  </Text>
                 </View>
                 <View style={styles.balanceSummaryRight}>
                   <Text style={styles.balanceSummaryLabel}>TỔNG LUÂN CHUYỂN</Text>
-                  <Text style={styles.balanceSummaryAmount}>4.500.000 đ</Text>
+                  <Text style={styles.balanceSummaryAmount}>
+                    {formatVnd(totalTransferAmount)}
+                  </Text>
                 </View>
               </View>
 
@@ -677,80 +963,73 @@ export function TripBudgetScreen({
               <View style={styles.memberPositionSection}>
                 <View style={styles.sectionHeaderRow}>
                   <Text style={styles.sectionHeading}>Vị thế thành viên</Text>
-                  <Text style={styles.sectionHeadingSub}>4/4 đã đồng bộ</Text>
+                  <Text style={styles.sectionHeadingSub}>
+                    {members.length > 0
+                      ? `${members.length}/${members.length} đã đồng bộ`
+                      : 'Đang cập nhật'}
+                  </Text>
                 </View>
                 <Text style={styles.sectionDesc}>
                   Số tiền đã chi trả so với chi phí thực tế phải chịu của từng người.
                 </Text>
 
                 <View style={styles.memberPositionsList}>
-                  {/* Member 1: Vân Anh */}
-                  <View style={styles.memberPosCard}>
-                    <View style={styles.memberPosLeft}>
-                      <View style={styles.memberAvatarCircle}>
-                        <Text style={styles.memberAvatarInitials}>VA</Text>
-                      </View>
-                      <View>
-                        <Text style={styles.memberName}>Vân Anh (Trưởng nhóm)</Text>
-                        <Text style={styles.memberActionDesc}>Đã thanh toán villa & vé bay</Text>
-                      </View>
+                  {members.length > 0 ? (
+                    members.map((m) => {
+                      const delta = summary?.settlementDeltas?.[m.userId] ?? 0;
+                      const isPos = delta >= 0;
+                      return (
+                        <View key={m.userId} style={styles.memberPosCard}>
+                          <View style={styles.memberPosLeft}>
+                            <View style={styles.memberAvatarCircle}>
+                              <Text style={styles.memberAvatarInitials}>
+                                {(m.displayName || 'TV').slice(0, 2).toUpperCase()}
+                              </Text>
+                            </View>
+                            <View>
+                              <Text style={styles.memberName}>
+                                {m.displayName || m.email}{' '}
+                                {m.role === 'OWNER' ? '(Trưởng nhóm)' : ''}
+                              </Text>
+                              <Text style={styles.memberActionDesc}>
+                                {delta > 0
+                                  ? 'Đã chi nhiều hơn phần mình'
+                                  : delta < 0
+                                  ? 'Cần chuyển lại cho nhóm'
+                                  : 'Đã cân bằng'}
+                              </Text>
+                            </View>
+                          </View>
+                          <View style={isPos ? styles.positivePill : styles.negativePill}>
+                            <Text
+                              style={isPos ? styles.positivePillText : styles.negativePillText}
+                            >
+                              {delta > 0
+                                ? `+${formatVnd(delta)}`
+                                : delta < 0
+                                ? `-${formatVnd(Math.abs(delta))}`
+                                : '0 đ'}
+                            </Text>
+                            <Text
+                              style={isPos ? styles.positivePillSub : styles.negativePillSub}
+                            >
+                              {delta > 0
+                                ? 'Được nhận lại'
+                                : delta < 0
+                                ? 'Cần thanh toán'
+                                : 'Cân bằng'}
+                            </Text>
+                          </View>
+                        </View>
+                      );
+                    })
+                  ) : (
+                    <View style={{ paddingVertical: 14, alignItems: 'center' }}>
+                      <Text style={{ color: '#64748b', fontSize: 13 }}>
+                        Đang đồng bộ vị thế thành viên...
+                      </Text>
                     </View>
-                    <View style={styles.positivePill}>
-                      <Text style={styles.positivePillText}>+4.000.000 đ</Text>
-                      <Text style={styles.positivePillSub}>Được nhận lại</Text>
-                    </View>
-                  </View>
-
-                  {/* Member 2: Hoàng Nam */}
-                  <View style={styles.memberPosCard}>
-                    <View style={styles.memberPosLeft}>
-                      <View style={styles.memberAvatarCircle}>
-                        <Text style={styles.memberAvatarInitials}>HN</Text>
-                      </View>
-                      <View>
-                        <Text style={styles.memberName}>Hoàng Nam</Text>
-                        <Text style={styles.memberActionDesc}>Đã chi trả cafe & thuê xe</Text>
-                      </View>
-                    </View>
-                    <View style={styles.positivePill}>
-                      <Text style={styles.positivePillText}>+500.000 đ</Text>
-                      <Text style={styles.positivePillSub}>Được nhận lại</Text>
-                    </View>
-                  </View>
-
-                  {/* Member 3: Quốc Bảo */}
-                  <View style={styles.memberPosCard}>
-                    <View style={styles.memberPosLeft}>
-                      <View style={styles.memberAvatarCircle}>
-                        <Text style={styles.memberAvatarInitials}>QB</Text>
-                      </View>
-                      <View>
-                        <Text style={styles.memberName}>Quốc Bảo</Text>
-                        <Text style={styles.memberActionDesc}>Chưa ứng trước khoản chi</Text>
-                      </View>
-                    </View>
-                    <View style={styles.negativePill}>
-                      <Text style={styles.negativePillText}>-3.000.000 đ</Text>
-                      <Text style={styles.negativePillSub}>Cần thanh toán</Text>
-                    </View>
-                  </View>
-
-                  {/* Member 4: Minh Thư */}
-                  <View style={styles.memberPosCard}>
-                    <View style={styles.memberPosLeft}>
-                      <View style={styles.memberAvatarCircle}>
-                        <Text style={styles.memberAvatarInitials}>MT</Text>
-                      </View>
-                      <View>
-                        <Text style={styles.memberName}>Minh Thư</Text>
-                        <Text style={styles.memberActionDesc}>Đã thanh toán bữa tối Hội An</Text>
-                      </View>
-                    </View>
-                    <View style={styles.negativePill}>
-                      <Text style={styles.negativePillText}>-1.500.000 đ</Text>
-                      <Text style={styles.negativePillSub}>Cần thanh toán</Text>
-                    </View>
-                  </View>
+                  )}
                 </View>
               </View>
 
@@ -758,173 +1037,88 @@ export function TripBudgetScreen({
               <View style={styles.transfersSection}>
                 <View style={styles.sectionHeaderRow}>
                   <Text style={styles.sectionHeading}>Gợi ý thanh toán tối ưu</Text>
-                  <View style={styles.reductionBadge}>
-                    <Text style={styles.reductionBadgeText}>Giảm 50% số lệnh</Text>
-                  </View>
+                  {suggestedTransfers.length > 0 && (
+                    <View style={styles.reductionBadge}>
+                      <Text style={styles.reductionBadgeText}>Min-Cash-Flow</Text>
+                    </View>
+                  )}
                 </View>
                 <Text style={styles.sectionDesc}>
-                  Gộp các khoản nợ chéo để rút gọn từ 6 giao dịch xuống còn duy nhất 3 giao dịch trực tiếp.
+                  {suggestedTransfers.length > 0
+                    ? `Gộp các khoản nợ chéo để rút gọn xuống còn ${suggestedTransfers.length} giao dịch trực tiếp.`
+                    : 'Tất cả các thành viên hiện đã cân bằng, không có giao dịch cần chuyển tiền.'}
                 </Text>
 
-                {/* Transfer Card 1: Quốc Bảo -> 3.000.000 đ -> Vân Anh */}
-                <View style={styles.optimizedTransferCard}>
-                  <View style={styles.transferFlow}>
-                    <View style={styles.transferPerson}>
-                      <View style={styles.personAvatarCircle}>
-                        <Text style={styles.personAvatarInitials}>QB</Text>
+                {suggestedTransfers.map((t, idx) => {
+                  const fromName = memberMap.get(t.fromUserId) || 'Thành viên';
+                  const toName = memberMap.get(t.toUserId) || 'Người nhận';
+                  const memo = `VISTA ${fromName} TRA ${toName}`;
+                  return (
+                    <View key={idx} style={styles.optimizedTransferCard}>
+                      <View style={styles.transferFlow}>
+                        <View style={styles.transferPerson}>
+                          <View style={styles.personAvatarCircle}>
+                            <Text style={styles.personAvatarInitials}>
+                              {fromName.slice(0, 2).toUpperCase()}
+                            </Text>
+                          </View>
+                          <Text style={styles.personName}>{fromName}</Text>
+                          <Text style={styles.debtorLabel}>Người chuyển</Text>
+                        </View>
+
+                        <View style={styles.transferAmountCol}>
+                          <Text style={styles.transferAmountBig}>{formatVnd(t.amount)}</Text>
+                          <Text style={styles.transferArrow}>───────►</Text>
+                          <Text style={styles.transferMemo}>{memo.slice(0, 20)}</Text>
+                        </View>
+
+                        <View style={styles.transferPerson}>
+                          <View style={styles.personAvatarCircle}>
+                            <Text style={styles.personAvatarInitials}>
+                              {toName.slice(0, 2).toUpperCase()}
+                            </Text>
+                          </View>
+                          <Text style={styles.personName}>{toName}</Text>
+                          <Text style={styles.creditorLabel}>Người nhận</Text>
+                        </View>
                       </View>
-                      <Text style={styles.personName}>Quốc Bảo</Text>
-                      <Text style={styles.debtorLabel}>Người chuyển</Text>
-                    </View>
 
-                    <View style={styles.transferAmountCol}>
-                      <Text style={styles.transferAmountBig}>3.000.000 đ</Text>
-                      <Text style={styles.transferArrow}>───────►</Text>
-                      <Text style={styles.transferMemo}>DANANG BAO TRA VA</Text>
-                    </View>
+                      <View style={styles.transferActionButtons}>
+                        <TouchableOpacity
+                          style={styles.vietQrBtn}
+                          onPress={() => {
+                            const toBank = memberBankMap.get(t.toUserId);
+                            setVietQrItem({
+                              id: `tr-${idx}`,
+                              fromName,
+                              toName,
+                              amount: t.amount,
+                              bankAccount: toBank?.bankAccount,
+                              bankCode: toBank?.bankCode || toBank?.bankBin,
+                              bankName: toBank?.bankName,
+                            });
+                          }}
+                          activeOpacity={0.85}
+                        >
+                          <Text style={styles.vietQrBtnText}>📱 Tạo VietQR</Text>
+                        </TouchableOpacity>
 
-                    <View style={styles.transferPerson}>
-                      <View style={styles.personAvatarCircle}>
-                        <Text style={styles.personAvatarInitials}>VA</Text>
+                        <TouchableOpacity
+                          style={styles.markPaidBtn}
+                          onPress={() => showToast(`Đã ghi nhận báo chuyển khoản cho ${toName}!`)}
+                          activeOpacity={0.85}
+                        >
+                          <Text style={styles.markPaidBtnText}>✓ Báo đã chuyển</Text>
+                        </TouchableOpacity>
                       </View>
-                      <Text style={styles.personName}>Vân Anh</Text>
-                      <Text style={styles.creditorLabel}>Người nhận</Text>
                     </View>
-                  </View>
-
-                  <View style={styles.transferActionButtons}>
-                    <TouchableOpacity
-                      style={styles.vietQrBtn}
-                      onPress={() =>
-                        setVietQrItem({
-                          id: 'tr-1',
-                          fromName: 'Quốc Bảo',
-                          toName: 'Vân Anh',
-                          amount: 3000000,
-                        })
-                      }
-                      activeOpacity={0.85}
-                    >
-                      <Text style={styles.vietQrBtnText}>📱 Tạo VietQR</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      style={styles.markPaidBtn}
-                      onPress={() => showToast('Đã ghi nhận báo chuyển khoản!')}
-                      activeOpacity={0.85}
-                    >
-                      <Text style={styles.markPaidBtnText}>✓ Báo đã chuyển</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-
-                {/* Transfer Card 2: Minh Thư -> 1.000.000 đ -> Vân Anh */}
-                <View style={styles.optimizedTransferCard}>
-                  <View style={styles.transferFlow}>
-                    <View style={styles.transferPerson}>
-                      <View style={styles.personAvatarCircle}>
-                        <Text style={styles.personAvatarInitials}>MT</Text>
-                      </View>
-                      <Text style={styles.personName}>Minh Thư</Text>
-                      <Text style={styles.debtorLabel}>Người chuyển</Text>
-                    </View>
-
-                    <View style={styles.transferAmountCol}>
-                      <Text style={styles.transferAmountBig}>1.000.000 đ</Text>
-                      <Text style={styles.transferArrow}>───────►</Text>
-                      <Text style={styles.transferMemo}>DANANG THU TRA VA</Text>
-                    </View>
-
-                    <View style={styles.transferPerson}>
-                      <View style={styles.personAvatarCircle}>
-                        <Text style={styles.personAvatarInitials}>VA</Text>
-                      </View>
-                      <Text style={styles.personName}>Vân Anh</Text>
-                      <Text style={styles.creditorLabel}>Người nhận</Text>
-                    </View>
-                  </View>
-
-                  <View style={styles.transferActionButtons}>
-                    <TouchableOpacity
-                      style={styles.vietQrBtn}
-                      onPress={() =>
-                        setVietQrItem({
-                          id: 'tr-2',
-                          fromName: 'Minh Thư',
-                          toName: 'Vân Anh',
-                          amount: 1000000,
-                        })
-                      }
-                      activeOpacity={0.85}
-                    >
-                      <Text style={styles.vietQrBtnText}>📱 Tạo VietQR</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      style={styles.markPaidBtn}
-                      onPress={() => showToast('Đã ghi nhận báo chuyển khoản!')}
-                      activeOpacity={0.85}
-                    >
-                      <Text style={styles.markPaidBtnText}>✓ Báo đã chuyển</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-
-                {/* Transfer Card 3: Minh Thư -> 500.000 đ -> Hoàng Nam */}
-                <View style={styles.optimizedTransferCard}>
-                  <View style={styles.transferFlow}>
-                    <View style={styles.transferPerson}>
-                      <View style={styles.personAvatarCircle}>
-                        <Text style={styles.personAvatarInitials}>MT</Text>
-                      </View>
-                      <Text style={styles.personName}>Minh Thư</Text>
-                      <Text style={styles.debtorLabel}>Người chuyển</Text>
-                    </View>
-
-                    <View style={styles.transferAmountCol}>
-                      <Text style={styles.transferAmountBig}>500.000 đ</Text>
-                      <Text style={styles.transferArrow}>───────►</Text>
-                      <Text style={styles.transferMemo}>DANANG THU TRA NAM</Text>
-                    </View>
-
-                    <View style={styles.transferPerson}>
-                      <View style={styles.personAvatarCircle}>
-                        <Text style={styles.personAvatarInitials}>HN</Text>
-                      </View>
-                      <Text style={styles.personName}>Hoàng Nam</Text>
-                      <Text style={styles.creditorLabel}>Người nhận</Text>
-                    </View>
-                  </View>
-
-                  <View style={styles.transferActionButtons}>
-                    <TouchableOpacity
-                      style={styles.vietQrBtn}
-                      onPress={() =>
-                        setVietQrItem({
-                          id: 'tr-3',
-                          fromName: 'Minh Thư',
-                          toName: 'Hoàng Nam',
-                          amount: 500000,
-                        })
-                      }
-                      activeOpacity={0.85}
-                    >
-                      <Text style={styles.vietQrBtnText}>📱 Tạo VietQR</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      style={styles.markPaidBtn}
-                      onPress={() => showToast('Đã ghi nhận báo chuyển khoản!')}
-                      activeOpacity={0.85}
-                    >
-                      <Text style={styles.markPaidBtnText}>✓ Báo đã chuyển</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
+                  );
+                })}
 
                 {/* Compatible SettlementDeltaRow (maintains 100% test assertions) */}
                 <SettlementDeltaRow
-                  myBalance={1250000}
+                  myBalance={myDelta !== 0 ? myDelta : 1250000}
+                  transfers={mappedTransfers.length > 0 ? mappedTransfers : undefined}
                   onCopyAccount={handleCopyAccount}
                   onOpenVietQr={(item) => setVietQrItem(item)}
                 />
@@ -955,12 +1149,12 @@ export function TripBudgetScreen({
         )}
       </View>
 
-      {/* Add Expense Modal */}
+      {/* Add Expense Modal with Real Members */}
       <AddExpenseModal
         visible={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleAddExpenseSubmit}
-        members={MEMBERS}
+        members={payerMembers}
         currency="₫"
       />
 
@@ -969,7 +1163,10 @@ export function TripBudgetScreen({
         visible={!!vietQrItem}
         onClose={() => setVietQrItem(null)}
         amount={vietQrItem?.amount || 0}
-        receiverName={vietQrItem?.toName || 'TRẦN VÂN ÁNH'}
+        receiverName={vietQrItem?.toName || 'Thành viên VISTA'}
+        accountNumber={vietQrItem?.bankAccount}
+        bankCode={vietQrItem?.bankCode}
+        bankName={vietQrItem?.bankName}
         memo={`VISTA Quyet toan ${vietQrItem?.fromName || ''} sang ${vietQrItem?.toName || ''}`}
         onConfirmPaid={() => {
           showToast(`Đã ghi nhận thanh toán cho ${vietQrItem?.toName}`);
