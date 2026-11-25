@@ -72,7 +72,13 @@ public class ExpenseService {
       ExpenseRepository expenseRepository,
       ExpenseSplitRepository expenseSplitRepository,
       ExpenseCalculationService calculationService) {
-    this(tripAccessService, expenseRepository, expenseSplitRepository, calculationService, null, null);
+    this(
+        tripAccessService,
+        expenseRepository,
+        expenseSplitRepository,
+        calculationService,
+        null,
+        null);
   }
 
   public ExpenseService(
@@ -81,7 +87,13 @@ public class ExpenseService {
       ExpenseSplitRepository expenseSplitRepository,
       ExpenseCalculationService calculationService,
       AuditLogService auditLogService) {
-    this(tripAccessService, expenseRepository, expenseSplitRepository, calculationService, auditLogService, null);
+    this(
+        tripAccessService,
+        expenseRepository,
+        expenseSplitRepository,
+        calculationService,
+        auditLogService,
+        null);
   }
 
   public ExpenseResponse createExpense(
@@ -327,9 +339,9 @@ public class ExpenseService {
   }
 
   /**
-   * Lấy thông tin tài khoản ngân hàng thụ hưởng phục vụ quyết toán (TV4).
-   * Chỉ các thành viên hợp lệ của chuyến đi mới được phép truy cập.
-   * Chỉ trả về tài khoản của những thành viên thực sự cần nhận tiền từ kết quả settlement.
+   * Lấy thông tin tài khoản ngân hàng thụ hưởng phục vụ quyết toán (TV4). Chỉ các thành viên hợp lệ
+   * của chuyến đi mới được phép truy cập. Chỉ trả về tài khoản của những thành viên thực sự cần
+   * nhận tiền từ kết quả settlement.
    */
   @Transactional(readOnly = true)
   public List<SettlementAccountResponse> getSettlementAccounts(UUID tripId, UUID currentUserId) {

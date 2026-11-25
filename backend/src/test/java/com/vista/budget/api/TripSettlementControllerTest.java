@@ -52,15 +52,9 @@ class TripSettlementControllerTest {
   void getSettlementAccounts_asMember_shouldReturn200() throws Exception {
     SettlementAccountResponse account =
         new SettlementAccountResponse(
-            receiverId,
-            "Nguyễn Văn A",
-            "TCB",
-            "970407",
-            "1903678999",
-            "NGUYEN VAN A");
+            receiverId, "Nguyễn Văn A", "TCB", "970407", "1903678999", "NGUYEN VAN A");
 
-    when(expenseService.getSettlementAccounts(tripId, currentUserId))
-        .thenReturn(List.of(account));
+    when(expenseService.getSettlementAccounts(tripId, currentUserId)).thenReturn(List.of(account));
 
     mockMvc
         .perform(
@@ -94,16 +88,9 @@ class TripSettlementControllerTest {
   @DisplayName("3. Thành viên không có thông tin ngân hàng trả về null an toàn")
   void getSettlementAccounts_memberWithoutBankInfo_shouldReturnNullFields() throws Exception {
     SettlementAccountResponse account =
-        new SettlementAccountResponse(
-            receiverId,
-            "Trần Thị B",
-            null,
-            null,
-            null,
-            null);
+        new SettlementAccountResponse(receiverId, "Trần Thị B", null, null, null, null);
 
-    when(expenseService.getSettlementAccounts(tripId, currentUserId))
-        .thenReturn(List.of(account));
+    when(expenseService.getSettlementAccounts(tripId, currentUserId)).thenReturn(List.of(account));
 
     mockMvc
         .perform(
@@ -119,8 +106,7 @@ class TripSettlementControllerTest {
   @Test
   @DisplayName("4. Khi không có giao dịch quyết toán trả về danh sách rỗng")
   void getSettlementAccounts_noSettlementRequired_shouldReturnEmptyList() throws Exception {
-    when(expenseService.getSettlementAccounts(tripId, currentUserId))
-        .thenReturn(List.of());
+    when(expenseService.getSettlementAccounts(tripId, currentUserId)).thenReturn(List.of());
 
     mockMvc
         .perform(

@@ -289,7 +289,8 @@ public class InvitationService {
   // ── W7-SSOT: Lấy danh sách lời mời đang chờ của người dùng hiện tại ─────────
 
   @Transactional(readOnly = true)
-  public List<MyPendingInvitationResponse> getMyPendingInvitations(UUID currentUserId, String email) {
+  public List<MyPendingInvitationResponse> getMyPendingInvitations(
+      UUID currentUserId, String email) {
     String searchEmail = email;
     if (searchEmail == null || searchEmail.isBlank()) {
       if (userRepository != null) {
@@ -400,7 +401,8 @@ public class InvitationService {
     return declineInvitationById(invitationId, userId, null);
   }
 
-  public InvitationResponse declineInvitationById(UUID invitationId, UUID userId, String userEmail) {
+  public InvitationResponse declineInvitationById(
+      UUID invitationId, UUID userId, String userEmail) {
     Invitation invitation = findOrThrow(invitationId);
 
     if (invitation.getStatus() != InvitationStatus.PENDING) {
@@ -413,15 +415,16 @@ public class InvitationService {
   }
 
   /**
-   * Kiểm tra người thao tác (userId / email) có phải đúng là người được mời (inviteeEmail).
-   * Nếu không khớp -> trả HTTP 403 Forbidden theo nguyên tắc bảo mật RBAC.
+   * Kiểm tra người thao tác (userId / email) có phải đúng là người được mời (inviteeEmail). Nếu
+   * không khớp -> trả HTTP 403 Forbidden theo nguyên tắc bảo mật RBAC.
    */
   public void verifyInviteeEmail(Invitation invitation, UUID userId, String explicitEmail) {
     String inviteeEmail = invitation.getInviteeEmail();
     if (inviteeEmail == null || inviteeEmail.isBlank()) {
       return;
     }
-    String userEmail = explicitEmail != null && !explicitEmail.isBlank() ? explicitEmail.trim() : null;
+    String userEmail =
+        explicitEmail != null && !explicitEmail.isBlank() ? explicitEmail.trim() : null;
     if (userEmail == null && userRepository != null && userId != null) {
       userEmail = userRepository.findById(userId).map(UserEntity::getEmail).orElse(null);
     }
@@ -442,7 +445,7 @@ public class InvitationService {
    * Thêm user vào trip_members với role MEMBER. Dùng TripMemberRepository trực tiếp (TV2 đã expose
    * qua domain layer). Nếu đã là member (ACTIVE) thì bỏ qua. Nếu bị REMOVED thì kích hoạt lại.
    */
-  private void addTripMember(UUID tripId, UUID userId) {
+  public void addTripMember(UUID tripId, UUID userId) {
     TripEntity trip =
         tripRepository
             .findById(tripId)
