@@ -16,7 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/trips/{tripId}/settlement-accounts")
-@Tag(name = "Settlement Accounts", description = "Thông tin tài khoản nhận tiền quyết toán của thành viên (TV4)")
+@Tag(
+    name = "Settlement Accounts",
+    description = "Thông tin tài khoản nhận tiền quyết toán của thành viên (TV4)")
 @SecurityRequirement(name = "bearerAuth")
 public class TripSettlementController {
 

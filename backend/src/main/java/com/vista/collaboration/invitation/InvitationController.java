@@ -90,7 +90,9 @@ public class InvitationController {
   }
 
   @GetMapping("/invitations/my-pending")
-  @Operation(summary = "Lấy danh sách lời mời đang chờ gửi đến người dùng hiện tại (cho Navbar / thông báo)")
+  @Operation(
+      summary =
+          "Lấy danh sách lời mời đang chờ gửi đến người dùng hiện tại (cho Navbar / thông báo)")
   public ResponseEntity<List<MyPendingInvitationResponse>> getMyPendingInvitations() {
     UUID userId = currentUserProvider.getCurrentUserId();
     String email = currentUserProvider.getCurrentUser().map(up -> up.getEmail()).orElse(null);

@@ -195,7 +195,8 @@ class InvitationServiceTest {
 
     when(invitationRepository.findByTokenHash(TOKEN_HASH)).thenReturn(Optional.of(inv));
 
-    assertThatThrownBy(() -> invitationService.acceptInvitation(RAW_TOKEN, INVITEE_ID, "attacker@evil.com"))
+    assertThatThrownBy(
+            () -> invitationService.acceptInvitation(RAW_TOKEN, INVITEE_ID, "attacker@evil.com"))
         .isInstanceOf(ResponseStatusException.class)
         .matches(ex -> ((ResponseStatusException) ex).getStatusCode() == HttpStatus.FORBIDDEN)
         .hasMessageContaining("user@vista.vn");
@@ -211,7 +212,8 @@ class InvitationServiceTest {
 
     when(invitationRepository.findByTokenHash(TOKEN_HASH)).thenReturn(Optional.of(inv));
 
-    assertThatThrownBy(() -> invitationService.declineInvitation(RAW_TOKEN, INVITEE_ID, "attacker@evil.com"))
+    assertThatThrownBy(
+            () -> invitationService.declineInvitation(RAW_TOKEN, INVITEE_ID, "attacker@evil.com"))
         .isInstanceOf(ResponseStatusException.class)
         .matches(ex -> ((ResponseStatusException) ex).getStatusCode() == HttpStatus.FORBIDDEN);
   }
@@ -235,7 +237,8 @@ class InvitationServiceTest {
     when(tripMemberRepository.save(any())).thenAnswer(i -> i.getArgument(0));
     when(invitationRepository.save(any())).thenAnswer(i -> i.getArgument(0));
 
-    InvitationResponse result = invitationService.acceptInvitation(RAW_TOKEN, INVITEE_ID, "USER@VISTA.VN");
+    InvitationResponse result =
+        invitationService.acceptInvitation(RAW_TOKEN, INVITEE_ID, "USER@VISTA.VN");
 
     assertThat(result.status()).isEqualTo(InvitationStatus.ACCEPTED);
     verify(tripMemberRepository).save(any());
@@ -250,7 +253,10 @@ class InvitationServiceTest {
 
     when(invitationRepository.findById(INVITATION_ID)).thenReturn(Optional.of(inv));
 
-    assertThatThrownBy(() -> invitationService.acceptInvitationById(INVITATION_ID, INVITEE_ID, "intruder@domain.com"))
+    assertThatThrownBy(
+            () ->
+                invitationService.acceptInvitationById(
+                    INVITATION_ID, INVITEE_ID, "intruder@domain.com"))
         .isInstanceOf(ResponseStatusException.class)
         .matches(ex -> ((ResponseStatusException) ex).getStatusCode() == HttpStatus.FORBIDDEN);
 
@@ -266,7 +272,9 @@ class InvitationServiceTest {
     when(invitationRepository.findById(INVITATION_ID)).thenReturn(Optional.of(inv));
     when(invitationRepository.save(any())).thenAnswer(i -> i.getArgument(0));
 
-    assertThatThrownBy(() -> invitationService.acceptInvitationById(INVITATION_ID, INVITEE_ID, "user@vista.vn"))
+    assertThatThrownBy(
+            () ->
+                invitationService.acceptInvitationById(INVITATION_ID, INVITEE_ID, "user@vista.vn"))
         .isInstanceOf(ConflictException.class)
         .hasMessageContaining("hết hạn");
 
@@ -292,7 +300,8 @@ class InvitationServiceTest {
     when(tripMemberRepository.save(any())).thenAnswer(i -> i.getArgument(0));
     when(invitationRepository.save(any())).thenAnswer(i -> i.getArgument(0));
 
-    InvitationResponse result = invitationService.acceptInvitationById(INVITATION_ID, INVITEE_ID, "user@vista.vn");
+    InvitationResponse result =
+        invitationService.acceptInvitationById(INVITATION_ID, INVITEE_ID, "user@vista.vn");
 
     assertThat(result.status()).isEqualTo(InvitationStatus.ACCEPTED);
     verify(tripMemberRepository).save(any());
@@ -305,7 +314,10 @@ class InvitationServiceTest {
 
     when(invitationRepository.findById(INVITATION_ID)).thenReturn(Optional.of(inv));
 
-    assertThatThrownBy(() -> invitationService.declineInvitationById(INVITATION_ID, INVITEE_ID, "intruder@domain.com"))
+    assertThatThrownBy(
+            () ->
+                invitationService.declineInvitationById(
+                    INVITATION_ID, INVITEE_ID, "intruder@domain.com"))
         .isInstanceOf(ResponseStatusException.class)
         .matches(ex -> ((ResponseStatusException) ex).getStatusCode() == HttpStatus.FORBIDDEN);
   }
@@ -318,7 +330,8 @@ class InvitationServiceTest {
     when(invitationRepository.findById(INVITATION_ID)).thenReturn(Optional.of(inv));
     when(invitationRepository.save(any())).thenAnswer(i -> i.getArgument(0));
 
-    InvitationResponse result = invitationService.declineInvitationById(INVITATION_ID, INVITEE_ID, "user@vista.vn");
+    InvitationResponse result =
+        invitationService.declineInvitationById(INVITATION_ID, INVITEE_ID, "user@vista.vn");
 
     assertThat(result.status()).isEqualTo(InvitationStatus.DECLINED);
   }
