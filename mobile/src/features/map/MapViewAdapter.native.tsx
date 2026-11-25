@@ -1,12 +1,16 @@
-import { Component, lazy, Suspense, type ReactNode } from 'react';
+import React, { Component, lazy, Suspense, type ReactNode } from 'react';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { ActivityIndicator, View } from 'react-native';
-import { AppText } from '@/components/ui/AppText';
 import type { MapViewAdapterProps } from './types';
+import { validCoordinate } from './types';
+import { MapVisualCanvas } from './MapVisualCanvas';
+
 export type { MapViewAdapterProps, MapMarker } from './types';
+
 const NativeMap = lazy(() => import('./NativeMap'));
+
 class NativeMapBoundary extends Component<
-  { children: ReactNode },
+  { children: ReactNode; fallback: ReactNode },
   { failed: boolean }
 > {
   state = { failed: false };
@@ -14,27 +18,46 @@ class NativeMapBoundary extends Component<
     return { failed: true };
   }
   render() {
-    return this.state.failed ? (
-      <AppText>
-        Không mở được bản đồ. Hãy kiểm tra kết nối hoặc cài lại bản VISTA hỗ trợ bản đồ.
-      </AppText>
-    ) : (
-      this.props.children
-    );
+    return this.state.failed ? this.props.fallback : this.props.children;
   }
 }
+
 export function MapViewAdapter(props: MapViewAdapterProps) {
+  const allMarkers = (props.destinations ?? props.markers ?? [])
+    .filter(validCoordinate)
+    .map((m) => ({
+      ...m,
+      title: 'name' in m && typeof m.name === 'string' ? m.name : m.title ?? 'Điểm đến',
+    }));
+
+  const hasRoute = Boolean(props.routeGeometry && props.routeGeometry.length > 1);
+
+  const canvasFallback = (
+    <View style={props.style}>
+      <MapVisualCanvas
+        markers={allMarkers}
+        selectedMarkerId={props.selectedDestinationId}
+        onSelectMarker={(marker) => {
+          props.onMarkerPress?.(marker);
+          props.onSelectDestination?.(marker);
+        }}
+        userLocation={props.userLocation}
+        routeGeometry={props.routeGeometry}
+        routeMode={hasRoute}
+        onLocateUser={props.onLocateUser}
+        onZoomIn={props.onZoomIn}
+        onZoomOut={props.onZoomOut}
+      />
+    </View>
+  );
+
+  // In Expo Go or if native MapLibre binaries are absent, render vector Da Nang MapVisualCanvas
   if (Constants.executionEnvironment === ExecutionEnvironment.StoreClient) {
-    return (
-      <View style={props.style}>
-        <AppText>
-          Bản ứng dụng hiện tại chưa hỗ trợ bản đồ. Hãy dùng bản VISTA Android/iOS theo hướng dẫn bàn giao.
-        </AppText>
-      </View>
-    );
+    return canvasFallback;
   }
+
   return (
-    <NativeMapBoundary>
+    <NativeMapBoundary fallback={canvasFallback}>
       <Suspense
         fallback={
           <ActivityIndicator accessibilityLabel="Đang mở bản đồ" />

@@ -15,6 +15,33 @@ export function useForegroundLocation(focused: boolean) {
         permission: Location.getForegroundPermissionsAsync,
         request: Location.requestForegroundPermissionsAsync,
         services: Location.hasServicesEnabledAsync,
+        getCurrentPosition: async () => {
+          try {
+            const loc = await Location.getCurrentPositionAsync({
+              accuracy: Location.Accuracy.Balanced,
+            });
+            return loc.coords;
+          } catch {
+            try {
+              const last = await Location.getLastKnownPositionAsync({
+                maxAge: 60000,
+              });
+              return last?.coords ?? null;
+            } catch {
+              return null;
+            }
+          }
+        },
+        getLastKnownPosition: async () => {
+          try {
+            const last = await Location.getLastKnownPositionAsync({
+              maxAge: 60000,
+            });
+            return last ? { ...last.coords, timestamp: last.timestamp } : null;
+          } catch {
+            return null;
+          }
+        },
         watch: (success, failure) =>
           Location.watchPositionAsync(
             { accuracy: Location.Accuracy.Balanced, distanceInterval: 5 },

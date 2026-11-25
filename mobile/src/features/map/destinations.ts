@@ -18,6 +18,10 @@ export function destinationMarkers(items: DestinationPage['items']) {
       description: `${item.province} · ${item.category}`,
       latitude: item.latitude!,
       longitude: item.longitude!,
+      imageUrl: item.imageUrl,
+      category: item.category,
+      province: item.province,
+      address: `${item.province}, Việt Nam`,
     });
   }
   return { markers, rejected };
