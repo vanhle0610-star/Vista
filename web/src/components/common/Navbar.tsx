@@ -620,7 +620,14 @@ export function Navbar({
                               <div className={styles.notificationMeta}>
                                 <span>📍 {inv.destinationSummary || inv.destination || 'Việt Nam'}</span>
                                 <span>•</span>
-                                <span>⏳ {inv.expiresAt ? new Date(inv.expiresAt).toLocaleDateString('vi-VN') : 'Trong 7 ngày'}</span>
+                                <span>
+                                  ⏳{' '}
+                                  {inv.expiresAt
+                                    ? !isNaN(new Date(inv.expiresAt).getTime())
+                                      ? new Date(inv.expiresAt).toLocaleDateString('vi-VN')
+                                      : inv.expiresAt
+                                    : 'Trong 7 ngày tới'}
+                                </span>
                               </div>
                             </div>
                           </div>
