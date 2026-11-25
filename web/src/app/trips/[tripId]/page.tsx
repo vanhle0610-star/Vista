@@ -1479,6 +1479,15 @@ export default function TripDetailPage() {
       }).catch(() => {});
     } catch {}
 
+    try {
+      if (tripId && /^[0-9a-f-]{36}$/i.test(tripId)) {
+        apiRequest(`/trips/${tripId}/invitations`, {
+          method: 'POST',
+          body: JSON.stringify({ inviteeEmail: email }),
+        }).catch(() => {});
+      }
+    } catch {}
+
     setCreatedInvitationInfo({
       email,
       token,

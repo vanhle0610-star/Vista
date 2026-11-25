@@ -157,26 +157,85 @@ export function Navbar({
     const fetchInvites = async () => {
       try {
         const token = localStorage.getItem('vista_token');
-        if (!token) {
+        if (!token && !currentUser?.email) {
           setIncomingInvitations([]);
           return;
         }
-        const list = await apiRequest<IncomingInvitation[]>('/invitations/my-pending');
-        if (Array.isArray(list)) {
-          // If a new invitation arrives that wasn't previously known, trigger toast
-          list.forEach((p) => {
-            const key = p.id;
-            if (!knownTokensRef.current.has(key)) {
-              knownTokensRef.current.add(key);
-              setActiveToast(p);
-              setTimeout(() => {
-                setActiveToast((curr) => (curr?.id === p.id ? null : curr));
-              }, 7000);
-            }
-          });
 
-          setIncomingInvitations(list);
+        const combinedList: IncomingInvitation[] = [];
+        const seenKeys = new Set<string>();
+
+        // 1. Lấy từ Spring Boot backend nếu có token
+        if (token) {
+          try {
+            const list = await apiRequest<IncomingInvitation[]>('/invitations/my-pending');
+            if (Array.isArray(list)) {
+              list.forEach((inv) => {
+                const key = inv.id || (inv as any).token;
+                if (key && !seenKeys.has(key)) {
+                  seenKeys.add(key);
+                  combinedList.push(inv);
+                }
+              });
+            }
+          } catch {
+            // im lặng fallback
+          }
         }
+
+        // 2. Lấy từ Next.js Store (.invitations_store.json) theo email hiện tại
+        if (currentUser?.email) {
+          try {
+            const cleanUserEmail = currentUser.email.trim().toLowerCase();
+            const localRes = await fetch(`/api/invitations?email=${encodeURIComponent(cleanUserEmail)}`, {
+              cache: 'no-store',
+            });
+            if (localRes.ok) {
+              const localList = await localRes.json();
+              if (Array.isArray(localList)) {
+                localList.forEach((inv: any) => {
+                  const key = inv.id || inv.token;
+                  if (inv.status === 'PENDING' && key && !seenKeys.has(key)) {
+                    seenKeys.add(key);
+                    if (inv.token) seenKeys.add(inv.token);
+                    combinedList.push({
+                      id: inv.id,
+                      tripId: inv.tripId,
+                      tripTitle: inv.tripTitle || 'Chuyến đi VISTA',
+                      destinationSummary: inv.destination,
+                      inviterName: inv.inviterName || inv.inviterEmail || 'Trưởng nhóm',
+                      inviterEmail: inv.inviterEmail,
+                      inviterAvatar: null,
+                      status: inv.status,
+                      expiresAt: inv.expiresAt,
+                      createdAt: inv.createdAt,
+                      token: inv.token,
+                    } as any);
+                  }
+                });
+              }
+            }
+          } catch {
+            // im lặng fallback
+          }
+        }
+
+        // Bật Toast thông báo cho lời mời mới tới
+        combinedList.forEach((p) => {
+          const key = p.id || (p as any).token;
+          if (key && !knownTokensRef.current.has(key)) {
+            knownTokensRef.current.add(key);
+            setActiveToast(p);
+            setTimeout(() => {
+              setActiveToast((curr) => {
+                const currKey = curr?.id || (curr as any)?.token;
+                return currKey === key ? null : curr;
+              });
+            }, 7000);
+          }
+        });
+
+        setIncomingInvitations(combinedList);
       } catch {
         // silent
       }
@@ -201,17 +260,38 @@ export function Navbar({
   const handleAcceptInvite = async (inv: IncomingInvitation) => {
     setIsProcessingAction(inv.id);
     try {
-      await apiRequest(`/invitations/${inv.id}/accept-by-id`, {
-        method: 'POST',
-      });
+      let accepted = false;
+      try {
+        await apiRequest(`/invitations/${inv.id}/accept-by-id`, {
+          method: 'POST',
+        });
+        accepted = true;
+      } catch (backendErr) {
+        // Fallback chấp nhận qua Next.js store
+        const token = (inv as any).token || inv.id;
+        const res = await fetch('/api/invitations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: inv.id,
+            token: token,
+            status: 'ACCEPTED',
+            acceptedBy: currentUser,
+          }),
+        });
+        if (res.ok) accepted = true;
+      }
 
-      setIncomingInvitations((prev) => prev.filter((i) => i.id !== inv.id));
+      setIncomingInvitations((prev) =>
+        prev.filter((i) => i.id !== inv.id && (i as any).token !== (inv as any).token)
+      );
       setNotificationsOpen(false);
       setActiveToast(null);
 
       if (typeof window !== 'undefined') {
         localStorage.setItem('vista_last_trip_id', inv.tripId);
         window.dispatchEvent(new CustomEvent('vista-trips-change'));
+        window.dispatchEvent(new CustomEvent('vista-invitations-change'));
       }
 
       router.push(`/trips/${inv.tripId}`);
@@ -225,11 +305,26 @@ export function Navbar({
   const handleDeclineInvite = async (inv: IncomingInvitation) => {
     setIsProcessingAction(inv.id);
     try {
-      await apiRequest(`/invitations/${inv.id}/decline-by-id`, {
-        method: 'POST',
-      });
-      setIncomingInvitations((prev) => prev.filter((i) => i.id !== inv.id));
-      if (activeToast?.id === inv.id) {
+      try {
+        await apiRequest(`/invitations/${inv.id}/decline-by-id`, {
+          method: 'POST',
+        });
+      } catch {
+        const token = (inv as any).token || inv.id;
+        await fetch('/api/invitations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: inv.id,
+            token: token,
+            status: 'DECLINED',
+          }),
+        });
+      }
+      setIncomingInvitations((prev) =>
+        prev.filter((i) => i.id !== inv.id && (i as any).token !== (inv as any).token)
+      );
+      if (activeToast?.id === inv.id || (activeToast as any)?.token === (inv as any).token) {
         setActiveToast(null);
       }
       window.dispatchEvent(new CustomEvent('vista-invitations-change'));
