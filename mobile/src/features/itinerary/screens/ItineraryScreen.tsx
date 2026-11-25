@@ -770,6 +770,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: tokens.colors.canvas,
+    width: '100%',
+    maxWidth: 440,
+    alignSelf: 'center',
+    position: 'relative',
   },
   centerScreen: {
     flex: 1,

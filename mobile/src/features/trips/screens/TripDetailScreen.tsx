@@ -709,6 +709,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: tokens.colors.canvas,
+    width: '100%',
+    maxWidth: 440,
+    alignSelf: 'center',
+    position: 'relative',
   },
   scrollContent: {
     paddingBottom: tokens.spacing.xxl,
@@ -748,7 +752,7 @@ const styles = StyleSheet.create({
 
   // Hero Section
   heroWrapper: {
-    width: SCREEN_WIDTH,
+    width: '100%',
     height: 290,
     position: 'relative',
     backgroundColor: tokens.colors.ink,

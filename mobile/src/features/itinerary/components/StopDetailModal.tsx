@@ -403,6 +403,9 @@ const styles = StyleSheet.create({
     borderTopRightRadius: tokens.radius.xl,
     maxHeight: '85%',
     paddingBottom: tokens.spacing.xl,
+    width: '100%',
+    maxWidth: 440,
+    alignSelf: 'center',
   },
   modalHeader: {
     flexDirection: 'row',
