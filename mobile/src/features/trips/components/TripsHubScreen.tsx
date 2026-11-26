@@ -21,6 +21,7 @@ import { CreateTripModal } from './CreateTripModal';
 import { InviteCodeModal } from './InviteCodeModal';
 import { AvatarGroup } from '../../../components/ui/AvatarGroup';
 import { StatusBadge } from '../../../components/ui/StatusBadge';
+import { formatTripDateRange, resolveTripStatus } from '../../../utils/tripStatus';
 import {
   WalletIcon,
   MapIcon,
@@ -39,23 +40,7 @@ function formatCurrency(amount: number): string {
 }
 
 function formatDateRange(startDate?: string, endDate?: string): string {
-  if (!startDate || !endDate) return 'Chưa định ngày';
-  try {
-    const s = new Date(startDate);
-    const e = new Date(endDate);
-    const sDay = s.getDate();
-    const sMonth = s.getMonth() + 1;
-    const eDay = e.getDate();
-    const eMonth = e.getMonth() + 1;
-    const eYear = e.getFullYear();
-
-    if (sMonth === eMonth) {
-      return `${sDay} – ${eDay}/${eMonth}/${eYear}`;
-    }
-    return `${sDay}/${sMonth} – ${eDay}/${eMonth}/${eYear}`;
-  } catch {
-    return `${startDate} – ${endDate}`;
-  }
+  return formatTripDateRange(startDate, endDate);
 }
 
 function getTripCoverImage(destinationSummary?: string | null): string {
@@ -105,15 +90,9 @@ export function TripsHubScreen() {
     checkAuth();
   }, [checkAuth]);
 
-  useFocusEffect(
-    useCallback(() => {
-      checkAuth();
-    }, [checkAuth])
-  );
-
   // 1. Fetch real trips from backend API
   const {
-    data: trips = [],
+    data: rawTrips = [],
     isLoading,
     isRefetching,
     refetch,
@@ -121,21 +100,40 @@ export function TripsHubScreen() {
     queryKey: ['trips'],
     queryFn: tripApi.fetchMyTrips,
     enabled: !!isAuthenticated,
-    staleTime: 15_000,
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 
-  // Filter trips based on tab
+  useFocusEffect(
+    useCallback(() => {
+      checkAuth();
+    }, [checkAuth])
+  );
+
+  // Derive effective status from calendar dates so expired/ongoing trips never stay PLANNING
+  const trips = useMemo(
+    () =>
+      rawTrips.map((t) => ({
+        ...t,
+        effectiveStatus: resolveTripStatus(t.startDate, t.endDate, t.status),
+      })),
+    [rawTrips]
+  );
+
+  // Filter trips based on tab using effectiveStatus
   const filteredTrips = useMemo(() => {
     if (activeTab === 'ALL') return trips;
-    return trips.filter((t) => t.status === activeTab);
+    return trips.filter((t) => t.effectiveStatus === activeTab);
   }, [trips, activeTab]);
 
-  // Spotlight trip: Active trip first, or the first trip in current filtered list
+  // Spotlight trip: Active trip first, then planning, then first trip in current filtered list
   const spotlightTrip = useMemo(() => {
     if (trips.length === 0) return null;
     if (activeTab === 'ALL') {
-      const active = trips.find((t) => t.status === 'ACTIVE');
-      return active || trips[0];
+      const active = trips.find((t) => t.effectiveStatus === 'ACTIVE');
+      if (active) return active;
+      const planning = trips.find((t) => t.effectiveStatus === 'PLANNING');
+      return planning || trips[0];
     }
     return filteredTrips[0] || null;
   }, [trips, filteredTrips, activeTab]);
@@ -292,7 +290,7 @@ export function TripsHubScreen() {
 
                 {/* Status Badge */}
                 <View style={styles.spotlightBadgeWrap}>
-                  <StatusBadge status={spotlightTrip.status} />
+                  <StatusBadge status={spotlightTrip.effectiveStatus} />
                 </View>
 
                 {/* Title & Dates on image */}
@@ -368,7 +366,12 @@ export function TripsHubScreen() {
                 <View style={styles.actionButtonsGrid}>
                   <TouchableOpacity
                     style={styles.treasuryBtn}
-                    onPress={() => router.push('/(tabs)/treasury')}
+                    onPress={() =>
+                      router.push({
+                        pathname: '/(tabs)/treasury',
+                        params: { tripId: spotlightTrip.id },
+                      } as any)
+                    }
                     activeOpacity={0.85}
                   >
                     <WalletIcon size={18} color={tokens.colors.primary} style={{ marginRight: 6 }} />
@@ -404,7 +407,7 @@ export function TripsHubScreen() {
             />
             <View style={styles.secondaryContent}>
               <View style={styles.secondaryHeader}>
-                <StatusBadge status={trip.status} size="small" />
+                <StatusBadge status={trip.effectiveStatus} size="small" />
               </View>
               <Text style={styles.secondaryTitle} numberOfLines={1}>
                 {trip.title}

@@ -27,6 +27,14 @@ describe('Budget UI Components', () => {
       expect(screen.getByText('VƯỢT HẠN MỨC')).toBeTruthy();
       expect(screen.getByText(/5.500.000/)).toBeTruthy();
     });
+
+    it('does not hardcode 25.000.000 when budgetTotal is 0 or unset', async () => {
+      await render(<BudgetSummaryCard totalSpent={900000} budgetTotal={0} currency="VND" />);
+
+      expect(screen.getByText('CHƯA ĐẶT NGÂN SÁCH')).toBeTruthy();
+      expect(screen.getByText('Chưa đặt ngân sách')).toBeTruthy();
+      expect(screen.queryByText(/25\.000\.000/)).toBeNull();
+    });
   });
 
   describe('ExpenseItem', () => {

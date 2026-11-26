@@ -12,14 +12,15 @@ export interface BudgetSummaryCardProps {
 
 export function BudgetSummaryCard({
   totalSpent,
-  budgetTotal = 25000000,
+  budgetTotal = 0,
   currency = '₫',
 }: BudgetSummaryCardProps) {
-  const targetBudget = budgetTotal && budgetTotal > 0 ? budgetTotal : 25000000;
-  const remainingBudget = Math.max(0, targetBudget - totalSpent);
-  const percentage = Math.min(Math.round((totalSpent / targetBudget) * 100), 100);
-  const isOverBudget = totalSpent > targetBudget;
-  const isNearLimit = percentage >= 80 && !isOverBudget;
+  const hasBudget = Boolean(budgetTotal && budgetTotal > 0);
+  const targetBudget = hasBudget ? (budgetTotal as number) : 0;
+  const remainingBudget = hasBudget ? Math.max(0, targetBudget - totalSpent) : 0;
+  const percentage = hasBudget ? Math.min(Math.round((totalSpent / targetBudget) * 100), 100) : 0;
+  const isOverBudget = hasBudget && totalSpent > targetBudget;
+  const isNearLimit = hasBudget && percentage >= 80 && !isOverBudget;
 
   const formatVndNumber = (val: number) => {
     return new Intl.NumberFormat('vi-VN').format(val);
@@ -70,7 +71,9 @@ export function BudgetSummaryCard({
                 isNearLimit && styles.statusTextWarning,
               ]}
             >
-              {isOverBudget
+              {!hasBudget
+                ? 'CHƯA ĐẶT NGÂN SÁCH'
+                : isOverBudget
                 ? 'VƯỢT HẠN MỨC'
                 : isNearLimit
                 ? 'TIỆM CẬN TRẦN'
@@ -84,12 +87,16 @@ export function BudgetSummaryCard({
           <Text style={styles.hiddenText}>NGÂN QUỸ KHẢ DỤNG</Text>
         </View>
 
-        {/* Hero Amount: 10.150.000 ₫ */}
+        {/* Hero Amount: 10.150.000 ₫ or Chưa đặt ngân sách */}
         <View style={styles.amountContainer}>
-          <Text style={styles.heroAmount}>
-            {formatVndNumber(remainingBudget)}{' '}
-            <Text style={styles.currencySymbol}>{currency}</Text>
-          </Text>
+          {hasBudget ? (
+            <Text style={styles.heroAmount}>
+              {formatVndNumber(remainingBudget)}{' '}
+              <Text style={styles.currencySymbol}>{currency}</Text>
+            </Text>
+          ) : (
+            <Text style={[styles.heroAmount, { fontSize: 22 }]}>Chưa đặt ngân sách</Text>
+          )}
         </View>
 
         {/* Advisory Note */}
@@ -100,9 +107,13 @@ export function BudgetSummaryCard({
         {/* Expenditure Progress Section */}
         <View style={styles.progressSection}>
           <View style={styles.progressInfoRow}>
-            <Text style={styles.progressLeftText}>Đã chi {percentage}%</Text>
+            <Text style={styles.progressLeftText}>
+              {hasBudget ? `Đã chi ${percentage}%` : 'Chưa có hạn mức dự toán'}
+            </Text>
             <Text style={styles.progressRightText}>
-              Kế hoạch: {formatVndNumber(targetBudget)} {currency}
+              {hasBudget
+                ? `Kế hoạch: ${formatVndNumber(targetBudget)} ${currency}`
+                : 'Không giới hạn'}
             </Text>
           </View>
           <View style={styles.progressTrack}>
@@ -126,7 +137,7 @@ export function BudgetSummaryCard({
           <View style={styles.metricColumn}>
             <Text style={styles.metricLabel}>Tổng dự toán</Text>
             <Text style={styles.metricValue}>
-              {formatVndNumber(targetBudget)} {currency}
+              {hasBudget ? `${formatVndNumber(targetBudget)} ${currency}` : 'Chưa đặt'}
             </Text>
           </View>
 

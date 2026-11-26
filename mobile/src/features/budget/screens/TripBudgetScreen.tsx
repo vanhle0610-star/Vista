@@ -71,11 +71,11 @@ export interface TripBudgetScreenProps {
 
 export function TripBudgetScreen({
   tripId,
-  budgetTotal = 25000000,
+  budgetTotal = 0,
   tripTitle,
   startDate,
   endDate,
-  status = 'ACTIVE',
+  status = 'PLANNING',
 }: TripBudgetScreenProps) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);

@@ -1,9 +1,10 @@
 import React, { useState, useCallback } from 'react';
 import { View, StyleSheet, ActivityIndicator } from 'react-native';
-import { router, useFocusEffect } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { TripBudgetScreen } from '@/features/budget';
 import { tripApi, TripDto } from '@/services/api/tripApi';
 import { authStorage } from '@/services/auth/authStorage';
+import { resolveTripStatus } from '@/utils/tripStatus';
 import { AppText } from '@/components/ui/AppText';
 import { AppButton } from '@/components/ui/AppButton';
 import { tokens } from '@/theme/tokens';
@@ -15,17 +16,22 @@ import { tokens } from '@/theme/tokens';
  * 3. Nếu không có, chọn chuyến đầu tiên trong danh sách (fallback).
  * 4. Nếu danh sách rỗng, trả về null để hiển thị Empty State.
  */
-export function pickDefaultTrip(trips: TripDto[]): TripDto | null {
+export function pickDefaultTrip(
+  trips: TripDto[],
+  currentDate: Date = new Date()
+): TripDto | null {
   if (!trips || trips.length === 0) {
     return null;
   }
   const activeTrip = trips.find(
-    (t: TripDto) => t.status === 'ACTIVE' || t.status === 'ONGOING'
+    (t: TripDto) => resolveTripStatus(t.startDate, t.endDate, t.status, currentDate) === 'ACTIVE'
   );
   if (activeTrip) {
     return activeTrip;
   }
-  const planningTrip = trips.find((t: TripDto) => t.status === 'PLANNING');
+  const planningTrip = trips.find(
+    (t: TripDto) => resolveTripStatus(t.startDate, t.endDate, t.status, currentDate) === 'PLANNING'
+  );
   if (planningTrip) {
     return planningTrip;
   }
@@ -33,6 +39,7 @@ export function pickDefaultTrip(trips: TripDto[]): TripDto | null {
 }
 
 export default function TreasuryRoute() {
+  const { tripId: paramTripId } = useLocalSearchParams<{ tripId?: string }>();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [selectedTrip, setSelectedTrip] = useState<TripDto | null>(null);
   const [loading, setLoading] = useState(true);
@@ -47,14 +54,15 @@ export default function TreasuryRoute() {
     setIsAuthenticated(true);
     try {
       const myTrips = await tripApi.fetchMyTrips();
-      const chosen = pickDefaultTrip(myTrips);
+      const matched = paramTripId ? myTrips.find((t) => t.id === paramTripId) : undefined;
+      const chosen = matched || pickDefaultTrip(myTrips);
       setSelectedTrip(chosen);
     } catch {
       // Offline fallback
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [paramTripId]);
 
   useFocusEffect(
     useCallback(() => {
@@ -99,7 +107,7 @@ export default function TreasuryRoute() {
       tripTitle={selectedTrip.title}
       startDate={selectedTrip.startDate}
       endDate={selectedTrip.endDate}
-      status={selectedTrip.status}
+      status={resolveTripStatus(selectedTrip.startDate, selectedTrip.endDate, selectedTrip.status)}
     />
   );
 }

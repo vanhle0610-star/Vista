@@ -658,7 +658,7 @@ export function CommunityScreen() {
             onPress={() => removePhoto(i)}
           />
         ))}
-        {sendError && (
+        {Boolean(sendError) && (
           <AppText accessibilityLiveRegion="polite">{sendError}</AppText>
         )}
         <AppButton

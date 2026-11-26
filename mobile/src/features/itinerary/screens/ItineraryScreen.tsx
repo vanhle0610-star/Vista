@@ -118,10 +118,16 @@ export function ItineraryScreen({ tripId }: { tripId: string }) {
       const name = (item.customStopName || '').toLowerCase();
       const note = (item.note || '').toLowerCase();
       const combined = `${name} ${note}`;
-      let cost = 100000;
+      const cost = Number(item.costVnd) || 0;
 
-      if (combined.includes('cáp treo') || combined.includes('vé') || combined.includes('bà nà') || combined.includes('tham quan')) {
-        cost = 350000;
+      if (
+        combined.includes('cáp treo') ||
+        combined.includes('vé') ||
+        combined.includes('bà nà') ||
+        combined.includes('tham quan') ||
+        combined.includes('bảo tàng') ||
+        combined.includes('di tích')
+      ) {
         sightCost += cost;
       } else if (
         combined.includes('ăn') ||
@@ -129,55 +135,49 @@ export function ItineraryScreen({ tripId }: { tripId: string }) {
         combined.includes('buffet') ||
         combined.includes('chợ') ||
         combined.includes('ẩm thực') ||
-        combined.includes('nhà hàng')
+        combined.includes('nhà hàng') ||
+        combined.includes('cà phê') ||
+        combined.includes('cafe')
       ) {
-        cost = 150000;
         foodCost += cost;
       } else if (
         combined.includes('xe') ||
         combined.includes('sân bay') ||
         combined.includes('di chuyển') ||
-        combined.includes('taxi')
+        combined.includes('taxi') ||
+        combined.includes('tàu') ||
+        combined.includes('bay')
       ) {
-        cost = 80000;
         transportCost += cost;
       } else {
-        cost = 100000;
-        sightCost += cost;
+        otherCost += cost;
       }
       estCost += cost;
     });
 
-    if (actCount === 0) {
-      estCost = 260000;
-      sightCost = 80000;
-      foodCost = 120000;
-      transportCost = 0;
-      otherCost = 60000;
-    }
+    const totalCat = sightCost + foodCost + transportCost + otherCost;
+    const sightPct = totalCat > 0 ? Math.round((sightCost / totalCat) * 100) : 0;
+    const foodPct = totalCat > 0 ? Math.round((foodCost / totalCat) * 100) : 0;
+    const transportPct = totalCat > 0 ? Math.round((transportCost / totalCat) * 100) : 0;
+    const otherPct =
+      totalCat > 0 ? Math.max(0, 100 - sightPct - foodPct - transportPct) : 0;
 
-    const totalCat = sightCost + foodCost + transportCost + otherCost || 1;
-    const sightPct = Math.round((sightCost / totalCat) * 100);
-    const foodPct = Math.round((foodCost / totalCat) * 100);
-    const transportPct = Math.round((transportCost / totalCat) * 100);
-    const otherPct = Math.max(0, 100 - sightPct - foodPct - transportPct);
-
-    const distanceKm = Math.round((actCount * 3.6 + 1.2) * 10) / 10;
-    const durationHours = Math.round((actCount * 1.5 + 0.5) * 10) / 10;
-    const totalBudget = trip?.budgetTotal || 10000000;
+    const distanceKm = actCount > 0 ? Math.round((actCount * 3.6 + 1.2) * 10) / 10 : 0;
+    const durationHours = actCount > 0 ? Math.round((actCount * 1.5 + 0.5) * 10) / 10 : 0;
+    const totalBudget = Number(trip?.budgetTotal) || 0;
     const percentOfBudget =
-      totalBudget > 0 ? Math.min(100, Math.round((estCost / totalBudget) * 100)) : 2;
+      totalBudget > 0 ? Math.min(100, Math.round((estCost / totalBudget) * 100)) : 0;
 
     return {
-      actCount: actCount || 3,
+      actCount,
       estCost,
       percentOfBudget,
       sightPct,
       foodPct,
       transportPct,
       otherPct,
-      distanceKm: distanceKm || 12,
-      durationHours: durationHours || 5,
+      distanceKm,
+      durationHours,
     };
   }, [activeStops, trip?.budgetTotal]);
 

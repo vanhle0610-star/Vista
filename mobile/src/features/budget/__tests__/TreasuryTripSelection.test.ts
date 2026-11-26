@@ -47,23 +47,25 @@ describe('Treasury - pickDefaultTrip Selection Logic', () => {
     members: [],
   };
 
+  const refDate = new Date(2026, 10, 20, 12, 0, 0); // 20/11/2026 during active/ongoing trips
+
   it('prioritizes ACTIVE trip when present in the list', () => {
     const list = [tripPlanning1, tripCompleted, tripActive];
-    const result = pickDefaultTrip(list);
+    const result = pickDefaultTrip(list, refDate);
     expect(result).toBeDefined();
     expect(result?.id).toBe('trip-active');
   });
 
   it('prioritizes ONGOING trip when present and no ACTIVE trip', () => {
     const list = [tripPlanning1, tripOngoing, tripCompleted];
-    const result = pickDefaultTrip(list);
+    const result = pickDefaultTrip(list, refDate);
     expect(result).toBeDefined();
     expect(result?.id).toBe('trip-ongoing');
   });
 
   it('selects PLANNING trip when no ACTIVE or ONGOING trip exists', () => {
     const list = [tripCompleted, tripPlanning1];
-    const result = pickDefaultTrip(list);
+    const result = pickDefaultTrip(list, refDate);
     expect(result).toBeDefined();
     expect(result?.id).toBe('trip-plan-1');
   });
@@ -71,7 +73,7 @@ describe('Treasury - pickDefaultTrip Selection Logic', () => {
   it('falls back to the first trip if only COMPLETED or other status exist', () => {
     const tripCancelled: TripDto = { ...tripPlanning1, id: 'trip-cancel', status: 'CANCELLED' };
     const list = [tripCompleted, tripCancelled];
-    const result = pickDefaultTrip(list);
+    const result = pickDefaultTrip(list, refDate);
     expect(result).toBeDefined();
     expect(result?.id).toBe('trip-done');
   });

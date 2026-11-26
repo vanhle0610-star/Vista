@@ -53,13 +53,15 @@ describe('TripDetailScreen (Bước 1 - TV3)', () => {
   });
 
   it('renders trip detail correctly for OWNER including Danger Zone', async () => {
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     (authStorage.getUser as jest.Mock).mockResolvedValue({ id: 'user-owner' });
     (tripFeatureApi.fetchTrip as jest.Mock).mockResolvedValue({
       id: 'trip-101',
       ownerId: 'user-owner',
       title: 'Đà Nẵng: Biển xanh & Núi non',
-      startDate: '2026-06-12',
-      endDate: '2026-06-15',
+      startDate: todayStr,
+      endDate: todayStr,
       destinationSummary: 'Đà Nẵng, Việt Nam',
       budgetTotal: 10000000,
       budgetSpent: 7500000,

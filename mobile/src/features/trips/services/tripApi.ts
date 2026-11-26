@@ -9,7 +9,7 @@ export interface TripItem {
   destinationSummary?: string;
   budgetTotal?: number;
   currency: string;
-  status: 'PLANNING' | 'ACTIVE' | 'ENDED' | 'CANCELLED';
+  status: 'PLANNING' | 'ACTIVE' | 'ONGOING' | 'COMPLETED' | 'CANCELLED';
   visibility: 'PUBLIC' | 'PRIVATE';
   createdAt: string;
   updatedAt: string;
@@ -45,7 +45,7 @@ export interface UpdateTripInput {
   budgetTotal?: number;
   currency?: string;
   visibility?: 'PUBLIC' | 'PRIVATE';
-  status?: 'PLANNING' | 'ACTIVE' | 'ENDED' | 'CANCELLED';
+  status?: 'PLANNING' | 'ACTIVE' | 'ONGOING' | 'COMPLETED' | 'CANCELLED';
 }
 
 export interface TransferOwnerInput {

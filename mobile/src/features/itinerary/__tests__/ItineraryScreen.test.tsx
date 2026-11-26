@@ -120,5 +120,23 @@ describe('ItineraryScreen (Bước 2 - TV3)', () => {
 
     expect(await findByText('Bạn không có quyền xem lịch trình này')).toBeTruthy();
   });
+
+  it('shows 0 cost and 0% breakdown when a day has no stops (no 260k/31% hardcode)', async () => {
+    (itineraryApi.fetchDays as jest.Mock).mockResolvedValue([
+      {
+        id: 'day-empty',
+        tripId: 'trip-101',
+        dayNumber: 1,
+        tripDate: '2026-06-12',
+        items: [],
+      },
+    ]);
+
+    const { findByText, queryByText } = await render(<ItineraryScreen tripId="trip-101" />);
+
+    expect(await findByText('Vé tham quan: 0%')).toBeTruthy();
+    expect(queryByText('Vé tham quan: 31%')).toBeNull();
+    expect(queryByText(/260\.000/)).toBeNull();
+  });
 });
 

@@ -91,7 +91,7 @@ describe('TripsHubScreen', () => {
       expect(screen.getByText('Tất cả')).toBeTruthy();
       expect(screen.getByText('Đang lên kế hoạch')).toBeTruthy();
       expect(screen.getAllByText('Đang diễn ra').length).toBeGreaterThanOrEqual(1);
-      expect(screen.getByText('Đã hoàn thành')).toBeTruthy();
+      expect(screen.getAllByText('Đã hoàn thành').length).toBeGreaterThanOrEqual(2);
       expect(screen.getByText('+ Tạo chuyến đi mới')).toBeTruthy();
       expect(screen.getByText('Thử AI lập lịch trình')).toBeTruthy();
       expect(screen.getByText('Được bạn bè mời tham gia?')).toBeTruthy();

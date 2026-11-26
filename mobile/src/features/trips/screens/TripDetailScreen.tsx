@@ -23,6 +23,8 @@ import { AppButton } from '@/components/ui/AppButton';
 import { AppCard } from '@/components/ui/AppCard';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { authStorage } from '@/services/auth/authStorage';
+import { expenseApi } from '@/services/api/expenseApi';
+import { parseLocalNoonDate, resolveTripStatus } from '@/utils/tripStatus';
 import { tripFeatureApi } from '../api';
 import { Trip, TripMember } from '../types';
 
@@ -57,8 +59,9 @@ function formatDateRange(startDateStr?: string, endDateStr?: string): string {
 function formatDuration(startDateStr?: string, endDateStr?: string): string {
   if (!startDateStr || !endDateStr) return '';
   try {
-    const s = new Date(startDateStr.split('T')[0]);
-    const e = new Date(endDateStr.split('T')[0]);
+    const s = parseLocalNoonDate(startDateStr);
+    const e = parseLocalNoonDate(endDateStr);
+    if (!s || !e) return '';
     const diffTime = Math.abs(e.getTime() - s.getTime());
     const days = Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1;
     if (days <= 1) return '1 Ngày';
@@ -95,6 +98,19 @@ export function TripDetailScreen({ tripId }: { tripId: string }) {
       setCurrentUserId(uid);
 
       const tripData = await tripFeatureApi.fetchTrip(tripId);
+      if (tripData.budgetSpent == null) {
+        try {
+          const summary = await expenseApi.fetchTripExpenseSummary(
+            tripId,
+            tripData.budgetTotal || undefined
+          );
+          if (summary && typeof summary.totalSpent === 'number') {
+            tripData.budgetSpent = summary.totalSpent;
+          }
+        } catch {
+          // Non-fatal: expense summary may be unavailable in offline/test mode
+        }
+      }
       setTrip(tripData);
 
       // Attempt to load member list
@@ -387,7 +403,10 @@ export function TripDetailScreen({ tripId }: { tripId: string }) {
           {/* Hero Meta Overlay */}
           <View style={styles.heroOverlayContent}>
             <View style={styles.heroBadgeRow}>
-              <StatusBadge status={trip.status || 'PLANNING'} size="small" />
+              <StatusBadge
+                status={resolveTripStatus(trip.startDate, trip.endDate, trip.status)}
+                size="small"
+              />
               {durationLabel ? (
                 <View style={styles.durationChip}>
                   <AppText style={styles.durationChipText}>{durationLabel}</AppText>

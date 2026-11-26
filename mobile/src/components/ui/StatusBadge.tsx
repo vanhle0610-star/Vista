@@ -2,7 +2,14 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { tokens } from '@/theme/tokens';
 
-export type TripStatusType = 'ACTIVE' | 'PLANNING' | 'COMPLETED' | 'CANCELLED';
+export type TripStatusType =
+  | 'ACTIVE'
+  | 'ONGOING'
+  | 'IN_PROGRESS'
+  | 'PLANNING'
+  | 'COMPLETED'
+  | 'ENDED'
+  | 'CANCELLED';
 
 export interface StatusBadgeProps {
   status: TripStatusType | string;
@@ -15,8 +22,10 @@ export function StatusBadge({ status, label, size = 'medium' }: StatusBadgeProps
   let textCol: string = tokens.colors.primary;
   let defaultLabel = 'Đang lên kế hoạch';
 
-  switch (status) {
+  switch ((status || '').toUpperCase()) {
     case 'ACTIVE':
+    case 'ONGOING':
+    case 'IN_PROGRESS':
       bg = tokens.colors.successSoft;
       textCol = tokens.colors.success;
       defaultLabel = 'Đang diễn ra';
@@ -27,6 +36,7 @@ export function StatusBadge({ status, label, size = 'medium' }: StatusBadgeProps
       defaultLabel = 'Đang lên kế hoạch';
       break;
     case 'COMPLETED':
+    case 'ENDED':
       bg = tokens.colors.primarySoft;
       textCol = tokens.colors.primary;
       defaultLabel = 'Đã hoàn thành';
