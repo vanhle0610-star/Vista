@@ -46,6 +46,7 @@ import { MapViewAdapter } from './MapViewAdapter';
 import { LocationPermissionCard } from './LocationPermissionCard';
 import { useForegroundLocation } from './useForegroundLocation';
 import { loadMapDestinations } from './destinations';
+import { DestinationRequestModal } from '@/components/destination/DestinationRequestModal';
 import {
   computeDistanceMeters,
   formatDistance,
@@ -106,6 +107,7 @@ export function MapScreen() {
   const [focusUser, setFocusUser] = useState(false);
   const [directionsOpen, setDirectionsOpen] = useState(params.directions === '1');
   const [showSteps, setShowSteps] = useState(false);
+  const [suggestPlaceOpen, setSuggestPlaceOpen] = useState(false);
 
   // Directions Route Multi-Stop States
   const [origin, setOrigin] = useState<MapMarker | 'gps' | null>('gps');
@@ -742,6 +744,16 @@ export function MapScreen() {
                   </TouchableOpacity>
                 );
               })}
+              <TouchableOpacity
+                activeOpacity={0.8}
+                style={[styles.categoryChip, { backgroundColor: '#e0f2fe', borderWidth: 1, borderColor: '#7dd3fc' }]}
+                onPress={() => setSuggestPlaceOpen(true)}
+              >
+                <PlusIcon size={15} color="#0369a1" />
+                <AppText style={[styles.categoryText, { color: '#0369a1' }]}>
+                  Đề xuất địa điểm
+                </AppText>
+              </TouchableOpacity>
             </ScrollView>
           </View>
         )}
@@ -1352,6 +1364,14 @@ export function MapScreen() {
           onStop={location.stop}
         />
       </View>
+
+      <DestinationRequestModal
+        visible={suggestPlaceOpen}
+        mode="CREATE"
+        mapCenter={center}
+        gpsLocation={location.position}
+        onClose={() => setSuggestPlaceOpen(false)}
+      />
     </View>
   );
 }

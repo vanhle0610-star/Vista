@@ -19,10 +19,13 @@ import {
   Layers,
   X,
   MessageSquareWarning,
+  Send,
 } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
 import { PaginationBar } from '@/components/PaginationBar';
 import { CrownModeratorIcon } from '@/components/common/LuxeIcons';
+import { fetchAdminDestinationRequestStats } from '@/services/destinationRequestApi';
+import { DestinationRequestsTab } from './DestinationRequestsTab';
 import styles from './moderation.module.css';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -291,8 +294,9 @@ interface AuditLogItem {
 }
 
 export default function ModerationPage() {
-  // Top-level hub active tab: 'DESTINATIONS' | 'REPORTS' | 'AUDIT_LOGS'
-  const [hubTab, setHubTab] = useState<'DESTINATIONS' | 'REPORTS' | 'AUDIT_LOGS'>('DESTINATIONS');
+  // Top-level hub active tab: 'DESTINATIONS' | 'REQUESTS' | 'REPORTS' | 'AUDIT_LOGS'
+  const [hubTab, setHubTab] = useState<'DESTINATIONS' | 'REQUESTS' | 'REPORTS' | 'AUDIT_LOGS'>('DESTINATIONS');
+  const [pendingRequestCount, setPendingRequestCount] = useState<number>(0);
 
   // ─────────────────────────────────────────────────────────────────────────
   // STATE: AUDIT LOGS (W6-TV1-03 - ADMIN ONLY)
@@ -454,6 +458,12 @@ export default function ModerationPage() {
       setAuditLoading(false);
     }
   }, [auditPage, auditEntityFilter]);
+
+  useEffect(() => {
+    void fetchAdminDestinationRequestStats()
+      .then((s) => setPendingRequestCount(s.pending))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const run = async () => {
@@ -705,6 +715,17 @@ export default function ModerationPage() {
         </button>
         <button
           type="button"
+          className={`${styles.hubTabBtn} ${hubTab === 'REQUESTS' ? styles.hubTabBtnActive : ''}`}
+          onClick={() => setHubTab('REQUESTS')}
+        >
+          <Send size={18} />
+          Yêu cầu từ người dùng
+          {pendingRequestCount > 0 && (
+            <span className={styles.tabBadge}>{pendingRequestCount}</span>
+          )}
+        </button>
+        <button
+          type="button"
           className={`${styles.hubTabBtn} ${hubTab === 'REPORTS' ? styles.hubTabBtnActive : ''}`}
           onClick={() => setHubTab('REPORTS')}
         >
@@ -720,6 +741,11 @@ export default function ModerationPage() {
           Nhật ký Quản trị (Audit Logs - ADMIN)
         </button>
       </nav>
+
+      {/* ════════ VIEW 1.5: USER DESTINATION REQUESTS ════════ */}
+      {hubTab === 'REQUESTS' && (
+        <DestinationRequestsTab onPendingCountChange={setPendingRequestCount} />
+      )}
 
       {/* ════════ VIEW 1: DESTINATIONS MODERATION (TV1) ════════ */}
       {hubTab === 'DESTINATIONS' && (
