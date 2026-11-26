@@ -47,6 +47,25 @@ export interface IncomingInvitation {
   createdAt?: string;
 }
 
+function formatInviteExpiry(expiresAt?: any): string {
+  if (!expiresAt || expiresAt === 'Invalid Date') return 'Trong 7 ngày tới';
+  if (typeof expiresAt === 'string') {
+    if (expiresAt.includes('ngày') || expiresAt.includes('Hôm nay') || expiresAt.includes('/')) {
+      return expiresAt;
+    }
+    const d = new Date(expiresAt);
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleDateString('vi-VN');
+    }
+  } else if (typeof expiresAt === 'number') {
+    const d = new Date(expiresAt > 1e11 ? expiresAt : expiresAt * 1000);
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleDateString('vi-VN');
+    }
+  }
+  return 'Trong 7 ngày tới';
+}
+
 export function Navbar({
   activeModule: propActiveModule,
   lang: propLang,
@@ -242,18 +261,57 @@ export function Navbar({
     };
 
     fetchInvites();
-    const interval = setInterval(fetchInvites, 5000);
+
+    // Chu kỳ polling 60 giây khi tab hiển thị; tạm dừng khi tab ẩn
+    const POLL_INTERVAL_MS = 60_000;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+
+    const startPolling = () => {
+      if (intervalId !== null) return; // đã chạy rồi
+      intervalId = setInterval(fetchInvites, POLL_INTERVAL_MS);
+    };
+
+    const stopPolling = () => {
+      if (intervalId !== null) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+    };
+
+    // Khởi động polling ngay nếu tab đang hiển thị
+    if (!document.hidden) {
+      startPolling();
+    }
+
+    // Xử lý chuyển tab: dừng khi ẩn, làm mới + tiếp tục khi hiện lại
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        stopPolling();
+      } else {
+        fetchInvites(); // làm mới ngay 1 lần khi quay lại
+        startPolling();
+      }
+    };
+
+    // focus (ví dụ: người dùng click lại cửa sổ từ app khác) → làm mới ngay
+    const onFocus = () => {
+      if (!document.hidden) {
+        fetchInvites();
+      }
+    };
 
     const onCustomChange = () => fetchInvites();
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('vista-invitations-change', onCustomChange);
     window.addEventListener('storage', onCustomChange);
-    window.addEventListener('focus', onCustomChange);
+    window.addEventListener('focus', onFocus);
 
     return () => {
-      clearInterval(interval);
+      stopPolling();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('vista-invitations-change', onCustomChange);
       window.removeEventListener('storage', onCustomChange);
-      window.removeEventListener('focus', onCustomChange);
+      window.removeEventListener('focus', onFocus);
     };
   }, [currentUser?.email]);
 
@@ -621,12 +679,7 @@ export function Navbar({
                                 <span>📍 {inv.destinationSummary || inv.destination || 'Việt Nam'}</span>
                                 <span>•</span>
                                 <span>
-                                  ⏳{' '}
-                                  {inv.expiresAt
-                                    ? !isNaN(new Date(inv.expiresAt).getTime())
-                                      ? new Date(inv.expiresAt).toLocaleDateString('vi-VN')
-                                      : inv.expiresAt
-                                    : 'Trong 7 ngày tới'}
+                                  ⏳ {formatInviteExpiry(inv.expiresAt)}
                                 </span>
                               </div>
                             </div>
@@ -650,7 +703,7 @@ export function Navbar({
                               Từ chối
                             </button>
                             <Link
-                              href={`/trips/${inv.tripId}`}
+                              href={inv.token ? `/invitations/${inv.token}` : `/trips/${inv.tripId}`}
                               onClick={() => setNotificationsOpen(false)}
                               style={{
                                 fontSize: '11.5px',
