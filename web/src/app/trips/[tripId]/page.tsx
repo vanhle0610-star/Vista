@@ -675,26 +675,31 @@ export default function TripDetailPage() {
     showToast('Vui lòng sử dụng mã lời mời từ Trưởng nhóm để tham gia chuyến đi này!');
   };
 
-  const handleLeaveTrip = async () => {
+  const handleLeaveTrip = () => {
     if (!trip || !currentUser) return;
-    if (!confirm('Bạn có chắc chắn muốn rời khỏi chuyến đi này không?')) {
-      return;
-    }
+    setShowLeaveConfirmModal(true);
+  };
 
+  const executeLeaveTrip = async () => {
+    if (!trip || !currentUser || isLeavingTrip) return;
+    setIsLeavingTrip(true);
     try {
       await apiRequest(`/trips/${tripId}/members/me`, {
         method: 'DELETE',
       });
 
+      setShowLeaveConfirmModal(false);
       showToast('✓ Bạn đã rời nhóm thành công!');
       window.dispatchEvent(new CustomEvent('vista-trips-change'));
       router.replace('/trips');
     } catch (err: any) {
       showToast(err.message || 'Không thể rời nhóm. Vui lòng thử lại sau.');
+    } finally {
+      setIsLeavingTrip(false);
     }
   };
 
-  const handleTransferOwnership = async (targetMember: any) => {
+  const handleTransferOwnership = (targetMember: any) => {
     if (!trip || !currentUser || !isTripOwner) return;
     const targetUserId = targetMember.userId || targetMember.id;
     if (!targetUserId) {
@@ -703,22 +708,34 @@ export default function TripDetailPage() {
     }
     const rawTargetName = typeof targetMember === 'string' ? targetMember : targetMember?.name || 'thành viên';
     const targetName = rawTargetName.replace(/\s*\(Bạn\)/gi, '').trim() || rawTargetName;
-    if (!confirm(`Bạn có chắc chắn muốn chuyển quyền Trưởng nhóm cho "${targetName}" không?\n\nSau khi chuyển quyền, bạn sẽ trở thành Thành viên và "${targetName}" sẽ là Trưởng nhóm mới.`)) {
-      return;
-    }
+    setTransferTarget({
+      userId: targetUserId,
+      name: targetName,
+      avatar: targetMember?.avatar || targetName.slice(0, 2).toUpperCase(),
+      color: targetMember?.color || '#10b981',
+      email: targetMember?.email,
+    });
+  };
 
+  const executeTransferOwnership = async () => {
+    if (!trip || !currentUser || !isTripOwner || !transferTarget || isTransferring) return;
+    setIsTransferring(true);
     try {
       await apiRequest(`/trips/${tripId}/transfer-ownership`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ newOwnerId: targetUserId }),
+        body: JSON.stringify({ newOwnerId: transferTarget.userId }),
       });
 
+      const targetName = transferTarget.name;
+      setTransferTarget(null);
       showToast(`👑 Đã chuyển quyền Trưởng nhóm cho "${targetName}" thành công!`);
       window.dispatchEvent(new CustomEvent('vista-trips-change'));
       window.location.reload();
     } catch (err: any) {
       showToast(err.message || 'Chuyển quyền thất bại. Vui lòng thử lại.');
+    } finally {
+      setIsTransferring(false);
     }
   };
 
@@ -815,6 +832,18 @@ export default function TripDetailPage() {
   const [showAddPropModal, setShowAddPropModal] = useState(false);
   const [newPropTitle, setNewPropTitle] = useState('');
   const [newPropCategory, setNewPropCategory] = useState('Ẩm thực');
+
+  // Transfer Ownership & Leave Trip confirmation modals (TV3)
+  const [transferTarget, setTransferTarget] = useState<{
+    userId: string;
+    name: string;
+    avatar: string;
+    color: string;
+    email?: string;
+  } | null>(null);
+  const [isTransferring, setIsTransferring] = useState(false);
+  const [showLeaveConfirmModal, setShowLeaveConfirmModal] = useState(false);
+  const [isLeavingTrip, setIsLeavingTrip] = useState(false);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -5414,6 +5443,368 @@ export default function TripDetailPage() {
                 }}
               >
                 Tạo đề xuất (+1 vote)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 6: XÁC NHẬN CHUYỂN QUYỀN TRƯỞNG NHÓM */}
+      {transferTarget && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(15, 23, 42, 0.65)',
+            backdropFilter: 'blur(5px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10000,
+            padding: '20px',
+          }}
+          onClick={() => {
+            if (!isTransferring) setTransferTarget(null);
+          }}
+        >
+          <div
+            style={{
+              background: '#FFFFFF',
+              borderRadius: '24px',
+              maxWidth: '460px',
+              width: '100%',
+              padding: '28px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              border: '1px solid #E2E8F0',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div
+                  style={{
+                    width: '44px',
+                    height: '44px',
+                    borderRadius: '14px',
+                    background: 'linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)',
+                    color: '#B45309',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  <Crown size={22} />
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
+                    Chuyển quyền Trưởng nhóm
+                  </h3>
+                  <span style={{ fontSize: '12.5px', color: '#64748B' }}>
+                    Quyền quản trị sẽ thay đổi ngay lập tức
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                disabled={isTransferring}
+                onClick={() => setTransferTarget(null)}
+                style={{
+                  background: '#F1F5F9',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '32px',
+                  height: '32px',
+                  fontSize: '15px',
+                  cursor: isTransferring ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#64748B',
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '12px 14px',
+                background: '#F8FAFC',
+                borderRadius: '14px',
+                border: '1px solid #E2E8F0',
+                marginBottom: '16px',
+              }}
+            >
+              <div
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  background: transferTarget.color || '#10b981',
+                  color: '#FFFFFF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 800,
+                  fontSize: '14px',
+                  flexShrink: 0,
+                }}
+              >
+                {transferTarget.avatar}
+              </div>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={{ fontSize: '15px', fontWeight: 700, color: '#0F172A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {transferTarget.name}
+                </div>
+                {transferTarget.email && (
+                  <div style={{ fontSize: '12.5px', color: '#64748B', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {transferTarget.email}
+                  </div>
+                )}
+              </div>
+              <span
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  padding: '4px 10px',
+                  borderRadius: '999px',
+                  background: '#FEF3C7',
+                  color: '#B45309',
+                  flexShrink: 0,
+                }}
+              >
+                Trưởng nhóm mới
+              </span>
+            </div>
+
+            <div
+              style={{
+                background: '#FFFBEB',
+                borderRadius: '12px',
+                padding: '14px 16px',
+                border: '1px solid #FDE68A',
+                marginBottom: '22px',
+                fontSize: '13.5px',
+                color: '#92400E',
+                lineHeight: '1.6',
+              }}
+            >
+              Bạn có chắc chắn muốn chuyển quyền Trưởng nhóm cho{' '}
+              <strong>&ldquo;{transferTarget.name}&rdquo;</strong> không?
+              <br />
+              <span style={{ display: 'inline-block', marginTop: '6px', color: '#78350F' }}>
+                Sau khi chuyển quyền, bạn sẽ trở thành <strong>Thành viên</strong> và{' '}
+                <strong>&ldquo;{transferTarget.name}&rdquo;</strong> sẽ là <strong>Trưởng nhóm mới</strong>.
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button
+                type="button"
+                disabled={isTransferring}
+                onClick={() => setTransferTarget(null)}
+                style={{
+                  padding: '10px 18px',
+                  borderRadius: '10px',
+                  border: '1px solid #CBD5E1',
+                  background: '#F8FAFC',
+                  color: '#475569',
+                  fontWeight: 700,
+                  fontSize: '13.5px',
+                  cursor: isTransferring ? 'not-allowed' : 'pointer',
+                  opacity: isTransferring ? 0.6 : 1,
+                }}
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                disabled={isTransferring}
+                onClick={executeTransferOwnership}
+                style={{
+                  padding: '10px 22px',
+                  borderRadius: '10px',
+                  border: 'none',
+                  background: isTransferring ? '#94A3B8' : 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)',
+                  color: '#FFFFFF',
+                  fontWeight: 700,
+                  fontSize: '13.5px',
+                  cursor: isTransferring ? 'not-allowed' : 'pointer',
+                  boxShadow: isTransferring ? 'none' : '0 4px 12px rgba(2, 132, 199, 0.3)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '7px',
+                }}
+              >
+                {isTransferring ? (
+                  <>
+                    <Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} />
+                    <span>Đang chuyển quyền...</span>
+                  </>
+                ) : (
+                  <>
+                    <Crown size={15} />
+                    <span>Xác nhận chuyển quyền</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 7: XÁC NHẬN RỜI NHÓM */}
+      {showLeaveConfirmModal && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(15, 23, 42, 0.65)',
+            backdropFilter: 'blur(5px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10000,
+            padding: '20px',
+          }}
+          onClick={() => {
+            if (!isLeavingTrip) setShowLeaveConfirmModal(false);
+          }}
+        >
+          <div
+            style={{
+              background: '#FFFFFF',
+              borderRadius: '24px',
+              maxWidth: '440px',
+              width: '100%',
+              padding: '28px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              border: '1px solid #FECACA',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div
+                  style={{
+                    width: '44px',
+                    height: '44px',
+                    borderRadius: '14px',
+                    background: '#FEE2E2',
+                    color: '#DC2626',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  <LogOut size={20} />
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
+                    Rời khỏi chuyến đi
+                  </h3>
+                  <span style={{ fontSize: '12.5px', color: '#64748B' }}>
+                    {trip?.title || 'Chuyến đi VISTA'}
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                disabled={isLeavingTrip}
+                onClick={() => setShowLeaveConfirmModal(false)}
+                style={{
+                  background: '#F1F5F9',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '32px',
+                  height: '32px',
+                  fontSize: '15px',
+                  cursor: isLeavingTrip ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#64748B',
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div
+              style={{
+                background: '#FEF2F2',
+                borderRadius: '12px',
+                padding: '14px 16px',
+                border: '1px solid #FECACA',
+                marginBottom: '22px',
+                fontSize: '13.5px',
+                color: '#991B1B',
+                lineHeight: '1.6',
+              }}
+            >
+              Bạn có chắc chắn muốn rời khỏi chuyến đi này không? Sau khi rời nhóm, bạn sẽ không còn quyền xem hoặc chỉnh sửa lịch trình trừ khi được mời lại.
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button
+                type="button"
+                disabled={isLeavingTrip}
+                onClick={() => setShowLeaveConfirmModal(false)}
+                style={{
+                  padding: '10px 18px',
+                  borderRadius: '10px',
+                  border: '1px solid #CBD5E1',
+                  background: '#F8FAFC',
+                  color: '#475569',
+                  fontWeight: 700,
+                  fontSize: '13.5px',
+                  cursor: isLeavingTrip ? 'not-allowed' : 'pointer',
+                  opacity: isLeavingTrip ? 0.6 : 1,
+                }}
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                disabled={isLeavingTrip}
+                onClick={executeLeaveTrip}
+                style={{
+                  padding: '10px 22px',
+                  borderRadius: '10px',
+                  border: 'none',
+                  background: isLeavingTrip ? '#94A3B8' : '#DC2626',
+                  color: '#FFFFFF',
+                  fontWeight: 700,
+                  fontSize: '13.5px',
+                  cursor: isLeavingTrip ? 'not-allowed' : 'pointer',
+                  boxShadow: isLeavingTrip ? 'none' : '0 4px 12px rgba(220, 38, 38, 0.25)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '7px',
+                }}
+              >
+                {isLeavingTrip ? (
+                  <>
+                    <Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} />
+                    <span>Đang rời nhóm...</span>
+                  </>
+                ) : (
+                  <>
+                    <LogOut size={15} />
+                    <span>Xác nhận rời nhóm</span>
+                  </>
+                )}
               </button>
             </div>
           </div>
