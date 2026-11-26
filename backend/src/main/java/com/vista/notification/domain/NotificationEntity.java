@@ -30,6 +30,7 @@ public class NotificationEntity {
   private String type;
 
   /** Payload JSON thô — serialize từ Map<String,Object> khi lưu. */
+  @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
   @Column(name = "payload_json", nullable = false, columnDefinition = "jsonb")
   private String payloadJson = "{}";
 

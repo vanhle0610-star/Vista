@@ -130,38 +130,39 @@ public class TripMemberService {
             .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy chuyến đi"));
 
     // 4. Cập nhật quyền trong cùng 1 transaction:
-    // a. Đặt người mới thành OWNER
-    newOwnerMember.setRole(TripMemberRole.OWNER);
-    tripMemberRepository.save(newOwnerMember);
-
-    // b. Hạ chủ cũ xuống MEMBER
+    // QUAN TRỌNG: Để không vi phạm partial unique index uq_trip_single_active_owner
+    // (ON trip_members (trip_id) WHERE role = 'OWNER' AND status = 'ACTIVE'),
+    // PHẢI hạ chủ cũ xuống MEMBER trước và flush ngay xuống DB, sau đó mới nâng chủ mới lên OWNER.
+    // a. Hạ chủ cũ xuống MEMBER và flush trước
     TripMemberEntity oldOwnerMember =
         tripMemberRepository
             .findByTripIdAndUserId(tripId, currentUserId)
             .orElseGet(() -> new TripMemberEntity(trip, currentUserId, TripMemberRole.MEMBER));
     oldOwnerMember.setRole(TripMemberRole.MEMBER);
-    tripMemberRepository.save(oldOwnerMember);
+    tripMemberRepository.saveAndFlush(oldOwnerMember);
+
+    // b. Nâng chủ mới lên OWNER và flush
+    newOwnerMember.setRole(TripMemberRole.OWNER);
+    tripMemberRepository.saveAndFlush(newOwnerMember);
 
     // c. Cập nhật ownerId trên chuyến đi
     trip.setOwnerId(newOwnerId);
-    tripRepository.save(trip);
-
-    tripMemberRepository.flush();
-    tripRepository.flush();
+    tripRepository.saveAndFlush(trip);
 
     log.info(
         "Chuyển quyền trưởng nhóm chuyến đi {} từ {} sang {}", tripId, currentUserId, newOwnerId);
 
     // 5. Gửi thông báo cho chủ mới qua NotificationService
     try {
+      String safeTitle = trip.getTitle() != null ? trip.getTitle() : "";
       notificationService.sendInAppNotification(
           newOwnerId,
           "Chuyển quyền trưởng nhóm",
-          "Bạn đã được chỉ định làm trưởng nhóm mới của chuyến đi: " + trip.getTitle(),
+          "Bạn đã được chỉ định làm trưởng nhóm mới của chuyến đi: " + safeTitle,
           NotificationType.OWNERSHIP_TRANSFERRED.name(),
           Map.of(
               "tripId", tripId.toString(),
-              "tripTitle", trip.getTitle(),
+              "tripTitle", safeTitle,
               "previousOwnerId", currentUserId.toString()));
     } catch (Exception e) {
       log.warn("Không thể gửi thông báo chuyển quyền tới user {}: {}", newOwnerId, e.getMessage());
