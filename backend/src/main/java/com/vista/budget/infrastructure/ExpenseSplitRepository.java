@@ -20,5 +20,6 @@ public interface ExpenseSplitRepository extends JpaRepository<ExpenseSplitEntity
           + "WHERE s.expense.tripId = :tripId "
           + "AND s.expense.status = 'ACTIVE' "
           + "AND UPPER(s.settledStatus) <> 'SETTLED'")
-  boolean existsUnsettledSplitsByTripId(@org.springframework.data.repository.query.Param("tripId") UUID tripId);
+  boolean existsUnsettledSplitsByTripId(
+      @org.springframework.data.repository.query.Param("tripId") UUID tripId);
 }

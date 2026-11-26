@@ -104,10 +104,7 @@ public class AdminDestinationRequestController {
     }
   }
 
-  @ExceptionHandler({
-    DestinationRequestNotFoundException.class,
-    DestinationNotFoundException.class
-  })
+  @ExceptionHandler({DestinationRequestNotFoundException.class, DestinationNotFoundException.class})
   public ProblemDetail handleNotFound(RuntimeException ex, HttpServletRequest request) {
     ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
     problem.setType(URI.create("https://vista.example/errors/not-found"));

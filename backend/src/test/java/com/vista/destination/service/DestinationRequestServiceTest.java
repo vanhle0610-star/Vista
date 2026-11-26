@@ -49,11 +49,7 @@ class DestinationRequestServiceTest {
 
     service =
         new DestinationRequestService(
-            requestRepository,
-            destinationRepository,
-            provinceRepository,
-            categoryRepository,
-            null);
+            requestRepository, destinationRepository, provinceRepository, categoryRepository, null);
     service.setAuditLogService(auditLogService);
 
     when(requestRepository.save(any(DestinationRequest.class)))
@@ -123,7 +119,8 @@ class DestinationRequestServiceTest {
   }
 
   @Test
-  @DisplayName("submitRequest UPDATE blocks duplicate PENDING request for same user and destination")
+  @DisplayName(
+      "submitRequest UPDATE blocks duplicate PENDING request for same user and destination")
   void submitUpdateDuplicatePendingThrowsConflict() {
     UUID userId = UUID.randomUUID();
     UUID destId = UUID.randomUUID();
@@ -217,8 +214,21 @@ class DestinationRequestServiceTest {
 
     var dto =
         new SubmitDestinationRequestDto(
-            "CREATE", null, "Test", "Đà Nẵng", null, null, null,
-            new BigDecimal("16.0"), new BigDecimal("108.0"), null, null, null, null, null, null);
+            "CREATE",
+            null,
+            "Test",
+            "Đà Nẵng",
+            null,
+            null,
+            null,
+            new BigDecimal("16.0"),
+            new BigDecimal("108.0"),
+            null,
+            null,
+            null,
+            null,
+            null,
+            null);
 
     assertThatThrownBy(() -> service.updateMyRequest(otherId, reqId, dto))
         .isInstanceOf(DestinationRequestForbiddenException.class);

@@ -493,7 +493,8 @@ public class DestinationRequestService {
   }
 
   private Province resolveProvince(String provinceName) {
-    String provName = provinceName != null && !provinceName.isBlank() ? provinceName.trim() : "Đà Nẵng";
+    String provName =
+        provinceName != null && !provinceName.isBlank() ? provinceName.trim() : "Đà Nẵng";
     if (provinceRepository != null) {
       return provinceRepository
           .findByName(provName)
@@ -564,7 +565,11 @@ public class DestinationRequestService {
   }
 
   private void validateCoordinatesAndPrices(
-      BigDecimal lat, BigDecimal lng, BigDecimal priceMin, BigDecimal priceMax, boolean requireCoords) {
+      BigDecimal lat,
+      BigDecimal lng,
+      BigDecimal priceMin,
+      BigDecimal priceMax,
+      boolean requireCoords) {
     if (requireCoords && (lat == null || lng == null)) {
       throw new IllegalArgumentException("Tọa độ GPS (latitude, longitude) là bắt buộc");
     }

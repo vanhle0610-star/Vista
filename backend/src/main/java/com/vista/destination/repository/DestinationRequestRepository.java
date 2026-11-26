@@ -8,8 +8,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface DestinationRequestRepository
-    extends JpaRepository<DestinationRequest, UUID>,
-        JpaSpecificationExecutor<DestinationRequest> {
+    extends JpaRepository<DestinationRequest, UUID>, JpaSpecificationExecutor<DestinationRequest> {
 
   boolean existsBySubmittedByAndTargetDestinationIdAndStatus(
       UUID submittedBy, UUID targetDestinationId, String status);
