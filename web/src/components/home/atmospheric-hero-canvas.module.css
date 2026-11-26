@@ -1,0 +1,602 @@
+/* ==========================================================================
+   VISTA ATMOSPHERIC DYNAMIC WEATHER CANVAS (COMPACT, SLEEK, REFINED SCALE)
+   ========================================================================== */
+
+.heroCanvasWrapper {
+  position: relative;
+  width: 100%;
+  min-height: clamp(580px, 86vh, 740px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 80px 20px 24px;
+  box-sizing: border-box;
+  user-select: none;
+  background-color: #0F172A;
+}
+
+/* ─── DYNAMIC BACKGROUND LAYERS WITH PARALLAX ────────────────────────── */
+.canvasBgLayer {
+  position: absolute;
+  inset: -30px;
+  background-size: cover;
+  background-position: center;
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Atmospheric Ambient Vignette Overlays */
+.ambientOverlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  transition: background 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.overlaySun {
+  background: radial-gradient(circle at 75% 20%, rgba(251, 191, 36, 0.22) 0%, transparent 60%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.32) 0%, rgba(15, 23, 42, 0.12) 50%, rgba(15, 23, 42, 0.65) 100%);
+}
+
+.overlayRain {
+  background: radial-gradient(circle at 50% 30%, rgba(56, 189, 248, 0.14) 0%, transparent 70%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.55) 0%, rgba(30, 41, 59, 0.45) 50%, rgba(15, 23, 42, 0.85) 100%);
+}
+
+.overlayCloud {
+  background: radial-gradient(circle at 50% 80%, rgba(255, 255, 255, 0.3) 0%, transparent 65%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.35) 0%, rgba(15, 23, 42, 0.15) 50%, rgba(15, 23, 42, 0.7) 100%);
+}
+
+.overlayNight {
+  background: radial-gradient(circle at 60% 70%, rgba(245, 158, 11, 0.22) 0%, transparent 55%),
+    linear-gradient(180deg, rgba(11, 19, 32, 0.6) 0%, rgba(15, 23, 42, 0.35) 50%, rgba(11, 19, 32, 0.9) 100%);
+}
+
+/* ─── ATMOSPHERIC PARTICLE FX ────────────────────────────────────────── */
+.particleCanvasLayer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  overflow: hidden;
+}
+
+/* 1. Rain Streaks Animation */
+.rainDropStreak {
+  position: absolute;
+  top: -50px;
+  width: 1.5px;
+  height: 42px;
+  background: linear-gradient(180deg, transparent, rgba(56, 189, 248, 0.85), #FFFFFF);
+  opacity: 0.75;
+  transform: rotate(18deg);
+  animation: rainStreakFall linear infinite;
+}
+
+@keyframes rainStreakFall {
+  0% {
+    transform: translateY(-50px) rotate(18deg);
+    opacity: 0;
+  }
+
+  15% {
+    opacity: 0.85;
+  }
+
+  100% {
+    transform: translateY(105vh) rotate(18deg);
+    opacity: 0;
+  }
+}
+
+/* 2. Sun Solar Flare */
+.solarFlareGlow {
+  position: absolute;
+  top: -100px;
+  right: -70px;
+  width: 440px;
+  height: 440px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(251, 191, 36, 0.42) 0%, rgba(245, 158, 11, 0.15) 45%, transparent 70%);
+  filter: blur(25px);
+  animation: solarPulse 10s ease-in-out infinite alternate;
+}
+
+@keyframes solarPulse {
+  0% {
+    transform: scale(0.9) rotate(0deg);
+    opacity: 0.8;
+  }
+
+  100% {
+    transform: scale(1.15) rotate(60deg);
+    opacity: 1;
+  }
+}
+
+/* 3. Cloud Mist Layer */
+.cloudMistFlow {
+  position: absolute;
+  bottom: -30px;
+  left: -10%;
+  width: 120%;
+  height: 260px;
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.08) 45%, transparent 75%);
+  filter: blur(30px);
+  animation: mistDrift 18s ease-in-out infinite alternate;
+}
+
+@keyframes mistDrift {
+  0% {
+    transform: translateX(0px) scale(1);
+  }
+
+  100% {
+    transform: translateX(40px) scale(1.05);
+  }
+}
+
+/* 4. Night Lantern Embers */
+.lanternEmber {
+  position: absolute;
+  bottom: -15px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #F59E0B;
+  box-shadow: 0 0 10px #F59E0B, 0 0 20px #FBBF24;
+  animation: emberRise ease-in infinite;
+}
+
+@keyframes emberRise {
+  0% {
+    transform: translateY(0px) scale(0.8);
+    opacity: 0;
+  }
+
+  30% {
+    opacity: 0.95;
+  }
+
+  80% {
+    opacity: 0.6;
+  }
+
+  100% {
+    transform: translateY(-80vh) scale(1.15);
+    opacity: 0;
+  }
+}
+
+/* ─── STAGE CONTAINER ────────────────────────────────────────────────── */
+.stageContainer {
+  position: relative;
+  z-index: 10;
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* ─── COMPACT WEATHER MOOD SELECTOR TABS ──────────────────────────────── */
+.moodSelectorRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px;
+  background: rgba(15, 23, 42, 0.52);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.moodTabBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 13px;
+  border-radius: 999px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: #CBD5E1;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.moodTabBtn:hover {
+  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.moodTabBtnActive {
+  background: #FFFFFF !important;
+  color: #0F172A !important;
+  border-color: #FFFFFF !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* ─── COMPACT EDITORIAL HEADLINE (REFINED PROPORTIONS) ───────────────── */
+.headlineWrap {
+  max-width: 720px;
+  margin-bottom: 18px;
+}
+
+.headlineMain {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(24px, 2.7vw, 36px);
+  font-weight: 700;
+  color: #FFFFFF;
+  margin: 0 0 8px;
+  line-height: 1.22;
+  letter-spacing: -0.01em;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.55);
+}
+
+.headlineSub {
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.86);
+  line-height: 1.55;
+  margin: 0 auto;
+  font-weight: 400;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
+  max-width: 520px;
+}
+
+/* ─── SLEEK ATMOSPHERIC TRAVEL CONSOLE (FROSTED GLASS CAPSULE) ──────── */
+.consoleCard {
+  width: 100%;
+  max-width: 760px;
+  background: rgba(15, 23, 42, 0.62);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-top: 1.5px solid rgba(255, 255, 255, 0.38);
+  border-radius: 999px;
+  padding: 5px 6px 5px 14px;
+  box-shadow:
+    0 22px 50px -10px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  margin-bottom: 16px;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.3s ease;
+}
+
+/* Mood-Adaptive Border & Aura Glow */
+.consoleCard_sun {
+  border-color: rgba(245, 158, 11, 0.45);
+  box-shadow:
+    0 22px 50px -10px rgba(0, 0, 0, 0.5),
+    0 0 32px -6px rgba(245, 158, 11, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.consoleCard_rain {
+  border-color: rgba(56, 189, 248, 0.45);
+  box-shadow:
+    0 22px 50px -10px rgba(0, 0, 0, 0.5),
+    0 0 32px -6px rgba(56, 189, 248, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.consoleCard_cloud {
+  border-color: rgba(147, 197, 253, 0.45);
+  box-shadow:
+    0 22px 50px -10px rgba(0, 0, 0, 0.5),
+    0 0 32px -6px rgba(147, 197, 253, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.consoleCard_night {
+  border-color: rgba(251, 191, 36, 0.45);
+  box-shadow:
+    0 22px 50px -10px rgba(0, 0, 0, 0.5),
+    0 0 32px -6px rgba(251, 191, 36, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+@media (max-width: 768px) {
+  .consoleCard {
+    flex-direction: column;
+    border-radius: 20px;
+    padding: 10px;
+    gap: 8px;
+  }
+}
+
+/* Console Field Segments */
+.consoleField {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  background: transparent;
+  transition: all 0.18s ease;
+  position: relative;
+  text-align: left;
+  min-width: 0;
+}
+
+.consoleField:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.fieldHeader {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 2px;
+}
+
+.fieldIcon {
+  color: rgba(255, 255, 255, 0.72);
+  flex-shrink: 0;
+}
+
+.consoleFieldLabel {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1;
+}
+
+.fieldValueRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.consoleFieldValue {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #FFFFFF;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+}
+
+.chevronIcon {
+  color: rgba(255, 255, 255, 0.45);
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.consoleField:hover .chevronIcon {
+  color: rgba(255, 255, 255, 0.85);
+  transform: translateY(1px);
+}
+
+/* Vertical Hairline Dividers */
+.fieldDivider {
+  width: 1px;
+  height: 26px;
+  background: rgba(255, 255, 255, 0.18);
+  flex-shrink: 0;
+  margin: 0 2px;
+}
+
+@media (max-width: 768px) {
+  .fieldDivider {
+    display: none;
+  }
+}
+
+/* Frosted Glass Popover Dropdowns */
+.fieldPopover {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  width: 280px;
+  background: rgba(15, 23, 42, 0.94);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 16px;
+  padding: 8px;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.55);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.popoverOptionItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 10px;
+  border-radius: 10px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.popoverOptionItem:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.popoverOptionItemActive {
+  background: rgba(255, 255, 255, 0.18) !important;
+}
+
+.popoverOptionName {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #FFFFFF;
+}
+
+.popoverOptionSub {
+  font-size: 11px;
+  color: #94A3B8;
+}
+
+/* Luminous Action Button (Pill Button With Mood Gradients) */
+.btnExplore {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9.5px 22px;
+  border-radius: 999px;
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.btnExplore_sun {
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+  box-shadow: 0 4px 18px rgba(245, 158, 11, 0.45);
+}
+
+.btnExplore_rain {
+  background: linear-gradient(135deg, #0EA5E9 0%, #0284C7 100%);
+  box-shadow: 0 4px 18px rgba(14, 165, 233, 0.45);
+}
+
+.btnExplore_cloud {
+  background: linear-gradient(135deg, #38BDF8 0%, #2563EB 100%);
+  box-shadow: 0 4px 18px rgba(37, 99, 235, 0.45);
+}
+
+.btnExplore_night {
+  background: linear-gradient(135deg, #F59E0B 0%, #EA580C 100%);
+  box-shadow: 0 4px 18px rgba(234, 88, 12, 0.45);
+}
+
+.btnExplore:hover {
+  transform: translateY(-1px) scale(1.02);
+  filter: brightness(1.1);
+}
+
+@media (max-width: 768px) {
+  .btnExplore {
+    width: 100%;
+  }
+}
+
+/* ─── QUICK DESTINATION SUGGESTIONS ──────────────────────────────────── */
+.quickDestRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.quickDestLabel {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+.quickDestChip {
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 11px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.quickDestChip:hover {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: #FFFFFF;
+  transform: translateY(-1px);
+}
+
+/* ─── COMPACT BOTTOM TELEMETRY BAR ───────────────────────────────────── */
+.bottomTelemetryBar {
+  position: relative;
+  z-index: 10;
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 11px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.telemetryLeft {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.pulseDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10B981;
+  box-shadow: 0 0 8px #10B981;
+  animation: pulseLive 2s infinite;
+}
+
+@keyframes pulseLive {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+
+  50% {
+    transform: scale(1.3);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+}
+
+.telemetryRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 500;
+}

@@ -4194,7 +4194,22 @@ export default function PlannerPage() {
         fallbackUsed: !!rec.aiMetadata.fallbackUsed,
       });
     }
-    setItineraryDays(rec.itineraryDays as DayPlan[]);
+    const restoredDays = ((rec.itineraryDays as DayPlan[]) || []).map((day) => ({
+      ...day,
+      activities: (day.activities || []).map((act) => {
+        if (act.photoUrl && !act.photoUrl.includes('unsplash.com')) return act;
+        const cleanTitle = (act.title || '').toLowerCase().trim();
+        const matched = REAL_VIETNAM_PLACES.find((p) => {
+          const pn = p.name.toLowerCase().trim();
+          return pn === cleanTitle || pn.includes(cleanTitle) || cleanTitle.includes(pn);
+        });
+        if (matched?.image && !matched.image.includes('unsplash.com') && !matched.image.includes('default_destination.webp')) {
+          return { ...act, photoUrl: matched.image };
+        }
+        return act;
+      }),
+    }));
+    setItineraryDays(restoredDays);
     setActiveDay(1);
     setHasPlanGenerated(true);
     setShowHistoryDrawer(false);
@@ -6046,17 +6061,43 @@ export default function PlannerPage() {
                               </div>
 
                               <div className={styles.activityCard}>
-                                {act.photoUrl ? (
-                                  <img
-                                    src={act.photoUrl}
-                                    alt={act.title}
-                                    className={styles.activityThumb}
-                                    onError={(e) => {
-                                      // "ko có ảnh thì ko để ảnh thôi đừng bỏ đại" -> Ẩn ảnh nếu tải lỗi, không bỏ đại ảnh tỉnh vào
-                                      (e.currentTarget as HTMLImageElement).style.display = 'none';
-                                    }}
-                                  />
-                                ) : null}
+                                {(() => {
+                                  const effectivePhoto = (() => {
+                                    if (act.photoUrl && !act.photoUrl.includes('unsplash.com')) {
+                                      return act.photoUrl;
+                                    }
+                                    const titleClean = (act.title || '').toLowerCase().trim();
+                                    const matchedPlace =
+                                      provinceRealPlaces.find((p) => {
+                                        const pn = p.name.toLowerCase().trim();
+                                        return pn === titleClean || pn.includes(titleClean) || titleClean.includes(pn);
+                                      }) ||
+                                      REAL_VIETNAM_PLACES.find((p) => {
+                                        const pn = p.name.toLowerCase().trim();
+                                        return pn === titleClean || pn.includes(titleClean) || titleClean.includes(pn);
+                                      });
+                                    if (
+                                      matchedPlace?.image &&
+                                      !matchedPlace.image.includes('unsplash.com') &&
+                                      !matchedPlace.image.includes('default_destination.webp')
+                                    ) {
+                                      return matchedPlace.image;
+                                    }
+                                    return '';
+                                  })();
+
+                                  return effectivePhoto ? (
+                                    <img
+                                      src={effectivePhoto}
+                                      alt={act.title}
+                                      className={styles.activityThumb}
+                                      onError={(e) => {
+                                        // Ẩn ảnh nếu tải lỗi, không gán đại ảnh khác
+                                        (e.currentTarget as HTMLImageElement).style.display = 'none';
+                                      }}
+                                    />
+                                  ) : null;
+                                })()}
                                 <div className={styles.activityContent}>
                                   <div className={styles.activityTitleRow}>
                                     <h5 className={styles.activityTitle}>

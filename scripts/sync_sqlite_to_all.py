@@ -57,8 +57,6 @@ def main():
         description = (r[10] or f"{name} là điểm đến nổi tiếng tại {province}.").strip()
         
         photo = (r[11] or "").strip()
-        if not photo:
-            photo = "/destinations/default_destination.webp"
             
         csv_rows.append({
             "name": name,
@@ -155,10 +153,40 @@ export function getRealPlacesByProvince(provinceQuery: string): RealPlace[] {{
 
   const target = normFn(provinceQuery);
 
+  const PROVINCE_ALIASES: Record<string, string> = {{
+    'hoi an': 'quang nam',
+    'sa pa': 'lao cai',
+    'sapa': 'lao cai',
+    'da lat': 'lam dong',
+    'dalat': 'lam dong',
+    'phu quoc': 'kien giang',
+    'ha long': 'quang ninh',
+    'halong': 'quang ninh',
+    'nha trang': 'khanh hoa',
+    'nhatrang': 'khanh hoa',
+    'mui ne': 'binh thuan',
+    'muine': 'binh thuan',
+    'phan thiet': 'binh thuan',
+    'quy nhon': 'binh dinh',
+    'quynhon': 'binh dinh',
+    'con dao': 'ba ria - vung tau',
+    'vung tau': 'ba ria - vung tau',
+    'buon ma thuot': 'dak lak',
+    'pleiku': 'gia lai',
+    'hue': 'thua thien hue',
+  }};
+  const resolvedTarget = PROVINCE_ALIASES[target] || target;
+
   // Direct matches
   const directMatches = REAL_VIETNAM_PLACES.filter((p) => {{
     const pProv = normFn(p.province);
-    return pProv === target || pProv.includes(target) || target.includes(pProv);
+    return (
+      pProv === target ||
+      pProv.includes(target) ||
+      target.includes(pProv) ||
+      pProv === resolvedTarget ||
+      pProv.includes(resolvedTarget)
+    );
   }});
 
   if (directMatches.length > 0) {{
