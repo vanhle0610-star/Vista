@@ -168,7 +168,6 @@ export async function POST(request: Request) {
 
     if (smtpUser && smtpPass) {
       try {
-        // @ts-expect-error nodemailer is an optional dependency
         const nodemailer = (await import('nodemailer')).default;
         const transporter = nodemailer.createTransport({
           host: smtpHost,

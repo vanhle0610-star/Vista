@@ -22,6 +22,7 @@ interface StopDetailModalProps {
   item: ItineraryItem | null;
   dayNumber?: number;
   tripDate?: string;
+  existingStops?: ItineraryItem[];
   onClose: () => void;
   onSuccess: () => void;
 }
@@ -49,6 +50,7 @@ export function StopDetailModal({
   item,
   dayNumber = 1,
   tripDate,
+  existingStops,
   onClose,
   onSuccess,
 }: StopDetailModalProps) {
@@ -57,6 +59,7 @@ export function StopDetailModal({
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [note, setNote] = useState('');
+  const [cost, setCost] = useState('0');
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -66,6 +69,7 @@ export function StopDetailModal({
       setStartTime(item.startTime ? item.startTime.slice(0, 5) : '09:00');
       setEndTime(item.endTime ? item.endTime.slice(0, 5) : '11:00');
       setNote(item.note || '');
+      setCost(item.costVnd != null ? String(item.costVnd) : '0');
       setIsEditing(false);
     }
   }, [item]);
@@ -81,17 +85,75 @@ export function StopDetailModal({
 
     setSaving(true);
     try {
-      await itineraryApi.updateItem(item.id, {
+      const parsedCost = parseInt(cost.replace(/[^0-9]/g, ''), 10);
+      const updatedItem = await itineraryApi.updateItem(item.id, {
         customStopName: stopName.trim(),
         startTime: startTime.trim() ? (startTime.includes(':') && startTime.length === 5 ? `${startTime.trim()}:00` : startTime.trim()) : null,
         endTime: endTime.trim() ? (endTime.includes(':') && endTime.length === 5 ? `${endTime.trim()}:00` : endTime.trim()) : null,
         note: note.trim() || undefined,
+        costVnd: isNaN(parsedCost) ? 0 : parsedCost,
         expected_updated_at: item.updatedAt,
       });
 
-      Alert.alert('Thành công', 'Thông tin điểm dừng đã được cập nhật.');
-      setIsEditing(false);
-      onSuccess();
+      // Kiểm tra cảnh báo trùng giờ (V-02: M-01)
+      const resWarnings = (updatedItem as any)?.warnings as Array<{ code?: string; message?: string }> | undefined;
+      const apiOverlapWarning = resWarnings?.find(
+        (w) => w.code === 'TIME_OVERLAP' || (w.message && w.message.toLowerCase().includes('trùng'))
+      );
+
+      let clientOverlapPartner: string | null = null;
+      if (!apiOverlapWarning && existingStops && existingStops.length > 0 && startTime && endTime) {
+        const toMinutes = (timeStr: string) => {
+          const parts = timeStr.split(':').map(Number);
+          return parts[0] * 60 + parts[1];
+        };
+        const s1 = toMinutes(startTime.slice(0, 5));
+        const e1 = toMinutes(endTime.slice(0, 5));
+        if (s1 < e1) {
+          const conflicting = existingStops.find((st) => {
+            if (st.id === item.id || !st.startTime || !st.endTime) return false;
+            const s2 = toMinutes(st.startTime.slice(0, 5));
+            const e2 = toMinutes(st.endTime.slice(0, 5));
+            return Math.max(s1, s2) < Math.min(e1, e2);
+          });
+          if (conflicting) {
+            clientOverlapPartner = conflicting.customStopName || 'Điểm dừng khác';
+          }
+        }
+      }
+
+      const overlapPartnerName = apiOverlapWarning?.message
+        ? apiOverlapWarning.message.replace(/^.*trùng với\s*/i, '').trim() || apiOverlapWarning.message
+        : clientOverlapPartner;
+
+      if (apiOverlapWarning || clientOverlapPartner) {
+        Alert.alert(
+          'Cảnh báo trùng giờ',
+          `Điểm dừng đã lưu, nhưng đang trùng giờ với ${overlapPartnerName}. Bạn có muốn kiểm tra lại không?`,
+          [
+            {
+              text: 'Để nguyên',
+              style: 'default',
+              onPress: () => {
+                setIsEditing(false);
+                onSuccess();
+              },
+            },
+            {
+              text: 'Kiểm tra lại',
+              style: 'cancel',
+              onPress: () => {
+                setIsEditing(true);
+                onSuccess();
+              },
+            },
+          ]
+        );
+      } else {
+        Alert.alert('Thành công', 'Thông tin điểm dừng đã được cập nhật.');
+        setIsEditing(false);
+        onSuccess();
+      }
     } catch (err: any) {
       const status = err?.response?.status;
       if (status === 409) {
@@ -219,6 +281,18 @@ export function StopDetailModal({
                 </View>
 
                 <View style={styles.inputGroup}>
+                  <AppText style={styles.inputLabel}>Chi phí dự kiến (₫)</AppText>
+                  <TextInput
+                    style={styles.textInput}
+                    value={cost}
+                    onChangeText={setCost}
+                    placeholder="VD: 150000"
+                    placeholderTextColor={tokens.colors.textDisabled}
+                    keyboardType="numeric"
+                  />
+                </View>
+
+                <View style={styles.inputGroup}>
                   <AppText style={styles.inputLabel}>Ghi chú cho nhóm (Lưu ý, số vé, nhắc nhở)</AppText>
                   <TextInput
                     style={[styles.textInput, styles.textArea]}
@@ -329,6 +403,9 @@ const styles = StyleSheet.create({
     borderTopRightRadius: tokens.radius.xl,
     maxHeight: '85%',
     paddingBottom: tokens.spacing.xl,
+    width: '100%',
+    maxWidth: 440,
+    alignSelf: 'center',
   },
   modalHeader: {
     flexDirection: 'row',

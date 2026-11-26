@@ -46,6 +46,19 @@ import {
   Ticket,
   Lock,
   ShieldAlert,
+  ChevronUp,
+  ChevronDown,
+  LogOut,
+  Crown,
+  Mail,
+  MailCheck,
+  Pencil,
+  Eye,
+  AlertTriangle,
+  Lightbulb,
+  Vote,
+  Unlock,
+  Loader2,
 } from 'lucide-react';
 import { SkeletonTripsPage, SkeletonTimeline, SkeletonTaskList } from '@/components/common/Skeleton';
 import { GroupMapTab } from '@/features/trip-location/components/GroupMapTab';
@@ -63,11 +76,13 @@ interface ActivityItem {
   category?: string;
   image?: string;
   tips?: string;
+  sortOrder?: number;
   hasTimeOverlap?: boolean;
   overlapWith?: string;
 }
 
 interface DayPlanItem {
+  id?: string;
   dayNumber: number;
   dateStr?: string;
   title: string;
@@ -806,6 +821,11 @@ export default function TripDetailPage() {
 
   const persistTrip = (updatedTrip: TripDetailData) => {
     setTrip(updatedTrip);
+    try {
+      if (tripId && updatedTrip.itineraryDays) {
+        localStorage.setItem(`vista_trip_itinerary_${tripId}`, JSON.stringify(updatedTrip.itineraryDays));
+      }
+    } catch {}
   };
 
   useEffect(() => {
@@ -862,13 +882,30 @@ export default function TripDetailPage() {
       }
 
       try {
-        const [serverTrip, serverMembers, serverProposals] = await Promise.all([
+        const [serverTrip, serverMembers, serverProposals, serverItineraryDays] = await Promise.all([
           apiRequest<any>(`/trips/${tripId}`).catch(() => null),
           apiRequest<any[]>(`/trips/${tripId}/members`).catch(() => []),
           apiRequest<any[]>(`/trips/${tripId}/proposals`).catch(() => []),
+          apiRequest<any[]>(`/trips/${tripId}/itinerary/days`).catch(() => []),
         ]);
 
         if (!serverTrip) {
+          // Tự động đồng bộ thành viên vào backend nếu người dùng vừa nhận lời mời
+          try {
+            const syncRes = await apiRequest<any>('/invitations/sync-membership', {
+              method: 'POST',
+              body: JSON.stringify({ tripId }),
+            }).catch(() => null);
+
+            if (syncRes && syncRes.status === 'SUCCESS') {
+              const retryTrip = await apiRequest<any>(`/trips/${tripId}`).catch(() => null);
+              if (retryTrip) {
+                window.location.reload();
+                return;
+              }
+            }
+          } catch {}
+
           setTripNotFound(true);
           setTripErrorMessage('Không tìm thấy chuyến đi này trong cơ sở dữ liệu (404 Not Found) hoặc bạn không có quyền truy cập (403 Forbidden).');
           setIsLoadingTrip(false);
@@ -917,10 +954,43 @@ export default function TripDetailPage() {
         else if (serverTrip.status === 'CANCELLED') mappedStatus = 'CANCELLED';
         else mappedStatus = 'PLANNING';
 
-        // SSOT: Do NOT inject fake sample itineraries into real database trips
-        const itinerary = Array.isArray(serverTrip.itineraryDays) && serverTrip.itineraryDays.length > 0
-          ? serverTrip.itineraryDays
-          : (isDemoMode ? getSampleItineraryForDestination(dest, serverTrip.startDate) : []);
+        // Map backend itinerary days if available
+        let mappedDays: DayPlanItem[] = [];
+        if (Array.isArray(serverItineraryDays) && serverItineraryDays.length > 0) {
+          mappedDays = serverItineraryDays.map((d: any) => ({
+            id: d.id,
+            dayNumber: d.dayNumber,
+            dateStr: d.tripDate ? d.tripDate.split('-').reverse().join('/') : undefined,
+            title: d.title || `Ngày ${d.dayNumber}`,
+            activities: (d.items || []).map((item: any) => ({
+              id: item.id,
+              timeSlot: item.startTime ? `${item.startTime.slice(0, 5)}${item.endTime ? ` – ${item.endTime.slice(0, 5)}` : ''}` : undefined,
+              timeRange: item.startTime ? `${item.startTime.slice(0, 5)}${item.endTime ? ` – ${item.endTime.slice(0, 5)}` : ''}` : undefined,
+              title: item.customStopName || 'Điểm dừng',
+              description: item.note || '',
+              location: item.location || '',
+              costVnd: item.costVnd || 0,
+              costLabel: item.costVnd ? `${item.costVnd.toLocaleString('vi-VN')}₫` : 'Miễn phí',
+              category: item.category || 'Địa điểm',
+              sortOrder: item.sortOrder,
+            })).sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)),
+          }));
+        }
+
+        let persistedItinerary: DayPlanItem[] | null = null;
+        try {
+          const stored = localStorage.getItem(`vista_trip_itinerary_${tripId}`);
+          if (stored) persistedItinerary = JSON.parse(stored);
+        } catch {}
+
+        // SSOT: Priority: mappedDays > persistedItinerary > serverTrip.itineraryDays > sample
+        const itinerary = mappedDays.length > 0
+          ? mappedDays
+          : (persistedItinerary && persistedItinerary.length > 0)
+            ? persistedItinerary
+            : (Array.isArray(serverTrip.itineraryDays) && serverTrip.itineraryDays.length > 0)
+              ? serverTrip.itineraryDays
+              : (isDemoMode ? getSampleItineraryForDestination(dest, serverTrip.startDate) : []);
 
         setTrip({
           id: String(serverTrip.id),
@@ -962,8 +1032,8 @@ export default function TripDetailPage() {
     };
   }, [tripId, currentUser?.id]);
 
-  // Reorder activities
-  const handleReorderActivity = (dayNum: number, actIdx: number, direction: 'UP' | 'DOWN') => {
+  // Reorder activities (W-01)
+  const handleReorderActivity = async (dayNum: number, actIdx: number, direction: 'UP' | 'DOWN') => {
     if (!trip || !trip.itineraryDays) return;
     const days = [...trip.itineraryDays];
     const dayIndex = days.findIndex((d) => d.dayNumber === dayNum);
@@ -973,14 +1043,43 @@ export default function TripDetailPage() {
     const targetIdx = direction === 'UP' ? actIdx - 1 : actIdx + 1;
     if (targetIdx < 0 || targetIdx >= acts.length) return;
 
+    const previousTrip = trip;
     const temp = acts[actIdx];
     acts[actIdx] = acts[targetIdx];
     acts[targetIdx] = temp;
 
+    // Update sortOrder
+    acts.forEach((act, i) => {
+      act.sortOrder = i;
+    });
+
     days[dayIndex] = { ...days[dayIndex], activities: acts };
     const updated = { ...trip, itineraryDays: days };
     persistTrip(updated);
-    showToast(`✓ Đã đổi thứ tự điểm dừng! Tải lại trang (F5) thứ tự vẫn giữ nguyên.`);
+
+    const dayId = days[dayIndex].id;
+    const isUuidStr = (str?: string) =>
+      Boolean(str && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str));
+
+    if (dayId && isUuidStr(dayId)) {
+      try {
+        const orderedItemIds = acts.map((a) => a.id).filter((id) => isUuidStr(id));
+        if (orderedItemIds.length === acts.length) {
+          await apiRequest(`/itinerary/days/${dayId}/items/reorder`, {
+            method: 'PUT',
+            body: JSON.stringify({ orderedItemIds }),
+          });
+        }
+        showToast('✓ Đã đổi thứ tự điểm dừng! Tải lại trang (F5) thứ tự vẫn giữ nguyên.');
+      } catch (err) {
+        console.error('Lỗi khi đổi thứ tự trạm dừng qua API:', err);
+        // Rollback on error
+        persistTrip(previousTrip);
+        showToast('Không đổi được thứ tự, vui lòng thử lại');
+      }
+    } else {
+      showToast('✓ Đã đổi thứ tự điểm dừng! Tải lại trang (F5) thứ tự vẫn giữ nguyên.');
+    }
   };
 
   // Date validation helper (V-01: Bước 9)
@@ -1394,6 +1493,15 @@ export default function TripDetailPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newInv),
       }).catch(() => {});
+    } catch {}
+
+    try {
+      if (tripId && /^[0-9a-f-]{36}$/i.test(tripId)) {
+        apiRequest(`/trips/${tripId}/invitations`, {
+          method: 'POST',
+          body: JSON.stringify({ inviteeEmail: email }),
+        }).catch(() => {});
+      }
     } catch {}
 
     setCreatedInvitationInfo({
@@ -2737,43 +2845,55 @@ export default function TripDetailPage() {
                                   </span>
 
                                   <div className={styles.stationActions}>
-                                    {/* Nút Reorder: Lên / Xuống (W3-TV3-03, Bước 5) */}
+                                    {/* Nút Reorder: Lên / Xuống (W-01) */}
                                     <div style={{ display: 'inline-flex', alignItems: 'center', background: '#F1F5F9', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '2px', gap: '2px' }}>
                                       <button
                                         type="button"
                                         disabled={actIdx === 0}
                                         onClick={() => handleReorderActivity(dayPlan.dayNumber, actIdx, 'UP')}
                                         style={{
-                                          padding: '4px 7px',
+                                          width: '32px',
+                                          height: '32px',
+                                          minWidth: '32px',
+                                          minHeight: '32px',
+                                          display: 'inline-flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
                                           background: actIdx === 0 ? 'transparent' : '#FFFFFF',
                                           color: actIdx === 0 ? '#CBD5E1' : '#0F172A',
                                           border: 'none',
                                           borderRadius: '6px',
                                           cursor: actIdx === 0 ? 'not-allowed' : 'pointer',
-                                          fontSize: '11px',
-                                          fontWeight: 800,
+                                          opacity: actIdx === 0 ? 0.35 : 1,
                                         }}
-                                        title="Chuyển điểm dừng lên trước"
+                                        title="Lên"
+                                        aria-label="Lên"
                                       >
-                                        ▲
+                                        <ChevronUp size={16} />
                                       </button>
                                       <button
                                         type="button"
                                         disabled={isLast}
                                         onClick={() => handleReorderActivity(dayPlan.dayNumber, actIdx, 'DOWN')}
                                         style={{
-                                          padding: '4px 7px',
+                                          width: '32px',
+                                          height: '32px',
+                                          minWidth: '32px',
+                                          minHeight: '32px',
+                                          display: 'inline-flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
                                           background: isLast ? 'transparent' : '#FFFFFF',
                                           color: isLast ? '#CBD5E1' : '#0F172A',
                                           border: 'none',
                                           borderRadius: '6px',
                                           cursor: isLast ? 'not-allowed' : 'pointer',
-                                          fontSize: '11px',
-                                          fontWeight: 800,
+                                          opacity: isLast ? 0.35 : 1,
                                         }}
-                                        title="Chuyển điểm dừng xuống sau"
+                                        title="Xuống"
+                                        aria-label="Xuống"
                                       >
-                                        ▼
+                                        <ChevronDown size={16} />
                                       </button>
                                     </div>
 
@@ -2796,7 +2916,8 @@ export default function TripDetailPage() {
                                       }}
                                       title="Chỉnh sửa tên, giờ hoặc chuyển sang ngày khác (F5 giữ nguyên)"
                                     >
-                                      <span>✏️ Sửa</span>
+                                      <Pencil size={14} />
+                                      <span>Sửa</span>
                                     </button>
 
                                     <button
@@ -2817,7 +2938,8 @@ export default function TripDetailPage() {
                                       }}
                                       title="Bấm để xem chi tiết địa điểm này"
                                     >
-                                      <span>🔍 Xem chi tiết</span>
+                                      <Eye size={14} />
+                                      <span>Xem chi tiết</span>
                                     </button>
 
                                     <Link
@@ -2836,7 +2958,7 @@ export default function TripDetailPage() {
                                       style={!isTripMember ? { opacity: 0.75, cursor: 'not-allowed' } : undefined}
                                     >
                                       <Check size={13} />
-                                      <span>{isDone ? 'Đã vi vu 🌸' : 'Check-in'}</span>
+                                      <span>{isDone ? 'Đã đến' : 'Check-in'}</span>
                                     </button>
 
                                     <button
@@ -2975,7 +3097,8 @@ export default function TripDetailPage() {
                     }}
                     title="Rời khỏi chuyến đi này"
                   >
-                    <span>🚪 Rời nhóm</span>
+                    <LogOut size={16} />
+                    <span>Rời nhóm</span>
                   </button>
                 )}
               </div>
@@ -3033,7 +3156,8 @@ export default function TripDetailPage() {
                             }}
                             title={`Chuyển quyền trưởng nhóm cho ${name}`}
                           >
-                            <span>👑 Chuyển quyền</span>
+                            <Crown size={14} />
+                            <span>Chuyển quyền</span>
                           </button>
                         )}
                       </div>
@@ -3106,8 +3230,9 @@ export default function TripDetailPage() {
               <div className={styles.invitationListCard}>
                 <div className={styles.invitationListHeader}>
                   <div className={styles.invitationHeaderTitleRow}>
-                    <h4 style={{ fontSize: '16px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
-                      ✉️ Danh sách lời mời đã phát hành
+                    <h4 style={{ fontSize: '16px', fontWeight: 800, color: '#0F172A', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Mail size={16} />
+                      <span>Danh sách lời mời đã phát hành</span>
                     </h4>
                     <span className={styles.invitationCountBadge}>
                       {invitationsList.length} lời mời
@@ -3199,8 +3324,9 @@ export default function TripDetailPage() {
                               </a>
                               <span style={{ fontSize: '12px', color: '#64748B' }}>Hạn: {inv.expiresAt}</span>
                               {(inv.emailSent || inv.status === 'PENDING') && (
-                                <span style={{ fontSize: '11px', color: '#166534', background: '#DCFCE7', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>
-                                  ✉️ Đã gửi thư tự động
+                                <span style={{ fontSize: '11px', color: '#166534', background: '#DCFCE7', padding: '1px 6px', borderRadius: '4px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                  <MailCheck size={13} />
+                                  <span>Đã gửi thư tự động</span>
                                 </span>
                               )}
                             </div>
@@ -3244,7 +3370,8 @@ export default function TripDetailPage() {
                               }}
                               title="Sao chép link mời để gửi qua Zalo / Facebook Messenger"
                             >
-                              <span>📋 Sao chép link</span>
+                              <Copy size={14} />
+                              <span>Sao chép link</span>
                             </button>
 
                             {/* Nút Gửi lại email tự động qua Google SMTP */}
@@ -3268,7 +3395,12 @@ export default function TripDetailPage() {
                                 }}
                                 title={`Tự động gửi lại email mời trực tiếp tới ${inv.email}`}
                               >
-                                <span>{isResendingEmail === inv.token ? '⏳ Đang gửi...' : '🔄 Gửi lại email'}</span>
+                                {isResendingEmail === inv.token ? (
+                                  <Loader2 size={14} className="animate-spin" />
+                                ) : (
+                                  <Mail size={14} />
+                                )}
+                                <span>{isResendingEmail === inv.token ? 'Đang gửi...' : 'Gửi lại email'}</span>
                               </button>
                             )}
 
@@ -3594,7 +3726,8 @@ export default function TripDetailPage() {
                     }}
                     title="Đóng / mở biểu quyết"
                   >
-                    <span>{isVotingClosed ? '🔓 Mở lại biểu quyết' : '🔒 Đóng biểu quyết (Chỉ Owner)'}</span>
+                    {isVotingClosed ? <Unlock size={15} /> : <Lock size={15} />}
+                    <span>{isVotingClosed ? 'Mở lại biểu quyết' : 'Đóng biểu quyết (Chỉ Owner)'}</span>
                   </button>
                 )}
               </div>
@@ -3622,8 +3755,9 @@ export default function TripDetailPage() {
                       {prop.category}
                     </span>
                     {isVotingClosed && (
-                      <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>
-                        🔒 Đã khóa kết quả
+                      <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <Lock size={12} />
+                        <span>Đã khóa kết quả</span>
                       </span>
                     )}
                   </div>
@@ -3912,8 +4046,9 @@ export default function TripDetailPage() {
                       <span style={{ fontSize: '12px', color: '#64748B' }}>{role}</span>
                     </div>
                     {idx === 0 && (
-                      <span style={{ fontSize: '11.5px', background: '#FEF3C7', color: '#B45309', fontWeight: 700, padding: '3px 8px', borderRadius: '6px' }}>
-                        👑 Trưởng nhóm
+                      <span style={{ fontSize: '11.5px', background: '#FEF3C7', color: '#B45309', fontWeight: 700, padding: '3px 8px', borderRadius: '6px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <Crown size={13} />
+                        <span>Trưởng nhóm</span>
                       </span>
                     )}
                   </div>
@@ -4264,8 +4399,9 @@ export default function TripDetailPage() {
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
               <div>
-                <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
-                  ✏️ Sửa điểm dừng lịch trình
+                <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Pencil size={18} style={{ color: '#0284C7' }} />
+                  <span>Sửa điểm dừng lịch trình</span>
                 </h3>
                 <span style={{ fontSize: '12px', color: '#64748B' }}>
                   Hiện đang ở Ngày {editingStop.dayNumber}
@@ -4675,8 +4811,18 @@ export default function TripDetailPage() {
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
               <div>
-                <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
-                  {createdInvitationInfo ? '🎉 Lời mời đã được gửi tự động!' : '✉️ Phát hành & Gửi lời mời trực tiếp'}
+                <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  {createdInvitationInfo ? (
+                    <>
+                      <Sparkles size={20} style={{ color: '#16A34A' }} />
+                      <span>Lời mời đã được gửi tự động!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Mail size={20} style={{ color: '#0284C7' }} />
+                      <span>Phát hành & Gửi lời mời trực tiếp</span>
+                    </>
+                  )}
                 </h3>
               </div>
               <button
@@ -4707,7 +4853,7 @@ export default function TripDetailPage() {
               <div>
                 <div style={{ background: '#F0FDF4', border: '1.5px solid #86EFAC', borderRadius: '16px', padding: '16px 18px', marginBottom: '18px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-                    <span style={{ fontSize: '22px' }}>✅</span>
+                    <CheckCircle2 size={22} style={{ color: '#16A34A', flexShrink: 0 }} />
                     <div>
                       <strong style={{ fontSize: '15px', color: '#15803D', display: 'block' }}>
                         Đã tự động gửi thư mời đến: {createdInvitationInfo.email}
@@ -4794,37 +4940,18 @@ export default function TripDetailPage() {
                         gap: '4px',
                       }}
                     >
-                      <span>{isResendingEmail === createdInvitationInfo.token ? '⏳ Đang gửi...' : '🔄 Gửi lại email'}</span>
+                      {isResendingEmail === createdInvitationInfo.token ? (
+                        <Loader2 size={13} className="animate-spin" />
+                      ) : (
+                        <Mail size={13} />
+                      )}
+                      <span>{isResendingEmail === createdInvitationInfo.token ? 'Đang gửi...' : 'Gửi lại email'}</span>
                     </button>
                   </div>
                 </div>
 
-                {/* THÔNG BÁO CHUYỂN PHÁT THẬT QUA SMTP HOẶC HƯỚNG DẪN */}
-                {createdInvitationInfo.deliveryMode === 'SMTP_TRANSPORT' ? (
-                  <div style={{ marginBottom: '20px', padding: '14px', background: '#F0FDF4', borderRadius: '14px', border: '1.5px solid #86EFAC' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                      <span style={{ fontSize: '18px' }}>🚀</span>
-                      <strong style={{ fontSize: '13.5px', color: '#15803D' }}>
-                        Đã tự động gửi email THẬT qua Google SMTP thành công!
-                      </strong>
-                    </div>
-                    <p style={{ margin: '0 0 8px 0', fontSize: '12px', color: '#166534', lineHeight: '1.5' }}>
-                      Email thư mời chính thức đã bay thẳng vào hộp thư đến của <strong>{createdInvitationInfo.email}</strong> qua máy chủ Google. Người nhận chỉ cần mở hòm thư của họ và bấm nhận lời mời!
-                    </p>
-                    <a
-                      href={getGmailComposeUrl(createdInvitationInfo.email, createdInvitationInfo.token)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        fontSize: '11.5px',
-                        color: '#15803D',
-                        textDecoration: 'underline',
-                      }}
-                    >
-                      Mở ứng dụng Gmail xem lại thư hoặc gửi dự phòng nếu cần ↗
-                    </a>
-                  </div>
-                ) : (
+                {/* THÔNG BÁO HƯỚNG DẪN DỰ PHÒNG CHO LOCALHOST (NẾU CHƯA CÓ SMTP) */}
+                {createdInvitationInfo.deliveryMode !== 'SMTP_TRANSPORT' && (
                   <div style={{ marginBottom: '20px', padding: '14px', background: '#FFF7ED', borderRadius: '14px', border: '1.5px solid #FFEDD5' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                       <span style={{ fontSize: '16px' }}>⚡</span>
@@ -4857,7 +4984,8 @@ export default function TripDetailPage() {
                         marginBottom: '8px',
                       }}
                     >
-                      <span>✉️ Bấm để gửi thư thật vào Gmail ngay (Soạn sẵn 100%) ↗</span>
+                      <Mail size={16} />
+                      <span>Bấm để gửi thư thật vào Gmail ngay (Soạn sẵn 100%) ↗</span>
                     </a>
 
                     <p style={{ margin: 0, fontSize: '11px', color: '#9A3412', textAlign: 'center', lineHeight: '1.4' }}>
@@ -4998,7 +5126,17 @@ export default function TripDetailPage() {
                       gap: '8px',
                     }}
                   >
-                    {isSendingInviteEmail ? '⏳ Đang tự động gửi email...' : '✉️ Phát hành & Tự động gửi thư mời'}
+                    {isSendingInviteEmail ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin" />
+                        <span>Đang tự động gửi email...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Mail size={16} />
+                        <span>Phát hành & Tự động gửi thư mời</span>
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
@@ -5039,8 +5177,9 @@ export default function TripDetailPage() {
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
               <div>
-                <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
-                  🗳️ Thêm đề xuất biểu quyết nhóm
+                <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Vote size={20} style={{ color: '#0284C7' }} />
+                  <span>Thêm đề xuất biểu quyết nhóm</span>
                 </h3>
               </div>
               <button

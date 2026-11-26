@@ -117,6 +117,15 @@ export default function InvitationAcceptPage() {
       setStatusMessage(`🎉 Chúc mừng ${cleanName}! Bạn đã được thêm vào cơ sở dữ liệu chuyến đi với vai trò Thành viên (MEMBER).`);
 
       const targetTripId = response?.tripId || invitationData?.tripId;
+      if (targetTripId && /^[0-9a-f-]{36}$/i.test(targetTripId)) {
+        try {
+          await apiRequest('/invitations/sync-membership', {
+            method: 'POST',
+            body: JSON.stringify({ tripId: targetTripId }),
+          });
+        } catch {}
+      }
+
       if (targetTripId) {
         setTimeout(() => {
           router.push(`/trips/${targetTripId}?tab=members`);

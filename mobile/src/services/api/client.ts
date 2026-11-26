@@ -1,4 +1,4 @@
-import axios, { create, isAxiosError, AxiosError, InternalAxiosRequestConfig } from 'axios';
+import axios, { create, isAxiosError, AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { authStorage } from '../auth/authStorage';
@@ -49,11 +49,11 @@ export const storage = {
 };
 
 const defaultBaseUrl =
-  Platform.OS === 'android' ? 'http://10.0.2.2:8081/api/v1' : 'http://localhost:8081/api/v1';
+  Platform.OS === 'android' ? 'http://10.0.2.2:8080/api/v1' : 'http://localhost:8080/api/v1';
 
 export const api = create({
   baseURL: process.env.EXPO_PUBLIC_API_URL ?? defaultBaseUrl,
-  timeout: 10_000,
+  timeout: 15_000,
   headers: { Accept: 'application/json' },
 });
 
@@ -98,7 +98,8 @@ api.interceptors.response.use(
     const isAuthUrl =
       originalRequest.url?.includes('/auth/login') ||
       originalRequest.url?.includes('/auth/register') ||
-      originalRequest.url?.includes('/auth/refresh');
+      originalRequest.url?.includes('/auth/refresh') ||
+      originalRequest.url?.includes('/auth/refresh-token');
 
     // Chỉ tự động refresh khi gặp HTTP 401 trên các API nghiệp vụ
     if (status === 401 && !originalRequest._retry && !isAuthUrl) {
@@ -161,21 +162,31 @@ api.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export function apiErrorMessage(reason: unknown) {
   if (isAxiosError(reason)) {
-    const data = reason.response?.data as { detail?: string; message?: string } | undefined;
-    return (
-      data?.detail ??
-      data?.message ??
-      (reason.code === 'ECONNABORTED'
-        ? 'Máy chủ phản hồi quá lâu.'
-        : reason.code === 'ERR_NETWORK' || reason.message?.includes('Network Error')
-        ? 'Không thể kết nối máy chủ VISTA. Vui lòng kiểm tra kết nối mạng và đảm bảo máy chủ backend đang chạy.'
-        : 'Không thể kết nối máy chủ.')
-    );
+    const data = reason.response?.data as { detail?: string; title?: string; message?: string } | undefined;
+    if (data?.detail) return data.detail;
+    if (data?.message) return data.message;
+    if (data?.title) return data.title;
+
+    const status = reason.response?.status;
+    if (status === 401) return 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+    if (status === 403) return 'Bạn không có quyền thực hiện thao tác này.';
+    if (status === 404) return 'Không tìm thấy dữ liệu yêu cầu.';
+    if (status === 409) return 'Dữ liệu bị xung đột hoặc thao tác đã được xử lý.';
+    if (status && status >= 500) return 'Hệ thống máy chủ đang bận. Vui lòng thử lại sau.';
+
+    return reason.code === 'ECONNABORTED'
+      ? 'Máy chủ phản hồi quá lâu (quá thời gian chờ).'
+      : reason.code === 'ERR_NETWORK' || reason.message?.includes('Network Error')
+      ? 'Không thể kết nối máy chủ VISTA. Vui lòng kiểm tra kết nối mạng và đảm bảo máy chủ backend đang chạy.'
+      : 'Không thể kết nối máy chủ. Kiểm tra địa chỉ API và kết nối mạng.';
+  }
+  if (reason instanceof Error) {
+    return reason.message;
   }
   return 'Đã xảy ra lỗi không xác định.';
 }

@@ -224,7 +224,8 @@ class InvitationControllerTest {
             null,
             null);
 
-    when(invitationService.acceptInvitation(eq(RAW_TOKEN), eq(MEMBER_ID), any())).thenReturn(accepted);
+    when(invitationService.acceptInvitation(eq(RAW_TOKEN), eq(MEMBER_ID), any()))
+        .thenReturn(accepted);
 
     mockMvc
         .perform(post("/api/v1/invitations/{token}/accept", RAW_TOKEN))
@@ -259,7 +260,8 @@ class InvitationControllerTest {
             null,
             null);
 
-    when(invitationService.declineInvitation(eq(RAW_TOKEN), eq(MEMBER_ID), any())).thenReturn(declined);
+    when(invitationService.declineInvitation(eq(RAW_TOKEN), eq(MEMBER_ID), any()))
+        .thenReturn(declined);
 
     mockMvc
         .perform(post("/api/v1/invitations/{token}/decline", RAW_TOKEN))
