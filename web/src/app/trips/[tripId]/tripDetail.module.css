@@ -2029,5 +2029,37 @@
   padding: 0 4px;
 }
 
+.invitationStatusBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.invitationStatusPending {
+  background: #FFFBEB;
+  color: #B45300;
+}
+
+.invitationStatusAccepted {
+  background: #ECFDF5;
+  color: #047857;
+}
+
+.invitationStatusRevoked {
+  background: #FEF2F2;
+  color: #DC2626;
+}
+
+.invitationStatusDeclined {
+  background: #F1F5F9;
+  color: #64748B;
+}
+
+
 
 

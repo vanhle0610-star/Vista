@@ -3553,14 +3553,17 @@ export default function TripDetailPage() {
                           </div>
 
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                            <span style={{
-                              fontSize: '11.5px',
-                              fontWeight: 800,
-                              padding: '3px 8px',
-                              borderRadius: '999px',
-                              background: inv.status === 'PENDING' ? '#DCFCE7' : inv.status === 'REVOKED' ? '#FEE2E2' : '#F1F5F9',
-                              color: inv.status === 'PENDING' ? '#15803D' : inv.status === 'REVOKED' ? '#991B1B' : '#475569',
-                            }}>
+                            <span
+                              className={`${styles.invitationStatusBadge} ${
+                                inv.status === 'PENDING'
+                                  ? styles.invitationStatusPending
+                                  : inv.status === 'ACCEPTED'
+                                    ? styles.invitationStatusAccepted
+                                    : inv.status === 'REVOKED'
+                                      ? styles.invitationStatusRevoked
+                                      : styles.invitationStatusDeclined
+                              }`}
+                            >
                               {inv.status}
                             </span>
 
