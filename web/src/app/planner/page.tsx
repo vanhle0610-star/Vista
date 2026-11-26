@@ -28,6 +28,7 @@ import {
   mergeTripItinerary,
   type MergeItineraryDay,
 } from '@/services/itineraryService';
+import { calculateIntercityTransit } from '@/lib/intercityTransit';
 import { fetchLiveWeatherByCoords, type RealtimeWeather } from '@/services/weatherService';
 import styles from './planner.module.css';
 import {
@@ -67,6 +68,7 @@ import {
   Bike,
   Footprints,
   SlidersHorizontal,
+  Users,
 } from 'lucide-react';
 import { PlannerSetupView, type CuratedTemplateItem } from './components/PlannerSetupView';
 import {
@@ -1147,6 +1149,8 @@ export default function PlannerPage() {
 
   // Preference Form Inputs
   const [destination, setDestination] = useState<string>('Hà Nội');
+  const [originProvince, setOriginProvince] = useState<string>('TP. Hồ Chí Minh');
+  const [intercityTransport, setIntercityTransport] = useState<string>('flight');
   const [planWarnings, setPlanWarnings] = useState<string[]>([]);
 
   const changeDestination = (newDest: string) => {
@@ -2751,17 +2755,22 @@ export default function PlannerPage() {
     const totalActivities = totalActPerPerson * count;
 
     // 2. Dining & Food (ăn uống đặc sản theo ngày)
-    // economy: 180k/người/ngày, standard: 350k/người/ngày, luxury: 750k/người/ngày
+    // economy/budget: 200k/người/ngày, standard: 350k/người/ngày, luxury: 750k/người/ngày
+    const isBudgetTierSaving = budgetTier === 'economy' || budgetTier === 'budget';
+    const isBudgetTierLuxury = budgetTier === 'luxury';
     const defaultDiningPerPersonDay =
-      budgetTier === 'economy' ? 180000 : budgetTier === 'luxury' ? 750000 : 350000;
+      isBudgetTierSaving ? 200000 : isBudgetTierLuxury ? 750000 : 350000;
     const diningPerPersonDay = customBudgetRates.diningPerPersonDay ?? defaultDiningPerPersonDay;
     const totalDining = diningPerPersonDay * count * daysCount;
 
     // 3. Lodging (Khách sạn / Homestay) - Quy chuẩn 2 người / phòng đôi
     const defaultRoomsNeeded = Math.ceil(count / 2);
     const roomsNeeded = Math.max(1, customBudgetRates.roomsNeeded ?? defaultRoomsNeeded);
+    // Tiết kiệm: 600.000đ/phòng/đêm (Homestay/khách sạn 2 sao tiện nghi)
+    // Tiêu chuẩn: 850.000đ/phòng/đêm (Khách sạn 3-4 sao)
+    // Cao cấp: 2.200.000đ/phòng/đêm (Resort 4-5 sao)
     const defaultRoomRatePerNight =
-      budgetTier === 'economy' ? 450000 : budgetTier === 'luxury' ? 2200000 : 850000;
+      isBudgetTierSaving ? 600000 : isBudgetTierLuxury ? 2200000 : 850000;
     const roomRatePerNight = customBudgetRates.roomRatePerNight ?? defaultRoomRatePerNight;
     const totalLodging = roomsNeeded * roomRatePerNight * nights;
 
@@ -2801,26 +2810,18 @@ export default function PlannerPage() {
     const perPersonMin = Math.round(minFluctuation / count);
     const perPersonMax = Math.round(maxFluctuation / count);
 
-    // Intercity transit estimate (từ tỉnh thành khác đến điểm đến)
-    const isNorthMountain = ['sa pa', 'sapa', 'hà giang', 'mộc châu', 'tam đảo', 'mai châu'].some((p) =>
-      destination.toLowerCase().includes(p)
-    );
-    const isIslandOrFar = ['phú quốc', 'côn đảo', 'nha trang', 'đà lạt', 'đà nẵng', 'quy nhơn'].some((p) =>
-      destination.toLowerCase().includes(p)
+    // Intercity transit estimate chính xác theo tuyến & mùa cao điểm/thấp điểm (TV4)
+    const transitInfo = calculateIntercityTransit(
+      originProvince,
+      destination,
+      intercityTransport,
+      startDate,
+      count
     );
 
-    let intercityType = 'Xe khách giường nằm khứ hồi';
-    let intercityMinPerPerson = 560000;
-    let intercityMaxPerPerson = 850000;
-    if (isIslandOrFar) {
-      intercityType = 'Vé máy bay khứ hồi (ước tính hạng phổ thông)';
-      intercityMinPerPerson = 1800000;
-      intercityMaxPerPerson = 3600000;
-    } else if (isNorthMountain) {
-      intercityType = 'Xe khách Cabin VIP / Limousine 2 chiều';
-      intercityMinPerPerson = 600000;
-      intercityMaxPerPerson = 950000;
-    }
+    let intercityType = transitInfo.transportName;
+    let intercityMinPerPerson = transitInfo.actualFarePerPerson;
+    let intercityMaxPerPerson = Math.round(transitInfo.actualFarePerPerson * 1.15);
 
     return {
       count,
@@ -3733,6 +3734,8 @@ export default function PlannerPage() {
       const [data] = await Promise.all([
         requestAiItinerary({
           destinationProvince: destination,
+          originProvince,
+          intercityTransportMode: intercityTransport,
           totalDays: daysCount,
           budgetLevel: budgetLevelApi,
           interests: wishesText.trim()
@@ -5113,14 +5116,21 @@ export default function PlannerPage() {
         <PlannerSetupView
           destination={destination}
           onChangeDestination={(dest) => changeDestination(dest)}
+          originProvince={originProvince}
+          onChangeOriginProvince={(orig) => setOriginProvince(orig)}
+          intercityTransport={intercityTransport}
+          onChangeIntercityTransport={(mode) => setIntercityTransport(mode)}
           startDate={startDate}
           onChangeStartDate={(date) => setStartDate(date)}
           duration={duration}
           onChangeDuration={(dur) => setDuration(dur)}
           peopleCount={peopleCount}
           onChangePeopleCount={(count) => setPeopleCount(count)}
-          budgetTier={budgetTier === 'budget' ? 'BUDGET' : budgetTier === 'luxury' ? 'LUXURY' : 'STANDARD'}
-          onChangeBudgetTier={(tier) => setBudgetTier(tier.toLowerCase() as any)}
+          budgetTier={budgetTier === 'budget' || budgetTier === 'economy' ? 'BUDGET' : budgetTier === 'luxury' ? 'LUXURY' : 'STANDARD'}
+          onChangeBudgetTier={(tier) => {
+            const mapped = tier === 'BUDGET' ? 'economy' : tier === 'LUXURY' ? 'luxury' : 'standard';
+            setBudgetTier(mapped);
+          }}
           travelPace={activePace}
           onChangeTravelPace={(pace) => setActivePace(pace)}
           selectedStyles={selectedStyles}
@@ -5393,6 +5403,32 @@ export default function PlannerPage() {
                   >
                     <Bookmark size={15} />
                     <span>Lưu</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '7px 12px',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      border: '1px solid #0088CC',
+                      background: '#F0F9FF',
+                      color: '#0088CC',
+                      transition: 'all 0.15s ease',
+                    }}
+                    onClick={() => {
+                      setNewTripTitle(`Chuyến đi ${destination} ${daysCount} ngày`);
+                      setShowCreateTripModal(true);
+                    }}
+                    title="Lưu lịch trình AI này thành Chuyến đi nhóm thực tế trên hệ thống"
+                  >
+                    <Users size={15} color="#0088CC" />
+                    <span>Tạo chuyến đi</span>
                   </button>
 
                   <button
@@ -5864,49 +5900,54 @@ export default function PlannerPage() {
                       </div>
                     )}
 
-                    {/* Warnings if any */}
+                    {/* Warnings / Smart Advisories */}
                     {planWarnings && planWarnings.length > 0 && (
                       <div style={{ marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        {planWarnings.map((w, idx) => (
-                          <div
-                            key={idx}
-                            style={{
-                              padding: '10px 14px',
-                              borderRadius: '12px',
-                              background: 'linear-gradient(90deg, #FFF1F2 0%, #FEF2F2 100%)',
-                              border: '1px solid #FECDD3',
-                              borderLeft: '3.5px solid #F43F5E',
-                              boxShadow: '0 2px 8px rgba(244, 63, 94, 0.06)',
-                              color: '#9F1239',
-                              fontSize: '12.5px',
-                              fontWeight: 500,
-                              lineHeight: 1.45,
-                              display: 'flex',
-                              alignItems: 'flex-start',
-                              gap: '10px',
-                            }}
-                          >
-                            <span
+                        {planWarnings.map((w, idx) => {
+                          const isTip = w.includes('Gợi ý') || w.includes('Mẹo') || w.includes('💡') || w.includes('tối ưu');
+                          return (
+                            <div
+                              key={idx}
                               style={{
-                                width: '22px',
-                                height: '22px',
-                                borderRadius: '7px',
-                                background: '#FFE4E6',
-                                color: '#E11D48',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: '12px',
-                                fontWeight: 800,
-                                flexShrink: 0,
-                                marginTop: '1px',
+                                padding: '10px 14px',
+                                borderRadius: '12px',
+                                background: isTip
+                                  ? 'linear-gradient(90deg, #F0F9FF 0%, #F8FAFC 100%)'
+                                  : 'linear-gradient(90deg, #FFFBEB 0%, #FEF3C7 100%)',
+                                border: isTip ? '1px solid #BAE6FD' : '1px solid #FDE68A',
+                                borderLeft: isTip ? '3.5px solid #0284C7' : '3.5px solid #D97706',
+                                boxShadow: '0 2px 8px rgba(2, 132, 199, 0.05)',
+                                color: isTip ? '#0369A1' : '#92400E',
+                                fontSize: '12.5px',
+                                fontWeight: 500,
+                                lineHeight: 1.45,
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                gap: '10px',
                               }}
                             >
-                              !
-                            </span>
-                            <span>{w}</span>
-                          </div>
-                        ))}
+                              <span
+                                style={{
+                                  width: '22px',
+                                  height: '22px',
+                                  borderRadius: '7px',
+                                  background: isTip ? '#E0F2FE' : '#FEF3C7',
+                                  color: isTip ? '#0284C7' : '#D97706',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontSize: '12px',
+                                  fontWeight: 800,
+                                  flexShrink: 0,
+                                  marginTop: '1px',
+                                }}
+                              >
+                                {isTip ? '💡' : 'ℹ️'}
+                              </span>
+                              <span>{w}</span>
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
 
@@ -7103,7 +7144,7 @@ export default function PlannerPage() {
                       <div style={{ background: '#FAFBFC', border: '1px solid #E2EAF0', borderRadius: '10px', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
                           <strong style={{ fontSize: '13.5px', color: '#142D4E' }}>
-                            ✈️ Phương tiện khứ hồi liên tỉnh (Đến {destination})
+                            ✈️ Phương tiện khứ hồi liên tỉnh ({originProvince} ➔ {destination})
                           </strong>
                           <span style={{ fontSize: '13px', fontWeight: 700, color: '#0284C7', whiteSpace: 'nowrap' }}>
                             {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.intercityMinGroup)}đ – {new Intl.NumberFormat('vi-VN').format(budgetBreakdown.intercityMaxGroup)}đ
@@ -8076,26 +8117,32 @@ export default function PlannerPage() {
               <div>
                 <label className={styles.fieldLabel}>Mức chi tiêu</label>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-                  {(['budget', 'standard', 'luxury'] as const).map((tier) => (
-                    <button
-                      key={tier}
-                      type="button"
-                      onClick={() => setBudgetTier(tier)}
-                      style={{
-                        padding: '8px 4px',
-                        borderRadius: '8px',
-                        border: budgetTier === tier ? '2px solid #0088CC' : '1px solid #CBD5E1',
-                        background: budgetTier === tier ? '#F0F9FF' : '#FFFFFF',
-                        color: budgetTier === tier ? '#0088CC' : '#334155',
-                        fontWeight: budgetTier === tier ? 700 : 500,
-                        fontSize: '12px',
-                        cursor: 'pointer',
-                        textAlign: 'center',
-                      }}
-                    >
-                      {tier === 'budget' ? 'Tiết kiệm' : tier === 'luxury' ? 'Cao cấp' : 'Tiêu chuẩn'}
-                    </button>
-                  ))}
+                  {(['economy', 'standard', 'luxury'] as const).map((tier) => {
+                    const isSelected =
+                      (tier === 'economy' && (budgetTier === 'economy' || budgetTier === 'budget')) ||
+                      (tier === 'standard' && budgetTier === 'standard') ||
+                      (tier === 'luxury' && budgetTier === 'luxury');
+                    return (
+                      <button
+                        key={tier}
+                        type="button"
+                        onClick={() => setBudgetTier(tier)}
+                        style={{
+                          padding: '8px 4px',
+                          borderRadius: '8px',
+                          border: isSelected ? '2px solid #0088CC' : '1px solid #CBD5E1',
+                          background: isSelected ? '#F0F9FF' : '#FFFFFF',
+                          color: isSelected ? '#0088CC' : '#334155',
+                          fontWeight: isSelected ? 700 : 500,
+                          fontSize: '12px',
+                          cursor: 'pointer',
+                          textAlign: 'center',
+                        }}
+                      >
+                        {tier === 'economy' ? 'Tiết kiệm' : tier === 'luxury' ? 'Cao cấp' : 'Tiêu chuẩn'}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 

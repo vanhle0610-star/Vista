@@ -63,7 +63,16 @@ export async function DELETE(request: NextRequest) {
       },
     });
 
-    return new NextResponse(null, { status: res.status });
+    if (res.status === 204) {
+      return new NextResponse(null, { status: 204 });
+    }
+    const contentType = res.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      const data = await res.json();
+      return NextResponse.json(data, { status: res.status });
+    }
+    const text = await res.text();
+    return new NextResponse(text, { status: res.status });
   } catch (error: any) {
     return NextResponse.json({ message: 'Không thể kết nối Backend', error: error.message }, { status: 502 });
   }

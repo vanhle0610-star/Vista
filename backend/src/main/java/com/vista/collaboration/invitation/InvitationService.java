@@ -493,4 +493,93 @@ public class InvitationService {
       throw new IllegalStateException("SHA-256 không khả dụng", e);
     }
   }
+
+  /**
+   * Gia nhập chuyến đi trực tiếp qua Invite Code (ví dụ: VISTA-3BEB6E hoặc VISTA-DN2026 hoặc mã 6
+   * ký tự). Khớp với đuôi ID của Trip (hoặc mã trip mẫu).
+   */
+  public Map<String, Object> joinByInviteCode(String inviteCode, UUID userId) {
+    if (inviteCode == null || inviteCode.isBlank()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã mời không được để trống");
+    }
+
+    String clean = inviteCode.trim().toUpperCase();
+    if (clean.startsWith("VISTA-")) {
+      clean = clean.substring(6);
+    }
+
+    // 1. Kiểm tra nếu mã khớp với token lời mời thông thường (rawToken)
+    try {
+      InvitationResponse invRes = acceptInvitation(inviteCode.trim(), userId);
+      return Map.of(
+          "status", "SUCCESS",
+          "tripId", invRes.tripId().toString(),
+          "message", "Gia nhập thành công qua mã lời mời!");
+    } catch (Exception ignored) {
+      // Tiếp tục tìm theo Trip Code
+    }
+
+    // 2. Tìm trip có ID kết thúc bằng 6 ký tự mã mời (không phân biệt gạch nối)
+    List<TripEntity> allTrips = tripRepository.findAll();
+    final String targetSuffix = clean.replace("-", "");
+
+    TripEntity matchedTrip = null;
+    for (TripEntity t : allTrips) {
+      String cleanTripId = t.getId().toString().replace("-", "").toUpperCase();
+      if (cleanTripId.endsWith(targetSuffix) || cleanTripId.equals(targetSuffix)) {
+        matchedTrip = t;
+        break;
+      }
+    }
+
+    // 3. Hỗ trợ mã chuyến đi mẫu mặc định: DN2026, HG2026, PQ2026
+    if (matchedTrip == null) {
+      if ("DN2026".equalsIgnoreCase(targetSuffix)) {
+        matchedTrip =
+            allTrips.stream()
+                .filter(
+                    t ->
+                        t.getDestinationSummary() != null
+                            && t.getDestinationSummary().contains("Đà Nẵng"))
+                .findFirst()
+                .orElse(null);
+      } else if ("HG2026".equalsIgnoreCase(targetSuffix)) {
+        matchedTrip =
+            allTrips.stream()
+                .filter(
+                    t ->
+                        t.getDestinationSummary() != null
+                            && t.getDestinationSummary().contains("Hà Giang"))
+                .findFirst()
+                .orElse(null);
+      } else if ("PQ2026".equalsIgnoreCase(targetSuffix)) {
+        matchedTrip =
+            allTrips.stream()
+                .filter(
+                    t ->
+                        t.getDestinationSummary() != null
+                            && t.getDestinationSummary().contains("Phú Quốc"))
+                .findFirst()
+                .orElse(null);
+      }
+    }
+
+    if (matchedTrip == null) {
+      throw new ResponseStatusException(
+          HttpStatus.NOT_FOUND, "Mã mời '" + inviteCode + "' không tồn tại hoặc không hợp lệ");
+    }
+
+    // Thêm user vào trip_members
+    addTripMember(matchedTrip.getId(), userId);
+
+    return Map.of(
+        "status",
+        "SUCCESS",
+        "tripId",
+        matchedTrip.getId().toString(),
+        "tripTitle",
+        matchedTrip.getTitle() != null ? matchedTrip.getTitle() : "Chuyến đi VISTA",
+        "message",
+        "Gia nhập thành công chuyến đi!");
+  }
 }

@@ -119,7 +119,7 @@ public class TripService {
     return TripResponse.from(tripRepository.save(trip));
   }
 
-  /** Xóa trip — chỉ owner mới được phép và không còn công nợ chưa quyết toán. */
+  /** Xóa trip — chỉ owner mới được phép, chặn xóa khi còn công nợ (TV4/TV2). */
   public void deleteTrip(UUID tripId, UUID requesterId) {
     tripAccessService.requireOwner(tripId, requesterId);
     TripEntity trip = findTripOrThrow(tripId);

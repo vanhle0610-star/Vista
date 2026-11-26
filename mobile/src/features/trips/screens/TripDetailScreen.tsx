@@ -151,26 +151,35 @@ export function TripDetailScreen({ tripId }: { tripId: string }) {
         },
       ]);
     } catch (err: any) {
-      const isConflict = err?.response?.status === 409 || err?.status === 409;
+      setIsDeleteModalVisible(false);
+      const isConflict =
+        err?.response?.status === 409 ||
+        err?.status === 409 ||
+        err?.response?.data?.code === 'TRIP_HAS_UNSETTLED_DEBTS' ||
+        err?.code === 'TRIP_HAS_UNSETTLED_DEBTS';
       const msg =
         err?.response?.data?.detail ||
         err?.response?.data?.message ||
+        err?.detail ||
         err?.message ||
-        'Không thể xóa chuyến đi này.';
+        'Chuyến đi còn khoản chi tiêu hoặc công nợ chưa quyết toán. Vui lòng vào mục Thủ quỹ để quyết toán toàn bộ trước khi xóa.';
 
       if (isConflict) {
         Alert.alert(
           'Không thể xóa chuyến đi',
-          msg ||
-            'Chuyến đi còn khoản chi tiêu hoặc công nợ chưa quyết toán. Vui lòng vào mục Thủ quỹ để quyết toán toàn bộ trước khi xóa.',
+          msg,
           [
-            {
-              text: 'Đến Thủ quỹ',
-              onPress: () => router.push('/(tabs)/treasury' as any),
-            },
             {
               text: 'Đóng',
               style: 'cancel',
+            },
+            {
+              text: 'Mở Thủ quỹ',
+              onPress: () =>
+                router.push({
+                  pathname: '/(tabs)/treasury',
+                  params: { tripId },
+                } as any),
             },
           ]
         );

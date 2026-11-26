@@ -130,4 +130,16 @@ public class InvitationController {
     }
     return ResponseEntity.badRequest().build();
   }
+
+  @PostMapping("/invitations/join-by-code")
+  @Operation(summary = "Gia nhập chuyến đi bằng mã mời ngắn (TV3/Web)")
+  public ResponseEntity<java.util.Map<String, Object>> joinByCode(
+      @RequestBody java.util.Map<String, String> body) {
+    UUID userId = currentUserProvider.getCurrentUserId();
+    String code = body.get("code");
+    if (code == null || code.isBlank()) {
+      code = body.get("token");
+    }
+    return ResponseEntity.ok(invitationService.joinByInviteCode(code, userId));
+  }
 }

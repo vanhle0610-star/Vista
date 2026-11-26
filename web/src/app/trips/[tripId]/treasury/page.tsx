@@ -306,6 +306,21 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
     }
   };
 
+  // Handle Settle All Expenses (TV4)
+  const handleSettleAll = async () => {
+    if (!trip) return;
+    if (!confirm('Bạn có chắc chắn muốn xác nhận quyết toán toàn bộ các khoản nợ trong chuyến đi này không?')) {
+      return;
+    }
+    try {
+      await apiRequest(`/trips/${trip.id}/settlement-accounts/settle-all`, { method: 'POST' });
+      await loadTreasuryData();
+      showToast('✓ Đã quyết toán toàn bộ các khoản nợ trong chuyến đi!');
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Không thể quyết toán nợ. Vui lòng thử lại sau.');
+    }
+  };
+
   if (isAuthenticated !== true) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc' }}>
@@ -487,7 +502,7 @@ export default function TripTreasuryPage({ params }: TreasuryPageProps) {
                     summary={summary}
                     members={members}
                     currentUserId={currentUserId}
-                    tripId={trip?.id || 'VISTA'}
+                    onSettleAll={handleSettleAll}
                   />
                 </div>
               </div>

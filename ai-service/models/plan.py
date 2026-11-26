@@ -29,6 +29,7 @@ try:
         fallback_used: bool = False
         warnings: List[str] = Field(default_factory=list)
         breakdown: Optional[dict] = None
+        intercity_transit: Optional[Dict[str, Any]] = None
         request_id: Optional[str] = None
         pace: str = "MODERATE"
         schedule_status: str = "FEASIBLE"
@@ -66,6 +67,7 @@ except ImportError:
         fallback_used: bool = False
         warnings: List[str] = field(default_factory=list)
         breakdown: Optional[dict] = None
+        intercity_transit: Optional[Dict[str, Any]] = None
         request_id: Optional[str] = None
         pace: str = "MODERATE"
         schedule_status: str = "FEASIBLE"
