@@ -916,21 +916,9 @@
 /* ─── 6. MEMBERS TAB (TAB 2) ─────────────────────────────────────────── */
 .membersGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 18px;
   margin-bottom: 28px;
-}
-
-@media (max-width: 900px) {
-  .membersGrid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 600px) {
-  .membersGrid {
-    grid-template-columns: 1fr;
-  }
 }
 
 .memberCard {
@@ -958,6 +946,7 @@
 
 .memberInfo {
   flex: 1;
+  min-width: 0;
 }
 
 .memberName {
@@ -971,6 +960,14 @@
   font-size: 12px;
   font-weight: 600;
   color: #0284C7;
+}
+
+.memberMetaEmail {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .inviteCardBanner {

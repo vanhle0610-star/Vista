@@ -3381,6 +3381,11 @@ export default function TripDetailPage() {
                           </button>
                         )}
                       </div>
+                      {typeof m === 'object' && m?.email && (
+                        <p className={styles.memberMetaEmail} title={m.email}>
+                          {m.email}
+                        </p>
+                      )}
                     </div>
                   </div>
                 );
