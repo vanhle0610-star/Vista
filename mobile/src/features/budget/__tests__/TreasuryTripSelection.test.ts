@@ -1,6 +1,11 @@
 import { pickDefaultTrip } from '../../../app/(tabs)/treasury';
 import { TripDto } from '../../../services/api/tripApi';
 
+jest.mock('expo-router', () => ({
+  router: { push: jest.fn(), replace: jest.fn(), back: jest.fn() },
+  useFocusEffect: jest.fn(),
+}));
+
 describe('Treasury - pickDefaultTrip Selection Logic', () => {
   const tripPlanning1: TripDto = {
     id: 'trip-plan-1',

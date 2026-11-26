@@ -46,6 +46,7 @@
     "eslint": "^9.39.5",
     "eslint-config-expo": "~57.0.2",
     "eslint-config-prettier": "^10.1.8",
+    "eslint-import-resolver-typescript": "^3.10.1",
     "jest-expo": "~57.0.6",
     "prettier": "^3.9.10",
     "typescript": "~6.0.3"
@@ -60,7 +61,7 @@
     "web": "expo start --web --port 8082",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "jest --runInBand --forceExit",
+    "test": "jest --runInBand",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

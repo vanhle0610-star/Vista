@@ -1,1 +1,1 @@
-import { DiscoverScreen } from '@/features/discovery'; export default function DiscoverRoute() { return <DiscoverScreen />; }
+import { DiscoverScreen } from '../../features/discovery'; export default function DiscoverRoute() { return <DiscoverScreen />; }

@@ -15,8 +15,8 @@ import Svg, { Path } from 'react-native-svg';
 import { api, apiErrorMessage } from '../../services/api/client';
 import { LoadingState, ErrorState } from '../../components/feedback/States';
 import { useFavorites, useDestinationHistory } from '../../features/favorites';
-import { AppButton } from '@/components/ui/AppButton';
-import { validCoordinate } from '@/features/map/types';
+import { AppButton } from '../../components/ui/AppButton';
+import { validCoordinate } from '../../features/map/types';
 
 export interface DestinationDetail {
   id: string;
