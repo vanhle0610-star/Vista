@@ -13,10 +13,11 @@ export function DestinationThumbnail({
   destination: DestinationMarker;
   className?: string;
 }) {
-  const [failed, setFailed] = useState(false);
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
 
   const rawUrl = destination.imageUrl || destination.thumbnailUrl;
   const finalUrl = rawUrl ? getCloudImageUrl(rawUrl) : '';
+  const failed = Boolean(finalUrl && failedUrl === finalUrl);
 
   return (
     <span className={`${styles.frame} ${className}`}>
@@ -25,7 +26,7 @@ export function DestinationThumbnail({
           src={finalUrl}
           alt={destination.name}
           style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-          onError={() => setFailed(true)}
+          onError={() => setFailedUrl(finalUrl)}
           loading="lazy"
         />
       ) : (

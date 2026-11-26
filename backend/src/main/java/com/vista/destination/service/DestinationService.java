@@ -119,6 +119,11 @@ public class DestinationService implements DestinationQueryService {
 
   @Transactional
   public DestinationDetailDto createDestination(CreateDestinationRequest request) {
+    return createDestination(request, null);
+  }
+
+  @Transactional
+  public DestinationDetailDto createDestination(CreateDestinationRequest request, UUID actorId) {
     String name = request.name().trim();
     String baseSlug = toSlug(name);
     String slug = baseSlug;
@@ -204,7 +209,7 @@ public class DestinationService implements DestinationQueryService {
     Destination saved = destinationRepository.save(dest);
     if (auditLogService != null && saved.getId() != null) {
       auditLogService.logAction(
-          null,
+          actorId,
           "CREATE_DESTINATION",
           "DESTINATION",
           saved.getId().toString(),
@@ -541,12 +546,106 @@ public class DestinationService implements DestinationQueryService {
   }
 
   public DestinationPageDto searchPublished(
+      String keyword,
+      String province,
+      String category,
+      BigDecimal priceMin,
+      BigDecimal priceMax,
+      String sortBy,
+      String sortDir,
+      int page,
+      int size) {
+    int validPage = Math.max(0, page);
+    int validSize = Math.min(100, Math.max(1, size));
+
+    Specification<Destination> spec =
+        createSearchSpec(keyword, province, category, priceMin, priceMax);
+    Sort sort = resolveSort(sortBy, sortDir);
+    PageRequest pageRequest = PageRequest.of(validPage, validSize, sort);
+    Page<Destination> pageResult = destinationRepository.findAll(spec, pageRequest);
+
+    List<Destination> content = pageResult.getContent();
+    List<UUID> ids = content.stream().map(Destination::getId).toList();
+    Map<UUID, DestinationReviewStats> statsMap = getReviewStatsBatch(ids);
+
+    List<DestinationSummaryDto> items =
+        content.stream()
+            .map(
+                d ->
+                    toSummaryDto(d, statsMap.getOrDefault(d.getId(), DestinationReviewStats.EMPTY)))
+            .toList();
+
+    return new DestinationPageDto(
+        items, pageResult.getNumber(), pageResult.getSize(), pageResult.getTotalElements());
+  }
+
+  private Sort resolveSort(String sortBy, String sortDir) {
+    Sort.Direction direction =
+        "asc".equalsIgnoreCase(sortDir != null ? sortDir.trim() : "")
+            ? Sort.Direction.ASC
+            : Sort.Direction.DESC;
+    if (sortBy == null || sortBy.isBlank()) {
+      return Sort.by(Sort.Direction.DESC, "createdAt");
+    }
+    String field =
+        switch (sortBy.trim().toLowerCase(Locale.ROOT)) {
+          case "name", "title" -> "name";
+          case "price", "pricemin", "price_min" -> "priceMin";
+          case "pricemax", "price_max" -> "priceMax";
+          case "verifiedat", "verified_at" -> "verifiedAt";
+          default -> "createdAt";
+        };
+    if ("name".equals(field) && (sortDir == null || sortDir.isBlank())) {
+      direction = Sort.Direction.ASC;
+    }
+    return Sort.by(direction, field);
+  }
+
+  public List<Map<String, Object>> listCategories() {
+    if (categoryRepository == null) {
+      return List.of();
+    }
+    return categoryRepository.findAll(Sort.by(Sort.Direction.ASC, "name")).stream()
+        .map(
+            c -> {
+              Map<String, Object> m = new LinkedHashMap<>();
+              m.put("id", c.getId());
+              m.put("name", c.getName());
+              m.put("icon", c.getIcon());
+              return m;
+            })
+        .toList();
+  }
+
+  public List<Map<String, Object>> listProvinces() {
+    if (provinceRepository == null) {
+      return List.of();
+    }
+    return provinceRepository.findAll(Sort.by(Sort.Direction.ASC, "name")).stream()
+        .map(
+            p -> {
+              Map<String, Object> m = new LinkedHashMap<>();
+              m.put("id", p.getId());
+              m.put("name", p.getName());
+              m.put("slug", p.getSlug());
+              m.put("regionCode", p.getRegionCode());
+              return m;
+            })
+        .toList();
+  }
+
+  public DestinationPageDto searchPublished(
       String keyword, String province, String category, int page, int size) {
     return searchPublished(keyword, province, category, null, page, size);
   }
 
   private Specification<Destination> createSearchSpec(
       String keyword, String province, String category, BigDecimal priceMax) {
+    return createSearchSpec(keyword, province, category, null, priceMax);
+  }
+
+  private Specification<Destination> createSearchSpec(
+      String keyword, String province, String category, BigDecimal priceMin, BigDecimal priceMax) {
     return (root, query, cb) -> {
       List<Predicate> predicates = new ArrayList<>();
       predicates.add(cb.equal(root.get("status"), STATUS_PUBLISHED));
@@ -600,6 +699,13 @@ public class DestinationService implements DestinationQueryService {
         String catTokenPattern = "%" + String.join("%", catTokens) + "%";
 
         predicates.add(cb.like(cb.lower(root.get("category").get("name")), catPattern));
+      }
+
+      if (priceMin != null) {
+        predicates.add(
+            cb.or(
+                cb.greaterThanOrEqualTo(root.get("priceMin"), priceMin),
+                cb.greaterThanOrEqualTo(root.get("priceMax"), priceMin)));
       }
 
       if (priceMax != null) {
@@ -1126,6 +1232,7 @@ public class DestinationService implements DestinationQueryService {
             new LinkedHashMap<>(
                 objectMapper.readValue(dest.getOpeningHours(), new TypeReference<>() {}));
         Object reasonObj = parsed.remove("_rejectionReason");
+        parsed.remove("_imageMeta");
         if (reasonObj != null) {
           extractedRejectionReason = reasonObj.toString();
         }

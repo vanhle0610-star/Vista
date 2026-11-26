@@ -15,9 +15,9 @@ import Svg, { Path } from 'react-native-svg';
 import { api, apiErrorMessage } from '../../services/api/client';
 import { LoadingState, ErrorState } from '../../components/feedback/States';
 import { useFavorites, useDestinationHistory } from '../../features/favorites';
-import { AppButton } from '@/components/ui/AppButton';
-import { validCoordinate } from '@/features/map/types';
-import { DestinationRequestModal } from '@/components/destination/DestinationRequestModal';
+import { AppButton } from '../../components/ui/AppButton';
+import { validCoordinate } from '../../features/map/types';
+import { DestinationRequestModal } from '../../components/destination/DestinationRequestModal';
 
 export interface DestinationDetail {
   id: string;
@@ -184,7 +184,7 @@ export default function DestinationDetailRoute() {
               <Image
                 source={{
                   uri: data.imageUrl.startsWith('http')
-                    ? data.imageUrl
+                    ? data.imageUrl.replace('://thumb.wikimedia.org/', '://upload.wikimedia.org/')
                     : 'https://images.unsplash.com/photo-1528127269322-539801943592?w=1000&q=80',
                 }}
                 style={styles.heroImage}

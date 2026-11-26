@@ -251,6 +251,21 @@ public class GlobalExceptionHandler {
     return problem;
   }
 
+  @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+  ProblemDetail noResourceFound(
+      org.springframework.web.servlet.resource.NoResourceFoundException exception,
+      HttpServletRequest request) {
+    var problem =
+        ProblemDetail.forStatusAndDetail(
+            HttpStatus.NOT_FOUND, "Không tìm thấy đường dẫn API: " + request.getRequestURI());
+    problem.setType(URI.create("https://vista.example/errors/not-found"));
+    problem.setTitle("Endpoint Not Found");
+    problem.setInstance(URI.create(request.getRequestURI()));
+    problem.setProperty("code", "ENDPOINT_NOT_FOUND");
+    problem.setProperty("requestId", MDC.get("requestId"));
+    return problem;
+  }
+
   @ExceptionHandler(AccessDeniedException.class)
   ProblemDetail accessDenied(AccessDeniedException exception, HttpServletRequest request) {
     var problem =

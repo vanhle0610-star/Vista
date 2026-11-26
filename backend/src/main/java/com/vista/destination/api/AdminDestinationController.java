@@ -2,6 +2,7 @@ package com.vista.destination.api;
 
 import com.vista.common.security.CurrentUserProvider;
 import com.vista.common.security.UserPrincipal;
+import com.vista.destination.api.dto.CreateDestinationRequest;
 import com.vista.destination.api.dto.DestinationDetailDto;
 import com.vista.destination.api.dto.DestinationPageDto;
 import com.vista.destination.api.dto.DestinationStatusUpdateRequest;
@@ -26,7 +27,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -104,6 +107,18 @@ public class AdminDestinationController {
     return ResponseEntity.ok(destinationService.getStatsByCategory());
   }
 
+  @PostMapping
+  @Operation(
+      summary = "Tạo mới điểm đến du lịch (Admin/Moderator - W6-TV1-02)",
+      description = "Tạo điểm đến mới và ghi nhận nhật ký audit_logs")
+  public ResponseEntity<DestinationDetailDto> createDestinationAdmin(
+      @Valid @RequestBody CreateDestinationRequest request,
+      @AuthenticationPrincipal UserPrincipal userPrincipal) {
+    UUID actorId = resolveModeratorId(userPrincipal);
+    DestinationDetailDto created = destinationService.createDestination(request, actorId);
+    return ResponseEntity.status(HttpStatus.CREATED).body(created);
+  }
+
   @GetMapping("/{id}")
   @Operation(
       summary = "Xem chi tiết điểm đến cho quản trị viên/kiểm duyệt viên",
@@ -118,6 +133,19 @@ public class AdminDestinationController {
       summary = "Chỉnh sửa thông tin điểm đến (Admin/Moderator)",
       description = "Cập nhật thông tin chi tiết, giá vé, tọa độ, ảnh của điểm đến")
   public ResponseEntity<DestinationDetailDto> updateDestination(
+      @PathVariable UUID id,
+      @Valid @RequestBody UpdateDestinationRequest request,
+      @AuthenticationPrincipal UserPrincipal userPrincipal) {
+    UUID actorId = resolveModeratorId(userPrincipal);
+    DestinationDetailDto updated = destinationService.updateDestination(id, request, actorId);
+    return ResponseEntity.ok(updated);
+  }
+
+  @PatchMapping("/{id}")
+  @Operation(
+      summary = "Chỉnh sửa thông tin điểm đến qua PATCH (Admin/Moderator - W6-TV1-02)",
+      description = "Cập nhật thông tin chi tiết, giá vé, tọa độ, ảnh của điểm đến")
+  public ResponseEntity<DestinationDetailDto> patchDestination(
       @PathVariable UUID id,
       @Valid @RequestBody UpdateDestinationRequest request,
       @AuthenticationPrincipal UserPrincipal userPrincipal) {
@@ -182,6 +210,17 @@ public class AdminDestinationController {
         destinationService.updateDestinationStatus(
             id, request.status(), moderatorId, request.note());
     return ResponseEntity.ok(updated);
+  }
+
+  @PatchMapping("/{id}/status")
+  @Operation(
+      summary = "Cập nhật trạng thái điểm đến qua PATCH (DRAFT, PUBLISHED, REJECTED, ARCHIVED)",
+      description = "Cho phép cập nhật hoặc hoàn tác trạng thái kiểm duyệt")
+  public ResponseEntity<DestinationDetailDto> patchDestinationStatus(
+      @PathVariable UUID id,
+      @Valid @RequestBody DestinationStatusUpdateRequest request,
+      @AuthenticationPrincipal UserPrincipal userPrincipal) {
+    return updateDestinationStatus(id, request, userPrincipal);
   }
 
   private UUID resolveModeratorId(UserPrincipal userPrincipal) {

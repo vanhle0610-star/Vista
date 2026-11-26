@@ -3,6 +3,10 @@ import { render, screen, fireEvent, act } from '@testing-library/react-native';
 import { AiPlannerScreen } from '../screens/AiPlannerScreen';
 import { expenseApi } from '../../../services/api/expenseApi';
 
+jest.mock('expo-router', () => ({
+  router: { push: jest.fn(), replace: jest.fn(), back: jest.fn() },
+}));
+
 // Ensure React 18 act environment is enabled
 // @ts-ignore
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;

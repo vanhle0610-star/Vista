@@ -54,13 +54,25 @@ function createTestQueryClient() {
     defaultOptions: {
       queries: {
         retry: false,
-        gcTime: 0,
+        gcTime: Infinity,
       },
     },
   });
 }
 
 describe('DiscoverScreen Discovery & Filters Tests (TV1 W5)', () => {
+  let activeQueryClient: QueryClient | null = null;
+
+  beforeAll(async () => {
+    const warmupClient = createTestQueryClient();
+    await render(
+      <QueryClientProvider client={warmupClient}>
+        <DiscoverScreen />
+      </QueryClientProvider>
+    );
+    cleanup();
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
     jest.mocked(api.get).mockReset();
@@ -75,18 +87,22 @@ describe('DiscoverScreen Discovery & Filters Tests (TV1 W5)', () => {
   });
 
   afterEach(() => {
+    activeQueryClient?.clear();
+    activeQueryClient = null;
     cleanup();
   });
 
   it('renders destination list with category badges and price information', async () => {
-    const queryClient = createTestQueryClient();
-    const { findByText, getByText, getAllByText } = await render(
-      <QueryClientProvider client={queryClient}>
+    activeQueryClient = createTestQueryClient();
+    const { getByText, getAllByText } = await render(
+      <QueryClientProvider client={activeQueryClient}>
         <DiscoverScreen />
       </QueryClientProvider>
     );
 
-    expect(await findByText('Cầu Rồng Đà Nẵng', {}, { timeout: 3000 })).toBeTruthy();
+    await waitFor(() => {
+      expect(getByText('Cầu Rồng Đà Nẵng')).toBeTruthy();
+    });
     expect(getByText('Bà Nà Hills')).toBeTruthy();
     expect(getByText('Miễn phí vé vào cổng')).toBeTruthy();
     expect(getByText('900.000 đ – 1.250.000 đ')).toBeTruthy();
@@ -95,9 +111,9 @@ describe('DiscoverScreen Discovery & Filters Tests (TV1 W5)', () => {
   });
 
   it('filters by category chip and passes category param to API', async () => {
-    const queryClient = createTestQueryClient();
+    activeQueryClient = createTestQueryClient();
     const { findByText, getAllByText } = await render(
-      <QueryClientProvider client={queryClient}>
+      <QueryClientProvider client={activeQueryClient}>
         <DiscoverScreen />
       </QueryClientProvider>
     );
@@ -122,9 +138,9 @@ describe('DiscoverScreen Discovery & Filters Tests (TV1 W5)', () => {
   });
 
   it('filters by max ticket price chip and passes priceMax param to API', async () => {
-    const queryClient = createTestQueryClient();
+    activeQueryClient = createTestQueryClient();
     const { findByText, getByText } = await render(
-      <QueryClientProvider client={queryClient}>
+      <QueryClientProvider client={activeQueryClient}>
         <DiscoverScreen />
       </QueryClientProvider>
     );
@@ -149,9 +165,9 @@ describe('DiscoverScreen Discovery & Filters Tests (TV1 W5)', () => {
   });
 
   it('filters by higher budget tier (<= 500k)', async () => {
-    const queryClient = createTestQueryClient();
+    activeQueryClient = createTestQueryClient();
     const { findByText, getByText } = await render(
-      <QueryClientProvider client={queryClient}>
+      <QueryClientProvider client={activeQueryClient}>
         <DiscoverScreen />
       </QueryClientProvider>
     );
@@ -176,9 +192,9 @@ describe('DiscoverScreen Discovery & Filters Tests (TV1 W5)', () => {
   });
 
   it('combines multiple filters (province, category, and priceMax)', async () => {
-    const queryClient = createTestQueryClient();
+    activeQueryClient = createTestQueryClient();
     const { findByText, getAllByText, getByText } = await render(
-      <QueryClientProvider client={queryClient}>
+      <QueryClientProvider client={activeQueryClient}>
         <DiscoverScreen />
       </QueryClientProvider>
     );
@@ -212,9 +228,9 @@ describe('DiscoverScreen Discovery & Filters Tests (TV1 W5)', () => {
   });
 
   it('displays active filter bar and resets all filters when tapped', async () => {
-    const queryClient = createTestQueryClient();
+    activeQueryClient = createTestQueryClient();
     const { findByText, getByText, queryByText, getAllByText } = await render(
-      <QueryClientProvider client={queryClient}>
+      <QueryClientProvider client={activeQueryClient}>
         <DiscoverScreen />
       </QueryClientProvider>
     );
@@ -256,9 +272,9 @@ describe('DiscoverScreen Discovery & Filters Tests (TV1 W5)', () => {
       },
     });
 
-    const queryClient = createTestQueryClient();
+    activeQueryClient = createTestQueryClient();
     const { findByText } = await render(
-      <QueryClientProvider client={queryClient}>
+      <QueryClientProvider client={activeQueryClient}>
         <DiscoverScreen />
       </QueryClientProvider>
     );
@@ -273,9 +289,9 @@ describe('DiscoverScreen Discovery & Filters Tests (TV1 W5)', () => {
   });
 
   it('submits unaccented search keyword (e.g. "da nang") to API', async () => {
-    const queryClient = createTestQueryClient();
+    activeQueryClient = createTestQueryClient();
     const { findByText, getByPlaceholderText, getByText } = await render(
-      <QueryClientProvider client={queryClient}>
+      <QueryClientProvider client={activeQueryClient}>
         <DiscoverScreen />
       </QueryClientProvider>
     );
@@ -303,9 +319,9 @@ describe('DiscoverScreen Discovery & Filters Tests (TV1 W5)', () => {
   });
 
   it('submits search input with special characters safely', async () => {
-    const queryClient = createTestQueryClient();
+    activeQueryClient = createTestQueryClient();
     const { findByText, getByPlaceholderText, getByText } = await render(
-      <QueryClientProvider client={queryClient}>
+      <QueryClientProvider client={activeQueryClient}>
         <DiscoverScreen />
       </QueryClientProvider>
     );
@@ -333,9 +349,9 @@ describe('DiscoverScreen Discovery & Filters Tests (TV1 W5)', () => {
   });
 
   it('filters by free ticket price (0 VND)', async () => {
-    const queryClient = createTestQueryClient();
+    activeQueryClient = createTestQueryClient();
     const { findByText, getByText } = await render(
-      <QueryClientProvider client={queryClient}>
+      <QueryClientProvider client={activeQueryClient}>
         <DiscoverScreen />
       </QueryClientProvider>
     );
@@ -360,9 +376,9 @@ describe('DiscoverScreen Discovery & Filters Tests (TV1 W5)', () => {
   it('renders error state and retry action when API request fails', async () => {
     jest.mocked(api.get).mockRejectedValue(new Error('Network error'));
 
-    const queryClient = createTestQueryClient();
+    activeQueryClient = createTestQueryClient();
     const { findByText } = await render(
-      <QueryClientProvider client={queryClient}>
+      <QueryClientProvider client={activeQueryClient}>
         <DiscoverScreen />
       </QueryClientProvider>
     );

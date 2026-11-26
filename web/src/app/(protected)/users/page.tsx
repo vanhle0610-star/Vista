@@ -53,6 +53,7 @@ interface AdminUserPageResponse {
   items: AdminUserSummary[];
   page: number;
   size: number;
+  limit?: number;
   total: number;
   totalPages: number;
 }
@@ -173,6 +174,7 @@ export default function UsersPage() {
   const [selectedRoles, setSelectedRoles] = useState<string[]>(['USER']);
   const [roleReason, setRoleReason] = useState<string>('');
   const [roleSubmitting, setRoleSubmitting] = useState<boolean>(false);
+  const submitting = statusSubmitting || roleSubmitting;
 
   // Toast State
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -273,6 +275,7 @@ export default function UsersPage() {
       params.set('sortDir', sortDir);
       params.set('page', String(page));
       params.set('size', String(size));
+      params.set('limit', String(size));
       if (debouncedQuery) {
         params.set('keyword', debouncedQuery);
       }
@@ -286,8 +289,8 @@ export default function UsersPage() {
         setIsForbidden(true);
         setErrorMessage(
           res.status === 401
-            ? 'Phiên đăng nhập đã hết hạn hoặc chưa xác thực. Vui lòng đăng nhập lại bằng tài khoản Quản trị viên (ADMIN).'
-            : 'Tài khoản hiện tại không có quyền ADMIN để truy cập phân hệ Quản lý người dùng.'
+            ? 'Phiên đăng nhập đã hết hạn hoặc chưa xác thực (HTTP 401). Vui lòng đăng nhập lại bằng tài khoản Quản trị viên (ADMIN).'
+            : 'Tài khoản hiện tại không có quyền ADMIN để truy cập phân hệ Quản lý người dùng (HTTP 403).'
         );
         setUsers([]);
         setTotal(0);
@@ -297,17 +300,27 @@ export default function UsersPage() {
 
       if (!res.ok) {
         const errBody = await res.json().catch(() => null);
-        throw new Error(errBody?.detail || `Lỗi máy chủ (${res.status}) khi tải danh sách người dùng.`);
+        throw new Error(
+          errBody?.detail ||
+            errBody?.message ||
+            `Lỗi máy chủ (HTTP ${res.status}) khi tải danh sách người dùng.`
+        );
       }
 
       const data = (await res.json()) as AdminUserPageResponse;
       const items = Array.isArray(data.items) ? data.items : [];
+      const effectiveLimit =
+        typeof data.limit === 'number' && data.limit > 0
+          ? data.limit
+          : typeof data.size === 'number' && data.size > 0
+            ? data.size
+            : size;
       setUsers(items);
       setTotal(typeof data.total === 'number' ? data.total : items.length);
       setTotalPages(
         typeof data.totalPages === 'number'
           ? data.totalPages
-          : Math.ceil((typeof data.total === 'number' ? data.total : items.length) / size)
+          : Math.ceil((typeof data.total === 'number' ? data.total : items.length) / effectiveLimit)
       );
     } catch (err) {
       setErrorMessage(
@@ -608,6 +621,7 @@ export default function UsersPage() {
             <select
               aria-label="Lọc theo vai trò"
               value={roleFilter}
+              disabled={loading || submitting}
               onChange={(e) => {
                 setRoleFilter(e.target.value as RoleFilter);
                 setPage(0);
@@ -626,6 +640,7 @@ export default function UsersPage() {
             <select
               aria-label="Lọc theo trạng thái"
               value={statusFilter}
+              disabled={loading || submitting}
               onChange={(e) => {
                 setStatusFilter(e.target.value as StatusFilter);
                 setPage(0);
@@ -643,6 +658,7 @@ export default function UsersPage() {
             <select
               aria-label="Sắp xếp theo ngày đăng ký"
               value={sortDir}
+              disabled={loading || submitting}
               onChange={(e) => {
                 setSortDir(e.target.value as SortDirection);
                 setPage(0);
@@ -655,7 +671,12 @@ export default function UsersPage() {
           </div>
 
           {(searchInput || roleFilter !== 'ALL' || statusFilter !== 'ALL' || sortDir !== 'desc') && (
-            <button type="button" onClick={handleResetFilters} className={styles.resetBtn}>
+            <button
+              type="button"
+              disabled={loading || submitting}
+              onClick={handleResetFilters}
+              className={styles.resetBtn}
+            >
               <RotateCcw size={14} />
               <span>Đặt lại</span>
             </button>
@@ -666,14 +687,140 @@ export default function UsersPage() {
       {/* Section B: User List Table */}
       <section className={styles.tableCard}>
         {loading ? (
-          <div className={styles.stateBox}>
-            <div className={styles.stateIconWrap}>
-              <RefreshCw size={20} className={styles.spinning} />
-            </div>
-            <p className={styles.stateTitle}>Đang tải danh sách người dùng...</p>
-            <p className={styles.stateDesc}>
-              Hệ thống đang đồng bộ dữ liệu tài khoản và quyền hạn từ máy chủ.
-            </p>
+          <div className={styles.tableWrapper} aria-busy="true" aria-label="Đang tải danh sách người dùng">
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th className={styles.sttCell}>STT</th>
+                  <th style={{ width: '58px' }}>Avatar</th>
+                  <th>Họ và tên</th>
+                  <th>Email</th>
+                  <th>Vai trò</th>
+                  <th>Ngày đăng ký</th>
+                  <th>Trạng thái</th>
+                  <th style={{ textAlign: 'right' }}>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Array.from({ length: 6 }).map((_, idx) => (
+                  <tr key={`skeleton-${idx}`} className={styles.tableRow}>
+                    <td className={styles.sttCell}>
+                      <div
+                        style={{
+                          width: '22px',
+                          height: '14px',
+                          borderRadius: '4px',
+                          background: '#e2e8f0',
+                        }}
+                      />
+                    </td>
+                    <td>
+                      <div
+                        style={{
+                          width: '38px',
+                          height: '38px',
+                          borderRadius: '10px',
+                          background: '#e2e8f0',
+                        }}
+                      />
+                    </td>
+                    <td>
+                      <div
+                        style={{
+                          width: '130px',
+                          height: '14px',
+                          borderRadius: '4px',
+                          background: '#e2e8f0',
+                          marginBottom: '6px',
+                        }}
+                      />
+                      <div
+                        style={{
+                          width: '90px',
+                          height: '11px',
+                          borderRadius: '4px',
+                          background: '#f1f5f9',
+                        }}
+                      />
+                    </td>
+                    <td>
+                      <div
+                        style={{
+                          width: '175px',
+                          height: '13px',
+                          borderRadius: '4px',
+                          background: '#e2e8f0',
+                        }}
+                      />
+                    </td>
+                    <td>
+                      <div
+                        style={{
+                          width: '86px',
+                          height: '22px',
+                          borderRadius: '999px',
+                          background: '#e2e8f0',
+                        }}
+                      />
+                    </td>
+                    <td>
+                      <div
+                        style={{
+                          width: '95px',
+                          height: '13px',
+                          borderRadius: '4px',
+                          background: '#e2e8f0',
+                        }}
+                      />
+                    </td>
+                    <td>
+                      <div
+                        style={{
+                          width: '110px',
+                          height: '24px',
+                          borderRadius: '999px',
+                          background: '#e2e8f0',
+                        }}
+                      />
+                    </td>
+                    <td>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'flex-end',
+                          gap: '6px',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: '68px',
+                            height: '28px',
+                            borderRadius: '7px',
+                            background: '#e2e8f0',
+                          }}
+                        />
+                        <div
+                          style={{
+                            width: '68px',
+                            height: '28px',
+                            borderRadius: '7px',
+                            background: '#e2e8f0',
+                          }}
+                        />
+                        <div
+                          style={{
+                            width: '68px',
+                            height: '28px',
+                            borderRadius: '7px',
+                            background: '#e2e8f0',
+                          }}
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         ) : errorMessage ? (
           <div className={styles.stateBox}>
@@ -809,6 +956,7 @@ export default function UsersPage() {
                           <div className={styles.actionGroup}>
                             <button
                               type="button"
+                              disabled={loading || submitting}
                               onClick={() => void openUserDetailModal(user)}
                               className={styles.iconActionBtn}
                               title="Xem chi tiết tài khoản"
@@ -818,6 +966,7 @@ export default function UsersPage() {
                             </button>
                             <button
                               type="button"
+                              disabled={loading || submitting}
                               onClick={() => openRoleModal(user)}
                               className={styles.iconActionBtn}
                               title="Thay đổi vai trò"
@@ -828,6 +977,7 @@ export default function UsersPage() {
                             {isLocked ? (
                               <button
                                 type="button"
+                                disabled={loading || submitting}
                                 onClick={() => openStatusConfirmation(user)}
                                 className={`${styles.iconActionBtn} ${styles.unlockActionBtn}`}
                                 title="Mở khóa tài khoản này"
@@ -839,7 +989,7 @@ export default function UsersPage() {
                               <button
                                 type="button"
                                 onClick={() => openStatusConfirmation(user)}
-                                disabled={selfAccount}
+                                disabled={selfAccount || loading || submitting}
                                 className={`${styles.iconActionBtn} ${styles.lockActionBtn}`}
                                 title={
                                   selfAccount
@@ -866,6 +1016,8 @@ export default function UsersPage() {
                 size={size}
                 total={total}
                 totalPages={totalPages}
+                unitLabel="người dùng"
+                disabled={loading || submitting}
                 onPageChange={(newPage) => setPage(newPage)}
                 onSizeChange={(newSize) => {
                   setSize(newSize);

@@ -8,6 +8,8 @@ export interface PaginationBarProps {
   totalPages: number;
   size: number;
   total?: number;
+  unitLabel?: string;
+  disabled?: boolean;
   onPageChange: (newPage: number) => void;
   onSizeChange: (newSize: number) => void;
 }
@@ -19,13 +21,15 @@ export function PaginationBar({
   totalPages,
   size,
   total,
+  unitLabel = 'địa điểm',
+  disabled = false,
   onPageChange,
   onSizeChange,
 }: PaginationBarProps) {
   const safeTotalPages = Math.max(1, totalPages);
   const currentPageDisplay = Math.min(page + 1, safeTotalPages);
-  const canPrev = page > 0;
-  const canNext = page + 1 < safeTotalPages;
+  const canPrev = !disabled && page > 0;
+  const canNext = !disabled && page + 1 < safeTotalPages;
 
   return (
     <div
@@ -48,7 +52,7 @@ export function PaginationBar({
         </span>
         {typeof total === 'number' && (
           <span style={{ color: '#64748b' }}>
-            (Tổng cộng <strong style={{ color: '#0f172a' }}>{total}</strong> địa điểm)
+            (Tổng cộng <strong style={{ color: '#0f172a' }}>{total}</strong> {unitLabel})
           </span>
         )}
       </div>
@@ -58,6 +62,7 @@ export function PaginationBar({
           <span>Hiển thị:</span>
           <select
             value={size}
+            disabled={disabled}
             onChange={(e) => onSizeChange(Number(e.target.value))}
             style={{
               padding: '0.35rem 0.6rem',
