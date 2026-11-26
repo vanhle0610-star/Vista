@@ -534,8 +534,15 @@ class ExpenseServiceTest {
   void hasOutstandingDebts_returnsTrue_whenSplitsUnsettled() {
     ExpenseEntity exp =
         new ExpenseEntity(
-            tripId, "Ăn tối", BigDecimal.valueOf(200000), "VND", currentUserId, ExpenseCategory.FOOD, Instant.now());
-    ExpenseSplitEntity split1 = new ExpenseSplitEntity(exp, currentUserId, BigDecimal.valueOf(100000));
+            tripId,
+            "Ăn tối",
+            BigDecimal.valueOf(200000),
+            "VND",
+            currentUserId,
+            ExpenseCategory.FOOD,
+            Instant.now());
+    ExpenseSplitEntity split1 =
+        new ExpenseSplitEntity(exp, currentUserId, BigDecimal.valueOf(100000));
     split1.setSettledStatus("SETTLED");
     ExpenseSplitEntity split2 = new ExpenseSplitEntity(exp, partnerId, BigDecimal.valueOf(100000));
     split2.setSettledStatus("UNSETTLED");
@@ -555,8 +562,15 @@ class ExpenseServiceTest {
   void hasOutstandingDebts_returnsFalse_whenAllSplitsSettled() {
     ExpenseEntity exp =
         new ExpenseEntity(
-            tripId, "Ăn trưa", BigDecimal.valueOf(200000), "VND", currentUserId, ExpenseCategory.FOOD, Instant.now());
-    ExpenseSplitEntity split1 = new ExpenseSplitEntity(exp, currentUserId, BigDecimal.valueOf(100000));
+            tripId,
+            "Ăn trưa",
+            BigDecimal.valueOf(200000),
+            "VND",
+            currentUserId,
+            ExpenseCategory.FOOD,
+            Instant.now());
+    ExpenseSplitEntity split1 =
+        new ExpenseSplitEntity(exp, currentUserId, BigDecimal.valueOf(100000));
     split1.setSettledStatus("SETTLED");
     ExpenseSplitEntity split2 = new ExpenseSplitEntity(exp, partnerId, BigDecimal.valueOf(100000));
     split2.setSettledStatus("SETTLED");
@@ -579,7 +593,13 @@ class ExpenseServiceTest {
   void settleAllTripExpenses_marksAllSplitsSettled() {
     ExpenseEntity exp =
         new ExpenseEntity(
-            tripId, "Vé tham quan", BigDecimal.valueOf(500000), "VND", currentUserId, ExpenseCategory.ACTIVITIES, Instant.now());
+            tripId,
+            "Vé tham quan",
+            BigDecimal.valueOf(500000),
+            "VND",
+            currentUserId,
+            ExpenseCategory.ACTIVITIES,
+            Instant.now());
     ExpenseSplitEntity split = new ExpenseSplitEntity(exp, partnerId, BigDecimal.valueOf(500000));
     split.setSettledStatus("UNSETTLED");
     exp.addSplit(split);

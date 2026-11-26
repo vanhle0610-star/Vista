@@ -18,6 +18,11 @@ import { tokens } from '../../theme/tokens';
 import { useFavorites, useDestinationHistory } from '../../features/favorites';
 import { authStorage } from '@/services/auth/authStorage';
 import { userApi, UserProfileResponse } from '@/services/api/userApi';
+import {
+  DestinationRequestItem,
+  fetchMyDestinationRequests,
+} from '@/services/api/destinationRequestApi';
+import { DestinationRequestModal } from '@/components/destination/DestinationRequestModal';
 import Constants from 'expo-constants';
 
 interface StoredUser {
@@ -33,9 +38,12 @@ interface StoredUser {
 
 export default function ProfileRoute() {
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<'favorites' | 'history'>('favorites');
+  const [activeTab, setActiveTab] = useState<'favorites' | 'history' | 'requests'>('favorites');
   const [currentUser, setCurrentUser] = useState<StoredUser | null>(null);
   const [pushNotifications, setPushNotifications] = useState(true);
+  const [myRequests, setMyRequests] = useState<DestinationRequestItem[]>([]);
+  const [requestsLoading, setRequestsLoading] = useState(false);
+  const [editingRequest, setEditingRequest] = useState<DestinationRequestItem | null>(null);
 
   const {
     favorites,
@@ -80,15 +88,34 @@ export default function ProfileRoute() {
     }
   }, []);
 
+  const loadMyRequests = useCallback(async () => {
+    const token = await authStorage.getAccessToken();
+    if (!token) {
+      setMyRequests([]);
+      return;
+    }
+    try {
+      setRequestsLoading(true);
+      const page = await fetchMyDestinationRequests('ALL', 0, 50);
+      setMyRequests(page.items || []);
+    } catch {
+      // ignore
+    } finally {
+      setRequestsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     loadUser();
-  }, [loadUser]);
+    void loadMyRequests();
+  }, [loadUser, loadMyRequests]);
 
   // Reload user info on focus
   useFocusEffect(
     useCallback(() => {
       loadUser();
-    }, [loadUser])
+      void loadMyRequests();
+    }, [loadUser, loadMyRequests])
   );
 
   const isGuest = !currentUser;
@@ -253,6 +280,19 @@ export default function ProfileRoute() {
             Đã xem ({history.length})
           </AppText>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.tabItem, activeTab === 'requests' && styles.tabItemActive]}
+          onPress={() => {
+            setActiveTab('requests');
+            void loadMyRequests();
+          }}
+          activeOpacity={0.8}
+        >
+          <AppText style={[styles.tabLabel, activeTab === 'requests' && styles.tabLabelActive]}>
+            Đóng góp ({myRequests.length})
+          </AppText>
+        </TouchableOpacity>
       </View>
 
       {/* Sync Status Badge */}
@@ -265,8 +305,91 @@ export default function ProfileRoute() {
         </AppText>
       </View>
 
-      {/* Danh sách địa điểm */}
-      {isLoading ? (
+      {/* Danh sách địa điểm hoặc Đóng góp của tôi */}
+      {activeTab === 'requests' ? (
+        isGuest ? (
+          <View style={styles.emptyContainer}>
+            <AppText style={styles.emptyIcon}>📝</AppText>
+            <AppText style={styles.emptyTitle}>Đăng nhập để xem đóng góp</AppText>
+            <AppText style={styles.emptySubtitle}>
+              Theo dõi trạng thái duyệt các địa điểm bạn đã đề xuất hoặc yêu cầu chỉnh sửa.
+            </AppText>
+            <TouchableOpacity
+              style={styles.exploreBtn}
+              onPress={() => router.push('/(auth)/login')}
+              activeOpacity={0.85}
+            >
+              <AppText style={styles.exploreBtnText}>Đăng nhập ngay</AppText>
+            </TouchableOpacity>
+          </View>
+        ) : requestsLoading ? (
+          <View style={styles.emptyContainer}>
+            <AppText style={styles.emptySubtitle}>Đang tải đóng góp của bạn...</AppText>
+          </View>
+        ) : myRequests.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <AppText style={styles.emptyIcon}>📍</AppText>
+            <AppText style={styles.emptyTitle}>Chưa có đóng góp nào</AppText>
+            <AppText style={styles.emptySubtitle}>
+              Bạn có thể đề xuất thêm địa điểm còn thiếu từ Bản đồ hoặc yêu cầu cập nhật trên trang chi tiết địa điểm.
+            </AppText>
+          </View>
+        ) : (
+          <View style={styles.listContainer}>
+            {myRequests.map((req) => {
+              const title = req.name || req.targetDestinationName || 'Đề xuất địa điểm';
+              const badgeColor =
+                req.status === 'APPROVED'
+                  ? { bg: '#dcfce7', text: '#166534', label: 'Đã duyệt' }
+                  : req.status === 'REJECTED'
+                    ? { bg: '#fee2e2', text: '#b91c1c', label: 'Bị từ chối' }
+                    : { bg: '#fef3c7', text: '#b45309', label: 'Chờ duyệt' };
+              return (
+                <View key={req.id} style={[styles.destItemCard, { flexDirection: 'column', alignItems: 'stretch', padding: 14, gap: 6 }]}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <AppText style={{ fontSize: 12, fontWeight: '700', color: '#0284c7' }}>
+                      {req.requestType === 'CREATE' ? '+ Thêm mới' : '✏️ Cập nhật'}
+                    </AppText>
+                    <View style={{ backgroundColor: badgeColor.bg, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999 }}>
+                      <AppText style={{ fontSize: 11.5, fontWeight: '700', color: badgeColor.text }}>
+                        {badgeColor.label}
+                      </AppText>
+                    </View>
+                  </View>
+                  <AppText style={styles.destName}>{title}</AppText>
+                  {req.provinceName && (
+                    <AppText style={{ fontSize: 12.5, color: '#64748b' }}>
+                      📍 {req.provinceName} {req.categoryName ? `· ${req.categoryName}` : ''}
+                    </AppText>
+                  )}
+                  {req.note && (
+                    <AppText style={{ fontSize: 12.5, color: '#334155' }}>
+                      Ghi chú: {req.note}
+                    </AppText>
+                  )}
+                  {req.status === 'REJECTED' && req.rejectionReason && (
+                    <View style={{ backgroundColor: '#fef2f2', padding: 8, borderRadius: 8 }}>
+                      <AppText style={{ fontSize: 12, color: '#b91c1c', fontWeight: '600' }}>
+                        Lý do từ chối: {req.rejectionReason}
+                      </AppText>
+                    </View>
+                  )}
+                  {(req.status === 'PENDING' || req.status === 'REJECTED') && (
+                    <TouchableOpacity
+                      style={{ alignSelf: 'flex-start', marginTop: 4, backgroundColor: '#e0f2fe', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 }}
+                      onPress={() => setEditingRequest(req)}
+                    >
+                      <AppText style={{ fontSize: 12.5, fontWeight: '700', color: '#0369a1' }}>
+                        {req.status === 'REJECTED' ? 'Sửa & gửi lại' : 'Chỉnh sửa'}
+                      </AppText>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              );
+            })}
+          </View>
+        )
+      ) : isLoading ? (
         <View style={styles.emptyContainer}>
           <AppText style={styles.emptySubtitle}>Đang tải danh sách...</AppText>
         </View>
@@ -366,6 +489,14 @@ export default function ProfileRoute() {
           VISTA Mobile • Phiên bản {Constants.expoConfig?.version || '1.0.0'}
         </AppText>
       </View>
+
+      <DestinationRequestModal
+        visible={Boolean(editingRequest)}
+        mode="EDIT"
+        existingRequest={editingRequest}
+        onClose={() => setEditingRequest(null)}
+        onSubmitted={() => void loadMyRequests()}
+      />
     </ScreenContainer>
   );
 }

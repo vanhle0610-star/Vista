@@ -276,7 +276,8 @@ public class GlobalExceptionHandler {
     problem.setInstance(URI.create(request.getRequestURI()));
     if (exception.getStatusCode() == HttpStatus.CONFLICT
         && exception.getReason() != null
-        && (exception.getReason().contains("quyết toán") || exception.getReason().contains("chi tiêu"))) {
+        && (exception.getReason().contains("quyết toán")
+            || exception.getReason().contains("chi tiêu"))) {
       problem.setProperty("code", "TRIP_HAS_UNSETTLED_DEBTS");
     } else {
       problem.setProperty("code", exception.getStatusCode().toString());

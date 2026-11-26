@@ -39,7 +39,8 @@ public class GoogleTokenVerifier {
       return parseDemoToken(idToken);
     }
 
-    // 2. If it's an OAuth2 Access Token (starts with ya29.) -> verify via Google UserInfo API directly
+    // 2. If it's an OAuth2 Access Token (starts with ya29.) -> verify via Google UserInfo API
+    // directly
     if (idToken.startsWith("ya29.")) {
       try {
         @SuppressWarnings("unchecked")

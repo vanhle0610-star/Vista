@@ -614,8 +614,8 @@ public class ExpenseService {
   }
 
   /**
-   * Quyết toán toàn bộ các khoản chi tiêu trong chuyến đi (TV4).
-   * Đánh dấu toàn bộ splits thành SETTLED.
+   * Quyết toán toàn bộ các khoản chi tiêu trong chuyến đi (TV4). Đánh dấu toàn bộ splits thành
+   * SETTLED.
    */
   public void settleAllTripExpenses(UUID tripId, UUID currentUserId) {
     tripAccessService.requireWriteAccess(tripId, currentUserId);

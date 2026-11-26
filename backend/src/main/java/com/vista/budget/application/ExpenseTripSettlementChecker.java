@@ -24,13 +24,14 @@ public class ExpenseTripSettlementChecker implements TripSettlementChecker {
     if (tripId == null) {
       return false;
     }
-    // 1. Kiểm tra xem có khoản phân chia chi phí (split) nào trong trip chưa được quyết toán (settledStatus != 'SETTLED')
+    // 1. Kiểm tra xem có khoản phân chia chi phí (split) nào trong trip chưa được quyết toán
+    // (settledStatus != 'SETTLED')
     boolean hasUnsettledSplits = expenseSplitRepository.existsUnsettledSplitsByTripId(tripId);
     if (hasUnsettledSplits) {
       return true;
     }
 
-    // 2. Kiểm tra xem có yêu cầu thanh toán bù trừ nào đang PENDING hoặc CONFIRMED
+    // 2. Chặn xóa khi yêu cầu thanh toán bù trừ còn ở trạng thái chưa kết thúc.
     return settlementPaymentRequestRepository.existsPendingSettlementRequestsByTripId(tripId);
   }
 }
