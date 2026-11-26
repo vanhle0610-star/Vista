@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getRealPlacesByProvince } from '@/data/realDestinationsData';
+import { calculateIntercityTransit } from '@/lib/intercityTransit';
 
 // Circuit breaker state for Python AI Engine
 let circuitBreakerOpenUntil = 0;
@@ -78,9 +79,14 @@ export async function POST(request: Request) {
     const budgetLevel = body.budgetLevel || 'MEDIUM';
     const arrivalTime = body.arrivalTime || '08:00';
     const departureTime = body.departureTime || '18:00';
+    const originProvince = (body.originProvince || body.origin || 'Hà Nội').trim();
+    const intercityTransport = (body.intercityTransportMode || body.intercityTransport || 'flight').toLowerCase().trim();
+    const transitCalculation = calculateIntercityTransit(originProvince, destination, intercityTransport, body.startDate, peopleCount);
 
     const pythonPayload = {
       destination,
+      origin_province: originProvince,
+      intercity_transport_mode: intercityTransport,
       days: totalDays,
       people: peopleCount,
       interests: body.interests || [],
@@ -132,6 +138,7 @@ export async function POST(request: Request) {
             minFluctuationVnd: pyData.min_fluctuation_vnd,
             maxFluctuationVnd: pyData.max_fluctuation_vnd,
             breakdown: pyData.breakdown || null,
+            intercityTransit: pyData.intercity_transit || transitCalculation,
             conflicts: pyData.conflicts || [],
             assumptions: pyData.assumptions || [],
             warnings: pyData.warnings || [],
@@ -253,6 +260,9 @@ export async function POST(request: Request) {
       });
     }
 
+    const baseCost = (budgetLevel === 'BUDGET' ? 350000 : budgetLevel === 'LUXURY' ? 950000 : 550000) * peopleCount * totalDays;
+    const totalWithTransit = baseCost + transitCalculation.totalTransitCostVnd;
+
     return NextResponse.json({
       provider: 'rule-based-fallback',
       fallbackUsed: true,
@@ -260,7 +270,13 @@ export async function POST(request: Request) {
       destinationProvince: destination,
       totalDays: totalDays,
       budgetLevel: budgetLevel,
-      estimatedTotalCost: 450000 * peopleCount * totalDays,
+      estimatedTotalCost: totalWithTransit,
+      intercityTransit: transitCalculation,
+      breakdown: {
+        onsite_cost: baseCost,
+        intercity_transit_cost: transitCalculation.totalTransitCostVnd,
+        nights_count: Math.max(0, totalDays - 1),
+      },
       warnings: ['Cảnh báo dự phòng: Đang dùng bộ dữ liệu offline (không kết nối được Python AI Engine).'],
       days: fallbackDays,
       citations: [],

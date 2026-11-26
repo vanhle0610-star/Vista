@@ -11,3 +11,7 @@ management:
   endpoint:
     health:
       show-details: never
+vista:
+  jwt:
+    # Bắt buộc biến môi trường JWT_SECRET trong môi trường triển khai thực tế (tối thiểu 256 bits / 32 bytes)
+    secret: ${JWT_SECRET}

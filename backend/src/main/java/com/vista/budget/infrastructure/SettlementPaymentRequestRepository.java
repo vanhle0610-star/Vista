@@ -24,4 +24,13 @@ public interface SettlementPaymentRequestRepository
           + "ORDER BY r.createdAt DESC")
   List<SettlementPaymentRequestEntity> findUserRequestsInTrip(
       @Param("tripId") UUID tripId, @Param("userId") UUID userId);
+
+  @Query(
+      "SELECT COUNT(r) > 0 FROM SettlementPaymentRequestEntity r "
+          + "WHERE r.tripId = :tripId "
+          + "AND r.status IN ("
+          + "com.vista.budget.domain.PaymentRequestStatus.CREATED, "
+          + "com.vista.budget.domain.PaymentRequestStatus.OPENED, "
+          + "com.vista.budget.domain.PaymentRequestStatus.PAYER_MARKED_SENT)")
+  boolean existsPendingSettlementRequestsByTripId(@Param("tripId") UUID tripId);
 }

@@ -975,6 +975,44 @@ export default function TripDetailPage() {
     }
   };
 
+  // Danger Zone / Delete Trip States & Handler (TV4 P1)
+  const [showDeleteTripModal, setShowDeleteTripModal] = useState(false);
+  const [isDeletingTrip, setIsDeletingTrip] = useState(false);
+  const [unsettledDebtsError, setUnsettledDebtsError] = useState<{
+    open: boolean;
+    message: string;
+    tripId: string;
+  } | null>(null);
+
+  const handleConfirmDeleteTrip = async () => {
+    if (!trip || !currentUser || !isTripOwner) return;
+    setIsDeletingTrip(true);
+    try {
+      await apiRequest(`/trips/${tripId}`, {
+        method: 'DELETE',
+      });
+      showToast('✓ Đã xóa chuyến đi thành công!');
+      setShowDeleteTripModal(false);
+      window.dispatchEvent(new CustomEvent('vista-trips-change'));
+      router.replace('/trips');
+    } catch (err: any) {
+      setIsDeletingTrip(false);
+      setShowDeleteTripModal(false);
+      if (err?.status === 409 || err?.code === 'TRIP_HAS_UNSETTLED_DEBTS') {
+        const message = err?.detail || err?.message || 'Chuyến đi còn khoản chưa quyết toán. Vui lòng kiểm tra Thủ quỹ trước khi xóa.';
+        setUnsettledDebtsError({
+          open: true,
+          message,
+          tripId: String(tripId),
+        });
+        return;
+      }
+      showToast(err?.detail || err?.message || 'Không thể xóa chuyến đi. Vui lòng thử lại sau.');
+    } finally {
+      setIsDeletingTrip(false);
+    }
+  };
+
   const handleTransferOwnership = (targetMember: any) => {
     if (!trip || !currentUser || !isTripOwner) return;
     const targetUserId = targetMember.userId || targetMember.id;
@@ -1167,9 +1205,24 @@ export default function TripDetailPage() {
       .then((serverInvs) => {
         if (Array.isArray(serverInvs) && serverInvs.length > 0) {
           setInvitationsList((prev) => {
-            const map = new Map();
-            prev.forEach((i: any) => map.set(i.token, { ...i, email: i.email || i.inviteeEmail || '' }));
-            serverInvs.forEach((i: any) => map.set(i.token, { ...i, email: i.email || i.inviteeEmail || '' }));
+            const map = new Map<string, any>();
+            prev.forEach((i: any) => {
+              const key = String(i.id || i.token);
+              map.set(key, { ...i, email: i.email || i.inviteeEmail || '' });
+            });
+            serverInvs.forEach((i: any) => {
+              const key = String(i.id || i.token);
+              const existing = map.get(key) || Array.from(map.values()).find((p) => p.token && i.token && p.token === i.token);
+              const resolvedKey = existing ? String(existing.id || existing.token) : key;
+              // Nếu backend/state đã có trạng thái kết thúc (ACCEPTED/REVOKED/DECLINED/EXPIRED), không cho store cũ ghi đè lại thành PENDING
+              const keepExistingStatus = existing && existing.status && existing.status !== 'PENDING' && i.status === 'PENDING';
+              map.set(resolvedKey, {
+                ...(existing || {}),
+                ...i,
+                email: i.email || i.inviteeEmail || existing?.email || '',
+                status: keepExistingStatus ? existing.status : (i.status || existing?.status || 'PENDING'),
+              });
+            });
             return Array.from(map.values());
           });
         }
@@ -1203,11 +1256,12 @@ export default function TripDetailPage() {
       }
 
       try {
-        const [serverTrip, serverMembers, serverProposals, serverItineraryDays] = await Promise.all([
+        const [serverTrip, serverMembers, serverProposals, serverItineraryDays, serverInvitations] = await Promise.all([
           apiRequest<any>(`/trips/${tripId}`).catch(() => null),
           apiRequest<any[]>(`/trips/${tripId}/members`).catch(() => []),
           apiRequest<any[]>(`/trips/${tripId}/proposals`).catch(() => null),
           apiRequest<any[]>(`/trips/${tripId}/itinerary/days`).catch(() => []),
+          apiRequest<any[]>(`/trips/${tripId}/invitations`).catch(() => null),
         ]);
 
         if (!serverTrip) {
@@ -1269,6 +1323,59 @@ export default function TripDetailPage() {
           userId: m.userId,
           email: m.email,
         }));
+
+        // Đồng bộ trạng thái lời mời thực tế từ Spring Boot PostgreSQL (ACCEPTED / REVOKED / DECLINED / PENDING)
+        if (Array.isArray(serverInvitations)) {
+          const activeMemberEmails = new Set(
+            formattedMembers
+              .map((m) => (m.email || '').trim().toLowerCase())
+              .filter(Boolean)
+          );
+          setInvitationsList((prev) => {
+            const prevById = new Map<string, any>();
+            prev.forEach((p) => {
+              if (p.id) prevById.set(String(p.id), p);
+            });
+
+            const syncedIds = new Set<string>();
+            const syncedFromBackend = serverInvitations.map((si: any) => {
+              const sid = String(si.id);
+              syncedIds.add(sid);
+              const existing = prevById.get(sid);
+              const siEmail = (si.inviteeEmail || existing?.email || '').trim();
+              const resolvedStatus = si.status || existing?.status || 'PENDING';
+              return {
+                id: sid,
+                email: siEmail,
+                token: existing?.token || sid.slice(0, 8).toUpperCase(),
+                status: resolvedStatus,
+                expiresAt:
+                  existing?.expiresAt ||
+                  (si.expiresAt ? new Date(si.expiresAt).toLocaleDateString('vi-VN') : 'Trong 7 ngày tới'),
+                emailSent: existing?.emailSent ?? true,
+                emailSentAt: existing?.emailSentAt,
+                emailMode: existing?.emailMode,
+              };
+            });
+
+            // Giữ các lời mời cũ chỉ có ở store/local (chưa gắn UUID backend), nhưng tự cập nhật nếu email đã vào nhóm
+            const extraLocal = prev
+              .filter((p) => !p.id || !syncedIds.has(String(p.id)))
+              .map((p) => {
+                const pEmail = (p.email || '').trim().toLowerCase();
+                if (p.status === 'PENDING' && pEmail && activeMemberEmails.has(pEmail)) {
+                  return { ...p, status: 'ACCEPTED' as const };
+                }
+                return p;
+              });
+
+            const merged = [...syncedFromBackend, ...extraLocal];
+            try {
+              localStorage.setItem(`vista_invitations_${tripId}`, JSON.stringify(merged));
+            } catch {}
+            return merged;
+          });
+        }
 
         const myMemberRecord = (serverMembers || []).find((m: any) => m.userId === currentUser?.id);
         const isOwner = Boolean(
@@ -3736,7 +3843,7 @@ export default function TripDetailPage() {
                 >
                   <span>+ Tạo lời mời mới</span>
                 </button>
-                {isTripMember && (
+                {isTripMember && !isTripOwner && (
                   <button
                     type="button"
                     onClick={handleLeaveTrip}
@@ -3758,6 +3865,31 @@ export default function TripDetailPage() {
                   >
                     <LogOut size={16} />
                     <span>Rời nhóm</span>
+                  </button>
+                )}
+                {isTripOwner && (
+                  <button
+                    type="button"
+                    id="btn-delete-trip"
+                    onClick={() => setShowDeleteTripModal(true)}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '9px 14px',
+                      background: '#FFF1F2',
+                      color: '#E11D48',
+                      border: '1px solid #FECDD3',
+                      borderRadius: '10px',
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                    }}
+                    title="Hủy & Xóa chuyến đi này (Chỉ dành cho Trưởng nhóm)"
+                  >
+                    <Trash2 size={16} />
+                    <span>Xóa chuyến đi</span>
                   </button>
                 )}
               </div>
@@ -6524,6 +6656,212 @@ export default function TripDetailPage() {
                   </>
                 )}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── MODAL: CONFIRM DELETE TRIP (Dành cho Trưởng nhóm - TV4) ──── */}
+      {showDeleteTripModal && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.65)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px',
+          }}
+          onClick={() => !isDeletingTrip && setShowDeleteTripModal(false)}
+        >
+          <div
+            style={{
+              background: '#FFFFFF',
+              borderRadius: '20px',
+              maxWidth: '460px',
+              width: '100%',
+              padding: '28px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              textAlign: 'center',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                width: '56px',
+                height: '56px',
+                borderRadius: '50%',
+                background: '#FEE2E2',
+                color: '#DC2626',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px',
+              }}
+            >
+              <Trash2 size={28} />
+            </div>
+            <h3 style={{ fontSize: '19px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
+              Xác nhận xóa chuyến đi?
+            </h3>
+            <p style={{ fontSize: '14px', color: '#64748B', lineHeight: '1.6', marginBottom: '24px' }}>
+              Hành động này sẽ <strong>xóa vĩnh viễn</strong> toàn bộ lịch trình, hoạt động và dữ liệu chuyến đi <strong>&ldquo;{trip.title}&rdquo;</strong>. Thao tác này không thể hoàn tác.
+            </p>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+              <button
+                type="button"
+                onClick={() => setShowDeleteTripModal(false)}
+                disabled={isDeletingTrip}
+                style={{
+                  flex: 1,
+                  padding: '11px 18px',
+                  borderRadius: '12px',
+                  border: '1.5px solid #CBD5E1',
+                  background: '#FFFFFF',
+                  color: '#475569',
+                  fontWeight: 700,
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                }}
+              >
+                Hủy bỏ
+              </button>
+              <button
+                type="button"
+                id="btn-confirm-delete-trip"
+                onClick={handleConfirmDeleteTrip}
+                disabled={isDeletingTrip}
+                style={{
+                  flex: 1,
+                  padding: '11px 18px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  background: '#DC2626',
+                  color: '#FFFFFF',
+                  fontWeight: 700,
+                  fontSize: '14px',
+                  cursor: isDeletingTrip ? 'not-allowed' : 'pointer',
+                  opacity: isDeletingTrip ? 0.7 : 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                }}
+              >
+                {isDeletingTrip ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    <span>Đang xóa...</span>
+                  </>
+                ) : (
+                  <span>Tôi hiểu, Xóa vĩnh viễn</span>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── MODAL: UNSETTLED DEBTS ERROR 409 (TV4 Bắt buộc) ────────────── */}
+      {unsettledDebtsError?.open && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.65)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px',
+          }}
+          onClick={() => setUnsettledDebtsError(null)}
+        >
+          <div
+            style={{
+              background: '#FFFFFF',
+              borderRadius: '20px',
+              maxWidth: '480px',
+              width: '100%',
+              padding: '28px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              textAlign: 'center',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                width: '60px',
+                height: '60px',
+                borderRadius: '50%',
+                background: '#FEF3C7',
+                color: '#D97706',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px',
+              }}
+            >
+              <AlertTriangle size={32} />
+            </div>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#FFFBEB', color: '#B45309', border: '1px solid #FDE68A', padding: '4px 12px', borderRadius: '999px', fontSize: '12px', fontWeight: 800, marginBottom: '12px' }}>
+              <span>HTTP 409 CONFLICT</span>
+              <span>·</span>
+              <span>TRIP_HAS_UNSETTLED_DEBTS</span>
+            </div>
+            <h3 style={{ fontSize: '19px', fontWeight: 800, color: '#0F172A', marginBottom: '10px' }}>
+              Không thể xóa chuyến đi
+            </h3>
+            <p style={{ fontSize: '14.5px', color: '#475569', lineHeight: '1.6', marginBottom: '24px' }}>
+              {unsettledDebtsError.message}
+            </p>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+              <button
+                type="button"
+                id="btn-close-debt-modal"
+                onClick={() => setUnsettledDebtsError(null)}
+                style={{
+                  flex: 1,
+                  padding: '12px 18px',
+                  borderRadius: '12px',
+                  border: '1.5px solid #CBD5E1',
+                  background: '#FFFFFF',
+                  color: '#475569',
+                  fontWeight: 700,
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                }}
+              >
+                Đã hiểu & Đóng
+              </button>
+              <Link
+                href={`/trips/${unsettledDebtsError.tripId}/treasury`}
+                id="btn-open-treasury-from-debt-modal"
+                style={{
+                  flex: 1.2,
+                  padding: '12px 18px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  background: 'linear-gradient(135deg, #0284C7, #0369A1)',
+                  color: '#FFFFFF',
+                  fontWeight: 700,
+                  fontSize: '14px',
+                  textDecoration: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  boxShadow: '0 4px 14px rgba(2, 132, 199, 0.35)',
+                }}
+                onClick={() => setUnsettledDebtsError(null)}
+              >
+                <Wallet size={16} />
+                <span>Mở Thủ quỹ</span>
+              </Link>
             </div>
           </div>
         </div>

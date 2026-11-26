@@ -517,4 +517,100 @@ class ExpenseServiceTest {
     assertThat(accounts).isEmpty();
     verify(userRepository, never()).findAllById(any());
   }
+
+  @Test
+  @DisplayName("17. hasOutstandingDebts: Trả về false khi chuyến đi chưa có bất kỳ khoản chi nào")
+  void hasOutstandingDebts_returnsFalse_whenNoExpenses() {
+    when(expenseRepository.findByTripIdAndStatusOrderByOccurredAtDesc(tripId, "ACTIVE"))
+        .thenReturn(List.of());
+
+    boolean hasDebts = expenseService.hasOutstandingDebts(tripId);
+
+    assertThat(hasDebts).isFalse();
+  }
+
+  @Test
+  @DisplayName("18. hasOutstandingDebts: Trả về true khi chuyến đi còn khoản chia tiền UNSETTLED")
+  void hasOutstandingDebts_returnsTrue_whenSplitsUnsettled() {
+    ExpenseEntity exp =
+        new ExpenseEntity(
+            tripId,
+            "Ăn tối",
+            BigDecimal.valueOf(200000),
+            "VND",
+            currentUserId,
+            ExpenseCategory.FOOD,
+            Instant.now());
+    ExpenseSplitEntity split1 =
+        new ExpenseSplitEntity(exp, currentUserId, BigDecimal.valueOf(100000));
+    split1.setSettledStatus("SETTLED");
+    ExpenseSplitEntity split2 = new ExpenseSplitEntity(exp, partnerId, BigDecimal.valueOf(100000));
+    split2.setSettledStatus("UNSETTLED");
+    exp.addSplit(split1);
+    exp.addSplit(split2);
+
+    when(expenseRepository.findByTripIdAndStatusOrderByOccurredAtDesc(tripId, "ACTIVE"))
+        .thenReturn(List.of(exp));
+
+    boolean hasDebts = expenseService.hasOutstandingDebts(tripId);
+
+    assertThat(hasDebts).isTrue();
+  }
+
+  @Test
+  @DisplayName("19. hasOutstandingDebts: Trả về false khi tất cả khoản chia đã SETTLED")
+  void hasOutstandingDebts_returnsFalse_whenAllSplitsSettled() {
+    ExpenseEntity exp =
+        new ExpenseEntity(
+            tripId,
+            "Ăn trưa",
+            BigDecimal.valueOf(200000),
+            "VND",
+            currentUserId,
+            ExpenseCategory.FOOD,
+            Instant.now());
+    ExpenseSplitEntity split1 =
+        new ExpenseSplitEntity(exp, currentUserId, BigDecimal.valueOf(100000));
+    split1.setSettledStatus("SETTLED");
+    ExpenseSplitEntity split2 = new ExpenseSplitEntity(exp, partnerId, BigDecimal.valueOf(100000));
+    split2.setSettledStatus("SETTLED");
+    exp.addSplit(split1);
+    exp.addSplit(split2);
+
+    when(expenseRepository.findByTripIdAndStatusOrderByOccurredAtDesc(tripId, "ACTIVE"))
+        .thenReturn(List.of(exp));
+    when(calculationService.calculateSettlementDeltas(any(), any()))
+        .thenReturn(Map.of(currentUserId, BigDecimal.ZERO, partnerId, BigDecimal.ZERO));
+    when(calculationService.simplifyDebts(any())).thenReturn(List.of());
+
+    boolean hasDebts = expenseService.hasOutstandingDebts(tripId);
+
+    assertThat(hasDebts).isFalse();
+  }
+
+  @Test
+  @DisplayName("20. settleAllTripExpenses: Đánh dấu toàn bộ splits thành SETTLED")
+  void settleAllTripExpenses_marksAllSplitsSettled() {
+    ExpenseEntity exp =
+        new ExpenseEntity(
+            tripId,
+            "Vé tham quan",
+            BigDecimal.valueOf(500000),
+            "VND",
+            currentUserId,
+            ExpenseCategory.ACTIVITIES,
+            Instant.now());
+    ExpenseSplitEntity split = new ExpenseSplitEntity(exp, partnerId, BigDecimal.valueOf(500000));
+    split.setSettledStatus("UNSETTLED");
+    exp.addSplit(split);
+
+    doNothing().when(tripAccessService).requireWriteAccess(tripId, currentUserId);
+    when(expenseRepository.findByTripIdAndStatusOrderByOccurredAtDesc(tripId, "ACTIVE"))
+        .thenReturn(List.of(exp));
+
+    expenseService.settleAllTripExpenses(tripId, currentUserId);
+
+    assertThat(split.getSettledStatus()).isEqualTo("SETTLED");
+    verify(expenseSplitRepository).save(split);
+  }
 }

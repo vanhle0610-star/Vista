@@ -11,6 +11,7 @@ import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -39,5 +40,13 @@ public class TripSettlementController {
     List<SettlementAccountResponse> accounts =
         expenseService.getSettlementAccounts(tripId, currentUserId);
     return ResponseEntity.ok(accounts);
+  }
+
+  @PostMapping("/settle-all")
+  @Operation(summary = "Quyết toán toàn bộ công nợ chuyến đi (TV4)")
+  public ResponseEntity<Void> settleAllExpenses(@PathVariable UUID tripId) {
+    UUID currentUserId = currentUserProvider.getCurrentUserId();
+    expenseService.settleAllTripExpenses(tripId, currentUserId);
+    return ResponseEntity.ok().build();
   }
 }

@@ -15,6 +15,7 @@ import type { Coordinates, DestinationMarker, RouteStop } from '@/features/map-l
 import { createStop, initialStops, resolveStops, stopRole, MAX_ROUTE_POINTS, type PlannerStop } from '@/features/map-location/routing/stops';
 import type { TravelMode } from '@/features/map-location/routing/routes';
 import { IconRoute, IconSearch } from '@/features/map-location/components/MapIcons';
+import { DestinationRequestModal } from '@/components/DestinationRequestModal';
 import styles from './map-page.module.css';
 
 // Coordinates for flyTo camera to center of 63 Vietnam provinces
@@ -118,6 +119,7 @@ export default function VistaMapPage() {
   const [selectedTripId, setSelectedTripId] = useState<string>('');
   const [selectedDayNumber, setSelectedDayNumber] = useState<number>(1);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [showSuggestPlaceModal, setShowSuggestPlaceModal] = useState(false);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -430,6 +432,25 @@ export default function VistaMapPage() {
               {/* Mode 1: Khám phá */}
               {sidebarMode === 'explore' && (
                 <div className={styles.modeContainer}>
+                  <div style={{ padding: '8px 12px 0' }}>
+                    <button
+                      type="button"
+                      onClick={() => setShowSuggestPlaceModal(true)}
+                      style={{
+                        width: '100%',
+                        padding: '8px 12px',
+                        borderRadius: 10,
+                        border: '1px dashed #0284c7',
+                        background: '#f0f9ff',
+                        color: '#0369a1',
+                        fontSize: 13,
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      + Đề xuất thêm địa điểm còn thiếu
+                    </button>
+                  </div>
                   {data.error && (
                     <div className={styles.dataNotice} role="alert">
                       <p>{data.error}</p>
@@ -659,6 +680,25 @@ export default function VistaMapPage() {
         <div className={styles.toastNotification}>
           <span>{toastMessage}</span>
         </div>
+      )}
+
+      {showSuggestPlaceModal && (
+        <DestinationRequestModal
+          mode="CREATE"
+          defaultProvince={selectedProvince !== 'all' ? selectedProvince : 'Đà Nẵng'}
+          defaultCoords={
+            coords
+              ? { latitude: coords.latitude, longitude: coords.longitude }
+              : PROVINCE_CENTERS[selectedProvince]
+                ? {
+                    latitude: PROVINCE_CENTERS[selectedProvince].latitude,
+                    longitude: PROVINCE_CENTERS[selectedProvince].longitude,
+                  }
+                : null
+          }
+          onClose={() => setShowSuggestPlaceModal(false)}
+          onSuccess={(msg) => showToast(msg)}
+        />
       )}
     </div>
   );

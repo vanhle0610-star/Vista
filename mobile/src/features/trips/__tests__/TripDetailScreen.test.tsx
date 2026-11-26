@@ -1,5 +1,6 @@
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { Alert } from 'react-native';
+import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import { TripDetailScreen } from '../screens/TripDetailScreen';
 import { tripFeatureApi } from '../api';
 import { authStorage } from '@/services/auth/authStorage';
@@ -122,5 +123,55 @@ describe('TripDetailScreen (Bước 1 - TV3)', () => {
 
     expect(await findByText('Bạn không có quyền xem chuyến đi này')).toBeTruthy();
     expect(getByText('Quay lại trang chủ')).toBeTruthy();
+  });
+
+  it('handles 409 Conflict when deleting a trip with unsettled debts', async () => {
+    const alertSpy = jest.spyOn(Alert, 'alert');
+    (authStorage.getUser as jest.Mock).mockResolvedValue({ id: 'user-owner' });
+    (tripFeatureApi.fetchTrip as jest.Mock).mockResolvedValue({
+      id: 'trip-101',
+      ownerId: 'user-owner',
+      title: 'Đà Nẵng: Biển xanh & Núi non',
+      startDate: '2026-06-12',
+      endDate: '2026-06-15',
+      destinationSummary: 'Đà Nẵng, Việt Nam',
+      budgetTotal: 10000000,
+      currency: 'VND',
+      status: 'ACTIVE',
+      role: 'OWNER',
+      members: [],
+    });
+    (tripFeatureApi.fetchTripMembers as jest.Mock).mockResolvedValue([]);
+
+    const error409 = new Error('Conflict') as any;
+    error409.response = {
+      status: 409,
+      data: {
+        code: 'TRIP_HAS_UNSETTLED_DEBTS',
+        detail: 'Chuyến đi còn khoản chi tiêu hoặc công nợ chưa quyết toán. Vui lòng vào mục Thủ quỹ để quyết toán toàn bộ trước khi xóa.',
+      },
+    };
+    (tripFeatureApi.deleteTrip as jest.Mock).mockRejectedValueOnce(error409);
+
+    const { findByText } = await render(<TripDetailScreen tripId="trip-101" />);
+
+    const deleteBtn = await findByText('Hủy & Xóa chuyến đi này');
+    await act(async () => {
+      fireEvent.press(deleteBtn);
+    });
+
+    const confirmBtn = await findByText('Tôi hiểu, Xóa vĩnh viễn');
+    await act(async () => {
+      fireEvent.press(confirmBtn);
+    });
+
+    expect(tripFeatureApi.deleteTrip).toHaveBeenCalledWith('trip-101');
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalledWith(
+        'Không thể xóa chuyến đi',
+        expect.stringContaining('chưa quyết toán'),
+        expect.any(Array)
+      );
+    });
   });
 });

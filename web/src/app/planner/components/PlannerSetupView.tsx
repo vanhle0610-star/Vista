@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useId } from 'react';
+import React, { useState, useId, useEffect } from 'react';
 import styles from './planner-setup.module.css';
 import {
   MapPin,
@@ -19,7 +19,12 @@ import {
   CloudRain,
   Car,
   Footprints,
+  Plane,
+  Train,
+  Bus,
+  AlertCircle,
 } from 'lucide-react';
+import { calculateIntercityTransit, getAvailableTransportModes } from '@/lib/intercityTransit';
 
 export interface CuratedTemplateItem {
   id: string;
@@ -45,6 +50,10 @@ export interface CuratedTemplateItem {
 export interface PlannerSetupProps {
   destination: string;
   onChangeDestination: (dest: string) => void;
+  originProvince?: string;
+  onChangeOriginProvince?: (origin: string) => void;
+  intercityTransport?: string;
+  onChangeIntercityTransport?: (mode: string) => void;
   startDate: string;
   onChangeStartDate: (date: string) => void;
   duration: string;
@@ -110,6 +119,10 @@ const QUICK_DESTINATIONS = ['Đà Nẵng', 'TP. Hồ Chí Minh', 'Sa Pa', 'Ninh 
 export function PlannerSetupView({
   destination,
   onChangeDestination,
+  originProvince = 'Hà Nội',
+  onChangeOriginProvince,
+  intercityTransport = 'flight',
+  onChangeIntercityTransport,
   startDate,
   onChangeStartDate,
   duration,
@@ -153,6 +166,25 @@ export function PlannerSetupView({
 
   const filteredDestinations = allDestinations.filter((d) =>
     d.nameVi.toLowerCase().includes(destFilter.toLowerCase().trim())
+  );
+
+  const availableModes = getAvailableTransportModes(originProvince, destination);
+
+  // Tự động chuyển đổi nếu phương tiện hiện tại không khả thi cho chặng này (ví dụ: Đà Nẵng -> Huế ko có máy bay)
+  useEffect(() => {
+    const currentModeAvailable = availableModes.find((m) => m.id === intercityTransport)?.available;
+    if (currentModeAvailable === false) {
+      const fallback = availableModes.find((m) => m.available)?.id || 'train';
+      onChangeIntercityTransport?.(fallback);
+    }
+  }, [originProvince, destination, intercityTransport, availableModes, onChangeIntercityTransport]);
+
+  const transitCalc = calculateIntercityTransit(
+    originProvince,
+    destination,
+    intercityTransport,
+    startDate,
+    peopleCount
   );
 
   const durationLabel =
@@ -303,6 +335,188 @@ export function PlannerSetupView({
                   {city}
                 </button>
               ))}
+            </div>
+          </div>
+
+          {/* 1b. Xuất phát & Phương tiện liên tỉnh với Biến động theo mùa */}
+          <div className={styles.moduleCard} style={{ borderLeft: '3.5px solid #0088CC' }}>
+            <div className={styles.moduleHeader}>
+              <div className={styles.moduleTitleRow}>
+                <Plane size={16} color="#0088CC" />
+                <span>Điểm xuất phát & Phương tiện liên tỉnh</span>
+              </div>
+              <span
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  padding: '2px 8px',
+                  borderRadius: '12px',
+                  background: transitCalc.seasonalFactor > 1.2 ? '#FEF2F2' : transitCalc.seasonalFactor < 1 ? '#F0FDF4' : '#F0F9FF',
+                  color: transitCalc.seasonalFactor > 1.2 ? '#DC2626' : transitCalc.seasonalFactor < 1 ? '#16A34A' : '#0284C7',
+                  border: `1px solid ${transitCalc.seasonalFactor > 1.2 ? '#FECDD3' : transitCalc.seasonalFactor < 1 ? '#BBF7D0' : '#BAE6FD'}`,
+                }}
+              >
+                {transitCalc.seasonBadge}
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '10px' }}>
+              {/* Origin Selection */}
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 600, color: '#475569', marginBottom: '6px', display: 'block' }}>
+                  Nơi xuất phát của đoàn:
+                </label>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {['Hà Nội', 'TP. Hồ Chí Minh', 'Đà Nẵng', 'Cần Thơ', 'Hải Phòng'].map((orig) => (
+                    <button
+                      key={orig}
+                      type="button"
+                      onClick={() => onChangeOriginProvince?.(orig)}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '8px',
+                        fontSize: '12px',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease',
+                        border: originProvince === orig ? '1.5px solid #0088CC' : '1px solid #E2E8F0',
+                        background: originProvince === orig ? '#F0F9FF' : '#FFFFFF',
+                        color: originProvince === orig ? '#0088CC' : '#334155',
+                        fontWeight: originProvince === orig ? 700 : 500,
+                      }}
+                    >
+                      {orig}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Transit Mode Selection */}
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 600, color: '#475569', marginBottom: '6px', display: 'block' }}>
+                  Lựa chọn phương tiện khứ hồi:
+                </label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
+                  {[
+                    { id: 'flight', label: 'Máy bay', icon: Plane, defaultDesc: 'Nhanh nhất' },
+                    { id: 'train', label: 'Tàu hỏa', icon: Train, defaultDesc: 'Trải nghiệm' },
+                    { id: 'coach', label: 'Xe khách / Limousine', icon: Bus, defaultDesc: 'Tiết kiệm' },
+                    { id: 'car', label: 'Ô tô cá nhân', icon: Car, defaultDesc: 'Xăng dầu & BOT' },
+                  ].map((m) => {
+                    const IconComp = m.icon;
+                    const modeStatus = availableModes.find((item) => item.id === m.id);
+                    const isAvailable = modeStatus ? modeStatus.available : true;
+                    const isActive = intercityTransport === m.id;
+
+                    return (
+                      <button
+                        key={m.id}
+                        type="button"
+                        disabled={!isAvailable}
+                        onClick={() => {
+                          if (isAvailable) onChangeIntercityTransport?.(m.id);
+                        }}
+                        title={!isAvailable ? (modeStatus?.unavailableReason || 'Phương tiện không khả dụng cho tuyến đường này') : ''}
+                        style={{
+                          padding: '8px 10px',
+                          borderRadius: '8px',
+                          cursor: isAvailable ? 'pointer' : 'not-allowed',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'flex-start',
+                          gap: '2px',
+                          textAlign: 'left',
+                          transition: 'all 0.15s ease',
+                          border: isActive && isAvailable
+                            ? '1.5px solid #0088CC'
+                            : !isAvailable
+                            ? '1px dashed #CBD5E1'
+                            : '1px solid #E2E8F0',
+                          background: isActive && isAvailable
+                            ? '#F0F9FF'
+                            : !isAvailable
+                            ? '#F1F5F9'
+                            : '#FFFFFF',
+                          opacity: isAvailable ? 1 : 0.55,
+                          position: 'relative',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '6px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <IconComp size={13} color={isActive && isAvailable ? '#0088CC' : !isAvailable ? '#94A3B8' : '#64748B'} />
+                            <span
+                              style={{
+                                fontSize: '12px',
+                                fontWeight: isActive && isAvailable ? 700 : 600,
+                                color: isActive && isAvailable ? '#0088CC' : !isAvailable ? '#94A3B8' : '#1E293B',
+                                textDecoration: !isAvailable ? 'line-through' : 'none',
+                              }}
+                            >
+                              {m.label}
+                            </span>
+                          </div>
+                          {!isAvailable && (
+                            <span style={{ fontSize: '9px', fontWeight: 600, background: '#E2E8F0', color: '#64748B', padding: '1px 4px', borderRadius: '4px' }}>
+                              Không có
+                            </span>
+                          )}
+                        </div>
+                        <span style={{ fontSize: '10px', color: !isAvailable ? '#94A3B8' : '#64748B' }}>
+                          {!isAvailable ? 'Không có tuyến này' : m.defaultDesc}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Notice if vehicle was auto-switched or has route limitation */}
+              {!transitCalc.isAvailable && (
+                <div
+                  style={{
+                    padding: '8px 11px',
+                    borderRadius: '8px',
+                    background: '#EFF6FF',
+                    border: '1px solid #BFDBFE',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    fontSize: '11.5px',
+                    color: '#1D4ED8',
+                  }}
+                >
+                  <AlertCircle size={15} color="#2563EB" style={{ flexShrink: 0 }} />
+                  <span>{transitCalc.summary}</span>
+                </div>
+              )}
+
+              {/* Live Fare Estimation Banner */}
+              <div
+                style={{
+                  padding: '9px 12px',
+                  borderRadius: '9px',
+                  background: '#F8FAFC',
+                  border: '1px solid #E2E8F0',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '8px',
+                }}
+              >
+                <div>
+                  <span style={{ fontSize: '11px', color: '#64748B' }}>Dự toán {transitCalc.transportName}:</span>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>
+                    ~{transitCalc.actualFarePerPerson.toLocaleString('vi-VN')} đ/người (Khứ hồi)
+                  </div>
+                  <span style={{ fontSize: '10.5px', color: '#0088CC' }}>Đến: {transitCalc.arrivalHub}</span>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <span style={{ fontSize: '10.5px', color: '#64748B' }}>Tổng {peopleCount} người:</span>
+                  <div style={{ fontSize: '13.5px', fontWeight: 800, color: '#0284C7' }}>
+                    {transitCalc.totalTransitCostVnd.toLocaleString('vi-VN')} đ
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 

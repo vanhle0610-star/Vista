@@ -51,10 +51,6 @@ public class JwtTokenService {
             user.getRoles().stream()
                 .map(r -> r.getCode().startsWith("ROLE_") ? r.getCode() : "ROLE_" + r.getCode())
                 .toList());
-    if (user.getEmail() != null && user.getEmail().toLowerCase().contains("admin")) {
-      if (!roles.contains("ROLE_ADMIN")) roles.add("ROLE_ADMIN");
-      if (!roles.contains("ROLE_MODERATOR")) roles.add("ROLE_MODERATOR");
-    }
 
     return Jwts.builder()
         .id(UUID.randomUUID().toString())
