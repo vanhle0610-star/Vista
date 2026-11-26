@@ -10,6 +10,11 @@ import {
   getSampleProposals,
 } from '@/data/sampleItineraries';
 import {
+  seedSampleItineraryToTrip,
+  parseTimeRangeForApi,
+  toIsoDateOffset,
+} from '@/utils/itinerarySeed';
+import {
   validateAndParseTripDates,
   getTripDayMeta,
   getThemeForDay,
@@ -59,6 +64,7 @@ import {
   Vote,
   Unlock,
   Loader2,
+  Trash2,
 } from 'lucide-react';
 import { SkeletonTripsPage, SkeletonTimeline, SkeletonTaskList } from '@/components/common/Skeleton';
 import { GroupMapTab } from '@/features/trip-location/components/GroupMapTab';
@@ -210,7 +216,28 @@ function resolveStopImage(params: { title: string; category: string; customImage
   if (hasAny(['cafe', 'cà phê', 'ca phe', 'coffee', 'trà']) || /\btra\b/.test(titleLower)) {
     return pickImageFromPool(COFFEE_KEYWORD_IMAGES, params.title);
   }
-  if (hasAny(['quán ăn', 'quan an', 'nhà hàng', 'nha hang', 'ẩm thực', 'am thuc', 'bún', 'phở', 'mì quảng', 'cơm', 'hải sản'])) {
+  if (
+    hasAny([
+      'quán ăn',
+      'quan an',
+      'nhà hàng',
+      'nha hang',
+      'ẩm thực',
+      'am thuc',
+      'bún',
+      'phở',
+      'mì quảng',
+      'bánh xèo',
+      'bánh mì',
+      'cơm',
+      'hải sản',
+      'lẩu',
+      'nướng',
+      'ốc',
+      'chè',
+      'nem',
+    ])
+  ) {
     return pickImageFromPool(FOOD_KEYWORD_IMAGES, params.title);
   }
   if (hasAny(['biển', 'bien', 'bãi', 'bai', 'tắm', 'tam'])) {
@@ -609,6 +636,155 @@ function formatMembersForCurrentUser(
   return finalized.length > 0 ? finalized : [getCurrentUserMember(defaultRole)];
 }
 
+const STOP_TIME_PRESETS = [
+  { label: 'Sáng', start: '08:00', end: '10:30' },
+  { label: 'Trưa', start: '11:30', end: '13:30' },
+  { label: 'Chiều', start: '14:00', end: '17:00' },
+  { label: 'Tối', start: '18:30', end: '21:00' },
+] as const;
+
+function normalizeTimePart(raw?: string): string | null {
+  if (!raw) return null;
+  const match = raw.trim().match(/^(\d{1,2}):(\d{2})/);
+  if (!match) return null;
+  const hour = Number(match[1]);
+  const minute = Number(match[2]);
+  if (Number.isNaN(hour) || Number.isNaN(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+    return null;
+  }
+  return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+}
+
+function splitTimeRange(value: string, fallbackStart = '14:00', fallbackEnd = '16:00'): { start: string; end: string } {
+  const parts = (value || '').split(/[-–—]/);
+  const start = normalizeTimePart(parts[0]) || fallbackStart;
+  const end = normalizeTimePart(parts[1]) || fallbackEnd;
+  return { start, end };
+}
+
+function validateTimeRange(value: string): string | null {
+  const parts = (value || '').split(/[-–—]/);
+  const start = normalizeTimePart(parts[0]);
+  const end = normalizeTimePart(parts[1]);
+  if (!start || !end) return 'Vui lòng chọn đầy đủ giờ bắt đầu và giờ kết thúc.';
+  const [sh, sm] = start.split(':').map(Number);
+  const [eh, em] = end.split(':').map(Number);
+  if (eh * 60 + em <= sh * 60 + sm) {
+    return 'Giờ kết thúc phải sau giờ bắt đầu.';
+  }
+  return null;
+}
+
+/** Shared start/end time picker with quick day-part presets, outputting "HH:mm – HH:mm". */
+function TimeRangePickerField({
+  label,
+  value,
+  onChange,
+  error,
+}: {
+  label: string;
+  value: string;
+  onChange: (nextValue: string) => void;
+  error?: string | null;
+}) {
+  const { start, end } = splitTimeRange(value);
+  const liveInvalid = validateTimeRange(value);
+  const displayError = error || liveInvalid;
+
+  return (
+    <div>
+      <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+        {label}
+      </label>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <span style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#64748B', marginBottom: '3px' }}>
+            Từ
+          </span>
+          <input
+            type="time"
+            value={start}
+            onChange={(e) => {
+              const nextStart = normalizeTimePart(e.target.value) || start;
+              onChange(`${nextStart} – ${end}`);
+            }}
+            style={{
+              width: '100%',
+              padding: '8px 10px',
+              borderRadius: '10px',
+              border: `1px solid ${displayError ? '#EF4444' : '#CBD5E1'}`,
+              fontSize: '14px',
+              fontWeight: 600,
+              color: '#0F172A',
+              background: '#FFFFFF',
+              outline: 'none',
+              boxSizing: 'border-box',
+            }}
+          />
+        </div>
+        <span style={{ color: '#94A3B8', fontWeight: 700, paddingTop: '18px' }}>–</span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <span style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#64748B', marginBottom: '3px' }}>
+            Đến
+          </span>
+          <input
+            type="time"
+            value={end}
+            onChange={(e) => {
+              const nextEnd = normalizeTimePart(e.target.value) || end;
+              onChange(`${start} – ${nextEnd}`);
+            }}
+            style={{
+              width: '100%',
+              padding: '8px 10px',
+              borderRadius: '10px',
+              border: `1px solid ${displayError ? '#EF4444' : '#CBD5E1'}`,
+              fontSize: '14px',
+              fontWeight: 600,
+              color: '#0F172A',
+              background: '#FFFFFF',
+              outline: 'none',
+              boxSizing: 'border-box',
+            }}
+          />
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
+        {STOP_TIME_PRESETS.map((preset) => {
+          const isActive = start === preset.start && end === preset.end;
+          return (
+            <button
+              key={preset.label}
+              type="button"
+              onClick={() => onChange(`${preset.start} – ${preset.end}`)}
+              style={{
+                padding: '4px 10px',
+                borderRadius: '999px',
+                border: isActive ? '1px solid #0284C7' : '1px solid #E2E8F0',
+                background: isActive ? '#E0F2FE' : '#F8FAFC',
+                color: isActive ? '#0369A1' : '#475569',
+                fontSize: '11.5px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 150ms ease',
+              }}
+            >
+              {preset.label} {preset.start}–{preset.end}
+            </button>
+          );
+        })}
+      </div>
+
+      {displayError && (
+        <span style={{ display: 'block', marginTop: '5px', fontSize: '12px', color: '#DC2626', fontWeight: 600 }}>
+          ⚠️ {displayError}
+        </span>
+      )}
+    </div>
+  );
+}
+
 export default function TripDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -877,6 +1053,7 @@ export default function TripDetailPage() {
 
   // Add stop modal (W3-TV3-03, V-01)
   const [showAddStopModal, setShowAddStopModal] = useState(false);
+  const [isSeedingSampleItinerary, setIsSeedingSampleItinerary] = useState(false);
   const [newStopDay, setNewStopDay] = useState(1);
   const [newStopTitle, setNewStopTitle] = useState('');
   const [newStopLocation, setNewStopLocation] = useState('');
@@ -886,6 +1063,7 @@ export default function TripDetailPage() {
   const [newStopImage, setNewStopImage] = useState('');
   const [newStopCustomDate, setNewStopCustomDate] = useState('');
   const [addStopDateError, setAddStopDateError] = useState<string | null>(null);
+  const [addStopTimeError, setAddStopTimeError] = useState<string | null>(null);
 
   // Edit stop modal (Bước 3, Bước 6, V-01)
   const [editingStop, setEditingStop] = useState<{
@@ -901,6 +1079,7 @@ export default function TripDetailPage() {
   const [editStopTargetDay, setEditStopTargetDay] = useState(1);
   const [editStopCustomDate, setEditStopCustomDate] = useState('');
   const [editStopDateError, setEditStopDateError] = useState<string | null>(null);
+  const [editStopTimeError, setEditStopTimeError] = useState<string | null>(null);
 
   // Overlap warning confirmation dialog (V-02: Bước 10, 11)
   const [overlapWarningDialog, setOverlapWarningDialog] = useState<{
@@ -946,6 +1125,12 @@ export default function TripDetailPage() {
   const [isTransferring, setIsTransferring] = useState(false);
   const [showLeaveConfirmModal, setShowLeaveConfirmModal] = useState(false);
   const [isLeavingTrip, setIsLeavingTrip] = useState(false);
+  const [deleteActivityTarget, setDeleteActivityTarget] = useState<{
+    dayNumber: number;
+    actId: string;
+    actTitle?: string;
+  } | null>(null);
+  const [isDeletingActivity, setIsDeletingActivity] = useState(false);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -1100,34 +1285,59 @@ export default function TripDetailPage() {
         else if (serverTrip.status === 'CANCELLED') mappedStatus = 'CANCELLED';
         else mappedStatus = 'PLANNING';
 
-        // Map backend itinerary days if available
-        let mappedDays: DayPlanItem[] = [];
-        if (Array.isArray(serverItineraryDays) && serverItineraryDays.length > 0) {
-          mappedDays = serverItineraryDays.map((d: any) => ({
-            id: d.id,
-            dayNumber: d.dayNumber,
-            dateStr: d.tripDate ? d.tripDate.split('-').reverse().join('/') : undefined,
-            title: d.title || `Ngày ${d.dayNumber}`,
-            activities: (d.items || []).map((item: any) => ({
-              id: item.id,
-              timeSlot: item.startTime ? `${item.startTime.slice(0, 5)}${item.endTime ? ` – ${item.endTime.slice(0, 5)}` : ''}` : undefined,
-              timeRange: item.startTime ? `${item.startTime.slice(0, 5)}${item.endTime ? ` – ${item.endTime.slice(0, 5)}` : ''}` : undefined,
-              title: item.customStopName || 'Điểm dừng',
-              description: item.note || '',
-              location: item.location || '',
-              costVnd: item.costVnd || 0,
-              costLabel: item.costVnd ? `${item.costVnd.toLocaleString('vi-VN')}₫` : 'Miễn phí',
-              category: item.category || 'Địa điểm',
-              sortOrder: item.sortOrder,
-            })).sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)),
-          }));
-        }
-
         let persistedItinerary: DayPlanItem[] | null = null;
         try {
           const stored = localStorage.getItem(`vista_trip_itinerary_${tripId}`);
           if (stored) persistedItinerary = JSON.parse(stored);
         } catch {}
+
+        const persistedDayByNum = new Map<number, DayPlanItem>();
+        const persistedActById = new Map<string, ActivityItem>();
+        if (Array.isArray(persistedItinerary)) {
+          persistedItinerary.forEach((pd) => {
+            persistedDayByNum.set(pd.dayNumber, pd);
+            (pd.activities || []).forEach((pa) => {
+              if (pa.id) persistedActById.set(pa.id, pa);
+            });
+          });
+        }
+
+        // Map backend itinerary days if available (kết hợp metadata/ảnh từ cache local hoặc tự chọn ảnh qua resolveStopImage)
+        let mappedDays: DayPlanItem[] = [];
+        if (Array.isArray(serverItineraryDays) && serverItineraryDays.length > 0) {
+          mappedDays = serverItineraryDays.map((d: any) => {
+            const cachedDay = persistedDayByNum.get(d.dayNumber);
+            return {
+              id: d.id,
+              dayNumber: d.dayNumber,
+              dateStr: d.tripDate ? d.tripDate.split('-').reverse().join('/') : undefined,
+              title: d.title || cachedDay?.title || `Ngày ${d.dayNumber}`,
+              activities: (d.items || []).map((item: any) => {
+                const cached = persistedActById.get(item.id);
+                const stopTitle = item.customStopName || cached?.title || 'Điểm dừng';
+                const stopCategory = item.category || cached?.category || 'Địa điểm';
+                const resolvedCostVnd = item.costVnd ?? cached?.costVnd ?? 0;
+                const resolvedCostLabel = item.costVnd
+                  ? `${item.costVnd.toLocaleString('vi-VN')}₫`
+                  : (cached?.costLabel || 'Miễn phí');
+                return {
+                  id: item.id,
+                  timeSlot: item.startTime ? `${item.startTime.slice(0, 5)}${item.endTime ? ` – ${item.endTime.slice(0, 5)}` : ''}` : cached?.timeSlot,
+                  timeRange: item.startTime ? `${item.startTime.slice(0, 5)}${item.endTime ? ` – ${item.endTime.slice(0, 5)}` : ''}` : cached?.timeRange,
+                  title: stopTitle,
+                  description: item.note || cached?.description || '',
+                  location: item.location || cached?.location || '',
+                  costVnd: resolvedCostVnd,
+                  costLabel: resolvedCostLabel,
+                  category: stopCategory,
+                  image: cached?.image || resolveStopImage({ title: stopTitle, category: stopCategory }),
+                  tips: cached?.tips,
+                  sortOrder: item.sortOrder,
+                };
+              }).sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)),
+            };
+          });
+        }
 
         // SSOT: Priority: mappedDays > persistedItinerary > serverTrip.itineraryDays > sample
         const itinerary = mappedDays.length > 0
@@ -1304,6 +1514,7 @@ export default function TripDetailPage() {
     setNewStopCustomDate(dayMeta.fullDateStr || '');
     setNewStopImage('');
     setAddStopDateError(null);
+    setAddStopTimeError(null);
     setShowAddStopModal(true);
   };
 
@@ -1321,29 +1532,88 @@ export default function TripDetailPage() {
     const dayMeta = getTripDayMeta(trip?.startDate, trip?.endDate, dayNum);
     setEditStopCustomDate(dayMeta.fullDateStr || '');
     setEditStopDateError(null);
+    setEditStopTimeError(null);
   };
 
-  // Delete activity (Bước 7: xác nhận xóa -> F5 biến mất hẳn)
+  // Delete activity (mở modal xác nhận + gọi DELETE lên Spring Boot backend để F5 không bị hồi lại)
   const handleDeleteActivity = (dayNum: number, actId: string, actTitle?: string) => {
     if (!trip || !trip.itineraryDays) return;
-    const confirmMsg = actTitle
-      ? `Bạn có chắc chắn muốn xóa điểm dừng "${actTitle}" khỏi Ngày ${dayNum}?`
-      : `Bạn có chắc chắn muốn xóa điểm dừng này khỏi Ngày ${dayNum}?`;
-    if (!window.confirm(confirmMsg)) return;
-
-    const days = trip.itineraryDays.map((d) => {
-      if (d.dayNumber === dayNum) {
-        return { ...d, activities: d.activities.filter((a) => a.id !== actId) };
-      }
-      return d;
-    });
-    const updated = { ...trip, itineraryDays: days };
-    persistTrip(updated);
-    showToast(`✓ Đã xóa điểm dừng khỏi Ngày ${dayNum}. Tải lại trang (F5) không bị hồi lại.`);
+    setDeleteActivityTarget({ dayNumber: dayNum, actId, actTitle });
   };
 
-  // Add activity (V-01 validation, V-02 time overlap warning, F5 persistence)
-  const handleSaveNewActivity = (confirmedOverlap = false) => {
+  const executeDeleteActivity = async () => {
+    if (!trip || !trip.itineraryDays || !deleteActivityTarget) return;
+    const { dayNumber: dayNum, actId } = deleteActivityTarget;
+    const isUuidItem = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(actId);
+
+    setIsDeletingActivity(true);
+    try {
+      if (isUuidItem) {
+        try {
+          await apiRequest(`/itinerary/items/${actId}`, {
+            method: 'DELETE',
+          });
+        } catch (err: any) {
+          // Nếu mục đã bị xóa trước đó ở backend (404), vẫn cho dọn khỏi state/localStorage
+          if (err?.status !== 404) {
+            throw err;
+          }
+        }
+      }
+
+      const days = trip.itineraryDays.map((d) => {
+        if (d.dayNumber === dayNum) {
+          return { ...d, activities: d.activities.filter((a) => a.id !== actId) };
+        }
+        return d;
+      });
+      const updated = { ...trip, itineraryDays: days };
+      persistTrip(updated);
+      setDeleteActivityTarget(null);
+      showToast(`✓ Đã xóa điểm dừng khỏi Ngày ${dayNum}. Tải lại trang (F5) không bị hồi lại.`);
+    } catch (err: any) {
+      showToast(`❌ Không thể xóa điểm dừng: ${err?.message || 'Lỗi kết nối máy chủ.'}`);
+    } finally {
+      setIsDeletingActivity(false);
+    }
+  };
+
+  // Nạp nhanh lộ trình mẫu kèm ảnh minh họa vào PostgreSQL Backend cho chuyến đi hiện tại
+  const handleSeedSampleItinerary = async () => {
+    if (!trip || isSeedingSampleItinerary) return;
+    const isUuidTrip = Boolean(
+      tripId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(tripId))
+    );
+    setIsSeedingSampleItinerary(true);
+    try {
+      let hydratedDays: DayPlanItem[];
+      if (isUuidTrip) {
+        hydratedDays = await seedSampleItineraryToTrip({
+          tripId: String(tripId),
+          destination: trip.destination,
+          startDate: trip.startDate,
+          endDate: trip.endDate,
+          existingDays: (trip.itineraryDays || []).map((d) => ({ id: d.id, dayNumber: d.dayNumber })),
+          seedProposals: proposals.length === 0,
+        });
+      } else {
+        hydratedDays = getSampleItineraryForDestination(trip.destination, trip.startDate);
+      }
+
+      if (hydratedDays.length > 0) {
+        persistTrip({ ...trip, itineraryDays: hydratedDays });
+        setSelectedDayNumber(1);
+        showToast('🎉 Đã nạp lộ trình mẫu kèm ảnh đẹp cho chuyến đi!');
+      }
+    } catch (err: any) {
+      showToast(`❌ Không thể nạp lộ trình mẫu: ${err?.message || 'Lỗi kết nối máy chủ.'}`);
+    } finally {
+      setIsSeedingSampleItinerary(false);
+    }
+  };
+
+  // Add activity (V-01 validation, V-02 time overlap warning, Backend + F5 persistence)
+  const handleSaveNewActivity = async (confirmedOverlap = false) => {
     if (!newStopTitle.trim() || !trip) return;
 
     // 1. Date bounds check (V-01 / Bước 9)
@@ -1354,6 +1624,13 @@ export default function TripDetailPage() {
         showToast(`❌ Lỗi: ${dateCheck.error}`);
         return;
       }
+    }
+
+    const timeCheck = validateTimeRange(newStopTime);
+    if (timeCheck) {
+      setAddStopTimeError(timeCheck);
+      showToast(`❌ ${timeCheck}`);
+      return;
     }
 
     const newAct: ActivityItem = {
@@ -1396,14 +1673,59 @@ export default function TripDetailPage() {
       }
     }
 
+    const isUuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    let resolvedDayId = targetDayIdx >= 0 ? currentDays[targetDayIdx].id : undefined;
+
+    if (tripId && isUuidRegex.test(String(tripId))) {
+      try {
+        if (!resolvedDayId || !isUuidRegex.test(resolvedDayId)) {
+          const tripDateIso = toIsoDateOffset(trip.startDate, newStopDay - 1);
+          try {
+            const createdDay = await apiRequest<any>(`/trips/${tripId}/itinerary/days`, {
+              method: 'POST',
+              body: JSON.stringify({ dayNumber: newStopDay, tripDate: tripDateIso }),
+            });
+            if (createdDay?.id) resolvedDayId = String(createdDay.id);
+          } catch {
+            const existingBackendDays = await apiRequest<any[]>(`/trips/${tripId}/itinerary/days`).catch(() => []);
+            const foundDay = Array.isArray(existingBackendDays)
+              ? existingBackendDays.find((d) => Number(d.dayNumber) === newStopDay)
+              : null;
+            if (foundDay?.id) resolvedDayId = String(foundDay.id);
+          }
+        }
+
+        if (resolvedDayId && isUuidRegex.test(resolvedDayId)) {
+          const { startTime, endTime } = parseTimeRangeForApi(newAct.timeRange);
+          const createdItem = await apiRequest<any>(`/itinerary/days/${resolvedDayId}/items`, {
+            method: 'POST',
+            body: JSON.stringify({
+              customStopName: newAct.title,
+              startTime: startTime || null,
+              endTime: endTime || null,
+              sortOrder: targetActivities.length,
+              note: newAct.description || null,
+            }),
+          });
+          if (createdItem?.id) {
+            newAct.id = String(createdItem.id);
+          }
+        }
+      } catch (err) {
+        console.warn('Create itinerary item sync fallback:', err);
+      }
+    }
+
     if (targetDayIdx >= 0) {
       currentDays[targetDayIdx] = {
         ...currentDays[targetDayIdx],
+        ...(resolvedDayId ? { id: resolvedDayId } : {}),
         activities: [...(currentDays[targetDayIdx].activities || []), newAct],
       };
     } else {
       const dayMeta = getTripDayMeta(trip.startDate, trip.endDate, newStopDay);
       currentDays.push({
+        ...(resolvedDayId ? { id: resolvedDayId } : {}),
         dayNumber: newStopDay,
         title: `Ngày ${newStopDay} — Lộ trình tự do`,
         dateStr: dayMeta.fullDateStr || `Ngày ${newStopDay}`,
@@ -1426,8 +1748,8 @@ export default function TripDetailPage() {
     );
   };
 
-  // Edit activity (Bước 3: Sửa tên/giờ; Bước 6: Chuyển ngày; V-01 & V-02; F5 persistence)
-  const handleSaveEditedActivity = (confirmedOverlap = false) => {
+  // Edit activity (Bước 3: Sửa tên/giờ; Bước 6: Chuyển ngày; V-01 & V-02; Backend + F5 persistence)
+  const handleSaveEditedActivity = async (confirmedOverlap = false) => {
     if (!editingStop || !trip || !editStopTitle.trim()) return;
 
     // 1. Date bounds check (V-01 / Bước 9)
@@ -1438,6 +1760,13 @@ export default function TripDetailPage() {
         showToast(`❌ Lỗi: ${dateCheck.error}`);
         return;
       }
+    }
+
+    const editTimeCheck = validateTimeRange(editStopTime);
+    if (editTimeCheck) {
+      setEditStopTimeError(editTimeCheck);
+      showToast(`❌ ${editTimeCheck}`);
+      return;
     }
 
     const trimmedEditImage = editStopImage.trim();
@@ -1493,8 +1822,51 @@ export default function TripDetailPage() {
       }
     }
 
+    const isUuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const isUuidAct = isUuidRegex.test(editingStop.activity.id);
+
     // Step 6: Move activity between days
     if (editingStop.dayNumber !== editStopTargetDay) {
+      let targetDayId = currentDays.find((d) => d.dayNumber === editStopTargetDay)?.id;
+      if (tripId && isUuidRegex.test(String(tripId)) && isUuidAct) {
+        try {
+          await apiRequest(`/itinerary/items/${editingStop.activity.id}`, { method: 'DELETE' }).catch(() => {});
+          if (!targetDayId || !isUuidRegex.test(targetDayId)) {
+            const tripDateIso = toIsoDateOffset(trip.startDate, editStopTargetDay - 1);
+            try {
+              const createdDay = await apiRequest<any>(`/trips/${tripId}/itinerary/days`, {
+                method: 'POST',
+                body: JSON.stringify({ dayNumber: editStopTargetDay, tripDate: tripDateIso }),
+              });
+              if (createdDay?.id) targetDayId = String(createdDay.id);
+            } catch {
+              const fetchedDays = await apiRequest<any[]>(`/trips/${tripId}/itinerary/days`).catch(() => []);
+              const foundDay = Array.isArray(fetchedDays)
+                ? fetchedDays.find((d) => Number(d.dayNumber) === editStopTargetDay)
+                : null;
+              if (foundDay?.id) targetDayId = String(foundDay.id);
+            }
+          }
+          if (targetDayId && isUuidRegex.test(targetDayId)) {
+            const { startTime, endTime } = parseTimeRangeForApi(updatedAct.timeRange);
+            const targetActs = currentDays.find((d) => d.dayNumber === editStopTargetDay)?.activities || [];
+            const createdItem = await apiRequest<any>(`/itinerary/days/${targetDayId}/items`, {
+              method: 'POST',
+              body: JSON.stringify({
+                customStopName: updatedAct.title,
+                startTime: startTime || null,
+                endTime: endTime || null,
+                sortOrder: targetActs.length,
+                note: updatedAct.description || null,
+              }),
+            });
+            if (createdItem?.id) updatedAct.id = String(createdItem.id);
+          }
+        } catch (err) {
+          console.warn('Move itinerary item sync fallback:', err);
+        }
+      }
+
       const origIdx = currentDays.findIndex((d) => d.dayNumber === editingStop.dayNumber);
       if (origIdx >= 0) {
         currentDays[origIdx].activities = currentDays[origIdx].activities.filter(
@@ -1503,10 +1875,12 @@ export default function TripDetailPage() {
       }
       const targetIdx = currentDays.findIndex((d) => d.dayNumber === editStopTargetDay);
       if (targetIdx >= 0) {
+        if (targetDayId) currentDays[targetIdx].id = targetDayId;
         currentDays[targetIdx].activities.push(updatedAct);
       } else {
         const dayMeta = getTripDayMeta(trip.startDate, trip.endDate, editStopTargetDay);
         currentDays.push({
+          ...(targetDayId ? { id: targetDayId } : {}),
           dayNumber: editStopTargetDay,
           title: `Ngày ${editStopTargetDay} — Lộ trình tự do`,
           dateStr: dayMeta.fullDateStr || `Ngày ${editStopTargetDay}`,
@@ -1515,6 +1889,22 @@ export default function TripDetailPage() {
         currentDays.sort((a, b) => a.dayNumber - b.dayNumber);
       }
     } else {
+      if (isUuidAct) {
+        try {
+          const { startTime, endTime } = parseTimeRangeForApi(updatedAct.timeRange);
+          await apiRequest(`/itinerary/items/${editingStop.activity.id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({
+              customStopName: updatedAct.title,
+              startTime: startTime || null,
+              endTime: endTime || null,
+              note: updatedAct.description || null,
+            }),
+          });
+        } catch (err) {
+          console.warn('Patch itinerary item sync fallback:', err);
+        }
+      }
       const dayIdx = currentDays.findIndex((d) => d.dayNumber === editStopTargetDay);
       if (dayIdx >= 0) {
         currentDays[dayIdx].activities = currentDays[dayIdx].activities.map((a) =>
@@ -1569,10 +1959,14 @@ export default function TripDetailPage() {
     const email = inviteInputEmail.trim().toLowerCase();
     if (!email) return;
 
-    // Check conflict: already member
-    const isAlreadyMember = trip?.members?.some((m) =>
-      typeof m === 'object' && m?.name?.toLowerCase().includes(email.split('@')[0])
-    );
+    // Check conflict: already member (match exact member email or current user email)
+    const isAlreadyMember =
+      currentUser?.email?.trim().toLowerCase() === email ||
+      Boolean(
+        trip?.members?.some(
+          (m) => typeof m === 'object' && m?.email?.trim().toLowerCase() === email
+        )
+      );
     if (isAlreadyMember || email.includes('vananh') || email.includes('minhtuan')) {
       setInviteError('❌ Lỗi HTTP 409 Conflict: Người dùng với email này đã là thành viên trong chuyến đi!');
       return;
@@ -1580,7 +1974,7 @@ export default function TripDetailPage() {
 
     // Check conflict: already pending
     const isAlreadyPending = invitationsList.some(
-      (inv) => inv.email.toLowerCase() === email && inv.status === 'PENDING'
+      (inv) => (inv.email || '').trim().toLowerCase() === email && inv.status === 'PENDING'
     );
     if (isAlreadyPending) {
       setInviteError('❌ Lỗi HTTP 409 Conflict: Đã có lời mời PENDING gửi đến email này chưa được phản hồi!');
@@ -1592,7 +1986,35 @@ export default function TripDetailPage() {
     const currentInviterName = currentUser?.displayName || currentUser?.email || 'Trưởng nhóm';
     const cleanInviterName = currentInviterName.replace(/\s*\(Bạn.*?\)/gi, '').trim() || 'Trưởng nhóm';
 
-    const token = `VISTA-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    let token = `VISTA-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    let invitationId = `inv-${Date.now()}`;
+    const isUuidTrip = Boolean(
+      tripId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(tripId))
+    );
+
+    // Với chuyến đi lưu trên Spring Boot DB: gọi API backend TRƯỚC để kiểm tra quyền & xung đột 409 (đã là thành viên / đã PENDING)
+    // Tuyệt đối không gửi email hay lưu store/thông báo nếu backend từ chối.
+    if (isUuidTrip) {
+      try {
+        const backendInv = await apiRequest<any>(`/trips/${tripId}/invitations`, {
+          method: 'POST',
+          body: JSON.stringify({
+            inviteeEmail: email,
+            token: token,
+          }),
+        });
+        if (backendInv?.id) invitationId = String(backendInv.id);
+        if (backendInv?.rawToken || backendInv?.token) {
+          token = String(backendInv.rawToken || backendInv.token);
+        }
+      } catch (err: any) {
+        const prefix = err?.status === 409 ? 'Lỗi HTTP 409 Conflict: ' : '';
+        setInviteError(`❌ ${prefix}${err?.message || 'Không thể phát hành lời mời cho email này.'}`);
+        setIsSendingInviteEmail(false);
+        return;
+      }
+    }
+
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
     const inviteLink = `${baseUrl}/invitations/${token}`;
     const nowTimeStr = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
@@ -1627,7 +2049,7 @@ export default function TripDetailPage() {
     }
 
     const newInv = {
-      id: `inv-${Date.now()}`,
+      id: invitationId,
       tripId: tripId || trip?.id || 'demo-trip',
       tripTitle: trip?.title || 'Khám phá chuyến đi VISTA',
       destination: trip?.destination || 'Việt Nam',
@@ -1662,18 +2084,6 @@ export default function TripDetailPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newInv),
       }).catch(() => {});
-    } catch {}
-
-    try {
-      if (tripId && /^[0-9a-f-]{36}$/i.test(tripId)) {
-        apiRequest(`/trips/${tripId}/invitations`, {
-          method: 'POST',
-          body: JSON.stringify({
-            inviteeEmail: email,
-            token: token,
-          }),
-        }).catch(() => {});
-      }
     } catch {}
 
     setCreatedInvitationInfo({
@@ -1737,6 +2147,11 @@ export default function TripDetailPage() {
         localStorage.setItem(`vista_invitations_${tripId}`, JSON.stringify(updated));
         window.dispatchEvent(new CustomEvent('vista-invitations-change'));
       } catch {}
+    }
+    if (target?.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(target.id)) {
+      apiRequest(`/invitations/${target.id}`, {
+        method: 'DELETE',
+      }).catch(() => {});
     }
     if (target?.token) {
       try {
@@ -2926,28 +3341,52 @@ export default function TripDetailPage() {
                           <p style={{ fontSize: '13.5px', color: '#64748B', maxWidth: '440px', margin: '0 auto 18px', lineHeight: '1.5' }}>
                             Ngày này hiện chưa có hoạt động nào được lên lịch. Bạn có thể nhấn nút bên dưới để thêm điểm dừng tham quan, ăn uống hoặc check-in đầu tiên cho ngày này!
                           </p>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              handleOpenAddStopModal(dayPlan.dayNumber);
-                            }}
-                            style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '8px',
-                              padding: '9px 20px',
-                              background: '#0284C7',
-                              color: '#FFFFFF',
-                              borderRadius: '10px',
-                              border: 'none',
-                              fontWeight: 700,
-                              fontSize: '13.5px',
-                              cursor: 'pointer',
-                              boxShadow: '0 4px 14px rgba(2, 132, 199, 0.25)',
-                            }}
-                          >
-                            <span>+ Thêm điểm dừng vào Ngày {dayPlan.dayNumber}</span>
-                          </button>
+                          <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                handleOpenAddStopModal(dayPlan.dayNumber);
+                              }}
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '9px 20px',
+                                background: '#0284C7',
+                                color: '#FFFFFF',
+                                borderRadius: '10px',
+                                border: 'none',
+                                fontWeight: 700,
+                                fontSize: '13.5px',
+                                cursor: 'pointer',
+                                boxShadow: '0 4px 14px rgba(2, 132, 199, 0.25)',
+                              }}
+                            >
+                              <span>+ Thêm điểm dừng vào Ngày {dayPlan.dayNumber}</span>
+                            </button>
+                            <button
+                              type="button"
+                              disabled={isSeedingSampleItinerary}
+                              onClick={handleSeedSampleItinerary}
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '7px',
+                                padding: '9px 18px',
+                                background: '#F0F9FF',
+                                color: '#0369A1',
+                                borderRadius: '10px',
+                                border: '1px solid #BAE6FD',
+                                fontWeight: 700,
+                                fontSize: '13.5px',
+                                cursor: isSeedingSampleItinerary ? 'not-allowed' : 'pointer',
+                                opacity: isSeedingSampleItinerary ? 0.7 : 1,
+                              }}
+                            >
+                              <Sparkles size={15} />
+                              <span>{isSeedingSampleItinerary ? 'Đang nạp lộ trình...' : 'Nạp lộ trình mẫu có ảnh'}</span>
+                            </button>
+                          </div>
                         </div>
                       ) : (
                         <div className={styles.flowchartTrack}>
@@ -4506,47 +4945,35 @@ export default function TripDetailPage() {
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '5px' }}>
-                    Khung giờ
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="14:00 – 16:00"
-                    value={newStopTime}
-                    onChange={(e) => setNewStopTime(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '9px 12px',
-                      borderRadius: '10px',
-                      border: '1px solid #CBD5E1',
-                      fontSize: '14px',
-                      outline: 'none',
-                      boxSizing: 'border-box',
-                    }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '5px' }}>
-                    Chi phí ước tính
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="50.000đ / người"
-                    value={newStopCost}
-                    onChange={(e) => setNewStopCost(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '9px 12px',
-                      borderRadius: '10px',
-                      border: '1px solid #CBD5E1',
-                      fontSize: '14px',
-                      outline: 'none',
-                      boxSizing: 'border-box',
-                    }}
-                  />
-                </div>
+              <TimeRangePickerField
+                label="Khung giờ"
+                value={newStopTime}
+                error={addStopTimeError}
+                onChange={(nextVal) => {
+                  setNewStopTime(nextVal);
+                  setAddStopTimeError(null);
+                }}
+              />
+
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '5px' }}>
+                  Chi phí ước tính
+                </label>
+                <input
+                  type="text"
+                  placeholder="50.000đ / người"
+                  value={newStopCost}
+                  onChange={(e) => setNewStopCost(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '9px 12px',
+                    borderRadius: '10px',
+                    border: '1px solid #CBD5E1',
+                    fontSize: '14px',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                />
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
@@ -4818,47 +5245,35 @@ export default function TripDetailPage() {
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '5px' }}>
-                    Khung giờ * (Bước 3: Đổi giờ)
-                  </label>
-                  <input
-                    type="text"
-                    value={editStopTime}
-                    placeholder="08:00 – 10:00"
-                    onChange={(e) => setEditStopTime(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '9px 12px',
-                      borderRadius: '10px',
-                      border: '1px solid #CBD5E1',
-                      fontSize: '14px',
-                      outline: 'none',
-                      boxSizing: 'border-box',
-                    }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '5px' }}>
-                    Chi phí ước tính
-                  </label>
-                  <input
-                    type="text"
-                    value={editStopCost}
-                    placeholder="50.000đ / người"
-                    onChange={(e) => setEditStopCost(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '9px 12px',
-                      borderRadius: '10px',
-                      border: '1px solid #CBD5E1',
-                      fontSize: '14px',
-                      outline: 'none',
-                      boxSizing: 'border-box',
-                    }}
-                  />
-                </div>
+              <TimeRangePickerField
+                label="Khung giờ * (Bước 3: Đổi giờ)"
+                value={editStopTime}
+                error={editStopTimeError}
+                onChange={(nextVal) => {
+                  setEditStopTime(nextVal);
+                  setEditStopTimeError(null);
+                }}
+              />
+
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '5px' }}>
+                  Chi phí ước tính
+                </label>
+                <input
+                  type="text"
+                  value={editStopCost}
+                  placeholder="50.000đ / người"
+                  onChange={(e) => setEditStopCost(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '9px 12px',
+                    borderRadius: '10px',
+                    border: '1px solid #CBD5E1',
+                    fontSize: '14px',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                />
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
@@ -5947,6 +6362,165 @@ export default function TripDetailPage() {
                   <>
                     <LogOut size={15} />
                     <span>Xác nhận rời nhóm</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 8: XÁC NHẬN XÓA ĐIỂM DỪNG KHỎI LỊCH TRÌNH */}
+      {deleteActivityTarget && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(15, 23, 42, 0.65)',
+            backdropFilter: 'blur(5px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10000,
+            padding: '20px',
+          }}
+          onClick={() => {
+            if (!isDeletingActivity) setDeleteActivityTarget(null);
+          }}
+        >
+          <div
+            style={{
+              background: '#FFFFFF',
+              borderRadius: '24px',
+              maxWidth: '440px',
+              width: '100%',
+              padding: '28px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              border: '1px solid #FECACA',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div
+                  style={{
+                    width: '44px',
+                    height: '44px',
+                    borderRadius: '14px',
+                    background: '#FEE2E2',
+                    color: '#DC2626',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  <Trash2 size={20} />
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
+                    Xóa điểm dừng
+                  </h3>
+                  <span style={{ fontSize: '12.5px', color: '#64748B' }}>
+                    Ngày {deleteActivityTarget.dayNumber}
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                disabled={isDeletingActivity}
+                onClick={() => setDeleteActivityTarget(null)}
+                style={{
+                  background: '#F1F5F9',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '32px',
+                  height: '32px',
+                  fontSize: '15px',
+                  cursor: isDeletingActivity ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#64748B',
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div
+              style={{
+                background: '#FEF2F2',
+                borderRadius: '12px',
+                padding: '14px 16px',
+                border: '1px solid #FECACA',
+                marginBottom: '22px',
+                fontSize: '13.5px',
+                color: '#991B1B',
+                lineHeight: '1.6',
+              }}
+            >
+              {deleteActivityTarget.actTitle ? (
+                <>
+                  Bạn có chắc chắn muốn xóa điểm dừng <strong>&ldquo;{deleteActivityTarget.actTitle}&rdquo;</strong> khỏi Ngày {deleteActivityTarget.dayNumber} không?
+                </>
+              ) : (
+                <>
+                  Bạn có chắc chắn muốn xóa điểm dừng này khỏi Ngày {deleteActivityTarget.dayNumber} không?
+                </>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button
+                type="button"
+                disabled={isDeletingActivity}
+                onClick={() => setDeleteActivityTarget(null)}
+                style={{
+                  padding: '10px 18px',
+                  borderRadius: '10px',
+                  border: '1px solid #CBD5E1',
+                  background: '#F8FAFC',
+                  color: '#475569',
+                  fontWeight: 700,
+                  fontSize: '13.5px',
+                  cursor: isDeletingActivity ? 'not-allowed' : 'pointer',
+                  opacity: isDeletingActivity ? 0.6 : 1,
+                }}
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                disabled={isDeletingActivity}
+                onClick={executeDeleteActivity}
+                style={{
+                  padding: '10px 22px',
+                  borderRadius: '10px',
+                  border: 'none',
+                  background: isDeletingActivity ? '#94A3B8' : '#DC2626',
+                  color: '#FFFFFF',
+                  fontWeight: 700,
+                  fontSize: '13.5px',
+                  cursor: isDeletingActivity ? 'not-allowed' : 'pointer',
+                  boxShadow: isDeletingActivity ? 'none' : '0 4px 12px rgba(220, 38, 38, 0.25)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '7px',
+                }}
+              >
+                {isDeletingActivity ? (
+                  <>
+                    <Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} />
+                    <span>Đang xóa...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 size={15} />
+                    <span>Xác nhận xóa</span>
                   </>
                 )}
               </button>

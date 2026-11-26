@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -103,10 +104,13 @@ public class InvitationService {
               });
     }
 
-    // Sinh raw token ngẫu nhiên đủ mạnh (256-bit entropy), chỉ lưu SHA-256 hash vào DB
+    // Sinh raw token: nếu client truyền token (ví dụ VISTA-XXXXXX) thì dùng, nếu không sinh ngẫu
+    // nhiên 256-bit
     String rawToken =
-        UUID.randomUUID().toString().replace("-", "")
-            + UUID.randomUUID().toString().replace("-", "");
+        (request.getToken() != null && !request.getToken().isBlank())
+            ? request.getToken().trim().toUpperCase()
+            : (UUID.randomUUID().toString().replace("-", "")
+                + UUID.randomUUID().toString().replace("-", ""));
     String tokenHash = sha256Hex(rawToken);
 
     Instant expiresAt =
@@ -478,9 +482,20 @@ public class InvitationService {
   }
 
   private Invitation findByTokenOrThrow(String rawToken) {
+    if (rawToken == null || rawToken.isBlank()) {
+      throw new ResourceNotFoundException("Token lời mời không tồn tại");
+    }
     String hash = sha256Hex(rawToken);
     return invitationRepository
         .findByTokenHash(hash)
+        .or(
+            () -> {
+              String upper = rawToken.trim().toUpperCase();
+              if (!upper.equals(rawToken)) {
+                return invitationRepository.findByTokenHash(sha256Hex(upper));
+              }
+              return Optional.empty();
+            })
         .orElseThrow(() -> new ResourceNotFoundException("Token lời mời không tồn tại"));
   }
 

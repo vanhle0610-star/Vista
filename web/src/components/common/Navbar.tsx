@@ -183,11 +183,13 @@ export function Navbar({
 
         const combinedList: IncomingInvitation[] = [];
         const seenKeys = new Set<string>();
+        let backendLoaded = false;
 
         // 1. Lấy từ Spring Boot backend nếu có token
         if (token) {
           try {
             const list = await apiRequest<IncomingInvitation[]>('/invitations/my-pending');
+            backendLoaded = true;
             if (Array.isArray(list)) {
               list.forEach((inv) => {
                 const key = inv.id || (inv as any).token;
@@ -202,7 +204,7 @@ export function Navbar({
           }
         }
 
-        // 2. Lấy từ Next.js Store (.invitations_store.json) theo email hiện tại
+        // 2. Lấy từ Next.js Store (.invitations_store.json) theo email hiện tại (chỉ dùng cho demo trip hoặc khi backend chưa phản hồi)
         if (currentUser?.email) {
           try {
             const cleanUserEmail = currentUser.email.trim().toLowerCase();
@@ -213,6 +215,12 @@ export function Navbar({
               const localList = await localRes.json();
               if (Array.isArray(localList)) {
                 localList.forEach((inv: any) => {
+                  const isUuidTrip = Boolean(
+                    inv.tripId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(inv.tripId))
+                  );
+                  if (backendLoaded && isUuidTrip) {
+                    return;
+                  }
                   const key = inv.id || inv.token;
                   if (inv.status === 'PENDING' && key && !seenKeys.has(key)) {
                     seenKeys.add(key);
