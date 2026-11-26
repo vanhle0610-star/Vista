@@ -3534,8 +3534,8 @@ export default function TripDetailPage() {
                               </a>
                               <span style={{ fontSize: '12px', color: '#64748B' }}>Hạn: {inv.expiresAt}</span>
                               {(inv.emailSent || inv.status === 'PENDING') && (
-                                <span style={{ fontSize: '11px', color: '#166534', background: '#DCFCE7', padding: '1px 6px', borderRadius: '4px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                                  <MailCheck size={13} />
+                                <span className={styles.invitationAutoMailNote}>
+                                  <Mail size={12} />
                                   <span>Đã gửi thư tự động</span>
                                 </span>
                               )}

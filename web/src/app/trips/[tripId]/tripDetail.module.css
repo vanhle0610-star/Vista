@@ -2143,6 +2143,15 @@
   cursor: not-allowed;
 }
 
+.invitationAutoMailNote {
+  font-size: 12px;
+  color: #64748B;
+  font-weight: 400;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
 
 
 
