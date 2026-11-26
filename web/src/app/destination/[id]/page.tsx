@@ -7,6 +7,7 @@ import type { components } from '@/types/api.generated';
 import { validPoint } from '@/features/map-location/data/publicDestinations';
 import { rememberDestination, viewedDestination } from '@/features/map-location/data/viewedDestinations';
 import { getCloudImageUrl } from '@/utils/cloudImage';
+import { DestinationRequestModal } from '@/components/DestinationRequestModal';
 import styles from './page.module.css';
 
 export default function DestinationPage() {
@@ -14,6 +15,8 @@ export default function DestinationPage() {
   const [data, setData] = useState<components['schemas']['DestinationDetail'] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
+  const [showRequestModal, setShowRequestModal] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -55,11 +58,66 @@ export default function DestinationPage() {
             <div className={styles.actions}>
               <Link href={`/map?destinationId=${data.id}`}>Xem trên bản đồ</Link>
               <Link href={`/map?destinationId=${data.id}&directions=1`}>Chỉ đường</Link>
+              <button
+                type="button"
+                onClick={() => setShowRequestModal(true)}
+                style={{ background: '#0f172a' }}
+              >
+                ✏️ Đề xuất cập nhật
+              </button>
             </div>
           ) : (
-            <p>Địa điểm chưa có tọa độ hợp lệ. Chưa thể hiển thị trên bản đồ hoặc tính tuyến.</p>
+            <div className={styles.actions}>
+              <p style={{ margin: 0, width: '100%' }}>
+                Địa điểm chưa có tọa độ hợp lệ. Chưa thể hiển thị trên bản đồ hoặc tính tuyến.
+              </p>
+              <button
+                type="button"
+                onClick={() => setShowRequestModal(true)}
+                style={{ background: '#0f172a' }}
+              >
+                ✏️ Đề xuất cập nhật
+              </button>
+            </div>
           )}
         </article>
+      )}
+      {toast && (
+        <div
+          style={{
+            marginTop: 16,
+            padding: '12px 16px',
+            borderRadius: 12,
+            background: '#dcfce7',
+            color: '#166534',
+            fontWeight: 600,
+          }}
+        >
+          {toast}
+        </div>
+      )}
+      {showRequestModal && data && (
+        <DestinationRequestModal
+          mode="UPDATE"
+          initialDestination={{
+            id: data.id,
+            name: data.name,
+            province: data.province,
+            category: data.category,
+            description: data.description,
+            latitude: data.latitude,
+            longitude: data.longitude,
+            priceMin: data.priceMin,
+            priceMax: data.priceMax,
+            sourceUrl: data.sourceUrl,
+            imageUrl: data.imageUrl,
+          }}
+          onClose={() => setShowRequestModal(false)}
+          onSuccess={(msg) => {
+            setToast(msg);
+            setTimeout(() => setToast(null), 5000);
+          }}
+        />
       )}
     </main>
   );

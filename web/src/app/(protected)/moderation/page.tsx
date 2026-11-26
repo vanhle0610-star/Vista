@@ -19,10 +19,13 @@ import {
   Layers,
   X,
   MessageSquareWarning,
+  Send,
 } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
 import { PaginationBar } from '@/components/PaginationBar';
 import { CrownModeratorIcon } from '@/components/common/LuxeIcons';
+import { fetchAdminDestinationRequestStats } from '@/services/destinationRequestApi';
+import { DestinationRequestsTab } from './DestinationRequestsTab';
 import styles from './moderation.module.css';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -281,8 +284,9 @@ const formatDate = (iso: string) => {
 };
 
 export default function ModerationPage() {
-  // Top-level hub active tab: 'DESTINATIONS' | 'REPORTS'
-  const [hubTab, setHubTab] = useState<'DESTINATIONS' | 'REPORTS'>('DESTINATIONS');
+  // Top-level hub active tab: 'DESTINATIONS' | 'REQUESTS' | 'REPORTS'
+  const [hubTab, setHubTab] = useState<'DESTINATIONS' | 'REQUESTS' | 'REPORTS'>('DESTINATIONS');
+  const [pendingRequestCount, setPendingRequestCount] = useState<number>(0);
 
   // ─────────────────────────────────────────────────────────────────────────
   // STATE: DESTINATIONS (TV1)
@@ -400,6 +404,12 @@ export default function ModerationPage() {
       setLoading(false);
     }
   }, [statusFilter, page, size, searchKeyword, selectedProvince]);
+
+  useEffect(() => {
+    void fetchAdminDestinationRequestStats()
+      .then((s) => setPendingRequestCount(s.pending))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (hubTab === 'DESTINATIONS') {
@@ -641,6 +651,17 @@ export default function ModerationPage() {
         </button>
         <button
           type="button"
+          className={`${styles.hubTabBtn} ${hubTab === 'REQUESTS' ? styles.hubTabBtnActive : ''}`}
+          onClick={() => setHubTab('REQUESTS')}
+        >
+          <Send size={18} />
+          Yêu cầu từ người dùng
+          {pendingRequestCount > 0 && (
+            <span className={styles.tabBadge}>{pendingRequestCount}</span>
+          )}
+        </button>
+        <button
+          type="button"
           className={`${styles.hubTabBtn} ${hubTab === 'REPORTS' ? styles.hubTabBtnActive : ''}`}
           onClick={() => setHubTab('REPORTS')}
         >
@@ -648,6 +669,11 @@ export default function ModerationPage() {
           Báo cáo Bài viết Cộng đồng (TV4)
         </button>
       </nav>
+
+      {/* ════════ VIEW 1.5: USER DESTINATION REQUESTS ════════ */}
+      {hubTab === 'REQUESTS' && (
+        <DestinationRequestsTab onPendingCountChange={setPendingRequestCount} />
+      )}
 
       {/* ════════ VIEW 1: DESTINATIONS MODERATION (TV1) ════════ */}
       {hubTab === 'DESTINATIONS' && (
