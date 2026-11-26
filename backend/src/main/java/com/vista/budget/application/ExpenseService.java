@@ -560,4 +560,80 @@ public class ExpenseService {
         splitResponses,
         entity.getVersion());
   }
+
+  @Transactional(readOnly = true)
+  public boolean hasOutstandingDebts(UUID tripId) {
+    Objects.requireNonNull(tripId, "tripId must not be null");
+
+    List<ExpenseEntity> expenses =
+        expenseRepository.findByTripIdAndStatusOrderByOccurredAtDesc(tripId, "ACTIVE");
+
+    // Trạng thái 1: Chưa có khoản chi -> Không có công nợ
+    if (expenses.isEmpty()) {
+      return false;
+    }
+
+    // Trạng thái 2 & 3: Kiểm tra các khoản chia tiền (splits)
+    // Nếu có split giữa thành viên khác người thanh toán và chưa SETTLED -> còn nợ
+    boolean hasUnsettledSplit = false;
+    for (ExpenseEntity exp : expenses) {
+      UUID payerId = exp.getPaidBy();
+      for (ExpenseSplitEntity split : exp.getSplits()) {
+        if (!split.getUserId().equals(payerId)
+            && !"SETTLED".equalsIgnoreCase(split.getSettledStatus())) {
+          hasUnsettledSplit = true;
+          break;
+        }
+      }
+      if (hasUnsettledSplit) {
+        break;
+      }
+    }
+
+    if (hasUnsettledSplit) {
+      return true;
+    }
+
+    // Kiểm tra thêm qua cán cân thanh toán (Min Cash Flow)
+    Set<UUID> memberSet = new LinkedHashSet<>();
+    for (ExpenseEntity exp : expenses) {
+      memberSet.add(exp.getPaidBy());
+      for (ExpenseSplitEntity split : exp.getSplits()) {
+        memberSet.add(split.getUserId());
+      }
+    }
+
+    List<UUID> memberList = new ArrayList<>(memberSet);
+    Map<UUID, BigDecimal> balances =
+        calculationService.calculateSettlementDeltas(expenses, memberList);
+
+    List<ExpenseCalculationService.SettlementTransfer> transfers =
+        calculationService.simplifyDebts(balances);
+
+    return !transfers.isEmpty();
+  }
+
+  /**
+   * Quyết toán toàn bộ các khoản chi tiêu trong chuyến đi (TV4).
+   * Đánh dấu toàn bộ splits thành SETTLED.
+   */
+  public void settleAllTripExpenses(UUID tripId, UUID currentUserId) {
+    tripAccessService.requireWriteAccess(tripId, currentUserId);
+    List<ExpenseEntity> expenses =
+        expenseRepository.findByTripIdAndStatusOrderByOccurredAtDesc(tripId, "ACTIVE");
+    for (ExpenseEntity exp : expenses) {
+      for (ExpenseSplitEntity split : exp.getSplits()) {
+        split.setSettledStatus("SETTLED");
+        expenseSplitRepository.save(split);
+      }
+    }
+    if (auditLogService != null) {
+      auditLogService.logAction(
+          currentUserId,
+          "EXPENSES_SETTLED",
+          "TRIP",
+          tripId.toString(),
+          "{\"status\":\"FULLY_SETTLED\"}");
+    }
+  }
 }

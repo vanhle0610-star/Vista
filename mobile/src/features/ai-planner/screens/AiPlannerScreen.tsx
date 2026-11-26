@@ -21,7 +21,6 @@ import {
   HeartIcon,
   GroupIcon,
   FamilyIcon,
-  SparkleIcon,
   WalletIcon,
   CarIcon,
 } from '../../../components/icons/StitchIcons';

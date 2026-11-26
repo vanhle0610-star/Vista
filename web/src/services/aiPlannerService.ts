@@ -4,6 +4,8 @@ export type AiProvider = 'local' | 'gemini' | 'claude' | 'deterministic' | 'unkn
 
 export interface AiItinerarySuggestionRequest {
   destinationProvince: string;
+  originProvince?: string;
+  intercityTransportMode?: string;
   totalDays: number;
   budgetLevel: string;
   interests: string[];
@@ -64,6 +66,7 @@ export interface AiItinerarySuggestionResponse {
   estimatedTotalCost: number;
   minFluctuationVnd?: number;
   maxFluctuationVnd?: number;
+  intercityTransit?: any;
   warnings?: string[];
   isMockData: boolean;
   days: AiSuggestedDay[];
@@ -82,9 +85,9 @@ export interface AiItinerarySuggestionResponse {
   isBudgetFeasible?: boolean;
   unverifiedCostCount?: number;
   scheduleStatus?: string;
-  conflicts?: Record<string, any>[];
-  breakdown?: Record<string, any>;
-  internalDiagnostics?: Record<string, any>;
+  conflicts?: Record<string, unknown>[];
+  breakdown?: Record<string, unknown>;
+  internalDiagnostics?: Record<string, unknown>;
 }
 
 export interface AiCitation {

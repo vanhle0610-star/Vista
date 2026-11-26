@@ -39,6 +39,35 @@ public class GoogleTokenVerifier {
       return parseDemoToken(idToken);
     }
 
+    // 2. If it's an OAuth2 Access Token (starts with ya29.) -> verify via Google UserInfo API directly
+    if (idToken.startsWith("ya29.")) {
+      try {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> userInfo =
+            restClient
+                .get()
+                .uri("https://www.googleapis.com/oauth2/v3/userinfo")
+                .header("Authorization", "Bearer " + idToken)
+                .retrieve()
+                .body(Map.class);
+
+        if (userInfo != null && userInfo.containsKey("email")) {
+          var email = String.valueOf(userInfo.get("email")).trim().toLowerCase();
+          var name =
+              userInfo.containsKey("name")
+                  ? String.valueOf(userInfo.get("name"))
+                  : email.substring(0, email.indexOf('@'));
+          var picture =
+              userInfo.containsKey("picture") ? String.valueOf(userInfo.get("picture")) : null;
+          var sub =
+              userInfo.containsKey("sub") ? String.valueOf(userInfo.get("sub")) : "google-" + email;
+          return new GoogleUserPayload(email, name, picture, sub);
+        }
+      } catch (Exception e) {
+        log.warn("Direct OAuth2 Access Token verification failed: {}", e.getMessage());
+      }
+    }
+
     // 2. Production validation via Google TokenInfo API
     try {
       @SuppressWarnings("unchecked")

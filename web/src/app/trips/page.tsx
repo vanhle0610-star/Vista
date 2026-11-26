@@ -37,6 +37,10 @@ import {
   ArrowRight,
   Clipboard,
   KeyRound,
+  AlertTriangle,
+  Wallet,
+  Loader2,
+  CreditCard,
 } from 'lucide-react';
 import { SkeletonCardGrid } from '@/components/common/Skeleton';
 import {
@@ -491,6 +495,7 @@ export default function TripsPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [dateFilter, setDateFilter] = useState<DateFilterType>('all');
   const [dateDropdownOpen, setDateDropdownOpen] = useState(false);
+  const [activeMenuTripId, setActiveMenuTripId] = useState<string | null>(null);
   const dateDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -849,6 +854,47 @@ export default function TripsPage() {
   const [isSyncingTrips, setIsSyncingTrips] = useState<boolean>(true);
   const [incomingInvitations, setIncomingInvitations] = useState<any[]>([]);
 
+  // Danger Zone / Delete Trip States & Handler (TV4 P1)
+  const [tripToDelete, setTripToDelete] = useState<TripItem | null>(null);
+  const [isDeletingTrip, setIsDeletingTrip] = useState(false);
+  const [unsettledDebtsError, setUnsettledDebtsError] = useState<{
+    open: boolean;
+    message: string;
+    tripId: string;
+    tripTitle?: string;
+  } | null>(null);
+
+  const handleConfirmDeleteTrip = async () => {
+    if (!tripToDelete) return;
+    const targetTrip = tripToDelete;
+    setIsDeletingTrip(true);
+    try {
+      await apiRequest(`/trips/${targetTrip.id}`, {
+        method: 'DELETE',
+      });
+      showToast(`✓ Đã xóa chuyến đi "${targetTrip.title}" thành công!`);
+      setTripsList((prev) => prev.filter((t) => t.id !== targetTrip.id));
+      setTripToDelete(null);
+      window.dispatchEvent(new CustomEvent('vista-trips-change'));
+    } catch (err: any) {
+      setIsDeletingTrip(false);
+      setTripToDelete(null);
+      if (err?.status === 409 || err?.code === 'TRIP_HAS_UNSETTLED_DEBTS') {
+        const message = err?.detail || err?.message || 'Chuyến đi còn khoản chưa quyết toán. Vui lòng kiểm tra Thủ quỹ trước khi xóa.';
+        setUnsettledDebtsError({
+          open: true,
+          message,
+          tripId: String(targetTrip.id),
+          tripTitle: targetTrip.title,
+        });
+        return;
+      }
+      showToast(err?.detail || err?.message || 'Không thể xóa chuyến đi. Vui lòng thử lại sau.');
+    } finally {
+      setIsDeletingTrip(false);
+    }
+  };
+
   // Load trips exclusively from PostgreSQL Database via Spring Boot API
   const fetchTripsFromBackend = async () => {
     setIsSyncingTrips(true);
@@ -1076,15 +1122,28 @@ export default function TripsPage() {
     }
 
     try {
-      const res = await apiRequest<any>(`/invitations/${encodeURIComponent(cleanCode)}/accept`, {
-        method: 'POST',
-      });
+      // 1. Thử gia nhập qua mã mời ngắn / mã chuyến đi (/invitations/join-by-code)
+      let res: any;
+      try {
+        res = await apiRequest<any>('/invitations/join-by-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: cleanCode }),
+        });
+      } catch (errCode: any) {
+        // 2. Dự phòng: Thử accept theo rawToken cũ
+        res = await apiRequest<any>(`/invitations/${encodeURIComponent(cleanCode)}/accept`, {
+          method: 'POST',
+        });
+      }
 
       setShowJoinModal(false);
       setJoinCode('');
       showToast(`🎉 Gia nhập thành công chuyến đi! Đang chuyển hướng...`);
       await fetchTripsFromBackend();
-      if (res.tripId) {
+      window.dispatchEvent(new CustomEvent('vista-trips-change'));
+
+      if (res?.tripId) {
         if (typeof window !== 'undefined') {
           localStorage.setItem('vista_last_trip_id', res.tripId);
         }
@@ -1582,14 +1641,71 @@ export default function TripsPage() {
                         </span>
                       )}
 
-                      <button
-                        type="button"
-                        className={styles.btnMoreMenu}
-                        title="Tùy chọn khác"
-                        onClick={() => showToast(`Tùy chọn: ${trip.title}`)}
-                      >
-                        <MoreHorizontal size={16} />
-                      </button>
+                      <div className={styles.cardMenuWrapper}>
+                        <button
+                          type="button"
+                          className={styles.btnMoreMenu}
+                          title="Tùy chọn khác"
+                          onClick={() => setActiveMenuTripId(activeMenuTripId === trip.id ? null : trip.id)}
+                        >
+                          <MoreHorizontal size={16} />
+                        </button>
+                        {activeMenuTripId === trip.id && (
+                          <div className={styles.cardDropdownMenu} onMouseLeave={() => setActiveMenuTripId(null)}>
+                            <Link
+                              href={`/trips/${trip.id}?tab=itinerary`}
+                              className={styles.cardDropdownItem}
+                              onClick={() => setActiveMenuTripId(null)}
+                            >
+                              <Calendar size={14} />
+                              <span>Lịch trình chi tiết</span>
+                            </Link>
+                            <Link
+                              href={`/trips/${trip.id}/treasury`}
+                              className={styles.cardDropdownItem}
+                              onClick={() => setActiveMenuTripId(null)}
+                            >
+                              <CreditCard size={14} />
+                              <span>Ví & Chi tiêu</span>
+                            </Link>
+                            <button
+                              type="button"
+                              className={styles.cardDropdownItem}
+                              onClick={() => {
+                                setActiveMenuTripId(null);
+                                handleOpenAssignModal(trip);
+                              }}
+                            >
+                              <Users size={14} />
+                              <span>Phân công việc</span>
+                            </button>
+                            <button
+                              type="button"
+                              className={styles.cardDropdownItem}
+                              onClick={() => {
+                                setActiveMenuTripId(null);
+                                handleOpenNoteModal(trip);
+                              }}
+                            >
+                              <CheckSquare size={14} />
+                              <span>Ghi chú chuẩn bị</span>
+                            </button>
+                            {isTripOwnerUser(trip) && (
+                              <button
+                                type="button"
+                                className={`${styles.cardDropdownItem} ${styles.cardDropdownDanger}`}
+                                onClick={() => {
+                                  setActiveMenuTripId(null);
+                                  setTripToDelete(trip);
+                                }}
+                              >
+                                <Trash2 size={14} />
+                                <span>Xóa chuyến đi</span>
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     {/* Bottom Row: Location + Duration badge */}
@@ -1670,201 +1786,77 @@ export default function TripsPage() {
                       </span>
                     </div>
 
-                    {/* Row 4: Alert Box Slot (Always fixed 46px height for perfect alignment) */}
-                    <div className={styles.cardAlertSlot}>
-                      {trip.alertType === 'AMBER' && (
+                    {/* Row 4: Alert Box Slot (Only rendered when there is a real operational notice) */}
+                    {trip.alertType === 'AMBER' && trip.alertText && (
+                      <div className={styles.cardAlertSlot}>
                         <div className={styles.alertBoxAmber}>
-                          <Bell size={14} style={{ flexShrink: 0 }} />
+                          <Bell size={13} style={{ flexShrink: 0 }} />
                           <span className={styles.alertTextClamp}>{trip.alertText}</span>
                         </div>
-                      )}
-                      {trip.alertType === 'BLUE' && (
+                      </div>
+                    )}
+                    {trip.alertType === 'BLUE' && trip.alertText && (
+                      <div className={styles.cardAlertSlot}>
                         <div className={styles.alertBoxBlue}>
-                          <Shuffle size={14} style={{ flexShrink: 0 }} />
+                          <Shuffle size={13} style={{ flexShrink: 0 }} />
                           <span className={styles.alertTextClamp}>{trip.alertText}</span>
                         </div>
-                      )}
-                      {trip.alertType === 'COMPLETED' && (
+                      </div>
+                    )}
+                    {trip.alertType === 'COMPLETED' && trip.alertText && (
+                      <div className={styles.cardAlertSlot}>
                         <div className={styles.alertBoxCompleted}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6, overflow: 'hidden', flex: 1 }}>
-                            <Camera size={14} style={{ flexShrink: 0 }} />
+                            <Camera size={13} style={{ flexShrink: 0 }} />
                             <span className={styles.alertTextClamp}>{trip.alertText}</span>
                           </div>
                           <span
                             className={styles.alertLinkBtn}
-                            onClick={() => showToast('Mở bộ sưu tập 148 ảnh & hóa đơn')}
+                            onClick={() => showToast('Mở bộ sưu tập ảnh & hóa đơn')}
                           >
                             {trip.alertLinkText || 'Xem'}
                           </span>
                         </div>
-                      )}
-                      {!['AMBER', 'BLUE', 'COMPLETED'].includes(trip.alertType as any) && trip.alertText && (
-                        <div className={styles.alertBoxBlue}>
-                          <Shuffle size={14} style={{ flexShrink: 0 }} />
-                          <span className={styles.alertTextClamp}>{trip.alertText}</span>
-                        </div>
-                      )}
-                      {!trip.alertText && (
-                        <div className={styles.alertBoxNeutral}>
-                          <Sparkles size={13} style={{ flexShrink: 0, color: '#0284C7' }} />
-                          <span className={styles.alertTextClamp}>Kế hoạch & trải nghiệm đang diễn ra</span>
-                        </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className={styles.cardBottomSection}>
-                    {/* Row 5: Progress Bar / Budget */}
+                    {/* Row 5: Compact Budget Bar */}
                     <div className={styles.cardProgressGroup}>
-                      {tripStatus === 'COMPLETED' ? (
-                        <>
-                          <div className={styles.progressLabelRow}>
-                            <span>Tổng chi tiêu hoàn tất</span>
-                            <span className={styles.progressValueBold}>
-                              {(trip.budgetSpent ?? 0).toLocaleString('vi-VN')}đ / {(trip.budgetTotal ?? 0).toLocaleString('vi-VN')}đ
-                            </span>
-                          </div>
-                          <div className={styles.progressBarTrack}>
-                            <div
-                              className={styles.progressBarFillNavy}
-                              style={{ width: `${trip.progressPercent ?? 100}%` }}
-                            />
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <div className={styles.progressLabelRow}>
-                            <span>Chi phí đã chi</span>
-                            <span className={styles.progressValueBold}>{trip.progressPercent ?? 0}%</span>
-                          </div>
-                          <div className={styles.progressBarTrack}>
-                            <div
-                              className={styles.progressBarFillCyan}
-                              style={{ width: `${trip.progressPercent ?? 0}%` }}
-                            />
-                          </div>
-                          <div className={styles.progressLabelRow}>
-                            <span>Ngân sách chuyến đi</span>
-                            <span className={styles.progressValueBold}>
-                              {(trip.budgetSpent ?? 0).toLocaleString('vi-VN')}đ / {(trip.budgetTotal ?? 0).toLocaleString('vi-VN')}đ
-                            </span>
-                          </div>
-                        </>
-                      )}
+                      <div className={styles.budgetCompactRow}>
+                        <span className={styles.budgetSpentLabel}>
+                          Đã chi: <strong>{(trip.budgetSpent ?? 0).toLocaleString('vi-VN')}đ</strong> ({trip.progressPercent ?? 0}%)
+                        </span>
+                        <span className={styles.budgetTotalLabel}>
+                          Tổng: <strong>{(trip.budgetTotal ?? 0).toLocaleString('vi-VN')}đ</strong>
+                        </span>
+                      </div>
+                      <div className={styles.progressBarTrack}>
+                        <div
+                          className={styles.progressBarFillCyan}
+                          style={{ width: `${Math.min(100, trip.progressPercent ?? 0)}%` }}
+                        />
+                      </div>
                     </div>
 
-                    {/* Row 6: Primary CTA Button */}
-                    <Link
-                      href={`/trips/${trip.id}`}
-                      className={
-                        tripStatus === 'ACTIVE'
-                          ? styles.btnCardMainPrimary
-                          : styles.btnCardMainSoft
-                      }
-                      id={`btn-cta-${trip.id}`}
-                    >
-                      {tripStatus === 'COMPLETED' ? 'Xem lại hành trình' : 'Xem chi tiết'}
-                    </Link>
-
-                    {/* Row 7: Secondary Action Pills */}
-                    <div
-                      className={
-                        actions.length === 2
-                          ? styles.secondaryActionsRow2
-                          : styles.secondaryActionsRow
-                      }
-                    >
-                      {actions.map((act, aIdx) => {
-                        const isItinerary = act.label.toLowerCase().includes('lịch trình') || act.actionType === 'PLAN';
-                        const isAssign = act.label.toLowerCase().includes('phân công') || act.actionType === 'ASSIGN';
-                        const isNote = act.label.toLowerCase().includes('ghi chú') || act.actionType === 'NOTE';
-                        const isVote = act.label.toLowerCase().includes('biểu quyết') || act.actionType === 'VOTE';
-
-                        if (isItinerary) {
-                          return (
-                            <Link
-                              key={aIdx}
-                              href={`/trips/${trip.id}?tab=itinerary`}
-                              className={styles.btnSecondaryPill}
-                              title="Mở lịch trình từng ngày của chuyến đi"
-                            >
-                              <Calendar size={12} style={{ marginRight: 3, flexShrink: 0 }} />
-                              <span>{act.label}</span>
-                            </Link>
-                          );
-                        }
-
-                        if (isAssign) {
-                          return (
-                            <button
-                              key={aIdx}
-                              type="button"
-                              className={styles.btnSecondaryPill}
-                              onClick={() => handleOpenAssignModal(trip)}
-                              title={isTripMember ? "Mở bảng phân công nhiệm vụ nhóm" : "Chỉ thành viên chuyến đi mới có quyền xem phân công"}
-                              style={!isTripMember ? { opacity: 0.65 } : undefined}
-                            >
-                              <Users size={12} style={{ marginRight: 3, flexShrink: 0 }} />
-                              <span>{act.label}</span>
-                              {!isTripMember && <Lock size={10} style={{ marginLeft: 3, opacity: 0.7, flexShrink: 0 }} />}
-                            </button>
-                          );
-                        }
-
-                        if (isNote) {
-                          return (
-                            <button
-                              key={aIdx}
-                              type="button"
-                              className={styles.btnSecondaryPill}
-                              onClick={() => handleOpenNoteModal(trip)}
-                              title={isTripMember ? "Mở ghi chú và danh sách chuẩn bị" : "Chỉ thành viên chuyến đi mới có quyền xem ghi chú"}
-                              style={!isTripMember ? { opacity: 0.65 } : undefined}
-                            >
-                              <CheckSquare size={12} style={{ marginRight: 3, flexShrink: 0 }} />
-                              <span>{act.label}</span>
-                              {!isTripMember && <Lock size={10} style={{ marginLeft: 3, opacity: 0.7, flexShrink: 0 }} />}
-                            </button>
-                          );
-                        }
-
-                        if (isVote) {
-                          return (
-                            <button
-                              key={aIdx}
-                              type="button"
-                              className={styles.btnSecondaryPill}
-                              onClick={() => setShowVoteModal(true)}
-                            >
-                              <ThumbsUp size={12} style={{ marginRight: 3, flexShrink: 0 }} />
-                              <span>{act.label}</span>
-                            </button>
-                          );
-                        }
-
-                        if (act.href) {
-                          return (
-                            <Link
-                              key={aIdx}
-                              href={act.href}
-                              className={styles.btnSecondaryPill}
-                            >
-                              <span>{act.label}</span>
-                            </Link>
-                          );
-                        }
-
-                        return (
-                          <button
-                            key={aIdx}
-                            type="button"
-                            className={styles.btnSecondaryPill}
-                            onClick={() => showToast(`Mở tính năng: ${act.label}`)}
-                          >
-                            <span>{act.label}</span>
-                          </button>
-                        );
-                      })}
+                    {/* Row 6: Balanced Dual Action Buttons */}
+                    <div className={styles.cardActionsRow}>
+                      <Link
+                        href={`/trips/${trip.id}`}
+                        className={styles.btnActionPrimary}
+                        id={`btn-cta-${trip.id}`}
+                      >
+                        <Compass size={14} />
+                        <span>Xem chi tiết</span>
+                      </Link>
+                      <Link
+                        href={`/trips/${trip.id}?tab=itinerary`}
+                        className={styles.btnActionSecondary}
+                      >
+                        <Calendar size={14} />
+                        <span>Lịch trình</span>
+                      </Link>
                     </div>
                   </div>
                 </div>
@@ -1897,6 +1889,15 @@ export default function TripsPage() {
                   <Sparkles size={16} color="#0284c7" /> Lên lịch với AI Planner
                 </Link>
               </div>
+
+              {typeof window !== 'undefined' && localStorage.getItem('vista_last_generated_plan') && (
+                <div style={{ marginTop: '1.5rem', padding: '12px 16px', background: '#F0F9FF', border: '1px solid #BAE6FD', borderRadius: '12px', display: 'inline-flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: '#0369A1' }}>
+                  <span>💡 Bạn có lịch trình AI vừa thiết kế chưa lưu thành chuyến đi.</span>
+                  <Link href="/planner" style={{ fontWeight: 700, color: '#0284C7', textDecoration: 'underline' }}>
+                    Quay lại lưu chuyến đi ngay →
+                  </Link>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -2812,6 +2813,209 @@ export default function TripsPage() {
             >
               Đóng & Lưu kết quả
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ─── MODAL: CONFIRM DELETE TRIP (Dành cho Trưởng nhóm - TV4) ──── */}
+      {tripToDelete && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.65)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px',
+          }}
+          onClick={() => !isDeletingTrip && setTripToDelete(null)}
+        >
+          <div
+            style={{
+              background: '#FFFFFF',
+              borderRadius: '20px',
+              maxWidth: '460px',
+              width: '100%',
+              padding: '28px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              textAlign: 'center',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                width: '56px',
+                height: '56px',
+                borderRadius: '50%',
+                background: '#FEE2E2',
+                color: '#DC2626',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px',
+              }}
+            >
+              <Trash2 size={28} />
+            </div>
+            <h3 style={{ fontSize: '19px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
+              Xác nhận xóa chuyến đi?
+            </h3>
+            <p style={{ fontSize: '14px', color: '#64748B', lineHeight: '1.6', marginBottom: '24px' }}>
+              Hành động này sẽ <strong>xóa vĩnh viễn</strong> toàn bộ dữ liệu chuyến đi <strong>&ldquo;{tripToDelete.title}&rdquo;</strong>. Thao tác này không thể hoàn tác.
+            </p>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+              <button
+                type="button"
+                onClick={() => setTripToDelete(null)}
+                disabled={isDeletingTrip}
+                style={{
+                  flex: 1,
+                  padding: '11px 18px',
+                  borderRadius: '12px',
+                  border: '1.5px solid #CBD5E1',
+                  background: '#FFFFFF',
+                  color: '#475569',
+                  fontWeight: 700,
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                }}
+              >
+                Hủy bỏ
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDeleteTrip}
+                disabled={isDeletingTrip}
+                style={{
+                  flex: 1,
+                  padding: '11px 18px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  background: '#DC2626',
+                  color: '#FFFFFF',
+                  fontWeight: 700,
+                  fontSize: '14px',
+                  cursor: isDeletingTrip ? 'not-allowed' : 'pointer',
+                  opacity: isDeletingTrip ? 0.7 : 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                }}
+              >
+                {isDeletingTrip ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    <span>Đang xóa...</span>
+                  </>
+                ) : (
+                  <span>Tôi hiểu, Xóa vĩnh viễn</span>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── MODAL: UNSETTLED DEBTS ERROR 409 (TV4 Bắt buộc) ────────────── */}
+      {unsettledDebtsError?.open && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.65)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px',
+          }}
+          onClick={() => setUnsettledDebtsError(null)}
+        >
+          <div
+            style={{
+              background: '#FFFFFF',
+              borderRadius: '20px',
+              maxWidth: '480px',
+              width: '100%',
+              padding: '28px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              textAlign: 'center',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                width: '60px',
+                height: '60px',
+                borderRadius: '50%',
+                background: '#FEF3C7',
+                color: '#D97706',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px',
+              }}
+            >
+              <AlertTriangle size={32} />
+            </div>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#FFFBEB', color: '#B45309', border: '1px solid #FDE68A', padding: '4px 12px', borderRadius: '999px', fontSize: '12px', fontWeight: 800, marginBottom: '12px' }}>
+              <span>HTTP 409 CONFLICT</span>
+              <span>·</span>
+              <span>TRIP_HAS_UNSETTLED_DEBTS</span>
+            </div>
+            <h3 style={{ fontSize: '19px', fontWeight: 800, color: '#0F172A', marginBottom: '10px' }}>
+              Không thể xóa chuyến đi
+            </h3>
+            <p style={{ fontSize: '14.5px', color: '#475569', lineHeight: '1.6', marginBottom: '24px' }}>
+              {unsettledDebtsError.message}
+            </p>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+              <button
+                type="button"
+                onClick={() => setUnsettledDebtsError(null)}
+                style={{
+                  flex: 1,
+                  padding: '12px 18px',
+                  borderRadius: '12px',
+                  border: '1.5px solid #CBD5E1',
+                  background: '#FFFFFF',
+                  color: '#475569',
+                  fontWeight: 700,
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                }}
+              >
+                Đã hiểu & Đóng
+              </button>
+              <Link
+                href={`/trips/${unsettledDebtsError.tripId}/treasury`}
+                style={{
+                  flex: 1.2,
+                  padding: '12px 18px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  background: 'linear-gradient(135deg, #0284C7, #0369A1)',
+                  color: '#FFFFFF',
+                  fontWeight: 700,
+                  fontSize: '14px',
+                  textDecoration: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  boxShadow: '0 4px 14px rgba(2, 132, 199, 0.35)',
+                }}
+                onClick={() => setUnsettledDebtsError(null)}
+              >
+                <Wallet size={16} />
+                <span>Mở Thủ quỹ</span>
+              </Link>
+            </div>
           </div>
         </div>
       )}

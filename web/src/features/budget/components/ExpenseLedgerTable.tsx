@@ -73,7 +73,6 @@ const CATEGORY_TABS = [
 export function ExpenseLedgerTable({
   expenses,
   members,
-  currentUserId,
   onOpenAddExpense,
   onDeleteExpense,
 }: ExpenseLedgerTableProps) {

@@ -5,6 +5,8 @@ try:
 
     class UserConstraints(BaseModel):
         destination_province: str
+        origin_province: Optional[str] = None
+        intercity_transport_mode: Optional[str] = "flight"
         total_days: int = Field(default=3, ge=1, le=7)
         people_count: int = Field(default=2, ge=1)
         travel_with: Optional[str] = "Cặp đôi / Bạn bè"
@@ -54,6 +56,8 @@ except ImportError:
     @dataclass
     class UserConstraints:
         destination_province: str
+        origin_province: Optional[str] = None
+        intercity_transport_mode: Optional[str] = "flight"
         total_days: int = 3
         people_count: int = 2
         travel_with: Optional[str] = "Cặp đôi / Bạn bè"
