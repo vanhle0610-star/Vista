@@ -1994,7 +1994,7 @@
   padding-right: 6px;
   margin-bottom: 16px;
   scrollbar-width: thin;
-  scrollbar-color: #CBD5E1 #F8FAFC;
+  scrollbar-color: #CBD5E1 transparent;
 }
 
 .invitationRow {
@@ -2003,8 +2003,14 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 10px;
-  padding: 13px 0;
+  padding: 13px 8px;
+  border-radius: 8px;
   border-bottom: 1px solid #E2E8F0;
+  transition: background-color 150ms ease;
+}
+
+.invitationRow:hover {
+  background: #F8FAFC;
 }
 
 .invitationRow:last-child {
@@ -2012,11 +2018,11 @@
 }
 
 .invitationScrollContainer::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 .invitationScrollContainer::-webkit-scrollbar-track {
-  background: #F8FAFC;
+  background: transparent;
   border-radius: 999px;
 }
 
