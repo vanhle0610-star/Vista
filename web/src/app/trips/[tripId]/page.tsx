@@ -3568,19 +3568,7 @@ export default function TripDetailPage() {
                                 }
                                 showToast(`✓ Đã sao chép link mời cho ${inv.email}!`);
                               }}
-                              style={{
-                                fontSize: '12px',
-                                color: '#0284C7',
-                                fontWeight: 700,
-                                padding: '6px 12px',
-                                background: '#F0F9FF',
-                                border: '1px solid #BAE6FD',
-                                borderRadius: '8px',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '4px',
-                                cursor: 'pointer',
-                              }}
+                              className={styles.invitationCopyBtn}
                               title="Sao chép link mời để gửi qua Zalo / Facebook Messenger"
                             >
                               <Copy size={14} />
@@ -3593,19 +3581,7 @@ export default function TripDetailPage() {
                                 type="button"
                                 onClick={() => handleResendInviteEmail(inv)}
                                 disabled={isResendingEmail === inv.token}
-                                style={{
-                                  fontSize: '12px',
-                                  color: '#047857',
-                                  fontWeight: 700,
-                                  padding: '6px 12px',
-                                  background: '#ECFDF5',
-                                  border: '1px solid #A7F3D0',
-                                  borderRadius: '8px',
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: '4px',
-                                  cursor: isResendingEmail === inv.token ? 'not-allowed' : 'pointer',
-                                }}
+                                className={styles.invitationResendBtn}
                                 title={`Tự động gửi lại email mời trực tiếp tới ${inv.email}`}
                               >
                                 {isResendingEmail === inv.token ? (
@@ -3622,16 +3598,7 @@ export default function TripDetailPage() {
                               <button
                                 type="button"
                                 onClick={() => handleRevokeInvite(inv.id)}
-                                style={{
-                                  fontSize: '12px',
-                                  color: '#DC2626',
-                                  fontWeight: 700,
-                                  padding: '6px 12px',
-                                  background: '#FEF2F2',
-                                  border: '1px solid #FECACA',
-                                  borderRadius: '8px',
-                                  cursor: 'pointer',
-                                }}
+                                className={styles.invitationRevokeBtn}
                               >
                                 Thu hồi (Revoke)
                               </button>
