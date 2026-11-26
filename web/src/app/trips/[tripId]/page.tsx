@@ -729,7 +729,7 @@ export default function TripDetailPage() {
 
       const targetName = transferTarget.name;
       setTransferTarget(null);
-      showToast(`👑 Đã chuyển quyền Trưởng nhóm cho "${targetName}" thành công!`);
+      showToast(`Đã chuyển quyền Trưởng nhóm cho "${targetName}" thành công!`);
       window.dispatchEvent(new CustomEvent('vista-trips-change'));
       window.location.reload();
     } catch (err: any) {
