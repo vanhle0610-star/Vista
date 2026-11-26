@@ -9,4 +9,5 @@ WORKDIR /app
 COPY --from=build /workspace/build/libs/*.jar app.jar
 USER vista
 EXPOSE 8080
+ENV SPRING_PROFILES_ACTIVE=prod
 ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75", "-jar", "/app/app.jar"]

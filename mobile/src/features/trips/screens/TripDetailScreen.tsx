@@ -151,8 +151,32 @@ export function TripDetailScreen({ tripId }: { tripId: string }) {
         },
       ]);
     } catch (err: any) {
-      const msg = err?.response?.data?.detail || 'Không thể xóa chuyến đi này.';
-      Alert.alert('Lỗi', msg);
+      const isConflict = err?.response?.status === 409 || err?.status === 409;
+      const msg =
+        err?.response?.data?.detail ||
+        err?.response?.data?.message ||
+        err?.message ||
+        'Không thể xóa chuyến đi này.';
+
+      if (isConflict) {
+        Alert.alert(
+          'Không thể xóa chuyến đi',
+          msg ||
+            'Chuyến đi còn khoản chi tiêu hoặc công nợ chưa quyết toán. Vui lòng vào mục Thủ quỹ để quyết toán toàn bộ trước khi xóa.',
+          [
+            {
+              text: 'Đến Thủ quỹ',
+              onPress: () => router.push('/(tabs)/treasury' as any),
+            },
+            {
+              text: 'Đóng',
+              style: 'cancel',
+            },
+          ]
+        );
+      } else {
+        Alert.alert('Lỗi', msg);
+      }
     } finally {
       setIsDeleting(false);
     }
