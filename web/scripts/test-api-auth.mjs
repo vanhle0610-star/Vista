@@ -199,6 +199,26 @@ test('successful delete retains 204 support', async () => {
   assert.equal(h.calls.length, 1);
 });
 
+test('delete trip with unsettled debts throws 409 with problem detail and code (TV4)', async () => {
+  const h = harness(() => json(409, {
+    title: 'Conflict',
+    code: 'TRIP_HAS_UNSETTLED_DEBTS',
+    detail: 'Chuyến đi còn khoản chưa quyết toán. Vui lòng kiểm tra Thủ quỹ trước khi xóa.',
+    status: 409,
+  }));
+  await assert.rejects(
+    async () => h.request('/trips/trip-123', { method: 'DELETE' }),
+    (err) => {
+      assert.equal(err.status, 409);
+      assert.equal(err.code, 'TRIP_HAS_UNSETTLED_DEBTS');
+      assert.equal(err.detail, 'Chuyến đi còn khoản chưa quyết toán. Vui lòng kiểm tra Thủ quỹ trước khi xóa.');
+      assert.equal(err.message, 'Chuyến đi còn khoản chưa quyết toán. Vui lòng kiểm tra Thủ quỹ trước khi xóa.');
+      return true;
+    }
+  );
+  assert.equal(h.calls.length, 1);
+});
+
 test('protected auth profile can refresh an expired session', async () => {
   const h = harness((_call, index) => [json(401), json(200, { accessToken: 'new-token' }), json(200, { id: 'user-1' })][index - 1]);
   assert.equal((await h.request('/auth/me')).id, 'user-1');

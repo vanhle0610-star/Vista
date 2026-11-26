@@ -7,8 +7,6 @@ import {
   X,
   UserPlus,
   ArrowRight,
-  QrCode,
-  Users,
 } from 'lucide-react';
 import type { TripExpenseSummary, TripMember } from '../types';
 import styles from '../treasury.module.css';
@@ -17,20 +15,19 @@ interface DebtSettlementMatrixProps {
   summary: TripExpenseSummary;
   members: TripMember[];
   currentUserId?: string;
-  tripId?: string;
   onAddMember?: (name: string) => void;
+  onSettleAll?: () => void;
 }
 
 export function DebtSettlementMatrix({
   summary,
   members,
   currentUserId = 'u-me',
-  tripId = 'VISTA',
   onAddMember,
+  onSettleAll,
 }: DebtSettlementMatrixProps) {
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
   const [newMemberName, setNewMemberName] = useState('');
-  const [showDetailModal, setShowDetailModal] = useState(false);
 
   const memberMap = new Map<string, TripMember>();
   members.forEach((m) => memberMap.set(m.userId, m));
@@ -104,7 +101,6 @@ export function DebtSettlementMatrix({
             ) : (
               members.map((member, idx) => {
                 const delta = deltas[member.userId] !== undefined ? deltas[member.userId] : 0;
-                const isMe = member.userId === currentUserId;
                 const paid = delta > 0 ? delta : 0;
                 const owed = delta < 0 ? Math.abs(delta) : 0;
                 const initial = member.displayName ? member.displayName.charAt(0).toUpperCase() : 'U';
@@ -163,6 +159,32 @@ export function DebtSettlementMatrix({
               </div>
             );
           })}
+          {onSettleAll && (
+            <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                id="btn-settle-all-debts"
+                onClick={onSettleAll}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '8px 16px',
+                  background: '#ECFDF5',
+                  color: '#059669',
+                  border: '1.5px solid #A7F3D0',
+                  borderRadius: '8px',
+                  fontWeight: 700,
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                <CheckCircle2 size={15} />
+                <span>Xác nhận quyết toán toàn bộ</span>
+              </button>
+            </div>
+          )}
         </div>
       )}
 

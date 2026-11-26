@@ -15,8 +15,9 @@ import Svg, { Path } from 'react-native-svg';
 import { api, apiErrorMessage } from '../../services/api/client';
 import { LoadingState, ErrorState } from '../../components/feedback/States';
 import { useFavorites, useDestinationHistory } from '../../features/favorites';
-import { AppButton } from '@/components/ui/AppButton';
-import { validCoordinate } from '@/features/map/types';
+import { AppButton } from '../../components/ui/AppButton';
+import { validCoordinate } from '../../features/map/types';
+import { DestinationRequestModal } from '../../components/destination/DestinationRequestModal';
 
 export interface DestinationDetail {
   id: string;
@@ -51,6 +52,7 @@ export default function DestinationDetailRoute() {
   const { isFavorite, toggleFavorite } = useFavorites();
   const { recordView } = useDestinationHistory();
   const recordedRef = React.useRef(false);
+  const [suggestModalOpen, setSuggestModalOpen] = React.useState(false);
 
   const { data, isPending, isError, error, refetch } = useQuery<DestinationDetail>({
     queryKey: ['destination', id],
@@ -182,7 +184,7 @@ export default function DestinationDetailRoute() {
               <Image
                 source={{
                   uri: data.imageUrl.startsWith('http')
-                    ? data.imageUrl
+                    ? data.imageUrl.replace('://thumb.wikimedia.org/', '://upload.wikimedia.org/')
                     : 'https://images.unsplash.com/photo-1528127269322-539801943592?w=1000&q=80',
                 }}
                 style={styles.heroImage}
@@ -273,7 +275,35 @@ export default function DestinationDetailRoute() {
               </Text>
             )}
           </View>
+
+          <View style={styles.sectionCard}>
+            <AppButton
+              label="Đề xuất cập nhật thông tin"
+              variant="secondary"
+              onPress={() => setSuggestModalOpen(true)}
+            />
+          </View>
         </ScrollView>
+      )}
+      {data && (
+        <DestinationRequestModal
+          visible={suggestModalOpen}
+          mode="UPDATE"
+          initialDestination={{
+            id: data.id,
+            name: data.name,
+            province: data.province,
+            category: data.category,
+            description: data.description,
+            latitude: data.latitude,
+            longitude: data.longitude,
+            priceMin: data.priceMin,
+            priceMax: data.priceMax,
+            sourceUrl: data.sourceUrl,
+            imageUrl: data.imageUrl,
+          }}
+          onClose={() => setSuggestModalOpen(false)}
+        />
       )}
     </SafeAreaView>
   );

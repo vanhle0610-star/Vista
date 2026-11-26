@@ -59,6 +59,7 @@ import {
   Vote,
   Unlock,
   Loader2,
+  Trash2,
 } from 'lucide-react';
 import { SkeletonTripsPage, SkeletonTimeline, SkeletonTaskList } from '@/components/common/Skeleton';
 import { GroupMapTab } from '@/features/trip-location/components/GroupMapTab';
@@ -691,6 +692,44 @@ export default function TripDetailPage() {
       router.replace('/trips');
     } catch (err: any) {
       showToast(err.message || 'Không thể rời nhóm. Vui lòng thử lại sau.');
+    }
+  };
+
+  // Danger Zone / Delete Trip States & Handler (TV4 P1)
+  const [showDeleteTripModal, setShowDeleteTripModal] = useState(false);
+  const [isDeletingTrip, setIsDeletingTrip] = useState(false);
+  const [unsettledDebtsError, setUnsettledDebtsError] = useState<{
+    open: boolean;
+    message: string;
+    tripId: string;
+  } | null>(null);
+
+  const handleConfirmDeleteTrip = async () => {
+    if (!trip || !currentUser || !isTripOwner) return;
+    setIsDeletingTrip(true);
+    try {
+      await apiRequest(`/trips/${tripId}`, {
+        method: 'DELETE',
+      });
+      showToast('✓ Đã xóa chuyến đi thành công!');
+      setShowDeleteTripModal(false);
+      window.dispatchEvent(new CustomEvent('vista-trips-change'));
+      router.replace('/trips');
+    } catch (err: any) {
+      setIsDeletingTrip(false);
+      setShowDeleteTripModal(false);
+      if (err?.status === 409 || err?.code === 'TRIP_HAS_UNSETTLED_DEBTS') {
+        const message = err?.detail || err?.message || 'Chuyến đi còn khoản chưa quyết toán. Vui lòng kiểm tra Thủ quỹ trước khi xóa.';
+        setUnsettledDebtsError({
+          open: true,
+          message,
+          tripId: String(tripId),
+        });
+        return;
+      }
+      showToast(err?.detail || err?.message || 'Không thể xóa chuyến đi. Vui lòng thử lại sau.');
+    } finally {
+      setIsDeletingTrip(false);
     }
   };
 
@@ -3077,7 +3116,7 @@ export default function TripDetailPage() {
                 >
                   <span>+ Tạo lời mời mới</span>
                 </button>
-                {isTripMember && (
+                {isTripMember && !isTripOwner && (
                   <button
                     type="button"
                     onClick={handleLeaveTrip}
@@ -3099,6 +3138,31 @@ export default function TripDetailPage() {
                   >
                     <LogOut size={16} />
                     <span>Rời nhóm</span>
+                  </button>
+                )}
+                {isTripOwner && (
+                  <button
+                    type="button"
+                    id="btn-delete-trip"
+                    onClick={() => setShowDeleteTripModal(true)}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '9px 14px',
+                      background: '#FFF1F2',
+                      color: '#E11D48',
+                      border: '1px solid #FECDD3',
+                      borderRadius: '10px',
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                    }}
+                    title="Hủy & Xóa chuyến đi này (Chỉ dành cho Trưởng nhóm)"
+                  >
+                    <Trash2 size={16} />
+                    <span>Xóa chuyến đi</span>
                   </button>
                 )}
               </div>
@@ -5290,6 +5354,212 @@ export default function TripDetailPage() {
               >
                 Tạo đề xuất (+1 vote)
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── MODAL: CONFIRM DELETE TRIP (Dành cho Trưởng nhóm - TV4) ──── */}
+      {showDeleteTripModal && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.65)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px',
+          }}
+          onClick={() => !isDeletingTrip && setShowDeleteTripModal(false)}
+        >
+          <div
+            style={{
+              background: '#FFFFFF',
+              borderRadius: '20px',
+              maxWidth: '460px',
+              width: '100%',
+              padding: '28px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              textAlign: 'center',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                width: '56px',
+                height: '56px',
+                borderRadius: '50%',
+                background: '#FEE2E2',
+                color: '#DC2626',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px',
+              }}
+            >
+              <Trash2 size={28} />
+            </div>
+            <h3 style={{ fontSize: '19px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
+              Xác nhận xóa chuyến đi?
+            </h3>
+            <p style={{ fontSize: '14px', color: '#64748B', lineHeight: '1.6', marginBottom: '24px' }}>
+              Hành động này sẽ <strong>xóa vĩnh viễn</strong> toàn bộ lịch trình, hoạt động và dữ liệu chuyến đi <strong>&ldquo;{trip.title}&rdquo;</strong>. Thao tác này không thể hoàn tác.
+            </p>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+              <button
+                type="button"
+                onClick={() => setShowDeleteTripModal(false)}
+                disabled={isDeletingTrip}
+                style={{
+                  flex: 1,
+                  padding: '11px 18px',
+                  borderRadius: '12px',
+                  border: '1.5px solid #CBD5E1',
+                  background: '#FFFFFF',
+                  color: '#475569',
+                  fontWeight: 700,
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                }}
+              >
+                Hủy bỏ
+              </button>
+              <button
+                type="button"
+                id="btn-confirm-delete-trip"
+                onClick={handleConfirmDeleteTrip}
+                disabled={isDeletingTrip}
+                style={{
+                  flex: 1,
+                  padding: '11px 18px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  background: '#DC2626',
+                  color: '#FFFFFF',
+                  fontWeight: 700,
+                  fontSize: '14px',
+                  cursor: isDeletingTrip ? 'not-allowed' : 'pointer',
+                  opacity: isDeletingTrip ? 0.7 : 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                }}
+              >
+                {isDeletingTrip ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    <span>Đang xóa...</span>
+                  </>
+                ) : (
+                  <span>Tôi hiểu, Xóa vĩnh viễn</span>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── MODAL: UNSETTLED DEBTS ERROR 409 (TV4 Bắt buộc) ────────────── */}
+      {unsettledDebtsError?.open && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.65)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px',
+          }}
+          onClick={() => setUnsettledDebtsError(null)}
+        >
+          <div
+            style={{
+              background: '#FFFFFF',
+              borderRadius: '20px',
+              maxWidth: '480px',
+              width: '100%',
+              padding: '28px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              textAlign: 'center',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                width: '60px',
+                height: '60px',
+                borderRadius: '50%',
+                background: '#FEF3C7',
+                color: '#D97706',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px',
+              }}
+            >
+              <AlertTriangle size={32} />
+            </div>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#FFFBEB', color: '#B45309', border: '1px solid #FDE68A', padding: '4px 12px', borderRadius: '999px', fontSize: '12px', fontWeight: 800, marginBottom: '12px' }}>
+              <span>HTTP 409 CONFLICT</span>
+              <span>·</span>
+              <span>TRIP_HAS_UNSETTLED_DEBTS</span>
+            </div>
+            <h3 style={{ fontSize: '19px', fontWeight: 800, color: '#0F172A', marginBottom: '10px' }}>
+              Không thể xóa chuyến đi
+            </h3>
+            <p style={{ fontSize: '14.5px', color: '#475569', lineHeight: '1.6', marginBottom: '24px' }}>
+              {unsettledDebtsError.message}
+            </p>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+              <button
+                type="button"
+                id="btn-close-debt-modal"
+                onClick={() => setUnsettledDebtsError(null)}
+                style={{
+                  flex: 1,
+                  padding: '12px 18px',
+                  borderRadius: '12px',
+                  border: '1.5px solid #CBD5E1',
+                  background: '#FFFFFF',
+                  color: '#475569',
+                  fontWeight: 700,
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                }}
+              >
+                Đã hiểu & Đóng
+              </button>
+              <Link
+                href={`/trips/${unsettledDebtsError.tripId}/treasury`}
+                id="btn-open-treasury-from-debt-modal"
+                style={{
+                  flex: 1.2,
+                  padding: '12px 18px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  background: 'linear-gradient(135deg, #0284C7, #0369A1)',
+                  color: '#FFFFFF',
+                  fontWeight: 700,
+                  fontSize: '14px',
+                  textDecoration: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  boxShadow: '0 4px 14px rgba(2, 132, 199, 0.35)',
+                }}
+                onClick={() => setUnsettledDebtsError(null)}
+              >
+                <Wallet size={16} />
+                <span>Mở Thủ quỹ</span>
+              </Link>
             </div>
           </div>
         </div>

@@ -78,7 +78,7 @@ export function PersonalBalanceHub({
     }
   });
 
-  const categoryLabels: Record<string, { label: string; icon: any }> = {
+  const categoryLabels: Record<string, { label: string; icon: React.ComponentType<{ size?: number; className?: string }> }> = {
     FOOD: { label: 'Ẩm thực', icon: UtensilsCrossed },
     TRANSPORT: { label: 'Di chuyển', icon: Car },
     ACCOMMODATION: { label: 'Lưu trú', icon: Bed },

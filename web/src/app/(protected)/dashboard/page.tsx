@@ -209,6 +209,24 @@ export default function DashboardPage() {
             Làm mới số liệu
           </button>
           <Link
+            href="/image-manager"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '0.5rem 1rem',
+              borderRadius: '8px',
+              border: '1px solid #bae6fd',
+              background: '#f0f9ff',
+              color: '#0369a1',
+              fontWeight: 600,
+              fontSize: '0.85rem',
+            }}
+          >
+            <Layers size={15} />
+            AI Image Manager
+          </Link>
+          <Link
             href="/"
             style={{
               display: 'inline-flex',

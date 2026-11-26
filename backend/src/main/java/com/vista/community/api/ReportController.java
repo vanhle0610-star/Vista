@@ -5,6 +5,7 @@ import com.vista.community.api.dto.CreateReportRequest;
 import com.vista.community.api.dto.HandleReportRequest;
 import com.vista.community.api.dto.ReportResponse;
 import com.vista.community.application.ReportService;
+import com.vista.moderation.ContentModerationRuleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -12,6 +13,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -36,12 +38,15 @@ public class ReportController {
   private final ReportService reportService;
   private final CurrentUserProvider currentUserProvider;
 
+  @Autowired(required = false)
+  private ContentModerationRuleService moderationRuleService;
+
   public ReportController(ReportService reportService, CurrentUserProvider currentUserProvider) {
     this.reportService = reportService;
     this.currentUserProvider = currentUserProvider;
   }
 
-  @PostMapping("/posts/{postId}/reports")
+  @PostMapping({"/posts/{postId}/reports", "/community/posts/{postId}/reports"})
   @ResponseStatus(HttpStatus.CREATED)
   @Operation(summary = "Người dùng báo cáo bài viết vi phạm")
   public ResponseEntity<Map<String, Object>> reportPost(
@@ -88,5 +93,43 @@ public class ReportController {
             "postId", postId,
             "status", "VISIBLE",
             "message", "Bài viết đã được khôi phục trở lại công khai."));
+  }
+
+  @PostMapping("/admin/moderation/evaluate")
+  @PreAuthorize("hasAnyRole('MODERATOR', 'ADMIN')")
+  @Operation(
+      summary = "Đánh giá 3 quy tắc kiểm duyệt nội dung tự động (W5-TV1-03)",
+      description =
+          "Kiểm duyệt URL, nội dung trùng lặp và tần suất đăng bài, lưu moderation_events")
+  public ResponseEntity<ContentModerationRuleService.ModerationEvaluationResult> evaluateContent(
+      @RequestBody Map<String, String> payload) {
+    UUID authorId =
+        payload != null && payload.get("authorId") != null
+            ? UUID.fromString(payload.get("authorId"))
+            : currentUserProvider.getCurrentUserId();
+    UUID targetId =
+        payload != null && payload.get("targetId") != null
+            ? UUID.fromString(payload.get("targetId"))
+            : UUID.randomUUID();
+    String targetType =
+        payload != null && payload.get("targetType") != null ? payload.get("targetType") : "POST";
+    String body = payload != null && payload.get("body") != null ? payload.get("body") : "";
+
+    ContentModerationRuleService service =
+        moderationRuleService != null
+            ? moderationRuleService
+            : new ContentModerationRuleService(null);
+    return ResponseEntity.ok(service.evaluateAndRecord(authorId, targetType, targetId, body));
+  }
+
+  @GetMapping("/admin/moderation/events")
+  @PreAuthorize("hasAnyRole('MODERATOR', 'ADMIN')")
+  @Operation(summary = "Xem danh sách sự kiện kiểm duyệt tự động/thủ công (moderation_events)")
+  public ResponseEntity<List<ContentModerationRuleService.ModerationEventRecord>>
+      listModerationEvents(@RequestParam(defaultValue = "20") int limit) {
+    if (moderationRuleService == null) {
+      return ResponseEntity.ok(List.of());
+    }
+    return ResponseEntity.ok(moderationRuleService.listRecentEvents(limit));
   }
 }

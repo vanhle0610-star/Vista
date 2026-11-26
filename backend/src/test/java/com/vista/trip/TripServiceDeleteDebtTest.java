@@ -55,7 +55,8 @@ class TripServiceDeleteDebtTest {
 
     ownerId = UUID.randomUUID();
     tripId = UUID.randomUUID();
-    sampleTrip = new TripEntity(ownerId, "Chuyến đi Đà Lạt", LocalDate.now(), LocalDate.now().plusDays(3));
+    sampleTrip =
+        new TripEntity(ownerId, "Chuyến đi Đà Lạt", LocalDate.now(), LocalDate.now().plusDays(3));
   }
 
   @Test
@@ -73,7 +74,8 @@ class TripServiceDeleteDebtTest {
   }
 
   @Test
-  @DisplayName("Owner xóa chuyến đi còn công nợ chưa quyết toán: Ném 409 CONFLICT và giữ nguyên dữ liệu")
+  @DisplayName(
+      "Owner xóa chuyến đi còn công nợ chưa quyết toán: Ném 409 CONFLICT và giữ nguyên dữ liệu")
   void deleteTrip_whenHasUnsettledDebts_throws409ConflictAndPreservesData() {
     when(tripRepository.findById(tripId)).thenReturn(Optional.of(sampleTrip));
     when(tripSettlementChecker.hasUnsettledDebts(tripId)).thenReturn(true);
@@ -84,7 +86,8 @@ class TripServiceDeleteDebtTest {
             ex -> {
               ResponseStatusException rse = (ResponseStatusException) ex;
               assertThat(rse.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
-              assertThat(rse.getReason()).contains("còn khoản chi tiêu hoặc công nợ chưa quyết toán");
+              assertThat(rse.getReason())
+                  .contains("còn khoản chi tiêu hoặc công nợ chưa quyết toán");
             });
 
     verify(tripAccessService).requireOwner(tripId, ownerId);
@@ -92,7 +95,8 @@ class TripServiceDeleteDebtTest {
   }
 
   @Test
-  @DisplayName("Người không phải Owner cố gắng xóa chuyến đi: Ném AccessDeniedException và không xóa")
+  @DisplayName(
+      "Người không phải Owner cố gắng xóa chuyến đi: Ném AccessDeniedException và không xóa")
   void deleteTrip_whenRequesterNotOwner_throwsAccessDenied() {
     UUID nonOwnerId = UUID.randomUUID();
     doThrow(new AccessDeniedException("Chỉ chủ chuyến đi mới có quyền thực hiện"))

@@ -20,10 +20,6 @@ interface FinancialKpiCardsProps {
 
 export function FinancialKpiCards({
   summary,
-  memberCount,
-  currentUserId = 'u-me',
-  members = [],
-  tripTitle = 'VISTA',
   tripDates = 'Chưa thiết lập ngày',
 }: FinancialKpiCardsProps) {
   const budget = Number(summary.budgetTotal) || 0;
@@ -31,15 +27,6 @@ export function FinancialKpiCards({
   const remaining = budget > 0 ? (summary.remainingBudget ?? (budget - spent)) : 0;
 
   const spentPct = budget > 0 ? Math.min(100, Math.round((spent / budget) * 100)) : 0;
-
-  // User's net balance delta
-  const myDelta =
-    currentUserId && summary.settlementDeltas && summary.settlementDeltas[currentUserId] !== undefined
-      ? summary.settlementDeltas[currentUserId]
-      : 0;
-
-  const isCreditor = myDelta > 1000;
-  const isDebtor = myDelta < -1000;
 
   const formatVnd = (val: number) => {
     return new Intl.NumberFormat('vi-VN').format(Math.abs(Math.round(val))) + ' đ';

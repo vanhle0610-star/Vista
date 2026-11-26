@@ -26,6 +26,7 @@ const HIDDEN_NAVBAR_ROUTES = [
   '/dashboard',
   '/moderation',
   '/destinations',
+  '/image-manager',
   '/users',
 ];
 

@@ -78,23 +78,48 @@ const PRICE_FILTERS: PriceFilterOption[] = [
   { label: '≤ 1 triệu', value: 1000000 },
 ];
 
+interface SortOption {
+  label: string;
+  key: string;
+  sortBy?: string;
+  sortDir?: 'asc' | 'desc';
+}
+
+const SORT_OPTIONS: SortOption[] = [
+  { label: 'Mới nhất', key: 'default' },
+  { label: 'Giá thấp → cao', key: 'price_asc', sortBy: 'priceMin', sortDir: 'asc' },
+  { label: 'Giá cao → thấp', key: 'price_desc', sortBy: 'priceMin', sortDir: 'desc' },
+  { label: 'Tên A → Z', key: 'name_asc', sortBy: 'name', sortDir: 'asc' },
+];
+
+function normalizeDestinationImageUri(url?: string | null): string {
+  if (!url || !url.startsWith('http')) {
+    return 'https://images.unsplash.com/photo-1528127269322-539801943592?w=800&q=80';
+  }
+  return url.replace('://thumb.wikimedia.org/', '://upload.wikimedia.org/');
+}
+
 export function DiscoverScreen() {
   const [searchInput, setSearchInput] = useState('');
   const [keyword, setKeyword] = useState('');
   const [selectedProvince, setSelectedProvince] = useState('Tất cả');
   const [selectedCategory, setSelectedCategory] = useState('Tất cả');
   const [selectedPriceMax, setSelectedPriceMax] = useState<number | null>(null);
+  const [selectedSortKey, setSelectedSortKey] = useState<string>('default');
   const { isFavorite, toggleFavorite } = useFavorites();
 
   const hasActiveFilter = Boolean(
     keyword ||
       selectedProvince !== 'Tất cả' ||
       selectedCategory !== 'Tất cả' ||
-      selectedPriceMax !== null
+      selectedPriceMax !== null ||
+      selectedSortKey !== 'default'
   );
 
+  const activeSort = SORT_OPTIONS.find((s) => s.key === selectedSortKey) || SORT_OPTIONS[0];
+
   const { data, isPending, isError, error, refetch } = useQuery<DestinationPage>({
-    queryKey: ['destinations', keyword, selectedProvince, selectedCategory, selectedPriceMax],
+    queryKey: ['destinations', keyword, selectedProvince, selectedCategory, selectedPriceMax, selectedSortKey],
     queryFn: async () => {
       const params: Record<string, string | number> = { size: 50 };
       if (keyword.trim()) {
@@ -108,6 +133,12 @@ export function DiscoverScreen() {
       }
       if (selectedPriceMax !== null) {
         params.priceMax = selectedPriceMax;
+      }
+      if (activeSort.sortBy) {
+        params.sortBy = activeSort.sortBy;
+      }
+      if (activeSort.sortDir) {
+        params.sortDir = activeSort.sortDir;
       }
 
       const res = await api.get<DestinationPage>('/destinations', { params });
@@ -130,6 +161,7 @@ export function DiscoverScreen() {
     setSelectedProvince('Tất cả');
     setSelectedCategory('Tất cả');
     setSelectedPriceMax(null);
+    setSelectedSortKey('default');
   };
 
   const formatPrice = (min?: number | null, max?: number | null) => {
@@ -278,6 +310,37 @@ export function DiscoverScreen() {
           </ScrollView>
         </View>
 
+        {/* Sắp xếp kết quả */}
+        <View style={styles.filterGroup}>
+          <Text style={styles.filterGroupLabel}>Sắp xếp theo:</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filterChipsRow}
+          >
+            {SORT_OPTIONS.map((s) => {
+              const isSelected = selectedSortKey === s.key;
+              return (
+                <TouchableOpacity
+                  key={s.key}
+                  style={[styles.filterChip, isSelected && styles.filterChipActive]}
+                  onPress={() => setSelectedSortKey(s.key)}
+                  activeOpacity={0.75}
+                >
+                  <Text
+                    style={[
+                      styles.filterChipText,
+                      isSelected && styles.filterChipTextActive,
+                    ]}
+                  >
+                    {s.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </View>
+
         {/* Thanh trạng thái bộ lọc đang kích hoạt */}
         {hasActiveFilter && (
           <View style={styles.activeFilterBar}>
@@ -340,7 +403,7 @@ export function DiscoverScreen() {
                 <View style={styles.cardMediaBox}>
                   {item.imageUrl ? (
                     <Image
-                      source={{ uri: item.imageUrl.startsWith('http') ? item.imageUrl : `https://images.unsplash.com/photo-1528127269322-539801943592?w=800&q=80` }}
+                      source={{ uri: normalizeDestinationImageUri(item.imageUrl) }}
                       style={styles.cardImage}
                       resizeMode="cover"
                     />

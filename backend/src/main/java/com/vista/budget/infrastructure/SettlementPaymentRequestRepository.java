@@ -1,8 +1,6 @@
 package com.vista.budget.infrastructure;
 
-import com.vista.budget.domain.PaymentRequestStatus;
 import com.vista.budget.domain.SettlementPaymentRequestEntity;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,5 +25,12 @@ public interface SettlementPaymentRequestRepository
   List<SettlementPaymentRequestEntity> findUserRequestsInTrip(
       @Param("tripId") UUID tripId, @Param("userId") UUID userId);
 
-  boolean existsByTripIdAndStatusIn(UUID tripId, Collection<PaymentRequestStatus> statuses);
+  @Query(
+      "SELECT COUNT(r) > 0 FROM SettlementPaymentRequestEntity r "
+          + "WHERE r.tripId = :tripId "
+          + "AND r.status IN ("
+          + "com.vista.budget.domain.PaymentRequestStatus.CREATED, "
+          + "com.vista.budget.domain.PaymentRequestStatus.OPENED, "
+          + "com.vista.budget.domain.PaymentRequestStatus.PAYER_MARKED_SENT)")
+  boolean existsPendingSettlementRequestsByTripId(@Param("tripId") UUID tripId);
 }

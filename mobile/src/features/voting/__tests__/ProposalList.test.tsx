@@ -3,6 +3,10 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { ProposalList } from '../components/ProposalList';
 import { ProposalDto } from '../../../services/api/collaborationApi';
 
+jest.mock('expo-router', () => ({
+  router: { push: jest.fn(), replace: jest.fn(), back: jest.fn() },
+}));
+
 describe('ProposalList Component', () => {
   const mockProposals: ProposalDto[] = [
     {

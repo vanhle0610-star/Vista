@@ -1,6 +1,7 @@
 from typing import List, Dict, Any
 from models.reason import ActivitySlot
 from models.constraints import UserConstraints
+from engine.intercity_transit import IntercityTransitPricingEngine
 import config
 
 
@@ -65,7 +66,25 @@ class BudgetCalculatorEngine:
             day_actual_meal = max(0, day_base_meal - deduction)
             total_meal_cost += day_actual_meal
 
-        subtotal = total_activities_cost + total_hotel_cost + total_transport_cost + total_meal_cost
+        # 4. Chi phí di chuyển liên tỉnh khứ hồi (Máy bay, Tàu hỏa, Xe khách - tự động áp dụng hệ số mùa)
+        origin_prov = getattr(constraints, "origin_province", None)
+        dest_prov = getattr(constraints, "destination_province", None)
+        intercity_mode = getattr(constraints, "intercity_transport_mode", "flight") or "flight"
+        start_date_str = getattr(constraints, "start_date", None)
+
+        transit_info = None
+        total_intercity_cost = 0
+        if origin_prov and dest_prov:
+            transit_info = IntercityTransitPricingEngine.calculate_transit_cost(
+                origin_province=origin_prov,
+                destination_province=dest_prov,
+                transport_mode=intercity_mode,
+                start_date=start_date_str,
+                people_count=people
+            )
+            total_intercity_cost = transit_info.get("total_transit_cost_vnd", 0)
+
+        subtotal = total_activities_cost + total_hotel_cost + total_transport_cost + total_meal_cost + total_intercity_cost
         contingency_cost = int(subtotal * config.CONTINGENCY_RATE)
         grand_total = subtotal + contingency_cost
 
@@ -81,6 +100,8 @@ class BudgetCalculatorEngine:
             "activities_cost": total_activities_cost,
             "hotel_cost": total_hotel_cost,
             "transport_cost": total_transport_cost,
+            "intercity_transit_cost": total_intercity_cost,
+            "intercity_transit": transit_info,
             "meal_cost": total_meal_cost,
             "contingency_cost": contingency_cost,
             "rooms_needed": rooms_needed,
@@ -88,6 +109,7 @@ class BudgetCalculatorEngine:
                 "activities_cost": total_activities_cost,
                 "hotel_cost": total_hotel_cost,
                 "transport_cost": total_transport_cost,
+                "intercity_transit_cost": total_intercity_cost,
                 "meal_cost": total_meal_cost,
                 "contingency_cost": contingency_cost,
                 "nights_count": nights,
