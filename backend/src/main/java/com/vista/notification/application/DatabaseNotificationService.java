@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -53,6 +54,7 @@ public class DatabaseNotificationService implements NotificationService {
   }
 
   @Override
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void sendInAppNotification(
       UUID recipientUserId, String title, String body, String type, Map<String, Object> data) {
     if (recipientUserId == null || type == null || type.isBlank()) {

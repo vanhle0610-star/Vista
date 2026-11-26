@@ -10,6 +10,11 @@ import {
   getSampleProposals,
 } from '@/data/sampleItineraries';
 import {
+  seedSampleItineraryToTrip,
+  parseTimeRangeForApi,
+  toIsoDateOffset,
+} from '@/utils/itinerarySeed';
+import {
   validateAndParseTripDates,
   getTripDayMeta,
   getThemeForDay,
@@ -136,6 +141,127 @@ function getStoredUser(): StoredUser | null {
   } catch {
     return null;
   }
+}
+
+// Bộ ảnh theo Phân loại & từ khóa (đều lấy từ URL có sẵn trong dự án và đã kiểm chứng HTTP 200)
+const CATEGORY_IMAGE_MAP: Record<string, string[]> = {
+  'Ẩm thực & Cà phê': [
+    'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1569058242253-92a9c755a0ec?auto=format&fit=crop&w=800&q=80',
+  ],
+  'Di tích & Văn hóa': [
+    'https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1599707367072-cd6ada2bc375?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80',
+  ],
+  'Trải nghiệm & Khám phá': [
+    'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1533240332313-0db49b459ad6?auto=format&fit=crop&w=800&q=80',
+  ],
+  'Nghỉ ngơi & Mua sắm': [
+    'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=800&q=80',
+  ],
+};
+
+const COFFEE_KEYWORD_IMAGES = [
+  'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=800&q=80',
+  'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80',
+];
+
+const FOOD_KEYWORD_IMAGES = [
+  'https://images.unsplash.com/photo-1569058242253-92a9c755a0ec?auto=format&fit=crop&w=800&q=80',
+  'https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=800&q=80',
+];
+
+const BEACH_KEYWORD_IMAGES = [
+  'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
+  'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80',
+];
+
+const BUILTIN_STOP_IMAGE_SET = new Set<string>([
+  ...Object.values(CATEGORY_IMAGE_MAP).flat(),
+  ...COFFEE_KEYWORD_IMAGES,
+  ...FOOD_KEYWORD_IMAGES,
+  ...BEACH_KEYWORD_IMAGES,
+  'https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=800&q=80',
+  'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=800&q=80',
+]);
+
+function isBuiltinStopImage(url?: string): boolean {
+  if (!url) return false;
+  return BUILTIN_STOP_IMAGE_SET.has(url.trim());
+}
+
+function pickImageFromPool(pool: string[], seedText: string): string {
+  if (!pool.length) return CATEGORY_IMAGE_MAP['Di tích & Văn hóa'][0];
+  let hash = 0;
+  for (let i = 0; i < seedText.length; i += 1) {
+    hash = (hash * 31 + seedText.charCodeAt(i)) >>> 0;
+  }
+  return pool[hash % pool.length];
+}
+
+function resolveStopImage(params: { title: string; category: string; customImageUrl?: string }): string {
+  const custom = (params.customImageUrl || '').trim();
+  if (custom) return custom;
+
+  const titleLower = (params.title || '').toLowerCase();
+  const hasAny = (keywords: string[]) => keywords.some((kw) => titleLower.includes(kw));
+
+  // 1. Khớp từ khóa trong tên điểm dừng
+  if (hasAny(['cafe', 'cà phê', 'ca phe', 'coffee', 'trà']) || /\btra\b/.test(titleLower)) {
+    return pickImageFromPool(COFFEE_KEYWORD_IMAGES, params.title);
+  }
+  if (
+    hasAny([
+      'quán ăn',
+      'quan an',
+      'nhà hàng',
+      'nha hang',
+      'ẩm thực',
+      'am thuc',
+      'bún',
+      'phở',
+      'mì quảng',
+      'bánh xèo',
+      'bánh mì',
+      'cơm',
+      'hải sản',
+      'lẩu',
+      'nướng',
+      'ốc',
+      'chè',
+      'nem',
+    ])
+  ) {
+    return pickImageFromPool(FOOD_KEYWORD_IMAGES, params.title);
+  }
+  if (hasAny(['biển', 'bien', 'bãi', 'bai', 'tắm', 'tam'])) {
+    return pickImageFromPool(BEACH_KEYWORD_IMAGES, params.title);
+  }
+  if (hasAny(['chùa', 'chua', 'tháp', 'thap', 'bảo tàng', 'bao tang', 'di tích', 'di tich'])) {
+    return pickImageFromPool(CATEGORY_IMAGE_MAP['Di tích & Văn hóa'], params.title);
+  }
+  if (hasAny(['chợ', 'mua sắm', 'mua sam', 'shop']) || /\bcho\b/.test(titleLower)) {
+    return pickImageFromPool(
+      [
+        'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80',
+      ],
+      params.title
+    );
+  }
+  if (hasAny(['núi', 'nui', 'leo', 'cáp treo', 'cap treo'])) {
+    return pickImageFromPool(CATEGORY_IMAGE_MAP['Trải nghiệm & Khám phá'], params.title);
+  }
+
+  // 2. Fallback theo Phân loại đã chọn
+  const categoryPool = CATEGORY_IMAGE_MAP[params.category] || CATEGORY_IMAGE_MAP['Di tích & Văn hóa'];
+  return pickImageFromPool(categoryPool, params.title);
 }
 
 const SAMPLE_HANOI_DAYS: DayPlanItem[] = [
@@ -510,6 +636,155 @@ function formatMembersForCurrentUser(
   return finalized.length > 0 ? finalized : [getCurrentUserMember(defaultRole)];
 }
 
+const STOP_TIME_PRESETS = [
+  { label: 'Sáng', start: '08:00', end: '10:30' },
+  { label: 'Trưa', start: '11:30', end: '13:30' },
+  { label: 'Chiều', start: '14:00', end: '17:00' },
+  { label: 'Tối', start: '18:30', end: '21:00' },
+] as const;
+
+function normalizeTimePart(raw?: string): string | null {
+  if (!raw) return null;
+  const match = raw.trim().match(/^(\d{1,2}):(\d{2})/);
+  if (!match) return null;
+  const hour = Number(match[1]);
+  const minute = Number(match[2]);
+  if (Number.isNaN(hour) || Number.isNaN(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+    return null;
+  }
+  return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+}
+
+function splitTimeRange(value: string, fallbackStart = '14:00', fallbackEnd = '16:00'): { start: string; end: string } {
+  const parts = (value || '').split(/[-–—]/);
+  const start = normalizeTimePart(parts[0]) || fallbackStart;
+  const end = normalizeTimePart(parts[1]) || fallbackEnd;
+  return { start, end };
+}
+
+function validateTimeRange(value: string): string | null {
+  const parts = (value || '').split(/[-–—]/);
+  const start = normalizeTimePart(parts[0]);
+  const end = normalizeTimePart(parts[1]);
+  if (!start || !end) return 'Vui lòng chọn đầy đủ giờ bắt đầu và giờ kết thúc.';
+  const [sh, sm] = start.split(':').map(Number);
+  const [eh, em] = end.split(':').map(Number);
+  if (eh * 60 + em <= sh * 60 + sm) {
+    return 'Giờ kết thúc phải sau giờ bắt đầu.';
+  }
+  return null;
+}
+
+/** Shared start/end time picker with quick day-part presets, outputting "HH:mm – HH:mm". */
+function TimeRangePickerField({
+  label,
+  value,
+  onChange,
+  error,
+}: {
+  label: string;
+  value: string;
+  onChange: (nextValue: string) => void;
+  error?: string | null;
+}) {
+  const { start, end } = splitTimeRange(value);
+  const liveInvalid = validateTimeRange(value);
+  const displayError = error || liveInvalid;
+
+  return (
+    <div>
+      <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+        {label}
+      </label>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <span style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#64748B', marginBottom: '3px' }}>
+            Từ
+          </span>
+          <input
+            type="time"
+            value={start}
+            onChange={(e) => {
+              const nextStart = normalizeTimePart(e.target.value) || start;
+              onChange(`${nextStart} – ${end}`);
+            }}
+            style={{
+              width: '100%',
+              padding: '8px 10px',
+              borderRadius: '10px',
+              border: `1px solid ${displayError ? '#EF4444' : '#CBD5E1'}`,
+              fontSize: '14px',
+              fontWeight: 600,
+              color: '#0F172A',
+              background: '#FFFFFF',
+              outline: 'none',
+              boxSizing: 'border-box',
+            }}
+          />
+        </div>
+        <span style={{ color: '#94A3B8', fontWeight: 700, paddingTop: '18px' }}>–</span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <span style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#64748B', marginBottom: '3px' }}>
+            Đến
+          </span>
+          <input
+            type="time"
+            value={end}
+            onChange={(e) => {
+              const nextEnd = normalizeTimePart(e.target.value) || end;
+              onChange(`${start} – ${nextEnd}`);
+            }}
+            style={{
+              width: '100%',
+              padding: '8px 10px',
+              borderRadius: '10px',
+              border: `1px solid ${displayError ? '#EF4444' : '#CBD5E1'}`,
+              fontSize: '14px',
+              fontWeight: 600,
+              color: '#0F172A',
+              background: '#FFFFFF',
+              outline: 'none',
+              boxSizing: 'border-box',
+            }}
+          />
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
+        {STOP_TIME_PRESETS.map((preset) => {
+          const isActive = start === preset.start && end === preset.end;
+          return (
+            <button
+              key={preset.label}
+              type="button"
+              onClick={() => onChange(`${preset.start} – ${preset.end}`)}
+              style={{
+                padding: '4px 10px',
+                borderRadius: '999px',
+                border: isActive ? '1px solid #0284C7' : '1px solid #E2E8F0',
+                background: isActive ? '#E0F2FE' : '#F8FAFC',
+                color: isActive ? '#0369A1' : '#475569',
+                fontSize: '11.5px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 150ms ease',
+              }}
+            >
+              {preset.label} {preset.start}–{preset.end}
+            </button>
+          );
+        })}
+      </div>
+
+      {displayError && (
+        <span style={{ display: 'block', marginTop: '5px', fontSize: '12px', color: '#DC2626', fontWeight: 600 }}>
+          ⚠️ {displayError}
+        </span>
+      )}
+    </div>
+  );
+}
+
 export default function TripDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -676,22 +951,27 @@ export default function TripDetailPage() {
     showToast('Vui lòng sử dụng mã lời mời từ Trưởng nhóm để tham gia chuyến đi này!');
   };
 
-  const handleLeaveTrip = async () => {
+  const handleLeaveTrip = () => {
     if (!trip || !currentUser) return;
-    if (!confirm('Bạn có chắc chắn muốn rời khỏi chuyến đi này không?')) {
-      return;
-    }
+    setShowLeaveConfirmModal(true);
+  };
 
+  const executeLeaveTrip = async () => {
+    if (!trip || !currentUser || isLeavingTrip) return;
+    setIsLeavingTrip(true);
     try {
       await apiRequest(`/trips/${tripId}/members/me`, {
         method: 'DELETE',
       });
 
+      setShowLeaveConfirmModal(false);
       showToast('✓ Bạn đã rời nhóm thành công!');
       window.dispatchEvent(new CustomEvent('vista-trips-change'));
       router.replace('/trips');
     } catch (err: any) {
       showToast(err.message || 'Không thể rời nhóm. Vui lòng thử lại sau.');
+    } finally {
+      setIsLeavingTrip(false);
     }
   };
 
@@ -733,7 +1013,7 @@ export default function TripDetailPage() {
     }
   };
 
-  const handleTransferOwnership = async (targetMember: any) => {
+  const handleTransferOwnership = (targetMember: any) => {
     if (!trip || !currentUser || !isTripOwner) return;
     const targetUserId = targetMember.userId || targetMember.id;
     if (!targetUserId) {
@@ -742,22 +1022,34 @@ export default function TripDetailPage() {
     }
     const rawTargetName = typeof targetMember === 'string' ? targetMember : targetMember?.name || 'thành viên';
     const targetName = rawTargetName.replace(/\s*\(Bạn\)/gi, '').trim() || rawTargetName;
-    if (!confirm(`Bạn có chắc chắn muốn chuyển quyền Trưởng nhóm cho "${targetName}" không?\n\nSau khi chuyển quyền, bạn sẽ trở thành Thành viên và "${targetName}" sẽ là Trưởng nhóm mới.`)) {
-      return;
-    }
+    setTransferTarget({
+      userId: targetUserId,
+      name: targetName,
+      avatar: targetMember?.avatar || targetName.slice(0, 2).toUpperCase(),
+      color: targetMember?.color || '#10b981',
+      email: targetMember?.email,
+    });
+  };
 
+  const executeTransferOwnership = async () => {
+    if (!trip || !currentUser || !isTripOwner || !transferTarget || isTransferring) return;
+    setIsTransferring(true);
     try {
       await apiRequest(`/trips/${tripId}/transfer-ownership`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ newOwnerId: targetUserId }),
+        body: JSON.stringify({ newOwnerId: transferTarget.userId }),
       });
 
-      showToast(`👑 Đã chuyển quyền Trưởng nhóm cho "${targetName}" thành công!`);
+      const targetName = transferTarget.name;
+      setTransferTarget(null);
+      showToast(`Đã chuyển quyền Trưởng nhóm cho "${targetName}" thành công!`);
       window.dispatchEvent(new CustomEvent('vista-trips-change'));
       window.location.reload();
     } catch (err: any) {
       showToast(err.message || 'Chuyển quyền thất bại. Vui lòng thử lại.');
+    } finally {
+      setIsTransferring(false);
     }
   };
 
@@ -773,8 +1065,10 @@ export default function TripDetailPage() {
     });
   };
 
-  // Voting state
-  const [proposals, setProposals] = useState(() => getSampleProposals(''));
+  // Voting state — 4 trạng thái tường minh: 'loading' | 'error' | 'empty' | 'loaded'
+  const [proposals, setProposals] = useState<Array<{ id: string; title: string; category: string; votes: number; voted: boolean }>>([]);
+  const [proposalsStatus, setProposalsStatus] = useState<'loading' | 'error' | 'empty' | 'loaded'>('loading');
+  const [proposalsError, setProposalsError] = useState<string | null>(null);
 
   // ─── TUẦN 3 & TUẦN 4 STATES ───────────────────────────────────────────────
   const [currentDateTick, setCurrentDateTick] = useState<number>(() => Date.now());
@@ -797,14 +1091,17 @@ export default function TripDetailPage() {
 
   // Add stop modal (W3-TV3-03, V-01)
   const [showAddStopModal, setShowAddStopModal] = useState(false);
+  const [isSeedingSampleItinerary, setIsSeedingSampleItinerary] = useState(false);
   const [newStopDay, setNewStopDay] = useState(1);
   const [newStopTitle, setNewStopTitle] = useState('');
   const [newStopLocation, setNewStopLocation] = useState('');
   const [newStopCategory, setNewStopCategory] = useState('Di tích & Văn hóa');
   const [newStopTime, setNewStopTime] = useState('14:00 – 16:00');
   const [newStopCost, setNewStopCost] = useState('50.000đ / người');
+  const [newStopImage, setNewStopImage] = useState('');
   const [newStopCustomDate, setNewStopCustomDate] = useState('');
   const [addStopDateError, setAddStopDateError] = useState<string | null>(null);
+  const [addStopTimeError, setAddStopTimeError] = useState<string | null>(null);
 
   // Edit stop modal (Bước 3, Bước 6, V-01)
   const [editingStop, setEditingStop] = useState<{
@@ -816,9 +1113,11 @@ export default function TripDetailPage() {
   const [editStopCategory, setEditStopCategory] = useState('Di tích & Văn hóa');
   const [editStopTime, setEditStopTime] = useState('');
   const [editStopCost, setEditStopCost] = useState('');
+  const [editStopImage, setEditStopImage] = useState('');
   const [editStopTargetDay, setEditStopTargetDay] = useState(1);
   const [editStopCustomDate, setEditStopCustomDate] = useState('');
   const [editStopDateError, setEditStopDateError] = useState<string | null>(null);
+  const [editStopTimeError, setEditStopTimeError] = useState<string | null>(null);
 
   // Overlap warning confirmation dialog (V-02: Bước 10, 11)
   const [overlapWarningDialog, setOverlapWarningDialog] = useState<{
@@ -852,6 +1151,24 @@ export default function TripDetailPage() {
   const [showAddPropModal, setShowAddPropModal] = useState(false);
   const [newPropTitle, setNewPropTitle] = useState('');
   const [newPropCategory, setNewPropCategory] = useState('Ẩm thực');
+
+  // Transfer Ownership & Leave Trip confirmation modals (TV3)
+  const [transferTarget, setTransferTarget] = useState<{
+    userId: string;
+    name: string;
+    avatar: string;
+    color: string;
+    email?: string;
+  } | null>(null);
+  const [isTransferring, setIsTransferring] = useState(false);
+  const [showLeaveConfirmModal, setShowLeaveConfirmModal] = useState(false);
+  const [isLeavingTrip, setIsLeavingTrip] = useState(false);
+  const [deleteActivityTarget, setDeleteActivityTarget] = useState<{
+    dayNumber: number;
+    actId: string;
+    actTitle?: string;
+  } | null>(null);
+  const [isDeletingActivity, setIsDeletingActivity] = useState(false);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -888,9 +1205,24 @@ export default function TripDetailPage() {
       .then((serverInvs) => {
         if (Array.isArray(serverInvs) && serverInvs.length > 0) {
           setInvitationsList((prev) => {
-            const map = new Map();
-            prev.forEach((i: any) => map.set(i.token, { ...i, email: i.email || i.inviteeEmail || '' }));
-            serverInvs.forEach((i: any) => map.set(i.token, { ...i, email: i.email || i.inviteeEmail || '' }));
+            const map = new Map<string, any>();
+            prev.forEach((i: any) => {
+              const key = String(i.id || i.token);
+              map.set(key, { ...i, email: i.email || i.inviteeEmail || '' });
+            });
+            serverInvs.forEach((i: any) => {
+              const key = String(i.id || i.token);
+              const existing = map.get(key) || Array.from(map.values()).find((p) => p.token && i.token && p.token === i.token);
+              const resolvedKey = existing ? String(existing.id || existing.token) : key;
+              // Nếu backend/state đã có trạng thái kết thúc (ACCEPTED/REVOKED/DECLINED/EXPIRED), không cho store cũ ghi đè lại thành PENDING
+              const keepExistingStatus = existing && existing.status && existing.status !== 'PENDING' && i.status === 'PENDING';
+              map.set(resolvedKey, {
+                ...(existing || {}),
+                ...i,
+                email: i.email || i.inviteeEmail || existing?.email || '',
+                status: keepExistingStatus ? existing.status : (i.status || existing?.status || 'PENDING'),
+              });
+            });
             return Array.from(map.values());
           });
         }
@@ -908,7 +1240,10 @@ export default function TripDetailPage() {
           const demoMatch = DEFAULT_DEMO_TRIPS.find((item) => item.id === tripId);
           if (demoMatch) {
             setTrip(demoMatch);
+            // Demo mode: hiển thị dữ liệu mẫu chỉ khi NEXT_PUBLIC_DEMO_MODE=true
             setProposals(getSampleProposals(demoMatch.destination));
+            setProposalsStatus('loaded');
+            setProposalsError(null);
             setIsLoadingTrip(false);
             setTripNotFound(false);
             return;
@@ -921,11 +1256,12 @@ export default function TripDetailPage() {
       }
 
       try {
-        const [serverTrip, serverMembers, serverProposals, serverItineraryDays] = await Promise.all([
+        const [serverTrip, serverMembers, serverProposals, serverItineraryDays, serverInvitations] = await Promise.all([
           apiRequest<any>(`/trips/${tripId}`).catch(() => null),
           apiRequest<any[]>(`/trips/${tripId}/members`).catch(() => []),
-          apiRequest<any[]>(`/trips/${tripId}/proposals`).catch(() => []),
+          apiRequest<any[]>(`/trips/${tripId}/proposals`).catch(() => null),
           apiRequest<any[]>(`/trips/${tripId}/itinerary/days`).catch(() => []),
+          apiRequest<any[]>(`/trips/${tripId}/invitations`).catch(() => null),
         ]);
 
         if (!serverTrip) {
@@ -953,8 +1289,18 @@ export default function TripDetailPage() {
 
         const dest = serverTrip.destinationSummary || 'Việt Nam';
 
-        // Load proposals from server
-        if (Array.isArray(serverProposals) && serverProposals.length > 0) {
+        // Load proposals from server — tách rõ 4 trạng thái
+        if (serverProposals === null) {
+          // null = API gặp lỗi (không phân biệt được với mảng rỗng nếu dùng catch(() => []))
+          setProposals([]);
+          setProposalsStatus('error');
+          setProposalsError('Không tải được danh sách biểu quyết. Vui lòng thử lại.');
+        } else if (Array.isArray(serverProposals) && serverProposals.length === 0) {
+          // Thành công nhưng chưa có đề xuất nào
+          setProposals([]);
+          setProposalsStatus('empty');
+          setProposalsError(null);
+        } else if (Array.isArray(serverProposals) && serverProposals.length > 0) {
           const userStr = typeof window !== 'undefined' ? localStorage.getItem('vista_user') : null;
           const currentUid = userStr ? JSON.parse(userStr)?.id : null;
           setProposals(
@@ -966,8 +1312,8 @@ export default function TripDetailPage() {
               voted: Array.isArray(sp.votes) && sp.votes.some((v: any) => v.userId === currentUid && (v.vote === 'UP' || v.vote === true)),
             }))
           );
-        } else {
-          setProposals(getSampleProposals(dest));
+          setProposalsStatus('loaded');
+          setProposalsError(null);
         }
         const formattedMembers: MemberItem[] = (serverMembers || []).map((m: any) => ({
           name: m.displayName || m.name || (m.role === 'OWNER' ? 'Trưởng nhóm' : 'Thành viên'),
@@ -977,6 +1323,59 @@ export default function TripDetailPage() {
           userId: m.userId,
           email: m.email,
         }));
+
+        // Đồng bộ trạng thái lời mời thực tế từ Spring Boot PostgreSQL (ACCEPTED / REVOKED / DECLINED / PENDING)
+        if (Array.isArray(serverInvitations)) {
+          const activeMemberEmails = new Set(
+            formattedMembers
+              .map((m) => (m.email || '').trim().toLowerCase())
+              .filter(Boolean)
+          );
+          setInvitationsList((prev) => {
+            const prevById = new Map<string, any>();
+            prev.forEach((p) => {
+              if (p.id) prevById.set(String(p.id), p);
+            });
+
+            const syncedIds = new Set<string>();
+            const syncedFromBackend = serverInvitations.map((si: any) => {
+              const sid = String(si.id);
+              syncedIds.add(sid);
+              const existing = prevById.get(sid);
+              const siEmail = (si.inviteeEmail || existing?.email || '').trim();
+              const resolvedStatus = si.status || existing?.status || 'PENDING';
+              return {
+                id: sid,
+                email: siEmail,
+                token: existing?.token || sid.slice(0, 8).toUpperCase(),
+                status: resolvedStatus,
+                expiresAt:
+                  existing?.expiresAt ||
+                  (si.expiresAt ? new Date(si.expiresAt).toLocaleDateString('vi-VN') : 'Trong 7 ngày tới'),
+                emailSent: existing?.emailSent ?? true,
+                emailSentAt: existing?.emailSentAt,
+                emailMode: existing?.emailMode,
+              };
+            });
+
+            // Giữ các lời mời cũ chỉ có ở store/local (chưa gắn UUID backend), nhưng tự cập nhật nếu email đã vào nhóm
+            const extraLocal = prev
+              .filter((p) => !p.id || !syncedIds.has(String(p.id)))
+              .map((p) => {
+                const pEmail = (p.email || '').trim().toLowerCase();
+                if (p.status === 'PENDING' && pEmail && activeMemberEmails.has(pEmail)) {
+                  return { ...p, status: 'ACCEPTED' as const };
+                }
+                return p;
+              });
+
+            const merged = [...syncedFromBackend, ...extraLocal];
+            try {
+              localStorage.setItem(`vista_invitations_${tripId}`, JSON.stringify(merged));
+            } catch {}
+            return merged;
+          });
+        }
 
         const myMemberRecord = (serverMembers || []).find((m: any) => m.userId === currentUser?.id);
         const isOwner = Boolean(
@@ -993,34 +1392,59 @@ export default function TripDetailPage() {
         else if (serverTrip.status === 'CANCELLED') mappedStatus = 'CANCELLED';
         else mappedStatus = 'PLANNING';
 
-        // Map backend itinerary days if available
-        let mappedDays: DayPlanItem[] = [];
-        if (Array.isArray(serverItineraryDays) && serverItineraryDays.length > 0) {
-          mappedDays = serverItineraryDays.map((d: any) => ({
-            id: d.id,
-            dayNumber: d.dayNumber,
-            dateStr: d.tripDate ? d.tripDate.split('-').reverse().join('/') : undefined,
-            title: d.title || `Ngày ${d.dayNumber}`,
-            activities: (d.items || []).map((item: any) => ({
-              id: item.id,
-              timeSlot: item.startTime ? `${item.startTime.slice(0, 5)}${item.endTime ? ` – ${item.endTime.slice(0, 5)}` : ''}` : undefined,
-              timeRange: item.startTime ? `${item.startTime.slice(0, 5)}${item.endTime ? ` – ${item.endTime.slice(0, 5)}` : ''}` : undefined,
-              title: item.customStopName || 'Điểm dừng',
-              description: item.note || '',
-              location: item.location || '',
-              costVnd: item.costVnd || 0,
-              costLabel: item.costVnd ? `${item.costVnd.toLocaleString('vi-VN')}₫` : 'Miễn phí',
-              category: item.category || 'Địa điểm',
-              sortOrder: item.sortOrder,
-            })).sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)),
-          }));
-        }
-
         let persistedItinerary: DayPlanItem[] | null = null;
         try {
           const stored = localStorage.getItem(`vista_trip_itinerary_${tripId}`);
           if (stored) persistedItinerary = JSON.parse(stored);
         } catch {}
+
+        const persistedDayByNum = new Map<number, DayPlanItem>();
+        const persistedActById = new Map<string, ActivityItem>();
+        if (Array.isArray(persistedItinerary)) {
+          persistedItinerary.forEach((pd) => {
+            persistedDayByNum.set(pd.dayNumber, pd);
+            (pd.activities || []).forEach((pa) => {
+              if (pa.id) persistedActById.set(pa.id, pa);
+            });
+          });
+        }
+
+        // Map backend itinerary days if available (kết hợp metadata/ảnh từ cache local hoặc tự chọn ảnh qua resolveStopImage)
+        let mappedDays: DayPlanItem[] = [];
+        if (Array.isArray(serverItineraryDays) && serverItineraryDays.length > 0) {
+          mappedDays = serverItineraryDays.map((d: any) => {
+            const cachedDay = persistedDayByNum.get(d.dayNumber);
+            return {
+              id: d.id,
+              dayNumber: d.dayNumber,
+              dateStr: d.tripDate ? d.tripDate.split('-').reverse().join('/') : undefined,
+              title: d.title || cachedDay?.title || `Ngày ${d.dayNumber}`,
+              activities: (d.items || []).map((item: any) => {
+                const cached = persistedActById.get(item.id);
+                const stopTitle = item.customStopName || cached?.title || 'Điểm dừng';
+                const stopCategory = item.category || cached?.category || 'Địa điểm';
+                const resolvedCostVnd = item.costVnd ?? cached?.costVnd ?? 0;
+                const resolvedCostLabel = item.costVnd
+                  ? `${item.costVnd.toLocaleString('vi-VN')}₫`
+                  : (cached?.costLabel || 'Miễn phí');
+                return {
+                  id: item.id,
+                  timeSlot: item.startTime ? `${item.startTime.slice(0, 5)}${item.endTime ? ` – ${item.endTime.slice(0, 5)}` : ''}` : cached?.timeSlot,
+                  timeRange: item.startTime ? `${item.startTime.slice(0, 5)}${item.endTime ? ` – ${item.endTime.slice(0, 5)}` : ''}` : cached?.timeRange,
+                  title: stopTitle,
+                  description: item.note || cached?.description || '',
+                  location: item.location || cached?.location || '',
+                  costVnd: resolvedCostVnd,
+                  costLabel: resolvedCostLabel,
+                  category: stopCategory,
+                  image: cached?.image || resolveStopImage({ title: stopTitle, category: stopCategory }),
+                  tips: cached?.tips,
+                  sortOrder: item.sortOrder,
+                };
+              }).sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)),
+            };
+          });
+        }
 
         // SSOT: Priority: mappedDays > persistedItinerary > serverTrip.itineraryDays > sample
         const itinerary = mappedDays.length > 0
@@ -1195,7 +1619,9 @@ export default function TripDetailPage() {
     setNewStopDay(dayNum);
     const dayMeta = getTripDayMeta(trip?.startDate, trip?.endDate, dayNum);
     setNewStopCustomDate(dayMeta.fullDateStr || '');
+    setNewStopImage('');
     setAddStopDateError(null);
+    setAddStopTimeError(null);
     setShowAddStopModal(true);
   };
 
@@ -1207,33 +1633,94 @@ export default function TripDetailPage() {
     setEditStopCategory(act.category || 'Di tích & Văn hóa');
     setEditStopTime(act.timeRange || act.timeSlot || '14:00 – 16:00');
     setEditStopCost(act.costLabel || 'Miễn phí');
+    // Nếu đang dùng ảnh tự dán thì hiển thị sẵn link; nếu dùng ảnh tự động/mặc định thì để trống
+    setEditStopImage(act.image && !isBuiltinStopImage(act.image) ? act.image : '');
     setEditStopTargetDay(dayNum);
     const dayMeta = getTripDayMeta(trip?.startDate, trip?.endDate, dayNum);
     setEditStopCustomDate(dayMeta.fullDateStr || '');
     setEditStopDateError(null);
+    setEditStopTimeError(null);
   };
 
-  // Delete activity (Bước 7: xác nhận xóa -> F5 biến mất hẳn)
+  // Delete activity (mở modal xác nhận + gọi DELETE lên Spring Boot backend để F5 không bị hồi lại)
   const handleDeleteActivity = (dayNum: number, actId: string, actTitle?: string) => {
     if (!trip || !trip.itineraryDays) return;
-    const confirmMsg = actTitle
-      ? `Bạn có chắc chắn muốn xóa điểm dừng "${actTitle}" khỏi Ngày ${dayNum}?`
-      : `Bạn có chắc chắn muốn xóa điểm dừng này khỏi Ngày ${dayNum}?`;
-    if (!window.confirm(confirmMsg)) return;
-
-    const days = trip.itineraryDays.map((d) => {
-      if (d.dayNumber === dayNum) {
-        return { ...d, activities: d.activities.filter((a) => a.id !== actId) };
-      }
-      return d;
-    });
-    const updated = { ...trip, itineraryDays: days };
-    persistTrip(updated);
-    showToast(`✓ Đã xóa điểm dừng khỏi Ngày ${dayNum}. Tải lại trang (F5) không bị hồi lại.`);
+    setDeleteActivityTarget({ dayNumber: dayNum, actId, actTitle });
   };
 
-  // Add activity (V-01 validation, V-02 time overlap warning, F5 persistence)
-  const handleSaveNewActivity = (confirmedOverlap = false) => {
+  const executeDeleteActivity = async () => {
+    if (!trip || !trip.itineraryDays || !deleteActivityTarget) return;
+    const { dayNumber: dayNum, actId } = deleteActivityTarget;
+    const isUuidItem = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(actId);
+
+    setIsDeletingActivity(true);
+    try {
+      if (isUuidItem) {
+        try {
+          await apiRequest(`/itinerary/items/${actId}`, {
+            method: 'DELETE',
+          });
+        } catch (err: any) {
+          // Nếu mục đã bị xóa trước đó ở backend (404), vẫn cho dọn khỏi state/localStorage
+          if (err?.status !== 404) {
+            throw err;
+          }
+        }
+      }
+
+      const days = trip.itineraryDays.map((d) => {
+        if (d.dayNumber === dayNum) {
+          return { ...d, activities: d.activities.filter((a) => a.id !== actId) };
+        }
+        return d;
+      });
+      const updated = { ...trip, itineraryDays: days };
+      persistTrip(updated);
+      setDeleteActivityTarget(null);
+      showToast(`✓ Đã xóa điểm dừng khỏi Ngày ${dayNum}. Tải lại trang (F5) không bị hồi lại.`);
+    } catch (err: any) {
+      showToast(`❌ Không thể xóa điểm dừng: ${err?.message || 'Lỗi kết nối máy chủ.'}`);
+    } finally {
+      setIsDeletingActivity(false);
+    }
+  };
+
+  // Nạp nhanh lộ trình mẫu kèm ảnh minh họa vào PostgreSQL Backend cho chuyến đi hiện tại
+  const handleSeedSampleItinerary = async () => {
+    if (!trip || isSeedingSampleItinerary) return;
+    const isUuidTrip = Boolean(
+      tripId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(tripId))
+    );
+    setIsSeedingSampleItinerary(true);
+    try {
+      let hydratedDays: DayPlanItem[];
+      if (isUuidTrip) {
+        hydratedDays = await seedSampleItineraryToTrip({
+          tripId: String(tripId),
+          destination: trip.destination,
+          startDate: trip.startDate,
+          endDate: trip.endDate,
+          existingDays: (trip.itineraryDays || []).map((d) => ({ id: d.id, dayNumber: d.dayNumber })),
+          seedProposals: proposals.length === 0,
+        });
+      } else {
+        hydratedDays = getSampleItineraryForDestination(trip.destination, trip.startDate);
+      }
+
+      if (hydratedDays.length > 0) {
+        persistTrip({ ...trip, itineraryDays: hydratedDays });
+        setSelectedDayNumber(1);
+        showToast('🎉 Đã nạp lộ trình mẫu kèm ảnh đẹp cho chuyến đi!');
+      }
+    } catch (err: any) {
+      showToast(`❌ Không thể nạp lộ trình mẫu: ${err?.message || 'Lỗi kết nối máy chủ.'}`);
+    } finally {
+      setIsSeedingSampleItinerary(false);
+    }
+  };
+
+  // Add activity (V-01 validation, V-02 time overlap warning, Backend + F5 persistence)
+  const handleSaveNewActivity = async (confirmedOverlap = false) => {
     if (!newStopTitle.trim() || !trip) return;
 
     // 1. Date bounds check (V-01 / Bước 9)
@@ -1246,6 +1733,13 @@ export default function TripDetailPage() {
       }
     }
 
+    const timeCheck = validateTimeRange(newStopTime);
+    if (timeCheck) {
+      setAddStopTimeError(timeCheck);
+      showToast(`❌ ${timeCheck}`);
+      return;
+    }
+
     const newAct: ActivityItem = {
       id: `custom-act-${Date.now()}`,
       title: newStopTitle.trim(),
@@ -1254,7 +1748,11 @@ export default function TripDetailPage() {
       timeRange: newStopTime.trim() || '14:00 – 16:00',
       costLabel: newStopCost.trim() || 'Miễn phí',
       description: 'Điểm dừng do thành viên nhóm vừa thêm vào lịch trình.',
-      image: 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=800&q=80',
+      image: resolveStopImage({
+        title: newStopTitle.trim(),
+        category: newStopCategory,
+        customImageUrl: newStopImage,
+      }),
     };
 
     const currentDays = JSON.parse(JSON.stringify(trip.itineraryDays || [])) as DayPlanItem[];
@@ -1282,14 +1780,59 @@ export default function TripDetailPage() {
       }
     }
 
+    const isUuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    let resolvedDayId = targetDayIdx >= 0 ? currentDays[targetDayIdx].id : undefined;
+
+    if (tripId && isUuidRegex.test(String(tripId))) {
+      try {
+        if (!resolvedDayId || !isUuidRegex.test(resolvedDayId)) {
+          const tripDateIso = toIsoDateOffset(trip.startDate, newStopDay - 1);
+          try {
+            const createdDay = await apiRequest<any>(`/trips/${tripId}/itinerary/days`, {
+              method: 'POST',
+              body: JSON.stringify({ dayNumber: newStopDay, tripDate: tripDateIso }),
+            });
+            if (createdDay?.id) resolvedDayId = String(createdDay.id);
+          } catch {
+            const existingBackendDays = await apiRequest<any[]>(`/trips/${tripId}/itinerary/days`).catch(() => []);
+            const foundDay = Array.isArray(existingBackendDays)
+              ? existingBackendDays.find((d) => Number(d.dayNumber) === newStopDay)
+              : null;
+            if (foundDay?.id) resolvedDayId = String(foundDay.id);
+          }
+        }
+
+        if (resolvedDayId && isUuidRegex.test(resolvedDayId)) {
+          const { startTime, endTime } = parseTimeRangeForApi(newAct.timeRange);
+          const createdItem = await apiRequest<any>(`/itinerary/days/${resolvedDayId}/items`, {
+            method: 'POST',
+            body: JSON.stringify({
+              customStopName: newAct.title,
+              startTime: startTime || null,
+              endTime: endTime || null,
+              sortOrder: targetActivities.length,
+              note: newAct.description || null,
+            }),
+          });
+          if (createdItem?.id) {
+            newAct.id = String(createdItem.id);
+          }
+        }
+      } catch (err) {
+        console.warn('Create itinerary item sync fallback:', err);
+      }
+    }
+
     if (targetDayIdx >= 0) {
       currentDays[targetDayIdx] = {
         ...currentDays[targetDayIdx],
+        ...(resolvedDayId ? { id: resolvedDayId } : {}),
         activities: [...(currentDays[targetDayIdx].activities || []), newAct],
       };
     } else {
       const dayMeta = getTripDayMeta(trip.startDate, trip.endDate, newStopDay);
       currentDays.push({
+        ...(resolvedDayId ? { id: resolvedDayId } : {}),
         dayNumber: newStopDay,
         title: `Ngày ${newStopDay} — Lộ trình tự do`,
         dateStr: dayMeta.fullDateStr || `Ngày ${newStopDay}`,
@@ -1304,6 +1847,7 @@ export default function TripDetailPage() {
     setOverlapWarningDialog(null);
     setNewStopTitle('');
     setNewStopLocation('');
+    setNewStopImage('');
     showToast(
       confirmedOverlap
         ? `⚠️ Đã lưu điểm dừng "${newAct.title}" vào Ngày ${newStopDay} (có cảnh báo chồng giờ).`
@@ -1311,8 +1855,8 @@ export default function TripDetailPage() {
     );
   };
 
-  // Edit activity (Bước 3: Sửa tên/giờ; Bước 6: Chuyển ngày; V-01 & V-02; F5 persistence)
-  const handleSaveEditedActivity = (confirmedOverlap = false) => {
+  // Edit activity (Bước 3: Sửa tên/giờ; Bước 6: Chuyển ngày; V-01 & V-02; Backend + F5 persistence)
+  const handleSaveEditedActivity = async (confirmedOverlap = false) => {
     if (!editingStop || !trip || !editStopTitle.trim()) return;
 
     // 1. Date bounds check (V-01 / Bước 9)
@@ -1325,13 +1869,35 @@ export default function TripDetailPage() {
       }
     }
 
+    const editTimeCheck = validateTimeRange(editStopTime);
+    if (editTimeCheck) {
+      setEditStopTimeError(editTimeCheck);
+      showToast(`❌ ${editTimeCheck}`);
+      return;
+    }
+
+    const trimmedEditImage = editStopImage.trim();
+    const prevAct = editingStop.activity;
+    const categoryOrTitleChanged =
+      editStopCategory !== (prevAct.category || '') ||
+      editStopTitle.trim() !== (prevAct.title || '').trim();
+    const resolvedEditImage = trimmedEditImage
+      ? trimmedEditImage
+      : !prevAct.image || !isBuiltinStopImage(prevAct.image) || categoryOrTitleChanged
+        ? resolveStopImage({
+            title: editStopTitle.trim(),
+            category: editStopCategory,
+          })
+        : prevAct.image;
+
     const updatedAct: ActivityItem = {
-      ...editingStop.activity,
+      ...prevAct,
       title: editStopTitle.trim(),
       location: editStopLocation.trim() || trip.destination,
       category: editStopCategory,
       timeRange: editStopTime.trim() || '14:00 – 16:00',
       costLabel: editStopCost.trim() || 'Miễn phí',
+      image: resolvedEditImage,
     };
 
     const currentDays = JSON.parse(JSON.stringify(trip.itineraryDays || [])) as DayPlanItem[];
@@ -1363,8 +1929,51 @@ export default function TripDetailPage() {
       }
     }
 
+    const isUuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const isUuidAct = isUuidRegex.test(editingStop.activity.id);
+
     // Step 6: Move activity between days
     if (editingStop.dayNumber !== editStopTargetDay) {
+      let targetDayId = currentDays.find((d) => d.dayNumber === editStopTargetDay)?.id;
+      if (tripId && isUuidRegex.test(String(tripId)) && isUuidAct) {
+        try {
+          await apiRequest(`/itinerary/items/${editingStop.activity.id}`, { method: 'DELETE' }).catch(() => {});
+          if (!targetDayId || !isUuidRegex.test(targetDayId)) {
+            const tripDateIso = toIsoDateOffset(trip.startDate, editStopTargetDay - 1);
+            try {
+              const createdDay = await apiRequest<any>(`/trips/${tripId}/itinerary/days`, {
+                method: 'POST',
+                body: JSON.stringify({ dayNumber: editStopTargetDay, tripDate: tripDateIso }),
+              });
+              if (createdDay?.id) targetDayId = String(createdDay.id);
+            } catch {
+              const fetchedDays = await apiRequest<any[]>(`/trips/${tripId}/itinerary/days`).catch(() => []);
+              const foundDay = Array.isArray(fetchedDays)
+                ? fetchedDays.find((d) => Number(d.dayNumber) === editStopTargetDay)
+                : null;
+              if (foundDay?.id) targetDayId = String(foundDay.id);
+            }
+          }
+          if (targetDayId && isUuidRegex.test(targetDayId)) {
+            const { startTime, endTime } = parseTimeRangeForApi(updatedAct.timeRange);
+            const targetActs = currentDays.find((d) => d.dayNumber === editStopTargetDay)?.activities || [];
+            const createdItem = await apiRequest<any>(`/itinerary/days/${targetDayId}/items`, {
+              method: 'POST',
+              body: JSON.stringify({
+                customStopName: updatedAct.title,
+                startTime: startTime || null,
+                endTime: endTime || null,
+                sortOrder: targetActs.length,
+                note: updatedAct.description || null,
+              }),
+            });
+            if (createdItem?.id) updatedAct.id = String(createdItem.id);
+          }
+        } catch (err) {
+          console.warn('Move itinerary item sync fallback:', err);
+        }
+      }
+
       const origIdx = currentDays.findIndex((d) => d.dayNumber === editingStop.dayNumber);
       if (origIdx >= 0) {
         currentDays[origIdx].activities = currentDays[origIdx].activities.filter(
@@ -1373,10 +1982,12 @@ export default function TripDetailPage() {
       }
       const targetIdx = currentDays.findIndex((d) => d.dayNumber === editStopTargetDay);
       if (targetIdx >= 0) {
+        if (targetDayId) currentDays[targetIdx].id = targetDayId;
         currentDays[targetIdx].activities.push(updatedAct);
       } else {
         const dayMeta = getTripDayMeta(trip.startDate, trip.endDate, editStopTargetDay);
         currentDays.push({
+          ...(targetDayId ? { id: targetDayId } : {}),
           dayNumber: editStopTargetDay,
           title: `Ngày ${editStopTargetDay} — Lộ trình tự do`,
           dateStr: dayMeta.fullDateStr || `Ngày ${editStopTargetDay}`,
@@ -1385,6 +1996,22 @@ export default function TripDetailPage() {
         currentDays.sort((a, b) => a.dayNumber - b.dayNumber);
       }
     } else {
+      if (isUuidAct) {
+        try {
+          const { startTime, endTime } = parseTimeRangeForApi(updatedAct.timeRange);
+          await apiRequest(`/itinerary/items/${editingStop.activity.id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({
+              customStopName: updatedAct.title,
+              startTime: startTime || null,
+              endTime: endTime || null,
+              note: updatedAct.description || null,
+            }),
+          });
+        } catch (err) {
+          console.warn('Patch itinerary item sync fallback:', err);
+        }
+      }
       const dayIdx = currentDays.findIndex((d) => d.dayNumber === editStopTargetDay);
       if (dayIdx >= 0) {
         currentDays[dayIdx].activities = currentDays[dayIdx].activities.map((a) =>
@@ -1439,10 +2066,14 @@ export default function TripDetailPage() {
     const email = inviteInputEmail.trim().toLowerCase();
     if (!email) return;
 
-    // Check conflict: already member
-    const isAlreadyMember = trip?.members?.some((m) =>
-      typeof m === 'object' && m?.name?.toLowerCase().includes(email.split('@')[0])
-    );
+    // Check conflict: already member (match exact member email or current user email)
+    const isAlreadyMember =
+      currentUser?.email?.trim().toLowerCase() === email ||
+      Boolean(
+        trip?.members?.some(
+          (m) => typeof m === 'object' && m?.email?.trim().toLowerCase() === email
+        )
+      );
     if (isAlreadyMember || email.includes('vananh') || email.includes('minhtuan')) {
       setInviteError('❌ Lỗi HTTP 409 Conflict: Người dùng với email này đã là thành viên trong chuyến đi!');
       return;
@@ -1450,7 +2081,7 @@ export default function TripDetailPage() {
 
     // Check conflict: already pending
     const isAlreadyPending = invitationsList.some(
-      (inv) => inv.email.toLowerCase() === email && inv.status === 'PENDING'
+      (inv) => (inv.email || '').trim().toLowerCase() === email && inv.status === 'PENDING'
     );
     if (isAlreadyPending) {
       setInviteError('❌ Lỗi HTTP 409 Conflict: Đã có lời mời PENDING gửi đến email này chưa được phản hồi!');
@@ -1462,7 +2093,35 @@ export default function TripDetailPage() {
     const currentInviterName = currentUser?.displayName || currentUser?.email || 'Trưởng nhóm';
     const cleanInviterName = currentInviterName.replace(/\s*\(Bạn.*?\)/gi, '').trim() || 'Trưởng nhóm';
 
-    const token = `VISTA-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    let token = `VISTA-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    let invitationId = `inv-${Date.now()}`;
+    const isUuidTrip = Boolean(
+      tripId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(tripId))
+    );
+
+    // Với chuyến đi lưu trên Spring Boot DB: gọi API backend TRƯỚC để kiểm tra quyền & xung đột 409 (đã là thành viên / đã PENDING)
+    // Tuyệt đối không gửi email hay lưu store/thông báo nếu backend từ chối.
+    if (isUuidTrip) {
+      try {
+        const backendInv = await apiRequest<any>(`/trips/${tripId}/invitations`, {
+          method: 'POST',
+          body: JSON.stringify({
+            inviteeEmail: email,
+            token: token,
+          }),
+        });
+        if (backendInv?.id) invitationId = String(backendInv.id);
+        if (backendInv?.rawToken || backendInv?.token) {
+          token = String(backendInv.rawToken || backendInv.token);
+        }
+      } catch (err: any) {
+        const prefix = err?.status === 409 ? 'Lỗi HTTP 409 Conflict: ' : '';
+        setInviteError(`❌ ${prefix}${err?.message || 'Không thể phát hành lời mời cho email này.'}`);
+        setIsSendingInviteEmail(false);
+        return;
+      }
+    }
+
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
     const inviteLink = `${baseUrl}/invitations/${token}`;
     const nowTimeStr = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
@@ -1497,7 +2156,7 @@ export default function TripDetailPage() {
     }
 
     const newInv = {
-      id: `inv-${Date.now()}`,
+      id: invitationId,
       tripId: tripId || trip?.id || 'demo-trip',
       tripTitle: trip?.title || 'Khám phá chuyến đi VISTA',
       destination: trip?.destination || 'Việt Nam',
@@ -1532,15 +2191,6 @@ export default function TripDetailPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newInv),
       }).catch(() => {});
-    } catch {}
-
-    try {
-      if (tripId && /^[0-9a-f-]{36}$/i.test(tripId)) {
-        apiRequest(`/trips/${tripId}/invitations`, {
-          method: 'POST',
-          body: JSON.stringify({ inviteeEmail: email }),
-        }).catch(() => {});
-      }
     } catch {}
 
     setCreatedInvitationInfo({
@@ -1605,6 +2255,11 @@ export default function TripDetailPage() {
         window.dispatchEvent(new CustomEvent('vista-invitations-change'));
       } catch {}
     }
+    if (target?.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(target.id)) {
+      apiRequest(`/invitations/${target.id}`, {
+        method: 'DELETE',
+      }).catch(() => {});
+    }
     if (target?.token) {
       try {
         fetch('/api/invitations', {
@@ -1617,7 +2272,40 @@ export default function TripDetailPage() {
     showToast('✓ Trưởng nhóm (Owner) đã thu hồi lời mời! Token này đã bị vô hiệu hóa.');
   };
 
-  // Vote toggle with closing support (W4-TV3-02)
+  // Tải lại danh sách biểu quyết (dùng cho nút "Thử lại" khi lỗi)
+  const reloadProposals = async () => {
+    if (!tripId) return;
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tripId as string);
+    if (!isUuid) return;
+    setProposalsStatus('loading');
+    setProposalsError(null);
+    try {
+      const result = await apiRequest<any[]>(`/trips/${tripId}/proposals`);
+      if (Array.isArray(result) && result.length === 0) {
+        setProposals([]);
+        setProposalsStatus('empty');
+      } else if (Array.isArray(result) && result.length > 0) {
+        const userStr = typeof window !== 'undefined' ? localStorage.getItem('vista_user') : null;
+        const currentUid = userStr ? JSON.parse(userStr)?.id : null;
+        setProposals(
+          result.map((sp: any) => ({
+            id: sp.id,
+            title: sp.title,
+            category: 'Gợi ý thành viên',
+            votes: sp.upVotes != null ? Number(sp.upVotes) : (Array.isArray(sp.votes) ? sp.votes.length : 0),
+            voted: Array.isArray(sp.votes) && sp.votes.some((v: any) => v.userId === currentUid && (v.vote === 'UP' || v.vote === true)),
+          }))
+        );
+        setProposalsStatus('loaded');
+      }
+      setProposalsError(null);
+    } catch {
+      setProposalsStatus('error');
+      setProposalsError('Không tải được danh sách biểu quyết. Vui lòng thử lại.');
+    }
+  };
+
+  // Vote toggle with closing support (W4-TV3-02) — optimistic update + revert on failure
   const handleVoteToggle = (propId: string) => {
     if (!isTripMember) {
       showToast('⚠️ Bạn chưa tham gia chuyến đi này. Chỉ thành viên nhóm mới có quyền biểu quyết!');
@@ -1628,36 +2316,50 @@ export default function TripDetailPage() {
       return;
     }
     const currentProp = proposals.find((p) => p.id === propId);
-    const willVote = currentProp ? !currentProp.voted : true;
+    if (!currentProp) return;
 
+    // Lưu trạng thái cũ để hoàn tác nếu API thất bại
+    const prevProposals = proposals.map((p) => ({ ...p }));
+    const willVote = !currentProp.voted;
+
+    // Optimistic update ngay lập tức
     setProposals((prev) =>
       prev.map((p) => {
         if (p.id === propId) {
-          const newVoted = !p.voted;
-          showToast(newVoted ? 'Đã bỏ phiếu đồng thuận (+1)!' : 'Đã hủy bỏ phiếu.');
           return {
             ...p,
-            voted: newVoted,
-            votes: newVoted ? p.votes + 1 : Math.max(0, p.votes - 1),
+            voted: willVote,
+            votes: willVote ? p.votes + 1 : Math.max(0, p.votes - 1),
           };
         }
         return p;
       })
     );
+    showToast(willVote ? 'Đã bỏ phiếu đồng thuận (+1)!' : 'Đã hủy bỏ phiếu.');
 
     // Persist to backend if trip is real UUID
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tripId as string);
     if (isUuid) {
-      if (willVote) {
-        apiRequest(`/proposals/${propId}/votes`, {
-          method: 'POST',
-          body: JSON.stringify({ vote: 'UP' }),
-        }).catch((err) => console.warn('Vote sync error:', err));
-      } else {
-        apiRequest(`/proposals/${propId}/votes`, {
-          method: 'DELETE',
-        }).catch((err) => console.warn('Vote remove error:', err));
-      }
+      const voteApiCall = willVote
+        ? apiRequest(`/proposals/${propId}/votes`, { method: 'POST', body: JSON.stringify({ vote: 'UP' }) })
+        : apiRequest(`/proposals/${propId}/votes`, { method: 'DELETE' });
+
+      voteApiCall
+        .then((resp: any) => {
+          // Áp dụng dữ liệu server trả về nếu có (đảm bảo đồng bộ)
+          if (resp && resp.upVotes != null) {
+            setProposals((prev) =>
+              prev.map((p) =>
+                p.id === propId ? { ...p, votes: Number(resp.upVotes), voted: willVote } : p
+              )
+            );
+          }
+        })
+        .catch(() => {
+          // Hoàn tác về trạng thái trước khi vote
+          setProposals(prevProposals);
+          showToast('❌ Bình chọn không thành công, vui lòng thử lại.');
+        });
     }
   };
 
@@ -1683,6 +2385,7 @@ export default function TripDetailPage() {
       voted: true,
     };
     setProposals((prev) => [...prev, newProp]);
+    setProposalsStatus('loaded');
     setShowAddPropModal(false);
     setNewPropTitle('');
     showToast(`✓ Đã tạo đề xuất mới: "${title}"!`);
@@ -2378,7 +3081,7 @@ export default function TripDetailPage() {
             onClick={() => handleTabChange('voting')}
             id="tab-btn-voting"
           >
-            Biểu quyết địa điểm ({proposals.length})
+            Biểu quyết địa điểm ({proposalsStatus === 'loaded' ? proposals.length : proposalsStatus === 'loading' ? '…' : proposalsStatus === 'error' ? '!' : 0})
           </button>
           <button
             type="button"
@@ -2745,28 +3448,52 @@ export default function TripDetailPage() {
                           <p style={{ fontSize: '13.5px', color: '#64748B', maxWidth: '440px', margin: '0 auto 18px', lineHeight: '1.5' }}>
                             Ngày này hiện chưa có hoạt động nào được lên lịch. Bạn có thể nhấn nút bên dưới để thêm điểm dừng tham quan, ăn uống hoặc check-in đầu tiên cho ngày này!
                           </p>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              handleOpenAddStopModal(dayPlan.dayNumber);
-                            }}
-                            style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '8px',
-                              padding: '9px 20px',
-                              background: '#0284C7',
-                              color: '#FFFFFF',
-                              borderRadius: '10px',
-                              border: 'none',
-                              fontWeight: 700,
-                              fontSize: '13.5px',
-                              cursor: 'pointer',
-                              boxShadow: '0 4px 14px rgba(2, 132, 199, 0.25)',
-                            }}
-                          >
-                            <span>+ Thêm điểm dừng vào Ngày {dayPlan.dayNumber}</span>
-                          </button>
+                          <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                handleOpenAddStopModal(dayPlan.dayNumber);
+                              }}
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '9px 20px',
+                                background: '#0284C7',
+                                color: '#FFFFFF',
+                                borderRadius: '10px',
+                                border: 'none',
+                                fontWeight: 700,
+                                fontSize: '13.5px',
+                                cursor: 'pointer',
+                                boxShadow: '0 4px 14px rgba(2, 132, 199, 0.25)',
+                              }}
+                            >
+                              <span>+ Thêm điểm dừng vào Ngày {dayPlan.dayNumber}</span>
+                            </button>
+                            <button
+                              type="button"
+                              disabled={isSeedingSampleItinerary}
+                              onClick={handleSeedSampleItinerary}
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '7px',
+                                padding: '9px 18px',
+                                background: '#F0F9FF',
+                                color: '#0369A1',
+                                borderRadius: '10px',
+                                border: '1px solid #BAE6FD',
+                                fontWeight: 700,
+                                fontSize: '13.5px',
+                                cursor: isSeedingSampleItinerary ? 'not-allowed' : 'pointer',
+                                opacity: isSeedingSampleItinerary ? 0.7 : 1,
+                              }}
+                            >
+                              <Sparkles size={15} />
+                              <span>{isSeedingSampleItinerary ? 'Đang nạp lộ trình...' : 'Nạp lộ trình mẫu có ảnh'}</span>
+                            </button>
+                          </div>
                         </div>
                       ) : (
                         <div className={styles.flowchartTrack}>
@@ -3225,6 +3952,11 @@ export default function TripDetailPage() {
                           </button>
                         )}
                       </div>
+                      {typeof m === 'object' && m?.email && (
+                        <p className={styles.memberMetaEmail} title={m.email}>
+                          {m.email}
+                        </p>
+                      )}
                     </div>
                   </div>
                 );
@@ -3350,17 +4082,7 @@ export default function TripDetailPage() {
                       {filteredInvitations.map((inv) => (
                         <div
                           key={inv.id}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            flexWrap: 'wrap',
-                            gap: '10px',
-                            padding: '12px 16px',
-                            background: '#F8FAFC',
-                            border: '1px solid #E2E8F0',
-                            borderRadius: '12px',
-                          }}
+                          className={styles.invitationRow}
                         >
                           <div>
                             <span style={{ fontWeight: 700, fontSize: '13.5px', color: '#0F172A' }}>{inv.email}</span>
@@ -3388,8 +4110,8 @@ export default function TripDetailPage() {
                               </a>
                               <span style={{ fontSize: '12px', color: '#64748B' }}>Hạn: {inv.expiresAt}</span>
                               {(inv.emailSent || inv.status === 'PENDING') && (
-                                <span style={{ fontSize: '11px', color: '#166534', background: '#DCFCE7', padding: '1px 6px', borderRadius: '4px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                                  <MailCheck size={13} />
+                                <span className={styles.invitationAutoMailNote}>
+                                  <Mail size={12} />
                                   <span>Đã gửi thư tự động</span>
                                 </span>
                               )}
@@ -3397,14 +4119,17 @@ export default function TripDetailPage() {
                           </div>
 
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                            <span style={{
-                              fontSize: '11.5px',
-                              fontWeight: 800,
-                              padding: '3px 8px',
-                              borderRadius: '999px',
-                              background: inv.status === 'PENDING' ? '#DCFCE7' : inv.status === 'REVOKED' ? '#FEE2E2' : '#F1F5F9',
-                              color: inv.status === 'PENDING' ? '#15803D' : inv.status === 'REVOKED' ? '#991B1B' : '#475569',
-                            }}>
+                            <span
+                              className={`${styles.invitationStatusBadge} ${
+                                inv.status === 'PENDING'
+                                  ? styles.invitationStatusPending
+                                  : inv.status === 'ACCEPTED'
+                                    ? styles.invitationStatusAccepted
+                                    : inv.status === 'REVOKED'
+                                      ? styles.invitationStatusRevoked
+                                      : styles.invitationStatusDeclined
+                              }`}
+                            >
                               {inv.status}
                             </span>
 
@@ -3419,19 +4144,7 @@ export default function TripDetailPage() {
                                 }
                                 showToast(`✓ Đã sao chép link mời cho ${inv.email}!`);
                               }}
-                              style={{
-                                fontSize: '12px',
-                                color: '#0284C7',
-                                fontWeight: 700,
-                                padding: '6px 12px',
-                                background: '#F0F9FF',
-                                border: '1px solid #BAE6FD',
-                                borderRadius: '8px',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '4px',
-                                cursor: 'pointer',
-                              }}
+                              className={styles.invitationCopyBtn}
                               title="Sao chép link mời để gửi qua Zalo / Facebook Messenger"
                             >
                               <Copy size={14} />
@@ -3444,19 +4157,7 @@ export default function TripDetailPage() {
                                 type="button"
                                 onClick={() => handleResendInviteEmail(inv)}
                                 disabled={isResendingEmail === inv.token}
-                                style={{
-                                  fontSize: '12px',
-                                  color: '#047857',
-                                  fontWeight: 700,
-                                  padding: '6px 12px',
-                                  background: '#ECFDF5',
-                                  border: '1px solid #A7F3D0',
-                                  borderRadius: '8px',
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: '4px',
-                                  cursor: isResendingEmail === inv.token ? 'not-allowed' : 'pointer',
-                                }}
+                                className={styles.invitationResendBtn}
                                 title={`Tự động gửi lại email mời trực tiếp tới ${inv.email}`}
                               >
                                 {isResendingEmail === inv.token ? (
@@ -3473,16 +4174,7 @@ export default function TripDetailPage() {
                               <button
                                 type="button"
                                 onClick={() => handleRevokeInvite(inv.id)}
-                                style={{
-                                  fontSize: '12px',
-                                  color: '#DC2626',
-                                  fontWeight: 700,
-                                  padding: '6px 12px',
-                                  background: '#FEF2F2',
-                                  border: '1px solid #FECACA',
-                                  borderRadius: '8px',
-                                  cursor: 'pointer',
-                                }}
+                                className={styles.invitationRevokeBtn}
                               >
                                 Thu hồi (Revoke)
                               </button>
@@ -3797,7 +4489,66 @@ export default function TripDetailPage() {
               </div>
             </div>
 
-            {proposals.map((prop) => (
+            {/* Trạng thái: đang tải */}
+            {proposalsStatus === 'loading' && (
+              <div style={{ textAlign: 'center', padding: '32px 16px', color: '#64748B' }}>
+                <Loader2 size={28} style={{ animation: 'spin 1s linear infinite', marginBottom: '8px' }} />
+                <p style={{ margin: 0, fontSize: '14px' }}>Đang tải danh sách biểu quyết...</p>
+              </div>
+            )}
+
+            {/* Trạng thái: lỗi API */}
+            {proposalsStatus === 'error' && (
+              <div style={{
+                textAlign: 'center',
+                padding: '32px 16px',
+                background: '#FEF2F2',
+                borderRadius: '12px',
+                border: '1px solid #FECACA',
+                margin: '8px 0',
+              }}>
+                <AlertTriangle size={28} color="#DC2626" style={{ marginBottom: '8px' }} />
+                <p style={{ margin: '0 0 12px', fontSize: '14px', color: '#DC2626', fontWeight: 600 }}>
+                  {proposalsError || 'Không tải được danh sách biểu quyết.'}
+                </p>
+                <button
+                  type="button"
+                  onClick={reloadProposals}
+                  style={{
+                    padding: '8px 20px',
+                    background: '#DC2626',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Thử lại
+                </button>
+              </div>
+            )}
+
+            {/* Trạng thái: thành công nhưng chưa có đề xuất */}
+            {proposalsStatus === 'empty' && (
+              <div style={{
+                textAlign: 'center',
+                padding: '36px 16px',
+                background: '#F8FAFC',
+                borderRadius: '12px',
+                border: '1px dashed #CBD5E1',
+                margin: '8px 0',
+              }}>
+                <Vote size={36} color="#94A3B8" style={{ marginBottom: '10px' }} />
+                <p style={{ margin: 0, fontSize: '15px', color: '#64748B', fontWeight: 600 }}>
+                  Chưa có đề xuất nào. Hãy tạo đề xuất đầu tiên!
+                </p>
+              </div>
+            )}
+
+            {/* Trạng thái: có dữ liệu thật */}
+            {proposalsStatus === 'loaded' && proposals.map((prop) => (
               <div
                 key={prop.id}
                 className={`${styles.proposalCard} ${prop.voted ? styles.proposalVoted : ''}`}
@@ -4171,16 +4922,19 @@ export default function TripDetailPage() {
             style={{
               background: '#FFFFFF',
               borderRadius: '24px',
-              maxWidth: '520px',
+              maxWidth: '560px',
               width: '100%',
-              padding: '28px',
+              maxHeight: '90vh',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
               boxShadow: '0 24px 48px rgba(0,0,0,0.3)',
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px 12px', flexShrink: 0, borderBottom: '1px solid #F1F5F9' }}>
               <div>
-                <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
+                <h3 style={{ fontSize: '19px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
                   + Thêm điểm dừng mới vào lịch trình
                 </h3>
               </div>
@@ -4199,13 +4953,14 @@ export default function TripDetailPage() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: '#64748B',
+                  flexShrink: 0,
                 }}
               >
                 ✕
               </button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '14px 24px', overflowY: 'auto', flex: 1, minHeight: 0 }}>
               <div>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
                   Chọn ngày dừng chân
@@ -4224,7 +4979,7 @@ export default function TripDetailPage() {
                       style={{
                         flex: displayCalendarDays.length <= 4 ? 1 : '0 0 calc(25% - 6px)',
                         minWidth: '70px',
-                        padding: '8px 10px',
+                        padding: '7px 8px',
                         borderRadius: '8px',
                         border: '1px solid',
                         borderColor: newStopDay === calDay.dayNumber ? '#0284C7' : '#CBD5E1',
@@ -4248,7 +5003,7 @@ export default function TripDetailPage() {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '5px' }}>
                   Ngày lịch trình (dd/mm/yyyy) — V-01 Chặn ngoài khoảng
                 </label>
                 <input
@@ -4263,7 +5018,7 @@ export default function TripDetailPage() {
                   }}
                   style={{
                     width: '100%',
-                    padding: '10px 14px',
+                    padding: '9px 12px',
                     borderRadius: '10px',
                     border: `1.5px solid ${addStopDateError ? '#EF4444' : '#CBD5E1'}`,
                     background: addStopDateError ? '#FEF2F2' : '#FFFFFF',
@@ -4273,7 +5028,7 @@ export default function TripDetailPage() {
                   }}
                 />
                 {addStopDateError && (
-                  <div style={{ marginTop: '6px', color: '#DC2626', fontSize: '12.5px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <div style={{ marginTop: '5px', color: '#DC2626', fontSize: '12.5px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <span>❌</span>
                     <span>{addStopDateError}</span>
                   </div>
@@ -4281,7 +5036,7 @@ export default function TripDetailPage() {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '5px' }}>
                   Tên địa điểm / Hoạt động *
                 </label>
                 <input
@@ -4291,7 +5046,7 @@ export default function TripDetailPage() {
                   onChange={(e) => setNewStopTitle(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '10px 14px',
+                    padding: '9px 12px',
                     borderRadius: '10px',
                     border: '1px solid #CBD5E1',
                     fontSize: '14px',
@@ -4302,7 +5057,7 @@ export default function TripDetailPage() {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '5px' }}>
                   Địa chỉ / Vị trí
                 </label>
                 <input
@@ -4312,7 +5067,38 @@ export default function TripDetailPage() {
                   onChange={(e) => setNewStopLocation(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '10px 14px',
+                    padding: '9px 12px',
+                    borderRadius: '10px',
+                    border: '1px solid #CBD5E1',
+                    fontSize: '14px',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+
+              <TimeRangePickerField
+                label="Khung giờ"
+                value={newStopTime}
+                error={addStopTimeError}
+                onChange={(nextVal) => {
+                  setNewStopTime(nextVal);
+                  setAddStopTimeError(null);
+                }}
+              />
+
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '5px' }}>
+                  Chi phí ước tính
+                </label>
+                <input
+                  type="text"
+                  placeholder="50.000đ / người"
+                  value={newStopCost}
+                  onChange={(e) => setNewStopCost(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '9px 12px',
                     borderRadius: '10px',
                     border: '1px solid #CBD5E1',
                     fontSize: '14px',
@@ -4324,74 +5110,54 @@ export default function TripDetailPage() {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
-                    Khung giờ
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '5px' }}>
+                    Phân loại
                   </label>
-                  <input
-                    type="text"
-                    placeholder="14:00 – 16:00"
-                    value={newStopTime}
-                    onChange={(e) => setNewStopTime(e.target.value)}
+                  <select
+                    value={newStopCategory}
+                    onChange={(e) => setNewStopCategory(e.target.value)}
                     style={{
                       width: '100%',
-                      padding: '10px 14px',
+                      padding: '9px 12px',
                       borderRadius: '10px',
                       border: '1px solid #CBD5E1',
                       fontSize: '14px',
                       outline: 'none',
                       boxSizing: 'border-box',
+                      background: '#FFFFFF',
                     }}
-                  />
+                  >
+                    <option value="Di tích & Văn hóa">Di tích & Văn hóa</option>
+                    <option value="Ẩm thực & Cà phê">Ẩm thực & Cà phê</option>
+                    <option value="Trải nghiệm & Khám phá">Trải nghiệm & Khám phá</option>
+                    <option value="Nghỉ ngơi & Mua sắm">Nghỉ ngơi & Mua sắm</option>
+                  </select>
                 </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
-                    Chi phí ước tính
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="50.000đ / người"
-                    value={newStopCost}
-                    onChange={(e) => setNewStopCost(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '10px 14px',
-                      borderRadius: '10px',
-                      border: '1px solid #CBD5E1',
-                      fontSize: '14px',
-                      outline: 'none',
-                      boxSizing: 'border-box',
-                    }}
-                  />
-                </div>
-              </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
-                  Phân loại
-                </label>
-                <select
-                  value={newStopCategory}
-                  onChange={(e) => setNewStopCategory(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '10px 14px',
-                    borderRadius: '10px',
-                    border: '1px solid #CBD5E1',
-                    fontSize: '14px',
-                    outline: 'none',
-                    boxSizing: 'border-box',
-                    background: '#FFFFFF',
-                  }}
-                >
-                  <option value="Di tích & Văn hóa">Di tích & Văn hóa</option>
-                  <option value="Ẩm thực & Cà phê">Ẩm thực & Cà phê</option>
-                  <option value="Trải nghiệm & Khám phá">Trải nghiệm & Khám phá</option>
-                  <option value="Nghỉ ngơi & Mua sắm">Nghỉ ngơi & Mua sắm</option>
-                </select>
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '5px' }}>
+                    Link ảnh (tùy chọn)
+                  </label>
+                  <input
+                    type="url"
+                    placeholder="Để trống để tự chọn ảnh"
+                    value={newStopImage}
+                    onChange={(e) => setNewStopImage(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '9px 12px',
+                      borderRadius: '10px',
+                      border: '1px solid #CBD5E1',
+                      fontSize: '14px',
+                      outline: 'none',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                </div>
               </div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', padding: '14px 24px 18px', borderTop: '1px solid #F1F5F9', flexShrink: 0, background: '#FFFFFF' }}>
               <button
                 type="button"
                 onClick={() => setShowAddStopModal(false)}
@@ -4454,16 +5220,19 @@ export default function TripDetailPage() {
             style={{
               background: '#FFFFFF',
               borderRadius: '24px',
-              maxWidth: '520px',
+              maxWidth: '560px',
               width: '100%',
-              padding: '28px',
+              maxHeight: '90vh',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
               boxShadow: '0 24px 48px rgba(0,0,0,0.3)',
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px 12px', flexShrink: 0, borderBottom: '1px solid #F1F5F9' }}>
               <div>
-                <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h3 style={{ fontSize: '19px', fontWeight: 800, color: '#0F172A', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <Pencil size={18} style={{ color: '#0284C7' }} />
                   <span>Sửa điểm dừng lịch trình</span>
                 </h3>
@@ -4486,13 +5255,14 @@ export default function TripDetailPage() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: '#64748B',
+                  flexShrink: 0,
                 }}
               >
                 ✕
               </button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '14px 24px', overflowY: 'auto', flex: 1, minHeight: 0 }}>
               <div>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
                   Chuyển sang Ngày (Bước 6)
@@ -4511,7 +5281,7 @@ export default function TripDetailPage() {
                       style={{
                         flex: displayCalendarDays.length <= 4 ? 1 : '0 0 calc(25% - 6px)',
                         minWidth: '70px',
-                        padding: '8px 10px',
+                        padding: '7px 8px',
                         borderRadius: '8px',
                         border: '1px solid',
                         borderColor: editStopTargetDay === calDay.dayNumber ? '#0284C7' : '#CBD5E1',
@@ -4535,7 +5305,7 @@ export default function TripDetailPage() {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '5px' }}>
                   Ngày lịch trình (dd/mm/yyyy) — V-01 Chặn ngoài khoảng
                 </label>
                 <input
@@ -4550,7 +5320,7 @@ export default function TripDetailPage() {
                   }}
                   style={{
                     width: '100%',
-                    padding: '10px 14px',
+                    padding: '9px 12px',
                     borderRadius: '10px',
                     border: `1.5px solid ${editStopDateError ? '#EF4444' : '#CBD5E1'}`,
                     background: editStopDateError ? '#FEF2F2' : '#FFFFFF',
@@ -4560,7 +5330,7 @@ export default function TripDetailPage() {
                   }}
                 />
                 {editStopDateError && (
-                  <div style={{ marginTop: '6px', color: '#DC2626', fontSize: '12.5px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <div style={{ marginTop: '5px', color: '#DC2626', fontSize: '12.5px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <span>❌</span>
                     <span>{editStopDateError}</span>
                   </div>
@@ -4568,7 +5338,7 @@ export default function TripDetailPage() {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '5px' }}>
                   Tên địa điểm / Hoạt động * (Bước 3: Đổi tên)
                 </label>
                 <input
@@ -4577,7 +5347,7 @@ export default function TripDetailPage() {
                   onChange={(e) => setEditStopTitle(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '10px 14px',
+                    padding: '9px 12px',
                     borderRadius: '10px',
                     border: '1px solid #CBD5E1',
                     fontSize: '14px',
@@ -4588,7 +5358,7 @@ export default function TripDetailPage() {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '5px' }}>
                   Địa chỉ / Vị trí
                 </label>
                 <input
@@ -4597,7 +5367,38 @@ export default function TripDetailPage() {
                   onChange={(e) => setEditStopLocation(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '10px 14px',
+                    padding: '9px 12px',
+                    borderRadius: '10px',
+                    border: '1px solid #CBD5E1',
+                    fontSize: '14px',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+
+              <TimeRangePickerField
+                label="Khung giờ * (Bước 3: Đổi giờ)"
+                value={editStopTime}
+                error={editStopTimeError}
+                onChange={(nextVal) => {
+                  setEditStopTime(nextVal);
+                  setEditStopTimeError(null);
+                }}
+              />
+
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '5px' }}>
+                  Chi phí ước tính
+                </label>
+                <input
+                  type="text"
+                  value={editStopCost}
+                  placeholder="50.000đ / người"
+                  onChange={(e) => setEditStopCost(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '9px 12px',
                     borderRadius: '10px',
                     border: '1px solid #CBD5E1',
                     fontSize: '14px',
@@ -4609,74 +5410,54 @@ export default function TripDetailPage() {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
-                    Khung giờ * (Bước 3: Đổi giờ)
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '5px' }}>
+                    Phân loại
                   </label>
-                  <input
-                    type="text"
-                    value={editStopTime}
-                    placeholder="08:00 – 10:00"
-                    onChange={(e) => setEditStopTime(e.target.value)}
+                  <select
+                    value={editStopCategory}
+                    onChange={(e) => setEditStopCategory(e.target.value)}
                     style={{
                       width: '100%',
-                      padding: '10px 14px',
+                      padding: '9px 12px',
                       borderRadius: '10px',
                       border: '1px solid #CBD5E1',
                       fontSize: '14px',
                       outline: 'none',
                       boxSizing: 'border-box',
+                      background: '#FFFFFF',
                     }}
-                  />
+                  >
+                    <option value="Di tích & Văn hóa">Di tích & Văn hóa</option>
+                    <option value="Ẩm thực & Cà phê">Ẩm thực & Cà phê</option>
+                    <option value="Trải nghiệm & Khám phá">Trải nghiệm & Khám phá</option>
+                    <option value="Nghỉ ngơi & Mua sắm">Nghỉ ngơi & Mua sắm</option>
+                  </select>
                 </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
-                    Chi phí ước tính
-                  </label>
-                  <input
-                    type="text"
-                    value={editStopCost}
-                    placeholder="50.000đ / người"
-                    onChange={(e) => setEditStopCost(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '10px 14px',
-                      borderRadius: '10px',
-                      border: '1px solid #CBD5E1',
-                      fontSize: '14px',
-                      outline: 'none',
-                      boxSizing: 'border-box',
-                    }}
-                  />
-                </div>
-              </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
-                  Phân loại
-                </label>
-                <select
-                  value={editStopCategory}
-                  onChange={(e) => setEditStopCategory(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '10px 14px',
-                    borderRadius: '10px',
-                    border: '1px solid #CBD5E1',
-                    fontSize: '14px',
-                    outline: 'none',
-                    boxSizing: 'border-box',
-                    background: '#FFFFFF',
-                  }}
-                >
-                  <option value="Di tích & Văn hóa">Di tích & Văn hóa</option>
-                  <option value="Ẩm thực & Cà phê">Ẩm thực & Cà phê</option>
-                  <option value="Trải nghiệm & Khám phá">Trải nghiệm & Khám phá</option>
-                  <option value="Nghỉ ngơi & Mua sắm">Nghỉ ngơi & Mua sắm</option>
-                </select>
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '5px' }}>
+                    Link ảnh (tùy chọn)
+                  </label>
+                  <input
+                    type="url"
+                    placeholder="Để trống để tự chọn ảnh"
+                    value={editStopImage}
+                    onChange={(e) => setEditStopImage(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '9px 12px',
+                      borderRadius: '10px',
+                      border: '1px solid #CBD5E1',
+                      fontSize: '14px',
+                      outline: 'none',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                </div>
               </div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', padding: '14px 24px 18px', borderTop: '1px solid #F1F5F9', flexShrink: 0, background: '#FFFFFF' }}>
               <button
                 type="button"
                 onClick={() => setEditingStop(null)}
@@ -5353,6 +6134,527 @@ export default function TripDetailPage() {
                 }}
               >
                 Tạo đề xuất (+1 vote)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 6: XÁC NHẬN CHUYỂN QUYỀN TRƯỞNG NHÓM */}
+      {transferTarget && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(15, 23, 42, 0.65)',
+            backdropFilter: 'blur(5px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10000,
+            padding: '20px',
+          }}
+          onClick={() => {
+            if (!isTransferring) setTransferTarget(null);
+          }}
+        >
+          <div
+            style={{
+              background: '#FFFFFF',
+              borderRadius: '24px',
+              maxWidth: '460px',
+              width: '100%',
+              padding: '28px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              border: '1px solid #E2E8F0',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div
+                  style={{
+                    width: '44px',
+                    height: '44px',
+                    borderRadius: '14px',
+                    background: 'linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)',
+                    color: '#B45309',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  <Crown size={22} />
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
+                    Chuyển quyền Trưởng nhóm
+                  </h3>
+                  <span style={{ fontSize: '12.5px', color: '#64748B' }}>
+                    Quyền quản trị sẽ thay đổi ngay lập tức
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                disabled={isTransferring}
+                onClick={() => setTransferTarget(null)}
+                style={{
+                  background: '#F1F5F9',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '32px',
+                  height: '32px',
+                  fontSize: '15px',
+                  cursor: isTransferring ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#64748B',
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '12px 14px',
+                background: '#F8FAFC',
+                borderRadius: '14px',
+                border: '1px solid #E2E8F0',
+                marginBottom: '16px',
+              }}
+            >
+              <div
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  background: transferTarget.color || '#10b981',
+                  color: '#FFFFFF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 800,
+                  fontSize: '14px',
+                  flexShrink: 0,
+                }}
+              >
+                {transferTarget.avatar}
+              </div>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={{ fontSize: '15px', fontWeight: 700, color: '#0F172A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {transferTarget.name}
+                </div>
+                {transferTarget.email && (
+                  <div style={{ fontSize: '12.5px', color: '#64748B', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {transferTarget.email}
+                  </div>
+                )}
+              </div>
+              <span
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  padding: '4px 10px',
+                  borderRadius: '999px',
+                  background: '#FEF3C7',
+                  color: '#B45309',
+                  flexShrink: 0,
+                }}
+              >
+                Trưởng nhóm mới
+              </span>
+            </div>
+
+            <div
+              style={{
+                background: '#FFFBEB',
+                borderRadius: '12px',
+                padding: '14px 16px',
+                border: '1px solid #FDE68A',
+                marginBottom: '22px',
+                fontSize: '13.5px',
+                color: '#92400E',
+                lineHeight: '1.6',
+              }}
+            >
+              Bạn có chắc chắn muốn chuyển quyền Trưởng nhóm cho{' '}
+              <strong>&ldquo;{transferTarget.name}&rdquo;</strong> không?
+              <br />
+              <span style={{ display: 'inline-block', marginTop: '6px', color: '#78350F' }}>
+                Sau khi chuyển quyền, bạn sẽ trở thành <strong>Thành viên</strong> và{' '}
+                <strong>&ldquo;{transferTarget.name}&rdquo;</strong> sẽ là <strong>Trưởng nhóm mới</strong>.
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button
+                type="button"
+                disabled={isTransferring}
+                onClick={() => setTransferTarget(null)}
+                style={{
+                  padding: '10px 18px',
+                  borderRadius: '10px',
+                  border: '1px solid #CBD5E1',
+                  background: '#F8FAFC',
+                  color: '#475569',
+                  fontWeight: 700,
+                  fontSize: '13.5px',
+                  cursor: isTransferring ? 'not-allowed' : 'pointer',
+                  opacity: isTransferring ? 0.6 : 1,
+                }}
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                disabled={isTransferring}
+                onClick={executeTransferOwnership}
+                style={{
+                  padding: '10px 22px',
+                  borderRadius: '10px',
+                  border: 'none',
+                  background: isTransferring ? '#94A3B8' : 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)',
+                  color: '#FFFFFF',
+                  fontWeight: 700,
+                  fontSize: '13.5px',
+                  cursor: isTransferring ? 'not-allowed' : 'pointer',
+                  boxShadow: isTransferring ? 'none' : '0 4px 12px rgba(2, 132, 199, 0.3)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '7px',
+                }}
+              >
+                {isTransferring ? (
+                  <>
+                    <Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} />
+                    <span>Đang chuyển quyền...</span>
+                  </>
+                ) : (
+                  <>
+                    <Crown size={15} />
+                    <span>Xác nhận chuyển quyền</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 7: XÁC NHẬN RỜI NHÓM */}
+      {showLeaveConfirmModal && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(15, 23, 42, 0.65)',
+            backdropFilter: 'blur(5px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10000,
+            padding: '20px',
+          }}
+          onClick={() => {
+            if (!isLeavingTrip) setShowLeaveConfirmModal(false);
+          }}
+        >
+          <div
+            style={{
+              background: '#FFFFFF',
+              borderRadius: '24px',
+              maxWidth: '440px',
+              width: '100%',
+              padding: '28px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              border: '1px solid #FECACA',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div
+                  style={{
+                    width: '44px',
+                    height: '44px',
+                    borderRadius: '14px',
+                    background: '#FEE2E2',
+                    color: '#DC2626',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  <LogOut size={20} />
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
+                    Rời khỏi chuyến đi
+                  </h3>
+                  <span style={{ fontSize: '12.5px', color: '#64748B' }}>
+                    {trip?.title || 'Chuyến đi VISTA'}
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                disabled={isLeavingTrip}
+                onClick={() => setShowLeaveConfirmModal(false)}
+                style={{
+                  background: '#F1F5F9',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '32px',
+                  height: '32px',
+                  fontSize: '15px',
+                  cursor: isLeavingTrip ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#64748B',
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div
+              style={{
+                background: '#FEF2F2',
+                borderRadius: '12px',
+                padding: '14px 16px',
+                border: '1px solid #FECACA',
+                marginBottom: '22px',
+                fontSize: '13.5px',
+                color: '#991B1B',
+                lineHeight: '1.6',
+              }}
+            >
+              Bạn có chắc chắn muốn rời khỏi chuyến đi này không? Sau khi rời nhóm, bạn sẽ không còn quyền xem hoặc chỉnh sửa lịch trình trừ khi được mời lại.
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button
+                type="button"
+                disabled={isLeavingTrip}
+                onClick={() => setShowLeaveConfirmModal(false)}
+                style={{
+                  padding: '10px 18px',
+                  borderRadius: '10px',
+                  border: '1px solid #CBD5E1',
+                  background: '#F8FAFC',
+                  color: '#475569',
+                  fontWeight: 700,
+                  fontSize: '13.5px',
+                  cursor: isLeavingTrip ? 'not-allowed' : 'pointer',
+                  opacity: isLeavingTrip ? 0.6 : 1,
+                }}
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                disabled={isLeavingTrip}
+                onClick={executeLeaveTrip}
+                style={{
+                  padding: '10px 22px',
+                  borderRadius: '10px',
+                  border: 'none',
+                  background: isLeavingTrip ? '#94A3B8' : '#DC2626',
+                  color: '#FFFFFF',
+                  fontWeight: 700,
+                  fontSize: '13.5px',
+                  cursor: isLeavingTrip ? 'not-allowed' : 'pointer',
+                  boxShadow: isLeavingTrip ? 'none' : '0 4px 12px rgba(220, 38, 38, 0.25)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '7px',
+                }}
+              >
+                {isLeavingTrip ? (
+                  <>
+                    <Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} />
+                    <span>Đang rời nhóm...</span>
+                  </>
+                ) : (
+                  <>
+                    <LogOut size={15} />
+                    <span>Xác nhận rời nhóm</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 8: XÁC NHẬN XÓA ĐIỂM DỪNG KHỎI LỊCH TRÌNH */}
+      {deleteActivityTarget && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(15, 23, 42, 0.65)',
+            backdropFilter: 'blur(5px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10000,
+            padding: '20px',
+          }}
+          onClick={() => {
+            if (!isDeletingActivity) setDeleteActivityTarget(null);
+          }}
+        >
+          <div
+            style={{
+              background: '#FFFFFF',
+              borderRadius: '24px',
+              maxWidth: '440px',
+              width: '100%',
+              padding: '28px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              border: '1px solid #FECACA',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div
+                  style={{
+                    width: '44px',
+                    height: '44px',
+                    borderRadius: '14px',
+                    background: '#FEE2E2',
+                    color: '#DC2626',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  <Trash2 size={20} />
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
+                    Xóa điểm dừng
+                  </h3>
+                  <span style={{ fontSize: '12.5px', color: '#64748B' }}>
+                    Ngày {deleteActivityTarget.dayNumber}
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                disabled={isDeletingActivity}
+                onClick={() => setDeleteActivityTarget(null)}
+                style={{
+                  background: '#F1F5F9',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '32px',
+                  height: '32px',
+                  fontSize: '15px',
+                  cursor: isDeletingActivity ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#64748B',
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div
+              style={{
+                background: '#FEF2F2',
+                borderRadius: '12px',
+                padding: '14px 16px',
+                border: '1px solid #FECACA',
+                marginBottom: '22px',
+                fontSize: '13.5px',
+                color: '#991B1B',
+                lineHeight: '1.6',
+              }}
+            >
+              {deleteActivityTarget.actTitle ? (
+                <>
+                  Bạn có chắc chắn muốn xóa điểm dừng <strong>&ldquo;{deleteActivityTarget.actTitle}&rdquo;</strong> khỏi Ngày {deleteActivityTarget.dayNumber} không?
+                </>
+              ) : (
+                <>
+                  Bạn có chắc chắn muốn xóa điểm dừng này khỏi Ngày {deleteActivityTarget.dayNumber} không?
+                </>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button
+                type="button"
+                disabled={isDeletingActivity}
+                onClick={() => setDeleteActivityTarget(null)}
+                style={{
+                  padding: '10px 18px',
+                  borderRadius: '10px',
+                  border: '1px solid #CBD5E1',
+                  background: '#F8FAFC',
+                  color: '#475569',
+                  fontWeight: 700,
+                  fontSize: '13.5px',
+                  cursor: isDeletingActivity ? 'not-allowed' : 'pointer',
+                  opacity: isDeletingActivity ? 0.6 : 1,
+                }}
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                disabled={isDeletingActivity}
+                onClick={executeDeleteActivity}
+                style={{
+                  padding: '10px 22px',
+                  borderRadius: '10px',
+                  border: 'none',
+                  background: isDeletingActivity ? '#94A3B8' : '#DC2626',
+                  color: '#FFFFFF',
+                  fontWeight: 700,
+                  fontSize: '13.5px',
+                  cursor: isDeletingActivity ? 'not-allowed' : 'pointer',
+                  boxShadow: isDeletingActivity ? 'none' : '0 4px 12px rgba(220, 38, 38, 0.25)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '7px',
+                }}
+              >
+                {isDeletingActivity ? (
+                  <>
+                    <Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} />
+                    <span>Đang xóa...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 size={15} />
+                    <span>Xác nhận xóa</span>
+                  </>
+                )}
               </button>
             </div>
           </div>
