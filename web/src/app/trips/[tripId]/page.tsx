@@ -137,6 +137,106 @@ function getStoredUser(): StoredUser | null {
   }
 }
 
+// Bộ ảnh theo Phân loại & từ khóa (đều lấy từ URL có sẵn trong dự án và đã kiểm chứng HTTP 200)
+const CATEGORY_IMAGE_MAP: Record<string, string[]> = {
+  'Ẩm thực & Cà phê': [
+    'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1569058242253-92a9c755a0ec?auto=format&fit=crop&w=800&q=80',
+  ],
+  'Di tích & Văn hóa': [
+    'https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1599707367072-cd6ada2bc375?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80',
+  ],
+  'Trải nghiệm & Khám phá': [
+    'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1533240332313-0db49b459ad6?auto=format&fit=crop&w=800&q=80',
+  ],
+  'Nghỉ ngơi & Mua sắm': [
+    'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=800&q=80',
+  ],
+};
+
+const COFFEE_KEYWORD_IMAGES = [
+  'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=800&q=80',
+  'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80',
+];
+
+const FOOD_KEYWORD_IMAGES = [
+  'https://images.unsplash.com/photo-1569058242253-92a9c755a0ec?auto=format&fit=crop&w=800&q=80',
+  'https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=800&q=80',
+];
+
+const BEACH_KEYWORD_IMAGES = [
+  'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
+  'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80',
+];
+
+const BUILTIN_STOP_IMAGE_SET = new Set<string>([
+  ...Object.values(CATEGORY_IMAGE_MAP).flat(),
+  ...COFFEE_KEYWORD_IMAGES,
+  ...FOOD_KEYWORD_IMAGES,
+  ...BEACH_KEYWORD_IMAGES,
+  'https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=800&q=80',
+  'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=800&q=80',
+]);
+
+function isBuiltinStopImage(url?: string): boolean {
+  if (!url) return false;
+  return BUILTIN_STOP_IMAGE_SET.has(url.trim());
+}
+
+function pickImageFromPool(pool: string[], seedText: string): string {
+  if (!pool.length) return CATEGORY_IMAGE_MAP['Di tích & Văn hóa'][0];
+  let hash = 0;
+  for (let i = 0; i < seedText.length; i += 1) {
+    hash = (hash * 31 + seedText.charCodeAt(i)) >>> 0;
+  }
+  return pool[hash % pool.length];
+}
+
+function resolveStopImage(params: { title: string; category: string; customImageUrl?: string }): string {
+  const custom = (params.customImageUrl || '').trim();
+  if (custom) return custom;
+
+  const titleLower = (params.title || '').toLowerCase();
+  const hasAny = (keywords: string[]) => keywords.some((kw) => titleLower.includes(kw));
+
+  // 1. Khớp từ khóa trong tên điểm dừng
+  if (hasAny(['cafe', 'cà phê', 'ca phe', 'coffee', 'trà']) || /\btra\b/.test(titleLower)) {
+    return pickImageFromPool(COFFEE_KEYWORD_IMAGES, params.title);
+  }
+  if (hasAny(['quán ăn', 'quan an', 'nhà hàng', 'nha hang', 'ẩm thực', 'am thuc', 'bún', 'phở', 'mì quảng', 'cơm', 'hải sản'])) {
+    return pickImageFromPool(FOOD_KEYWORD_IMAGES, params.title);
+  }
+  if (hasAny(['biển', 'bien', 'bãi', 'bai', 'tắm', 'tam'])) {
+    return pickImageFromPool(BEACH_KEYWORD_IMAGES, params.title);
+  }
+  if (hasAny(['chùa', 'chua', 'tháp', 'thap', 'bảo tàng', 'bao tang', 'di tích', 'di tich'])) {
+    return pickImageFromPool(CATEGORY_IMAGE_MAP['Di tích & Văn hóa'], params.title);
+  }
+  if (hasAny(['chợ', 'mua sắm', 'mua sam', 'shop']) || /\bcho\b/.test(titleLower)) {
+    return pickImageFromPool(
+      [
+        'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80',
+      ],
+      params.title
+    );
+  }
+  if (hasAny(['núi', 'nui', 'leo', 'cáp treo', 'cap treo'])) {
+    return pickImageFromPool(CATEGORY_IMAGE_MAP['Trải nghiệm & Khám phá'], params.title);
+  }
+
+  // 2. Fallback theo Phân loại đã chọn
+  const categoryPool = CATEGORY_IMAGE_MAP[params.category] || CATEGORY_IMAGE_MAP['Di tích & Văn hóa'];
+  return pickImageFromPool(categoryPool, params.title);
+}
+
 const SAMPLE_HANOI_DAYS: DayPlanItem[] = [
   {
     dayNumber: 1,
@@ -783,6 +883,7 @@ export default function TripDetailPage() {
   const [newStopCategory, setNewStopCategory] = useState('Di tích & Văn hóa');
   const [newStopTime, setNewStopTime] = useState('14:00 – 16:00');
   const [newStopCost, setNewStopCost] = useState('50.000đ / người');
+  const [newStopImage, setNewStopImage] = useState('');
   const [newStopCustomDate, setNewStopCustomDate] = useState('');
   const [addStopDateError, setAddStopDateError] = useState<string | null>(null);
 
@@ -796,6 +897,7 @@ export default function TripDetailPage() {
   const [editStopCategory, setEditStopCategory] = useState('Di tích & Văn hóa');
   const [editStopTime, setEditStopTime] = useState('');
   const [editStopCost, setEditStopCost] = useState('');
+  const [editStopImage, setEditStopImage] = useState('');
   const [editStopTargetDay, setEditStopTargetDay] = useState(1);
   const [editStopCustomDate, setEditStopCustomDate] = useState('');
   const [editStopDateError, setEditStopDateError] = useState<string | null>(null);
@@ -1200,6 +1302,7 @@ export default function TripDetailPage() {
     setNewStopDay(dayNum);
     const dayMeta = getTripDayMeta(trip?.startDate, trip?.endDate, dayNum);
     setNewStopCustomDate(dayMeta.fullDateStr || '');
+    setNewStopImage('');
     setAddStopDateError(null);
     setShowAddStopModal(true);
   };
@@ -1212,6 +1315,8 @@ export default function TripDetailPage() {
     setEditStopCategory(act.category || 'Di tích & Văn hóa');
     setEditStopTime(act.timeRange || act.timeSlot || '14:00 – 16:00');
     setEditStopCost(act.costLabel || 'Miễn phí');
+    // Nếu đang dùng ảnh tự dán thì hiển thị sẵn link; nếu dùng ảnh tự động/mặc định thì để trống
+    setEditStopImage(act.image && !isBuiltinStopImage(act.image) ? act.image : '');
     setEditStopTargetDay(dayNum);
     const dayMeta = getTripDayMeta(trip?.startDate, trip?.endDate, dayNum);
     setEditStopCustomDate(dayMeta.fullDateStr || '');
@@ -1259,7 +1364,11 @@ export default function TripDetailPage() {
       timeRange: newStopTime.trim() || '14:00 – 16:00',
       costLabel: newStopCost.trim() || 'Miễn phí',
       description: 'Điểm dừng do thành viên nhóm vừa thêm vào lịch trình.',
-      image: 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=800&q=80',
+      image: resolveStopImage({
+        title: newStopTitle.trim(),
+        category: newStopCategory,
+        customImageUrl: newStopImage,
+      }),
     };
 
     const currentDays = JSON.parse(JSON.stringify(trip.itineraryDays || [])) as DayPlanItem[];
@@ -1309,6 +1418,7 @@ export default function TripDetailPage() {
     setOverlapWarningDialog(null);
     setNewStopTitle('');
     setNewStopLocation('');
+    setNewStopImage('');
     showToast(
       confirmedOverlap
         ? `⚠️ Đã lưu điểm dừng "${newAct.title}" vào Ngày ${newStopDay} (có cảnh báo chồng giờ).`
@@ -1330,13 +1440,28 @@ export default function TripDetailPage() {
       }
     }
 
+    const trimmedEditImage = editStopImage.trim();
+    const prevAct = editingStop.activity;
+    const categoryOrTitleChanged =
+      editStopCategory !== (prevAct.category || '') ||
+      editStopTitle.trim() !== (prevAct.title || '').trim();
+    const resolvedEditImage = trimmedEditImage
+      ? trimmedEditImage
+      : !prevAct.image || !isBuiltinStopImage(prevAct.image) || categoryOrTitleChanged
+        ? resolveStopImage({
+            title: editStopTitle.trim(),
+            category: editStopCategory,
+          })
+        : prevAct.image;
+
     const updatedAct: ActivityItem = {
-      ...editingStop.activity,
+      ...prevAct,
       title: editStopTitle.trim(),
       location: editStopLocation.trim() || trip.destination,
       category: editStopCategory,
       timeRange: editStopTime.trim() || '14:00 – 16:00',
       costLabel: editStopCost.trim() || 'Miễn phí',
+      image: resolvedEditImage,
     };
 
     const currentDays = JSON.parse(JSON.stringify(trip.itineraryDays || [])) as DayPlanItem[];
@@ -4479,6 +4604,27 @@ export default function TripDetailPage() {
                   <option value="Nghỉ ngơi & Mua sắm">Nghỉ ngơi & Mua sắm</option>
                 </select>
               </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                  Link ảnh (tùy chọn)
+                </label>
+                <input
+                  type="url"
+                  placeholder="Để trống để tự động chọn ảnh theo phân loại"
+                  value={newStopImage}
+                  onChange={(e) => setNewStopImage(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    borderRadius: '10px',
+                    border: '1px solid #CBD5E1',
+                    fontSize: '14px',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
@@ -4763,6 +4909,27 @@ export default function TripDetailPage() {
                   <option value="Trải nghiệm & Khám phá">Trải nghiệm & Khám phá</option>
                   <option value="Nghỉ ngơi & Mua sắm">Nghỉ ngơi & Mua sắm</option>
                 </select>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                  Link ảnh (tùy chọn)
+                </label>
+                <input
+                  type="url"
+                  placeholder="Để trống để tự động chọn ảnh theo phân loại"
+                  value={editStopImage}
+                  onChange={(e) => setEditStopImage(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    borderRadius: '10px',
+                    border: '1px solid #CBD5E1',
+                    fontSize: '14px',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                />
               </div>
             </div>
 
