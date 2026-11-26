@@ -319,32 +319,46 @@ export function Navbar({
     setIsProcessingAction(inv.id);
     try {
       let accepted = false;
+      const isUuidId = /^[0-9a-f-]{36}$/i.test(inv.id);
+      const token = (inv as any).token || (!isUuidId ? inv.id : undefined);
+
       try {
-        await apiRequest(`/invitations/${inv.id}/accept-by-id`, {
-          method: 'POST',
-        });
-        accepted = true;
+        if (isUuidId) {
+          await apiRequest(`/invitations/${inv.id}/accept-by-id`, {
+            method: 'POST',
+          });
+          accepted = true;
+        } else if (token) {
+          await apiRequest(`/invitations/${encodeURIComponent(token)}/accept`, {
+            method: 'POST',
+          });
+          accepted = true;
+        }
       } catch (backendErr) {
-        // Fallback chấp nhận qua Next.js store
-        const token = (inv as any).token || inv.id;
+        console.warn('Backend accept invite fallback to local store:', backendErr);
+      }
+
+      // Đồng bộ trạng thái ACCEPTED lên Next.js store để không hiển thị lại ở chuông
+      try {
         const res = await fetch('/api/invitations', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             id: inv.id,
-            token: token,
+            token: token || inv.id,
             status: 'ACCEPTED',
             acceptedBy: currentUser,
           }),
         });
         if (res.ok) accepted = true;
-      }
+      } catch {}
 
       // Đảm bảo đồng bộ thành viên vào trip_members của Spring Boot database
       if (inv.tripId && /^[0-9a-f-]{36}$/i.test(inv.tripId)) {
         try {
           await apiRequest('/invitations/sync-membership', {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ tripId: inv.tripId }),
           });
         } catch (e) {
@@ -376,10 +390,21 @@ export function Navbar({
     setIsProcessingAction(inv.id);
     try {
       try {
-        await apiRequest(`/invitations/${inv.id}/decline-by-id`, {
-          method: 'POST',
-        });
+        const isUuidId = /^[0-9a-f-]{36}$/i.test(inv.id);
+        if (isUuidId) {
+          await apiRequest(`/invitations/${inv.id}/decline-by-id`, {
+            method: 'POST',
+          });
+        } else if ((inv as any).token) {
+          await apiRequest(`/invitations/${encodeURIComponent((inv as any).token)}/decline`, {
+            method: 'POST',
+          });
+        }
       } catch {
+        // fallback handled below
+      }
+
+      try {
         const token = (inv as any).token || inv.id;
         await fetch('/api/invitations', {
           method: 'POST',
@@ -390,18 +415,7 @@ export function Navbar({
             status: 'DECLINED',
           }),
         });
-      }
-      // Đảm bảo đồng bộ thành viên vào trip_members của Spring Boot database
-      if (inv.tripId && /^[0-9a-f-]{36}$/i.test(inv.tripId)) {
-        try {
-          await apiRequest('/invitations/sync-membership', {
-            method: 'POST',
-            body: JSON.stringify({ tripId: inv.tripId }),
-          });
-        } catch (e) {
-          console.warn('Membership sync to backend:', e);
-        }
-      }
+      } catch {}
 
       setIncomingInvitations((prev) =>
         prev.filter((i) => i.id !== inv.id && (i as any).token !== (inv as any).token)
