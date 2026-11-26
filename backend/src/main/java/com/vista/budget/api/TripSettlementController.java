@@ -35,18 +35,18 @@ public class TripSettlementController {
   @GetMapping
   @Operation(summary = "Lấy thông tin tài khoản ngân hàng thụ hưởng phục vụ quyết toán (TV4)")
   public ResponseEntity<List<SettlementAccountResponse>> getSettlementAccounts(
-      @PathVariable UUID tripId) {
+      @PathVariable("tripId") UUID tripId) {
     UUID currentUserId = currentUserProvider.getCurrentUserId();
     List<SettlementAccountResponse> accounts =
         expenseService.getSettlementAccounts(tripId, currentUserId);
-    return ResponseEntity.ok(accounts);
+    return ResponseEntity.ok().body(accounts);
   }
 
   @PostMapping("/settle-all")
   @Operation(summary = "Quyết toán toàn bộ công nợ chuyến đi (TV4)")
-  public ResponseEntity<Void> settleAllExpenses(@PathVariable UUID tripId) {
+  public ResponseEntity<Void> settleAllExpenses(@PathVariable("tripId") UUID tripId) {
     UUID currentUserId = currentUserProvider.getCurrentUserId();
     expenseService.settleAllTripExpenses(tripId, currentUserId);
-    return ResponseEntity.ok().build();
+    return ResponseEntity.noContent().build();
   }
 }

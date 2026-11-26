@@ -4908,8 +4908,36 @@ export default function PlannerPage() {
       setLinkedTripId(realTripId);
       setLinkedTripTitle(tripTitle);
 
-      // 2. Persist AI itinerary days into database if activities exist
+      // 2. Persist AI itinerary days into database & localStorage if activities exist
       if (Array.isArray(itineraryDays) && itineraryDays.length > 0) {
+        // Map to DayPlanItem format for immediate consumption by Trip Detail view
+        const tripDetailDays = itineraryDays.map((d) => ({
+          dayNumber: d.dayNumber,
+          title: d.title || `Ngày ${d.dayNumber} — ${destination}`,
+          dateStr: d.dateStr || `Ngày ${d.dayNumber}`,
+          activities: d.activities.map((a, idx) => ({
+            id: a.id || `act-${d.dayNumber}-${idx + 1}`,
+            timeSlot: a.timeSlot === 'MORNING' ? '08:00 – 11:30' : a.timeSlot === 'AFTERNOON' ? '14:00 – 17:00' : '19:00 – 21:30',
+            timeRange: a.timeRange || (a.timeSlot === 'MORNING' ? '08:00 – 11:30' : a.timeSlot === 'AFTERNOON' ? '14:00 – 17:00' : '19:00 – 21:30'),
+            title: a.title,
+            description: a.description || '',
+            location: a.location || destination,
+            costVnd: a.costVnd || 0,
+            costLabel: a.costLabel || (a.costVnd ? `${a.costVnd.toLocaleString('vi-VN')}₫` : 'Miễn phí'),
+            category: a.category || 'Tham quan',
+            sortOrder: idx + 1,
+            photoUrl: a.photoUrl,
+            latitude: a.latitude,
+            longitude: a.longitude,
+          })),
+        }));
+
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem(`vista_trip_itinerary_${realTripId}`, JSON.stringify(tripDetailDays));
+          } catch {}
+        }
+
         try {
           const mergeDays: MergeItineraryDay[] = itineraryDays.map((d) => ({
             dayNumber: d.dayNumber,

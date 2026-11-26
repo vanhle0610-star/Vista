@@ -116,9 +116,18 @@ export async function apiRequest<T>(path: string, init?: RequestInit): Promise<T
     throw await responseError(response);
   }
 
-  if (response.status === 204) {
+  if (response.status === 204 || response.headers.get('content-length') === '0') {
     return {} as T;
   }
 
-  return response.json() as Promise<T>;
+  const text = await response.text();
+  if (!text || !text.trim()) {
+    return {} as T;
+  }
+
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    return text as unknown as T;
+  }
 }

@@ -1103,6 +1103,41 @@ export default function TripsPage() {
       const realTripId = createdTrip.id;
       if (typeof window !== 'undefined') {
         localStorage.setItem('vista_last_trip_id', realTripId);
+
+        // Tự động kiểm tra nếu có kế hoạch AI vừa sinh trong AI Planner cho cùng điểm đến, chuyển ngay vào chuyến đi
+        try {
+          const plannerStateRaw = localStorage.getItem('vista_active_planner_state');
+          if (plannerStateRaw) {
+            const plannerState = JSON.parse(plannerStateRaw);
+            if (
+              plannerState &&
+              Array.isArray(plannerState.itineraryDays) &&
+              plannerState.itineraryDays.length > 0
+            ) {
+              const tripDetailDays = plannerState.itineraryDays.map((d: any) => ({
+                dayNumber: d.dayNumber,
+                title: d.theme || `Ngày ${d.dayNumber} — ${destinationToSave}`,
+                dateStr: d.date || `Ngày ${d.dayNumber}`,
+                activities: (d.activities || []).map((a: any, idx: number) => ({
+                  id: a.id || `act-${d.dayNumber}-${idx + 1}`,
+                  timeSlot: a.timeSlot === 'MORNING' ? '08:00 – 11:30' : a.timeSlot === 'AFTERNOON' ? '14:00 – 17:00' : '19:00 – 21:30',
+                  timeRange: a.timeRange || (a.timeSlot === 'MORNING' ? '08:00 – 11:30' : a.timeSlot === 'AFTERNOON' ? '14:00 – 17:00' : '19:00 – 21:30'),
+                  title: a.title,
+                  description: a.description || '',
+                  location: a.location || destinationToSave,
+                  costVnd: a.costVnd || 0,
+                  costLabel: a.costLabel || (a.costVnd ? `${a.costVnd.toLocaleString('vi-VN')}₫` : 'Miễn phí'),
+                  category: a.category || 'Tham quan',
+                  sortOrder: idx + 1,
+                  photoUrl: a.photoUrl,
+                  latitude: a.latitude,
+                  longitude: a.longitude,
+                })),
+              }));
+              localStorage.setItem(`vista_trip_itinerary_${realTripId}`, JSON.stringify(tripDetailDays));
+            }
+          }
+        } catch {}
       }
 
       if (autoSeedItinerary) {

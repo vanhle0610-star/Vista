@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { apiRequest } from '@/lib/api';
+import { mergeTripItinerary, MergeItineraryDay } from '@/services/itineraryService';
 import {
   getSampleItineraryForDestination,
   getDestinationHeroImage,
@@ -1256,12 +1257,13 @@ export default function TripDetailPage() {
       }
 
       try {
-        const [serverTrip, serverMembers, serverProposals, serverItineraryDays, serverInvitations] = await Promise.all([
+        const [serverTrip, serverMembers, serverProposals, serverItineraryDays, serverInvitations, serverFullItinerary] = await Promise.all([
           apiRequest<any>(`/trips/${tripId}`).catch(() => null),
           apiRequest<any[]>(`/trips/${tripId}/members`).catch(() => []),
           apiRequest<any[]>(`/trips/${tripId}/proposals`).catch(() => null),
           apiRequest<any[]>(`/trips/${tripId}/itinerary/days`).catch(() => []),
           apiRequest<any[]>(`/trips/${tripId}/invitations`).catch(() => null),
+          apiRequest<any>(`/trips/${tripId}/itinerary`).catch(() => null),
         ]);
 
         if (!serverTrip) {
@@ -1397,6 +1399,7 @@ export default function TripDetailPage() {
           const stored = localStorage.getItem(`vista_trip_itinerary_${tripId}`);
           if (stored) persistedItinerary = JSON.parse(stored);
         } catch {}
+        const hasPersistedActivities = Array.isArray(persistedItinerary) && persistedItinerary.some((d) => Array.isArray(d.activities) && d.activities.length > 0);
 
         const persistedDayByNum = new Map<number, DayPlanItem>();
         const persistedActById = new Map<string, ActivityItem>();
@@ -1409,7 +1412,7 @@ export default function TripDetailPage() {
           });
         }
 
-        // Map backend itinerary days if available (kết hợp metadata/ảnh từ cache local hoặc tự chọn ảnh qua resolveStopImage)
+        // Map backend itinerary days if available (/trips/{tripId}/itinerary/days)
         let mappedDays: DayPlanItem[] = [];
         if (Array.isArray(serverItineraryDays) && serverItineraryDays.length > 0) {
           mappedDays = serverItineraryDays.map((d: any) => {
@@ -1421,19 +1424,19 @@ export default function TripDetailPage() {
               title: d.title || cachedDay?.title || `Ngày ${d.dayNumber}`,
               activities: (d.items || []).map((item: any) => {
                 const cached = persistedActById.get(item.id);
-                const stopTitle = item.customStopName || cached?.title || 'Điểm dừng';
+                const stopTitle = item.customStopName || item.destinationName || cached?.title || 'Điểm dừng';
                 const stopCategory = item.category || cached?.category || 'Địa điểm';
                 const resolvedCostVnd = item.costVnd ?? cached?.costVnd ?? 0;
                 const resolvedCostLabel = item.costVnd
                   ? `${item.costVnd.toLocaleString('vi-VN')}₫`
-                  : (cached?.costLabel || 'Miễn phí');
+                  : (cached?.costLabel || (resolvedCostVnd ? `${resolvedCostVnd.toLocaleString('vi-VN')}₫` : 'Miễn phí'));
                 return {
                   id: item.id,
                   timeSlot: item.startTime ? `${item.startTime.slice(0, 5)}${item.endTime ? ` – ${item.endTime.slice(0, 5)}` : ''}` : cached?.timeSlot,
                   timeRange: item.startTime ? `${item.startTime.slice(0, 5)}${item.endTime ? ` – ${item.endTime.slice(0, 5)}` : ''}` : cached?.timeRange,
                   title: stopTitle,
                   description: item.note || cached?.description || '',
-                  location: item.location || cached?.location || '',
+                  location: item.location || item.destinationName || cached?.location || dest,
                   costVnd: resolvedCostVnd,
                   costLabel: resolvedCostLabel,
                   category: stopCategory,
@@ -1446,14 +1449,121 @@ export default function TripDetailPage() {
           });
         }
 
-        // SSOT: Priority: mappedDays > persistedItinerary > serverTrip.itineraryDays > sample
-        const itinerary = mappedDays.length > 0
-          ? mappedDays
-          : (persistedItinerary && persistedItinerary.length > 0)
-            ? persistedItinerary
-            : (Array.isArray(serverTrip.itineraryDays) && serverTrip.itineraryDays.length > 0)
-              ? serverTrip.itineraryDays
-              : (isDemoMode ? getSampleItineraryForDestination(dest, serverTrip.startDate) : []);
+        // Map backend merged itinerary if available (/trips/{tripId}/itinerary)
+        let fullItinDays: DayPlanItem[] = [];
+        if (serverFullItinerary && Array.isArray(serverFullItinerary.days) && serverFullItinerary.days.length > 0) {
+          fullItinDays = serverFullItinerary.days.map((d: any) => {
+            return {
+              id: d.id,
+              dayNumber: d.dayNumber,
+              dateStr: d.tripDate ? d.tripDate.split('-').reverse().join('/') : undefined,
+              title: `Ngày ${d.dayNumber} — ${dest}`,
+              activities: (d.activities || []).map((item: any, idx: number) => {
+                const stopTitle = item.customStopName || item.destinationName || 'Điểm dừng';
+                const stopCategory = 'Tham quan';
+                return {
+                  id: item.id || `act-${d.dayNumber}-${idx + 1}`,
+                  timeSlot: item.startTime ? `${item.startTime.slice(0, 5)}${item.endTime ? ` – ${item.endTime.slice(0, 5)}` : ''}` : undefined,
+                  timeRange: item.startTime ? `${item.startTime.slice(0, 5)}${item.endTime ? ` – ${item.endTime.slice(0, 5)}` : ''}` : undefined,
+                  title: stopTitle,
+                  description: item.note || '',
+                  location: item.destinationName || dest,
+                  costVnd: 0,
+                  costLabel: 'Miễn phí',
+                  category: stopCategory,
+                  image: resolveStopImage({ title: stopTitle, category: stopCategory }),
+                  sortOrder: item.sortOrder ?? (idx + 1),
+                };
+              }).sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)),
+            };
+          });
+        }
+
+        const hasMappedActivities = mappedDays.some((d) => Array.isArray(d.activities) && d.activities.length > 0);
+        const hasFullActivities = fullItinDays.some((d) => Array.isArray(d.activities) && d.activities.length > 0);
+
+        let plannerItinerary: DayPlanItem[] | null = null;
+        if (!hasMappedActivities && !hasFullActivities && !hasPersistedActivities) {
+          try {
+            const plannerStateRaw = localStorage.getItem('vista_active_planner_state');
+            if (plannerStateRaw) {
+              const plannerState = JSON.parse(plannerStateRaw);
+              if (
+                plannerState &&
+                Array.isArray(plannerState.itineraryDays) &&
+                plannerState.itineraryDays.length > 0
+              ) {
+                plannerItinerary = plannerState.itineraryDays.map((d: any) => ({
+                  dayNumber: d.dayNumber,
+                  title: d.theme || `Ngày ${d.dayNumber} — ${dest}`,
+                  dateStr: d.date || `Ngày ${d.dayNumber}`,
+                  activities: (d.activities || []).map((a: any, idx: number) => {
+                    const stopTitle = a.title;
+                    const stopCategory = a.category || 'Tham quan';
+                    return {
+                      id: a.id || `act-${d.dayNumber}-${idx + 1}`,
+                      timeSlot: a.timeSlot === 'MORNING' ? '08:00 – 11:30' : a.timeSlot === 'AFTERNOON' ? '14:00 – 17:00' : '19:00 – 21:30',
+                      timeRange: a.timeRange || (a.timeSlot === 'MORNING' ? '08:00 – 11:30' : a.timeSlot === 'AFTERNOON' ? '14:00 – 17:00' : '19:00 – 21:30'),
+                      title: stopTitle,
+                      description: a.description || '',
+                      location: a.location || dest,
+                      costVnd: a.costVnd || 0,
+                      costLabel: a.costLabel || (a.costVnd ? `${a.costVnd.toLocaleString('vi-VN')}₫` : 'Miễn phí'),
+                      category: stopCategory,
+                      image: a.photoUrl || resolveStopImage({ title: stopTitle, category: stopCategory }),
+                      sortOrder: idx + 1,
+                      photoUrl: a.photoUrl,
+                      latitude: a.latitude,
+                      longitude: a.longitude,
+                    };
+                  }),
+                }));
+              }
+            }
+          } catch {}
+        }
+        const hasPlannerActivities = Array.isArray(plannerItinerary) && plannerItinerary.some((d) => Array.isArray(d.activities) && d.activities.length > 0);
+
+        // Tự động nạp lịch trình mẫu đặc trưng theo điểm đến nếu chưa có lộ trình
+        const sampleItinerary = getSampleItineraryForDestination(dest, serverTrip.startDate);
+
+        // SSOT Priority: hasMappedActivities > hasFullActivities > hasPersistedActivities > hasPlannerActivities > sampleItinerary
+        let itinerary: DayPlanItem[] = [];
+        if (hasMappedActivities) {
+          itinerary = mappedDays;
+        } else if (hasFullActivities) {
+          itinerary = fullItinDays;
+        } else if (hasPersistedActivities && persistedItinerary) {
+          itinerary = persistedItinerary;
+        } else if (hasPlannerActivities && plannerItinerary) {
+          itinerary = plannerItinerary;
+        } else if (sampleItinerary && sampleItinerary.length > 0) {
+          itinerary = sampleItinerary;
+        }
+
+        // Lưu vào cache localStorage và đồng bộ lên backend database nếu backend chưa có activities
+        if (itinerary.length > 0) {
+          try {
+            localStorage.setItem(`vista_trip_itinerary_${tripId}`, JSON.stringify(itinerary));
+          } catch {}
+
+          if (!hasMappedActivities && !hasFullActivities) {
+            try {
+              const mergeDays: MergeItineraryDay[] = itinerary.map((d) => ({
+                dayNumber: d.dayNumber,
+                activities: (d.activities || []).map((a, idx) => ({
+                  customStopName: a.title,
+                  note: a.description,
+                  startTime: a.timeSlot?.includes('–') ? a.timeSlot.split('–')[0].trim() : '08:00',
+                  endTime: a.timeSlot?.includes('–') ? a.timeSlot.split('–')[1].trim() : '11:30',
+                  sortOrder: a.sortOrder || idx + 1,
+                  source: 'AI_GEMINI' as const,
+                })),
+              }));
+              mergeTripItinerary(tripId, mergeDays).catch(() => {});
+            } catch {}
+          }
+        }
 
         setTrip({
           id: String(serverTrip.id),
