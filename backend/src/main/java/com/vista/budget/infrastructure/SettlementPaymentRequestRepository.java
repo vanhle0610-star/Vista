@@ -28,6 +28,8 @@ public interface SettlementPaymentRequestRepository
   @Query(
       "SELECT COUNT(r) > 0 FROM SettlementPaymentRequestEntity r "
           + "WHERE r.tripId = :tripId "
-          + "AND r.status IN (com.vista.budget.domain.PaymentRequestStatus.PENDING, com.vista.budget.domain.PaymentRequestStatus.CONFIRMED)")
+          + "AND r.status IN (com.vista.budget.domain.PaymentRequestStatus.CREATED, "
+          + "com.vista.budget.domain.PaymentRequestStatus.OPENED, "
+          + "com.vista.budget.domain.PaymentRequestStatus.PAYER_MARKED_SENT)")
   boolean existsPendingSettlementRequestsByTripId(@Param("tripId") UUID tripId);
 }
