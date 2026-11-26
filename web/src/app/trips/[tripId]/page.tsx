@@ -734,8 +734,10 @@ export default function TripDetailPage() {
     });
   };
 
-  // Voting state
-  const [proposals, setProposals] = useState(() => getSampleProposals(''));
+  // Voting state — 4 trạng thái tường minh: 'loading' | 'error' | 'empty' | 'loaded'
+  const [proposals, setProposals] = useState<Array<{ id: string; title: string; category: string; votes: number; voted: boolean }>>([]);
+  const [proposalsStatus, setProposalsStatus] = useState<'loading' | 'error' | 'empty' | 'loaded'>('loading');
+  const [proposalsError, setProposalsError] = useState<string | null>(null);
 
   // ─── TUẦN 3 & TUẦN 4 STATES ───────────────────────────────────────────────
   const [currentDateTick, setCurrentDateTick] = useState<number>(() => Date.now());
@@ -869,7 +871,10 @@ export default function TripDetailPage() {
           const demoMatch = DEFAULT_DEMO_TRIPS.find((item) => item.id === tripId);
           if (demoMatch) {
             setTrip(demoMatch);
+            // Demo mode: hiển thị dữ liệu mẫu chỉ khi NEXT_PUBLIC_DEMO_MODE=true
             setProposals(getSampleProposals(demoMatch.destination));
+            setProposalsStatus('loaded');
+            setProposalsError(null);
             setIsLoadingTrip(false);
             setTripNotFound(false);
             return;
@@ -885,7 +890,7 @@ export default function TripDetailPage() {
         const [serverTrip, serverMembers, serverProposals, serverItineraryDays] = await Promise.all([
           apiRequest<any>(`/trips/${tripId}`).catch(() => null),
           apiRequest<any[]>(`/trips/${tripId}/members`).catch(() => []),
-          apiRequest<any[]>(`/trips/${tripId}/proposals`).catch(() => []),
+          apiRequest<any[]>(`/trips/${tripId}/proposals`).catch(() => null),
           apiRequest<any[]>(`/trips/${tripId}/itinerary/days`).catch(() => []),
         ]);
 
@@ -914,8 +919,18 @@ export default function TripDetailPage() {
 
         const dest = serverTrip.destinationSummary || 'Việt Nam';
 
-        // Load proposals from server
-        if (Array.isArray(serverProposals) && serverProposals.length > 0) {
+        // Load proposals from server — tách rõ 4 trạng thái
+        if (serverProposals === null) {
+          // null = API gặp lỗi (không phân biệt được với mảng rỗng nếu dùng catch(() => []))
+          setProposals([]);
+          setProposalsStatus('error');
+          setProposalsError('Không tải được danh sách biểu quyết. Vui lòng thử lại.');
+        } else if (Array.isArray(serverProposals) && serverProposals.length === 0) {
+          // Thành công nhưng chưa có đề xuất nào
+          setProposals([]);
+          setProposalsStatus('empty');
+          setProposalsError(null);
+        } else if (Array.isArray(serverProposals) && serverProposals.length > 0) {
           const userStr = typeof window !== 'undefined' ? localStorage.getItem('vista_user') : null;
           const currentUid = userStr ? JSON.parse(userStr)?.id : null;
           setProposals(
@@ -927,8 +942,8 @@ export default function TripDetailPage() {
               voted: Array.isArray(sp.votes) && sp.votes.some((v: any) => v.userId === currentUid && (v.vote === 'UP' || v.vote === true)),
             }))
           );
-        } else {
-          setProposals(getSampleProposals(dest));
+          setProposalsStatus('loaded');
+          setProposalsError(null);
         }
         const formattedMembers: MemberItem[] = (serverMembers || []).map((m: any) => ({
           name: m.displayName || m.name || (m.role === 'OWNER' ? 'Trưởng nhóm' : 'Thành viên'),
@@ -1499,7 +1514,10 @@ export default function TripDetailPage() {
       if (tripId && /^[0-9a-f-]{36}$/i.test(tripId)) {
         apiRequest(`/trips/${tripId}/invitations`, {
           method: 'POST',
-          body: JSON.stringify({ inviteeEmail: email }),
+          body: JSON.stringify({
+            inviteeEmail: email,
+            token: token,
+          }),
         }).catch(() => {});
       }
     } catch {}
@@ -1578,7 +1596,40 @@ export default function TripDetailPage() {
     showToast('✓ Trưởng nhóm (Owner) đã thu hồi lời mời! Token này đã bị vô hiệu hóa.');
   };
 
-  // Vote toggle with closing support (W4-TV3-02)
+  // Tải lại danh sách biểu quyết (dùng cho nút "Thử lại" khi lỗi)
+  const reloadProposals = async () => {
+    if (!tripId) return;
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tripId as string);
+    if (!isUuid) return;
+    setProposalsStatus('loading');
+    setProposalsError(null);
+    try {
+      const result = await apiRequest<any[]>(`/trips/${tripId}/proposals`);
+      if (Array.isArray(result) && result.length === 0) {
+        setProposals([]);
+        setProposalsStatus('empty');
+      } else if (Array.isArray(result) && result.length > 0) {
+        const userStr = typeof window !== 'undefined' ? localStorage.getItem('vista_user') : null;
+        const currentUid = userStr ? JSON.parse(userStr)?.id : null;
+        setProposals(
+          result.map((sp: any) => ({
+            id: sp.id,
+            title: sp.title,
+            category: 'Gợi ý thành viên',
+            votes: sp.upVotes != null ? Number(sp.upVotes) : (Array.isArray(sp.votes) ? sp.votes.length : 0),
+            voted: Array.isArray(sp.votes) && sp.votes.some((v: any) => v.userId === currentUid && (v.vote === 'UP' || v.vote === true)),
+          }))
+        );
+        setProposalsStatus('loaded');
+      }
+      setProposalsError(null);
+    } catch {
+      setProposalsStatus('error');
+      setProposalsError('Không tải được danh sách biểu quyết. Vui lòng thử lại.');
+    }
+  };
+
+  // Vote toggle with closing support (W4-TV3-02) — optimistic update + revert on failure
   const handleVoteToggle = (propId: string) => {
     if (!isTripMember) {
       showToast('⚠️ Bạn chưa tham gia chuyến đi này. Chỉ thành viên nhóm mới có quyền biểu quyết!');
@@ -1589,36 +1640,50 @@ export default function TripDetailPage() {
       return;
     }
     const currentProp = proposals.find((p) => p.id === propId);
-    const willVote = currentProp ? !currentProp.voted : true;
+    if (!currentProp) return;
 
+    // Lưu trạng thái cũ để hoàn tác nếu API thất bại
+    const prevProposals = proposals.map((p) => ({ ...p }));
+    const willVote = !currentProp.voted;
+
+    // Optimistic update ngay lập tức
     setProposals((prev) =>
       prev.map((p) => {
         if (p.id === propId) {
-          const newVoted = !p.voted;
-          showToast(newVoted ? 'Đã bỏ phiếu đồng thuận (+1)!' : 'Đã hủy bỏ phiếu.');
           return {
             ...p,
-            voted: newVoted,
-            votes: newVoted ? p.votes + 1 : Math.max(0, p.votes - 1),
+            voted: willVote,
+            votes: willVote ? p.votes + 1 : Math.max(0, p.votes - 1),
           };
         }
         return p;
       })
     );
+    showToast(willVote ? 'Đã bỏ phiếu đồng thuận (+1)!' : 'Đã hủy bỏ phiếu.');
 
     // Persist to backend if trip is real UUID
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tripId as string);
     if (isUuid) {
-      if (willVote) {
-        apiRequest(`/proposals/${propId}/votes`, {
-          method: 'POST',
-          body: JSON.stringify({ vote: 'UP' }),
-        }).catch((err) => console.warn('Vote sync error:', err));
-      } else {
-        apiRequest(`/proposals/${propId}/votes`, {
-          method: 'DELETE',
-        }).catch((err) => console.warn('Vote remove error:', err));
-      }
+      const voteApiCall = willVote
+        ? apiRequest(`/proposals/${propId}/votes`, { method: 'POST', body: JSON.stringify({ vote: 'UP' }) })
+        : apiRequest(`/proposals/${propId}/votes`, { method: 'DELETE' });
+
+      voteApiCall
+        .then((resp: any) => {
+          // Áp dụng dữ liệu server trả về nếu có (đảm bảo đồng bộ)
+          if (resp && resp.upVotes != null) {
+            setProposals((prev) =>
+              prev.map((p) =>
+                p.id === propId ? { ...p, votes: Number(resp.upVotes), voted: willVote } : p
+              )
+            );
+          }
+        })
+        .catch(() => {
+          // Hoàn tác về trạng thái trước khi vote
+          setProposals(prevProposals);
+          showToast('❌ Bình chọn không thành công, vui lòng thử lại.');
+        });
     }
   };
 
@@ -1644,6 +1709,7 @@ export default function TripDetailPage() {
       voted: true,
     };
     setProposals((prev) => [...prev, newProp]);
+    setProposalsStatus('loaded');
     setShowAddPropModal(false);
     setNewPropTitle('');
     showToast(`✓ Đã tạo đề xuất mới: "${title}"!`);
@@ -2339,7 +2405,7 @@ export default function TripDetailPage() {
             onClick={() => handleTabChange('voting')}
             id="tab-btn-voting"
           >
-            Biểu quyết địa điểm ({proposals.length})
+            Biểu quyết địa điểm ({proposalsStatus === 'loaded' ? proposals.length : proposalsStatus === 'loading' ? '…' : proposalsStatus === 'error' ? '!' : 0})
           </button>
           <button
             type="button"
@@ -3733,7 +3799,66 @@ export default function TripDetailPage() {
               </div>
             </div>
 
-            {proposals.map((prop) => (
+            {/* Trạng thái: đang tải */}
+            {proposalsStatus === 'loading' && (
+              <div style={{ textAlign: 'center', padding: '32px 16px', color: '#64748B' }}>
+                <Loader2 size={28} style={{ animation: 'spin 1s linear infinite', marginBottom: '8px' }} />
+                <p style={{ margin: 0, fontSize: '14px' }}>Đang tải danh sách biểu quyết...</p>
+              </div>
+            )}
+
+            {/* Trạng thái: lỗi API */}
+            {proposalsStatus === 'error' && (
+              <div style={{
+                textAlign: 'center',
+                padding: '32px 16px',
+                background: '#FEF2F2',
+                borderRadius: '12px',
+                border: '1px solid #FECACA',
+                margin: '8px 0',
+              }}>
+                <AlertTriangle size={28} color="#DC2626" style={{ marginBottom: '8px' }} />
+                <p style={{ margin: '0 0 12px', fontSize: '14px', color: '#DC2626', fontWeight: 600 }}>
+                  {proposalsError || 'Không tải được danh sách biểu quyết.'}
+                </p>
+                <button
+                  type="button"
+                  onClick={reloadProposals}
+                  style={{
+                    padding: '8px 20px',
+                    background: '#DC2626',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Thử lại
+                </button>
+              </div>
+            )}
+
+            {/* Trạng thái: thành công nhưng chưa có đề xuất */}
+            {proposalsStatus === 'empty' && (
+              <div style={{
+                textAlign: 'center',
+                padding: '36px 16px',
+                background: '#F8FAFC',
+                borderRadius: '12px',
+                border: '1px dashed #CBD5E1',
+                margin: '8px 0',
+              }}>
+                <Vote size={36} color="#94A3B8" style={{ marginBottom: '10px' }} />
+                <p style={{ margin: 0, fontSize: '15px', color: '#64748B', fontWeight: 600 }}>
+                  Chưa có đề xuất nào. Hãy tạo đề xuất đầu tiên!
+                </p>
+              </div>
+            )}
+
+            {/* Trạng thái: có dữ liệu thật */}
+            {proposalsStatus === 'loaded' && proposals.map((prop) => (
               <div
                 key={prop.id}
                 className={`${styles.proposalCard} ${prop.voted ? styles.proposalVoted : ''}`}
