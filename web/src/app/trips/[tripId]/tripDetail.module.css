@@ -1990,7 +1990,7 @@
 .invitationScrollContainer {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0;
   max-height: 380px;
   overflow-y: auto;
   overflow-x: hidden;
@@ -1998,6 +1998,20 @@
   margin-bottom: 16px;
   scrollbar-width: thin;
   scrollbar-color: #CBD5E1 #F8FAFC;
+}
+
+.invitationRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 13px 0;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.invitationRow:last-child {
+  border-bottom: none;
 }
 
 .invitationScrollContainer::-webkit-scrollbar {

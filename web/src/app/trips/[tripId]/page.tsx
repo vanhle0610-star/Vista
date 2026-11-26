@@ -3506,17 +3506,7 @@ export default function TripDetailPage() {
                       {filteredInvitations.map((inv) => (
                         <div
                           key={inv.id}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            flexWrap: 'wrap',
-                            gap: '10px',
-                            padding: '12px 16px',
-                            background: '#F8FAFC',
-                            border: '1px solid #E2E8F0',
-                            borderRadius: '12px',
-                          }}
+                          className={styles.invitationRow}
                         >
                           <div>
                             <span style={{ fontWeight: 700, fontSize: '13.5px', color: '#0F172A' }}>{inv.email}</span>
