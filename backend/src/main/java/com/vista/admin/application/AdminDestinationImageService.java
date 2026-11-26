@@ -60,58 +60,63 @@ public class AdminDestinationImageService {
   public static final String STATUS_NO_MATCH = "NO_MATCH_FOUND";
   public static final String STATUS_SKIPPED = "SKIPPED";
 
-  private static final String USER_AGENT = "VistaTravelAdminBot/1.0 (https://vista.vn; admin@vista.vn) JavaHttpClient/21";
+  private static final String USER_AGENT =
+      "VistaTravelAdminBot/1.0 (https://vista.vn; admin@vista.vn) JavaHttpClient/21";
 
-  private static final Set<String> KNOWN_GENERIC_STOCK_PATTERNS = Set.of(
-      "photo-1507525428034-b723cf961d3e",
-      "photo-1583417319070-4a69db38a482",
-      "photo-1464822759023-fed622ff2c3b",
-      "photo-1555396273-367ea4eb4db5",
-      "photo-1528127269322-539801943592",
-      "picsum.photos",
-      "placehold.co",
-      "via.placeholder.com",
-      "placeholder.com");
+  private static final Set<String> KNOWN_GENERIC_STOCK_PATTERNS =
+      Set.of(
+          "photo-1507525428034-b723cf961d3e",
+          "photo-1583417319070-4a69db38a482",
+          "photo-1464822759023-fed622ff2c3b",
+          "photo-1555396273-367ea4eb4db5",
+          "photo-1528127269322-539801943592",
+          "picsum.photos",
+          "placehold.co",
+          "via.placeholder.com",
+          "placeholder.com");
 
-  private static final Set<String> STOP_WORDS = Set.copyOf(
-      Arrays.asList(
-          "khu", "du", "lich", "diem", "tham", "quan", "danh", "thang", "va", "tai", "o", "cua",
-          "the", "of", "in", "and", "viet", "nam", "vietnam", "tp", "thanh", "pho", "tinh",
-          "sinh", "thai", "di", "tich", "su", "canh", "quoc", "gia"));
+  private static final Set<String> STOP_WORDS =
+      Set.copyOf(
+          Arrays.asList(
+              "khu", "du", "lich", "diem", "tham", "quan", "danh", "thang", "va", "tai", "o", "cua",
+              "the", "of", "in", "and", "viet", "nam", "vietnam", "tp", "thanh", "pho", "tinh",
+              "sinh", "thai", "di", "tich", "su", "canh", "quoc", "gia"));
 
-  private static final Set<String> GENERIC_LANDMARK_TYPE_WORDS = Set.copyOf(
-      Arrays.asList(
-          "bai", "bien", "chua", "den", "dinh", "ho", "nui", "thac", "cho", "lang", "nghe",
-          "dao", "ban", "vinh", "hang", "dong", "deo", "suoi", "vuon", "bao", "tang", "nha",
-          "tho", "co", "do", "thanh", "dia", "ba", "tu", "lau", "cau", "pho", "cong", "vien",
-          "quang", "truong", "mon", "am", "thuc", "dac", "san", "rung", "doi", "khe", "ghenh",
-          "ganh", "mui", "hon", "cu", "lao", "bau", "ao", "buon", "ap", "cum", "trung", "tam",
-          "ga", "xe", "lua", "hat", "lon", "khu", "ton", "thien", "nhien", "van", "hoa", "luu",
-          "niem", "dai", "quan", "sat", "toa", "thung", "lung", "cao", "nguyen", "canh", "khau",
-          "pha", "miet", "ruong", "khoang", "nong", "ngap", "man"));
+  private static final Set<String> GENERIC_LANDMARK_TYPE_WORDS =
+      Set.copyOf(
+          Arrays.asList(
+              "bai", "bien", "chua", "den", "dinh", "ho", "nui", "thac", "cho", "lang", "nghe",
+              "dao", "ban", "vinh", "hang", "dong", "deo", "suoi", "vuon", "bao", "tang", "nha",
+              "tho", "co", "do", "thanh", "dia", "ba", "tu", "lau", "cau", "pho", "cong", "vien",
+              "quang", "truong", "mon", "am", "thuc", "dac", "san", "rung", "doi", "khe", "ghenh",
+              "ganh", "mui", "hon", "cu", "lao", "bau", "ao", "buon", "ap", "cum", "trung", "tam",
+              "ga", "xe", "lua", "hat", "lon", "khu", "ton", "thien", "nhien", "van", "hoa", "luu",
+              "niem", "dai", "quan", "sat", "toa", "thung", "lung", "cao", "nguyen", "canh", "khau",
+              "pha", "miet", "ruong", "khoang", "nong", "ngap", "man"));
 
-  private static final Set<String> BANNED_MEDIA_KEYWORDS = Set.of(
-      "locator",
-      "location_map",
-      "flag_of",
-      "coat_of_arms",
-      "logo",
-      "icon",
-      "symbol",
-      "diagram",
-      "map_of",
-      "bando",
-      "ban_do",
-      "signature",
-      "stamp",
-      "BlankMap");
+  private static final Set<String> BANNED_MEDIA_KEYWORDS =
+      Set.of(
+          "locator",
+          "location_map",
+          "flag_of",
+          "coat_of_arms",
+          "logo",
+          "icon",
+          "symbol",
+          "diagram",
+          "map_of",
+          "bando",
+          "ban_do",
+          "signature",
+          "stamp",
+          "BlankMap");
 
   private final DestinationRepository destinationRepository;
   private final ObjectMapper objectMapper;
   private final HttpClient httpClient;
   private final Semaphore httpCheckSemaphore = new Semaphore(20);
-  private final java.util.concurrent.ExecutorService batchSearchExecutor = java.util.concurrent.Executors
-      .newFixedThreadPool(4);
+  private final java.util.concurrent.ExecutorService batchSearchExecutor =
+      java.util.concurrent.Executors.newFixedThreadPool(4);
 
   @Autowired(required = false)
   private AuditLogService auditLogService;
@@ -136,10 +141,11 @@ public class AdminDestinationImageService {
   public AdminDestinationImageService(DestinationRepository destinationRepository) {
     this.destinationRepository = destinationRepository;
     this.objectMapper = new ObjectMapper();
-    this.httpClient = HttpClient.newBuilder()
-        .connectTimeout(Duration.ofSeconds(4))
-        .followRedirects(HttpClient.Redirect.NORMAL)
-        .build();
+    this.httpClient =
+        HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(4))
+            .followRedirects(HttpClient.Redirect.NORMAL)
+            .build();
   }
 
   public void setAuditLogService(AuditLogService auditLogService) {
@@ -181,12 +187,16 @@ public class AdminDestinationImageService {
       String province,
       String category,
       String auditStatus) {
-    String normKeyword = keyword != null && !keyword.isBlank() ? DestinationService.stripAccents(keyword) : "";
-    String normProvince = province != null && !province.isBlank() ? DestinationService.stripAccents(province) : "";
-    String normCategory = category != null && !category.isBlank() ? DestinationService.stripAccents(category) : "";
-    String normStatus = auditStatus != null && !auditStatus.isBlank() && !"ALL".equalsIgnoreCase(auditStatus)
-        ? auditStatus.trim().toUpperCase(Locale.ROOT)
-        : "";
+    String normKeyword =
+        keyword != null && !keyword.isBlank() ? DestinationService.stripAccents(keyword) : "";
+    String normProvince =
+        province != null && !province.isBlank() ? DestinationService.stripAccents(province) : "";
+    String normCategory =
+        category != null && !category.isBlank() ? DestinationService.stripAccents(category) : "";
+    String normStatus =
+        auditStatus != null && !auditStatus.isBlank() && !"ALL".equalsIgnoreCase(auditStatus)
+            ? auditStatus.trim().toUpperCase(Locale.ROOT)
+            : "";
 
     return allItems.stream()
         .filter(
@@ -246,8 +256,8 @@ public class AdminDestinationImageService {
     }
 
     AiImageStatsDto stats = computeStats(allItems);
-    List<DestinationImageAuditItemDto> filtered = filterAndSortItems(allItems, keyword, province, category,
-        auditStatus);
+    List<DestinationImageAuditItemDto> filtered =
+        filterAndSortItems(allItems, keyword, province, category, auditStatus);
 
     int validPage = Math.max(0, page);
     int validSize = Math.min(100, Math.max(1, size));
@@ -290,8 +300,8 @@ public class AdminDestinationImageService {
   public AiImageStatsDto getStats() {
     List<Destination> allDestinations = loadAllDestinations();
     Map<String, Integer> urlCounts = computeUrlUsageCounts(allDestinations);
-    List<DestinationImageAuditItemDto> allItems = allDestinations.stream().map(d -> buildAuditItem(d, urlCounts, false))
-        .toList();
+    List<DestinationImageAuditItemDto> allItems =
+        allDestinations.stream().map(d -> buildAuditItem(d, urlCounts, false)).toList();
     return computeStats(allItems);
   }
 
@@ -365,7 +375,8 @@ public class AdminDestinationImageService {
         results.add(existing);
         continue;
       }
-      DestinationImageAuditItemDto evaluated = buildAuditItem(dest, urlCounts, checkHttpReachability);
+      DestinationImageAuditItemDto evaluated =
+          buildAuditItem(dest, urlCounts, checkHttpReachability);
       stateCache.put(dest.getId(), evaluated);
       results.add(evaluated);
     }
@@ -377,10 +388,11 @@ public class AdminDestinationImageService {
       dest.addImage(targetUrl, dest.getName(), 0);
       return;
     }
-    DestinationImage primary = dest.getImages().stream()
-        .min(
-            Comparator.comparingInt(img -> img.getSortOrder() != null ? img.getSortOrder() : 0))
-        .orElse(dest.getImages().get(0));
+    DestinationImage primary =
+        dest.getImages().stream()
+            .min(
+                Comparator.comparingInt(img -> img.getSortOrder() != null ? img.getSortOrder() : 0))
+            .orElse(dest.getImages().get(0));
     primary.setStoragePath(targetUrl);
     primary.setAltText(dest.getName());
     if (primary.getSortOrder() == null) {
@@ -390,9 +402,11 @@ public class AdminDestinationImageService {
 
   public DestinationImageAuditItemDto searchCandidatesForDestination(
       UUID destinationId, String customQuery) {
-    Destination dest = loadDestinationById(destinationId)
-        .orElseThrow(
-            () -> new DestinationNotFoundException("Không tìm thấy địa điểm: " + destinationId));
+    Destination dest =
+        loadDestinationById(destinationId)
+            .orElseThrow(
+                () ->
+                    new DestinationNotFoundException("Không tìm thấy địa điểm: " + destinationId));
 
     List<Destination> allDestinations = loadAllDestinations();
     Map<String, Integer> urlCounts = computeUrlUsageCounts(allDestinations);
@@ -422,9 +436,10 @@ public class AdminDestinationImageService {
         }
       }
 
-      boolean canAutoApply = allowAutoApply
-          && top.confidence() >= 65
-          && !STATUS_VALID.equals(currentItem.auditStatus());
+      boolean canAutoApply =
+          allowAutoApply
+              && top.confidence() >= 65
+              && !STATUS_VALID.equals(currentItem.auditStatus());
       if (canAutoApply) {
         String targetUrl = normalizeWikimediaImageUrl(top.imageUrl());
         urlCounts.merge(normalizeUrlKey(targetUrl), 1, Integer::sum);
@@ -433,9 +448,10 @@ public class AdminDestinationImageService {
         updatePrimaryImageOnEntity(dest, targetUrl);
         dest.setUpdatedAt(now);
 
-        String preservedPreviousUrl = oldPrimaryUrl != null && !oldPrimaryUrl.equals(targetUrl)
-            ? oldPrimaryUrl
-            : currentItem.previousImageUrl();
+        String preservedPreviousUrl =
+            oldPrimaryUrl != null && !oldPrimaryUrl.equals(targetUrl)
+                ? oldPrimaryUrl
+                : currentItem.previousImageUrl();
 
         Map<String, Object> historyEntry = new LinkedHashMap<>();
         historyEntry.put("id", UUID.randomUUID().toString());
@@ -447,7 +463,70 @@ public class AdminDestinationImageService {
         historyEntry.put("performedBy", "AI Image Manager (Auto)");
         historyEntry.put("performedAt", now.toString());
 
-        DestinationImageAuditItemDto updatedItem = new DestinationImageAuditItemDto(
+        DestinationImageAuditItemDto updatedItem =
+            new DestinationImageAuditItemDto(
+                dest.getId(),
+                currentItem.name(),
+                currentItem.province(),
+                currentItem.category(),
+                currentItem.description(),
+                currentItem.latitude(),
+                currentItem.longitude(),
+                currentItem.destinationStatus(),
+                targetUrl,
+                1,
+                STATUS_UPDATED,
+                "Đã tự động cập nhật ảnh xác thực từ nguồn: " + top.sourceName(),
+                candidates,
+                targetUrl,
+                top.sourceName(),
+                top.sourcePageUrl(),
+                top.license(),
+                top.confidence(),
+                preservedPreviousUrl,
+                "AI Image Manager (Auto)",
+                now,
+                top.sourceName());
+
+        stateCache.put(dest.getId(), updatedItem);
+        persistImageMetaToDestination(dest, updatedItem, historyEntry);
+        destinationRepository.saveAndFlush(dest);
+        return updatedItem;
+      }
+
+      DestinationImageAuditItemDto pendingItem =
+          new DestinationImageAuditItemDto(
+              dest.getId(),
+              currentItem.name(),
+              currentItem.province(),
+              currentItem.category(),
+              currentItem.description(),
+              currentItem.latitude(),
+              currentItem.longitude(),
+              currentItem.destinationStatus(),
+              currentItem.currentImageUrl(),
+              currentItem.duplicateCount(),
+              STATUS_PENDING_APPROVAL,
+              "Đã tìm thấy " + candidates.size() + " ảnh đề xuất phù hợp, đang chờ Admin duyệt",
+              candidates,
+              top.imageUrl(),
+              top.sourceName(),
+              top.sourcePageUrl(),
+              top.license(),
+              top.confidence(),
+              currentItem.previousImageUrl(),
+              currentItem.lastUpdatedBy(),
+              currentItem.lastUpdatedAt(),
+              currentItem.lastUpdateSource());
+
+      stateCache.put(dest.getId(), pendingItem);
+      persistImageMetaToDestination(dest, pendingItem, null);
+      destinationRepository.saveAndFlush(dest);
+      return pendingItem;
+    }
+
+    DestinationImageAuditItemDto noMatchItem =
+        new DestinationImageAuditItemDto(
             dest.getId(),
             currentItem.name(),
             currentItem.province(),
@@ -456,80 +535,20 @@ public class AdminDestinationImageService {
             currentItem.latitude(),
             currentItem.longitude(),
             currentItem.destinationStatus(),
-            targetUrl,
-            1,
-            STATUS_UPDATED,
-            "Đã tự động cập nhật ảnh xác thực từ nguồn: " + top.sourceName(),
-            candidates,
-            targetUrl,
-            top.sourceName(),
-            top.sourcePageUrl(),
-            top.license(),
-            top.confidence(),
-            preservedPreviousUrl,
-            "AI Image Manager (Auto)",
-            now,
-            top.sourceName());
-
-        stateCache.put(dest.getId(), updatedItem);
-        persistImageMetaToDestination(dest, updatedItem, historyEntry);
-        destinationRepository.saveAndFlush(dest);
-        return updatedItem;
-      }
-
-      DestinationImageAuditItemDto pendingItem = new DestinationImageAuditItemDto(
-          dest.getId(),
-          currentItem.name(),
-          currentItem.province(),
-          currentItem.category(),
-          currentItem.description(),
-          currentItem.latitude(),
-          currentItem.longitude(),
-          currentItem.destinationStatus(),
-          currentItem.currentImageUrl(),
-          currentItem.duplicateCount(),
-          STATUS_PENDING_APPROVAL,
-          "Đã tìm thấy " + candidates.size() + " ảnh đề xuất phù hợp, đang chờ Admin duyệt",
-          candidates,
-          top.imageUrl(),
-          top.sourceName(),
-          top.sourcePageUrl(),
-          top.license(),
-          top.confidence(),
-          currentItem.previousImageUrl(),
-          currentItem.lastUpdatedBy(),
-          currentItem.lastUpdatedAt(),
-          currentItem.lastUpdateSource());
-
-      stateCache.put(dest.getId(), pendingItem);
-      persistImageMetaToDestination(dest, pendingItem, null);
-      destinationRepository.saveAndFlush(dest);
-      return pendingItem;
-    }
-
-    DestinationImageAuditItemDto noMatchItem = new DestinationImageAuditItemDto(
-        dest.getId(),
-        currentItem.name(),
-        currentItem.province(),
-        currentItem.category(),
-        currentItem.description(),
-        currentItem.latitude(),
-        currentItem.longitude(),
-        currentItem.destinationStatus(),
-        currentItem.currentImageUrl(),
-        currentItem.duplicateCount(),
-        STATUS_NO_MATCH,
-        "Đã tìm kiếm nhưng chưa tìm thấy ảnh có độ tin cậy cao",
-        List.of(),
-        null,
-        null,
-        null,
-        null,
-        null,
-        currentItem.previousImageUrl(),
-        currentItem.lastUpdatedBy(),
-        currentItem.lastUpdatedAt(),
-        currentItem.lastUpdateSource());
+            currentItem.currentImageUrl(),
+            currentItem.duplicateCount(),
+            STATUS_NO_MATCH,
+            "Đã tìm kiếm nhưng chưa tìm thấy ảnh có độ tin cậy cao",
+            List.of(),
+            null,
+            null,
+            null,
+            null,
+            null,
+            currentItem.previousImageUrl(),
+            currentItem.lastUpdatedBy(),
+            currentItem.lastUpdatedAt(),
+            currentItem.lastUpdateSource());
 
     stateCache.put(dest.getId(), noMatchItem);
     persistImageMetaToDestination(dest, noMatchItem, null);
@@ -561,7 +580,8 @@ public class AdminDestinationImageService {
 
     // Run external HTTP candidate searches in parallel outside any database
     // transaction
-    Map<UUID, java.util.concurrent.CompletableFuture<List<ImageCandidateDto>>> futures = new LinkedHashMap<>();
+    Map<UUID, java.util.concurrent.CompletableFuture<List<ImageCandidateDto>>> futures =
+        new LinkedHashMap<>();
     for (Destination dest : targetDests) {
       futures.put(
           dest.getId(),
@@ -572,10 +592,11 @@ public class AdminDestinationImageService {
     List<DestinationImageAuditItemDto> results = new ArrayList<>(targetDests.size());
     for (Destination dest : targetDests) {
       try {
-        List<ImageCandidateDto> candidates = futures.get(dest.getId()).get(25, java.util.concurrent.TimeUnit.SECONDS);
+        List<ImageCandidateDto> candidates =
+            futures.get(dest.getId()).get(25, java.util.concurrent.TimeUnit.SECONDS);
         DestinationImageAuditItemDto currentItem = buildAuditItem(dest, urlCounts, false);
-        DestinationImageAuditItemDto updatedItem = persistSearchResultForDestination(dest, currentItem, candidates,
-            urlCounts, true);
+        DestinationImageAuditItemDto updatedItem =
+            persistSearchResultForDestination(dest, currentItem, candidates, urlCounts, true);
         results.add(updatedItem);
       } catch (Exception e) {
         log.warn("Lỗi tìm kiếm ảnh cho địa điểm {}: {}", dest.getId(), e.getMessage());
@@ -593,59 +614,66 @@ public class AdminDestinationImageService {
       String license,
       Integer confidence,
       boolean approvedReady) {
-    Destination dest = loadDestinationById(destinationId)
-        .orElseThrow(
-            () -> new DestinationNotFoundException("Không tìm thấy địa điểm: " + destinationId));
+    Destination dest =
+        loadDestinationById(destinationId)
+            .orElseThrow(
+                () ->
+                    new DestinationNotFoundException("Không tìm thấy địa điểm: " + destinationId));
 
     List<Destination> allDestinations = loadAllDestinations();
     Map<String, Integer> urlCounts = computeUrlUsageCounts(allDestinations);
     DestinationImageAuditItemDto current = buildAuditItem(dest, urlCounts, false);
 
-    String effectiveUrl = candidateUrl != null && !candidateUrl.isBlank()
-        ? candidateUrl.trim()
-        : current.selectedCandidateUrl();
+    String effectiveUrl =
+        candidateUrl != null && !candidateUrl.isBlank()
+            ? candidateUrl.trim()
+            : current.selectedCandidateUrl();
     if (effectiveUrl == null || effectiveUrl.isBlank()) {
       throw new IllegalArgumentException("Chưa có URL ảnh đề xuất được chọn để duyệt.");
     }
 
-    String effectiveSource = sourceName != null && !sourceName.isBlank()
-        ? sourceName
-        : (current.selectedCandidateSource() != null
-            ? current.selectedCandidateSource()
-            : "Admin Selected");
-    String effectivePageUrl = sourcePageUrl != null ? sourcePageUrl : current.selectedCandidatePageUrl();
+    String effectiveSource =
+        sourceName != null && !sourceName.isBlank()
+            ? sourceName
+            : (current.selectedCandidateSource() != null
+                ? current.selectedCandidateSource()
+                : "Admin Selected");
+    String effectivePageUrl =
+        sourcePageUrl != null ? sourcePageUrl : current.selectedCandidatePageUrl();
     String effectiveLicense = license != null ? license : current.selectedCandidateLicense();
-    Integer effectiveConfidence = confidence != null
-        ? confidence
-        : (current.selectedCandidateConfidence() != null
-            ? current.selectedCandidateConfidence()
-            : 85);
+    Integer effectiveConfidence =
+        confidence != null
+            ? confidence
+            : (current.selectedCandidateConfidence() != null
+                ? current.selectedCandidateConfidence()
+                : 85);
 
     String nextStatus = approvedReady ? STATUS_APPROVED_READY : STATUS_PENDING_APPROVAL;
 
-    DestinationImageAuditItemDto updated = new DestinationImageAuditItemDto(
-        dest.getId(),
-        current.name(),
-        current.province(),
-        current.category(),
-        current.description(),
-        current.latitude(),
-        current.longitude(),
-        current.destinationStatus(),
-        current.currentImageUrl(),
-        current.duplicateCount(),
-        nextStatus,
-        current.issueReason(),
-        current.candidates(),
-        effectiveUrl,
-        effectiveSource,
-        effectivePageUrl,
-        effectiveLicense,
-        effectiveConfidence,
-        current.previousImageUrl(),
-        current.lastUpdatedBy(),
-        current.lastUpdatedAt(),
-        current.lastUpdateSource());
+    DestinationImageAuditItemDto updated =
+        new DestinationImageAuditItemDto(
+            dest.getId(),
+            current.name(),
+            current.province(),
+            current.category(),
+            current.description(),
+            current.latitude(),
+            current.longitude(),
+            current.destinationStatus(),
+            current.currentImageUrl(),
+            current.duplicateCount(),
+            nextStatus,
+            current.issueReason(),
+            current.candidates(),
+            effectiveUrl,
+            effectiveSource,
+            effectivePageUrl,
+            effectiveLicense,
+            effectiveConfidence,
+            current.previousImageUrl(),
+            current.lastUpdatedBy(),
+            current.lastUpdatedAt(),
+            current.lastUpdateSource());
 
     stateCache.put(dest.getId(), updated);
     persistImageMetaToDestination(dest, updated, null);
@@ -661,14 +689,24 @@ public class AdminDestinationImageService {
       Integer confidence,
       UUID actorId,
       String actorName) {
-    Destination dest = loadDestinationById(destinationId)
-        .orElseThrow(
-            () -> new DestinationNotFoundException("Không tìm thấy địa điểm: " + destinationId));
+    Destination dest =
+        loadDestinationById(destinationId)
+            .orElseThrow(
+                () ->
+                    new DestinationNotFoundException("Không tìm thấy địa điểm: " + destinationId));
 
     List<Destination> allDestinations = loadAllDestinations();
     Map<String, Integer> urlCounts = computeUrlUsageCounts(allDestinations);
-    DestinationImageAuditItemDto updated = applyImageUpdateOnLoadedDest(
-        dest, urlCounts, newImageUrl, sourceName, sourcePageUrl, license, confidence, actorName);
+    DestinationImageAuditItemDto updated =
+        applyImageUpdateOnLoadedDest(
+            dest,
+            urlCounts,
+            newImageUrl,
+            sourceName,
+            sourcePageUrl,
+            license,
+            confidence,
+            actorName);
     if (auditLogService != null) {
       auditLogService.logAction(
           actorId,
@@ -691,9 +729,10 @@ public class AdminDestinationImageService {
       String actorName) {
     DestinationImageAuditItemDto current = buildAuditItem(dest, urlCounts, false);
 
-    String targetUrl = newImageUrl != null && !newImageUrl.isBlank()
-        ? newImageUrl.trim()
-        : current.selectedCandidateUrl();
+    String targetUrl =
+        newImageUrl != null && !newImageUrl.isBlank()
+            ? newImageUrl.trim()
+            : current.selectedCandidateUrl();
 
     if (targetUrl != null) {
       targetUrl = normalizeWikimediaImageUrl(targetUrl);
@@ -704,11 +743,12 @@ public class AdminDestinationImageService {
           "Không thể cập nhật: Chưa có URL ảnh thay thế được xác minh.");
     }
 
-    int effectiveConfidence = confidence != null
-        ? confidence
-        : (current.selectedCandidateConfidence() != null
-            ? current.selectedCandidateConfidence()
-            : 80);
+    int effectiveConfidence =
+        confidence != null
+            ? confidence
+            : (current.selectedCandidateConfidence() != null
+                ? current.selectedCandidateConfidence()
+                : 80);
 
     if (effectiveConfidence < 50) {
       throw new IllegalArgumentException(
@@ -718,20 +758,22 @@ public class AdminDestinationImageService {
     }
 
     String oldPrimaryUrl = extractPrimaryImageUrl(dest);
-    String effectiveSource = sourceName != null && !sourceName.isBlank()
-        ? sourceName
-        : (current.selectedCandidateSource() != null
-            ? current.selectedCandidateSource()
-            : "Wikimedia / Verified Source");
+    String effectiveSource =
+        sourceName != null && !sourceName.isBlank()
+            ? sourceName
+            : (current.selectedCandidateSource() != null
+                ? current.selectedCandidateSource()
+                : "Wikimedia / Verified Source");
     String effectiveActor = actorName != null && !actorName.isBlank() ? actorName : "Admin VISTA";
     Instant now = Instant.now();
 
     updatePrimaryImageOnEntity(dest, targetUrl);
     dest.setUpdatedAt(now);
 
-    String preservedPreviousUrl = oldPrimaryUrl != null && !oldPrimaryUrl.equals(targetUrl)
-        ? oldPrimaryUrl
-        : current.previousImageUrl();
+    String preservedPreviousUrl =
+        oldPrimaryUrl != null && !oldPrimaryUrl.equals(targetUrl)
+            ? oldPrimaryUrl
+            : current.previousImageUrl();
 
     Map<String, Object> historyEntry = new LinkedHashMap<>();
     historyEntry.put("id", UUID.randomUUID().toString());
@@ -743,29 +785,30 @@ public class AdminDestinationImageService {
     historyEntry.put("performedBy", effectiveActor);
     historyEntry.put("performedAt", now.toString());
 
-    DestinationImageAuditItemDto updatedItem = new DestinationImageAuditItemDto(
-        dest.getId(),
-        dest.getName(),
-        dest.getProvince() != null ? dest.getProvince().getName() : "",
-        dest.getCategory() != null ? dest.getCategory().getName() : "",
-        dest.getDescription(),
-        dest.getLatitude() != null ? dest.getLatitude().doubleValue() : null,
-        dest.getLongitude() != null ? dest.getLongitude().doubleValue() : null,
-        dest.getStatus(),
-        targetUrl,
-        1,
-        STATUS_UPDATED,
-        "Đã cập nhật ảnh xác thực từ nguồn: " + effectiveSource,
-        current.candidates(),
-        targetUrl,
-        effectiveSource,
-        sourcePageUrl != null ? sourcePageUrl : current.selectedCandidatePageUrl(),
-        license != null ? license : current.selectedCandidateLicense(),
-        effectiveConfidence,
-        preservedPreviousUrl,
-        effectiveActor,
-        now,
-        effectiveSource);
+    DestinationImageAuditItemDto updatedItem =
+        new DestinationImageAuditItemDto(
+            dest.getId(),
+            dest.getName(),
+            dest.getProvince() != null ? dest.getProvince().getName() : "",
+            dest.getCategory() != null ? dest.getCategory().getName() : "",
+            dest.getDescription(),
+            dest.getLatitude() != null ? dest.getLatitude().doubleValue() : null,
+            dest.getLongitude() != null ? dest.getLongitude().doubleValue() : null,
+            dest.getStatus(),
+            targetUrl,
+            1,
+            STATUS_UPDATED,
+            "Đã cập nhật ảnh xác thực từ nguồn: " + effectiveSource,
+            current.candidates(),
+            targetUrl,
+            effectiveSource,
+            sourcePageUrl != null ? sourcePageUrl : current.selectedCandidatePageUrl(),
+            license != null ? license : current.selectedCandidateLicense(),
+            effectiveConfidence,
+            preservedPreviousUrl,
+            effectiveActor,
+            now,
+            effectiveSource);
 
     persistImageMetaToDestination(dest, updatedItem, historyEntry);
     destinationRepository.saveAndFlush(dest);
@@ -789,7 +832,7 @@ public class AdminDestinationImageService {
       for (Destination d : allDestinations) {
         DestinationImageAuditItemDto item = buildAuditItem(d, urlCounts, false);
         if ((STATUS_APPROVED_READY.equals(item.auditStatus())
-            || STATUS_PENDING_APPROVAL.equals(item.auditStatus()))
+                || STATUS_PENDING_APPROVAL.equals(item.auditStatus()))
             && item.selectedCandidateUrl() != null
             && !item.selectedCandidateUrl().isBlank()) {
           targets.add(d.getId());
@@ -804,10 +847,9 @@ public class AdminDestinationImageService {
         if (dest == null) {
           dest = loadDestinationById(id).orElse(null);
         }
-        if (dest == null)
-          continue;
-        DestinationImageAuditItemDto updated = applyImageUpdateOnLoadedDest(dest, urlCounts, null, null, null, null,
-            null, actorName);
+        if (dest == null) continue;
+        DestinationImageAuditItemDto updated =
+            applyImageUpdateOnLoadedDest(dest, urlCounts, null, null, null, null, null, actorName);
         updatedList.add(updated);
       } catch (Exception e) {
         log.warn("Không thể cập nhật hàng loạt cho địa điểm {}: {}", id, e.getMessage());
@@ -818,9 +860,11 @@ public class AdminDestinationImageService {
 
   public DestinationImageAuditItemDto rollbackImage(
       UUID destinationId, UUID actorId, String actorName) {
-    Destination dest = loadDestinationById(destinationId)
-        .orElseThrow(
-            () -> new DestinationNotFoundException("Không tìm thấy địa điểm: " + destinationId));
+    Destination dest =
+        loadDestinationById(destinationId)
+            .orElseThrow(
+                () ->
+                    new DestinationNotFoundException("Không tìm thấy địa điểm: " + destinationId));
 
     List<Destination> allDestinations = loadAllDestinations();
     Map<String, Integer> urlCounts = computeUrlUsageCounts(allDestinations);
@@ -849,29 +893,30 @@ public class AdminDestinationImageService {
     historyEntry.put("performedBy", effectiveActor);
     historyEntry.put("performedAt", now.toString());
 
-    DestinationImageAuditItemDto rolledBackItem = new DestinationImageAuditItemDto(
-        dest.getId(),
-        dest.getName(),
-        dest.getProvince() != null ? dest.getProvince().getName() : "",
-        dest.getCategory() != null ? dest.getCategory().getName() : "",
-        dest.getDescription(),
-        dest.getLatitude() != null ? dest.getLatitude().doubleValue() : null,
-        dest.getLongitude() != null ? dest.getLongitude().doubleValue() : null,
-        dest.getStatus(),
-        prevUrl,
-        urlCounts.getOrDefault(prevUrl, 1),
-        STATUS_VALID,
-        "Đã khôi phục (Rollback) về ảnh gốc trước đó",
-        current.candidates(),
-        current.selectedCandidateUrl(),
-        current.selectedCandidateSource(),
-        current.selectedCandidatePageUrl(),
-        current.selectedCandidateLicense(),
-        current.selectedCandidateConfidence(),
-        currentUrl,
-        effectiveActor,
-        now,
-        "Rollback");
+    DestinationImageAuditItemDto rolledBackItem =
+        new DestinationImageAuditItemDto(
+            dest.getId(),
+            dest.getName(),
+            dest.getProvince() != null ? dest.getProvince().getName() : "",
+            dest.getCategory() != null ? dest.getCategory().getName() : "",
+            dest.getDescription(),
+            dest.getLatitude() != null ? dest.getLatitude().doubleValue() : null,
+            dest.getLongitude() != null ? dest.getLongitude().doubleValue() : null,
+            dest.getStatus(),
+            prevUrl,
+            urlCounts.getOrDefault(prevUrl, 1),
+            STATUS_VALID,
+            "Đã khôi phục (Rollback) về ảnh gốc trước đó",
+            current.candidates(),
+            current.selectedCandidateUrl(),
+            current.selectedCandidateSource(),
+            current.selectedCandidatePageUrl(),
+            current.selectedCandidateLicense(),
+            current.selectedCandidateConfidence(),
+            currentUrl,
+            effectiveActor,
+            now,
+            "Rollback");
 
     persistImageMetaToDestination(dest, rolledBackItem, historyEntry);
     destinationRepository.saveAndFlush(dest);
@@ -889,37 +934,40 @@ public class AdminDestinationImageService {
 
   @Transactional
   public DestinationImageAuditItemDto skipDestination(UUID destinationId) {
-    Destination dest = loadDestinationById(destinationId)
-        .orElseThrow(
-            () -> new DestinationNotFoundException("Không tìm thấy địa điểm: " + destinationId));
+    Destination dest =
+        loadDestinationById(destinationId)
+            .orElseThrow(
+                () ->
+                    new DestinationNotFoundException("Không tìm thấy địa điểm: " + destinationId));
 
     List<Destination> allDestinations = loadAllDestinations();
     Map<String, Integer> urlCounts = computeUrlUsageCounts(allDestinations);
     DestinationImageAuditItemDto current = buildAuditItem(dest, urlCounts, false);
 
-    DestinationImageAuditItemDto skipped = new DestinationImageAuditItemDto(
-        dest.getId(),
-        current.name(),
-        current.province(),
-        current.category(),
-        current.description(),
-        current.latitude(),
-        current.longitude(),
-        current.destinationStatus(),
-        current.currentImageUrl(),
-        current.duplicateCount(),
-        STATUS_SKIPPED,
-        "Admin đã đánh dấu bỏ qua kiểm tra địa điểm này",
-        current.candidates(),
-        current.selectedCandidateUrl(),
-        current.selectedCandidateSource(),
-        current.selectedCandidatePageUrl(),
-        current.selectedCandidateLicense(),
-        current.selectedCandidateConfidence(),
-        current.previousImageUrl(),
-        current.lastUpdatedBy(),
-        current.lastUpdatedAt(),
-        current.lastUpdateSource());
+    DestinationImageAuditItemDto skipped =
+        new DestinationImageAuditItemDto(
+            dest.getId(),
+            current.name(),
+            current.province(),
+            current.category(),
+            current.description(),
+            current.latitude(),
+            current.longitude(),
+            current.destinationStatus(),
+            current.currentImageUrl(),
+            current.duplicateCount(),
+            STATUS_SKIPPED,
+            "Admin đã đánh dấu bỏ qua kiểm tra địa điểm này",
+            current.candidates(),
+            current.selectedCandidateUrl(),
+            current.selectedCandidateSource(),
+            current.selectedCandidatePageUrl(),
+            current.selectedCandidateLicense(),
+            current.selectedCandidateConfidence(),
+            current.previousImageUrl(),
+            current.lastUpdatedBy(),
+            current.lastUpdatedAt(),
+            current.lastUpdateSource());
 
     stateCache.put(dest.getId(), skipped);
     persistImageMetaToDestination(dest, skipped, null);
@@ -934,8 +982,7 @@ public class AdminDestinationImageService {
 
     for (Destination dest : allDestinations) {
       Map<String, Object> meta = extractImageMetaFromOpeningHours(dest.getOpeningHours());
-      if (meta == null)
-        continue;
+      if (meta == null) continue;
       Object histObj = meta.get("history");
       if (histObj instanceof List<?> rawList) {
         String provName = dest.getProvince() != null ? dest.getProvince().getName() : "";
@@ -943,7 +990,8 @@ public class AdminDestinationImageService {
           if (entryObj instanceof Map<?, ?> m) {
             String id = Objects.toString(m.get("id"), UUID.randomUUID().toString());
             String action = Objects.toString(m.get("action"), "UPDATE");
-            String prevUrl = m.get("previousImageUrl") != null ? m.get("previousImageUrl").toString() : null;
+            String prevUrl =
+                m.get("previousImageUrl") != null ? m.get("previousImageUrl").toString() : null;
             String newUrl = m.get("newImageUrl") != null ? m.get("newImageUrl").toString() : null;
             String source = Objects.toString(m.get("sourceName"), "Wikimedia Commons");
             Integer conf = 85;
@@ -1009,8 +1057,7 @@ public class AdminDestinationImageService {
   }
 
   private String normalizeUrlKey(String url) {
-    if (url == null)
-      return "";
+    if (url == null) return "";
     String trimmed = url.trim();
     int qIdx = trimmed.indexOf('?');
     if (qIdx > 0 && trimmed.contains("unsplash.com")) {
@@ -1022,9 +1069,10 @@ public class AdminDestinationImageService {
   private DestinationImageAuditItemDto buildAuditItem(
       Destination dest, Map<String, Integer> urlCounts, boolean verifyHttpReachability) {
     String currentUrl = extractPrimaryImageUrl(dest);
-    int dupCount = currentUrl != null && !currentUrl.isBlank()
-        ? urlCounts.getOrDefault(normalizeUrlKey(currentUrl), 1)
-        : 0;
+    int dupCount =
+        currentUrl != null && !currentUrl.isBlank()
+            ? urlCounts.getOrDefault(normalizeUrlKey(currentUrl), 1)
+            : 0;
 
     DestinationImageAuditItemDto cached = stateCache.get(dest.getId());
     Map<String, Object> persistedMeta = extractImageMetaFromOpeningHours(dest.getOpeningHours());
@@ -1039,8 +1087,8 @@ public class AdminDestinationImageService {
     String lastUpdatedBy = cached != null ? cached.lastUpdatedBy() : null;
     Instant lastUpdatedAt = cached != null ? cached.lastUpdatedAt() : null;
     String lastUpdateSource = cached != null ? cached.lastUpdateSource() : null;
-    List<ImageCandidateDto> candidates = cached != null && cached.candidates() != null ? cached.candidates()
-        : List.of();
+    List<ImageCandidateDto> candidates =
+        cached != null && cached.candidates() != null ? cached.candidates() : List.of();
     String selectedUrl = cached != null ? cached.selectedCandidateUrl() : null;
     String selectedSource = cached != null ? cached.selectedCandidateSource() : null;
     String selectedPageUrl = cached != null ? cached.selectedCandidatePageUrl() : null;
@@ -1085,9 +1133,9 @@ public class AdminDestinationImageService {
       }
       if (candidates.isEmpty() && persistedMeta.get("candidates") != null) {
         try {
-          candidates = objectMapper.convertValue(
-              persistedMeta.get("candidates"), new TypeReference<List<ImageCandidateDto>>() {
-              });
+          candidates =
+              objectMapper.convertValue(
+                  persistedMeta.get("candidates"), new TypeReference<List<ImageCandidateDto>>() {});
         } catch (Exception ignored) {
         }
       }
@@ -1103,15 +1151,17 @@ public class AdminDestinationImageService {
         && isValidHttpOrLocalUrl(currentUrl)
         && !isKnownGenericStock(currentUrl)) {
       evaluatedStatus = STATUS_UPDATED;
-      issueReason = "Đã cập nhật ảnh xác thực ("
-          + (lastUpdateSource != null ? lastUpdateSource : "Wikimedia")
-          + ")";
+      issueReason =
+          "Đã cập nhật ảnh xác thực ("
+              + (lastUpdateSource != null ? lastUpdateSource : "Wikimedia")
+              + ")";
     } else if (STATUS_APPROVED_READY.equals(persistedStatus) && selectedUrl != null) {
       evaluatedStatus = STATUS_APPROVED_READY;
       issueReason = "Đã được Admin chọn duyệt, sẵn sàng cập nhật";
     } else if (STATUS_PENDING_APPROVAL.equals(persistedStatus) && !candidates.isEmpty()) {
       evaluatedStatus = STATUS_PENDING_APPROVAL;
-      issueReason = "Đã tìm thấy " + candidates.size() + " ảnh đề xuất phù hợp, đang chờ Admin duyệt";
+      issueReason =
+          "Đã tìm thấy " + candidates.size() + " ảnh đề xuất phù hợp, đang chờ Admin duyệt";
     } else if (STATUS_SKIPPED.equals(persistedStatus)) {
       evaluatedStatus = STATUS_SKIPPED;
       issueReason = "Admin đã đánh dấu bỏ qua kiểm tra";
@@ -1132,59 +1182,62 @@ public class AdminDestinationImageService {
       issueReason = "Không thể tải được ảnh (HTTP 404/403 hoặc máy chủ ảnh không phản hồi)";
     } else if (isKnownGenericStock(currentUrl)) {
       evaluatedStatus = STATUS_SUSPICIOUS;
-      issueReason = dupCount > 1
-          ? "Sử dụng ảnh mẫu Unsplash mặc định trùng lặp trên "
-              + dupCount
-              + " địa điểm khác nhau"
-          : "Sử dụng ảnh mẫu Unsplash chung chung, không phải ảnh thực tế của địa điểm";
+      issueReason =
+          dupCount > 1
+              ? "Sử dụng ảnh mẫu Unsplash mặc định trùng lặp trên "
+                  + dupCount
+                  + " địa điểm khác nhau"
+              : "Sử dụng ảnh mẫu Unsplash chung chung, không phải ảnh thực tế của địa điểm";
     } else if (dupCount > 1) {
       evaluatedStatus = STATUS_SUSPICIOUS;
-      issueReason = "Ảnh bị trùng lặp bất thường: Đang dùng chung URL với "
-          + (dupCount - 1)
-          + " địa điểm khác";
+      issueReason =
+          "Ảnh bị trùng lặp bất thường: Đang dùng chung URL với "
+              + (dupCount - 1)
+              + " địa điểm khác";
     } else if (hasExplicitLocationMismatch(currentUrl, dest.getName(), provinceName)) {
       evaluatedStatus = STATUS_SUSPICIOUS;
-      issueReason = "Tên file ảnh chứa tên tỉnh/địa danh khác không khớp với '"
-          + dest.getName()
-          + "' ("
-          + provinceName
-          + ")";
+      issueReason =
+          "Tên file ảnh chứa tên tỉnh/địa danh khác không khớp với '"
+              + dest.getName()
+              + "' ("
+              + provinceName
+              + ")";
     } else {
       evaluatedStatus = STATUS_VALID;
       issueReason = "Ảnh đại diện hợp lệ, duy nhất và hoạt động tốt";
     }
 
-    DestinationImageAuditItemDto dto = new DestinationImageAuditItemDto(
-        dest.getId(),
-        dest.getName(),
-        provinceName,
-        categoryName,
-        dest.getDescription(),
-        lat,
-        lon,
-        dest.getStatus(),
-        currentUrl,
-        dupCount,
-        evaluatedStatus,
-        issueReason,
-        candidates,
-        selectedUrl,
-        selectedSource,
-        selectedPageUrl,
-        selectedLicense,
-        selectedConf,
-        previousImageUrl,
-        lastUpdatedBy,
-        lastUpdatedAt,
-        lastUpdateSource);
+    DestinationImageAuditItemDto dto =
+        new DestinationImageAuditItemDto(
+            dest.getId(),
+            dest.getName(),
+            provinceName,
+            categoryName,
+            dest.getDescription(),
+            lat,
+            lon,
+            dest.getStatus(),
+            currentUrl,
+            dupCount,
+            evaluatedStatus,
+            issueReason,
+            candidates,
+            selectedUrl,
+            selectedSource,
+            selectedPageUrl,
+            selectedLicense,
+            selectedConf,
+            previousImageUrl,
+            lastUpdatedBy,
+            lastUpdatedAt,
+            lastUpdateSource);
 
     stateCache.put(dest.getId(), dto);
     return dto;
   }
 
   private boolean isValidHttpOrLocalUrl(String url) {
-    if (url == null || url.isBlank())
-      return false;
+    if (url == null || url.isBlank()) return false;
     String trimmed = url.trim();
     if (trimmed.startsWith("/images/") || trimmed.startsWith("/")) {
       return true;
@@ -1200,8 +1253,7 @@ public class AdminDestinationImageService {
   }
 
   private boolean isKnownGenericStock(String url) {
-    if (url == null)
-      return false;
+    if (url == null) return false;
     String lower = url.toLowerCase(Locale.ROOT);
     for (String pattern : KNOWN_GENERIC_STOCK_PATTERNS) {
       if (lower.contains(pattern)) {
@@ -1239,12 +1291,9 @@ public class AdminDestinationImageService {
   }
 
   private boolean checkUrlReachable(String url) {
-    if (url == null || url.isBlank())
-      return false;
-    if (url.startsWith("/"))
-      return true;
-    if (!url.startsWith("http://") && !url.startsWith("https://"))
-      return false;
+    if (url == null || url.isBlank()) return false;
+    if (url.startsWith("/")) return true;
+    if (!url.startsWith("http://") && !url.startsWith("https://")) return false;
 
     Boolean cached = urlReachabilityCache.get(url);
     if (cached != null) {
@@ -1255,34 +1304,40 @@ public class AdminDestinationImageService {
     try {
       acquired = httpCheckSemaphore.tryAcquire(3, java.util.concurrent.TimeUnit.SECONDS);
       URI safeUri = URI.create(url.trim().replace("|", "%7C").replace(" ", "%20"));
-      HttpRequest req = HttpRequest.newBuilder()
-          .uri(safeUri)
-          .timeout(Duration.ofSeconds(4))
-          .header("User-Agent", USER_AGENT)
-          .header("Accept", "image/*,*/*;q=0.8")
-          .method("HEAD", HttpRequest.BodyPublishers.noBody())
-          .build();
+      HttpRequest req =
+          HttpRequest.newBuilder()
+              .uri(safeUri)
+              .timeout(Duration.ofSeconds(4))
+              .header("User-Agent", USER_AGENT)
+              .header("Accept", "image/*,*/*;q=0.8")
+              .method("HEAD", HttpRequest.BodyPublishers.noBody())
+              .build();
       HttpResponse<Void> res = httpClient.send(req, HttpResponse.BodyHandlers.discarding());
       int code = res.statusCode();
-      String contentType = res.headers().firstValue("content-type").orElse("").toLowerCase(Locale.ROOT);
+      String contentType =
+          res.headers().firstValue("content-type").orElse("").toLowerCase(Locale.ROOT);
       if (code == 405 || code == 403 || contentType.isEmpty()) {
         // Retry with lightweight ranged GET
-        HttpRequest getReq = HttpRequest.newBuilder()
-            .uri(safeUri)
-            .timeout(Duration.ofSeconds(4))
-            .header("User-Agent", USER_AGENT)
-            .header("Accept", "image/*,*/*;q=0.8")
-            .header("Range", "bytes=0-1023")
-            .GET()
-            .build();
+        HttpRequest getReq =
+            HttpRequest.newBuilder()
+                .uri(safeUri)
+                .timeout(Duration.ofSeconds(4))
+                .header("User-Agent", USER_AGENT)
+                .header("Accept", "image/*,*/*;q=0.8")
+                .header("Range", "bytes=0-1023")
+                .GET()
+                .build();
         HttpResponse<Void> getRes = httpClient.send(getReq, HttpResponse.BodyHandlers.discarding());
         code = getRes.statusCode();
-        contentType = getRes.headers().firstValue("content-type").orElse("").toLowerCase(Locale.ROOT);
+        contentType =
+            getRes.headers().firstValue("content-type").orElse("").toLowerCase(Locale.ROOT);
       }
-      boolean validContentType = contentType.isEmpty()
-          || contentType.startsWith("image/")
-          || contentType.contains("octet-stream");
-      boolean notHtmlOrJson = !contentType.contains("text/html") && !contentType.contains("application/json");
+      boolean validContentType =
+          contentType.isEmpty()
+              || contentType.startsWith("image/")
+              || contentType.contains("octet-stream");
+      boolean notHtmlOrJson =
+          !contentType.contains("text/html") && !contentType.contains("application/json");
       if (code == 429 && url.contains("wikimedia.org")) {
         return true;
       }
@@ -1305,9 +1360,10 @@ public class AdminDestinationImageService {
 
   private List<ImageCandidateDto> findBestCandidates(Destination dest, String customQuery) {
     String name = dest.getName() != null ? dest.getName().trim() : "";
-    String province = dest.getProvince() != null && dest.getProvince().getName() != null
-        ? dest.getProvince().getName().trim()
-        : "";
+    String province =
+        dest.getProvince() != null && dest.getProvince().getName() != null
+            ? dest.getProvince().getName().trim()
+            : "";
     Double lat = dest.getLatitude() != null ? dest.getLatitude().doubleValue() : null;
     Double lon = dest.getLongitude() != null ? dest.getLongitude().doubleValue() : null;
 
@@ -1332,14 +1388,14 @@ public class AdminDestinationImageService {
       }
       if (name.contains("(")) {
         String beforeParen = name.substring(0, name.indexOf('(')).trim();
-        String insideParen = name.substring(
-            name.indexOf('(') + 1,
-            name.indexOf(')') > name.indexOf('(') ? name.indexOf(')') : name.length())
-            .trim();
+        String insideParen =
+            name.substring(
+                    name.indexOf('(') + 1,
+                    name.indexOf(')') > name.indexOf('(') ? name.indexOf(')') : name.length())
+                .trim();
         if (!beforeParen.isEmpty()) {
           querySet.add(beforeParen);
-          if (!province.isEmpty())
-            querySet.add(beforeParen + " " + province);
+          if (!province.isEmpty()) querySet.add(beforeParen + " " + province);
         }
         if (!insideParen.isEmpty()) {
           querySet.add(insideParen);
@@ -1351,23 +1407,24 @@ public class AdminDestinationImageService {
           || name.toLowerCase(Locale.ROOT).contains(" và ")
           || name.toLowerCase(Locale.ROOT).contains(" tại ")
           || name.toLowerCase(Locale.ROOT).contains(" trên ")) {
-        for (String part : name.split("(?i)(\\s*&\\s*|\\s+và\\s+|\\s*[–-]\\s*|\\s+tại\\s+|\\s+trên\\s+)")) {
+        for (String part :
+            name.split("(?i)(\\s*&\\s*|\\s+và\\s+|\\s*[–-]\\s*|\\s+tại\\s+|\\s+trên\\s+)")) {
           String trimmedPart = part.trim();
           if (trimmedPart.length() >= 4) {
             querySet.add(trimmedPart);
-            if (!province.isEmpty())
-              querySet.add(trimmedPart + " " + province);
+            if (!province.isEmpty()) querySet.add(trimmedPart + " " + province);
           }
         }
       }
       // Strip generic prefixes like "Bãi biển ", "Khu du lịch ", "Bán đảo ", "Danh
       // thắng ", "Cố đô
       // ", "Thánh địa "
-      String strippedPrefix = normalizedApos
-          .replaceFirst(
-              "(?i)^(Bãi biển|Khu du lịch sinh thái|Khu du lịch|Khu di tích lịch sử|Khu di tích|Di tích lịch sử|Di tích|Danh thắng|Thắng cảnh|Quần thể danh thắng|Quần thể di tích|Quần thể|Làng văn hóa du lịch|Làng du lịch|Làng nghề|Làng cổ|Làng hoa|Làng đá|Bán đảo|Cố đô|Thánh địa|Khu bảo tồn thiên nhiên|Khu bảo tồn|Khu lưu niệm|Đài quan sát|Tòa nhà|Rừng ngập mặn|Rừng thông|Rừng tràm|Cánh đồng quạt gió|Cánh đồng điện gió|Đồi chè|Thung lũng|Quảng trường|Tượng đài|Nhà tưởng niệm|Đền thờ)\\s+",
-              "")
-          .trim();
+      String strippedPrefix =
+          normalizedApos
+              .replaceFirst(
+                  "(?i)^(Bãi biển|Khu du lịch sinh thái|Khu du lịch|Khu di tích lịch sử|Khu di tích|Di tích lịch sử|Di tích|Danh thắng|Thắng cảnh|Quần thể danh thắng|Quần thể di tích|Quần thể|Làng văn hóa du lịch|Làng du lịch|Làng nghề|Làng cổ|Làng hoa|Làng đá|Bán đảo|Cố đô|Thánh địa|Khu bảo tồn thiên nhiên|Khu bảo tồn|Khu lưu niệm|Đài quan sát|Tòa nhà|Rừng ngập mặn|Rừng thông|Rừng tràm|Cánh đồng quạt gió|Cánh đồng điện gió|Đồi chè|Thung lũng|Quảng trường|Tượng đài|Nhà tưởng niệm|Đền thờ)\\s+",
+                  "")
+              .trim();
       String normProvCheck = DestinationService.stripAccents(province);
       String normStrippedCheck = DestinationService.stripAccents(strippedPrefix);
       if (!strippedPrefix.isEmpty()
@@ -1375,8 +1432,7 @@ public class AdminDestinationImageService {
           && strippedPrefix.length() >= 4
           && !normStrippedCheck.equals(normProvCheck)) {
         querySet.add(strippedPrefix);
-        if (!province.isEmpty())
-          querySet.add(strippedPrefix + " " + province);
+        if (!province.isEmpty()) querySet.add(strippedPrefix + " " + province);
       }
       querySet.addAll(buildEnglishLandmarkQueries(name));
     }
@@ -1434,8 +1490,7 @@ public class AdminDestinationImageService {
       for (String q : commonsQueries) {
         fetchWikipediaCandidates("en", q + " Vietnam", dest, candidateMap);
         enQueriesRun++;
-        if (maxConfidence(candidateMap) >= 75 || enQueriesRun >= 2)
-          break;
+        if (maxConfidence(candidateMap) >= 75 || enQueriesRun >= 2) break;
       }
     }
 
@@ -1452,18 +1507,18 @@ public class AdminDestinationImageService {
     // Sort by confidence descending, filter >= 65, verify HTTP reachability & image
     // content-type,
     // and return top 3
-    List<ImageCandidateDto> sorted = candidateMap.values().stream()
-        .filter(c -> c.confidence() >= 65)
-        .sorted(Comparator.comparingInt(ImageCandidateDto::confidence).reversed())
-        .toList();
+    List<ImageCandidateDto> sorted =
+        candidateMap.values().stream()
+            .filter(c -> c.confidence() >= 65)
+            .sorted(Comparator.comparingInt(ImageCandidateDto::confidence).reversed())
+            .toList();
 
     List<ImageCandidateDto> verified = new ArrayList<>(3);
     for (ImageCandidateDto cand : sorted) {
       if (cand.imageUrl().contains("wikimedia.org/wikipedia/")
           || checkUrlReachable(cand.imageUrl())) {
         verified.add(cand);
-        if (verified.size() >= 3)
-          break;
+        if (verified.size() >= 3) break;
       }
     }
     return verified;
@@ -1474,8 +1529,7 @@ public class AdminDestinationImageService {
   }
 
   private String normalizeWikimediaImageUrl(String rawUrl) {
-    if (rawUrl == null || rawUrl.isBlank())
-      return "";
+    if (rawUrl == null || rawUrl.isBlank()) return "";
     String clean = rawUrl.trim();
     clean = clean.replace("https://thumb.wikimedia.org/", "https://upload.wikimedia.org/");
     clean = clean.replace("http://thumb.wikimedia.org/", "https://upload.wikimedia.org/");
@@ -1489,16 +1543,15 @@ public class AdminDestinationImageService {
       String lang, String query, Destination dest, Map<String, ImageCandidateDto> candidateMap) {
     try {
       String encoded = URLEncoder.encode(query, StandardCharsets.UTF_8);
-      String apiUrl = String.format(
-          "https://%s.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=%s&gsrlimit=5&prop=pageimages|info|extracts|coordinates&inprop=url&piprop=original|thumbnail&pithumbsize=1000&exintro=1&explaintext=1&exchars=300&format=json",
-          lang, encoded);
+      String apiUrl =
+          String.format(
+              "https://%s.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=%s&gsrlimit=5&prop=pageimages|info|extracts|coordinates&inprop=url&piprop=original|thumbnail&pithumbsize=1000&exintro=1&explaintext=1&exchars=300&format=json",
+              lang, encoded);
 
       JsonNode root = sendGetJson(apiUrl);
-      if (root == null)
-        return;
+      if (root == null) return;
       JsonNode pages = root.path("query").path("pages");
-      if (!pages.isObject())
-        return;
+      if (!pages.isObject()) return;
 
       pages
           .fields()
@@ -1507,17 +1560,19 @@ public class AdminDestinationImageService {
                 JsonNode page = entry.getValue();
                 String pageTitle = page.path("title").asText("");
                 String extract = page.path("extract").asText("");
-                String fullUrl = page.path("fullurl")
-                    .asText(
-                        "https://"
-                            + lang
-                            + ".wikipedia.org/wiki/"
-                            + URLEncoder.encode(pageTitle, StandardCharsets.UTF_8));
+                String fullUrl =
+                    page.path("fullurl")
+                        .asText(
+                            "https://"
+                                + lang
+                                + ".wikipedia.org/wiki/"
+                                + URLEncoder.encode(pageTitle, StandardCharsets.UTF_8));
 
                 String thumbUrl = page.path("thumbnail").path("source").asText("");
                 String origUrl = page.path("original").path("source").asText("");
-                String imageUrl = normalizeWikimediaImageUrl(
-                    !origUrl.isBlank() && !isBannedMediaUrl(origUrl) ? origUrl : thumbUrl);
+                String imageUrl =
+                    normalizeWikimediaImageUrl(
+                        !origUrl.isBlank() && !isBannedMediaUrl(origUrl) ? origUrl : thumbUrl);
 
                 if (imageUrl.isBlank() || isBannedMediaUrl(imageUrl)) {
                   return;
@@ -1534,36 +1589,40 @@ public class AdminDestinationImageService {
                 int width = page.path("thumbnail").path("width").asInt(800);
                 int height = page.path("thumbnail").path("height").asInt(600);
 
-                String sourceLabel = "vi".equals(lang) ? "Wikipedia Tiếng Việt" : "Wikipedia English";
-                ScoredCandidate scored = scoreCandidate(
-                    dest,
-                    pageTitle,
-                    extract,
-                    imageUrl,
-                    pageLat,
-                    pageLon,
-                    true,
-                    width,
-                    height,
-                    sourceLabel);
+                String sourceLabel =
+                    "vi".equals(lang) ? "Wikipedia Tiếng Việt" : "Wikipedia English";
+                ScoredCandidate scored =
+                    scoreCandidate(
+                        dest,
+                        pageTitle,
+                        extract,
+                        imageUrl,
+                        pageLat,
+                        pageLon,
+                        true,
+                        width,
+                        height,
+                        sourceLabel);
 
                 if (scored.confidence >= 55) {
                   String key = normalizeCandidateDedupKey(imageUrl);
-                  ImageCandidateDto candidate = new ImageCandidateDto(
-                      imageUrl,
-                      imageUrl,
-                      pageTitle,
-                      sourceLabel,
-                      fullUrl,
-                      "CC BY-SA / Wikimedia",
-                      scored.confidence,
-                      scored.reason,
-                      width,
-                      height);
+                  ImageCandidateDto candidate =
+                      new ImageCandidateDto(
+                          imageUrl,
+                          imageUrl,
+                          pageTitle,
+                          sourceLabel,
+                          fullUrl,
+                          "CC BY-SA / Wikimedia",
+                          scored.confidence,
+                          scored.reason,
+                          width,
+                          height);
                   candidateMap.merge(
                       key,
                       candidate,
-                      (oldVal, newVal) -> newVal.confidence() > oldVal.confidence() ? newVal : oldVal);
+                      (oldVal, newVal) ->
+                          newVal.confidence() > oldVal.confidence() ? newVal : oldVal);
                 }
               });
     } catch (Exception e) {
@@ -1578,19 +1637,18 @@ public class AdminDestinationImageService {
       Destination dest,
       Map<String, ImageCandidateDto> candidateMap) {
     try {
-      String apiUrl = String.format(
-          Locale.US,
-          "https://%s.wikipedia.org/w/api.php?action=query&generator=geosearch&ggscoord=%.6f|%.6f&ggsradius=2000&ggslimit=5&prop=pageimages|info|extracts|coordinates&inprop=url&piprop=original|thumbnail&pithumbsize=1000&exintro=1&explaintext=1&exchars=250&format=json",
-          lang,
-          lat,
-          lon);
+      String apiUrl =
+          String.format(
+              Locale.US,
+              "https://%s.wikipedia.org/w/api.php?action=query&generator=geosearch&ggscoord=%.6f|%.6f&ggsradius=2000&ggslimit=5&prop=pageimages|info|extracts|coordinates&inprop=url&piprop=original|thumbnail&pithumbsize=1000&exintro=1&explaintext=1&exchars=250&format=json",
+              lang,
+              lat,
+              lon);
 
       JsonNode root = sendGetJson(apiUrl);
-      if (root == null)
-        return;
+      if (root == null) return;
       JsonNode pages = root.path("query").path("pages");
-      if (!pages.isObject())
-        return;
+      if (!pages.isObject()) return;
 
       pages
           .fields()
@@ -1602,8 +1660,9 @@ public class AdminDestinationImageService {
                 String fullUrl = page.path("fullurl").asText("");
                 String thumbUrl = page.path("thumbnail").path("source").asText("");
                 String origUrl = page.path("original").path("source").asText("");
-                String imageUrl = normalizeWikimediaImageUrl(
-                    !origUrl.isBlank() && !isBannedMediaUrl(origUrl) ? origUrl : thumbUrl);
+                String imageUrl =
+                    normalizeWikimediaImageUrl(
+                        !origUrl.isBlank() && !isBannedMediaUrl(origUrl) ? origUrl : thumbUrl);
 
                 if (imageUrl.isBlank() || isBannedMediaUrl(imageUrl)) {
                   return;
@@ -1619,39 +1678,43 @@ public class AdminDestinationImageService {
 
                 int width = page.path("thumbnail").path("width").asInt(800);
                 int height = page.path("thumbnail").path("height").asInt(600);
-                String sourceLabel = "vi".equals(lang)
-                    ? "Wikipedia Geosearch (GPS)"
-                    : "Wikipedia EN Geosearch (GPS)";
+                String sourceLabel =
+                    "vi".equals(lang)
+                        ? "Wikipedia Geosearch (GPS)"
+                        : "Wikipedia EN Geosearch (GPS)";
 
-                ScoredCandidate scored = scoreCandidate(
-                    dest,
-                    pageTitle,
-                    extract,
-                    imageUrl,
-                    pageLat,
-                    pageLon,
-                    true,
-                    width,
-                    height,
-                    sourceLabel);
+                ScoredCandidate scored =
+                    scoreCandidate(
+                        dest,
+                        pageTitle,
+                        extract,
+                        imageUrl,
+                        pageLat,
+                        pageLon,
+                        true,
+                        width,
+                        height,
+                        sourceLabel);
 
                 if (scored.confidence >= 55) {
                   String key = normalizeCandidateDedupKey(imageUrl);
-                  ImageCandidateDto candidate = new ImageCandidateDto(
-                      imageUrl,
-                      imageUrl,
-                      pageTitle,
-                      sourceLabel,
-                      fullUrl,
-                      "CC BY-SA / Wikimedia",
-                      scored.confidence,
-                      scored.reason,
-                      width,
-                      height);
+                  ImageCandidateDto candidate =
+                      new ImageCandidateDto(
+                          imageUrl,
+                          imageUrl,
+                          pageTitle,
+                          sourceLabel,
+                          fullUrl,
+                          "CC BY-SA / Wikimedia",
+                          scored.confidence,
+                          scored.reason,
+                          width,
+                          height);
                   candidateMap.merge(
                       key,
                       candidate,
-                      (oldVal, newVal) -> newVal.confidence() > oldVal.confidence() ? newVal : oldVal);
+                      (oldVal, newVal) ->
+                          newVal.confidence() > oldVal.confidence() ? newVal : oldVal);
                 }
               });
     } catch (Exception e) {
@@ -1663,16 +1726,15 @@ public class AdminDestinationImageService {
       String query, Destination dest, Map<String, ImageCandidateDto> candidateMap) {
     try {
       String encoded = URLEncoder.encode(query, StandardCharsets.UTF_8);
-      String apiUrl = "https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrnamespace=6&gsrsearch="
-          + encoded
-          + "&gsrlimit=6&prop=imageinfo|coordinates&iiprop=url|dimensions|mime|extmetadata&iiurlwidth=1024&format=json";
+      String apiUrl =
+          "https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrnamespace=6&gsrsearch="
+              + encoded
+              + "&gsrlimit=6&prop=imageinfo|coordinates&iiprop=url|dimensions|mime|extmetadata&iiurlwidth=1024&format=json";
 
       JsonNode root = sendGetJson(apiUrl);
-      if (root == null)
-        return;
+      if (root == null) return;
       JsonNode pages = root.path("query").path("pages");
-      if (!pages.isObject())
-        return;
+      if (!pages.isObject()) return;
 
       pages
           .fields()
@@ -1681,8 +1743,7 @@ public class AdminDestinationImageService {
                 JsonNode page = entry.getValue();
                 String rawTitle = page.path("title").asText("").replaceFirst("^File:", "");
                 JsonNode imageInfoArr = page.path("imageinfo");
-                if (!imageInfoArr.isArray() || imageInfoArr.isEmpty())
-                  return;
+                if (!imageInfoArr.isArray() || imageInfoArr.isEmpty()) return;
 
                 JsonNode ii = imageInfoArr.get(0);
                 String mime = ii.path("mime").asText("");
@@ -1700,8 +1761,9 @@ public class AdminDestinationImageService {
 
                 String thumbUrl = ii.path("thumburl").asText("");
                 String origUrl = ii.path("url").asText("");
-                String imageUrl = normalizeWikimediaImageUrl(
-                    !origUrl.isBlank() && !isBannedMediaUrl(origUrl) ? origUrl : thumbUrl);
+                String imageUrl =
+                    normalizeWikimediaImageUrl(
+                        !origUrl.isBlank() && !isBannedMediaUrl(origUrl) ? origUrl : thumbUrl);
                 String descriptionUrl = ii.path("descriptionurl").asText("");
 
                 if (imageUrl.isBlank()
@@ -1711,12 +1773,14 @@ public class AdminDestinationImageService {
                 }
 
                 JsonNode ext = ii.path("extmetadata");
-                String imgDesc = ext.path("ImageDescription")
-                    .path("value")
-                    .asText("")
-                    .replaceAll("<[^>]+>", " ");
+                String imgDesc =
+                    ext.path("ImageDescription")
+                        .path("value")
+                        .asText("")
+                        .replaceAll("<[^>]+>", " ");
                 String categories = ext.path("Categories").path("value").asText("");
-                String license = ext.path("LicenseShortName").path("value").asText("Wikimedia Commons CC");
+                String license =
+                    ext.path("LicenseShortName").path("value").asText("Wikimedia Commons CC");
 
                 Double fileLat = null;
                 Double fileLon = null;
@@ -1726,35 +1790,38 @@ public class AdminDestinationImageService {
                   fileLon = coords.get(0).path("lon").asDouble();
                 }
 
-                ScoredCandidate scored = scoreCandidate(
-                    dest,
-                    rawTitle,
-                    imgDesc + " " + categories,
-                    imageUrl,
-                    fileLat,
-                    fileLon,
-                    false,
-                    width,
-                    height,
-                    "Wikimedia Commons");
+                ScoredCandidate scored =
+                    scoreCandidate(
+                        dest,
+                        rawTitle,
+                        imgDesc + " " + categories,
+                        imageUrl,
+                        fileLat,
+                        fileLon,
+                        false,
+                        width,
+                        height,
+                        "Wikimedia Commons");
 
                 if (scored.confidence >= 55) {
                   String key = normalizeCandidateDedupKey(imageUrl);
-                  ImageCandidateDto candidate = new ImageCandidateDto(
-                      imageUrl,
-                      imageUrl,
-                      rawTitle.replaceAll("\\.[a-zA-Z0-9]+$", ""),
-                      "Wikimedia Commons",
-                      descriptionUrl,
-                      license,
-                      scored.confidence,
-                      scored.reason,
-                      width,
-                      height);
+                  ImageCandidateDto candidate =
+                      new ImageCandidateDto(
+                          imageUrl,
+                          imageUrl,
+                          rawTitle.replaceAll("\\.[a-zA-Z0-9]+$", ""),
+                          "Wikimedia Commons",
+                          descriptionUrl,
+                          license,
+                          scored.confidence,
+                          scored.reason,
+                          width,
+                          height);
                   candidateMap.merge(
                       key,
                       candidate,
-                      (oldVal, newVal) -> newVal.confidence() > oldVal.confidence() ? newVal : oldVal);
+                      (oldVal, newVal) ->
+                          newVal.confidence() > oldVal.confidence() ? newVal : oldVal);
                 }
               });
     } catch (Exception e) {
@@ -1765,18 +1832,17 @@ public class AdminDestinationImageService {
   private void fetchWikimediaCommonsGeoCandidates(
       double lat, double lon, Destination dest, Map<String, ImageCandidateDto> candidateMap) {
     try {
-      String apiUrl = String.format(
-          Locale.US,
-          "https://commons.wikimedia.org/w/api.php?action=query&generator=geosearch&ggsnamespace=6&ggscoord=%.6f|%.6f&ggsradius=1200&ggslimit=6&prop=imageinfo|coordinates&iiprop=url|dimensions|mime|extmetadata&iiurlwidth=1024&format=json",
-          lat,
-          lon);
+      String apiUrl =
+          String.format(
+              Locale.US,
+              "https://commons.wikimedia.org/w/api.php?action=query&generator=geosearch&ggsnamespace=6&ggscoord=%.6f|%.6f&ggsradius=1200&ggslimit=6&prop=imageinfo|coordinates&iiprop=url|dimensions|mime|extmetadata&iiurlwidth=1024&format=json",
+              lat,
+              lon);
 
       JsonNode root = sendGetJson(apiUrl);
-      if (root == null)
-        return;
+      if (root == null) return;
       JsonNode pages = root.path("query").path("pages");
-      if (!pages.isObject())
-        return;
+      if (!pages.isObject()) return;
 
       pages
           .fields()
@@ -1785,8 +1851,7 @@ public class AdminDestinationImageService {
                 JsonNode page = entry.getValue();
                 String rawTitle = page.path("title").asText("").replaceFirst("^File:", "");
                 JsonNode imageInfoArr = page.path("imageinfo");
-                if (!imageInfoArr.isArray() || imageInfoArr.isEmpty())
-                  return;
+                if (!imageInfoArr.isArray() || imageInfoArr.isEmpty()) return;
 
                 JsonNode ii = imageInfoArr.get(0);
                 String mime = ii.path("mime").asText("");
@@ -1798,8 +1863,9 @@ public class AdminDestinationImageService {
 
                 String thumbUrl = ii.path("thumburl").asText("");
                 String origUrl = ii.path("url").asText("");
-                String imageUrl = normalizeWikimediaImageUrl(
-                    !origUrl.isBlank() && !isBannedMediaUrl(origUrl) ? origUrl : thumbUrl);
+                String imageUrl =
+                    normalizeWikimediaImageUrl(
+                        !origUrl.isBlank() && !isBannedMediaUrl(origUrl) ? origUrl : thumbUrl);
                 String descriptionUrl = ii.path("descriptionurl").asText("");
                 if (imageUrl.isBlank()
                     || isBannedMediaUrl(imageUrl)
@@ -1810,11 +1876,13 @@ public class AdminDestinationImageService {
                 int width = ii.path("width").asInt(800);
                 int height = ii.path("height").asInt(600);
                 JsonNode ext = ii.path("extmetadata");
-                String imgDesc = ext.path("ImageDescription")
-                    .path("value")
-                    .asText("")
-                    .replaceAll("<[^>]+>", " ");
-                String license = ext.path("LicenseShortName").path("value").asText("Wikimedia Commons CC");
+                String imgDesc =
+                    ext.path("ImageDescription")
+                        .path("value")
+                        .asText("")
+                        .replaceAll("<[^>]+>", " ");
+                String license =
+                    ext.path("LicenseShortName").path("value").asText("Wikimedia Commons CC");
 
                 Double fileLat = lat;
                 Double fileLon = lon;
@@ -1824,35 +1892,38 @@ public class AdminDestinationImageService {
                   fileLon = coords.get(0).path("lon").asDouble();
                 }
 
-                ScoredCandidate scored = scoreCandidate(
-                    dest,
-                    rawTitle,
-                    imgDesc,
-                    imageUrl,
-                    fileLat,
-                    fileLon,
-                    false,
-                    width,
-                    height,
-                    "Wikimedia Commons GPS");
+                ScoredCandidate scored =
+                    scoreCandidate(
+                        dest,
+                        rawTitle,
+                        imgDesc,
+                        imageUrl,
+                        fileLat,
+                        fileLon,
+                        false,
+                        width,
+                        height,
+                        "Wikimedia Commons GPS");
 
                 if (scored.confidence >= 55) {
                   String key = normalizeCandidateDedupKey(imageUrl);
-                  ImageCandidateDto candidate = new ImageCandidateDto(
-                      imageUrl,
-                      imageUrl,
-                      rawTitle.replaceAll("\\.[a-zA-Z0-9]+$", ""),
-                      "Wikimedia Commons GPS",
-                      descriptionUrl,
-                      license,
-                      scored.confidence,
-                      scored.reason,
-                      width,
-                      height);
+                  ImageCandidateDto candidate =
+                      new ImageCandidateDto(
+                          imageUrl,
+                          imageUrl,
+                          rawTitle.replaceAll("\\.[a-zA-Z0-9]+$", ""),
+                          "Wikimedia Commons GPS",
+                          descriptionUrl,
+                          license,
+                          scored.confidence,
+                          scored.reason,
+                          width,
+                          height);
                   candidateMap.merge(
                       key,
                       candidate,
-                      (oldVal, newVal) -> newVal.confidence() > oldVal.confidence() ? newVal : oldVal);
+                      (oldVal, newVal) ->
+                          newVal.confidence() > oldVal.confidence() ? newVal : oldVal);
                 }
               });
     } catch (Exception e) {
@@ -1864,13 +1935,12 @@ public class AdminDestinationImageService {
       String query, Destination dest, Map<String, ImageCandidateDto> candidateMap) {
     try {
       String encoded = URLEncoder.encode(query, StandardCharsets.UTF_8);
-      String apiUrl = "https://api.openverse.org/v1/images/?q=" + encoded + "&page_size=5&license_type=all";
+      String apiUrl =
+          "https://api.openverse.org/v1/images/?q=" + encoded + "&page_size=5&license_type=all";
       JsonNode root = sendGetJson(apiUrl);
-      if (root == null)
-        return;
+      if (root == null) return;
       JsonNode results = root.path("results");
-      if (!results.isArray())
-        return;
+      if (!results.isArray()) return;
 
       for (JsonNode item : results) {
         String rawUrl = item.path("url").asText("");
@@ -1901,22 +1971,24 @@ public class AdminDestinationImageService {
         }
 
         String sourceLabel = "Openverse / " + source.toUpperCase(Locale.ROOT) + " CC";
-        ScoredCandidate scored = scoreCandidate(
-            dest, title, tagsText, imageUrl, null, null, false, width, height, sourceLabel);
+        ScoredCandidate scored =
+            scoreCandidate(
+                dest, title, tagsText, imageUrl, null, null, false, width, height, sourceLabel);
 
         if (scored.confidence >= 65) {
           String key = normalizeCandidateDedupKey(imageUrl);
-          ImageCandidateDto candidate = new ImageCandidateDto(
-              imageUrl,
-              !thumbUrl.isBlank() ? thumbUrl : imageUrl,
-              title,
-              sourceLabel,
-              foreignUrl,
-              "CC " + licenseCode,
-              scored.confidence,
-              scored.reason,
-              width,
-              height);
+          ImageCandidateDto candidate =
+              new ImageCandidateDto(
+                  imageUrl,
+                  !thumbUrl.isBlank() ? thumbUrl : imageUrl,
+                  title,
+                  sourceLabel,
+                  foreignUrl,
+                  "CC " + licenseCode,
+                  scored.confidence,
+                  scored.reason,
+                  width,
+                  height);
           candidateMap.merge(
               key,
               candidate,
@@ -1932,17 +2004,16 @@ public class AdminDestinationImageService {
       String query, Destination dest, Map<String, ImageCandidateDto> candidateMap) {
     try {
       String encoded = URLEncoder.encode(query, StandardCharsets.UTF_8);
-      String apiUrl = String.format(
-          "https://www.googleapis.com/customsearch/v1?key=%s&cx=%s&q=%s&searchType=image&num=3&safe=active",
-          URLEncoder.encode(googleCseApiKey, StandardCharsets.UTF_8),
-          URLEncoder.encode(googleCseCx, StandardCharsets.UTF_8),
-          encoded);
+      String apiUrl =
+          String.format(
+              "https://www.googleapis.com/customsearch/v1?key=%s&cx=%s&q=%s&searchType=image&num=3&safe=active",
+              URLEncoder.encode(googleCseApiKey, StandardCharsets.UTF_8),
+              URLEncoder.encode(googleCseCx, StandardCharsets.UTF_8),
+              encoded);
       JsonNode root = sendGetJson(apiUrl);
-      if (root == null)
-        return;
+      if (root == null) return;
       JsonNode items = root.path("items");
-      if (!items.isArray())
-        return;
+      if (!items.isArray()) return;
 
       for (JsonNode item : items) {
         String link = item.path("link").asText("");
@@ -1952,19 +2023,19 @@ public class AdminDestinationImageService {
         int width = item.path("image").path("width").asInt(800);
         int height = item.path("image").path("height").asInt(600);
 
-        if (link.isBlank() || isBannedMediaUrl(link))
-          continue;
-        ScoredCandidate scored = scoreCandidate(
-            dest,
-            title,
-            snippet,
-            link,
-            null,
-            null,
-            false,
-            width,
-            height,
-            "Google Custom Search");
+        if (link.isBlank() || isBannedMediaUrl(link)) continue;
+        ScoredCandidate scored =
+            scoreCandidate(
+                dest,
+                title,
+                snippet,
+                link,
+                null,
+                null,
+                false,
+                width,
+                height,
+                "Google Custom Search");
         if (scored.confidence >= 60) {
           String key = normalizeCandidateDedupKey(link);
           candidateMap.putIfAbsent(
@@ -1988,12 +2059,12 @@ public class AdminDestinationImageService {
   }
 
   private List<String> buildEnglishLandmarkQueries(String destName) {
-    if (destName == null || destName.isBlank())
-      return List.of();
-    String norm = DestinationService.stripAccents(destName)
-        .replaceAll("[^a-z0-9\\s]", " ")
-        .replaceAll("\\s+", " ")
-        .trim();
+    if (destName == null || destName.isBlank()) return List.of();
+    String norm =
+        DestinationService.stripAccents(destName)
+            .replaceAll("[^a-z0-9\\s]", " ")
+            .replaceAll("\\s+", " ")
+            .trim();
     List<String> out = new ArrayList<>();
     if (norm.startsWith("bai bien ")) {
       String core = norm.substring("bai bien ".length()).trim();
@@ -2149,8 +2220,7 @@ public class AdminDestinationImageService {
     return out;
   }
 
-  private record ScoredCandidate(int confidence, String reason) {
-  }
+  private record ScoredCandidate(int confidence, String reason) {}
 
   private ScoredCandidate scoreCandidate(
       Destination dest,
@@ -2165,26 +2235,31 @@ public class AdminDestinationImageService {
       String sourceName) {
 
     String destName = dest.getName() != null ? dest.getName() : "";
-    String province = dest.getProvince() != null && dest.getProvince().getName() != null
-        ? dest.getProvince().getName()
-        : "";
+    String province =
+        dest.getProvince() != null && dest.getProvince().getName() != null
+            ? dest.getProvince().getName()
+            : "";
 
-    String normDestName = DestinationService.stripAccents(destName)
-        .replaceAll("[^a-z0-9\\s]", " ")
-        .replaceAll("\\s+", " ")
-        .trim();
-    String normProv = DestinationService.stripAccents(province)
-        .replaceAll("[^a-z0-9\\s]", " ")
-        .replaceAll("\\s+", " ")
-        .trim();
-    String normTitle = DestinationService.stripAccents(candidateTitle)
-        .replaceAll("[^a-z0-9\\s]", " ")
-        .replaceAll("\\s+", " ")
-        .trim();
-    String normDesc = DestinationService.stripAccents(candidateDesc)
-        .replaceAll("[^a-z0-9\\s]", " ")
-        .replaceAll("\\s+", " ")
-        .trim();
+    String normDestName =
+        DestinationService.stripAccents(destName)
+            .replaceAll("[^a-z0-9\\s]", " ")
+            .replaceAll("\\s+", " ")
+            .trim();
+    String normProv =
+        DestinationService.stripAccents(province)
+            .replaceAll("[^a-z0-9\\s]", " ")
+            .replaceAll("\\s+", " ")
+            .trim();
+    String normTitle =
+        DestinationService.stripAccents(candidateTitle)
+            .replaceAll("[^a-z0-9\\s]", " ")
+            .replaceAll("\\s+", " ")
+            .trim();
+    String normDesc =
+        DestinationService.stripAccents(candidateDesc)
+            .replaceAll("[^a-z0-9\\s]", " ")
+            .replaceAll("\\s+", " ")
+            .trim();
 
     if (normDestName.isBlank() || normTitle.isBlank()) {
       return new ScoredCandidate(0, "Thiếu tiêu đề đối chiếu");
@@ -2230,7 +2305,8 @@ public class AdminDestinationImageService {
 
     List<String> strippedProperPhrases = new ArrayList<>();
     List<String> destTokens = extractDistinctiveTokens(normDestName);
-    List<String> properTokens = destTokens.stream().filter(t -> !GENERIC_LANDMARK_TYPE_WORDS.contains(t)).toList();
+    List<String> properTokens =
+        destTokens.stream().filter(t -> !GENERIC_LANDMARK_TYPE_WORDS.contains(t)).toList();
 
     // Never allow stripped proper phrase if it is identical to the province/city
     // name (e.g. "Bảo
@@ -2248,17 +2324,19 @@ public class AdminDestinationImageService {
       properTokens = destTokens;
     }
 
-    String strippedPrefixRaw = destName
-        .replace('’', '\'')
-        .replace('‘', '\'')
-        .replaceFirst(
-            "(?i)^(Bãi biển|Khu du lịch sinh thái|Khu du lịch|Khu di tích lịch sử|Khu di tích|Di tích lịch sử|Di tích|Danh thắng|Thắng cảnh|Quần thể danh thắng|Quần thể di tích|Quần thể|Làng văn hóa du lịch|Làng du lịch|Làng nghề|Làng cổ|Làng hoa|Làng đá|Bán đảo|Cố đô|Thánh địa|Khu bảo tồn thiên nhiên|Khu bảo tồn|Khu lưu niệm|Đài quan sát|Tòa nhà|Rừng ngập mặn|Rừng thông|Rừng tràm|Cánh đồng quạt gió|Cánh đồng điện gió|Đồi chè|Thung lũng|Quảng trường|Tượng đài|Nhà tưởng niệm|Đền thờ)\\s+",
-            "")
-        .trim();
-    String strippedPrefixNorm = DestinationService.stripAccents(strippedPrefixRaw)
-        .replaceAll("[^a-z0-9\\s]", " ")
-        .replaceAll("\\s+", " ")
-        .trim();
+    String strippedPrefixRaw =
+        destName
+            .replace('’', '\'')
+            .replace('‘', '\'')
+            .replaceFirst(
+                "(?i)^(Bãi biển|Khu du lịch sinh thái|Khu du lịch|Khu di tích lịch sử|Khu di tích|Di tích lịch sử|Di tích|Danh thắng|Thắng cảnh|Quần thể danh thắng|Quần thể di tích|Quần thể|Làng văn hóa du lịch|Làng du lịch|Làng nghề|Làng cổ|Làng hoa|Làng đá|Bán đảo|Cố đô|Thánh địa|Khu bảo tồn thiên nhiên|Khu bảo tồn|Khu lưu niệm|Đài quan sát|Tòa nhà|Rừng ngập mặn|Rừng thông|Rừng tràm|Cánh đồng quạt gió|Cánh đồng điện gió|Đồi chè|Thung lũng|Quảng trường|Tượng đài|Nhà tưởng niệm|Đền thờ)\\s+",
+                "")
+            .trim();
+    String strippedPrefixNorm =
+        DestinationService.stripAccents(strippedPrefixRaw)
+            .replaceAll("[^a-z0-9\\s]", " ")
+            .replaceAll("\\s+", " ")
+            .trim();
     if (strippedPrefixNorm.length() >= 5
         && !strippedPrefixNorm.equals(normDestName)
         && !strippedPrefixNorm.equals(normProv)
@@ -2275,17 +2353,20 @@ public class AdminDestinationImageService {
         || destName.toLowerCase(Locale.ROOT).contains(" và ")
         || destName.toLowerCase(Locale.ROOT).contains(" tại ")
         || destName.toLowerCase(Locale.ROOT).contains(" trên ")) {
-      for (String part : destName.split("(?i)(\\s*&\\s*|\\s+và\\s+|\\s*[–-]\\s*|\\s+tại\\s+|\\s+trên\\s+)")) {
-        String normPart = DestinationService.stripAccents(part)
-            .replaceAll("[^a-z0-9\\s]", " ")
-            .replaceAll("\\s+", " ")
-            .trim();
+      for (String part :
+          destName.split("(?i)(\\s*&\\s*|\\s+và\\s+|\\s*[–-]\\s*|\\s+tại\\s+|\\s+trên\\s+)")) {
+        String normPart =
+            DestinationService.stripAccents(part)
+                .replaceAll("[^a-z0-9\\s]", " ")
+                .replaceAll("\\s+", " ")
+                .trim();
         if (normPart.length() >= 5 && !normPart.equals(normProv)) {
           fullPhrases.add(normPart);
           fullPhrases.addAll(buildEnglishLandmarkQueries(part));
-          List<String> subProper = extractDistinctiveTokens(normPart).stream()
-              .filter(t -> !GENERIC_LANDMARK_TYPE_WORDS.contains(t))
-              .toList();
+          List<String> subProper =
+              extractDistinctiveTokens(normPart).stream()
+                  .filter(t -> !GENERIC_LANDMARK_TYPE_WORDS.contains(t))
+                  .toList();
           if (subProper.size() >= 2) {
             String subProperPhrase = String.join(" ", subProper);
             if (subProperPhrase.length() >= 5 && !subProperPhrase.equals(normProv)) {
@@ -2296,10 +2377,11 @@ public class AdminDestinationImageService {
       }
     }
     if (destName.contains("(")) {
-      String beforeParen = DestinationService.stripAccents(destName.substring(0, destName.indexOf('(')))
-          .replaceAll("[^a-z0-9\\s]", " ")
-          .replaceAll("\\s+", " ")
-          .trim();
+      String beforeParen =
+          DestinationService.stripAccents(destName.substring(0, destName.indexOf('(')))
+              .replaceAll("[^a-z0-9\\s]", " ")
+              .replaceAll("\\s+", " ")
+              .trim();
       if (beforeParen.length() >= 5 && !beforeParen.equals(normProv)) {
         fullPhrases.add(beforeParen);
         fullPhrases.addAll(
@@ -2315,8 +2397,7 @@ public class AdminDestinationImageService {
     boolean fullPhraseInTitle = false;
     boolean fullPhraseInDesc = false;
     for (String phrase : fullPhrases) {
-      if (phrase == null || phrase.isBlank())
-        continue;
+      if (phrase == null || phrase.isBlank()) continue;
       if (paddedTitle.contains(" " + phrase + " ")) {
         fullPhraseInTitle = true;
         break;
@@ -2333,8 +2414,7 @@ public class AdminDestinationImageService {
 
     boolean strippedPhraseInTitle = false;
     for (String phrase : strippedProperPhrases) {
-      if (phrase == null || phrase.isBlank())
-        continue;
+      if (phrase == null || phrase.isBlank()) continue;
       if (paddedTitle.contains(" " + phrase + " ")) {
         strippedPhraseInTitle = true;
         break;
@@ -2352,7 +2432,8 @@ public class AdminDestinationImageService {
         matchedDestInTitle++;
       }
     }
-    boolean allDestTokensInTitle = destTokens.size() >= 2 && matchedDestInTitle == destTokens.size();
+    boolean allDestTokensInTitle =
+        destTokens.size() >= 2 && matchedDestInTitle == destTokens.size();
 
     int matchedProperInTitle = 0;
     for (String token : properTokens) {
@@ -2360,37 +2441,39 @@ public class AdminDestinationImageService {
         matchedProperInTitle++;
       }
     }
-    boolean highMultiWordProperMatch = properTokens.size() >= 3 && matchedProperInTitle == properTokens.size();
+    boolean highMultiWordProperMatch =
+        properTokens.size() >= 3 && matchedProperInTitle == properTokens.size();
 
     boolean provinceMatched = matchesProvinceOrAlias(paddedTitle, paddedDesc, normTitle, normProv);
 
     // Check if candidate has landmark/geography context when only stripped proper
     // phrase matched
     String combinedContext = paddedTitle + " " + paddedDesc;
-    boolean hasLandmarkContext = isWikipediaLeadImage
-        || provinceMatched
-        || combinedContext.contains(" viet nam ")
-        || combinedContext.contains(" vietnam ")
-        || combinedContext.contains(" beach ")
-        || combinedContext.contains(" pagoda ")
-        || combinedContext.contains(" temple ")
-        || combinedContext.contains(" museum ")
-        || combinedContext.contains(" waterfall ")
-        || combinedContext.contains(" lake ")
-        || combinedContext.contains(" island ")
-        || combinedContext.contains(" bay ")
-        || combinedContext.contains(" cave ")
-        || combinedContext.contains(" grotto ")
-        || combinedContext.contains(" pass ")
-        || combinedContext.contains(" mountain ")
-        || combinedContext.contains(" market ")
-        || combinedContext.contains(" church ")
-        || combinedContext.contains(" cathedral ")
-        || combinedContext.contains(" bridge ")
-        || combinedContext.contains(" palace ")
-        || combinedContext.contains(" citadel ")
-        || combinedContext.contains(" park ")
-        || combinedContext.contains(" village ");
+    boolean hasLandmarkContext =
+        isWikipediaLeadImage
+            || provinceMatched
+            || combinedContext.contains(" viet nam ")
+            || combinedContext.contains(" vietnam ")
+            || combinedContext.contains(" beach ")
+            || combinedContext.contains(" pagoda ")
+            || combinedContext.contains(" temple ")
+            || combinedContext.contains(" museum ")
+            || combinedContext.contains(" waterfall ")
+            || combinedContext.contains(" lake ")
+            || combinedContext.contains(" island ")
+            || combinedContext.contains(" bay ")
+            || combinedContext.contains(" cave ")
+            || combinedContext.contains(" grotto ")
+            || combinedContext.contains(" pass ")
+            || combinedContext.contains(" mountain ")
+            || combinedContext.contains(" market ")
+            || combinedContext.contains(" church ")
+            || combinedContext.contains(" cathedral ")
+            || combinedContext.contains(" bridge ")
+            || combinedContext.contains(" palace ")
+            || combinedContext.contains(" citadel ")
+            || combinedContext.contains(" park ")
+            || combinedContext.contains(" village ");
     if (!hasLandmarkContext) {
       for (String token : destTokens) {
         if (GENERIC_LANDMARK_TYPE_WORDS.contains(token)
@@ -2406,11 +2489,12 @@ public class AdminDestinationImageService {
         && dest.getLongitude() != null
         && candLat != null
         && candLon != null) {
-      distanceKm = haversineKm(
-          dest.getLatitude().doubleValue(),
-          dest.getLongitude().doubleValue(),
-          candLat,
-          candLon);
+      distanceKm =
+          haversineKm(
+              dest.getLatitude().doubleValue(),
+              dest.getLongitude().doubleValue(),
+              candLat,
+              candLon);
     }
 
     // Reject if GPS coordinates are known and far away (> 15 km)
@@ -2419,8 +2503,9 @@ public class AdminDestinationImageService {
           0, "Tọa độ GPS của ảnh cách quá xa địa điểm (" + Math.round(distanceKm) + "km)");
     }
 
-    boolean validStrippedMatch = (strippedPhraseInTitle || highMultiWordProperMatch)
-        && (hasLandmarkContext || (distanceKm != null && distanceKm <= 5.0));
+    boolean validStrippedMatch =
+        (strippedPhraseInTitle || highMultiWordProperMatch)
+            && (hasLandmarkContext || (distanceKm != null && distanceKm <= 5.0));
 
     // STRICT ACCEPTANCE GATE:
     if (!fullPhraseInTitle && !allDestTokensInTitle && !validStrippedMatch && !fullPhraseInDesc) {
@@ -2474,14 +2559,13 @@ public class AdminDestinationImageService {
 
   private boolean matchesProvinceOrAlias(
       String paddedTitle, String paddedDesc, String normTitle, String normProv) {
-    if (normProv == null || normProv.isBlank())
-      return false;
+    if (normProv == null || normProv.isBlank()) return false;
     List<String> aliases = new ArrayList<>();
     aliases.add(normProv);
     switch (normProv) {
       case "vinh long" -> aliases.addAll(List.of("tra vinh", "ben tre"));
       case "lam dong" ->
-        aliases.addAll(List.of("binh thuan", "dak nong", "da lat", "phan thiet", "mui ne"));
+          aliases.addAll(List.of("binh thuan", "dak nong", "da lat", "phan thiet", "mui ne"));
       case "dak lak" -> aliases.addAll(List.of("phu yen", "tuy hoa", "buon ma thuot"));
       case "gia lai" -> aliases.addAll(List.of("binh dinh", "quy nhon", "kon tum", "pleiku"));
       case "can tho" -> aliases.addAll(List.of("soc trang", "hau giang"));
@@ -2503,18 +2587,17 @@ public class AdminDestinationImageService {
       case "tay ninh" -> aliases.addAll(List.of("long an"));
       case "dong thap" -> aliases.addAll(List.of("tien giang", "my tho", "sa dec"));
       case "ho chi minh", "tp ho chi minh", "thanh pho ho chi minh" ->
-        aliases.addAll(
-            List.of(
-                "ho chi minh",
-                "sai gon",
-                "saigon",
-                "ba ria vung tau",
-                "vung tau",
-                "binh duong",
-                "con dao"));
+          aliases.addAll(
+              List.of(
+                  "ho chi minh",
+                  "sai gon",
+                  "saigon",
+                  "ba ria vung tau",
+                  "vung tau",
+                  "binh duong",
+                  "con dao"));
       case "hue", "thua thien hue" -> aliases.addAll(List.of("hue", "thua thien hue"));
-      default -> {
-      }
+      default -> {}
     }
     String compactTitle = normTitle.replace(" ", "");
     for (String alias : aliases) {
@@ -2539,8 +2622,7 @@ public class AdminDestinationImageService {
   }
 
   private boolean isBannedMediaUrl(String text) {
-    if (text == null || text.isBlank())
-      return true;
+    if (text == null || text.isBlank()) return true;
     String lower = text.toLowerCase(Locale.ROOT);
     if (lower.endsWith(".svg")
         || lower.endsWith(".svg.png")
@@ -2561,8 +2643,7 @@ public class AdminDestinationImageService {
   }
 
   private String normalizeCandidateDedupKey(String url) {
-    if (url == null)
-      return "";
+    if (url == null) return "";
     // Deduplicate different thumbnail sizes of the same Wikimedia image
     String cleaned = url.replaceAll("/\\d+px-", "/px-");
     return cleaned.toLowerCase(Locale.ROOT);
@@ -2572,11 +2653,12 @@ public class AdminDestinationImageService {
     final double r = 6371.0;
     double dLat = Math.toRadians(lat2 - lat1);
     double dLon = Math.toRadians(lon2 - lon1);
-    double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-        + Math.cos(Math.toRadians(lat1))
-            * Math.cos(Math.toRadians(lat2))
-            * Math.sin(dLon / 2)
-            * Math.sin(dLon / 2);
+    double a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2)
+            + Math.cos(Math.toRadians(lat1))
+                * Math.cos(Math.toRadians(lat2))
+                * Math.sin(dLon / 2)
+                * Math.sin(dLon / 2);
     double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return r * c;
   }
@@ -2586,14 +2668,16 @@ public class AdminDestinationImageService {
     try {
       acquired = httpCheckSemaphore.tryAcquire(5, java.util.concurrent.TimeUnit.SECONDS);
       URI safeUri = URI.create(url.replace("|", "%7C"));
-      HttpRequest req = HttpRequest.newBuilder()
-          .uri(safeUri)
-          .timeout(Duration.ofSeconds(6))
-          .header("User-Agent", USER_AGENT)
-          .header("Accept", "application/json")
-          .GET()
-          .build();
-      HttpResponse<String> res = httpClient.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+      HttpRequest req =
+          HttpRequest.newBuilder()
+              .uri(safeUri)
+              .timeout(Duration.ofSeconds(6))
+              .header("User-Agent", USER_AGENT)
+              .header("Accept", "application/json")
+              .GET()
+              .build();
+      HttpResponse<String> res =
+          httpClient.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
       if (res.statusCode() >= 200 && res.statusCode() < 300) {
         return objectMapper.readTree(res.body());
       }
@@ -2616,8 +2700,8 @@ public class AdminDestinationImageService {
       return null;
     }
     try {
-      Map<String, Object> root = objectMapper.readValue(openingHoursJson, new TypeReference<Map<String, Object>>() {
-      });
+      Map<String, Object> root =
+          objectMapper.readValue(openingHoursJson, new TypeReference<Map<String, Object>>() {});
       Object metaObj = root.get("_imageMeta");
       if (metaObj instanceof Map<?, ?> m) {
         Map<String, Object> result = new LinkedHashMap<>();
@@ -2637,8 +2721,7 @@ public class AdminDestinationImageService {
         try {
           root.putAll(
               objectMapper.readValue(
-                  dest.getOpeningHours(), new TypeReference<Map<String, Object>>() {
-                  }));
+                  dest.getOpeningHours(), new TypeReference<Map<String, Object>>() {}));
         } catch (Exception ignored) {
         }
       }
