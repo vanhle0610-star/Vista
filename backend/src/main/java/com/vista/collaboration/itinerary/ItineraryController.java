@@ -53,6 +53,21 @@ public class ItineraryController {
     return ResponseEntity.ok(itineraryService.getDays(tripId, userId));
   }
 
+  @GetMapping("/trips/{tripId}/itinerary")
+  @Operation(summary = "Xem lịch trình dạng gộp (tương thích AI Planner)")
+  public ResponseEntity<TripItineraryResponse> getTripItinerary(@PathVariable UUID tripId) {
+    UUID userId = currentUserProvider.getCurrentUserId();
+    return ResponseEntity.ok(itineraryService.getTripItinerary(tripId, userId));
+  }
+
+  @PostMapping("/trips/{tripId}/itinerary/merge")
+  @Operation(summary = "Đồng bộ / lưu toàn bộ lịch trình từ AI Planner vào chuyến đi")
+  public ResponseEntity<TripItineraryResponse> mergeItinerary(
+      @PathVariable UUID tripId, @RequestBody MergeItineraryRequest request) {
+    UUID userId = currentUserProvider.getCurrentUserId();
+    return ResponseEntity.ok(itineraryService.mergeItinerary(tripId, userId, request));
+  }
+
   // ── Itinerary Items ────────────────────────────────────────────────────────
 
   @PostMapping("/itinerary/days/{dayId}/items")

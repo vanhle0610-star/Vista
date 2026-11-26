@@ -12,8 +12,14 @@ import com.vista.trip.domain.TripEntity;
 import com.vista.trip.domain.TripRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -103,6 +109,164 @@ public class ItineraryService {
     return dayRepository.findByTripIdOrderByDayNumberAsc(tripId).stream()
         .map(ItineraryDayResponse::from)
         .toList();
+  }
+
+  /** Trả về toàn bộ lịch trình dạng { tripId, days: [{ ..., activities }] } cho AI Planner. */
+  @Transactional(readOnly = true)
+  public TripItineraryResponse getTripItinerary(UUID tripId, UUID userId) {
+    tripAccessService.requireMember(tripId, userId);
+    return buildTripItineraryResponse(tripId);
+  }
+
+  /**
+   * Đồng bộ / gộp lịch trình từ AI Planner vào bảng itinerary_days & itinerary_items của chuyến đi.
+   */
+  public TripItineraryResponse mergeItinerary(
+      UUID tripId, UUID userId, MergeItineraryRequest request) {
+    tripAccessService.requireMember(tripId, userId);
+
+    TripEntity trip =
+        tripRepository
+            .findById(tripId)
+            .orElseThrow(
+                () -> new ResourceNotFoundException("Không tìm thấy chuyến đi: " + tripId));
+
+    List<MergeItineraryRequest.MergeDay> incomingDays =
+        request != null && request.days() != null ? request.days() : List.of();
+
+    List<ItineraryDay> existingDays = dayRepository.findByTripIdOrderByDayNumberAsc(tripId);
+    Map<Integer, ItineraryDay> dayByNumber = new HashMap<>();
+    Set<LocalDate> usedDates = new HashSet<>();
+    for (ItineraryDay d : existingDays) {
+      dayByNumber.put(d.getDayNumber(), d);
+      if (d.getTripDate() != null) {
+        usedDates.add(d.getTripDate());
+      }
+    }
+
+    LocalDate baseStart = trip.getStartDate() != null ? trip.getStartDate() : LocalDate.now();
+
+    for (MergeItineraryRequest.MergeDay mergeDay : incomingDays) {
+      if (mergeDay == null || mergeDay.dayNumber() == null || mergeDay.dayNumber() < 1) {
+        continue;
+      }
+      int dayNum = mergeDay.dayNumber();
+      ItineraryDay day = dayByNumber.get(dayNum);
+      if (day == null) {
+        LocalDate candidateDate = baseStart.plusDays(dayNum - 1L);
+        while (usedDates.contains(candidateDate)) {
+          candidateDate = candidateDate.plusDays(1);
+        }
+        usedDates.add(candidateDate);
+        day = dayRepository.saveAndFlush(new ItineraryDay(tripId, dayNum, candidateDate));
+        dayByNumber.put(dayNum, day);
+      } else {
+        day.getItems().clear();
+        dayRepository.saveAndFlush(day);
+      }
+
+      List<MergeItineraryRequest.MergeActivity> activities =
+          mergeDay.activities() != null ? mergeDay.activities() : List.of();
+      for (int idx = 0; idx < activities.size(); idx++) {
+        MergeItineraryRequest.MergeActivity act = activities.get(idx);
+        if (act == null) continue;
+
+        UUID resolvedDestId = null;
+        String destName = null;
+        if (act.destinationId() != null && destinationRepository != null) {
+          var destOpt = destinationRepository.findById(act.destinationId());
+          if (destOpt.isPresent()) {
+            resolvedDestId = act.destinationId();
+            destName = destOpt.get().getName();
+          }
+        }
+
+        String stopName = act.customStopName() != null ? act.customStopName().trim() : "";
+        if (stopName.isEmpty()) {
+          stopName = destName != null && !destName.isBlank() ? destName : "Điểm dừng";
+        }
+        if (stopName.length() > 200) {
+          stopName = stopName.substring(0, 200);
+        }
+
+        LocalTime startTime = parseFlexibleTime(act.startTime());
+        LocalTime endTime = parseFlexibleTime(act.endTime());
+        if (startTime != null && endTime != null && !endTime.isAfter(startTime)) {
+          endTime = null;
+        }
+
+        int sortOrder = act.sortOrder() != null ? act.sortOrder() : idx;
+        ItineraryItem item =
+            new ItineraryItem(
+                day, resolvedDestId, stopName, startTime, endTime, sortOrder, act.note(), userId);
+
+        String source =
+            act.source() != null && !act.source().isBlank() ? act.source().trim() : "AI_SUGGESTED";
+        if (source.length() > 30) {
+          source = source.substring(0, 30);
+        }
+        item.setSource(source);
+        day.getItems().add(item);
+      }
+
+      dayRepository.saveAndFlush(day);
+    }
+
+    notifyTripMembers(
+        tripId,
+        "Lịch trình đã thay đổi",
+        "Lịch trình từ AI Planner đã được đồng bộ vào chuyến đi",
+        userId);
+
+    return buildTripItineraryResponse(tripId);
+  }
+
+  private TripItineraryResponse buildTripItineraryResponse(UUID tripId) {
+    List<ItineraryDay> days = dayRepository.findByTripIdOrderByDayNumberAsc(tripId);
+    List<TripItineraryResponse.DayDto> dayDtos = new ArrayList<>();
+    for (ItineraryDay day : days) {
+      List<ItineraryItem> items = itemRepository.findByDayIdOrderBySortOrderAsc(day.getId());
+      List<TripItineraryResponse.ActivityDto> activityDtos = new ArrayList<>();
+      for (ItineraryItem item : items) {
+        String destName = null;
+        if (item.getDestinationId() != null && destinationRepository != null) {
+          destName =
+              destinationRepository
+                  .findById(item.getDestinationId())
+                  .map(Destination::getName)
+                  .orElse(null);
+        }
+        activityDtos.add(
+            new TripItineraryResponse.ActivityDto(
+                item.getId(),
+                item.getDestinationId(),
+                destName,
+                item.getCustomStopName(),
+                item.getStartTime(),
+                item.getEndTime(),
+                item.getSortOrder(),
+                item.getNote(),
+                item.getSource(),
+                item.getVersion()));
+      }
+      dayDtos.add(
+          new TripItineraryResponse.DayDto(
+              day.getId(), day.getDayNumber(), day.getTripDate(), day.getVersion(), activityDtos));
+    }
+    return new TripItineraryResponse(tripId, dayDtos);
+  }
+
+  private static LocalTime parseFlexibleTime(String raw) {
+    if (raw == null || raw.isBlank()) return null;
+    try {
+      String trimmed = raw.trim();
+      if (trimmed.length() == 5) {
+        trimmed = trimmed + ":00";
+      }
+      return LocalTime.parse(trimmed);
+    } catch (Exception e) {
+      return null;
+    }
   }
 
   // -- Itinerary Items ---------------------------------------------------
