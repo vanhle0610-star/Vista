@@ -4386,16 +4386,19 @@ export default function TripDetailPage() {
             style={{
               background: '#FFFFFF',
               borderRadius: '24px',
-              maxWidth: '520px',
+              maxWidth: '560px',
               width: '100%',
-              padding: '28px',
+              maxHeight: '90vh',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
               boxShadow: '0 24px 48px rgba(0,0,0,0.3)',
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px 12px', flexShrink: 0, borderBottom: '1px solid #F1F5F9' }}>
               <div>
-                <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
+                <h3 style={{ fontSize: '19px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
                   + Thêm điểm dừng mới vào lịch trình
                 </h3>
               </div>
@@ -4414,13 +4417,14 @@ export default function TripDetailPage() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: '#64748B',
+                  flexShrink: 0,
                 }}
               >
                 ✕
               </button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '14px 24px', overflowY: 'auto', flex: 1, minHeight: 0 }}>
               <div>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
                   Chọn ngày dừng chân
@@ -4439,7 +4443,7 @@ export default function TripDetailPage() {
                       style={{
                         flex: displayCalendarDays.length <= 4 ? 1 : '0 0 calc(25% - 6px)',
                         minWidth: '70px',
-                        padding: '8px 10px',
+                        padding: '7px 8px',
                         borderRadius: '8px',
                         border: '1px solid',
                         borderColor: newStopDay === calDay.dayNumber ? '#0284C7' : '#CBD5E1',
@@ -4463,7 +4467,7 @@ export default function TripDetailPage() {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '5px' }}>
                   Ngày lịch trình (dd/mm/yyyy) — V-01 Chặn ngoài khoảng
                 </label>
                 <input
@@ -4478,7 +4482,7 @@ export default function TripDetailPage() {
                   }}
                   style={{
                     width: '100%',
-                    padding: '10px 14px',
+                    padding: '9px 12px',
                     borderRadius: '10px',
                     border: `1.5px solid ${addStopDateError ? '#EF4444' : '#CBD5E1'}`,
                     background: addStopDateError ? '#FEF2F2' : '#FFFFFF',
@@ -4488,7 +4492,7 @@ export default function TripDetailPage() {
                   }}
                 />
                 {addStopDateError && (
-                  <div style={{ marginTop: '6px', color: '#DC2626', fontSize: '12.5px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <div style={{ marginTop: '5px', color: '#DC2626', fontSize: '12.5px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <span>❌</span>
                     <span>{addStopDateError}</span>
                   </div>
@@ -4496,7 +4500,7 @@ export default function TripDetailPage() {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '5px' }}>
                   Tên địa điểm / Hoạt động *
                 </label>
                 <input
@@ -4506,7 +4510,7 @@ export default function TripDetailPage() {
                   onChange={(e) => setNewStopTitle(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '10px 14px',
+                    padding: '9px 12px',
                     borderRadius: '10px',
                     border: '1px solid #CBD5E1',
                     fontSize: '14px',
@@ -4517,7 +4521,7 @@ export default function TripDetailPage() {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '5px' }}>
                   Địa chỉ / Vị trí
                 </label>
                 <input
@@ -4527,7 +4531,7 @@ export default function TripDetailPage() {
                   onChange={(e) => setNewStopLocation(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '10px 14px',
+                    padding: '9px 12px',
                     borderRadius: '10px',
                     border: '1px solid #CBD5E1',
                     fontSize: '14px',
@@ -4539,7 +4543,7 @@ export default function TripDetailPage() {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '5px' }}>
                     Khung giờ
                   </label>
                   <input
@@ -4549,7 +4553,7 @@ export default function TripDetailPage() {
                     onChange={(e) => setNewStopTime(e.target.value)}
                     style={{
                       width: '100%',
-                      padding: '10px 14px',
+                      padding: '9px 12px',
                       borderRadius: '10px',
                       border: '1px solid #CBD5E1',
                       fontSize: '14px',
@@ -4559,7 +4563,7 @@ export default function TripDetailPage() {
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '5px' }}>
                     Chi phí ước tính
                   </label>
                   <input
@@ -4569,7 +4573,7 @@ export default function TripDetailPage() {
                     onChange={(e) => setNewStopCost(e.target.value)}
                     style={{
                       width: '100%',
-                      padding: '10px 14px',
+                      padding: '9px 12px',
                       borderRadius: '10px',
                       border: '1px solid #CBD5E1',
                       fontSize: '14px',
@@ -4580,54 +4584,56 @@ export default function TripDetailPage() {
                 </div>
               </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
-                  Phân loại
-                </label>
-                <select
-                  value={newStopCategory}
-                  onChange={(e) => setNewStopCategory(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '10px 14px',
-                    borderRadius: '10px',
-                    border: '1px solid #CBD5E1',
-                    fontSize: '14px',
-                    outline: 'none',
-                    boxSizing: 'border-box',
-                    background: '#FFFFFF',
-                  }}
-                >
-                  <option value="Di tích & Văn hóa">Di tích & Văn hóa</option>
-                  <option value="Ẩm thực & Cà phê">Ẩm thực & Cà phê</option>
-                  <option value="Trải nghiệm & Khám phá">Trải nghiệm & Khám phá</option>
-                  <option value="Nghỉ ngơi & Mua sắm">Nghỉ ngơi & Mua sắm</option>
-                </select>
-              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '5px' }}>
+                    Phân loại
+                  </label>
+                  <select
+                    value={newStopCategory}
+                    onChange={(e) => setNewStopCategory(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '9px 12px',
+                      borderRadius: '10px',
+                      border: '1px solid #CBD5E1',
+                      fontSize: '14px',
+                      outline: 'none',
+                      boxSizing: 'border-box',
+                      background: '#FFFFFF',
+                    }}
+                  >
+                    <option value="Di tích & Văn hóa">Di tích & Văn hóa</option>
+                    <option value="Ẩm thực & Cà phê">Ẩm thực & Cà phê</option>
+                    <option value="Trải nghiệm & Khám phá">Trải nghiệm & Khám phá</option>
+                    <option value="Nghỉ ngơi & Mua sắm">Nghỉ ngơi & Mua sắm</option>
+                  </select>
+                </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
-                  Link ảnh (tùy chọn)
-                </label>
-                <input
-                  type="url"
-                  placeholder="Để trống để tự động chọn ảnh theo phân loại"
-                  value={newStopImage}
-                  onChange={(e) => setNewStopImage(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '10px 14px',
-                    borderRadius: '10px',
-                    border: '1px solid #CBD5E1',
-                    fontSize: '14px',
-                    outline: 'none',
-                    boxSizing: 'border-box',
-                  }}
-                />
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '5px' }}>
+                    Link ảnh (tùy chọn)
+                  </label>
+                  <input
+                    type="url"
+                    placeholder="Để trống để tự chọn ảnh"
+                    value={newStopImage}
+                    onChange={(e) => setNewStopImage(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '9px 12px',
+                      borderRadius: '10px',
+                      border: '1px solid #CBD5E1',
+                      fontSize: '14px',
+                      outline: 'none',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                </div>
               </div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', padding: '14px 24px 18px', borderTop: '1px solid #F1F5F9', flexShrink: 0, background: '#FFFFFF' }}>
               <button
                 type="button"
                 onClick={() => setShowAddStopModal(false)}
@@ -4690,16 +4696,19 @@ export default function TripDetailPage() {
             style={{
               background: '#FFFFFF',
               borderRadius: '24px',
-              maxWidth: '520px',
+              maxWidth: '560px',
               width: '100%',
-              padding: '28px',
+              maxHeight: '90vh',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
               boxShadow: '0 24px 48px rgba(0,0,0,0.3)',
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px 12px', flexShrink: 0, borderBottom: '1px solid #F1F5F9' }}>
               <div>
-                <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h3 style={{ fontSize: '19px', fontWeight: 800, color: '#0F172A', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <Pencil size={18} style={{ color: '#0284C7' }} />
                   <span>Sửa điểm dừng lịch trình</span>
                 </h3>
@@ -4722,13 +4731,14 @@ export default function TripDetailPage() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: '#64748B',
+                  flexShrink: 0,
                 }}
               >
                 ✕
               </button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '14px 24px', overflowY: 'auto', flex: 1, minHeight: 0 }}>
               <div>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
                   Chuyển sang Ngày (Bước 6)
@@ -4747,7 +4757,7 @@ export default function TripDetailPage() {
                       style={{
                         flex: displayCalendarDays.length <= 4 ? 1 : '0 0 calc(25% - 6px)',
                         minWidth: '70px',
-                        padding: '8px 10px',
+                        padding: '7px 8px',
                         borderRadius: '8px',
                         border: '1px solid',
                         borderColor: editStopTargetDay === calDay.dayNumber ? '#0284C7' : '#CBD5E1',
@@ -4771,7 +4781,7 @@ export default function TripDetailPage() {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '5px' }}>
                   Ngày lịch trình (dd/mm/yyyy) — V-01 Chặn ngoài khoảng
                 </label>
                 <input
@@ -4786,7 +4796,7 @@ export default function TripDetailPage() {
                   }}
                   style={{
                     width: '100%',
-                    padding: '10px 14px',
+                    padding: '9px 12px',
                     borderRadius: '10px',
                     border: `1.5px solid ${editStopDateError ? '#EF4444' : '#CBD5E1'}`,
                     background: editStopDateError ? '#FEF2F2' : '#FFFFFF',
@@ -4796,7 +4806,7 @@ export default function TripDetailPage() {
                   }}
                 />
                 {editStopDateError && (
-                  <div style={{ marginTop: '6px', color: '#DC2626', fontSize: '12.5px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <div style={{ marginTop: '5px', color: '#DC2626', fontSize: '12.5px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <span>❌</span>
                     <span>{editStopDateError}</span>
                   </div>
@@ -4804,7 +4814,7 @@ export default function TripDetailPage() {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '5px' }}>
                   Tên địa điểm / Hoạt động * (Bước 3: Đổi tên)
                 </label>
                 <input
@@ -4813,7 +4823,7 @@ export default function TripDetailPage() {
                   onChange={(e) => setEditStopTitle(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '10px 14px',
+                    padding: '9px 12px',
                     borderRadius: '10px',
                     border: '1px solid #CBD5E1',
                     fontSize: '14px',
@@ -4824,7 +4834,7 @@ export default function TripDetailPage() {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '5px' }}>
                   Địa chỉ / Vị trí
                 </label>
                 <input
@@ -4833,7 +4843,7 @@ export default function TripDetailPage() {
                   onChange={(e) => setEditStopLocation(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '10px 14px',
+                    padding: '9px 12px',
                     borderRadius: '10px',
                     border: '1px solid #CBD5E1',
                     fontSize: '14px',
@@ -4845,7 +4855,7 @@ export default function TripDetailPage() {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '5px' }}>
                     Khung giờ * (Bước 3: Đổi giờ)
                   </label>
                   <input
@@ -4855,7 +4865,7 @@ export default function TripDetailPage() {
                     onChange={(e) => setEditStopTime(e.target.value)}
                     style={{
                       width: '100%',
-                      padding: '10px 14px',
+                      padding: '9px 12px',
                       borderRadius: '10px',
                       border: '1px solid #CBD5E1',
                       fontSize: '14px',
@@ -4865,7 +4875,7 @@ export default function TripDetailPage() {
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '5px' }}>
                     Chi phí ước tính
                   </label>
                   <input
@@ -4875,7 +4885,7 @@ export default function TripDetailPage() {
                     onChange={(e) => setEditStopCost(e.target.value)}
                     style={{
                       width: '100%',
-                      padding: '10px 14px',
+                      padding: '9px 12px',
                       borderRadius: '10px',
                       border: '1px solid #CBD5E1',
                       fontSize: '14px',
@@ -4886,54 +4896,56 @@ export default function TripDetailPage() {
                 </div>
               </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
-                  Phân loại
-                </label>
-                <select
-                  value={editStopCategory}
-                  onChange={(e) => setEditStopCategory(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '10px 14px',
-                    borderRadius: '10px',
-                    border: '1px solid #CBD5E1',
-                    fontSize: '14px',
-                    outline: 'none',
-                    boxSizing: 'border-box',
-                    background: '#FFFFFF',
-                  }}
-                >
-                  <option value="Di tích & Văn hóa">Di tích & Văn hóa</option>
-                  <option value="Ẩm thực & Cà phê">Ẩm thực & Cà phê</option>
-                  <option value="Trải nghiệm & Khám phá">Trải nghiệm & Khám phá</option>
-                  <option value="Nghỉ ngơi & Mua sắm">Nghỉ ngơi & Mua sắm</option>
-                </select>
-              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '5px' }}>
+                    Phân loại
+                  </label>
+                  <select
+                    value={editStopCategory}
+                    onChange={(e) => setEditStopCategory(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '9px 12px',
+                      borderRadius: '10px',
+                      border: '1px solid #CBD5E1',
+                      fontSize: '14px',
+                      outline: 'none',
+                      boxSizing: 'border-box',
+                      background: '#FFFFFF',
+                    }}
+                  >
+                    <option value="Di tích & Văn hóa">Di tích & Văn hóa</option>
+                    <option value="Ẩm thực & Cà phê">Ẩm thực & Cà phê</option>
+                    <option value="Trải nghiệm & Khám phá">Trải nghiệm & Khám phá</option>
+                    <option value="Nghỉ ngơi & Mua sắm">Nghỉ ngơi & Mua sắm</option>
+                  </select>
+                </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
-                  Link ảnh (tùy chọn)
-                </label>
-                <input
-                  type="url"
-                  placeholder="Để trống để tự động chọn ảnh theo phân loại"
-                  value={editStopImage}
-                  onChange={(e) => setEditStopImage(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '10px 14px',
-                    borderRadius: '10px',
-                    border: '1px solid #CBD5E1',
-                    fontSize: '14px',
-                    outline: 'none',
-                    boxSizing: 'border-box',
-                  }}
-                />
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '5px' }}>
+                    Link ảnh (tùy chọn)
+                  </label>
+                  <input
+                    type="url"
+                    placeholder="Để trống để tự chọn ảnh"
+                    value={editStopImage}
+                    onChange={(e) => setEditStopImage(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '9px 12px',
+                      borderRadius: '10px',
+                      border: '1px solid #CBD5E1',
+                      fontSize: '14px',
+                      outline: 'none',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                </div>
               </div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', padding: '14px 24px 18px', borderTop: '1px solid #F1F5F9', flexShrink: 0, background: '#FFFFFF' }}>
               <button
                 type="button"
                 onClick={() => setEditingStop(null)}
