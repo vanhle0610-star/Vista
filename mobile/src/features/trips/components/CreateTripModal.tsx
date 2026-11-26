@@ -17,6 +17,7 @@ import { router } from 'expo-router';
 import { authStorage } from '@/services/auth/authStorage';
 import { tokens } from '../../../theme/tokens';
 import { tripApi, CreateTripPayload, TripDto } from '../../../services/api/tripApi';
+import { autoGenerateTripItinerary } from '../utils/autoGenerateTripItinerary';
 import { LockIcon, GlobeIcon, SparkleIcon, CheckIcon } from '../../../components/icons/StitchIcons';
 
 const POPULAR_DESTINATIONS = [
@@ -99,7 +100,22 @@ export function CreateTripModal({ visible, onClose, onTripCreated }: CreateTripM
       };
 
       const created = await tripApi.createTrip(payload);
-      Alert.alert('Thành công', `Đã tạo chuyến đi "${created.title}"!`);
+
+      let aiSummaryText = '';
+      if (aiSuggestionsEnabled && payload.destinationSummary) {
+        const aiResult = await autoGenerateTripItinerary({
+          tripId: created.id,
+          destinationSummary: payload.destinationSummary,
+          startDate: payload.startDate,
+          endDate: payload.endDate,
+          budgetTotal: payload.budgetTotal,
+        });
+        if (aiResult.generatedStops > 0) {
+          aiSummaryText = `\nĐã tự động đề xuất ${aiResult.generatedStops} điểm dừng cho ${aiResult.generatedDays} ngày lịch trình.`;
+        }
+      }
+
+      Alert.alert('Thành công', `Đã tạo chuyến đi "${created.title}"!${aiSummaryText}`);
       onTripCreated(created);
       onClose();
       // Reset form

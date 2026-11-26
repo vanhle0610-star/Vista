@@ -466,7 +466,7 @@ export function TripBudgetScreen({
           <View style={styles.topAppBarLeft}>
             <TouchableOpacity
               style={styles.backButton}
-              onPress={() => router.back()}
+              onPress={() => (typeof router.canGoBack === 'function' && router.canGoBack() ? router.back() : router.replace('/(tabs)/trips'))}
               activeOpacity={0.7}
               accessibilityLabel="Quay lại"
             >

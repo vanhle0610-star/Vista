@@ -23,6 +23,11 @@ import { AddStopModal } from '../components/AddStopModal';
 import { AddDayModal } from '../components/AddDayModal';
 import { tripFeatureApi } from '@/features/trips/api';
 import { Trip } from '@/features/trips/types';
+import { safeGoBack } from '@/utils/navigation';
+import {
+  fetchLiveWeatherAdvice,
+  LiveWeatherAdvice,
+} from '@/services/weather/weatherService';
 
 // Format short date (DD/MM)
 function formatShortDate(dateStr?: string): string {
@@ -57,6 +62,7 @@ export function ItineraryScreen({ tripId }: { tripId: string }) {
   const [selectedDayIdx, setSelectedDayIdx] = useState(0);
   const [loading, setLoading] = useState(true);
   const [errorStatus, setErrorStatus] = useState<number | null>(null);
+  const [weatherAdvice, setWeatherAdvice] = useState<LiveWeatherAdvice | null>(null);
 
   // Modals state
   const [selectedStop, setSelectedStop] = useState<ItineraryItem | null>(null);
@@ -99,6 +105,27 @@ export function ItineraryScreen({ tripId }: { tripId: string }) {
 
   const activeDay = days.length > 0 ? days[Math.min(selectedDayIdx, days.length - 1)] : null;
   const activeStops = activeDay?.items || [];
+
+  useEffect(() => {
+    let cancelled = false;
+    const locationText = trip?.destinationSummary || trip?.title;
+    if (!locationText && !activeDay?.tripDate) return;
+
+    fetchLiveWeatherAdvice({
+      locationText,
+      dateStr: activeDay?.tripDate || trip?.startDate,
+    })
+      .then((res) => {
+        if (!cancelled) setWeatherAdvice(res);
+      })
+      .catch(() => {
+        // Non-fatal
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [trip?.destinationSummary, trip?.title, trip?.startDate, activeDay?.tripDate]);
 
   // Warnings for the currently active day
   const activeDayWarnings = warnings.filter(
@@ -261,7 +288,7 @@ export function ItineraryScreen({ tripId }: { tripId: string }) {
       <View style={styles.topHeader}>
         <TouchableOpacity
           style={styles.backBtn}
-          onPress={() => router.back()}
+          onPress={() => safeGoBack(`/trip/${tripId}`)}
           accessibilityLabel="Quay lại"
         >
           <Svg width={22} height={22} viewBox="0 0 24 24" fill="none">
@@ -572,10 +599,14 @@ export function ItineraryScreen({ tripId }: { tripId: string }) {
                 </Svg>
                 <View style={styles.goldenHourTextCol}>
                   <AppText style={styles.goldenHourTitle}>
-                    Khung giờ ảnh đẹp (06:30 - 08:00 & 17:00 - 18:30)
+                    {weatherAdvice
+                      ? `Khung giờ ảnh đẹp (${weatherAdvice.morningGoldenHour} & ${weatherAdvice.eveningGoldenHour})`
+                      : 'Đang tính khung giờ ảnh đẹp...'}
                   </AppText>
                   <AppText style={styles.goldenHourDesc}>
-                    Ánh sáng sớm mai và hoàng hôn mang lại góc chụp lung linh nhất cho các điểm di tích & phố cổ.
+                    {weatherAdvice
+                      ? weatherAdvice.goldenHourNote
+                      : 'Đang đồng bộ giờ bình minh & hoàng hôn theo điểm đến.'}
                   </AppText>
                 </View>
               </View>
@@ -588,10 +619,14 @@ export function ItineraryScreen({ tripId }: { tripId: string }) {
                 </Svg>
                 <View style={styles.goldenHourTextCol}>
                   <AppText style={[styles.goldenHourTitle, { color: '#065F46' }]}>
-                    Thời tiết thuận lợi (24°C - 28°C)
+                    {weatherAdvice
+                      ? `${weatherAdvice.conditionLabel} (${weatherAdvice.tempMin}°C - ${weatherAdvice.tempMax}°C)`
+                      : 'Đang tải dự báo thời tiết...'}
                   </AppText>
                   <AppText style={[styles.goldenHourDesc, { color: '#047857' }]}>
-                    Trời khô ráo thoáng đãng, gió nhẹ, lý tưởng cho trải nghiệm ngoài trời.
+                    {weatherAdvice
+                      ? weatherAdvice.advice
+                      : 'Đang lấy dữ liệu khí tượng từ Open-Meteo.'}
                   </AppText>
                 </View>
               </View>

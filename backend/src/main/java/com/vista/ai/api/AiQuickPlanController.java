@@ -105,8 +105,8 @@ public class AiQuickPlanController {
     BigDecimal budgetVnd = calculateBudgetVnd(request.budgetLevel(), daysCount);
     List<DestinationSummary> publishedDestinations =
         diversifyByCategory(
-            destinationQueryService.searchPublished(
-                null, request.destinationProvince(), null, budgetVnd, 30));
+            com.vista.ai.util.ProvinceAliasResolver.searchPublishedForPlanner(
+                destinationQueryService, request.destinationProvince(), budgetVnd));
     if (publishedDestinations.isEmpty()) {
       throw new IllegalArgumentException(
           "Không có địa điểm PUBLISHED phù hợp; hệ thống từ chối tạo dữ liệu giả");

@@ -14,6 +14,7 @@ import com.vista.ai.scheduler.SemanticIntentExtractor;
 import com.vista.ai.scheduler.TravelScheduler;
 import com.vista.ai.util.AiResponseValidator;
 import com.vista.ai.util.PromptBuilder;
+import com.vista.ai.util.ProvinceAliasResolver;
 import com.vista.budget.util.RouteOptimizer;
 import com.vista.common.audit.AuditLogService;
 import com.vista.common.security.CurrentUserProvider;
@@ -110,8 +111,8 @@ public class AiPlannerController {
     if (destinationQueryService != null && request.destinationProvince() != null) {
       try {
         publishedDestinations =
-            destinationQueryService.searchPublished(
-                null, request.destinationProvince(), null, budgetVnd, 30);
+            ProvinceAliasResolver.searchPublishedForPlanner(
+                destinationQueryService, request.destinationProvince(), budgetVnd);
       } catch (Exception e) {
         log.warn("Could not query published destinations: {}", e.getClass().getSimpleName());
       }

@@ -18,6 +18,7 @@ import { AppText } from '@/components/ui/AppText';
 import { AppButton } from '@/components/ui/AppButton';
 import { AppCard } from '@/components/ui/AppCard';
 import { authStorage } from '@/services/auth/authStorage';
+import { safeGoBack } from '@/utils/navigation';
 import { tripFeatureApi } from '../api';
 import { Trip, TripMember, Invitation } from '../types';
 import { InviteCodeModal } from '../components/InviteCodeModal';
@@ -236,7 +237,7 @@ export function TripMembersScreen({ tripId }: { tripId: string }) {
       <View style={styles.topHeader}>
         <TouchableOpacity
           style={styles.backBtn}
-          onPress={() => router.back()}
+          onPress={() => safeGoBack(`/trip/${tripId}`)}
           accessibilityLabel="Quay lại"
         >
           <Svg width={22} height={22} viewBox="0 0 24 24" fill="none">

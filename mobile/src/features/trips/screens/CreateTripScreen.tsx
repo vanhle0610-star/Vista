@@ -18,6 +18,7 @@ import { AppInput } from '@/components/ui/AppInput';
 import { AppButton } from '@/components/ui/AppButton';
 import { tokens } from '@/theme/tokens';
 import { tripApi } from '../services/tripApi';
+import { autoGenerateTripItinerary } from '../utils/autoGenerateTripItinerary';
 import { LockIcon, GlobeIcon, SparkleIcon, CheckIcon } from '@/components/icons/StitchIcons';
 
 const POPULAR_DESTINATIONS = [
@@ -106,9 +107,23 @@ export function CreateTripScreen() {
         visibility: isPrivate ? 'PRIVATE' : 'PUBLIC',
       });
 
+      let aiSummaryText = '';
+      if (destinationSummary.trim()) {
+        const aiResult = await autoGenerateTripItinerary({
+          tripId: created.id,
+          destinationSummary: destinationSummary.trim(),
+          startDate: startDate.trim(),
+          endDate: endDate.trim(),
+          budgetTotal: budgetNum,
+        });
+        if (aiResult.generatedStops > 0) {
+          aiSummaryText = `\nĐã tự động đề xuất ${aiResult.generatedStops} điểm dừng cho ${aiResult.generatedDays} ngày lịch trình.`;
+        }
+      }
+
       Alert.alert(
         'Thành công',
-        `Chuyến đi "${created.title}" đã được tạo thành công! Bạn là Chủ chuyến đi.`,
+        `Chuyến đi "${created.title}" đã được tạo thành công! Bạn là Chủ chuyến đi.${aiSummaryText}`,
         [
           {
             text: 'Xem chi tiết',
@@ -317,7 +332,7 @@ export function CreateTripScreen() {
           <AppButton
             label="Hủy bỏ"
             variant="secondary"
-            onPress={() => router.back()}
+            onPress={() => (typeof router.canGoBack === 'function' && router.canGoBack() ? router.back() : router.replace('/(tabs)/trips'))}
             disabled={submitting}
           />
         </View>

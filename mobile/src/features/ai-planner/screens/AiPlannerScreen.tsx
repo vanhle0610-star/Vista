@@ -15,6 +15,7 @@ import { tokens } from '../../../theme/tokens';
 import { expenseApi, AiItineraryResponse } from '../../../services/api/expenseApi';
 import { tripApi } from '../../../services/api/tripApi';
 import { authStorage } from '@/services/auth/authStorage';
+import { fetchLiveWeatherAdvice } from '../../../services/weather/weatherService';
 import {
   SunIcon,
   PersonIcon,
@@ -80,7 +81,32 @@ export function AiPlannerScreen({
   const [selectedStyles, setSelectedStyles] = useState<string[]>(['Biển & Chill', 'Ẩm thực']);
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
 
-  const climate = React.useMemo(() => getProvinceClimate(province), [province]);
+  const fallbackClimate = React.useMemo(() => getProvinceClimate(province), [province]);
+  const [liveClimate, setLiveClimate] = useState<{ temp: string; desc: string } | null>(null);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      fetchLiveWeatherAdvice({ locationText: province })
+        .then((res) => {
+          if (!cancelled && res.source !== 'offline-fallback') {
+            const tempVal = res.tempCurrent ?? Math.round((res.tempMin + res.tempMax) / 2);
+            setLiveClimate({
+              temp: `${tempVal}°C`,
+              desc: `${res.conditionLabel}. ${res.advice}`,
+            });
+          }
+        })
+        .catch(() => {});
+    }, 300);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [province]);
+
+  const climate = liveClimate || fallbackClimate;
 
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);

@@ -25,6 +25,7 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { authStorage } from '@/services/auth/authStorage';
 import { expenseApi } from '@/services/api/expenseApi';
 import { parseLocalNoonDate, resolveTripStatus } from '@/utils/tripStatus';
+import { safeGoBack } from '@/utils/navigation';
 import { tripFeatureApi } from '../api';
 import { Trip, TripMember } from '../types';
 
@@ -216,7 +217,7 @@ export function TripDetailScreen({ tripId }: { tripId: string }) {
         <View style={styles.topBar}>
           <TouchableOpacity
             style={styles.backButton}
-            onPress={() => router.back()}
+            onPress={() => safeGoBack('/(tabs)/trips')}
             accessibilityLabel="Quay lại"
           >
             <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
@@ -314,7 +315,7 @@ export function TripDetailScreen({ tripId }: { tripId: string }) {
           />
           <AppButton
             label="Quay lại"
-            onPress={() => router.back()}
+            onPress={() => safeGoBack('/(tabs)/trips')}
             variant="secondary"
             style={{ flex: 1 }}
           />
@@ -346,7 +347,7 @@ export function TripDetailScreen({ tripId }: { tripId: string }) {
       <View style={[styles.floatingHeader, { top: insets.top + 6 }]}>
         <TouchableOpacity
           style={styles.floatingBackButton}
-          onPress={() => router.back()}
+          onPress={() => safeGoBack('/(tabs)/trips')}
           accessibilityLabel="Quay lại"
         >
           <Svg width={22} height={22} viewBox="0 0 24 24" fill="none">

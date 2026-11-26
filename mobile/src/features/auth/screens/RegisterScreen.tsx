@@ -143,7 +143,7 @@ export function RegisterScreen() {
               {/* Floating Back Button */}
               <TouchableOpacity
                 style={[styles.floatingBackBtn, { top: topInset + 6 }]}
-                onPress={() => router.back()}
+                onPress={() => (typeof router.canGoBack === 'function' && router.canGoBack() ? router.back() : router.replace('/(auth)/login'))}
                 activeOpacity={0.7}
               >
                 <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">

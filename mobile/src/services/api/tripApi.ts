@@ -125,6 +125,7 @@ export const tripApi = {
       startTime?: string | null;
       endTime?: string | null;
       sortOrder?: number;
+      costVnd?: number;
       note?: string;
     }
   ): Promise<any> {
