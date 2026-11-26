@@ -10,6 +10,8 @@ public class CreateInvitationRequest {
 
   private Instant expiresAt;
 
+  private String token;
+
   public CreateInvitationRequest() {}
 
   public CreateInvitationRequest(String inviteeEmail) {
@@ -19,6 +21,20 @@ public class CreateInvitationRequest {
   public CreateInvitationRequest(String inviteeEmail, Instant expiresAt) {
     this.inviteeEmail = inviteeEmail;
     this.expiresAt = expiresAt;
+  }
+
+  public CreateInvitationRequest(String inviteeEmail, Instant expiresAt, String token) {
+    this.inviteeEmail = inviteeEmail;
+    this.expiresAt = expiresAt;
+    this.token = token;
+  }
+
+  public String getToken() {
+    return token;
+  }
+
+  public void setToken(String token) {
+    this.token = token;
   }
 
   public String getInviteeEmail() {

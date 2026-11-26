@@ -73,7 +73,7 @@ public class ItineraryService {
                           resultSet.getLong("item_version")));
                 }
               }
-              return null;
+              return Boolean.TRUE;
             });
     return new ItineraryResponse(
         tripId,

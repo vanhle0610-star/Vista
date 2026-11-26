@@ -48,6 +48,7 @@ import {
   getSampleItineraryForDestination,
   getDestinationHeroImage,
 } from '@/data/sampleItineraries';
+import { seedSampleItineraryToTrip, toIsoDateOffset } from '@/utils/itinerarySeed';
 import { resolveTripStatus } from '@/utils/tripDateUtils';
 import styles from './trips.module.css';
 
@@ -783,6 +784,8 @@ export default function TripsPage() {
   const [newBudget, setNewBudget] = useState('20000000');
   const [newStartDate, setNewStartDate] = useState<string>(() => getTodayString());
   const [newEndDate, setNewEndDate] = useState<string>(() => getDefaultEndString());
+  const [autoSeedItinerary, setAutoSeedItinerary] = useState(true);
+  const [isCreatingTrip, setIsCreatingTrip] = useState(false);
   const [joinCode, setJoinCode] = useState('');
 
   const calculateDuration = (startStr: string, endStr: string) => {
@@ -1057,6 +1060,7 @@ export default function TripsPage() {
 
   const handleCreateTrip = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isCreatingTrip) return;
     const token = typeof window !== 'undefined' ? localStorage.getItem('vista_token') : null;
     if (!token) {
       showToast('Vui lòng đăng nhập để tạo chuyến đi!');
@@ -1080,6 +1084,7 @@ export default function TripsPage() {
     }
 
     const parsedBudget = Number(newBudget) > 0 ? Number(newBudget) : 20000000;
+    setIsCreatingTrip(true);
 
     try {
       const createdTrip = await apiRequest<any>('/trips', {
@@ -1100,16 +1105,87 @@ export default function TripsPage() {
         localStorage.setItem('vista_last_trip_id', realTripId);
       }
 
+      if (autoSeedItinerary) {
+        try {
+          await seedSampleItineraryToTrip({
+            tripId: String(realTripId),
+            destination: destinationToSave,
+            startDate: newStartDate,
+            endDate: newEndDate,
+          });
+        } catch (seedErr) {
+          console.warn('Auto-seed sample itinerary warning:', seedErr);
+        }
+      }
+
       setShowCreateModal(false);
       setNewTitle('');
       setNewDestination('');
       setCustomCityName('');
       setIsCustomCity(false);
-      showToast(`🎉 Tạo thành công chuyến đi "${newTitle}"!`);
+      showToast(
+        autoSeedItinerary
+          ? `🎉 Đã tạo chuyến đi "${newTitle}" kèm lộ trình ảnh mẫu!`
+          : `🎉 Tạo thành công chuyến đi "${newTitle}"!`
+      );
       await fetchTripsFromBackend();
       router.push(`/trips/${realTripId}`);
     } catch (err: any) {
       showToast(err.message || 'Lỗi khi tạo chuyến đi trên máy chủ');
+    } finally {
+      setIsCreatingTrip(false);
+    }
+  };
+
+  const handleQuickCreateDemoTrip = async () => {
+    if (isCreatingTrip) return;
+    const token = typeof window !== 'undefined' ? localStorage.getItem('vista_token') : null;
+    if (!token) {
+      showToast('Vui lòng đăng nhập để tạo chuyến đi demo!');
+      router.replace('/login?returnUrl=/trips');
+      return;
+    }
+
+    setIsCreatingTrip(true);
+    const startIso = toIsoDateOffset(todayStr || undefined, 0);
+    const endIso = toIsoDateOffset(todayStr || undefined, 2);
+    const demoTitle = 'Khám phá Đà Nẵng – Hội An (3N2Đ Demo)';
+    const demoDest = 'TP. Đà Nẵng';
+
+    try {
+      const createdTrip = await apiRequest<any>('/trips', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: demoTitle,
+          startDate: startIso,
+          endDate: endIso,
+          destinationSummary: demoDest,
+          budgetTotal: 15000000,
+          currency: 'VND',
+        }),
+      });
+
+      const realTripId = String(createdTrip.id);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('vista_last_trip_id', realTripId);
+      }
+
+      await seedSampleItineraryToTrip({
+        tripId: realTripId,
+        destination: demoDest,
+        startDate: startIso,
+        endDate: endIso,
+      });
+
+      setShowCreateModal(false);
+      showToast('🎉 Đã tạo chuyến đi Demo Đà Nẵng – Hội An có lộ trình ảnh đầy đủ!');
+      await fetchTripsFromBackend();
+      router.push(`/trips/${realTripId}`);
+    } catch (err: any) {
+      showToast(err.message || 'Không thể tạo chuyến đi demo lúc này');
+    } finally {
+      setIsCreatingTrip(false);
     }
   };
 
@@ -1205,10 +1281,17 @@ export default function TripsPage() {
 
             <div className={styles.headerActions}>
               <div className={styles.headerActionsRow}>
-                <Link href="/planner" className={styles.btnAiPlan}>
+                <button
+                  type="button"
+                  className={styles.btnAiPlan}
+                  onClick={handleQuickCreateDemoTrip}
+                  disabled={isCreatingTrip}
+                  title="Tạo nhanh 1 chuyến đi Đà Nẵng – Hội An 3N2Đ có sẵn ảnh & lộ trình để demo"
+                  style={{ cursor: isCreatingTrip ? 'not-allowed' : 'pointer', opacity: isCreatingTrip ? 0.7 : 1 }}
+                >
                   <Sparkles size={16} />
-                  <span>Tạo lịch trình bằng AI</span>
-                </Link>
+                  <span>{isCreatingTrip ? 'Đang tạo chuyến Demo...' : 'Tạo Demo có ảnh'}</span>
+                </button>
                 <button
                   type="button"
                   className={styles.btnJoinCode}
@@ -2165,18 +2248,44 @@ export default function TripsPage() {
                 </div>
               </div>
 
+              {/* Tùy chọn tạo sẵn lộ trình mẫu có ảnh */}
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '10px 12px',
+                  background: '#F0F9FF',
+                  border: '1px solid #BAE6FD',
+                  borderRadius: '10px',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  color: '#0369A1',
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={autoSeedItinerary}
+                  onChange={(e) => setAutoSeedItinerary(e.target.checked)}
+                  style={{ width: 16, height: 16, accentColor: '#0284C7', cursor: 'pointer' }}
+                />
+                <span>✨ Tự động khởi tạo sẵn lịch trình mẫu kèm ảnh minh họa theo điểm đến</span>
+              </label>
+
               {/* Action Buttons */}
               <div className={styles.modalActionsRow} style={{ marginTop: 6 }}>
                 <button
                   type="button"
                   className={styles.btnCancelModal}
+                  disabled={isCreatingTrip}
                   onClick={() => setShowCreateModal(false)}
                 >
                   Hủy bỏ
                 </button>
-                <button type="submit" className={styles.btnSubmitFancy}>
+                <button type="submit" className={styles.btnSubmitFancy} disabled={isCreatingTrip}>
                   <Sparkles size={16} />
-                  <span>Hoàn tất & Khởi tạo chuyến đi</span>
+                  <span>{isCreatingTrip ? 'Đang khởi tạo...' : 'Hoàn tất & Khởi tạo chuyến đi'}</span>
                 </button>
               </div>
             </form>

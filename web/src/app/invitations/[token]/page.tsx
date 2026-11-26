@@ -40,15 +40,40 @@ export default function InvitationAcceptPage() {
     expiresAt?: string;
   } | null>(null);
 
-  // Load real invitation preview from backend (SSOT)
+  // Load real invitation preview from backend (SSOT) with seamless Next.js fallback
   useEffect(() => {
     if (!token) return;
 
     const fetchInvitation = async () => {
       try {
-        const data = await apiRequest<any>(`/invitations/${encodeURIComponent(token)}/preview`);
+        let data: any = null;
+        try {
+          data = await apiRequest<any>(`/invitations/${encodeURIComponent(token)}/preview`);
+        } catch (backendErr) {
+          // Fallback sang local API Store nếu backend chưa có token này
+          const localRes = await fetch(`/api/invitations?token=${encodeURIComponent(token)}`, {
+            cache: 'no-store',
+          });
+          if (localRes.ok) {
+            data = await localRes.json();
+          } else {
+            throw backendErr;
+          }
+        }
+
         if (data) {
-          setInvitationData(data);
+          setInvitationData({
+            id: data.id,
+            tripId: data.tripId,
+            tripTitle: data.tripTitle || data.title || 'Chuyến đi VISTA',
+            destinationSummary: data.destinationSummary || data.destination || 'Việt Nam',
+            inviteeEmail: data.inviteeEmail || data.email,
+            status: data.status || 'PENDING',
+            startDate: data.startDate,
+            endDate: data.endDate,
+            expiresAt: data.expiresAt,
+          });
+          setErrorMessage(null);
           const st = data.status || 'PENDING';
           setTestState(st);
 
@@ -106,17 +131,43 @@ export default function InvitationAcceptPage() {
     setErrorMessage(null);
 
     try {
-      // Gọi trực tiếp Spring Boot API: Single Source of Truth
-      const response = await apiRequest<any>(`/invitations/${encodeURIComponent(token)}/accept`, {
-        method: 'POST',
-      });
+      let accepted = false;
+      let targetTripId = invitationData?.tripId;
+
+      try {
+        // Gọi trực tiếp Spring Boot API: Single Source of Truth
+        const response = await apiRequest<any>(`/invitations/${encodeURIComponent(token)}/accept`, {
+          method: 'POST',
+        });
+        accepted = true;
+        if (response?.tripId) targetTripId = response.tripId;
+      } catch (backendErr) {
+        // Fallback chấp nhận qua Next.js /api/invitations
+        const localRes = await fetch('/api/invitations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            token: token,
+            id: invitationData?.id,
+            tripId: targetTripId,
+            status: 'ACCEPTED',
+            user: currentUser,
+            acceptedBy: currentUser,
+          }),
+        });
+        if (localRes.ok) {
+          accepted = true;
+        } else {
+          throw backendErr;
+        }
+      }
 
       const cleanName = currentUser.displayName || currentUser.email || 'Thành viên';
       setIsSuccess(true);
       setTestState('ACCEPTED');
       setStatusMessage(`🎉 Chúc mừng ${cleanName}! Bạn đã được thêm vào cơ sở dữ liệu chuyến đi với vai trò Thành viên (MEMBER).`);
 
-      const targetTripId = response?.tripId || invitationData?.tripId;
+      // Luôn đồng bộ thành viên vào trip_members trong Spring Boot database
       if (targetTripId && /^[0-9a-f-]{36}$/i.test(targetTripId)) {
         try {
           await apiRequest('/invitations/sync-membership', {
@@ -126,10 +177,16 @@ export default function InvitationAcceptPage() {
         } catch {}
       }
 
+      if (typeof window !== 'undefined' && targetTripId) {
+        localStorage.setItem('vista_last_trip_id', targetTripId);
+        window.dispatchEvent(new CustomEvent('vista-trips-change'));
+        window.dispatchEvent(new CustomEvent('vista-invitations-change'));
+      }
+
       if (targetTripId) {
         setTimeout(() => {
           router.push(`/trips/${targetTripId}?tab=members`);
-        }, 1500);
+        }, 1200);
       }
     } catch (err: any) {
       console.error('Failed to accept invitation:', err);
@@ -157,9 +214,21 @@ export default function InvitationAcceptPage() {
     setErrorMessage(null);
 
     try {
-      await apiRequest<any>(`/invitations/${encodeURIComponent(token)}/decline`, {
-        method: 'POST',
-      });
+      try {
+        await apiRequest<any>(`/invitations/${encodeURIComponent(token)}/decline`, {
+          method: 'POST',
+        });
+      } catch {
+        await fetch('/api/invitations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            token: token,
+            id: invitationData?.id,
+            status: 'REVOKED',
+          }),
+        });
+      }
 
       setIsDeclined(true);
       setTestState('REVOKED');

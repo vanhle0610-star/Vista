@@ -247,17 +247,23 @@ export async function POST(request: NextRequest) {
     // Always keep local store in sync
     const list = readStore();
     const cleanToken = token.toUpperCase();
-    const existingIndex = list.findIndex((it) => it.token.toUpperCase() === cleanToken);
+    const existingIndex = list.findIndex(
+      (it) =>
+        (id && it.id && String(it.id) === String(id)) ||
+        (cleanToken && (it.token || '').toUpperCase() === cleanToken)
+    );
     const cleanEmail = (body.email || body.inviteeEmail || '').toLowerCase().trim();
     const isAccepted = body.action === 'ACCEPT' || status === 'ACCEPTED';
     const isRevoked = body.action === 'REVOKE' || status === 'REVOKED';
 
     let localResult = null;
     if (existingIndex >= 0) {
+      const existingToken = (list[existingIndex].token || '').trim();
       const updated: StoredInvitation = {
         ...list[existingIndex],
         ...body,
-        token: cleanToken || list[existingIndex].token,
+        id: list[existingIndex].id || id,
+        token: existingToken || cleanToken,
         status: isAccepted ? 'ACCEPTED' : (isRevoked ? 'REVOKED' : (body.status || list[existingIndex].status)),
         acceptedAt: isAccepted ? new Date().toISOString() : list[existingIndex].acceptedAt,
         acceptedBy: isAccepted && body.user ? body.user : list[existingIndex].acceptedBy,

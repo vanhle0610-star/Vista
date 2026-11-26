@@ -916,21 +916,9 @@
 /* ─── 6. MEMBERS TAB (TAB 2) ─────────────────────────────────────────── */
 .membersGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 18px;
   margin-bottom: 28px;
-}
-
-@media (max-width: 900px) {
-  .membersGrid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 600px) {
-  .membersGrid {
-    grid-template-columns: 1fr;
-  }
 }
 
 .memberCard {
@@ -958,6 +946,7 @@
 
 .memberInfo {
   flex: 1;
+  min-width: 0;
 }
 
 .memberName {
@@ -971,6 +960,14 @@
   font-size: 12px;
   font-weight: 600;
   color: #0284C7;
+}
+
+.memberMetaEmail {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .inviteCardBanner {
@@ -1069,14 +1066,15 @@
   position: fixed;
   bottom: 24px;
   right: 24px;
-  background: #0F172A;
-  color: #FFFFFF;
+  background: #FFFFFF;
+  color: #0F172A;
+  border: 1px solid #E2E8F0;
   padding: 12px 22px;
   border-radius: 12px;
   font-size: 14px;
   font-weight: 600;
-  z-index: 3000;
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.35);
+  z-index: 10001;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
   animation: slideUpToast 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
@@ -1989,22 +1987,42 @@
 .invitationScrollContainer {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0;
   max-height: 380px;
   overflow-y: auto;
   overflow-x: hidden;
   padding-right: 6px;
   margin-bottom: 16px;
   scrollbar-width: thin;
-  scrollbar-color: #CBD5E1 #F8FAFC;
+  scrollbar-color: #CBD5E1 transparent;
+}
+
+.invitationRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 13px 8px;
+  border-radius: 8px;
+  border-bottom: 1px solid #E2E8F0;
+  transition: background-color 150ms ease;
+}
+
+.invitationRow:hover {
+  background: #F8FAFC;
+}
+
+.invitationRow:last-child {
+  border-bottom: none;
 }
 
 .invitationScrollContainer::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 .invitationScrollContainer::-webkit-scrollbar-track {
-  background: #F8FAFC;
+  background: transparent;
   border-radius: 999px;
 }
 
@@ -2027,6 +2045,116 @@
   margin-bottom: 14px;
   padding: 0 4px;
 }
+
+.invitationStatusBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.invitationStatusPending {
+  background: #FFFBEB;
+  color: #B45300;
+}
+
+.invitationStatusAccepted {
+  background: #ECFDF5;
+  color: #047857;
+}
+
+.invitationStatusRevoked {
+  background: #FEF2F2;
+  color: #DC2626;
+}
+
+.invitationStatusDeclined {
+  background: #F1F5F9;
+  color: #64748B;
+}
+
+.invitationCopyBtn {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0284C7;
+  padding: 6px 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.invitationCopyBtn:hover:not(:disabled) {
+  background: #F0F9FF;
+}
+
+.invitationCopyBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.invitationResendBtn {
+  font-size: 12px;
+  font-weight: 600;
+  color: #047857;
+  padding: 5px 10px;
+  background: transparent;
+  border: 1px solid #A7F3D0;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.invitationResendBtn:hover:not(:disabled) {
+  background: #ECFDF5;
+}
+
+.invitationResendBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.invitationRevokeBtn {
+  font-size: 12px;
+  font-weight: 600;
+  color: #DC2626;
+  padding: 6px 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.invitationRevokeBtn:hover:not(:disabled) {
+  background: #FEF2F2;
+}
+
+.invitationRevokeBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.invitationAutoMailNote {
+  font-size: 12px;
+  color: #64748B;
+  font-weight: 400;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
 
 
 

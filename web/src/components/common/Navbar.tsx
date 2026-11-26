@@ -48,6 +48,25 @@ export interface IncomingInvitation {
   createdAt?: string;
 }
 
+function formatInviteExpiry(expiresAt?: any): string {
+  if (!expiresAt || expiresAt === 'Invalid Date') return 'Trong 7 ngày tới';
+  if (typeof expiresAt === 'string') {
+    if (expiresAt.includes('ngày') || expiresAt.includes('Hôm nay') || expiresAt.includes('/')) {
+      return expiresAt;
+    }
+    const d = new Date(expiresAt);
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleDateString('vi-VN');
+    }
+  } else if (typeof expiresAt === 'number') {
+    const d = new Date(expiresAt > 1e11 ? expiresAt : expiresAt * 1000);
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleDateString('vi-VN');
+    }
+  }
+  return 'Trong 7 ngày tới';
+}
+
 export function Navbar({
   activeModule: propActiveModule,
   lang: propLang,
@@ -165,11 +184,13 @@ export function Navbar({
 
         const combinedList: IncomingInvitation[] = [];
         const seenKeys = new Set<string>();
+        let backendLoaded = false;
 
         // 1. Lấy từ Spring Boot backend nếu có token
         if (token) {
           try {
             const list = await apiRequest<IncomingInvitation[]>('/invitations/my-pending');
+            backendLoaded = true;
             if (Array.isArray(list)) {
               list.forEach((inv) => {
                 const key = inv.id || (inv as any).token;
@@ -184,7 +205,7 @@ export function Navbar({
           }
         }
 
-        // 2. Lấy từ Next.js Store (.invitations_store.json) theo email hiện tại
+        // 2. Lấy từ Next.js Store (.invitations_store.json) theo email hiện tại (chỉ dùng cho demo trip hoặc khi backend chưa phản hồi)
         if (currentUser?.email) {
           try {
             const cleanUserEmail = currentUser.email.trim().toLowerCase();
@@ -195,6 +216,12 @@ export function Navbar({
               const localList = await localRes.json();
               if (Array.isArray(localList)) {
                 localList.forEach((inv: any) => {
+                  const isUuidTrip = Boolean(
+                    inv.tripId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(inv.tripId))
+                  );
+                  if (backendLoaded && isUuidTrip) {
+                    return;
+                  }
                   const key = inv.id || inv.token;
                   if (inv.status === 'PENDING' && key && !seenKeys.has(key)) {
                     seenKeys.add(key);
@@ -243,18 +270,57 @@ export function Navbar({
     };
 
     fetchInvites();
-    const interval = setInterval(fetchInvites, 5000);
+
+    // Chu kỳ polling 60 giây khi tab hiển thị; tạm dừng khi tab ẩn
+    const POLL_INTERVAL_MS = 60_000;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+
+    const startPolling = () => {
+      if (intervalId !== null) return; // đã chạy rồi
+      intervalId = setInterval(fetchInvites, POLL_INTERVAL_MS);
+    };
+
+    const stopPolling = () => {
+      if (intervalId !== null) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+    };
+
+    // Khởi động polling ngay nếu tab đang hiển thị
+    if (!document.hidden) {
+      startPolling();
+    }
+
+    // Xử lý chuyển tab: dừng khi ẩn, làm mới + tiếp tục khi hiện lại
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        stopPolling();
+      } else {
+        fetchInvites(); // làm mới ngay 1 lần khi quay lại
+        startPolling();
+      }
+    };
+
+    // focus (ví dụ: người dùng click lại cửa sổ từ app khác) → làm mới ngay
+    const onFocus = () => {
+      if (!document.hidden) {
+        fetchInvites();
+      }
+    };
 
     const onCustomChange = () => fetchInvites();
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('vista-invitations-change', onCustomChange);
     window.addEventListener('storage', onCustomChange);
-    window.addEventListener('focus', onCustomChange);
+    window.addEventListener('focus', onFocus);
 
     return () => {
-      clearInterval(interval);
+      stopPolling();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('vista-invitations-change', onCustomChange);
       window.removeEventListener('storage', onCustomChange);
-      window.removeEventListener('focus', onCustomChange);
+      window.removeEventListener('focus', onFocus);
     };
   }, [currentUser?.email]);
 
@@ -262,32 +328,46 @@ export function Navbar({
     setIsProcessingAction(inv.id);
     try {
       let accepted = false;
+      const isUuidId = /^[0-9a-f-]{36}$/i.test(inv.id);
+      const token = (inv as any).token || (!isUuidId ? inv.id : undefined);
+
       try {
-        await apiRequest(`/invitations/${inv.id}/accept-by-id`, {
-          method: 'POST',
-        });
-        accepted = true;
+        if (isUuidId) {
+          await apiRequest(`/invitations/${inv.id}/accept-by-id`, {
+            method: 'POST',
+          });
+          accepted = true;
+        } else if (token) {
+          await apiRequest(`/invitations/${encodeURIComponent(token)}/accept`, {
+            method: 'POST',
+          });
+          accepted = true;
+        }
       } catch (backendErr) {
-        // Fallback chấp nhận qua Next.js store
-        const token = (inv as any).token || inv.id;
+        console.warn('Backend accept invite fallback to local store:', backendErr);
+      }
+
+      // Đồng bộ trạng thái ACCEPTED lên Next.js store để không hiển thị lại ở chuông
+      try {
         const res = await fetch('/api/invitations', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             id: inv.id,
-            token: token,
+            token: token || inv.id,
             status: 'ACCEPTED',
             acceptedBy: currentUser,
           }),
         });
         if (res.ok) accepted = true;
-      }
+      } catch {}
 
       // Đảm bảo đồng bộ thành viên vào trip_members của Spring Boot database
       if (inv.tripId && /^[0-9a-f-]{36}$/i.test(inv.tripId)) {
         try {
           await apiRequest('/invitations/sync-membership', {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ tripId: inv.tripId }),
           });
         } catch (e) {
@@ -319,10 +399,21 @@ export function Navbar({
     setIsProcessingAction(inv.id);
     try {
       try {
-        await apiRequest(`/invitations/${inv.id}/decline-by-id`, {
-          method: 'POST',
-        });
+        const isUuidId = /^[0-9a-f-]{36}$/i.test(inv.id);
+        if (isUuidId) {
+          await apiRequest(`/invitations/${inv.id}/decline-by-id`, {
+            method: 'POST',
+          });
+        } else if ((inv as any).token) {
+          await apiRequest(`/invitations/${encodeURIComponent((inv as any).token)}/decline`, {
+            method: 'POST',
+          });
+        }
       } catch {
+        // fallback handled below
+      }
+
+      try {
         const token = (inv as any).token || inv.id;
         await fetch('/api/invitations', {
           method: 'POST',
@@ -333,18 +424,7 @@ export function Navbar({
             status: 'DECLINED',
           }),
         });
-      }
-      // Đảm bảo đồng bộ thành viên vào trip_members của Spring Boot database
-      if (inv.tripId && /^[0-9a-f-]{36}$/i.test(inv.tripId)) {
-        try {
-          await apiRequest('/invitations/sync-membership', {
-            method: 'POST',
-            body: JSON.stringify({ tripId: inv.tripId }),
-          });
-        } catch (e) {
-          console.warn('Membership sync to backend:', e);
-        }
-      }
+      } catch {}
 
       setIncomingInvitations((prev) =>
         prev.filter((i) => i.id !== inv.id && (i as any).token !== (inv as any).token)
@@ -622,12 +702,7 @@ export function Navbar({
                                 <span>📍 {inv.destinationSummary || inv.destination || 'Việt Nam'}</span>
                                 <span>•</span>
                                 <span>
-                                  ⏳{' '}
-                                  {inv.expiresAt
-                                    ? !isNaN(new Date(inv.expiresAt).getTime())
-                                      ? new Date(inv.expiresAt).toLocaleDateString('vi-VN')
-                                      : inv.expiresAt
-                                    : 'Trong 7 ngày tới'}
+                                  ⏳ {formatInviteExpiry(inv.expiresAt)}
                                 </span>
                               </div>
                             </div>
@@ -651,7 +726,7 @@ export function Navbar({
                               Từ chối
                             </button>
                             <Link
-                              href={`/trips/${inv.tripId}`}
+                              href={inv.token ? `/invitations/${inv.token}` : `/trips/${inv.tripId}`}
                               onClick={() => setNotificationsOpen(false)}
                               style={{
                                 fontSize: '11.5px',

@@ -70,6 +70,9 @@ function refreshAccessToken(previousToken: string): Promise<string | null> {
 export async function apiRequest<T>(path: string, init?: RequestInit): Promise<T> {
   const headers = new Headers(init?.headers);
   if (!headers.has('Accept')) headers.set('Accept', 'application/json');
+  if (typeof init?.body === 'string' && !headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json');
+  }
   let sessionToken: string | null = null;
 
   if (typeof window !== 'undefined' && !headers.has('Authorization')) {
