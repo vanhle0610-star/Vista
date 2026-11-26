@@ -8,6 +8,11 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
+  // Never intercept static assets, images, or media files
+  if (/\.[a-zA-Z0-9]+$/.test(pathname)) {
+    return NextResponse.next();
+  }
+
   // Protected paths requiring active administrator session
   const protectedPaths = [
     '/dashboard',

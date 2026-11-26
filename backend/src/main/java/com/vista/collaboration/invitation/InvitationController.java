@@ -77,13 +77,57 @@ public class InvitationController {
   @Operation(summary = "Chấp nhận lời mời — người được mời chấp nhận qua raw token")
   public ResponseEntity<InvitationResponse> acceptInvitation(@PathVariable String token) {
     UUID userId = currentUserProvider.getCurrentUserId();
-    return ResponseEntity.ok(invitationService.acceptInvitation(token, userId));
+    String userEmail = currentUserProvider.getCurrentUser().map(up -> up.getEmail()).orElse(null);
+    return ResponseEntity.ok(invitationService.acceptInvitation(token, userId, userEmail));
   }
 
   @PostMapping("/invitations/{token}/decline")
   @Operation(summary = "Từ chối lời mời — người được mời từ chối qua raw token")
   public ResponseEntity<InvitationResponse> declineInvitation(@PathVariable String token) {
     UUID userId = currentUserProvider.getCurrentUserId();
-    return ResponseEntity.ok(invitationService.declineInvitation(token, userId));
+    String userEmail = currentUserProvider.getCurrentUser().map(up -> up.getEmail()).orElse(null);
+    return ResponseEntity.ok(invitationService.declineInvitation(token, userId, userEmail));
+  }
+
+  @GetMapping("/invitations/my-pending")
+  @Operation(
+      summary =
+          "Lấy danh sách lời mời đang chờ gửi đến người dùng hiện tại (cho Navbar / thông báo)")
+  public ResponseEntity<List<MyPendingInvitationResponse>> getMyPendingInvitations() {
+    UUID userId = currentUserProvider.getCurrentUserId();
+    String email = currentUserProvider.getCurrentUser().map(up -> up.getEmail()).orElse(null);
+    return ResponseEntity.ok(invitationService.getMyPendingInvitations(userId, email));
+  }
+
+  @PostMapping("/invitations/{id}/accept-by-id")
+  @Operation(summary = "Chấp nhận lời mời trực tiếp bằng ID (khi đã đăng nhập trên Navbar)")
+  public ResponseEntity<InvitationResponse> acceptInvitationById(@PathVariable UUID id) {
+    UUID userId = currentUserProvider.getCurrentUserId();
+    String userEmail = currentUserProvider.getCurrentUser().map(up -> up.getEmail()).orElse(null);
+    return ResponseEntity.ok(invitationService.acceptInvitationById(id, userId, userEmail));
+  }
+
+  @PostMapping("/invitations/{id}/decline-by-id")
+  @Operation(summary = "Từ chối lời mời trực tiếp bằng ID (khi đã đăng nhập trên Navbar)")
+  public ResponseEntity<InvitationResponse> declineInvitationById(@PathVariable UUID id) {
+    UUID userId = currentUserProvider.getCurrentUserId();
+    String userEmail = currentUserProvider.getCurrentUser().map(up -> up.getEmail()).orElse(null);
+    return ResponseEntity.ok(invitationService.declineInvitationById(id, userId, userEmail));
+  }
+
+  @PostMapping("/invitations/sync-membership")
+  @Operation(summary = "Đồng bộ thành viên khi chấp nhận lời mời từ Web (TV3)")
+  public ResponseEntity<java.util.Map<String, Object>> syncMembership(
+      @RequestBody java.util.Map<String, String> body) {
+    UUID userId = currentUserProvider.getCurrentUserId();
+    String tripIdStr = body.get("tripId");
+    if (tripIdStr != null && !tripIdStr.isBlank()) {
+      UUID tripId = UUID.fromString(tripIdStr.trim());
+      invitationService.addTripMember(tripId, userId);
+      return ResponseEntity.ok(
+          java.util.Map.of(
+              "status", "SUCCESS", "tripId", tripId.toString(), "userId", userId.toString()));
+    }
+    return ResponseEntity.badRequest().build();
   }
 }

@@ -13,7 +13,11 @@ console.log('[AI RUNNER] Đang khởi chạy VISTA Python AI Service từ:', aiD
 
 const proc = spawn(pythonCmd, ['run.py'], {
   cwd: aiDir,
-  env: process.env,
+  env: {
+    ...process.env,
+    PYTHONIOENCODING: 'utf-8',
+    PYTHONUTF8: '1'
+  },
   stdio: 'inherit'
 });
 

@@ -227,7 +227,7 @@ export function getTripDayMeta(
   };
 }
 
-export type TripStatusType = 'ACTIVE' | 'PLANNING' | 'COMPLETED';
+export type TripStatusType = 'ACTIVE' | 'PLANNING' | 'COMPLETED' | 'ONGOING' | 'CANCELLED';
 
 export interface TripStatusResult {
   status: TripStatusType;
@@ -248,8 +248,20 @@ export function resolveTripStatusDetails(
   currentDate: Date = new Date()
 ): TripStatusResult {
   const normFallback = (fallbackStatus || '').toUpperCase();
+  if (normFallback === 'CANCELLED') {
+    return {
+      status: 'CANCELLED',
+      isDerived: false,
+      isValidDate: true,
+    };
+  }
+
   const safeFallback: TripStatusType =
-    normFallback === 'ACTIVE' || normFallback === 'COMPLETED' ? (normFallback as TripStatusType) : 'PLANNING';
+    normFallback === 'ONGOING' || normFallback === 'ACTIVE'
+      ? 'ONGOING'
+      : normFallback === 'COMPLETED'
+      ? 'COMPLETED'
+      : 'PLANNING';
 
   const validation = validateAndParseTripDates(startDateStr, endDateStr);
   if (!validation.isValid || !validation.startDate || !validation.endDate) {
@@ -281,7 +293,7 @@ export function resolveTripStatusDetails(
   if (todayTime < startTime) {
     derived = 'PLANNING';
   } else if (todayTime <= endTime) {
-    derived = 'ACTIVE';
+    derived = 'ONGOING';
   } else {
     derived = 'COMPLETED';
   }

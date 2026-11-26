@@ -26,6 +26,8 @@ export interface LocationDriver {
   permission: () => Promise<LocationPermission>;
   request: () => Promise<LocationPermission>;
   services: () => Promise<boolean>;
+  getCurrentPosition?: () => Promise<(MapCoordinate & { accuracy?: number | null }) | null>;
+  getLastKnownPosition?: () => Promise<(MapCoordinate & { accuracy?: number | null; timestamp?: number }) | null>;
   watch: (
     success: (coords: MapCoordinate & { accuracy?: number | null }) => void,
     failure: () => void,
@@ -130,11 +132,13 @@ export class LocationController {
           permission.android?.accuracy === 'coarse' ||
           permission.ios?.accuracy === 'reduced',
       });
+      let resolved = false;
       const finish = (
         status: LocationStatus,
         coords?: MapCoordinate & { accuracy?: number | null },
       ) => {
-        if (!current()) return;
+        if (!current() || resolved) return;
+        resolved = true;
         this.cancel();
         this.update({
           status,
@@ -143,6 +147,19 @@ export class LocationController {
         });
       };
       this.timer = setTimeout(() => finish('timeout'), this.timeoutMs);
+
+      // Fast one-shot current position fix when supported by driver
+      if (this.driver.getCurrentPosition) {
+        void this.driver
+          .getCurrentPosition()
+          .then((coords) => {
+            if (current() && !resolved && coords && validCoordinate(coords)) {
+              finish('granted', coords);
+            }
+          })
+          .catch(() => {});
+      }
+
       const subscription = await this.driver.watch(
         (coords) =>
           validCoordinate(coords)
@@ -150,7 +167,7 @@ export class LocationController {
             : finish('unavailable'),
         () => finish('unavailable'),
       );
-      if (current()) this.subscription = subscription;
+      if (current() && !resolved) this.subscription = subscription;
       else subscription.remove();
     } catch {
       if (current()) {

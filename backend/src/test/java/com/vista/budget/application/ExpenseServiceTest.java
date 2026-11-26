@@ -446,7 +446,8 @@ class ExpenseServiceTest {
   }
 
   @Test
-  @DisplayName("14. Lấy tài khoản quyết toán: Thành viên được trả thông tin ngân hàng của người nhận")
+  @DisplayName(
+      "14. Lấy tài khoản quyết toán: Thành viên được trả thông tin ngân hàng của người nhận")
   void getSettlementAccounts_withCreditor_returnsBankDetails() {
     ExpenseEntity expense =
         new ExpenseEntity(
@@ -467,7 +468,8 @@ class ExpenseServiceTest {
                 currentUserId, BigDecimal.valueOf(-500000),
                 partnerId, BigDecimal.valueOf(500000)));
     when(calculationService.simplifyDebts(any()))
-        .thenReturn(List.of(new SettlementTransfer(currentUserId, partnerId, BigDecimal.valueOf(500000))));
+        .thenReturn(
+            List.of(new SettlementTransfer(currentUserId, partnerId, BigDecimal.valueOf(500000))));
 
     UserEntity creditorUser = new UserEntity("partner@vista.vn", "hash", "Partner A");
     ReflectionTestUtils.setField(creditorUser, "id", partnerId);

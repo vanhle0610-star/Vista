@@ -82,6 +82,15 @@ def process_destinations(province: str = "Kiên Giang", id_prefix: str = None, l
             FROM destinations
             ORDER BY id ASC
         """)
+    elif "," in province:
+        prov_list = [p.strip() for p in province.split(",") if p.strip()]
+        placeholders = ",".join(["?"] * len(prov_list))
+        cur.execute(f"""
+            SELECT id, name, province, category, photo_url
+            FROM destinations
+            WHERE province IN ({placeholders})
+            ORDER BY province ASC, id ASC
+        """, tuple(prov_list))
     else:
         cur.execute("""
             SELECT id, name, province, category, photo_url
@@ -107,11 +116,11 @@ def process_destinations(province: str = "Kiên Giang", id_prefix: str = None, l
         dest_file = OUTPUT_DIR / f"{poi_id}.webp"
 
         # Check if already processed and file exists
-        if (dest_file.exists() and dest_file.stat().st_size > 5000) and (poi_id in progress["processed_ids"]):
+        if (dest_file.exists() and dest_file.stat().st_size > 5000) or (cur_photo and dest_file.exists()):
             skip_count += 1
             continue
 
-        if limit and (success_count + fail_count) >= limit:
+        if limit and limit > 0 and (success_count + fail_count) >= limit:
             print(f"[BatchProcessor] Reached limit of {limit} operations. Stopping batch.")
             break
 
@@ -177,7 +186,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="VISTA Batch Photo Processor")
     parser.add_argument("--province", type=str, default="Kiên Giang", help="Province to process or 'all'")
     parser.add_argument("--id-prefix", type=str, default=None, help="Process destinations starting with prefix (e.g. 'dest-pq-')")
-    parser.add_argument("--limit", type=int, default=50, help="Max items to process in this run")
+    parser.add_argument("--limit", type=int, default=0, help="Max items to process (0 = unlimited)")
     parser.add_argument("--delay", type=float, default=0.4, help="Polite delay between requests in seconds")
     args = parser.parse_args()
 

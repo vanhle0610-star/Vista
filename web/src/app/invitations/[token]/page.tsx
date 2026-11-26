@@ -14,183 +14,133 @@ import {
   ShieldCheck,
   Ticket,
 } from 'lucide-react';
+import { apiRequest } from '@/lib/api';
 
 export default function InvitationAcceptPage() {
   const params = useParams();
   const router = useRouter();
-  const token = typeof params?.token === 'string' ? params.token : 'VISTA-NG2026';
+  const token = typeof params?.token === 'string' ? params.token : '';
 
   const [testState, setTestState] = useState<'PENDING' | 'REVOKED' | 'EXPIRED' | 'ACCEPTED'>('PENDING');
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isDeclined, setIsDeclined] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDeclineConfirm, setShowDeclineConfirm] = useState(false);
   const [invitationData, setInvitationData] = useState<{
+    id?: string;
     tripId?: string;
     tripTitle?: string;
-    destination?: string;
-    inviterName?: string;
+    destinationSummary?: string;
+    inviteeEmail?: string;
+    status?: string;
     startDate?: string;
     endDate?: string;
+    expiresAt?: string;
   } | null>(null);
 
-  // Load real invitation details and status from server store or fallback
+  // Load real invitation preview from backend (SSOT)
   useEffect(() => {
+    if (!token) return;
+
     const fetchInvitation = async () => {
       try {
-        const res = await fetch(`/api/invitations?token=${encodeURIComponent(token)}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data && data.status) {
-            setTestState(data.status);
-            setInvitationData(data);
-            if (data.status === 'REVOKED') {
-              setIsDeclined(true);
-              setStatusMessage('❌ Lời mời này đã bị Trưởng nhóm (Owner) thu hồi hoặc bạn đã từ chối!');
-            } else if (data.status === 'EXPIRED') {
-              setStatusMessage('❌ Lời mời này đã quá thời hạn và bị hết hạn! Vui lòng xin mã mời mới.');
-            } else if (data.status === 'ACCEPTED') {
-              setIsSuccess(true);
-              setStatusMessage('🎉 Lời mời này đã được chấp nhận và tham gia thành công!');
-            }
-            return;
+        const data = await apiRequest<any>(`/invitations/${encodeURIComponent(token)}/preview`);
+        if (data) {
+          setInvitationData(data);
+          const st = data.status || 'PENDING';
+          setTestState(st);
+
+          if (st === 'REVOKED') {
+            setIsDeclined(true);
+            setErrorMessage('❌ Lời mời này đã bị Trưởng nhóm (Owner) thu hồi hoặc đã bị hủy.');
+          } else if (st === 'EXPIRED') {
+            setErrorMessage('❌ Lời mời này đã quá thời hạn và bị hết hạn! Vui lòng xin mã mời mới.');
+          } else if (st === 'ACCEPTED') {
+            setIsSuccess(true);
+            setStatusMessage('🎉 Lời mời này đã được chấp nhận và tham gia thành công trước đó.');
           }
         }
-      } catch {
-        // Fallback to local check below
-      }
-
-      if (token.toLowerCase().includes('revoked')) {
-        setTestState('REVOKED');
-        setIsDeclined(true);
-      } else if (token.toLowerCase().includes('expired')) {
-        setTestState('EXPIRED');
+      } catch (err: any) {
+        console.error('Failed to preview invitation:', err);
+        setErrorMessage(err?.message || 'Không thể tìm thấy thông tin lời mời. Vui lòng kiểm tra lại liên kết.');
       }
     };
 
     fetchInvitation();
   }, [token]);
 
-  const handleAccept = () => {
+  const handleAccept = async () => {
     if (testState === 'REVOKED') {
-      setStatusMessage('❌ Lời mời này đã bị Trưởng nhóm (Owner) thu hồi! Bạn không thể tham gia chuyến đi.');
+      setErrorMessage('❌ Lời mời này đã bị thu hồi! Bạn không thể tham gia chuyến đi.');
       return;
     }
     if (testState === 'EXPIRED') {
-      setStatusMessage('❌ Lời mời này đã quá thời hạn 7 ngày và bị hết hạn! Vui lòng xin mã mời mới.');
+      setErrorMessage('❌ Lời mời này đã hết hạn! Vui lòng xin mã mời mới từ Trưởng nhóm.');
       return;
     }
     if (testState === 'ACCEPTED') {
-      setStatusMessage('❌ Lời mời này đã được sử dụng trước đó (Conflict 409)! Không thể tái sử dụng.');
+      setErrorMessage('❌ Lời mời này đã được sử dụng trước đó (Conflict 409)! Không thể tái sử dụng.');
       return;
     }
 
     // RBAC Auth Guard: Verify logged in user
+    let tokenAuth: string | null = null;
     let currentUser: any = null;
     try {
+      tokenAuth = localStorage.getItem('vista_token');
       const rawUser = localStorage.getItem('vista_user');
       if (rawUser) currentUser = JSON.parse(rawUser);
     } catch {}
 
-    const tokenAuth = typeof window !== 'undefined' ? localStorage.getItem('vista_token') : null;
     if (!tokenAuth || !currentUser) {
-      setStatusMessage('⚠️ Vui lòng đăng nhập tài khoản trước khi chấp nhận lời mời gia nhập nhóm!');
+      setErrorMessage('⚠️ Vui lòng đăng nhập tài khoản trước khi chấp nhận lời mời gia nhập nhóm!');
       setTimeout(() => {
         router.push(`/login?returnUrl=${encodeURIComponent(`/invitations/${token}`)}`);
       }, 1500);
       return;
     }
 
-    const rawName = currentUser.displayName || currentUser.email || 'Thành viên mới';
-    const cleanName = rawName.replace(/\s*\(Bạn.*?\)/gi, '').trim() || 'Thành viên mới';
-    const parts = cleanName.split(/\s+/);
-    const initials = (parts.length >= 2 ? parts[0][0] + parts[parts.length - 1][0] : cleanName.slice(0, 2)).toUpperCase();
+    setIsSubmitting(true);
+    setErrorMessage(null);
 
-    const newMember = {
-      name: cleanName,
-      avatar: initials || 'TV',
-      color: '#0284c7',
-      role: 'Thành viên',
-      userId: currentUser.id || 'u-me',
-      email: currentUser.email || '',
-    };
-
-    const targetTripId = invitationData?.tripId || 'trip-1794386330666';
-    const targetTripTitle = invitationData?.tripTitle || 'Khám phá chuyến đi VISTA';
-    const targetDest = invitationData?.destination || 'Việt Nam';
-    const targetStartDate = invitationData?.startDate || '11/11/2026';
-    const targetEndDate = invitationData?.endDate || '15/11/2026';
-
-    // Success: Add real logged in user to local storage trip data
     try {
-      const stored = localStorage.getItem('vista_custom_trips');
-      let trips = stored ? JSON.parse(stored) : [];
-      let trip = trips.find((t: any) => t.id === targetTripId);
+      // Gọi trực tiếp Spring Boot API: Single Source of Truth
+      const response = await apiRequest<any>(`/invitations/${encodeURIComponent(token)}/accept`, {
+        method: 'POST',
+      });
 
-      if (!trip) {
-        trip = {
-          id: targetTripId,
-          title: targetTripTitle,
-          destination: targetDest,
-          startDate: targetStartDate,
-          endDate: targetEndDate,
-          members: [
-            { name: invitationData?.inviterName || 'Trưởng nhóm', avatar: 'TN', color: '#0284c7', role: 'Trưởng nhóm' },
-            newMember,
-          ],
-        };
-        trips.push(trip);
-      } else {
-        if (!trip.members) trip.members = [];
-        const alreadyIn = trip.members.some(
-          (m: any) =>
-            (m.userId && m.userId === newMember.userId) ||
-            (m.email && newMember.email && m.email.toLowerCase() === newMember.email.toLowerCase()) ||
-            m.name.trim().toLowerCase() === newMember.name.trim().toLowerCase()
-        );
-        if (!alreadyIn) {
-          trip.members.push(newMember);
-        }
+      const cleanName = currentUser.displayName || currentUser.email || 'Thành viên';
+      setIsSuccess(true);
+      setTestState('ACCEPTED');
+      setStatusMessage(`🎉 Chúc mừng ${cleanName}! Bạn đã được thêm vào cơ sở dữ liệu chuyến đi với vai trò Thành viên (MEMBER).`);
+
+      const targetTripId = response?.tripId || invitationData?.tripId;
+      if (targetTripId && /^[0-9a-f-]{36}$/i.test(targetTripId)) {
+        try {
+          await apiRequest('/invitations/sync-membership', {
+            method: 'POST',
+            body: JSON.stringify({ tripId: targetTripId }),
+          });
+        } catch {}
       }
-      localStorage.setItem('vista_custom_trips', JSON.stringify(trips));
-      window.dispatchEvent(new CustomEvent('vista-trips-change'));
-      window.dispatchEvent(new Event('storage'));
-    } catch {
-      // ignore
+
+      if (targetTripId) {
+        setTimeout(() => {
+          router.push(`/trips/${targetTripId}?tab=members`);
+        }, 1500);
+      }
+    } catch (err: any) {
+      console.error('Failed to accept invitation:', err);
+      setIsSuccess(false);
+      setErrorMessage(
+        err?.message ||
+        'Không thể tham gia chuyến đi. Vui lòng kiểm tra xem tài khoản đăng nhập có khớp với email được mời hay không.'
+      );
+    } finally {
+      setIsSubmitting(false);
     }
-
-    // Notify server about ACCEPT and update trips store synchronously
-    try {
-      fetch('/api/invitations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'ACCEPT',
-          status: 'ACCEPTED',
-          token,
-          user: newMember,
-          tripId: targetTripId,
-          email: currentUser.email || (invitationData as any)?.inviteeEmail || '',
-        }),
-      }).catch(() => {});
-
-      fetch('/api/trips', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: targetTripId,
-          members: [newMember],
-        }),
-      }).catch(() => {});
-    } catch {}
-
-    setIsSuccess(true);
-    setTestState('ACCEPTED');
-    setStatusMessage(`🎉 Chúc mừng ${cleanName}! Bạn đã chấp nhận lời mời và trở thành thành viên chính thức của chuyến đi.`);
-
-    setTimeout(() => {
-      router.push(`/trips/${targetTripId}?tab=members`);
-    }, 1800);
   };
 
   const handleStartDecline = () => {
@@ -201,19 +151,25 @@ export default function InvitationAcceptPage() {
     setShowDeclineConfirm(false);
   };
 
-  const handleConfirmDecline = () => {
+  const handleConfirmDecline = async () => {
     setShowDeclineConfirm(false);
-    setIsDeclined(true);
-    setTestState('REVOKED');
-    setStatusMessage('❌ Bạn đã chọn TỪ CHỐI lời mời. Bạn không tham gia chuyến đi này.');
+    setIsSubmitting(true);
+    setErrorMessage(null);
 
     try {
-      fetch('/api/invitations', {
+      await apiRequest<any>(`/invitations/${encodeURIComponent(token)}/decline`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'REVOKE', token }),
-      }).catch(() => {});
-    } catch {}
+      });
+
+      setIsDeclined(true);
+      setTestState('REVOKED');
+      setStatusMessage('❌ Bạn đã từ chối lời mời. Bạn không tham gia chuyến đi này.');
+    } catch (err: any) {
+      console.error('Failed to decline invitation:', err);
+      setErrorMessage(err?.message || 'Không thể từ chối lời mời vào lúc này. Vui lòng thử lại sau.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -230,7 +186,7 @@ export default function InvitationAcceptPage() {
               Lời mời tham gia chuyến đi
             </h2>
             <p style={{ margin: 0, opacity: 0.9, fontSize: '14px' }}>
-              Trưởng nhóm <strong>{invitationData?.inviterName || 'Lê Vân Anh'}</strong> đã mời bạn cùng đồng hành!
+              Bạn nhận được lời mời tham gia chuyến đi từ nền tảng <strong>VISTA</strong>!
             </p>
           </div>
 
@@ -257,21 +213,21 @@ export default function InvitationAcceptPage() {
               </div>
 
               <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', margin: '0 0 12px' }}>
-                {invitationData?.tripTitle || 'Khám phá Đà Nẵng - Hội An 4N3Đ'}
+                {invitationData?.tripTitle || 'Chuyến đi VISTA'}
               </h3>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', fontSize: '13.5px', color: '#475569' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <MapPin size={15} style={{ color: '#0EA5E9' }} />
-                  <span>{invitationData?.destination || 'Đà Nẵng & Hội An'}</span>
+                  <span>{invitationData?.destinationSummary || 'Việt Nam'}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <Calendar size={15} style={{ color: '#6366F1' }} />
-                  <span>{invitationData?.startDate && invitationData?.endDate ? `${invitationData.startDate} – ${invitationData.endDate}` : '15 – 18/11/2026'}</span>
+                  <span>{invitationData?.startDate && invitationData?.endDate ? `${invitationData.startDate} – ${invitationData.endDate}` : 'Lịch trình linh hoạt'}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <Users size={15} style={{ color: '#F59E0B' }} />
-                  <span>Thành viên đang chờ</span>
+                  <span>Người nhận: {invitationData?.inviteeEmail || 'Theo thư mời'}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <ShieldCheck size={15} style={{ color: '#10B981' }} />
@@ -280,20 +236,37 @@ export default function InvitationAcceptPage() {
               </div>
             </div>
 
-            {/* Thông báo kết quả thao tác */}
+            {/* Thông báo thành công */}
             {statusMessage && (
               <div style={{
-                background: isSuccess ? '#F0FDF4' : '#FEF2F2',
-                border: `1.5px solid ${isSuccess ? '#86EFAC' : '#FECACA'}`,
+                background: '#F0FDF4',
+                border: '1.5px solid #86EFAC',
                 borderRadius: '14px',
                 padding: '14px 18px',
                 marginBottom: '20px',
                 fontSize: '13.5px',
-                color: isSuccess ? '#15803D' : '#991B1B',
+                color: '#15803D',
                 fontWeight: 600,
                 lineHeight: '1.5',
               }}>
                 {statusMessage}
+              </div>
+            )}
+
+            {/* Thông báo lỗi thực tế từ Backend */}
+            {errorMessage && (
+              <div style={{
+                background: '#FEF2F2',
+                border: '1.5px solid #FECACA',
+                borderRadius: '14px',
+                padding: '14px 18px',
+                marginBottom: '20px',
+                fontSize: '13.5px',
+                color: '#991B1B',
+                fontWeight: 600,
+                lineHeight: '1.5',
+              }}>
+                {errorMessage}
               </div>
             )}
 
@@ -314,12 +287,13 @@ export default function InvitationAcceptPage() {
                   </strong>
                 </div>
                 <p style={{ margin: '0 0 16px', fontSize: '13px', color: '#881337', lineHeight: '1.5' }}>
-                  Nếu chọn <strong>"Có, từ chối"</strong>, lời mời sẽ bị hủy bỏ và bạn sẽ không thể tham gia chuyến đi bằng mã này nữa.
+                  Nếu chọn <strong>"Có, từ chối"</strong>, trạng thái lời mời sẽ cập nhật thành DECLINED và bạn sẽ không thể tham gia chuyến đi bằng mã này nữa.
                 </p>
                 <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
                   <button
                     type="button"
                     onClick={handleCancelDecline}
+                    disabled={isSubmitting}
                     style={{
                       padding: '10px 18px',
                       borderRadius: '10px',
@@ -336,6 +310,7 @@ export default function InvitationAcceptPage() {
                   <button
                     type="button"
                     onClick={handleConfirmDecline}
+                    disabled={isSubmitting}
                     style={{
                       padding: '10px 20px',
                       borderRadius: '10px',
@@ -348,18 +323,19 @@ export default function InvitationAcceptPage() {
                       boxShadow: '0 4px 12px rgba(225, 29, 72, 0.3)',
                     }}
                   >
-                    Có, từ chối
+                    {isSubmitting ? 'Đang xử lý...' : 'Có, từ chối'}
                   </button>
                 </div>
               </div>
             )}
 
-            {/* Các nút hành động chính: MẤT ĐI khi đã từ chối (isDeclined) hoặc đã chấp nhận (isSuccess) */}
+            {/* Các nút hành động chính */}
             {!isSuccess && !isDeclined && testState === 'PENDING' && !showDeclineConfirm && (
               <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                 <button
                   type="button"
                   onClick={handleAccept}
+                  disabled={isSubmitting}
                   style={{
                     flex: 1,
                     display: 'inline-flex',
@@ -373,18 +349,20 @@ export default function InvitationAcceptPage() {
                     borderRadius: '12px',
                     fontSize: '14.5px',
                     fontWeight: 800,
-                    cursor: 'pointer',
+                    cursor: isSubmitting ? 'not-allowed' : 'pointer',
                     boxShadow: '0 4px 14px rgba(22, 163, 74, 0.3)',
+                    opacity: isSubmitting ? 0.7 : 1,
                     transition: 'all 0.2s',
                   }}
                 >
                   <CheckCircle2 size={18} />
-                  <span>Chấp nhận vào nhóm</span>
+                  <span>{isSubmitting ? 'Đang xác thực...' : 'Chấp nhận vào nhóm'}</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={handleStartDecline}
+                  disabled={isSubmitting}
                   style={{
                     padding: '13px 20px',
                     background: '#FFFFFF',
@@ -406,7 +384,7 @@ export default function InvitationAcceptPage() {
             {isSuccess && (
               <div style={{ textAlign: 'center' }}>
                 <Link
-                  href={`/trips/${invitationData?.tripId || 'demo-danang-2026'}?tab=members`}
+                  href={`/trips/${invitationData?.tripId}?tab=members`}
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -429,7 +407,7 @@ export default function InvitationAcceptPage() {
               </div>
             )}
 
-            {/* Sau khi đã từ chối: Nút biến mất, hiện nút quay về trang chủ */}
+            {/* Sau khi đã từ chối: Nút quay về trang chủ */}
             {(isDeclined || testState === 'REVOKED' || testState === 'EXPIRED') && !isSuccess && (
               <div style={{ textAlign: 'center' }}>
                 <Link
@@ -460,4 +438,3 @@ export default function InvitationAcceptPage() {
     </div>
   );
 }
-

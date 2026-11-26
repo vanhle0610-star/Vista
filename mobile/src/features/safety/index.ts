@@ -19,3 +19,5 @@ export interface LocationShareState {
   lastLatitude?: number;
   lastLongitude?: number;
 }
+
+export { TripSafetyTools, type TripSafetyToolsProps } from './TripSafetyTools';

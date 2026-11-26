@@ -213,6 +213,10 @@ class NotificationRealIntegrationTest {
             USER_A, "Đà Nẵng Chill", LocalDate.of(2026, 11, 10), LocalDate.of(2026, 11, 12));
     ReflectionTestUtils.setField(trip, "id", TRIP_ID);
 
+    UserEntity userBEntity = new UserEntity("userb@gmail.com", "pass123", "User B");
+    ReflectionTestUtils.setField(userBEntity, "id", USER_B);
+
+    when(userRepository.findById(USER_B)).thenReturn(Optional.of(userBEntity));
     when(invitationRepository.findByTokenHash(any())).thenReturn(Optional.of(invitation));
     when(tripRepository.findById(TRIP_ID)).thenReturn(Optional.of(trip));
     when(tripMemberRepository.findByTripIdAndUserId(TRIP_ID, USER_B)).thenReturn(Optional.empty());

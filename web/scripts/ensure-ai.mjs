@@ -34,7 +34,11 @@ async function main() {
   try {
     const child = spawn(pythonCmd, ['run.py'], {
       cwd: aiDir,
-      env: process.env,
+      env: {
+        ...process.env,
+        PYTHONIOENCODING: 'utf-8',
+        PYTHONUTF8: '1'
+      },
       detached: true,
       stdio: 'ignore'
     });

@@ -15,4 +15,7 @@ public interface InvitationRepository extends JpaRepository<Invitation, UUID> {
       UUID tripId, String inviteeEmail, InvitationStatus status);
 
   List<Invitation> findByTripIdOrderByCreatedAtDesc(UUID tripId);
+
+  List<Invitation> findByInviteeEmailIgnoreCaseAndStatusOrderByCreatedAtDesc(
+      String inviteeEmail, InvitationStatus status);
 }

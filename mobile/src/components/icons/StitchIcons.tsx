@@ -1,5 +1,5 @@
 import React from 'react';
-import Svg, { Path, Circle, Rect, G } from 'react-native-svg';
+import Svg, { Path, Circle, Rect, G, Line } from 'react-native-svg';
 
 export interface IconProps {
   size?: number;
@@ -250,5 +250,205 @@ export function GlobeIcon({ size = 18, color = '#64748b', style }: IconProps) {
     </Svg>
   );
 }
+
+export function LayersIcon({ size = 20, color = '#0284c7', style }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={style}>
+      <Path d="m12 2 10 5-10 5L2 7l10-5z" />
+      <Path d="m2 17 10 5 10-5" />
+      <Path d="m2 12 10 5 10-5" />
+    </Svg>
+  );
+}
+
+export function CrosshairIcon({ size = 20, color = '#0284c7', style }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={style}>
+      <Circle cx="12" cy="12" r="10" />
+      <Path d="M22 12h-4" />
+      <Path d="M6 12H2" />
+      <Path d="M12 6V2" />
+      <Path d="M12 22v-4" />
+      <Circle cx="12" cy="12" r="3" fill={color} />
+    </Svg>
+  );
+}
+
+export function DirectionsIcon({ size = 18, color = '#ffffff', style }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={style}>
+      <Path d="m9 18 6-6-6-6" />
+      <Path d="M4 12h11" />
+    </Svg>
+  );
+}
+
+export function WalkIcon({ size = 18, color = '#64748b', style }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={style}>
+      <Circle cx="13" cy="4" r="2" fill={color} />
+      <Path d="M13 6v5l3 2" />
+      <Path d="m10 11 3-2 3 2" />
+      <Path d="m10 17 3-6-3 6" />
+      <Path d="m10 22 3-5 3 5" />
+    </Svg>
+  );
+}
+
+export function PinIcon({ size = 18, color = '#0284c7', style }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={style}>
+      <Path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+      <Circle cx="12" cy="10" r="3" fill={color} />
+    </Svg>
+  );
+}
+
+export function PhotoIcon({ size = 18, color = '#0284c7', style }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={style}>
+      <Rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+      <Circle cx="9" cy="9" r="2" />
+      <Path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+    </Svg>
+  );
+}
+
+export function CommentIcon({ size = 18, color = '#64748b', style }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={style}>
+      <Path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
+    </Svg>
+  );
+}
+
+export function ShareIcon({ size = 18, color = '#64748b', style }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={style}>
+      <Circle cx="18" cy="5" r="3" />
+      <Circle cx="6" cy="12" r="3" />
+      <Circle cx="18" cy="19" r="3" />
+      <Path d="m8.59 13.51 6.83 3.98" />
+      <Path d="m15.41 6.51-6.82 3.98" />
+    </Svg>
+  );
+}
+
+export function BellIcon({ size = 20, color = '#0F172A', style }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={style}>
+      <Path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+      <Path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+    </Svg>
+  );
+}
+
+export function ArrowLeftIcon({ size = 22, color = '#0F172A', style }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" style={style}>
+      <Path d="m12 19-7-7 7-7" />
+      <Path d="M19 12H5" />
+    </Svg>
+  );
+}
+
+export function MenuDotsIcon({ size = 20, color = '#64748b', style }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={style}>
+      <Circle cx="12" cy="12" r="2" fill={color} />
+      <Circle cx="19" cy="12" r="2" fill={color} />
+      <Circle cx="5" cy="12" r="2" fill={color} />
+    </Svg>
+  );
+}
+
+export function MenuLinesIcon({ size = 20, color = '#94A3B8', style }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={style}>
+      <Path d="M4 8h16" />
+      <Path d="M4 16h16" />
+    </Svg>
+  );
+}
+
+export function PlusIcon({ size = 18, color = '#0284c7', style }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" style={style}>
+      <Path d="M5 12h14" />
+      <Path d="M12 5v14" />
+    </Svg>
+  );
+}
+
+export function MinusIcon({ size = 18, color = '#0F172A', style }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" style={style}>
+      <Path d="M5 12h14" />
+    </Svg>
+  );
+}
+
+export function ChevronDownIcon({ size = 16, color = '#64748b', style }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={style}>
+      <Path d="m6 9 6 6 6-6" />
+    </Svg>
+  );
+}
+
+export function ChevronUpIcon({ size = 16, color = '#64748b', style }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={style}>
+      <Path d="m18 15-6-6-6 6" />
+    </Svg>
+  );
+}
+
+export function CloseIcon({ size = 16, color = '#64748b', style }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" style={style}>
+      <Path d="M18 6 6 18" />
+      <Path d="m6 6 12 12" />
+    </Svg>
+  );
+}
+
+export function MuseumIcon({ size = 18, color = '#64748b', style }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={style}>
+      <Path d="m2 9 20-5 0 0" />
+      <Path d="M4 10v11" />
+      <Path d="M8 10v11" />
+      <Path d="M12 10v11" />
+      <Path d="M16 10v11" />
+      <Path d="M20 10v11" />
+      <Path d="M2 21h20" />
+    </Svg>
+  );
+}
+
+export function UtensilsIcon({ size = 18, color = '#64748b', style }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={style}>
+      <Path d="M18 2v6a3 3 0 0 1-3 3 3 3 0 0 1-3-3V2" />
+      <Path d="M15 11v11" />
+      <Path d="M5 2v10a3 3 0 0 0 3 3h0a3 3 0 0 0 3-3V2" />
+      <Path d="M8 15v7" />
+    </Svg>
+  );
+}
+
+export function SmileIcon({ size = 18, color = '#64748b', style }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={style}>
+      <Circle cx="12" cy="12" r="10" />
+      <Path d="M8 14s1.5 2 4 2 4-2 4-2" />
+      <Line x1="9" y1="9" x2="9.01" y2="9" strokeWidth={3} strokeLinecap="round" />
+      <Line x1="15" y1="9" x2="15.01" y2="9" strokeWidth={3} strokeLinecap="round" />
+    </Svg>
+  );
+}
+
+
 
 

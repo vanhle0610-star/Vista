@@ -168,6 +168,7 @@ export async function POST(request: Request) {
 
     if (smtpUser && smtpPass) {
       try {
+        // @ts-ignore nodemailer is optional SMTP transport
         const nodemailer = (await import('nodemailer')).default;
         const transporter = nodemailer.createTransport({
           host: smtpHost,

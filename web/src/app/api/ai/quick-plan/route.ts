@@ -108,7 +108,7 @@ export async function POST(request: Request) {
     };
 
     const AI_SERVICE_URL = process.env.AI_SERVICE_URL || process.env.PYTHON_LLM_SERVICE_URL || 'http://127.0.0.1:8000';
-    const INTERNAL_TOKEN = process.env.INTERNAL_TOKEN || '';
+    const INTERNAL_TOKEN = process.env.INTERNAL_TOKEN || 'vista-ai-dev-token-2026';
 
     // Check circuit breaker
     const isCircuitOpen = Date.now() < circuitBreakerOpenUntil;
