@@ -1,0 +1,1051 @@
+/* VISTA Planner — Senior Product Designer Setup Workspace */
+/* Compact, Refined, High-Fidelity, 100% Matching Approved Mockup */
+
+.setupPageWrapper {
+  max-width: 1220px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 16px 20px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  font-family: inherit;
+}
+
+/* ─── Top Intro & Weather Header ─── */
+.topIntroRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 2px;
+}
+
+@media (max-width: 900px) {
+  .topIntroRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.introLeft {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.badgePill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #0088CC;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.mainHeading {
+  font-size: 22px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0;
+  letter-spacing: -0.3px;
+  line-height: 1.25;
+}
+
+.subHeading {
+  font-size: 12.5px;
+  color: #64748B;
+  margin: 0;
+  line-height: 1.45;
+}
+
+.featureChipsRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+  flex-wrap: wrap;
+}
+
+.featureChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #475569;
+  background: #F1F5F9;
+  padding: 2.5px 8px;
+  border-radius: 99px;
+}
+
+/* ─── Live Weather Widget (High Prominence, Vibrant Sunny Yellow) ─── */
+.weatherWidget {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #FFFFFF;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 9px 14px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  width: 320px;
+  max-width: 100%;
+  margin-top: 0;
+}
+
+/* Sunny / Nắng đẹp — Vàng ấm rực rỡ nổi bật 100% theo yêu cầu */
+.weatherWidgetSunny {
+  background: linear-gradient(135deg, #FFFDF0 0%, #FEF9C3 55%, #FEF08A 100%);
+  border: 1.5px solid #F59E0B;
+  box-shadow: 0 3px 14px rgba(245, 158, 11, 0.22);
+}
+
+.weatherWidgetCool {
+  background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
+  border: 1.5px solid #38BDF8;
+  box-shadow: 0 3px 12px rgba(2, 132, 199, 0.12);
+}
+
+.weatherWidgetRainy {
+  background: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%);
+  border: 1.5px solid #94A3B8;
+  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.06);
+}
+
+.weatherIconBox {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: #FFFFFF;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.weatherIconBoxSunny {
+  background: #FEF08A;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
+  animation: pulseSun 3s ease-in-out infinite alternate;
+}
+
+@keyframes pulseSun {
+  0% { transform: scale(1); filter: drop-shadow(0 0 2px rgba(245, 158, 11, 0.4)); }
+  100% { transform: scale(1.05); filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.65)); }
+}
+
+.weatherContentCol {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.weatherTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.weatherCityName {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #0F172A;
+}
+
+.weatherCityNameSunny {
+  color: #78350F;
+}
+
+.weatherTemp {
+  background: #E0F2FE;
+  color: #0088CC;
+  font-size: 11.5px;
+  font-weight: 800;
+  padding: 1.5px 7px;
+  border-radius: 99px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.weatherTempSunny {
+  background: #F59E0B;
+  color: #FFFFFF;
+  box-shadow: 0 1px 4px rgba(245, 158, 11, 0.35);
+}
+
+.weatherLiveDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #10B981;
+  display: inline-block;
+}
+
+.weatherAdviceText {
+  font-size: 11px;
+  color: #64748B;
+  line-height: 1.35;
+}
+
+.weatherAdviceTextSunny {
+  color: #92400E;
+  font-weight: 600;
+}
+
+/* ─── Master 2-Column Balanced Grid (60% Left vs 40% Right) ─── */
+.plannerGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.48fr) minmax(360px, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .plannerGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   LEFT COLUMN — COMPACT, REFINED FORM CARDS
+   ════════════════════════════════════════════════════════════════════ */
+.leftColForm {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.moduleCard {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.moduleHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.moduleTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.moduleStatusBadge {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #0088CC;
+  background: #E0F2FE;
+  padding: 2px 8px;
+  border-radius: 99px;
+}
+
+/* 1. Destination Module */
+.chosenDestBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 9px;
+  padding: 8px 12px;
+}
+
+.destAvatarBox {
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+  background: #E0F2FE;
+  color: #0088CC;
+  font-weight: 800;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.destInfoText {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.destNameTitle {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.destSubDesc {
+  font-size: 11.5px;
+  color: #64748B;
+}
+
+.changeDestBtn {
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #0088CC;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.changeDestBtn:hover {
+  background: #F0F9FF;
+  border-color: #0088CC;
+}
+
+.quickPillsRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 11.5px;
+}
+
+.quickPillBtn {
+  background: #F1F5F9;
+  border: 1px solid transparent;
+  color: #475569;
+  border-radius: 99px;
+  padding: 2.5px 9px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.quickPillBtn:hover {
+  background: #E0F2FE;
+  color: #0088CC;
+}
+
+/* 2. Departure Date & Duration Module */
+.datePaxGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 640px) {
+  .datePaxGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.fieldLabelSmall {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #64748B;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.dateInputBox {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.dateInputBox:hover {
+  border-color: #0088CC;
+}
+
+.dateQuickRow {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 5px;
+}
+
+.dateQuickBtn {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  color: #64748B;
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.dateQuickBtnActive {
+  background: #E0F2FE;
+  color: #0088CC;
+  border-color: #BAE6FD;
+  font-weight: 700;
+}
+
+.paxStepperBox {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+  padding: 5px 8px;
+}
+
+.stepperBtn {
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
+  background: #F1F5F9;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  color: #0F172A;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.stepperBtn:hover {
+  background: #E2E8F0;
+}
+
+.durationRadioGroup {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 5px;
+}
+
+@media (max-width: 640px) {
+  .durationRadioGroup {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.durationBtn {
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 7px;
+  padding: 6px 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #334155;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.durationBtn:hover {
+  border-color: #0088CC;
+}
+
+.durationBtnActive {
+  background: #0088CC;
+  border-color: #0088CC;
+  color: #FFFFFF;
+  font-weight: 800;
+}
+
+/* 3. Budget & Travel Pace */
+.budgetThreeCards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+@media (max-width: 640px) {
+  .budgetThreeCards {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tierCard {
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 9px;
+  padding: 10px 12px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.tierCard:hover {
+  border-color: #0088CC;
+}
+
+.tierCardActive {
+  background: #F0F9FF;
+  border: 2px solid #0088CC;
+}
+
+.tierBadgePop {
+  position: absolute;
+  top: -7px;
+  right: 6px;
+  background: #0088CC;
+  color: #FFFFFF;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 99px;
+  text-transform: uppercase;
+}
+
+.tierTitle {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #0F172A;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tierPrice {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #0088CC;
+}
+
+.tierPriceMuted {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.tierDesc {
+  font-size: 10.5px;
+  color: #64748B;
+  line-height: 1.35;
+}
+
+.paceRowGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+@media (max-width: 640px) {
+  .paceRowGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.paceBtn {
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 7px;
+  padding: 6px 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.paceBtn:hover {
+  border-color: #0088CC;
+}
+
+.paceBtnActive {
+  background: #F0F9FF;
+  border: 1.5px solid #0088CC;
+  color: #0088CC;
+  font-weight: 800;
+}
+
+/* 4. Interests & Priority Order */
+.interestsTagGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+@media (max-width: 640px) {
+  .interestsTagGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.interestPill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  border-radius: 7px;
+  border: 1px solid #CBD5E1;
+  background: #FFFFFF;
+  font-size: 11.5px;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.interestPill:hover {
+  border-color: #0088CC;
+}
+
+.interestPillActive {
+  background: #F0F9FF;
+  border: 1.5px solid #0088CC;
+  color: #0088CC;
+  font-weight: 700;
+}
+
+.priorityBadgeCircle {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #0088CC;
+  color: #FFFFFF;
+  font-size: 10px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.unselectedPlusCircle {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #F1F5F9;
+  color: #94A3B8;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* 5. Custom Wishes Textarea */
+.wishesTextarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #CBD5E1;
+  border-radius: 7px;
+  font-size: 12px;
+  font-family: inherit;
+  color: #0F172A;
+  resize: none;
+  background: #FFFFFF;
+  line-height: 1.4;
+}
+
+.wishesTextarea:focus {
+  outline: none;
+  border-color: #0088CC;
+  box-shadow: 0 0 0 2px rgba(0, 136, 204, 0.12);
+}
+
+/* 6. Sticky Action Bar */
+.stickyBottomBar {
+  position: sticky;
+  bottom: 12px;
+  z-index: 30;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid #CBD5E1;
+  border-radius: 10px;
+  padding: 10px 16px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.bottomSummaryTitle {
+  font-size: 13px;
+  font-weight: 800;
+  color: #0F172A;
+}
+
+.bottomSummarySub {
+  font-size: 11px;
+  color: #64748B;
+}
+
+.primaryCtaBtn {
+  background: #0088CC;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 7px;
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 6px rgba(0, 136, 204, 0.25);
+  transition: all 0.15s ease;
+}
+
+.primaryCtaBtn:hover {
+  background: #0284C7;
+  transform: translateY(-1px);
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   RIGHT COLUMN — STICKY CURATED TEMPLATES & SAVED TRIPS
+   ════════════════════════════════════════════════════════════════════ */
+.rightStickyRail {
+  position: sticky;
+  top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rightTabSwitcher {
+  background: #F1F5F9;
+  border-radius: 8px;
+  padding: 3px;
+  display: flex;
+  gap: 3px;
+}
+
+.rightTabBtn {
+  flex: 1;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #64748B;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.12s ease;
+}
+
+.rightTabBtnActive {
+  background: #FFFFFF;
+  color: #0088CC;
+  font-weight: 700;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+}
+
+/* Featured Hero Showcase Card */
+.heroShowcaseCard {
+  background: #FFFFFF;
+  border: 1.5px solid #BAE6FD;
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.showcaseImgBox {
+  position: relative;
+  width: 100%;
+  height: 140px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #F1F5F9;
+}
+
+.showcaseImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.showcaseOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.2) 0%, rgba(15, 23, 42, 0.82) 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 8px 10px;
+}
+
+.showcaseTopRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.showcaseTag {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(4px);
+  color: #FFFFFF;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.showcaseRating {
+  background: rgba(255, 255, 255, 0.92);
+  color: #0F172A;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.showcaseTitle {
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 800;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.dailyStopsBox {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 7px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dailyStopRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.stopDayBadge {
+  background: #E0F2FE;
+  color: #0088CC;
+  font-weight: 800;
+  font-size: 9.5px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.showcaseActionRow {
+  display: flex;
+  gap: 8px;
+}
+
+.outlineBtnSm {
+  flex: 1;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #CBD5E1;
+  background: #FFFFFF;
+  color: #475569;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.applyBtnSm {
+  flex: 1;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: none;
+  background: #0088CC;
+  color: #FFFFFF;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+/* Compact Curated Cards */
+.compactCard {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.compactCard:hover {
+  border-color: #0088CC;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+}
+
+.compactThumb {
+  width: 72px;
+  height: 72px;
+  border-radius: 7px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #F1F5F9;
+}
+
+.compactBody {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1;
+  min-width: 0;
+}
+
+.compactTitle {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 1px 0 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.compactDesc {
+  font-size: 10.5px;
+  color: #64748B;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.35;
+}
+
+.compactFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10.5px;
+}
+
+.compactPrice {
+  color: #0088CC;
+  font-weight: 700;
+}
+
+/* Saved Trips Teaser Box */
+.savedTeaserBox {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.savedTeaserHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.savedMiniCard {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 7px;
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.savedCityBadge {
+  width: 28px;
+  height: 28px;
+  border-radius: 5px;
+  background: #E0F2FE;
+  color: #0088CC;
+  font-weight: 800;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ─── VISTA Platform Page Footer ─── */
+.plannerFooter {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #E2E8F0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 11.5px;
+  color: #64748B;
+}
+
+.footerLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.footerLogo {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: #0F172A;
+  font-size: 12px;
+}
+
+.footerDivider {
+  color: #CBD5E1;
+}
+
+.footerRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.footerRight a {
+  color: #64748B;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.footerRight a:hover {
+  color: #0088CC;
+}

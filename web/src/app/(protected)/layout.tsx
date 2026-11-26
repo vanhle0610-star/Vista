@@ -27,6 +27,7 @@ function checkAdminAuth(): boolean {
       return false;
     }
 
+    let jwtRoles: string[] = [];
     // Check expiration if possible (payload base64)
     try {
       const payload = JSON.parse(atob(tokenParts[1]));
@@ -34,20 +35,22 @@ function checkAdminAuth(): boolean {
         localStorage.removeItem('vista_token');
         return false;
       }
+      if (Array.isArray(payload.roles)) {
+        jwtRoles = payload.roles;
+      }
     } catch {
       // If parsing payload fails, proceed to role check
     }
 
     const user = JSON.parse(userJson);
-    const roles: string[] = Array.isArray(user?.roles) ? user.roles : [];
-    const email: string = user?.email || '';
+    const roles: string[] = Array.isArray(user?.roles) && user.roles.length > 0 ? user.roles : jwtRoles;
 
     const isAdminOrMod =
       roles.some(
         (r) =>
           typeof r === 'string' &&
           (r.toUpperCase().includes('ADMIN') || r.toUpperCase().includes('MODERATOR'))
-      ) || email.toLowerCase().includes('admin');
+      );
 
     return isAdminOrMod;
   } catch {

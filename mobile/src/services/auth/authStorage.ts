@@ -80,6 +80,9 @@ export const authStorage = {
       return null;
     }
   },
+  async setUser(user: unknown): Promise<void> {
+    await setItem(USER_KEY, JSON.stringify(user));
+  },
   async setSession(tokens: {
     accessToken: string;
     refreshToken?: string;

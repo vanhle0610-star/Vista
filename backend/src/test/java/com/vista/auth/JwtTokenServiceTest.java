@@ -100,4 +100,16 @@ class JwtTokenServiceTest {
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("JWT_SECRET không đủ an toàn");
   }
+
+  @Test
+  void doesNotGrantAdminRoleBasedOnEmailContainingAdmin() {
+    var user = new UserEntity("hackeradmin@example.com", "hashed", "Fake Admin");
+    user.addRole(new RoleEntity("USER"));
+
+    var token = jwtTokenService.generateAccessToken(user);
+    var roles = jwtTokenService.extractRoles(token);
+
+    assertThat(roles).contains("ROLE_USER");
+    assertThat(roles).doesNotContain("ROLE_ADMIN", "ROLE_MODERATOR");
+  }
 }

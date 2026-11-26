@@ -122,12 +122,19 @@ class VistaReplannerEngine:
                         act["end_time"] = li["end_time"]
 
         used_ids = set()
+        used_names = set()
         for d in days:
             for act in d.get("activities", []):
                 used_ids.add(act.get("destination_id"))
+                n_str = str(act.get("destination_name", "")).lower().strip()
+                if n_str:
+                    used_names.add(n_str)
 
         prov_dests = data_loader.get_by_province(canonical_prov)
-        available_pool = [d for d in prov_dests if d.id not in used_ids]
+        available_pool = [
+            d for d in prov_dests
+            if d.id not in used_ids and not any(un in str(d.name or "").lower() or str(d.name or "").lower() in un for un in used_names)
+        ]
 
         changes_summary: List[str] = []
         conflicts: List[Dict[str, Any]] = []
@@ -177,7 +184,7 @@ class VistaReplannerEngine:
                 old_act["cost_label"] = f"{rep_dest.price_min:,} VND" if rep_dest.price_min > 0 else "Miễn phí"
                 old_act["note"] = rep_dest.description
                 old_act["tip"] = rep_dest.local_tip
-                old_act["photo_url"] = getattr(rep_dest, "photo_url", "") or old_act.get("photo_url", "")
+                old_act["photo_url"] = getattr(rep_dest, "photo_url", "") or ""
                 old_act["latitude"] = rep_dest.latitude
                 old_act["longitude"] = rep_dest.longitude
                 old_act["duration_min"] = getattr(rep_dest, "avg_duration_min", 90)
@@ -268,8 +275,11 @@ class VistaReplannerEngine:
             changes_summary.extend(shift_msgs)
             conflicts.extend(shift_conflicts)
 
-        # Case A: Rain / Indoor Swap
-        elif any(w in inst_lower for w in ["mưa", "mua", "trong nhà", "trong nha", "indoor", "bảo tàng", "thời tiết xấu"]):
+        # Case A: Rain / Indoor Swap (trời mưa, tránh mưa, thời tiết xấu)
+        elif any(w in inst_lower for w in ["mưa", "mua", "trời mưa", "tranh mua", "tránh mưa", "thời tiết xấu"]) or (
+            any(w in inst_lower for w in ["trong nhà", "trong nha", "indoor"])
+            and not any(w in inst_lower for w in ["đổi", "doi", "thay", "ko thích", "không thích"])
+        ):
             changes_summary.extend(cls._handle_rain_mode(target_day, available_pool, used_ids, target_day_num))
             cls._recalculate_day_timeline(
                 target_day,
@@ -293,17 +303,6 @@ class VistaReplannerEngine:
                     has_elderly=has_elderly
                 )
 
-        # Case C: Food Swap / Local Culinary
-        elif any(w in inst_lower for w in ["hải sản", "hai san", "ẩm thực", "quán ăn", "đặc sản", "đổi điểm ăn", "ăn trưa", "ăn tối"]):
-            changes_summary.extend(cls._handle_food_swap(target_day, available_pool, used_ids, target_day_num))
-            cls._recalculate_day_timeline(
-                target_day,
-                day_num=target_day_num,
-                start_date=c_data.get("start_date"),
-                transport_mode=transport_mode,
-                has_elderly=has_elderly
-            )
-
         # Case D: Relax Pace / Remove 1 stop
         elif any(w in inst_lower for w in ["giảm tải", "mệt", "bớt điểm", "bỏ bớt", "nghỉ ngơi", "thong thả", "thư thả", "nhe nhang", "nhẹ nhàng"]):
             changes_summary.extend(cls._handle_relax_pace(target_day, target_day_num))
@@ -320,6 +319,53 @@ class VistaReplannerEngine:
         elif any(w in inst_lower for w in ["đi nhiều", "di nhieu", "thêm điểm", "them diem", "dày đặc"]):
             changes_summary.extend(cls._handle_add_stop(target_day, available_pool, used_ids, target_day_num))
             plan["pace"] = "INTENSIVE"
+            cls._recalculate_day_timeline(
+                target_day,
+                day_num=target_day_num,
+                start_date=c_data.get("start_date"),
+                transport_mode=transport_mode,
+                has_elderly=has_elderly
+            )
+
+        # Case A.2: Explicit Stop Swap / User doesn't like a stop / Keyword swap (bảo tàng, cafe, công viên, etc.)
+        elif any(w in inst_lower for w in ["đổi", "doi", "thay", "thay thế", "chuyển sang", "chuyen sang", "không thích", "ko thích", "bỏ điểm", "bo diem"]):
+            # Extract target stop name if mentioned (e.g. "ko thích đi hồ cổ điển", "đổi lăng minh mạng")
+            target_stop_kw = None
+            for act_cand in activities:
+                c_name = str(act_cand.get("destination_name", "")).lower()
+                # Check for significant tokens of destination name in instruction
+                c_tokens = [tok for tok in c_name.split() if len(tok) >= 3 and tok not in ("cơ", "sở", "hà", "nội", "thừa", "thiên", "huế", "quán", "điểm", "nhà")]
+                if any(tok in inst_lower for tok in c_tokens):
+                    target_stop_kw = act_cand.get("destination_name")
+                    break
+
+            # If user mentioned meal/time slot specifically (e.g. "điểm ăn trưa", "bữa trưa", "bữa tối")
+            if not target_stop_kw:
+                if any(k in inst_lower for k in ["ăn trưa", "bữa trưa", "điểm ăn trưa", "điểm ăn"]):
+                    meal_act = next((a for a in activities if a.get("time_slot") in ("NOON", "LUNCH") or a.get("item_type") in ("MEAL", "MEAL_BREAK") or "ẩm thực" in str(a.get("category", "")).lower() or "quán" in str(a.get("destination_name", "")).lower() or "cơm" in str(a.get("destination_name", "")).lower()), None)
+                    if meal_act:
+                        target_stop_kw = meal_act.get("destination_name")
+                elif any(k in inst_lower for k in ["ăn tối", "bữa tối"]):
+                    meal_act = next((a for a in activities if a.get("time_slot") in ("EVENING", "DINNER") or "tối" in str(a.get("destination_name", "")).lower()), None)
+                    if meal_act:
+                        target_stop_kw = meal_act.get("destination_name")
+
+            # Extract preferred theme/keyword if mentioned
+            preferred_kw = None
+            for pkw in [
+                "bảo tàng", "museum", "lăng tẩm", "lăng", "cà phê", "cafe", "coffee", "công viên", "hồ", "chùa", "đền", "di tích",
+                "văn hóa", "chợ", "chợ đêm", "ẩm thực", "đặc sản", "quán ăn", "nhà hàng", "hải sản", "bún chả",
+                "phở", "check-in", "ngắm cảnh", "hoàng hôn", "bãi biển", "biển", "núi", "đồi"
+            ]:
+                if pkw in inst_lower:
+                    preferred_kw = pkw
+                    break
+
+            changes_summary.extend(cls._handle_generic_swap(
+                target_day, available_pool, used_ids, target_day_num,
+                target_stop_name=target_stop_kw,
+                preferred_keyword=preferred_kw
+            ))
             cls._recalculate_day_timeline(
                 target_day,
                 day_num=target_day_num,
@@ -422,6 +468,20 @@ class VistaReplannerEngine:
         plan["co_pilot_reply"] = insider_data.get("reply_speech")
         plan["insider_tip"] = insider_data.get("insider_tip")
         plan["proactive_suggestion"] = insider_data.get("proactive_suggestion")
+
+        if c_data.get("include_internal_diagnostics") or plan.get("internal_diagnostics"):
+            existing_diag = resolve_plan_source_diagnostics(plan.get("internal_diagnostics"))
+            replan_entry = build_source_signal_entry(
+                replan_source_code,
+                stage_label="Chỉnh lịch (Replan)",
+                fallback_reason=replan_fallback_reason,
+                model_roles=replan_model_roles,
+            )
+            plan["internal_diagnostics"] = {
+                "initial_plan_source": existing_diag.get("initial_plan_source"),
+                "last_replan_source": replan_entry,
+                "current_source": replan_entry,
+            }
 
         return plan
 
@@ -756,6 +816,7 @@ class VistaReplannerEngine:
                 act["category"] = new_dest.category
                 act["cost_vnd"] = new_dest.price_min
                 act["cost_label"] = f"{new_dest.price_min:,} VND" if new_dest.price_min > 0 else "Miễn phí"
+                act["photo_url"] = getattr(new_dest, "photo_url", "") or ""
                 act["tip"] = new_dest.local_tip or "Điểm tham quan trong nhà tránh mưa lý tưởng."
                 act["reasons"] = [
                     {
@@ -859,6 +920,7 @@ class VistaReplannerEngine:
             act["category"] = new_food.category
             act["cost_vnd"] = new_food.price_min
             act["cost_label"] = f"{new_food.price_min:,} VND" if new_food.price_min > 0 else "Theo menu"
+            act["photo_url"] = getattr(new_food, "photo_url", "") or ""
             act["tip"] = new_food.local_tip or "Thưởng thức các món đặc sản chuẩn vị bản địa."
             return [f"Ngày {day_num}: Đổi điểm ăn '{old_name}' thành quán đặc sản '{new_food.name}'"]
 
@@ -979,24 +1041,90 @@ class VistaReplannerEngine:
         if not unlocked or not available_pool:
             return [f"Ngày {day_num}: Đã giữ nguyên các điểm tối ưu."]
 
-        act = unlocked[-1]
+        # Candidate matching & relevance ranking
+        kw = (preferred_keyword or "").lower().strip()
+        is_museum_culture = any(k in kw for k in ["bảo tàng", "museum", "di tích", "lịch sử", "văn hóa", "chùa", "đền", "triển lãm"])
+        is_cafe = any(k in kw for k in ["cà phê", "cafe", "coffee", "trà", "chill", "rooftop"])
+        is_food = any(k in kw for k in ["ẩm thực", "quán ăn", "ăn uống", "đặc sản", "hải sản", "bún", "phở", "cơm"])
+        is_nature_park = any(k in kw for k in ["hồ", "công viên", "vườn hoa", "núi", "sinh thái", "ngắm cảnh"])
+
+        act = None
         if target_stop_name and isinstance(target_stop_name, str):
             t_low = target_stop_name.lower().strip()
+            # 1. Exact substring match
             matched_act = next((a for a in unlocked if t_low in str(a.get("destination_name", "")).lower()), None)
+            if not matched_act:
+                # 2. Token overlap match
+                t_tokens = [tok for tok in re.findall(r'\w+', t_low) if len(tok) >= 2 and tok not in ("cơ", "sở", "hà", "nội", "đi", "ko", "không", "thích")]
+                best_score = 0
+                for a in unlocked:
+                    a_name_low = str(a.get("destination_name", "")).lower()
+                    overlap = sum(1 for tok in t_tokens if tok in a_name_low)
+                    if overlap > best_score:
+                        best_score = overlap
+                        matched_act = a
             if matched_act:
                 act = matched_act
 
-        new_dest = available_pool[0]
-        if preferred_keyword and isinstance(preferred_keyword, str):
-            kw = preferred_keyword.lower().strip()
-            kw_matches = [
-                d for d in available_pool
-                if kw in f"{d.name} {d.category} {d.description or ''}".lower()
-            ]
-            if kw_matches:
-                # Prefer curated Tier-1 match when available
-                kw_matches.sort(key=lambda d: 0 if getattr(d, "data_source", "") != "OPENSTREETMAP_REAL" else 1)
-                new_dest = kw_matches[0]
+        if act is None:
+            if is_food:
+                act = next((a for a in unlocked if a.get("time_slot") in ("NOON", "EVENING") or a.get("item_type") in ("MEAL", "MEAL_BREAK")), unlocked[-1])
+            else:
+                sightseeing_unlocked = [a for a in unlocked if a.get("time_slot") not in ("NOON", "EVENING") and a.get("item_type") not in ("MEAL", "MEAL_BREAK")]
+                act = sightseeing_unlocked[-1] if sightseeing_unlocked else unlocked[-1]
+
+        scored_candidates = []
+        for d in available_pool:
+            if d.id in used_ids:
+                continue
+            d_name = str(d.name or "").lower()
+            d_cat = str(d.category or "").lower()
+            d_desc = str(d.description or "").lower()
+
+            # Strict guard against fake names
+            if "(cơ sở" in d_name or "(co so" in d_name or "osm-gen-" in str(d.id):
+                continue
+
+            # Incompatibility filtering:
+            if is_museum_culture:
+                # Disallow restaurants / food / cafes when asking for a museum/culture
+                if any(bad in d_cat for bad in ["ẩm thực", "quán ăn", "nhà hàng", "cà phê", "cafe", "bar", "pub"]):
+                    continue
+            elif is_cafe:
+                if not any(good in d_cat or good in d_name for good in ["cà phê", "cafe", "coffee", "trà", "giải khát"]):
+                    continue
+            elif is_food:
+                if not (is_food_destination(d) or any(good in d_cat or good in d_name for good in ["ẩm thực", "quán ăn", "nhà hàng", "đặc sản"])):
+                    continue
+
+            # Relevance scoring
+            score = 1
+            if kw:
+                if kw in d_name:
+                    score += 60
+                if kw in d_cat:
+                    score += 40
+                if kw in d_desc:
+                    score += 15
+            elif is_museum_culture:
+                if "bảo tàng" in d_name:
+                    score += 50
+                elif any(m in d_name or m in d_cat for m in ["di tích", "văn hóa", "lịch sử"]):
+                    score += 30
+
+            # Quality bonuses
+            if getattr(d, "data_source", "") != "OPENSTREETMAP_REAL":
+                score += 20  # Curated Tier-1 priority
+            if getattr(d, "photo_url", ""):
+                score += 10  # Verified photo priority
+
+            scored_candidates.append((score, d))
+
+        if scored_candidates:
+            scored_candidates.sort(key=lambda x: x[0], reverse=True)
+            new_dest = scored_candidates[0][1]
+        else:
+            new_dest = available_pool[0]
 
         old_name = act.get("destination_name")
         used_ids.add(new_dest.id)
@@ -1010,9 +1138,10 @@ class VistaReplannerEngine:
         act["tip"] = new_dest.local_tip or "Khám phá địa danh độc đáo."
         act["latitude"] = new_dest.latitude
         act["longitude"] = new_dest.longitude
-        act["photo_url"] = getattr(new_dest, "photo_url", "") or act.get("photo_url", "")
+        act["photo_url"] = getattr(new_dest, "photo_url", "") or ""
 
-        return [f"Ngày {day_num}: Đổi '{old_name}' sang trải nghiệm mới tại '{new_dest.name}'"]
+        theme_note = f" (theo mong muốn khám phá '{preferred_keyword}')" if preferred_keyword else ""
+        return [f"Ngày {day_num}: Đã thay thế '{old_name}' bằng '{new_dest.name}'{theme_note}"]
 
     @classmethod
     def _recalculate_day_timeline(

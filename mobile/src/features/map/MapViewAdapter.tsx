@@ -1,40 +1,57 @@
+import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { AppText } from '@/components/ui/AppText';
-import { AppButton } from '@/components/ui/AppButton';
 import { tokens } from '@/theme/tokens';
 import { validCoordinate, type MapViewAdapterProps } from './types';
+import { MapVisualCanvas } from './MapVisualCanvas';
+
 export type { MapViewAdapterProps, MapMarker } from './types';
 
-/** Explicit unsupported-platform fallback, not a native map implementation. */
+/** Fallback & Web Vector Da Nang Map Adapter */
 export function MapViewAdapter({
   markers = [],
   destinations,
   onSelectDestination,
   onMarkerPress,
+  userLocation,
+  selectedDestinationId,
+  routeGeometry,
+  onLocateUser,
+  onZoomIn,
+  onZoomOut,
   style,
   testID,
 }: MapViewAdapterProps) {
+  const allMarkers = (destinations ?? markers).filter(validCoordinate).map((m) => ({
+    ...m,
+    title: 'name' in m && typeof m.name === 'string' ? m.name : m.title ?? 'Điểm đến',
+  }));
+
+  const hasRoute = Boolean(routeGeometry && routeGeometry.length > 1);
+
   return (
     <View style={[styles.container, style]} testID={testID}>
-      <AppText>
-        Phiên bản này chưa hỗ trợ hiển thị bản đồ. Bạn vẫn có thể chọn địa điểm bên dưới.
-      </AppText>
-      {(destinations ?? markers).filter(validCoordinate).map((marker) => (
-        <AppButton
-          key={marker.id}
-          label={'name' in marker && typeof marker.name === 'string' ? marker.name : marker.title ?? 'Điểm đến'}
-          variant="secondary"
-          onPress={() => { onMarkerPress?.(marker); onSelectDestination?.(marker); }}
-        />
-      ))}
+      <MapVisualCanvas
+        markers={allMarkers}
+        selectedMarkerId={selectedDestinationId}
+        onSelectMarker={(marker) => {
+          onMarkerPress?.(marker);
+          onSelectDestination?.(marker);
+        }}
+        userLocation={userLocation}
+        routeGeometry={routeGeometry}
+        routeMode={hasRoute}
+        onLocateUser={onLocateUser}
+        onZoomIn={onZoomIn}
+        onZoomOut={onZoomOut}
+      />
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
-    gap: 8,
-    backgroundColor: tokens.colors.surface,
+    flex: 1,
     minHeight: 280,
+    backgroundColor: tokens.colors.surface,
   },
 });

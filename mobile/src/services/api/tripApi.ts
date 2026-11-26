@@ -6,6 +6,9 @@ export interface TripMemberDto {
   email: string;
   role: string;
   budgetShare?: number | null;
+  bankCode?: string | null;
+  bankName?: string | null;
+  bankAccountNumber?: string | null;
 }
 
 export interface TripDto {
@@ -61,6 +64,11 @@ export const tripApi = {
 
   async fetchTrip(tripId: string): Promise<TripDto> {
     const res = await api.get<TripDto>(`/trips/${tripId}`);
+    return res.data;
+  },
+
+  async fetchTripMembers(tripId: string): Promise<TripMemberDto[]> {
+    const res = await api.get<TripMemberDto[]>(`/trips/${tripId}/members`);
     return res.data;
   },
 

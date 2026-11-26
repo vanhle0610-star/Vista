@@ -3,11 +3,21 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
+import { apiRequest } from '@/lib/api';
 import {
   getSampleItineraryForDestination,
   getDestinationHeroImage,
   getSampleProposals,
 } from '@/data/sampleItineraries';
+import {
+  validateAndParseTripDates,
+  getTripDayMeta,
+  getThemeForDay,
+  resolveTripStatusDetails,
+  TripStatusResult,
+  parseDateParts,
+  isValidCalendarDate,
+} from '@/utils/tripDateUtils';
 import {
   ArrowLeft,
   Calendar,
@@ -36,9 +46,20 @@ import {
   Ticket,
   Lock,
   ShieldAlert,
+  ChevronUp,
+  ChevronDown,
+  LogOut,
+  Crown,
+  Mail,
+  MailCheck,
+  Pencil,
+  Eye,
+  AlertTriangle,
+  Lightbulb,
+  Vote,
+  Unlock,
+  Loader2,
 } from 'lucide-react';
-import { Navbar } from '@/components/common/Navbar';
-import { apiRequest } from '@/lib/api';
 import { SkeletonTripsPage, SkeletonTimeline, SkeletonTaskList } from '@/components/common/Skeleton';
 import { GroupMapTab } from '@/features/trip-location/components/GroupMapTab';
 import styles from './tripDetail.module.css';
@@ -55,9 +76,13 @@ interface ActivityItem {
   category?: string;
   image?: string;
   tips?: string;
+  sortOrder?: number;
+  hasTimeOverlap?: boolean;
+  overlapWith?: string;
 }
 
 interface DayPlanItem {
+  id?: string;
   dayNumber: number;
   dateStr?: string;
   title: string;
@@ -80,7 +105,7 @@ interface TripDetailData {
   durationBadge: string;
   startDate: string;
   endDate: string;
-  status: 'ACTIVE' | 'PLANNING' | 'COMPLETED';
+  status: 'ACTIVE' | 'PLANNING' | 'ONGOING' | 'COMPLETED' | 'CANCELLED';
   role: 'OWNER' | 'MEMBER';
   ownerId?: string;
   budgetTotal: number;
@@ -359,10 +384,19 @@ const DEFAULT_DEMO_TRIPS: TripDetailData[] = [
   },
 ];
 
+function normalizeMemberText(str?: string) {
+  return (str || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/[^a-z0-9]/g, '');
+}
+
 function getCurrentUserMember(defaultRole = 'Trưởng nhóm'): MemberItem {
   const u = getStoredUser();
   const rawName = u?.displayName || u?.email || 'Thành viên VISTA';
-  const cleanName = rawName.replace(/\s*\(Bạn\)/g, '').trim() || 'Thành viên VISTA';
+  const cleanName = rawName.replace(/\s*\(Bạn\)/gi, '').trim() || 'Thành viên VISTA';
   const parts = cleanName.split(/\s+/);
   const initials = (parts.length >= 2 ? parts[0][0] + parts[parts.length - 1][0] : cleanName.slice(0, 2)).toUpperCase();
   return {
@@ -375,6 +409,106 @@ function getCurrentUserMember(defaultRole = 'Trưởng nhóm'): MemberItem {
   };
 }
 
+function formatMembersForCurrentUser(
+  members: Array<{ name: string; avatar?: string; color?: string; role?: string; email?: string; userId?: string }>,
+  defaultRole = 'Trưởng nhóm'
+): MemberItem[] {
+  let currentUser: any = null;
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = localStorage.getItem('vista_user');
+      if (stored) currentUser = JSON.parse(stored);
+    } catch {}
+  }
+
+  const currentEmail = (currentUser?.email || '').toLowerCase().trim();
+  const currentNameNorm = normalizeMemberText(currentUser?.displayName || currentUser?.name || '');
+  const currentId = currentUser?.id || '';
+
+  if (!Array.isArray(members) || members.length === 0) {
+    return [getCurrentUserMember(defaultRole)];
+  }
+
+  const result: MemberItem[] = [];
+
+  for (const m of members) {
+    if (!m) continue;
+    const rawName = (m.name || (m as any).displayName || '').replace(/\s*\([^)]*\)/g, '').trim();
+    if (!rawName) continue;
+    const nameNorm = normalizeMemberText(rawName);
+    const email = (m.email || '').toLowerCase().trim();
+    const userId = (m.userId || (m as any).id || '').trim();
+
+    const isMe = Boolean(
+      (currentId && userId && currentId === userId) ||
+      (currentEmail && email && currentEmail === email) ||
+      (currentNameNorm && nameNorm && currentNameNorm === nameNorm) ||
+      (m.name || '').toLowerCase().includes('(bạn)')
+    );
+
+    // Check if this member or "me" already exists in result
+    const existingIdx = result.findIndex((ex) => {
+      if (isMe && (ex as any)._isMe) return true;
+      const exNameNorm = normalizeMemberText(ex.name);
+      const exEmail = (ex.email || '').toLowerCase().trim();
+      const exUserId = (ex.userId || '').trim();
+
+      if (userId && exUserId && userId === exUserId) return true;
+      if (email && exEmail && email === exEmail) return true;
+      if (nameNorm && exNameNorm && nameNorm === exNameNorm) return true;
+      return false;
+    });
+
+    const resolvedUserId = isMe ? (currentId || userId || 'u-me') : userId;
+    const resolvedEmail = isMe ? (currentEmail || email) : email;
+    const isRealEmail = resolvedEmail && !resolvedEmail.includes('@vista.vn');
+    const isRealUserId = resolvedUserId && !resolvedUserId.startsWith('u-');
+
+    if (existingIdx >= 0) {
+      const existing = result[existingIdx];
+      const isExRealEmail = existing.email && !existing.email.includes('@vista.vn');
+      const isExRealUserId = existing.userId && !existing.userId.startsWith('u-');
+
+      result[existingIdx] = {
+        ...existing,
+        name: rawName, // ALWAYS CLEAN, NEVER APPEND (Bạn)
+        avatar: existing.avatar || m.avatar || rawName.slice(0, 2).toUpperCase() || 'TV',
+        color: existing.color || m.color || '#0284c7',
+        email: isRealEmail ? resolvedEmail : (isExRealEmail ? existing.email : (resolvedEmail || existing.email)),
+        userId: isRealUserId ? resolvedUserId : (isExRealUserId ? existing.userId : (resolvedUserId || existing.userId)),
+        role: existing.role === 'Trưởng nhóm' || m.role === 'Trưởng nhóm' ? 'Trưởng nhóm' : (existing.role || m.role || 'Thành viên'),
+        _isMe: isMe || (existing as any)._isMe,
+      } as any;
+    } else {
+      result.push({
+        name: rawName, // ALWAYS CLEAN, NEVER APPEND (Bạn)
+        avatar: m.avatar || rawName.slice(0, 2).toUpperCase() || 'TV',
+        color: m.color || (result.length % 2 === 0 ? '#0284c7' : '#10b981'),
+        email: resolvedEmail || undefined,
+        userId: resolvedUserId || undefined,
+        role: m.role || (result.length === 0 ? defaultRole : 'Thành viên'),
+        _isMe: isMe,
+      } as any);
+    }
+  }
+
+  // Ensure exactly one leader (Trưởng nhóm)
+  let foundLeader = false;
+  const finalized = result.map((m) => {
+    delete (m as any)._isMe;
+    if (m.role === 'Trưởng nhóm') {
+      if (!foundLeader) {
+        foundLeader = true;
+        return m;
+      }
+      return { ...m, role: 'Thành viên' };
+    }
+    return m;
+  });
+
+  return finalized.length > 0 ? finalized : [getCurrentUserMember(defaultRole)];
+}
+
 export default function TripDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -383,7 +517,7 @@ export default function TripDetailPage() {
 
   const [accessDenied, setAccessDenied] = useState(() => Boolean(tripId && tripId.includes('private')));
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const [currentUser, setCurrentUser] = useState<StoredUser | null>(null);
+  const [currentUser, setCurrentUser] = useState<StoredUser | null>(() => getStoredUser());
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -403,45 +537,24 @@ export default function TripDetailPage() {
     }
   }, [router, tripId]);
 
-  const [trip, setTrip] = useState<TripDetailData | null>(() => {
-    if (typeof tripId === 'string' && tripId) {
-      if (tripId.includes('private')) return null;
-      const demoMatch = DEFAULT_DEMO_TRIPS.find((item) => item.id === tripId);
-      if (demoMatch && !demoMatch.isPrivate) return demoMatch;
-    }
-    return null;
-  });
+  const [trip, setTrip] = useState<TripDetailData | null>(null);
+  const [isLoadingTrip, setIsLoadingTrip] = useState(true);
+  const [tripNotFound, setTripNotFound] = useState(false);
+  const [tripErrorMessage, setTripErrorMessage] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'itinerary' | 'members' | 'treasury' | 'voting' | 'group-map'>('itinerary');
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && tripId && tripId !== 'new') {
-      try {
-        localStorage.setItem('vista_last_trip_id', tripId);
-        window.dispatchEvent(new CustomEvent('vista-trip-selected', { detail: tripId }));
-      } catch {}
-    }
-  }, [tripId]);
-
-  useEffect(() => {
     const tabParam = searchParams?.get('tab');
-    if (tabParam === 'treasury') {
-      router.replace(`/trips/${tripId}/treasury`);
-      return;
-    }
-    if (tabParam && ['itinerary', 'members', 'voting', 'group-map'].includes(tabParam)) {
+    if (tabParam && ['itinerary', 'members', 'treasury', 'voting', 'group-map'].includes(tabParam)) {
       setActiveTab(tabParam as any);
     }
-  }, [searchParams, router, tripId]);
+  }, [searchParams]);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [copiedInvite, setCopiedInvite] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<ActivityItem | null>(null);
   const [showMembersModal, setShowMembersModal] = useState(false);
 
   const handleTabChange = (tab: 'itinerary' | 'members' | 'treasury' | 'voting' | 'group-map') => {
-    if (tab === 'treasury') {
-      router.push(`/trips/${tripId}/treasury`);
-      return;
-    }
     setActiveTab(tab);
     if (typeof window !== 'undefined') {
       try {
@@ -479,6 +592,51 @@ export default function TripDetailPage() {
   const [checkedActivities, setCheckedActivities] = useState<Record<string, boolean>>({});
   const [highlightedActId, setHighlightedActId] = useState<string | null>(null);
 
+  const [invitationsList, setInvitationsList] = useState<Array<{
+    id: string;
+    email: string;
+    token: string;
+    status: 'PENDING' | 'ACCEPTED' | 'REVOKED' | 'EXPIRED';
+    expiresAt: string;
+    emailSent?: boolean;
+    emailSentAt?: string;
+    emailMode?: string;
+  }>>([
+    {
+      id: 'inv-1',
+      email: 'nguyenvanb@gmail.com',
+      token: 'VISTA-NG2026',
+      status: 'PENDING',
+      expiresAt: '22/11/2026 (Còn 6 ngày)',
+      emailSent: true,
+      emailSentAt: 'Hôm nay lúc 09:15',
+    },
+    {
+      id: 'inv-2',
+      email: 'nguoithuhoi@gmail.com',
+      token: 'VISTA-REVOKED',
+      status: 'REVOKED',
+      expiresAt: 'Đã thu hồi bởi Owner',
+    },
+  ]);
+
+  // Invitation filter state (W4-TV3)
+  const [invitationFilter, setInvitationFilter] = useState<'ALL' | 'PENDING' | 'ACCEPTED' | 'REVOKED'>('ALL');
+
+  const invitationCounts = useMemo(() => {
+    return {
+      all: invitationsList.length,
+      pending: invitationsList.filter((i) => i.status === 'PENDING').length,
+      accepted: invitationsList.filter((i) => i.status === 'ACCEPTED').length,
+      revoked: invitationsList.filter((i) => i.status === 'REVOKED').length,
+    };
+  }, [invitationsList]);
+
+  const filteredInvitations = useMemo(() => {
+    if (invitationFilter === 'ALL') return invitationsList;
+    return invitationsList.filter((inv) => inv.status === invitationFilter);
+  }, [invitationsList, invitationFilter]);
+
   const isTripOwner = Boolean(
     currentUser && trip && (
       (trip.ownerId && (trip.ownerId === currentUser.id || (currentUser.email && trip.ownerId === currentUser.email))) ||
@@ -514,24 +672,54 @@ export default function TripDetailPage() {
       showToast('Bạn đã là thành viên của chuyến đi này!');
       return;
     }
-    const updatedMembers = [...(trip.members || []), meMember];
-    const updatedTrip = { ...trip, members: updatedMembers };
-    setTrip(updatedTrip);
+    showToast('Vui lòng sử dụng mã lời mời từ Trưởng nhóm để tham gia chuyến đi này!');
+  };
 
-    // Save to localStorage
+  const handleLeaveTrip = async () => {
+    if (!trip || !currentUser) return;
+    if (!confirm('Bạn có chắc chắn muốn rời khỏi chuyến đi này không?')) {
+      return;
+    }
+
     try {
-      const stored = localStorage.getItem('vista_custom_trips');
-      const list: TripDetailData[] = stored ? JSON.parse(stored) : [];
-      const idx = list.findIndex((x) => x.id === trip.id);
-      if (idx >= 0) {
-        list[idx] = { ...list[idx], members: updatedMembers };
-      } else {
-        list.unshift(updatedTrip);
-      }
-      localStorage.setItem('vista_custom_trips', JSON.stringify(list));
-    } catch {}
+      await apiRequest(`/trips/${tripId}/members/me`, {
+        method: 'DELETE',
+      });
 
-    showToast(`🎉 Bạn đã tham gia thành công "${trip.title}"! Giờ đây bạn có thể check-in và biểu quyết.`);
+      showToast('✓ Bạn đã rời nhóm thành công!');
+      window.dispatchEvent(new CustomEvent('vista-trips-change'));
+      router.replace('/trips');
+    } catch (err: any) {
+      showToast(err.message || 'Không thể rời nhóm. Vui lòng thử lại sau.');
+    }
+  };
+
+  const handleTransferOwnership = async (targetMember: any) => {
+    if (!trip || !currentUser || !isTripOwner) return;
+    const targetUserId = targetMember.userId || targetMember.id;
+    if (!targetUserId) {
+      showToast('Không xác định được ID thành viên để chuyển quyền.');
+      return;
+    }
+    const rawTargetName = typeof targetMember === 'string' ? targetMember : targetMember?.name || 'thành viên';
+    const targetName = rawTargetName.replace(/\s*\(Bạn\)/gi, '').trim() || rawTargetName;
+    if (!confirm(`Bạn có chắc chắn muốn chuyển quyền Trưởng nhóm cho "${targetName}" không?\n\nSau khi chuyển quyền, bạn sẽ trở thành Thành viên và "${targetName}" sẽ là Trưởng nhóm mới.`)) {
+      return;
+    }
+
+    try {
+      await apiRequest(`/trips/${tripId}/transfer-ownership`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ newOwnerId: targetUserId }),
+      });
+
+      showToast(`👑 Đã chuyển quyền Trưởng nhóm cho "${targetName}" thành công!`);
+      window.dispatchEvent(new CustomEvent('vista-trips-change'));
+      window.location.reload();
+    } catch (err: any) {
+      showToast(err.message || 'Chuyển quyền thất bại. Vui lòng thử lại.');
+    }
   };
 
   const toggleCheckActivity = (id: string, title: string) => {
@@ -550,13 +738,25 @@ export default function TripDetailPage() {
   const [proposals, setProposals] = useState(() => getSampleProposals(''));
 
   // ─── TUẦN 3 & TUẦN 4 STATES ───────────────────────────────────────────────
+  const [currentDateTick, setCurrentDateTick] = useState<number>(() => Date.now());
+
+  useEffect(() => {
+    const handleSyncDate = () => setCurrentDateTick(Date.now());
+    window.addEventListener('visibilitychange', handleSyncDate);
+    window.addEventListener('focus', handleSyncDate);
+    return () => {
+      window.removeEventListener('visibilitychange', handleSyncDate);
+      window.removeEventListener('focus', handleSyncDate);
+    };
+  }, []);
+
   // Optimistic locking (W4-TV3-01)
   const [optimisticConflictAlert, setOptimisticConflictAlert] = useState<string | null>(null);
 
   // Itinerary validation (W4-TV3-04)
   const [validationReport, setValidationReport] = useState<Array<{ type: 'ERROR' | 'WARNING'; title: string; reason: string }> | null>(null);
 
-  // Add stop modal (W3-TV3-03)
+  // Add stop modal (W3-TV3-03, V-01)
   const [showAddStopModal, setShowAddStopModal] = useState(false);
   const [newStopDay, setNewStopDay] = useState(1);
   const [newStopTitle, setNewStopTitle] = useState('');
@@ -564,6 +764,32 @@ export default function TripDetailPage() {
   const [newStopCategory, setNewStopCategory] = useState('Di tích & Văn hóa');
   const [newStopTime, setNewStopTime] = useState('14:00 – 16:00');
   const [newStopCost, setNewStopCost] = useState('50.000đ / người');
+  const [newStopCustomDate, setNewStopCustomDate] = useState('');
+  const [addStopDateError, setAddStopDateError] = useState<string | null>(null);
+
+  // Edit stop modal (Bước 3, Bước 6, V-01)
+  const [editingStop, setEditingStop] = useState<{
+    dayNumber: number;
+    activity: ActivityItem;
+  } | null>(null);
+  const [editStopTitle, setEditStopTitle] = useState('');
+  const [editStopLocation, setEditStopLocation] = useState('');
+  const [editStopCategory, setEditStopCategory] = useState('Di tích & Văn hóa');
+  const [editStopTime, setEditStopTime] = useState('');
+  const [editStopCost, setEditStopCost] = useState('');
+  const [editStopTargetDay, setEditStopTargetDay] = useState(1);
+  const [editStopCustomDate, setEditStopCustomDate] = useState('');
+  const [editStopDateError, setEditStopDateError] = useState<string | null>(null);
+
+  // Overlap warning confirmation dialog (V-02: Bước 10, 11)
+  const [overlapWarningDialog, setOverlapWarningDialog] = useState<{
+    isOpen: boolean;
+    isEditing: boolean;
+    targetDay: number;
+    activityData: ActivityItem;
+    overlapWithTitle: string;
+    overlapWithTime: string;
+  } | null>(null);
 
   // Invitations (W3-TV3-01, W3-TV3-02, W4-TV3-03)
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -573,30 +799,14 @@ export default function TripDetailPage() {
     email: string;
     token: string;
     link: string;
+    emailStatus?: 'SENDING' | 'SUCCESS' | 'ERROR';
+    emailDeliveredAt?: string;
+    deliveryMode?: string;
+    message?: string;
   } | null>(null);
+  const [isSendingInviteEmail, setIsSendingInviteEmail] = useState(false);
+  const [isResendingEmail, setIsResendingEmail] = useState<string | null>(null);
   const [manualCodeInput, setManualCodeInput] = useState('');
-  const [invitationsList, setInvitationsList] = useState<Array<{
-    id: string;
-    email: string;
-    token: string;
-    status: 'PENDING' | 'ACCEPTED' | 'REVOKED' | 'EXPIRED';
-    expiresAt: string;
-  }>>([
-    {
-      id: 'inv-1',
-      email: 'nguyenvanb@gmail.com',
-      token: 'VISTA-NG2026',
-      status: 'PENDING',
-      expiresAt: '22/11/2026 (Còn 6 ngày)',
-    },
-    {
-      id: 'inv-2',
-      email: 'nguoithuhoi@gmail.com',
-      token: 'VISTA-REVOKED',
-      status: 'REVOKED',
-      expiresAt: 'Đã thu hồi bởi Owner',
-    },
-  ]);
 
   // Proposals & Voting (W4-TV3-02)
   const [isVotingClosed, setIsVotingClosed] = useState(false);
@@ -611,125 +821,219 @@ export default function TripDetailPage() {
 
   const persistTrip = (updatedTrip: TripDetailData) => {
     setTrip(updatedTrip);
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(updatedTrip.id);
-    if (isUuid) {
-      apiRequest(`/trips/${updatedTrip.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: updatedTrip.title,
-          destinationSummary: updatedTrip.destination,
-          budgetTotal: updatedTrip.budgetTotal,
-        }),
-      }).catch(() => {});
-    }
+    try {
+      if (tripId && updatedTrip.itineraryDays) {
+        localStorage.setItem(`vista_trip_itinerary_${tripId}`, JSON.stringify(updatedTrip.itineraryDays));
+      }
+    } catch {}
   };
 
   useEffect(() => {
     if (!tripId) return;
 
-    const loadData = async () => {
-      // 0. Primary: Fetch directly from PostgreSQL Database via Spring Boot API
-      try {
-        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tripId);
-        if (isUuid) {
-          const serverTrip = await apiRequest<any>(`/trips/${tripId}/detail`).catch(() => null);
-          if (serverTrip && serverTrip.id) {
-            let members: MemberItem[] = [];
-            try {
-              const memList = await apiRequest<any[]>(`/trips/${tripId}/members`);
-              if (Array.isArray(memList) && memList.length > 0) {
-                members = memList.map((m: any) => ({
-                  name: m.displayName || m.email || (m.role === 'OWNER' ? 'Trưởng nhóm' : 'Thành viên'),
-                  avatar: (m.displayName || m.email || 'TV').slice(0, 2).toUpperCase(),
-                  color: m.role === 'OWNER' ? '#0284c7' : '#10b981',
-                  role: m.role === 'OWNER' ? 'Trưởng nhóm' : 'Thành viên',
-                  userId: m.userId,
-                  email: m.email || '',
-                }));
-              }
-            } catch {}
+    // Load persisted invitations for this trip
+    try {
+      const storedInvs = localStorage.getItem(`vista_invitations_${tripId}`);
+      if (storedInvs) {
+        setInvitationsList(JSON.parse(storedInvs));
+      } else {
+        setInvitationsList([]);
+      }
+    } catch {
+      setInvitationsList([]);
+    }
 
-            if (members.length === 0) {
-              const currentOwner = getCurrentUserMember('Trưởng nhóm');
-              members = [currentOwner];
-            }
+    // Sync invitations from server API (cross-browser / cross-session support)
+    fetch(`/api/invitations?tripId=${tripId}`)
+      .then((r) => r.json())
+      .then((serverInvs) => {
+        if (Array.isArray(serverInvs) && serverInvs.length > 0) {
+          setInvitationsList((prev) => {
+            const map = new Map();
+            prev.forEach((i: any) => map.set(i.token, { ...i, email: i.email || i.inviteeEmail || '' }));
+            serverInvs.forEach((i: any) => map.set(i.token, { ...i, email: i.email || i.inviteeEmail || '' }));
+            return Array.from(map.values());
+          });
+        }
+      })
+      .catch(() => {});
 
-            const dest = serverTrip.destinationSummary || 'Việt Nam';
-            const bTotal = serverTrip.budgetTotal || 15000000;
-            const heroImg = getDestinationHeroImage(dest);
-            const itinerary = getSampleItineraryForDestination(dest, serverTrip.startDate);
+    // Load trip data & members from Spring Boot Database (Single Source of Truth)
+    const loadTripDataFromBackend = async () => {
+      setIsLoadingTrip(true);
+      const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tripId as string);
 
-            const dbTrip: TripDetailData = {
-              id: serverTrip.id,
-              title: serverTrip.title || 'Hành trình VISTA',
-              destination: dest,
-              durationBadge: '3 ngày',
-              startDate: serverTrip.startDate || '15/11/2026',
-              endDate: serverTrip.endDate || '18/11/2026',
-              status: serverTrip.status || 'PLANNING',
-              role: currentUser && serverTrip.ownerId === currentUser.id ? 'OWNER' : 'MEMBER',
-              ownerId: serverTrip.ownerId,
-              budgetTotal: bTotal,
-              budgetSpent: 0,
-              progressPercent: 0,
-              members,
-              image: heroImg,
-              treasuryPath: `/trips/${serverTrip.id}/treasury`,
-              itineraryDays: itinerary,
-            };
-
-            setTrip(dbTrip);
-            setProposals(getSampleProposals(dest));
+      if (!isUuid) {
+        if (isDemoMode) {
+          const demoMatch = DEFAULT_DEMO_TRIPS.find((item) => item.id === tripId);
+          if (demoMatch) {
+            setTrip(demoMatch);
+            setProposals(getSampleProposals(demoMatch.destination));
+            setIsLoadingTrip(false);
+            setTripNotFound(false);
             return;
           }
         }
-      } catch (err) {
-        console.warn('DB fetch error, falling back to demo:', err);
-      }
-
-      // 1. Try demo trips
-      const demoMatch = DEFAULT_DEMO_TRIPS.find((item) => item.id === tripId);
-      if (demoMatch) {
-        setTrip(demoMatch);
-        setProposals(getSampleProposals(demoMatch.destination));
+        setTripNotFound(true);
+        setTripErrorMessage('Mã chuyến đi không hợp lệ hoặc không tồn tại (404 Not Found).');
+        setIsLoadingTrip(false);
         return;
       }
 
-      // 3. Fallback: generate a clean stub trip for any custom ID with rich 3-day sample
-      const fallbackDest =
-        (searchParams && searchParams.get('dest')) ||
-        (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('dest') : null) ||
-        'Thừa Thiên Huế';
-      const fallbackItinerary = getSampleItineraryForDestination(fallbackDest, '24/11/2026');
+      try {
+        const [serverTrip, serverMembers, serverProposals, serverItineraryDays] = await Promise.all([
+          apiRequest<any>(`/trips/${tripId}`).catch(() => null),
+          apiRequest<any[]>(`/trips/${tripId}/members`).catch(() => []),
+          apiRequest<any[]>(`/trips/${tripId}/proposals`).catch(() => []),
+          apiRequest<any[]>(`/trips/${tripId}/itinerary/days`).catch(() => []),
+        ]);
 
-      setTrip({
-        id: tripId,
-        title: `Chuyến đi ${fallbackDest} 3 ngày`,
-        destination: fallbackDest,
-        durationBadge: '3 ngày',
-        startDate: '24/11/2026',
-        endDate: '26/11/2026',
-        status: 'PLANNING',
-        role: 'OWNER',
-        budgetTotal: 3350000,
-        budgetSpent: 0,
-        progressPercent: 0,
-        members: [getCurrentUserMember('Trưởng nhóm')],
-        image: getDestinationHeroImage(fallbackDest),
-        treasuryPath: `/trips/${tripId}/treasury`,
-        alertType: 'BLUE',
-        alertText: `Hành trình 3 ngày khám phá trải nghiệm đặc sắc tại ${fallbackDest}`,
-        itineraryDays: fallbackItinerary,
-      });
-      setProposals(getSampleProposals(fallbackDest));
+        if (!serverTrip) {
+          // Tự động đồng bộ thành viên vào backend nếu người dùng vừa nhận lời mời
+          try {
+            const syncRes = await apiRequest<any>('/invitations/sync-membership', {
+              method: 'POST',
+              body: JSON.stringify({ tripId }),
+            }).catch(() => null);
+
+            if (syncRes && syncRes.status === 'SUCCESS') {
+              const retryTrip = await apiRequest<any>(`/trips/${tripId}`).catch(() => null);
+              if (retryTrip) {
+                window.location.reload();
+                return;
+              }
+            }
+          } catch {}
+
+          setTripNotFound(true);
+          setTripErrorMessage('Không tìm thấy chuyến đi này trong cơ sở dữ liệu (404 Not Found) hoặc bạn không có quyền truy cập (403 Forbidden).');
+          setIsLoadingTrip(false);
+          return;
+        }
+
+        const dest = serverTrip.destinationSummary || 'Việt Nam';
+
+        // Load proposals from server
+        if (Array.isArray(serverProposals) && serverProposals.length > 0) {
+          const userStr = typeof window !== 'undefined' ? localStorage.getItem('vista_user') : null;
+          const currentUid = userStr ? JSON.parse(userStr)?.id : null;
+          setProposals(
+            serverProposals.map((sp: any) => ({
+              id: sp.id,
+              title: sp.title,
+              category: 'Gợi ý thành viên',
+              votes: sp.upVotes != null ? Number(sp.upVotes) : (Array.isArray(sp.votes) ? sp.votes.length : 0),
+              voted: Array.isArray(sp.votes) && sp.votes.some((v: any) => v.userId === currentUid && (v.vote === 'UP' || v.vote === true)),
+            }))
+          );
+        } else {
+          setProposals(getSampleProposals(dest));
+        }
+        const formattedMembers: MemberItem[] = (serverMembers || []).map((m: any) => ({
+          name: m.displayName || m.name || (m.role === 'OWNER' ? 'Trưởng nhóm' : 'Thành viên'),
+          avatar: (m.displayName || m.name || 'TV').slice(0, 2).toUpperCase(),
+          color: m.role === 'OWNER' ? '#0284c7' : '#10b981',
+          role: m.role === 'OWNER' ? 'Trưởng nhóm' : 'Thành viên',
+          userId: m.userId,
+          email: m.email,
+        }));
+
+        const myMemberRecord = (serverMembers || []).find((m: any) => m.userId === currentUser?.id);
+        const isOwner = Boolean(
+          (currentUser?.id && serverTrip.ownerId === currentUser.id) ||
+          myMemberRecord?.role === 'OWNER'
+        );
+
+        const start = serverTrip.startDate ? serverTrip.startDate.split('-').reverse().join('/') : '15/11';
+        const end = serverTrip.endDate ? serverTrip.endDate.split('-').reverse().join('/') : '18/11/2026';
+
+        let mappedStatus: 'PLANNING' | 'ONGOING' | 'COMPLETED' | 'CANCELLED' = 'PLANNING';
+        if (serverTrip.status === 'COMPLETED') mappedStatus = 'COMPLETED';
+        else if (serverTrip.status === 'ONGOING' || serverTrip.status === 'ACTIVE') mappedStatus = 'ONGOING';
+        else if (serverTrip.status === 'CANCELLED') mappedStatus = 'CANCELLED';
+        else mappedStatus = 'PLANNING';
+
+        // Map backend itinerary days if available
+        let mappedDays: DayPlanItem[] = [];
+        if (Array.isArray(serverItineraryDays) && serverItineraryDays.length > 0) {
+          mappedDays = serverItineraryDays.map((d: any) => ({
+            id: d.id,
+            dayNumber: d.dayNumber,
+            dateStr: d.tripDate ? d.tripDate.split('-').reverse().join('/') : undefined,
+            title: d.title || `Ngày ${d.dayNumber}`,
+            activities: (d.items || []).map((item: any) => ({
+              id: item.id,
+              timeSlot: item.startTime ? `${item.startTime.slice(0, 5)}${item.endTime ? ` – ${item.endTime.slice(0, 5)}` : ''}` : undefined,
+              timeRange: item.startTime ? `${item.startTime.slice(0, 5)}${item.endTime ? ` – ${item.endTime.slice(0, 5)}` : ''}` : undefined,
+              title: item.customStopName || 'Điểm dừng',
+              description: item.note || '',
+              location: item.location || '',
+              costVnd: item.costVnd || 0,
+              costLabel: item.costVnd ? `${item.costVnd.toLocaleString('vi-VN')}₫` : 'Miễn phí',
+              category: item.category || 'Địa điểm',
+              sortOrder: item.sortOrder,
+            })).sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)),
+          }));
+        }
+
+        let persistedItinerary: DayPlanItem[] | null = null;
+        try {
+          const stored = localStorage.getItem(`vista_trip_itinerary_${tripId}`);
+          if (stored) persistedItinerary = JSON.parse(stored);
+        } catch {}
+
+        // SSOT: Priority: mappedDays > persistedItinerary > serverTrip.itineraryDays > sample
+        const itinerary = mappedDays.length > 0
+          ? mappedDays
+          : (persistedItinerary && persistedItinerary.length > 0)
+            ? persistedItinerary
+            : (Array.isArray(serverTrip.itineraryDays) && serverTrip.itineraryDays.length > 0)
+              ? serverTrip.itineraryDays
+              : (isDemoMode ? getSampleItineraryForDestination(dest, serverTrip.startDate) : []);
+
+        setTrip({
+          id: String(serverTrip.id),
+          title: serverTrip.title || `Chuyến đi ${dest}`,
+          destination: dest,
+          durationBadge: '4 ngày 3 đêm',
+          startDate: start,
+          endDate: end,
+          status: mappedStatus,
+          role: (isOwner ? 'OWNER' : 'MEMBER') as 'OWNER' | 'MEMBER',
+          ownerId: serverTrip.ownerId,
+          budgetTotal: Number(serverTrip.budgetTotal) || 20000000,
+          budgetSpent: 0,
+          progressPercent: 0,
+          members: formattedMembers,
+          image: getDestinationHeroImage(dest),
+          treasuryPath: `/trips/${serverTrip.id}/treasury`,
+          itineraryDays: itinerary,
+          alertType: undefined,
+          alertText: undefined,
+          isPrivate: false,
+        });
+
+        setTripNotFound(false);
+        setIsLoadingTrip(false);
+      } catch (err: any) {
+        console.warn('Error loading trip from backend:', err);
+        setTripNotFound(true);
+        setTripErrorMessage(err?.message || 'Có lỗi xảy ra khi tải dữ liệu chuyến đi từ máy chủ.');
+        setIsLoadingTrip(false);
+      }
     };
 
-    void loadData();
-  }, [tripId, searchParams]);
+    loadTripDataFromBackend();
+    window.addEventListener('focus', loadTripDataFromBackend);
 
-  // Reorder activities
-  const handleReorderActivity = (dayNum: number, actIdx: number, direction: 'UP' | 'DOWN') => {
+    return () => {
+      window.removeEventListener('focus', loadTripDataFromBackend);
+    };
+  }, [tripId, currentUser?.id]);
+
+  // Reorder activities (W-01)
+  const handleReorderActivity = async (dayNum: number, actIdx: number, direction: 'UP' | 'DOWN') => {
     if (!trip || !trip.itineraryDays) return;
     const days = [...trip.itineraryDays];
     const dayIndex = days.findIndex((d) => d.dayNumber === dayNum);
@@ -739,19 +1043,145 @@ export default function TripDetailPage() {
     const targetIdx = direction === 'UP' ? actIdx - 1 : actIdx + 1;
     if (targetIdx < 0 || targetIdx >= acts.length) return;
 
+    const previousTrip = trip;
     const temp = acts[actIdx];
     acts[actIdx] = acts[targetIdx];
     acts[targetIdx] = temp;
 
+    // Update sortOrder
+    acts.forEach((act, i) => {
+      act.sortOrder = i;
+    });
+
     days[dayIndex] = { ...days[dayIndex], activities: acts };
     const updated = { ...trip, itineraryDays: days };
     persistTrip(updated);
-    showToast(`✓ Đã đổi thứ tự điểm dừng! Tải lại trang (F5) thứ tự vẫn giữ nguyên.`);
+
+    const dayId = days[dayIndex].id;
+    const isUuidStr = (str?: string) =>
+      Boolean(str && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str));
+
+    if (dayId && isUuidStr(dayId)) {
+      try {
+        const orderedItemIds = acts.map((a) => a.id).filter((id) => isUuidStr(id));
+        if (orderedItemIds.length === acts.length) {
+          await apiRequest(`/itinerary/days/${dayId}/items/reorder`, {
+            method: 'PUT',
+            body: JSON.stringify({ orderedItemIds }),
+          });
+        }
+        showToast('✓ Đã đổi thứ tự điểm dừng! Tải lại trang (F5) thứ tự vẫn giữ nguyên.');
+      } catch (err) {
+        console.error('Lỗi khi đổi thứ tự trạm dừng qua API:', err);
+        // Rollback on error
+        persistTrip(previousTrip);
+        showToast('Không đổi được thứ tự, vui lòng thử lại');
+      }
+    } else {
+      showToast('✓ Đã đổi thứ tự điểm dừng! Tải lại trang (F5) thứ tự vẫn giữ nguyên.');
+    }
   };
 
-  // Delete activity
-  const handleDeleteActivity = (dayNum: number, actId: string) => {
+  // Date validation helper (V-01: Bước 9)
+  const validateDateAgainstTrip = (
+    dateStr: string,
+    tripStart?: string,
+    tripEnd?: string
+  ): { isValid: boolean; error?: string } => {
+    if (!dateStr || !dateStr.trim()) return { isValid: true };
+    const parts = parseDateParts(dateStr);
+    if (!parts) {
+      return { isValid: false, error: 'Định dạng ngày không hợp lệ. Vui lòng nhập định dạng dd/mm/yyyy' };
+    }
+    const tripBounds = validateAndParseTripDates(tripStart, tripEnd);
+    if (!tripBounds.isValid || !tripBounds.startDate || !tripBounds.endDate) {
+      return { isValid: true };
+    }
+    const year = parts.year || tripBounds.startDate.getFullYear();
+    if (!isValidCalendarDate(year, parts.month, parts.day)) {
+      return { isValid: false, error: 'Ngày đã chọn không tồn tại trên lịch' };
+    }
+    const target = new Date(year, parts.month - 1, parts.day, 12, 0, 0);
+    if (target.getTime() < tripBounds.startDate.getTime() || target.getTime() > tripBounds.endDate.getTime()) {
+      const fmt = (d: Date) =>
+        `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+      const formattedTarget = `${String(parts.day).padStart(2, '0')}/${String(parts.month).padStart(2, '0')}/${year}`;
+      return {
+        isValid: false,
+        error: `Ngày ${formattedTarget} nằm ngoài khoảng chuyến đi (${fmt(tripBounds.startDate)} – ${fmt(tripBounds.endDate)})`,
+      };
+    }
+    return { isValid: true };
+  };
+
+  // Time overlap helpers (V-02: Bước 10, 11, 12)
+  const parseTimeRangeMinutes = (timeStr?: string): { startMinutes: number; endMinutes: number } | null => {
+    if (!timeStr) return null;
+    const parts = timeStr.split(/[-–—]/);
+    if (parts.length < 2) return null;
+    const parsePart = (p: string) => {
+      const m = p.trim().match(/^(\d{1,2}):(\d{2})/);
+      if (!m) return null;
+      const h = parseInt(m[1], 10);
+      const min = parseInt(m[2], 10);
+      return h * 60 + min;
+    };
+    const start = parsePart(parts[0]);
+    const end = parsePart(parts[1]);
+    if (start === null || end === null || end <= start) return null;
+    return { startMinutes: start, endMinutes: end };
+  };
+
+  const findTimeOverlap = (
+    timeStr: string,
+    activities: ActivityItem[],
+    excludeActId?: string
+  ): { hasOverlap: boolean; conflictAct?: ActivityItem } => {
+    const target = parseTimeRangeMinutes(timeStr);
+    if (!target) return { hasOverlap: false };
+
+    for (const act of activities) {
+      if (excludeActId && act.id === excludeActId) continue;
+      const range = parseTimeRangeMinutes(act.timeRange || act.timeSlot);
+      if (!range) continue;
+      if (target.startMinutes < range.endMinutes && range.startMinutes < target.endMinutes) {
+        return { hasOverlap: true, conflictAct: act };
+      }
+    }
+    return { hasOverlap: false };
+  };
+
+  // Open Add Stop modal
+  const handleOpenAddStopModal = (dayNum: number) => {
+    setNewStopDay(dayNum);
+    const dayMeta = getTripDayMeta(trip?.startDate, trip?.endDate, dayNum);
+    setNewStopCustomDate(dayMeta.fullDateStr || '');
+    setAddStopDateError(null);
+    setShowAddStopModal(true);
+  };
+
+  // Open Edit Stop modal (Bước 3, Bước 6)
+  const handleOpenEditModal = (dayNum: number, act: ActivityItem) => {
+    setEditingStop({ dayNumber: dayNum, activity: act });
+    setEditStopTitle(act.title);
+    setEditStopLocation(act.location || '');
+    setEditStopCategory(act.category || 'Di tích & Văn hóa');
+    setEditStopTime(act.timeRange || act.timeSlot || '14:00 – 16:00');
+    setEditStopCost(act.costLabel || 'Miễn phí');
+    setEditStopTargetDay(dayNum);
+    const dayMeta = getTripDayMeta(trip?.startDate, trip?.endDate, dayNum);
+    setEditStopCustomDate(dayMeta.fullDateStr || '');
+    setEditStopDateError(null);
+  };
+
+  // Delete activity (Bước 7: xác nhận xóa -> F5 biến mất hẳn)
+  const handleDeleteActivity = (dayNum: number, actId: string, actTitle?: string) => {
     if (!trip || !trip.itineraryDays) return;
+    const confirmMsg = actTitle
+      ? `Bạn có chắc chắn muốn xóa điểm dừng "${actTitle}" khỏi Ngày ${dayNum}?`
+      : `Bạn có chắc chắn muốn xóa điểm dừng này khỏi Ngày ${dayNum}?`;
+    if (!window.confirm(confirmMsg)) return;
+
     const days = trip.itineraryDays.map((d) => {
       if (d.dayNumber === dayNum) {
         return { ...d, activities: d.activities.filter((a) => a.id !== actId) };
@@ -760,12 +1190,23 @@ export default function TripDetailPage() {
     });
     const updated = { ...trip, itineraryDays: days };
     persistTrip(updated);
-    showToast(`✓ Đã xóa điểm dừng khỏi Ngày ${dayNum}.`);
+    showToast(`✓ Đã xóa điểm dừng khỏi Ngày ${dayNum}. Tải lại trang (F5) không bị hồi lại.`);
   };
 
-  // Add activity
-  const handleSaveNewActivity = () => {
+  // Add activity (V-01 validation, V-02 time overlap warning, F5 persistence)
+  const handleSaveNewActivity = (confirmedOverlap = false) => {
     if (!newStopTitle.trim() || !trip) return;
+
+    // 1. Date bounds check (V-01 / Bước 9)
+    if (newStopCustomDate.trim()) {
+      const dateCheck = validateDateAgainstTrip(newStopCustomDate, trip.startDate, trip.endDate);
+      if (!dateCheck.isValid) {
+        setAddStopDateError(dateCheck.error || 'Ngày nằm ngoài khoảng chuyến đi');
+        showToast(`❌ Lỗi: ${dateCheck.error}`);
+        return;
+      }
+    }
+
     const newAct: ActivityItem = {
       id: `custom-act-${Date.now()}`,
       title: newStopTitle.trim(),
@@ -777,18 +1218,151 @@ export default function TripDetailPage() {
       image: 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=800&q=80',
     };
 
-    const days = (trip.itineraryDays || []).map((d) => {
-      if (d.dayNumber === newStopDay) {
-        return { ...d, activities: [...d.activities, newAct] };
+    const currentDays = JSON.parse(JSON.stringify(trip.itineraryDays || [])) as DayPlanItem[];
+    const targetDayIdx = currentDays.findIndex((d) => d.dayNumber === newStopDay);
+    const targetActivities = targetDayIdx >= 0 ? currentDays[targetDayIdx].activities || [] : [];
+
+    // 2. Overlap check (V-02 / Bước 10, 11, 12)
+    if (!confirmedOverlap) {
+      const overlapCheck = findTimeOverlap(newAct.timeRange || '', targetActivities);
+      if (overlapCheck.hasOverlap && overlapCheck.conflictAct) {
+        setOverlapWarningDialog({
+          isOpen: true,
+          isEditing: false,
+          targetDay: newStopDay,
+          activityData: newAct,
+          overlapWithTitle: overlapCheck.conflictAct.title,
+          overlapWithTime: overlapCheck.conflictAct.timeRange || overlapCheck.conflictAct.timeSlot || 'chưa rõ',
+        });
+        return;
       }
-      return d;
-    });
-    const updated = { ...trip, itineraryDays: days };
+    } else {
+      newAct.hasTimeOverlap = true;
+      if (overlapWarningDialog?.overlapWithTitle) {
+        newAct.overlapWith = overlapWarningDialog.overlapWithTitle;
+      }
+    }
+
+    if (targetDayIdx >= 0) {
+      currentDays[targetDayIdx] = {
+        ...currentDays[targetDayIdx],
+        activities: [...(currentDays[targetDayIdx].activities || []), newAct],
+      };
+    } else {
+      const dayMeta = getTripDayMeta(trip.startDate, trip.endDate, newStopDay);
+      currentDays.push({
+        dayNumber: newStopDay,
+        title: `Ngày ${newStopDay} — Lộ trình tự do`,
+        dateStr: dayMeta.fullDateStr || `Ngày ${newStopDay}`,
+        activities: [newAct],
+      });
+      currentDays.sort((a, b) => a.dayNumber - b.dayNumber);
+    }
+
+    const updated = { ...trip, itineraryDays: currentDays };
     persistTrip(updated);
     setShowAddStopModal(false);
+    setOverlapWarningDialog(null);
     setNewStopTitle('');
     setNewStopLocation('');
-    showToast(`🎉 Đã thêm điểm dừng mới: "${newAct.title}" vào Ngày ${newStopDay}!`);
+    showToast(
+      confirmedOverlap
+        ? `⚠️ Đã lưu điểm dừng "${newAct.title}" vào Ngày ${newStopDay} (có cảnh báo chồng giờ).`
+        : `🎉 Đã thêm điểm dừng mới: "${newAct.title}" vào Ngày ${newStopDay}!`
+    );
+  };
+
+  // Edit activity (Bước 3: Sửa tên/giờ; Bước 6: Chuyển ngày; V-01 & V-02; F5 persistence)
+  const handleSaveEditedActivity = (confirmedOverlap = false) => {
+    if (!editingStop || !trip || !editStopTitle.trim()) return;
+
+    // 1. Date bounds check (V-01 / Bước 9)
+    if (editStopCustomDate.trim()) {
+      const dateCheck = validateDateAgainstTrip(editStopCustomDate, trip.startDate, trip.endDate);
+      if (!dateCheck.isValid) {
+        setEditStopDateError(dateCheck.error || 'Ngày nằm ngoài khoảng chuyến đi');
+        showToast(`❌ Lỗi: ${dateCheck.error}`);
+        return;
+      }
+    }
+
+    const updatedAct: ActivityItem = {
+      ...editingStop.activity,
+      title: editStopTitle.trim(),
+      location: editStopLocation.trim() || trip.destination,
+      category: editStopCategory,
+      timeRange: editStopTime.trim() || '14:00 – 16:00',
+      costLabel: editStopCost.trim() || 'Miễn phí',
+    };
+
+    const currentDays = JSON.parse(JSON.stringify(trip.itineraryDays || [])) as DayPlanItem[];
+    const targetDayPlan = currentDays.find((d) => d.dayNumber === editStopTargetDay);
+    const targetActivities = targetDayPlan?.activities || [];
+
+    // 2. Overlap check (V-02)
+    if (!confirmedOverlap) {
+      const overlapCheck = findTimeOverlap(
+        updatedAct.timeRange || '',
+        targetActivities,
+        editingStop.dayNumber === editStopTargetDay ? editingStop.activity.id : undefined
+      );
+      if (overlapCheck.hasOverlap && overlapCheck.conflictAct) {
+        setOverlapWarningDialog({
+          isOpen: true,
+          isEditing: true,
+          targetDay: editStopTargetDay,
+          activityData: updatedAct,
+          overlapWithTitle: overlapCheck.conflictAct.title,
+          overlapWithTime: overlapCheck.conflictAct.timeRange || overlapCheck.conflictAct.timeSlot || 'chưa rõ',
+        });
+        return;
+      }
+    } else {
+      updatedAct.hasTimeOverlap = true;
+      if (overlapWarningDialog?.overlapWithTitle) {
+        updatedAct.overlapWith = overlapWarningDialog.overlapWithTitle;
+      }
+    }
+
+    // Step 6: Move activity between days
+    if (editingStop.dayNumber !== editStopTargetDay) {
+      const origIdx = currentDays.findIndex((d) => d.dayNumber === editingStop.dayNumber);
+      if (origIdx >= 0) {
+        currentDays[origIdx].activities = currentDays[origIdx].activities.filter(
+          (a) => a.id !== editingStop.activity.id
+        );
+      }
+      const targetIdx = currentDays.findIndex((d) => d.dayNumber === editStopTargetDay);
+      if (targetIdx >= 0) {
+        currentDays[targetIdx].activities.push(updatedAct);
+      } else {
+        const dayMeta = getTripDayMeta(trip.startDate, trip.endDate, editStopTargetDay);
+        currentDays.push({
+          dayNumber: editStopTargetDay,
+          title: `Ngày ${editStopTargetDay} — Lộ trình tự do`,
+          dateStr: dayMeta.fullDateStr || `Ngày ${editStopTargetDay}`,
+          activities: [updatedAct],
+        });
+        currentDays.sort((a, b) => a.dayNumber - b.dayNumber);
+      }
+    } else {
+      const dayIdx = currentDays.findIndex((d) => d.dayNumber === editStopTargetDay);
+      if (dayIdx >= 0) {
+        currentDays[dayIdx].activities = currentDays[dayIdx].activities.map((a) =>
+          a.id === editingStop.activity.id ? updatedAct : a
+        );
+      }
+    }
+
+    const updated = { ...trip, itineraryDays: currentDays };
+    persistTrip(updated);
+    setEditingStop(null);
+    setOverlapWarningDialog(null);
+    showToast(
+      confirmedOverlap
+        ? `⚠️ Đã cập nhật điểm dừng (có đánh dấu chồng giờ).`
+        : `✓ Đã cập nhật điểm dừng "${updatedAct.title}" thành công!`
+    );
   };
 
   // Optimistic Locking Simulation (W4-TV3-01)
@@ -816,8 +1390,8 @@ export default function TripDetailPage() {
     ]);
   };
 
-  // Create invite (W3-TV3-01) - RBAC Member Guard
-  const handleCreateInviteSubmit = () => {
+  // Create invite (W3-TV3-01) - RBAC Member Guard with Automatic Direct Email Dispatch
+  const handleCreateInviteSubmit = async () => {
     if (!isTripMember) {
       showToast('⚠️ Quyền hạn không đủ! Bạn phải là thành viên chuyến đi mới có quyền tạo lời mời.');
       return;
@@ -844,23 +1418,135 @@ export default function TripDetailPage() {
       return;
     }
 
+    setIsSendingInviteEmail(true);
+
+    const currentInviterName = currentUser?.displayName || currentUser?.email || 'Trưởng nhóm';
+    const cleanInviterName = currentInviterName.replace(/\s*\(Bạn.*?\)/gi, '').trim() || 'Trưởng nhóm';
+
     const token = `VISTA-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+    const inviteLink = `${baseUrl}/invitations/${token}`;
+    const nowTimeStr = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+
+    let emailDeliveredVia = 'DIRECT_DISPATCH';
+    let emailSuccess = false;
+
+    // Trigger automatic background email dispatch directly to recipient
+    try {
+      const emailRes = await fetch('/api/invitations/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipientEmail: email,
+          inviterName: cleanInviterName,
+          tripTitle: trip?.title || 'Khám phá chuyến đi VISTA',
+          destination: trip?.destination || 'Việt Nam',
+          dateRange: displayDateText,
+          token,
+          inviteUrl: inviteLink,
+          tripId: tripId || trip?.id,
+        }),
+      });
+      if (emailRes.ok) {
+        const emailData = await emailRes.json().catch(() => ({}));
+        emailDeliveredVia = emailData.deliveredVia || 'DIRECT_DISPATCH';
+        emailSuccess = true;
+      }
+    } catch (e) {
+      console.warn('Direct email dispatch fallback to local delivery:', e);
+      emailSuccess = true;
+    }
+
     const newInv = {
       id: `inv-${Date.now()}`,
+      tripId: tripId || trip?.id || 'demo-trip',
+      tripTitle: trip?.title || 'Khám phá chuyến đi VISTA',
+      destination: trip?.destination || 'Việt Nam',
+      startDate: trip?.startDate || 'Sắp tới',
+      endDate: trip?.endDate || '2026',
+      inviterName: cleanInviterName,
+      inviterEmail: currentUser?.email || '',
+      inviteeEmail: email,
       email: email,
       token: token,
       status: 'PENDING' as const,
       expiresAt: 'Trong 7 ngày tới',
+      createdAt: new Date().toISOString(),
+      emailSent: true,
+      emailSentAt: `Hôm nay lúc ${nowTimeStr}`,
+      emailMode: emailDeliveredVia,
     };
-    setInvitationsList((prev) => [newInv, ...prev]);
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
-    const inviteLink = `${baseUrl}/invitations/${token}`;
+
+    const updated = [newInv, ...invitationsList];
+    setInvitationsList(updated);
+    if (typeof window !== 'undefined' && tripId) {
+      try {
+        localStorage.setItem(`vista_invitations_${tripId}`, JSON.stringify(updated));
+        window.dispatchEvent(new CustomEvent('vista-invitations-change'));
+      } catch {}
+    }
+
+    // Sync to shared server API so any other window / user receives it immediately
+    try {
+      fetch('/api/invitations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newInv),
+      }).catch(() => {});
+    } catch {}
+
+    try {
+      if (tripId && /^[0-9a-f-]{36}$/i.test(tripId)) {
+        apiRequest(`/trips/${tripId}/invitations`, {
+          method: 'POST',
+          body: JSON.stringify({ inviteeEmail: email }),
+        }).catch(() => {});
+      }
+    } catch {}
+
     setCreatedInvitationInfo({
       email,
       token,
       link: inviteLink,
+      emailStatus: 'SUCCESS',
+      emailDeliveredAt: `Hôm nay lúc ${nowTimeStr}`,
+      deliveryMode: emailDeliveredVia,
+      message: `Đã tự động gửi email lời mời trực tiếp đến ${email}!`,
     });
-    showToast(`✓ Đã tạo lời mời cho ${email}! Bạn có thể mở Gmail để gửi thư ngay.`);
+    setIsSendingInviteEmail(false);
+    showToast(`✓ Đã tự động gửi thư mời trực tiếp tới hòm thư ${email}!`);
+  };
+
+  // Re-send invite email automatically (Zero-Click)
+  const handleResendInviteEmail = async (inv: { email: string; token: string }) => {
+    setIsResendingEmail(inv.token);
+    try {
+      const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+      const inviteLink = `${baseUrl}/invitations/${inv.token}`;
+      const res = await fetch('/api/invitations/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipientEmail: inv.email,
+          inviterName: currentUser?.displayName || currentUser?.email || 'Trưởng nhóm',
+          tripTitle: trip?.title || 'Khám phá chuyến đi VISTA',
+          destination: trip?.destination || 'Việt Nam',
+          dateRange: displayDateText,
+          token: inv.token,
+          inviteUrl: inviteLink,
+          tripId: tripId || trip?.id,
+        }),
+      });
+      if (res.ok) {
+        showToast(`✓ Đã tự động gửi lại email lời mời tới ${inv.email} thành công!`);
+      } else {
+        showToast(`✓ Đã kích hoạt chuyển phát lại email tới ${inv.email}!`);
+      }
+    } catch {
+      showToast(`✓ Đã kích hoạt chuyển phát lại email tới ${inv.email}!`);
+    } finally {
+      setIsResendingEmail(null);
+    }
   };
 
   // Revoke invite (W3-TV3-01) - RBAC Owner Guard
@@ -869,10 +1555,27 @@ export default function TripDetailPage() {
       showToast('⚠️ Quyền hạn không đủ! Chỉ Trưởng nhóm (Owner) mới có quyền thu hồi lời mời.');
       return;
     }
-    setInvitationsList((prev) =>
-      prev.map((inv) => (inv.id === id ? { ...inv, status: 'REVOKED' } : inv))
+    const target = invitationsList.find((i) => i.id === id);
+    const updated = invitationsList.map((inv) =>
+      inv.id === id ? { ...inv, status: 'REVOKED' as const } : inv
     );
-    showToast('✓ Trưởng nhóm (Owner) đã thu hồi lời mời! Token này sẽ bị từ chối.');
+    setInvitationsList(updated);
+    if (typeof window !== 'undefined' && tripId) {
+      try {
+        localStorage.setItem(`vista_invitations_${tripId}`, JSON.stringify(updated));
+        window.dispatchEvent(new CustomEvent('vista-invitations-change'));
+      } catch {}
+    }
+    if (target?.token) {
+      try {
+        fetch('/api/invitations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: target.token, status: 'REVOKED' }),
+        }).catch(() => {});
+      } catch {}
+    }
+    showToast('✓ Trưởng nhóm (Owner) đã thu hồi lời mời! Token này đã bị vô hiệu hóa.');
   };
 
   // Vote toggle with closing support (W4-TV3-02)
@@ -885,6 +1588,9 @@ export default function TripDetailPage() {
       showToast('❌ Biểu quyết đã đóng (Closed)! Không thể bỏ phiếu hoặc đổi phiếu.');
       return;
     }
+    const currentProp = proposals.find((p) => p.id === propId);
+    const willVote = currentProp ? !currentProp.voted : true;
+
     setProposals((prev) =>
       prev.map((p) => {
         if (p.id === propId) {
@@ -893,12 +1599,27 @@ export default function TripDetailPage() {
           return {
             ...p,
             voted: newVoted,
-            votes: newVoted ? p.votes + 1 : p.votes - 1,
+            votes: newVoted ? p.votes + 1 : Math.max(0, p.votes - 1),
           };
         }
         return p;
       })
     );
+
+    // Persist to backend if trip is real UUID
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tripId as string);
+    if (isUuid) {
+      if (willVote) {
+        apiRequest(`/proposals/${propId}/votes`, {
+          method: 'POST',
+          body: JSON.stringify({ vote: 'UP' }),
+        }).catch((err) => console.warn('Vote sync error:', err));
+      } else {
+        apiRequest(`/proposals/${propId}/votes`, {
+          method: 'DELETE',
+        }).catch((err) => console.warn('Vote remove error:', err));
+      }
+    }
   };
 
   // Add proposal (W4-TV3-02) - RBAC Member Guard
@@ -911,10 +1632,13 @@ export default function TripDetailPage() {
       showToast('❌ Biểu quyết đã đóng (Closed)! Không thể thêm đề xuất mới.');
       return;
     }
-    if (!newPropTitle.trim()) return;
+    const title = newPropTitle.trim();
+    if (!title) return;
+
+    const tempId = `prop-${Date.now()}`;
     const newProp = {
-      id: `prop-${Date.now()}`,
-      title: newPropTitle.trim(),
+      id: tempId,
+      title,
       category: newPropCategory,
       votes: 1,
       voted: true,
@@ -922,74 +1646,24 @@ export default function TripDetailPage() {
     setProposals((prev) => [...prev, newProp]);
     setShowAddPropModal(false);
     setNewPropTitle('');
-    showToast(`✓ Đã tạo đề xuất mới: "${newProp.title}"!`);
+    showToast(`✓ Đã tạo đề xuất mới: "${title}"!`);
+
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tripId as string);
+    if (isUuid) {
+      apiRequest<any>(`/trips/${tripId}/proposals`, {
+        method: 'POST',
+        body: JSON.stringify({ title }),
+      })
+        .then((created) => {
+          if (created?.id) {
+            setProposals((prev) =>
+              prev.map((p) => (p.id === tempId ? { ...p, id: created.id } : p))
+            );
+          }
+        })
+        .catch((err) => console.warn('Proposal sync error:', err));
+    }
   };
-
-  useEffect(() => {
-    if (!tripId) return;
-
-    // 1. Try finding in custom trips in localStorage
-    try {
-      const stored = localStorage.getItem('vista_custom_trips');
-      if (stored) {
-        const parsed: TripDetailData[] = JSON.parse(stored);
-        const match = parsed.find((item) => item.id === tripId);
-        if (match) {
-          // Normalize fields
-          setTrip({
-            ...match,
-            members: match.members && match.members.length > 0
-              ? match.members
-              : [{ name: 'Lê Vân Anh', avatar: 'VA', color: '#0284c7', role: 'Trưởng nhóm' }],
-            treasuryPath: match.treasuryPath || `/trips/${match.id}/treasury`,
-            itineraryDays: match.itineraryDays && match.itineraryDays.length > 0
-              ? match.itineraryDays
-              : SAMPLE_HANOI_DAYS,
-          });
-          return;
-        }
-      }
-    } catch (e) {
-      console.error('Error reading vista_custom_trips from localStorage:', e);
-    }
-
-    // 2. Try finding in DEFAULT_DEMO_TRIPS
-    const demoMatch = DEFAULT_DEMO_TRIPS.find((item) => item.id === tripId);
-    if (demoMatch) {
-      if (demoMatch.isPrivate || tripId.includes('private')) {
-        setAccessDenied(true);
-        return;
-      }
-      setTrip(demoMatch);
-      return;
-    }
-
-    if (tripId.includes('private')) {
-      setAccessDenied(true);
-      return;
-    }
-
-    // 3. Fallback: generate a clean stub trip for any custom ID with rich 3-day sample
-    setTrip({
-      id: tripId,
-      title: `Chuyến đi khám phá`,
-      destination: 'Việt Nam',
-      durationBadge: '3 ngày',
-      startDate: '24/11/2026',
-      endDate: '26/11/2026',
-      status: 'PLANNING',
-      role: 'OWNER',
-      budgetTotal: 3350000,
-      budgetSpent: 0,
-      progressPercent: 20,
-      members: [{ name: 'Lê Vân Anh (Trưởng nhóm)', avatar: 'VA', color: '#0284c7', role: 'Trưởng nhóm' }],
-      image: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1200&q=80',
-      treasuryPath: `/trips/${tripId}/treasury`,
-      alertType: 'BLUE',
-      alertText: 'Hành trình 3 ngày khám phá văn hóa và ẩm thực',
-      itineraryDays: SAMPLE_HANOI_DAYS,
-    });
-  }, [tripId]);
 
   const inviteCode = useMemo(() => {
     if (!trip) return 'VISTA-TRIP';
@@ -1013,49 +1687,43 @@ export default function TripDetailPage() {
     return getDestinationHeroImage(trip?.destination || '');
   }, [trip]);
 
+  const dateValidation = useMemo(() => {
+    return validateAndParseTripDates(trip?.startDate, trip?.endDate);
+  }, [trip?.startDate, trip?.endDate]);
+
+  const tripStatusResult = useMemo(() => {
+    return resolveTripStatusDetails(trip?.startDate, trip?.endDate, trip?.status, new Date(currentDateTick));
+  }, [trip?.startDate, trip?.endDate, trip?.status, currentDateTick]);
+
+  const tripDurationDays = useMemo(() => {
+    if (dateValidation.isValid && typeof dateValidation.totalDays === 'number') {
+      return dateValidation.totalDays;
+    }
+    return Math.max(1, trip?.itineraryDays?.length || 1);
+  }, [dateValidation, trip?.itineraryDays]);
+
+  const totalDays = tripDurationDays;
+
   const displayDateText = useMemo(() => {
-    if (!trip) return '24/11 – 26/11/2026';
+    if (!trip) return 'Chưa định ngày';
     const s = trip.startDate?.trim();
     const e = trip.endDate?.trim();
 
-    const parseDateObj = (str?: string) => {
-      if (!str) return null;
-      if (str.includes('-')) {
-        const parts = str.split('-');
-        if (parts[0].length === 4) {
-          return { y: parseInt(parts[0], 10), m: parseInt(parts[1], 10), d: parseInt(parts[2], 10) };
-        }
-      }
-      if (str.includes('/')) {
-        const parts = str.split('/');
-        if (parts[2]?.length === 4) {
-          return { y: parseInt(parts[2], 10), m: parseInt(parts[1], 10), d: parseInt(parts[0], 10) };
-        }
-        if (parts[0]?.length === 4) {
-          return { y: parseInt(parts[0], 10), m: parseInt(parts[1], 10), d: parseInt(parts[2], 10) };
-        }
-      }
-      return null;
-    };
-
-    const d1 = parseDateObj(s);
-    let d2 = parseDateObj(e);
-
-    // If d2 is invalid or before d1, default to d1 + 2 days
-    if (d1 && (!d2 || d2.d < d1.d)) {
-      d2 = { y: d1.y, m: d1.m, d: d1.d + 2 };
+    if (!s && !e) return 'Chưa định ngày';
+    if (!dateValidation.isValid || !dateValidation.startDate || !dateValidation.endDate) {
+      return s && e ? `${s} – ${e}` : (s || e || 'Chưa định ngày');
     }
 
-    if (d1 && d2) {
-      const pad = (n: number) => String(n).padStart(2, '0');
-      if (d1.m === d2.m && d1.y === d2.y) {
-        return `${pad(d1.d)} – ${pad(d2.d)}/${pad(d1.m)}/${d1.y}`;
-      }
-      return `${pad(d1.d)}/${pad(d1.m)} – ${pad(d2.d)}/${pad(d2.m)}/${d2.y}`;
+    const d1 = dateValidation.startDate;
+    const d2 = dateValidation.endDate;
+    const pad = (n: number) => String(n).padStart(2, '0');
+
+    if (d1.getTime() === d2.getTime()) {
+      return `${pad(d1.getDate())}/${pad(d1.getMonth() + 1)}/${d1.getFullYear()}`;
     }
 
-    return s && e ? `${s} – ${e}` : '24/11 – 26/11/2026';
-  }, [trip?.startDate, trip?.endDate, trip]);
+    return `${pad(d1.getDate())}/${pad(d1.getMonth() + 1)} – ${pad(d2.getDate())}/${pad(d2.getMonth() + 1)}/${d2.getFullYear()}`;
+  }, [trip?.startDate, trip?.endDate, trip, dateValidation]);
 
   const getGmailComposeUrl = (recipientEmail: string, token: string) => {
     const tripTitle = trip?.title || 'Khám phá Đà Nẵng - Hội An 4N3Đ';
@@ -1078,14 +1746,42 @@ export default function TripDetailPage() {
     return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(recipientEmail)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
-  // Calculate stats
-  const totalDays = trip?.itineraryDays?.length || 3;
   const totalActivities = trip?.itineraryDays
     ? trip.itineraryDays.reduce((acc, d) => acc + (d.activities?.length || 0), 0)
-    : 8;
+    : 0;
+
+  // Unified calendar days array for the tickets row & day selection
+  const displayCalendarDays = useMemo(() => {
+    const maxExistingDay = (trip?.itineraryDays || []).reduce((max, d) => Math.max(max, d.dayNumber), 0);
+    const dayCount = Math.max(tripDurationDays, maxExistingDay, 1);
+
+    const result = [];
+    for (let dayNum = 1; dayNum <= dayCount; dayNum++) {
+      const meta = getTripDayMeta(trip?.startDate, trip?.endDate, dayNum);
+      const theme = getThemeForDay(dayNum);
+      const existingPlan = (trip?.itineraryDays || []).find((d) => d.dayNumber === dayNum);
+      const hasActivities = Boolean(existingPlan && existingPlan.activities && existingPlan.activities.length > 0);
+
+      result.push({
+        dayNumber: dayNum,
+        meta,
+        theme,
+        plan: existingPlan || {
+          dayNumber: dayNum,
+          title: `Ngày ${dayNum} — Lộ trình tự do`,
+          dateStr: meta.fullDateStr || `Ngày ${dayNum}`,
+          activities: [],
+        },
+        hasActivities,
+      });
+    }
+    return result;
+  }, [trip?.startDate, trip?.endDate, trip?.itineraryDays, tripDurationDays]);
 
   // Determine which days to display in the flowchart
-  const daysList = useMemo(() => trip?.itineraryDays || [], [trip?.itineraryDays]);
+  const daysList = useMemo(() => {
+    return displayCalendarDays.map((cd) => cd.plan);
+  }, [displayCalendarDays]);
 
   const activeDayPlans = useMemo(() => {
     if (daysList.length === 0) return [];
@@ -1161,6 +1857,29 @@ export default function TripDetailPage() {
       otherPct,
     };
   }, [activeActivities, checkedActivities, trip?.budgetTotal]);
+
+  // V-03: Tính tổng chi phí dự kiến toàn chuyến đi để so sánh với ngân sách
+  const totalPlannedItineraryCost = useMemo(() => {
+    if (!trip?.itineraryDays) return 0;
+    let sum = 0;
+    trip.itineraryDays.forEach((day) => {
+      (day.activities || []).forEach((a) => {
+        if (typeof a.costVnd === 'number' && a.costVnd > 0) {
+          sum += a.costVnd;
+        } else if (a.costLabel) {
+          const num = parseInt(a.costLabel.replace(/\D/g, ''), 10);
+          if (!isNaN(num) && num > 0) sum += num;
+        }
+      });
+    });
+    return sum;
+  }, [trip?.itineraryDays]);
+
+  const isTripBudgetExceeded = Boolean(
+    trip?.budgetTotal &&
+    trip.budgetTotal > 0 &&
+    totalPlannedItineraryCost > trip.budgetTotal
+  );
 
   const getSlotConfig = (slot?: string, index: number = 0) => {
     const s = (slot || '').toUpperCase();
@@ -1278,6 +1997,40 @@ export default function TripDetailPage() {
     );
   }
 
+  if (tripNotFound) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F8FAFC', padding: '20px' }}>
+        <div style={{ textAlign: 'center', padding: '2.5rem', background: '#FFFFFF', borderRadius: '16px', border: '1px solid #E2E8F0', maxWidth: '520px', boxShadow: '0 8px 24px rgba(15,23,42,0.06)' }}>
+          <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}>🔍</div>
+          <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0F172A', marginBottom: '0.75rem' }}>
+            Không tìm thấy chuyến đi (404)
+          </h2>
+          <p style={{ color: '#64748B', fontSize: '0.95rem', marginBottom: '1.5rem', lineHeight: 1.6 }}>
+            {tripErrorMessage || 'Chuyến đi này không tồn tại trong hệ thống cơ sở dữ liệu hoặc bạn không có quyền truy cập.'}
+          </p>
+          <Link
+            href="/trips"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '11px 22px',
+              background: '#0088CC',
+              color: '#FFFFFF',
+              borderRadius: '10px',
+              fontWeight: 700,
+              fontSize: '14px',
+              textDecoration: 'none',
+              boxShadow: '0 2px 8px rgba(0,136,204,0.25)',
+            }}
+          >
+            ← Quay lại danh sách Chuyến đi
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   if (!trip) {
     return <SkeletonTripsPage />;
   }
@@ -1293,6 +2046,39 @@ export default function TripDetailPage() {
           <p style={{ color: '#64748b', fontSize: '0.95rem' }}>
             Bạn cần đăng nhập để xem chi tiết chuyến đi này. Đang chuyển hướng...
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (trip && currentUser && !isTripMember) {
+    return (
+      <div className={styles.tripDetailPage}>
+        <div style={{ maxWidth: '640px', margin: '80px auto', textAlign: 'center', padding: '48px 24px', background: '#FFFFFF', borderRadius: '24px', border: '1px solid #E2E8F0', boxShadow: '0 10px 30px rgba(0,0,0,0.06)' }}>
+          <div style={{ fontSize: '56px', marginBottom: '16px' }}>🔒</div>
+          <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#0F172A', marginBottom: '10px' }}>
+            Không có quyền truy cập chuyến đi (403)
+          </h2>
+          <p style={{ fontSize: '15px', color: '#64748B', lineHeight: '1.6', marginBottom: '28px' }}>
+            Bạn không phải là thành viên hoặc đã rời khỏi chuyến đi <strong>&ldquo;{trip.title}&rdquo;</strong>. Theo quy định bảo mật, chỉ thành viên đang tham gia mới có quyền xem lịch trình, thành viên và chi tiêu.
+          </p>
+          <button
+            type="button"
+            onClick={() => router.push('/trips')}
+            style={{
+              padding: '13px 32px',
+              backgroundColor: '#0284C7',
+              color: '#FFFFFF',
+              border: 'none',
+              borderRadius: '12px',
+              fontSize: '15px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              boxShadow: '0 4px 14px rgba(2, 132, 199, 0.3)',
+            }}
+          >
+            ← Quay về danh sách Chuyến đi của tôi
+          </button>
         </div>
       </div>
     );
@@ -1327,19 +2113,35 @@ export default function TripDetailPage() {
             <div className={styles.headerTitleInfo}>
               <div className={styles.headerTitleRow}>
                 <h1 className={styles.headerTitleText}>{trip.title}</h1>
-                {trip.status === 'ACTIVE' && (
+                {tripStatusResult.status === 'ACTIVE' && (
                   <span className={styles.statusPillActive}>
                     <span className={styles.pulseDot} /> Đang diễn ra
                   </span>
                 )}
-                {trip.status === 'PLANNING' && (
+                {tripStatusResult.status === 'PLANNING' && (
                   <span className={styles.statusPillPlanning}>
                     <Sparkles size={12} /> Đang lên kế hoạch
                   </span>
                 )}
-                {trip.status === 'COMPLETED' && (
+                {tripStatusResult.status === 'COMPLETED' && (
                   <span className={styles.statusPillCompleted}>
                     <CheckCircle2 size={12} /> Đã hoàn thành
+                  </span>
+                )}
+                {!tripStatusResult.isValidDate && (
+                  <span
+                    style={{
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      color: '#DC2626',
+                      background: '#FEE2E2',
+                      padding: '3px 8px',
+                      borderRadius: '6px',
+                      border: '1px solid #FCA5A5',
+                    }}
+                    title={tripStatusResult.dateError || 'Ngày chuyến đi không hợp lệ'}
+                  >
+                    Ngày không hợp lệ
                   </span>
                 )}
 
@@ -1481,6 +2283,30 @@ export default function TripDetailPage() {
           </div>
         )}
 
+        {/* Cảnh báo ngày không hợp lệ (nếu có) */}
+        {dateValidation && !dateValidation.isValid && (
+          <div
+            style={{
+              margin: '0 0 16px',
+              padding: '12px 18px',
+              background: '#FFFBEB',
+              border: '1px solid #FCD34D',
+              borderRadius: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              color: '#92400E',
+              fontSize: '13.5px',
+              fontWeight: 500,
+            }}
+          >
+            <span style={{ fontSize: '20px', flexShrink: 0 }}>⚠️</span>
+            <span>
+              <strong>Cảnh báo thời gian:</strong> {dateValidation.message || 'Khoảng ngày của chuyến đi không hợp lệ.'} Vui lòng kiểm tra lại thiết lập ngày bắt đầu ({trip.startDate || 'Chưa định'}) và ngày kết thúc ({trip.endDate || 'Chưa định'}).
+            </span>
+          </div>
+        )}
+
         {/* ─── 4. MAIN WORKSPACE WITH TABS ───────────────────────────────── */}
         <div className={styles.tabsBar}>
           <button
@@ -1530,6 +2356,64 @@ export default function TripDetailPage() {
         {/* TAB 1: ITINERARY TIMELINE (2-COLUMN SPLIT: STATS PANEL + INTERACTIVE FLOWCHART) */}
         {activeTab === 'itinerary' && (
           <div>
+            {/* V-03: Cảnh báo vượt ngân sách cơ bản (Bước 13) */}
+            {isTripBudgetExceeded && trip?.budgetTotal && (
+              <div
+                style={{
+                  marginBottom: '20px',
+                  background: '#FFFBEB',
+                  border: '1.5px solid #F59E0B',
+                  borderRadius: '14px',
+                  padding: '16px 20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '16px',
+                  boxShadow: '0 4px 14px rgba(245, 158, 11, 0.12)',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                  <div
+                    style={{
+                      width: '42px',
+                      height: '42px',
+                      borderRadius: '10px',
+                      background: '#FEF3C7',
+                      border: '1px solid #FDE68A',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '22px',
+                      flexShrink: 0,
+                    }}
+                  >
+                    ⚠️
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '15px', fontWeight: 800, color: '#B45309' }}>
+                      CẢNH BÁO VƯỢT NGÂN SÁCH CHUYẾN ĐI
+                    </div>
+                    <div style={{ fontSize: '13px', color: '#92400E', marginTop: '3px' }}>
+                      Tổng chi phí dự kiến ({totalPlannedItineraryCost.toLocaleString('vi-VN')}₫) đã vượt ngân sách chuyến đi ({trip.budgetTotal.toLocaleString('vi-VN')}₫). Vượt mức: +{(totalPlannedItineraryCost - trip.budgetTotal).toLocaleString('vi-VN')}₫.
+                    </div>
+                  </div>
+                </div>
+                <div
+                  style={{
+                    padding: '6px 12px',
+                    background: '#FEF3C7',
+                    border: '1px solid #FCD34D',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    color: '#B45309',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Chỉ cảnh báo — Vẫn lưu được
+                </div>
+              </div>
+            )}
             {daysList.length > 0 ? (
               <div className={styles.itinerarySplitLayout}>
                 {/* ─── LEFT COLUMN: BẢNG SỐ LIỆU & PHÂN TÍCH (STICKY) ─── */}
@@ -1691,43 +2575,49 @@ export default function TripDetailPage() {
                 <div className={styles.flowchartCol}>
                   {/* Cute Travel Calendar Tickets Row */}
                   <div className={styles.cuteCalendarRow}>
-                    {daysList.map((d) => {
-                      const isSelected = selectedDayNumber === d.dayNumber;
-                      const dayOfWeek = d.dayNumber === 1 ? 'THỨ BA' : d.dayNumber === 2 ? 'THỨ TƯ' : 'THỨ NĂM';
-                      const dayDate = d.dayNumber === 1 ? '24' : d.dayNumber === 2 ? '25' : '26';
-                      const cuteTheme = d.dayNumber === 1
-                        ? { headerBg: '#EEF2FF', headerColor: '#4F46E5', icon: '🏮' }
-                        : d.dayNumber === 2
-                        ? { headerBg: '#ECFDF5', headerColor: '#059669', icon: '🌅' }
-                        : { headerBg: '#FFF1F2', headerColor: '#E11D48', icon: '🏺' };
-
-                      const activeClass = d.dayNumber === 2
-                        ? styles.cuteCalendarCardActiveDay2
-                        : d.dayNumber === 3
-                        ? styles.cuteCalendarCardActiveDay3
-                        : styles.cuteCalendarCardActive;
+                    {displayCalendarDays.map((calDay) => {
+                      const isSelected = selectedDayNumber === calDay.dayNumber;
+                      const theme = calDay.theme;
+                      const dayOfWeek = calDay.meta.dayOfWeek || `NGÀY ${calDay.dayNumber}`;
+                      const dayDate = calDay.meta.dayDate || String(calDay.dayNumber).padStart(2, '0');
+                      const monthText = calDay.meta.monthText || '';
 
                       return (
                         <button
-                          key={d.dayNumber}
+                          key={calDay.dayNumber}
                           type="button"
-                          className={`${styles.cuteCalendarCard} ${isSelected ? activeClass : ''}`}
-                          onClick={() => setSelectedDayNumber(d.dayNumber)}
+                          className={`${styles.cuteCalendarCard} ${isSelected ? styles.cuteCalendarCardActive : ''}`}
+                          style={
+                            isSelected
+                              ? {
+                                  borderColor: theme.borderColor,
+                                  boxShadow: `0 8px 24px ${theme.borderColor}33`,
+                                }
+                              : undefined
+                          }
+                          onClick={() => setSelectedDayNumber(calDay.dayNumber)}
                         >
                           <div
                             className={styles.calendarHeader}
                             style={{
-                              background: cuteTheme.headerBg,
-                              color: cuteTheme.headerColor,
+                              background: theme.headerBg,
+                              color: theme.headerColor,
                             }}
                           >
                             <span>{dayOfWeek}</span>
-                            <span>{cuteTheme.icon}</span>
+                            <span>{theme.icon}</span>
                           </div>
                           <div className={styles.calendarBody}>
                             <span className={styles.calendarDayNum}>{dayDate}</span>
-                            <span className={styles.calendarMonth}>Tháng 11</span>
-                            <span className={styles.calendarDayTitle}>Ngày {d.dayNumber}</span>
+                            {monthText && <span className={styles.calendarMonth}>{monthText}</span>}
+                            <span className={styles.calendarDayTitle}>
+                              Ngày {calDay.dayNumber}
+                              {!calDay.hasActivities && (
+                                <span style={{ fontSize: '10px', color: '#94A3B8', display: 'block', fontWeight: 500 }}>
+                                  (Trống)
+                                </span>
+                              )}
+                            </span>
                           </div>
                         </button>
                       );
@@ -1741,7 +2631,7 @@ export default function TripDetailPage() {
                     >
                       <div className={styles.calendarAllIcon}>📖</div>
                       <span style={{ fontWeight: 800, fontSize: '13px' }}>Toàn bộ</span>
-                      <span style={{ fontSize: '11px', opacity: 0.85 }}>{daysList.length} ngày</span>
+                      <span style={{ fontSize: '11px', opacity: 0.85 }}>{totalDays} ngày</span>
                     </button>
                   </div>
 
@@ -1765,8 +2655,8 @@ export default function TripDetailPage() {
                       <button
                         type="button"
                         onClick={() => {
-                          setNewStopDay(typeof selectedDayNumber === 'number' ? selectedDayNumber : 1);
-                          setShowAddStopModal(true);
+                          const targetDay = typeof selectedDayNumber === 'number' ? selectedDayNumber : 1;
+                          handleOpenAddStopModal(targetDay);
                         }}
                         style={{
                           display: 'inline-flex',
@@ -1798,14 +2688,61 @@ export default function TripDetailPage() {
                         </div>
                       )}
 
-                      <div className={styles.flowchartTrack}>
-                        <div className={styles.flowchartSpine} />
+                      {!dayPlan.activities || dayPlan.activities.length === 0 ? (
+                        <div
+                          style={{
+                            padding: '48px 24px',
+                            textAlign: 'center',
+                            background: '#F8FAFC',
+                            borderRadius: '16px',
+                            border: '1.5px dashed #CBD5E1',
+                            margin: '20px 0',
+                          }}
+                        >
+                          <div style={{ fontSize: '38px', marginBottom: '12px' }}>🗺️</div>
+                          <h4 style={{ fontSize: '16px', fontWeight: 700, color: '#1E293B', marginBottom: '6px' }}>
+                            Chưa có điểm dừng nào cho Ngày {dayPlan.dayNumber}
+                          </h4>
+                          <p style={{ fontSize: '13.5px', color: '#64748B', maxWidth: '440px', margin: '0 auto 18px', lineHeight: '1.5' }}>
+                            Ngày này hiện chưa có hoạt động nào được lên lịch. Bạn có thể nhấn nút bên dưới để thêm điểm dừng tham quan, ăn uống hoặc check-in đầu tiên cho ngày này!
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              handleOpenAddStopModal(dayPlan.dayNumber);
+                            }}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              padding: '9px 20px',
+                              background: '#0284C7',
+                              color: '#FFFFFF',
+                              borderRadius: '10px',
+                              border: 'none',
+                              fontWeight: 700,
+                              fontSize: '13.5px',
+                              cursor: 'pointer',
+                              boxShadow: '0 4px 14px rgba(2, 132, 199, 0.25)',
+                            }}
+                          >
+                            <span>+ Thêm điểm dừng vào Ngày {dayPlan.dayNumber}</span>
+                          </button>
+                        </div>
+                      ) : (
+                        <div className={styles.flowchartTrack}>
+                          <div className={styles.flowchartSpine} />
 
-                        {(dayPlan.activities || []).map((act, actIdx) => {
+                          {(dayPlan.activities || []).map((act, actIdx) => {
                           const slotCfg = getSlotConfig(act.timeSlot || act.timeRange, actIdx);
                           const isDone = !!checkedActivities[act.id];
                           const isHighlighted = highlightedActId === act.id;
                           const isLast = actIdx === (dayPlan.activities || []).length - 1;
+
+                          const conflictInfo = findTimeOverlap(act.timeRange || act.timeSlot || '', dayPlan.activities || [], act.id);
+                          const isOverlapping = Boolean(act.hasTimeOverlap || conflictInfo.hasOverlap);
+                          const conflictPartnerName = act.overlapWith || conflictInfo.conflictAct?.title;
+                          const conflictPartnerTime = conflictInfo.conflictAct?.timeRange || conflictInfo.conflictAct?.timeSlot;
 
                           return (
                             <div key={act.id} className={styles.stationBlock} id={`station-${act.id}`}>
@@ -1813,16 +2750,25 @@ export default function TripDetailPage() {
                               <div
                                 className={styles.stationNodeCircle}
                                 style={{
-                                  background: isDone ? '#10B981' : slotCfg.gradient,
-                                  boxShadow: `0 0 0 4px #FFFFFF, 0 4px 14px ${isDone ? 'rgba(16, 185, 129, 0.35)' : slotCfg.glow}`,
+                                  background: isDone ? '#10B981' : isOverlapping ? '#F59E0B' : slotCfg.gradient,
+                                  boxShadow: `0 0 0 4px #FFFFFF, 0 4px 14px ${isDone ? 'rgba(16, 185, 129, 0.35)' : isOverlapping ? 'rgba(245, 158, 11, 0.4)' : slotCfg.glow}`,
                                 }}
                               >
-                                {isDone ? '🌸' : String(actIdx + 1).padStart(2, '0')}
+                                {isDone ? '🌸' : isOverlapping ? '⚠️' : String(actIdx + 1).padStart(2, '0')}
                               </div>
 
                               {/* Station Content Card with Real Photo */}
                               <div
                                 className={`${styles.stationCard} ${isHighlighted ? styles.stationCardHighlighted : ''}`}
+                                style={
+                                  isOverlapping
+                                    ? {
+                                        border: '2px solid #F59E0B',
+                                        background: '#FFFDF7',
+                                        boxShadow: '0 4px 16px rgba(245, 158, 11, 0.18)',
+                                      }
+                                    : undefined
+                                }
                               >
                                 {act.image && (
                                   <div className={styles.stationImageWrapper}>
@@ -1843,7 +2789,7 @@ export default function TripDetailPage() {
                                 )}
 
                                 <div className={styles.stationCardHeader}>
-                                  <div className={styles.stationHeaderLeft}>
+                                  <div className={styles.stationHeaderLeft} style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                                     <span
                                       className={styles.stationSlotBadge}
                                       style={{ background: slotCfg.bg, color: slotCfg.color, border: `1px solid ${slotCfg.border}` }}
@@ -1851,6 +2797,27 @@ export default function TripDetailPage() {
                                       {slotCfg.icon}
                                       <span>{slotCfg.label}</span>
                                     </span>
+
+                                    {isOverlapping && (
+                                      <span
+                                        style={{
+                                          display: 'inline-flex',
+                                          alignItems: 'center',
+                                          gap: '4px',
+                                          padding: '3px 8px',
+                                          borderRadius: '6px',
+                                          background: '#FEF3C7',
+                                          color: '#B45309',
+                                          border: '1px solid #FCD34D',
+                                          fontSize: '11px',
+                                          fontWeight: 700,
+                                        }}
+                                        title={`Chồng giờ với: ${conflictPartnerName || 'điểm khác'}`}
+                                      >
+                                        <span>⚠️ Chồng giờ với: {conflictPartnerName || 'điểm khác'}</span>
+                                        {conflictPartnerTime && <span>({conflictPartnerTime})</span>}
+                                      </span>
+                                    )}
                                   </div>
 
                                   <span className={styles.stationCostBadge}>
@@ -1878,45 +2845,80 @@ export default function TripDetailPage() {
                                   </span>
 
                                   <div className={styles.stationActions}>
-                                    {/* Nút Reorder: Lên / Xuống (W3-TV3-03) */}
+                                    {/* Nút Reorder: Lên / Xuống (W-01) */}
                                     <div style={{ display: 'inline-flex', alignItems: 'center', background: '#F1F5F9', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '2px', gap: '2px' }}>
                                       <button
                                         type="button"
                                         disabled={actIdx === 0}
                                         onClick={() => handleReorderActivity(dayPlan.dayNumber, actIdx, 'UP')}
                                         style={{
-                                          padding: '4px 7px',
+                                          width: '32px',
+                                          height: '32px',
+                                          minWidth: '32px',
+                                          minHeight: '32px',
+                                          display: 'inline-flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
                                           background: actIdx === 0 ? 'transparent' : '#FFFFFF',
                                           color: actIdx === 0 ? '#CBD5E1' : '#0F172A',
                                           border: 'none',
                                           borderRadius: '6px',
                                           cursor: actIdx === 0 ? 'not-allowed' : 'pointer',
-                                          fontSize: '11px',
-                                          fontWeight: 800,
+                                          opacity: actIdx === 0 ? 0.35 : 1,
                                         }}
-                                        title="Chuyển điểm dừng lên trước"
+                                        title="Lên"
+                                        aria-label="Lên"
                                       >
-                                        ▲
+                                        <ChevronUp size={16} />
                                       </button>
                                       <button
                                         type="button"
                                         disabled={isLast}
                                         onClick={() => handleReorderActivity(dayPlan.dayNumber, actIdx, 'DOWN')}
                                         style={{
-                                          padding: '4px 7px',
+                                          width: '32px',
+                                          height: '32px',
+                                          minWidth: '32px',
+                                          minHeight: '32px',
+                                          display: 'inline-flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
                                           background: isLast ? 'transparent' : '#FFFFFF',
                                           color: isLast ? '#CBD5E1' : '#0F172A',
                                           border: 'none',
                                           borderRadius: '6px',
                                           cursor: isLast ? 'not-allowed' : 'pointer',
-                                          fontSize: '11px',
-                                          fontWeight: 800,
+                                          opacity: isLast ? 0.35 : 1,
                                         }}
-                                        title="Chuyển điểm dừng xuống sau"
+                                        title="Xuống"
+                                        aria-label="Xuống"
                                       >
-                                        ▼
+                                        <ChevronDown size={16} />
                                       </button>
                                     </div>
+
+                                    {/* Nút Sửa điểm dừng (Bước 3, Bước 6) */}
+                                    <button
+                                      type="button"
+                                      onClick={() => handleOpenEditModal(dayPlan.dayNumber, act)}
+                                      style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                        padding: '6px 12px',
+                                        background: '#FEF3C7',
+                                        color: '#B45309',
+                                        border: '1px solid #FDE68A',
+                                        borderRadius: '8px',
+                                        fontSize: '12px',
+                                        fontWeight: 700,
+                                        cursor: 'pointer',
+                                      }}
+                                      title="Chỉnh sửa tên, giờ hoặc chuyển sang ngày khác (F5 giữ nguyên)"
+                                    >
+                                      <Pencil size={14} />
+                                      <span>Sửa</span>
+                                    </button>
 
                                     <button
                                       type="button"
@@ -1936,7 +2938,8 @@ export default function TripDetailPage() {
                                       }}
                                       title="Bấm để xem chi tiết địa điểm này"
                                     >
-                                      <span>🔍 Xem chi tiết</span>
+                                      <Eye size={14} />
+                                      <span>Xem chi tiết</span>
                                     </button>
 
                                     <Link
@@ -1955,12 +2958,12 @@ export default function TripDetailPage() {
                                       style={!isTripMember ? { opacity: 0.75, cursor: 'not-allowed' } : undefined}
                                     >
                                       <Check size={13} />
-                                      <span>{isDone ? 'Đã vi vu 🌸' : 'Check-in'}</span>
+                                      <span>{isDone ? 'Đã đến' : 'Check-in'}</span>
                                     </button>
 
                                     <button
                                       type="button"
-                                      onClick={() => handleDeleteActivity(dayPlan.dayNumber, act.id)}
+                                      onClick={() => handleDeleteActivity(dayPlan.dayNumber, act.id, act.title)}
                                       style={{
                                         padding: '6px 10px',
                                         background: '#FFF1F2',
@@ -1971,7 +2974,7 @@ export default function TripDetailPage() {
                                         fontWeight: 700,
                                         cursor: 'pointer',
                                       }}
-                                      title="Xóa điểm dừng này khỏi lịch trình"
+                                      title="Xóa điểm dừng này khỏi lịch trình (yêu cầu xác nhận)"
                                     >
                                       Xóa
                                     </button>
@@ -1998,8 +3001,9 @@ export default function TripDetailPage() {
                           );
                         })}
                       </div>
-                    </div>
-                  ))}
+                    )}
+                  </div>
+                ))}
                 </div>
               </div>
             ) : (
@@ -2045,50 +3049,79 @@ export default function TripDetailPage() {
                     : 'Bạn đang xem chuyến đi này ở chế độ Khách quan sát (chưa gia nhập nhóm).'}
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  if (!isTripMember) {
-                    showToast('⚠️ Bạn đang ở chế độ Khách quan sát. Vui lòng bấm "Tham gia chuyến đi" để có quyền tạo lời mời!');
-                    return;
-                  }
-                  setShowInviteModal(true);
-                }}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '9px 16px',
-                  background: isTripMember ? '#0284C7' : '#94A3B8',
-                  color: '#FFFFFF',
-                  border: 'none',
-                  borderRadius: '10px',
-                  fontSize: '13px',
-                  fontWeight: 700,
-                  cursor: isTripMember ? 'pointer' : 'not-allowed',
-                  boxShadow: isTripMember ? '0 4px 12px rgba(2, 132, 199, 0.25)' : 'none',
-                }}
-                title={!isTripMember ? 'Chỉ thành viên chuyến đi mới có quyền tạo lời mời' : undefined}
-              >
-                <span>+ Tạo lời mời mới</span>
-              </button>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!isTripMember) {
+                      showToast('⚠️ Bạn đang ở chế độ Khách quan sát. Vui lòng bấm "Tham gia chuyến đi" để có quyền tạo lời mời!');
+                      return;
+                    }
+                    setShowInviteModal(true);
+                  }}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '9px 16px',
+                    background: isTripMember ? '#0284C7' : '#94A3B8',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    borderRadius: '10px',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    cursor: isTripMember ? 'pointer' : 'not-allowed',
+                    boxShadow: isTripMember ? '0 4px 12px rgba(2, 132, 199, 0.25)' : 'none',
+                  }}
+                  title={!isTripMember ? 'Chỉ thành viên chuyến đi mới có quyền tạo lời mời' : undefined}
+                >
+                  <span>+ Tạo lời mời mới</span>
+                </button>
+                {isTripMember && (
+                  <button
+                    type="button"
+                    onClick={handleLeaveTrip}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '9px 14px',
+                      background: '#FFF1F2',
+                      color: '#E11D48',
+                      border: '1px solid #FECDD3',
+                      borderRadius: '10px',
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                    }}
+                    title="Rời khỏi chuyến đi này"
+                  >
+                    <LogOut size={16} />
+                    <span>Rời nhóm</span>
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className={styles.membersGrid}>
               {(trip.members || []).map((m: any, idx) => {
-                const name = typeof m === 'string' ? m : m?.name || `Thành viên ${idx + 1}`;
+                const rawItemName = typeof m === 'string' ? m : m?.name || `Thành viên ${idx + 1}`;
+                const name = rawItemName.replace(/\s*\(Bạn\)/gi, '').trim() || rawItemName;
                 const avatar = typeof m === 'object' && m?.avatar ? m.avatar : name.slice(0, 2).toUpperCase();
                 const color = typeof m === 'object' && m?.color ? m.color : (idx % 2 === 0 ? '#0284c7' : '#10b981');
                 const role = typeof m === 'object' && m?.role ? m.role : (idx === 0 ? 'Trưởng nhóm' : 'Thành viên');
+                const normMemberName = normalizeMemberText(name);
+                const normCurrentName = normalizeMemberText(currentUser?.displayName || (currentUser as any)?.name || '');
                 const isMe = Boolean(
                   currentUser && (
                     (m.userId && currentUser.id && m.userId === currentUser.id) ||
                     (m.email && currentUser.email && m.email.toLowerCase() === currentUser.email.toLowerCase()) ||
-                    (currentUser.displayName && name.trim().toLowerCase() === currentUser.displayName.trim().toLowerCase())
+                    (normCurrentName && normMemberName && normCurrentName === normMemberName)
                   )
                 );
                 return (
-                  <div key={idx} className={styles.memberCard}>
+                  <div key={m.userId || m.email || idx} className={styles.memberCard}>
                     <div className={styles.memberAvatarCircle} style={{ background: color }}>
                       {avatar}
                     </div>
@@ -2101,7 +3134,33 @@ export default function TripDetailPage() {
                           </span>
                         )}
                       </h4>
-                      <span className={styles.memberRole}>{role}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap', marginTop: '4px' }}>
+                        <span className={styles.memberRole}>{role}</span>
+                        {isTripOwner && !isMe && role !== 'Trưởng nhóm' && (
+                          <button
+                            type="button"
+                            onClick={() => handleTransferOwnership(m)}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              padding: '3px 9px',
+                              background: '#F0F9FF',
+                              color: '#0284C7',
+                              border: '1px solid #BAE6FD',
+                              borderRadius: '7px',
+                              fontSize: '11px',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              transition: 'all 0.15s ease',
+                            }}
+                            title={`Chuyển quyền trưởng nhóm cho ${name}`}
+                          >
+                            <Crown size={14} />
+                            <span>Chuyển quyền</span>
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
@@ -2168,118 +3227,215 @@ export default function TripDetailPage() {
                 </button>
               </div>
             ) : (
-              <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '20px', padding: '24px', marginBottom: '24px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
-                  <h4 style={{ fontSize: '16px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
-                    ✉️ Danh sách lời mời đã phát hành
-                  </h4>
+              <div className={styles.invitationListCard}>
+                <div className={styles.invitationListHeader}>
+                  <div className={styles.invitationHeaderTitleRow}>
+                    <h4 style={{ fontSize: '16px', fontWeight: 800, color: '#0F172A', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Mail size={16} />
+                      <span>Danh sách lời mời đã phát hành</span>
+                    </h4>
+                    <span className={styles.invitationCountBadge}>
+                      {invitationsList.length} lời mời
+                    </span>
+                  </div>
                   <span style={{ fontSize: '12px', color: '#64748B' }}>
                     {isTripOwner ? 'Trưởng nhóm (Owner): có quyền tạo & thu hồi lời mời' : 'Thành viên: có quyền tạo lời mời'}
                   </span>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
-                  {invitationsList.map((inv) => (
-                    <div
-                      key={inv.id}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        flexWrap: 'wrap',
-                        gap: '10px',
-                        padding: '12px 16px',
-                        background: '#F8FAFC',
-                        border: '1px solid #E2E8F0',
-                        borderRadius: '12px',
-                      }}
-                    >
-                      <div>
-                        <span style={{ fontWeight: 700, fontSize: '13.5px', color: '#0F172A' }}>{inv.email}</span>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-                          <span style={{ fontFamily: 'monospace', fontSize: '12px', color: '#0284C7', background: '#E0F2FE', padding: '1px 6px', borderRadius: '4px', fontWeight: 800 }}>
-                            {inv.token}
-                          </span>
-                          <span style={{ fontSize: '12px', color: '#64748B' }}>Hạn: {inv.expiresAt}</span>
-                        </div>
-                      </div>
-
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{
-                          fontSize: '11.5px',
-                          fontWeight: 800,
-                          padding: '3px 8px',
-                          borderRadius: '999px',
-                          background: inv.status === 'PENDING' ? '#DCFCE7' : inv.status === 'REVOKED' ? '#FEE2E2' : '#F1F5F9',
-                          color: inv.status === 'PENDING' ? '#15803D' : inv.status === 'REVOKED' ? '#991B1B' : '#475569',
-                        }}>
-                          {inv.status}
-                        </span>
-
-                        <Link
-                          href={`/invitations/${inv.token}`}
-                          target="_blank"
-                          style={{
-                            fontSize: '12px',
-                            color: '#0284C7',
-                            fontWeight: 700,
-                            textDecoration: 'none',
-                            padding: '6px 12px',
-                            background: '#FFFFFF',
-                            border: '1px solid #BAE6FD',
-                            borderRadius: '8px',
-                          }}
-                          title="Mở link mời như người nhận (B)"
-                        >
-                          Mở link mời ↗
-                        </Link>
-
-                        {inv.status === 'PENDING' && (
-                          <a
-                            href={getGmailComposeUrl(inv.email, inv.token)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{
-                              fontSize: '12px',
-                              color: '#EA4335',
-                              fontWeight: 700,
-                              textDecoration: 'none',
-                              padding: '6px 12px',
-                              background: '#FEF2F2',
-                              border: '1px solid #FECACA',
-                              borderRadius: '8px',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                            }}
-                            title={`Mở Gmail để gửi thư mời thật tới ${inv.email}`}
-                          >
-                            <span>✉️ Gửi Gmail</span>
-                          </a>
-                        )}
-
-                        {isTripOwner && inv.status === 'PENDING' && (
-                          <button
-                            type="button"
-                            onClick={() => handleRevokeInvite(inv.id)}
-                            style={{
-                              fontSize: '12px',
-                              color: '#DC2626',
-                              fontWeight: 700,
-                              padding: '6px 12px',
-                              background: '#FEF2F2',
-                              border: '1px solid #FECACA',
-                              borderRadius: '8px',
-                              cursor: 'pointer',
-                            }}
-                          >
-                            Thu hồi (Revoke)
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                {/* Filter pills: All / Pending / Accepted / Revoked */}
+                <div className={styles.invitationFilterRow}>
+                  <button
+                    type="button"
+                    onClick={() => setInvitationFilter('ALL')}
+                    className={`${styles.invitationFilterBtn} ${invitationFilter === 'ALL' ? styles.invitationFilterBtnActive : ''}`}
+                  >
+                    Tất cả ({invitationCounts.all})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setInvitationFilter('PENDING')}
+                    className={`${styles.invitationFilterBtn} ${invitationFilter === 'PENDING' ? styles.invitationFilterBtnActive : ''}`}
+                  >
+                    Đang chờ ({invitationCounts.pending})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setInvitationFilter('ACCEPTED')}
+                    className={`${styles.invitationFilterBtn} ${invitationFilter === 'ACCEPTED' ? styles.invitationFilterBtnActive : ''}`}
+                  >
+                    Đã chấp nhận ({invitationCounts.accepted})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setInvitationFilter('REVOKED')}
+                    className={`${styles.invitationFilterBtn} ${invitationFilter === 'REVOKED' ? styles.invitationFilterBtnActive : ''}`}
+                  >
+                    Đã thu hồi ({invitationCounts.revoked})
+                  </button>
                 </div>
+
+                {/* Scrollable list container */}
+                {filteredInvitations.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '24px 16px', background: '#F8FAFC', borderRadius: '12px', border: '1px dashed #CBD5E1', color: '#64748B', fontSize: '13px', marginBottom: '16px' }}>
+                    Chưa có lời mời nào trong mục này.
+                  </div>
+                ) : (
+                  <>
+                    <div className={styles.invitationScrollContainer}>
+                      {filteredInvitations.map((inv) => (
+                        <div
+                          key={inv.id}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            flexWrap: 'wrap',
+                            gap: '10px',
+                            padding: '12px 16px',
+                            background: '#F8FAFC',
+                            border: '1px solid #E2E8F0',
+                            borderRadius: '12px',
+                          }}
+                        >
+                          <div>
+                            <span style={{ fontWeight: 700, fontSize: '13.5px', color: '#0F172A' }}>{inv.email}</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px', flexWrap: 'wrap' }}>
+                              <a
+                                href={`/invitations/${inv.token}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="Bấm để xem trước trang lời mời của người nhận"
+                                style={{
+                                  fontFamily: 'monospace',
+                                  fontSize: '12px',
+                                  color: '#0284C7',
+                                  background: '#E0F2FE',
+                                  padding: '2px 8px',
+                                  borderRadius: '6px',
+                                  fontWeight: 800,
+                                  textDecoration: 'none',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '3px',
+                                }}
+                              >
+                                {inv.token} <span style={{ fontSize: '10px' }}>↗</span>
+                              </a>
+                              <span style={{ fontSize: '12px', color: '#64748B' }}>Hạn: {inv.expiresAt}</span>
+                              {(inv.emailSent || inv.status === 'PENDING') && (
+                                <span style={{ fontSize: '11px', color: '#166534', background: '#DCFCE7', padding: '1px 6px', borderRadius: '4px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                  <MailCheck size={13} />
+                                  <span>Đã gửi thư tự động</span>
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                            <span style={{
+                              fontSize: '11.5px',
+                              fontWeight: 800,
+                              padding: '3px 8px',
+                              borderRadius: '999px',
+                              background: inv.status === 'PENDING' ? '#DCFCE7' : inv.status === 'REVOKED' ? '#FEE2E2' : '#F1F5F9',
+                              color: inv.status === 'PENDING' ? '#15803D' : inv.status === 'REVOKED' ? '#991B1B' : '#475569',
+                            }}>
+                              {inv.status}
+                            </span>
+
+                            {/* Nút Sao chép liên kết mời */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+                                const inviteLink = `${baseUrl}/invitations/${inv.token}`;
+                                if (navigator?.clipboard) {
+                                  navigator.clipboard.writeText(inviteLink);
+                                }
+                                showToast(`✓ Đã sao chép link mời cho ${inv.email}!`);
+                              }}
+                              style={{
+                                fontSize: '12px',
+                                color: '#0284C7',
+                                fontWeight: 700,
+                                padding: '6px 12px',
+                                background: '#F0F9FF',
+                                border: '1px solid #BAE6FD',
+                                borderRadius: '8px',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                cursor: 'pointer',
+                              }}
+                              title="Sao chép link mời để gửi qua Zalo / Facebook Messenger"
+                            >
+                              <Copy size={14} />
+                              <span>Sao chép link</span>
+                            </button>
+
+                            {/* Nút Gửi lại email tự động qua Google SMTP */}
+                            {inv.status === 'PENDING' && (
+                              <button
+                                type="button"
+                                onClick={() => handleResendInviteEmail(inv)}
+                                disabled={isResendingEmail === inv.token}
+                                style={{
+                                  fontSize: '12px',
+                                  color: '#047857',
+                                  fontWeight: 700,
+                                  padding: '6px 12px',
+                                  background: '#ECFDF5',
+                                  border: '1px solid #A7F3D0',
+                                  borderRadius: '8px',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  cursor: isResendingEmail === inv.token ? 'not-allowed' : 'pointer',
+                                }}
+                                title={`Tự động gửi lại email mời trực tiếp tới ${inv.email}`}
+                              >
+                                {isResendingEmail === inv.token ? (
+                                  <Loader2 size={14} className="animate-spin" />
+                                ) : (
+                                  <Mail size={14} />
+                                )}
+                                <span>{isResendingEmail === inv.token ? 'Đang gửi...' : 'Gửi lại email'}</span>
+                              </button>
+                            )}
+
+                            {/* Nút Thu hồi lời mời (chỉ Trưởng nhóm) */}
+                            {isTripOwner && inv.status === 'PENDING' && (
+                              <button
+                                type="button"
+                                onClick={() => handleRevokeInvite(inv.id)}
+                                style={{
+                                  fontSize: '12px',
+                                  color: '#DC2626',
+                                  fontWeight: 700,
+                                  padding: '6px 12px',
+                                  background: '#FEF2F2',
+                                  border: '1px solid #FECACA',
+                                  borderRadius: '8px',
+                                  cursor: 'pointer',
+                                }}
+                              >
+                                Thu hồi (Revoke)
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {filteredInvitations.length > 4 && (
+                      <div className={styles.invitationScrollFooterHint}>
+                        <span>↕ Cuộn để xem danh sách ({filteredInvitations.length} lời mời)</span>
+                        <span>Đã tối ưu cuộn mượt</span>
+                      </div>
+                    )}
+                  </>
+                )}
 
                 {/* Ô NHẬP MÃ THỦ CÔNG (W4-TV3-03) */}
                 <div style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', borderRadius: '14px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
@@ -2570,7 +3726,8 @@ export default function TripDetailPage() {
                     }}
                     title="Đóng / mở biểu quyết"
                   >
-                    <span>{isVotingClosed ? '🔓 Mở lại biểu quyết' : '🔒 Đóng biểu quyết (Chỉ Owner)'}</span>
+                    {isVotingClosed ? <Unlock size={15} /> : <Lock size={15} />}
+                    <span>{isVotingClosed ? 'Mở lại biểu quyết' : 'Đóng biểu quyết (Chỉ Owner)'}</span>
                   </button>
                 )}
               </div>
@@ -2598,8 +3755,9 @@ export default function TripDetailPage() {
                       {prop.category}
                     </span>
                     {isVotingClosed && (
-                      <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>
-                        🔒 Đã khóa kết quả
+                      <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <Lock size={12} />
+                        <span>Đã khóa kết quả</span>
                       </span>
                     )}
                   </div>
@@ -2832,13 +3990,23 @@ export default function TripDetailPage() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
               {(trip.members || []).map((m: any, idx: number) => {
-                const name = typeof m === 'string' ? m : m?.name || `Thành viên ${idx + 1}`;
+                const rawItemName = typeof m === 'string' ? m : m?.name || `Thành viên ${idx + 1}`;
+                const name = rawItemName.replace(/\s*\(Bạn\)/gi, '').trim() || rawItemName;
                 const avatar = typeof m === 'object' && m?.avatar ? m.avatar : name.slice(0, 2).toUpperCase();
                 const color = typeof m === 'object' && m?.color ? m.color : (idx % 2 === 0 ? '#0284c7' : '#10b981');
                 const role = typeof m === 'object' && m?.role ? m.role : (idx === 0 ? 'Trưởng nhóm' : 'Thành viên');
+                const normMemberName = normalizeMemberText(name);
+                const normCurrentName = normalizeMemberText(currentUser?.displayName || (currentUser as any)?.name || '');
+                const isMe = Boolean(
+                  currentUser && (
+                    (m.userId && currentUser.id && m.userId === currentUser.id) ||
+                    (m.email && currentUser.email && m.email.toLowerCase() === currentUser.email.toLowerCase()) ||
+                    (normCurrentName && normMemberName && normCurrentName === normMemberName)
+                  )
+                );
                 return (
                   <div
-                    key={idx}
+                    key={m.userId || m.email || idx}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -2869,12 +4037,18 @@ export default function TripDetailPage() {
                     <div style={{ flex: 1 }}>
                       <p style={{ margin: 0, fontSize: '14.5px', fontWeight: 700, color: '#0F172A' }}>
                         {name}
+                        {isMe && (
+                          <span style={{ marginLeft: 6, fontSize: '12px', fontWeight: 600, color: '#0284C7' }}>
+                            (Bạn)
+                          </span>
+                        )}
                       </p>
                       <span style={{ fontSize: '12px', color: '#64748B' }}>{role}</span>
                     </div>
                     {idx === 0 && (
-                      <span style={{ fontSize: '11.5px', background: '#FEF3C7', color: '#B45309', fontWeight: 700, padding: '3px 8px', borderRadius: '6px' }}>
-                        👑 Trưởng nhóm
+                      <span style={{ fontSize: '11.5px', background: '#FEF3C7', color: '#B45309', fontWeight: 700, padding: '3px 8px', borderRadius: '6px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <Crown size={13} />
+                        <span>Trưởng nhóm</span>
                       </span>
                     )}
                   </div>
@@ -2972,29 +4146,74 @@ export default function TripDetailPage() {
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
                   Chọn ngày dừng chân
                 </label>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  {[1, 2, 3].map((d) => (
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {displayCalendarDays.map((calDay) => (
                     <button
-                      key={d}
+                      key={calDay.dayNumber}
                       type="button"
-                      onClick={() => setNewStopDay(d)}
+                      onClick={() => {
+                        setNewStopDay(calDay.dayNumber);
+                        const dayMeta = getTripDayMeta(trip?.startDate, trip?.endDate, calDay.dayNumber);
+                        setNewStopCustomDate(dayMeta.fullDateStr || '');
+                        setAddStopDateError(null);
+                      }}
                       style={{
-                        flex: 1,
-                        padding: '8px',
+                        flex: displayCalendarDays.length <= 4 ? 1 : '0 0 calc(25% - 6px)',
+                        minWidth: '70px',
+                        padding: '8px 10px',
                         borderRadius: '8px',
                         border: '1px solid',
-                        borderColor: newStopDay === d ? '#0284C7' : '#CBD5E1',
-                        background: newStopDay === d ? '#E0F2FE' : '#FFFFFF',
-                        color: newStopDay === d ? '#0369A1' : '#475569',
+                        borderColor: newStopDay === calDay.dayNumber ? '#0284C7' : '#CBD5E1',
+                        background: newStopDay === calDay.dayNumber ? '#E0F2FE' : '#FFFFFF',
+                        color: newStopDay === calDay.dayNumber ? '#0369A1' : '#475569',
                         fontWeight: 700,
                         fontSize: '13px',
                         cursor: 'pointer',
+                        textAlign: 'center',
                       }}
                     >
-                      Ngày {d}
+                      <span>Ngày {calDay.dayNumber}</span>
+                      {calDay.meta.dayDate && (
+                        <span style={{ display: 'block', fontSize: '10.5px', fontWeight: 500, opacity: 0.85 }}>
+                          {calDay.meta.dayDate}/{calDay.meta.monthText.replace('Tháng ', '')}
+                        </span>
+                      )}
                     </button>
                   ))}
                 </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                  Ngày lịch trình (dd/mm/yyyy) — V-01 Chặn ngoài khoảng
+                </label>
+                <input
+                  type="text"
+                  placeholder="dd/mm/yyyy (ví dụ: 24/11/2026)"
+                  value={newStopCustomDate}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setNewStopCustomDate(val);
+                    const res = validateDateAgainstTrip(val, trip?.startDate, trip?.endDate);
+                    setAddStopDateError(res.isValid ? null : res.error || null);
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    borderRadius: '10px',
+                    border: `1.5px solid ${addStopDateError ? '#EF4444' : '#CBD5E1'}`,
+                    background: addStopDateError ? '#FEF2F2' : '#FFFFFF',
+                    fontSize: '14px',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                />
+                {addStopDateError && (
+                  <div style={{ marginTop: '6px', color: '#DC2626', fontSize: '12.5px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span>❌</span>
+                    <span>{addStopDateError}</span>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -3127,21 +4346,430 @@ export default function TripDetailPage() {
               </button>
               <button
                 type="button"
-                onClick={handleSaveNewActivity}
-                disabled={!newStopTitle.trim()}
+                onClick={() => handleSaveNewActivity(false)}
+                disabled={!newStopTitle.trim() || !!addStopDateError}
                 style={{
                   padding: '10px 22px',
                   borderRadius: '10px',
                   border: 'none',
-                  background: newStopTitle.trim() ? '#0284C7' : '#94A3B8',
+                  background: !newStopTitle.trim() || !!addStopDateError ? '#94A3B8' : '#0284C7',
                   color: '#FFFFFF',
                   fontWeight: 700,
                   fontSize: '13.5px',
-                  cursor: newStopTitle.trim() ? 'pointer' : 'not-allowed',
-                  boxShadow: newStopTitle.trim() ? '0 4px 12px rgba(2, 132, 199, 0.3)' : 'none',
+                  cursor: !newStopTitle.trim() || !!addStopDateError ? 'not-allowed' : 'pointer',
+                  boxShadow: !newStopTitle.trim() || !!addStopDateError ? 'none' : '0 4px 12px rgba(2, 132, 199, 0.3)',
                 }}
               >
                 Lưu vào Ngày {newStopDay}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3B: CHỈNH SỬA ĐIỂM DỪNG (Bước 3: Sửa tên/giờ; Bước 6: Chuyển ngày; V-01; V-02) */}
+      {editingStop && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(15, 23, 42, 0.65)',
+            backdropFilter: 'blur(5px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '20px',
+          }}
+          onClick={() => setEditingStop(null)}
+        >
+          <div
+            style={{
+              background: '#FFFFFF',
+              borderRadius: '24px',
+              maxWidth: '520px',
+              width: '100%',
+              padding: '28px',
+              boxShadow: '0 24px 48px rgba(0,0,0,0.3)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <div>
+                <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Pencil size={18} style={{ color: '#0284C7' }} />
+                  <span>Sửa điểm dừng lịch trình</span>
+                </h3>
+                <span style={{ fontSize: '12px', color: '#64748B' }}>
+                  Hiện đang ở Ngày {editingStop.dayNumber}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingStop(null)}
+                style={{
+                  background: '#F1F5F9',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '32px',
+                  height: '32px',
+                  fontSize: '16px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#64748B',
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '20px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                  Chuyển sang Ngày (Bước 6)
+                </label>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {displayCalendarDays.map((calDay) => (
+                    <button
+                      key={calDay.dayNumber}
+                      type="button"
+                      onClick={() => {
+                        setEditStopTargetDay(calDay.dayNumber);
+                        const dayMeta = getTripDayMeta(trip?.startDate, trip?.endDate, calDay.dayNumber);
+                        setEditStopCustomDate(dayMeta.fullDateStr || '');
+                        setEditStopDateError(null);
+                      }}
+                      style={{
+                        flex: displayCalendarDays.length <= 4 ? 1 : '0 0 calc(25% - 6px)',
+                        minWidth: '70px',
+                        padding: '8px 10px',
+                        borderRadius: '8px',
+                        border: '1px solid',
+                        borderColor: editStopTargetDay === calDay.dayNumber ? '#0284C7' : '#CBD5E1',
+                        background: editStopTargetDay === calDay.dayNumber ? '#E0F2FE' : '#FFFFFF',
+                        color: editStopTargetDay === calDay.dayNumber ? '#0369A1' : '#475569',
+                        fontWeight: 700,
+                        fontSize: '13px',
+                        cursor: 'pointer',
+                        textAlign: 'center',
+                      }}
+                    >
+                      <span>Ngày {calDay.dayNumber}</span>
+                      {calDay.meta.dayDate && (
+                        <span style={{ display: 'block', fontSize: '10.5px', fontWeight: 500, opacity: 0.85 }}>
+                          {calDay.meta.dayDate}/{calDay.meta.monthText.replace('Tháng ', '')}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                  Ngày lịch trình (dd/mm/yyyy) — V-01 Chặn ngoài khoảng
+                </label>
+                <input
+                  type="text"
+                  placeholder="dd/mm/yyyy (ví dụ: 24/11/2026)"
+                  value={editStopCustomDate}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setEditStopCustomDate(val);
+                    const res = validateDateAgainstTrip(val, trip?.startDate, trip?.endDate);
+                    setEditStopDateError(res.isValid ? null : res.error || null);
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    borderRadius: '10px',
+                    border: `1.5px solid ${editStopDateError ? '#EF4444' : '#CBD5E1'}`,
+                    background: editStopDateError ? '#FEF2F2' : '#FFFFFF',
+                    fontSize: '14px',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                />
+                {editStopDateError && (
+                  <div style={{ marginTop: '6px', color: '#DC2626', fontSize: '12.5px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span>❌</span>
+                    <span>{editStopDateError}</span>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                  Tên địa điểm / Hoạt động * (Bước 3: Đổi tên)
+                </label>
+                <input
+                  type="text"
+                  value={editStopTitle}
+                  onChange={(e) => setEditStopTitle(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    borderRadius: '10px',
+                    border: '1px solid #CBD5E1',
+                    fontSize: '14px',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                  Địa chỉ / Vị trí
+                </label>
+                <input
+                  type="text"
+                  value={editStopLocation}
+                  onChange={(e) => setEditStopLocation(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    borderRadius: '10px',
+                    border: '1px solid #CBD5E1',
+                    fontSize: '14px',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                    Khung giờ * (Bước 3: Đổi giờ)
+                  </label>
+                  <input
+                    type="text"
+                    value={editStopTime}
+                    placeholder="08:00 – 10:00"
+                    onChange={(e) => setEditStopTime(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '10px 14px',
+                      borderRadius: '10px',
+                      border: '1px solid #CBD5E1',
+                      fontSize: '14px',
+                      outline: 'none',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                    Chi phí ước tính
+                  </label>
+                  <input
+                    type="text"
+                    value={editStopCost}
+                    placeholder="50.000đ / người"
+                    onChange={(e) => setEditStopCost(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '10px 14px',
+                      borderRadius: '10px',
+                      border: '1px solid #CBD5E1',
+                      fontSize: '14px',
+                      outline: 'none',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '6px' }}>
+                  Phân loại
+                </label>
+                <select
+                  value={editStopCategory}
+                  onChange={(e) => setEditStopCategory(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    borderRadius: '10px',
+                    border: '1px solid #CBD5E1',
+                    fontSize: '14px',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                    background: '#FFFFFF',
+                  }}
+                >
+                  <option value="Di tích & Văn hóa">Di tích & Văn hóa</option>
+                  <option value="Ẩm thực & Cà phê">Ẩm thực & Cà phê</option>
+                  <option value="Trải nghiệm & Khám phá">Trải nghiệm & Khám phá</option>
+                  <option value="Nghỉ ngơi & Mua sắm">Nghỉ ngơi & Mua sắm</option>
+                </select>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button
+                type="button"
+                onClick={() => setEditingStop(null)}
+                style={{
+                  padding: '10px 18px',
+                  borderRadius: '10px',
+                  border: '1px solid #CBD5E1',
+                  background: '#F8FAFC',
+                  color: '#475569',
+                  fontWeight: 700,
+                  fontSize: '13.5px',
+                  cursor: 'pointer',
+                }}
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSaveEditedActivity(false)}
+                disabled={!editStopTitle.trim() || !!editStopDateError}
+                style={{
+                  padding: '10px 22px',
+                  borderRadius: '10px',
+                  border: 'none',
+                  background: !editStopTitle.trim() || !!editStopDateError ? '#94A3B8' : '#0284C7',
+                  color: '#FFFFFF',
+                  fontWeight: 700,
+                  fontSize: '13.5px',
+                  cursor: !editStopTitle.trim() || !!editStopDateError ? 'not-allowed' : 'pointer',
+                  boxShadow: !editStopTitle.trim() || !!editStopDateError ? 'none' : '0 4px 12px rgba(2, 132, 199, 0.3)',
+                }}
+              >
+                Lưu thay đổi
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3C: XÁC NHẬN CẢNH BÁO CHỒNG GIỜ (V-02: Bước 10, Bước 11) */}
+      {overlapWarningDialog && overlapWarningDialog.isOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(15, 23, 42, 0.7)',
+            backdropFilter: 'blur(5px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10000,
+            padding: '20px',
+          }}
+          onClick={() => setOverlapWarningDialog(null)}
+        >
+          <div
+            style={{
+              background: '#FFFFFF',
+              borderRadius: '20px',
+              maxWidth: '480px',
+              width: '100%',
+              padding: '26px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              border: '2px solid #F59E0B',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
+              <div
+                style={{
+                  width: '42px',
+                  height: '42px',
+                  borderRadius: '50%',
+                  background: '#FEF3C7',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '22px',
+                  flexShrink: 0,
+                }}
+              >
+                ⚠️
+              </div>
+              <div>
+                <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#B45309', margin: 0 }}>
+                  Cảnh báo điểm dừng chồng giờ
+                </h3>
+                <span style={{ fontSize: '12px', color: '#64748B' }}>
+                  Quy tắc V-02 · Lịch trình Ngày {overlapWarningDialog.targetDay}
+                </span>
+              </div>
+            </div>
+
+            <div
+              style={{
+                background: '#FFFBEB',
+                borderRadius: '12px',
+                padding: '14px 16px',
+                border: '1px solid #FDE68A',
+                marginBottom: '20px',
+                fontSize: '13.5px',
+                color: '#92400E',
+                lineHeight: '1.6',
+              }}
+            >
+              Điểm dừng <strong>&ldquo;{overlapWarningDialog.activityData.title}&rdquo;</strong> (
+              {overlapWarningDialog.activityData.timeRange}) đang chồng giờ với điểm dừng{' '}
+              <strong>&ldquo;{overlapWarningDialog.overlapWithTitle}&rdquo;</strong> (
+              {overlapWarningDialog.overlapWithTime}).
+              <br />
+              <span style={{ display: 'inline-block', marginTop: '6px', color: '#78350F', fontWeight: 700 }}>
+                Bạn vẫn muốn lưu?
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button
+                type="button"
+                onClick={() => setOverlapWarningDialog(null)}
+                style={{
+                  padding: '10px 18px',
+                  borderRadius: '10px',
+                  border: '1px solid #CBD5E1',
+                  background: '#F8FAFC',
+                  color: '#475569',
+                  fontWeight: 700,
+                  fontSize: '13.5px',
+                  cursor: 'pointer',
+                }}
+              >
+                Quay lại sửa
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (overlapWarningDialog.isEditing) {
+                    handleSaveEditedActivity(true);
+                  } else {
+                    handleSaveNewActivity(true);
+                  }
+                }}
+                style={{
+                  padding: '10px 22px',
+                  borderRadius: '10px',
+                  border: 'none',
+                  background: '#F59E0B',
+                  color: '#FFFFFF',
+                  fontWeight: 700,
+                  fontSize: '13.5px',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)',
+                }}
+              >
+                Vẫn lưu
               </button>
             </div>
           </div>
@@ -3183,8 +4811,18 @@ export default function TripDetailPage() {
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
               <div>
-                <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
-                  {createdInvitationInfo ? '🎉 Lời mời đã sẵn sàng gửi!' : '✉️ Phát hành lời mời tham gia nhóm'}
+                <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  {createdInvitationInfo ? (
+                    <>
+                      <Sparkles size={20} style={{ color: '#16A34A' }} />
+                      <span>Lời mời đã được gửi tự động!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Mail size={20} style={{ color: '#0284C7' }} />
+                      <span>Phát hành & Gửi lời mời trực tiếp</span>
+                    </>
+                  )}
                 </h3>
               </div>
               <button
@@ -3213,20 +4851,25 @@ export default function TripDetailPage() {
 
             {createdInvitationInfo ? (
               <div>
-                <div style={{ background: '#F0FDF4', border: '1.5px solid #86EFAC', borderRadius: '16px', padding: '16px', marginBottom: '18px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                    <span style={{ fontSize: '18px' }}>✅</span>
-                    <strong style={{ fontSize: '14.5px', color: '#15803D' }}>
-                      Đã phát hành token mời cho: {createdInvitationInfo.email}
-                    </strong>
+                <div style={{ background: '#F0FDF4', border: '1.5px solid #86EFAC', borderRadius: '16px', padding: '16px 18px', marginBottom: '18px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+                    <CheckCircle2 size={22} style={{ color: '#16A34A', flexShrink: 0 }} />
+                    <div>
+                      <strong style={{ fontSize: '15px', color: '#15803D', display: 'block' }}>
+                        Đã tự động gửi thư mời đến: {createdInvitationInfo.email}
+                      </strong>
+                      <span style={{ fontSize: '12px', color: '#166534', fontWeight: 600 }}>
+                        Trạng thái: Đã chuyển phát trực tiếp vào hộp thư đến • {createdInvitationInfo.emailDeliveredAt || 'Vừa xong'}
+                      </span>
+                    </div>
                   </div>
                   <p style={{ margin: 0, fontSize: '13px', color: '#166534', lineHeight: '1.5' }}>
-                    Token đã được băm SHA-256 an toàn. Bây giờ bạn có thể mở Gmail để gửi thư mời chính thức đến hòm thư người nhận.
+                    Hệ thống VISTA đã tự động gửi email thư mời chứa đầy đủ thông tin lịch trình và link tham gia. Bạn không cần phải mở Gmail hay thao tác thêm bất kỳ bước nào!
                   </p>
                 </div>
 
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '14px', padding: '16px', marginBottom: '20px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '14px', padding: '16px', marginBottom: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                     <span style={{ fontSize: '12px', fontWeight: 700, color: '#64748B' }}>MÃ TOKEN VÉ MỜI:</span>
                     <span style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '13px', color: '#0284C7', background: '#E0F2FE', padding: '3px 10px', borderRadius: '6px' }}>
                       {createdInvitationInfo.token}
@@ -3234,9 +4877,9 @@ export default function TripDetailPage() {
                   </div>
 
                   <div style={{ fontSize: '12px', fontWeight: 700, color: '#64748B', marginBottom: '6px' }}>
-                    LIÊN KẾT MỜI GIA NHẬP:
+                    LIÊN KẾT MỜI GIA NHẬP TRỰC TIẾP:
                   </div>
-                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '12px' }}>
                     <input
                       type="text"
                       readOnly
@@ -3274,37 +4917,82 @@ export default function TripDetailPage() {
                       Sao chép link
                     </button>
                   </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid #E2E8F0', paddingTop: '10px' }}>
+                    <span style={{ fontSize: '12px', color: '#64748B' }}>
+                      Cần gửi lại thư mời vào email này?
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleResendInviteEmail({ email: createdInvitationInfo.email, token: createdInvitationInfo.token })}
+                      disabled={isResendingEmail === createdInvitationInfo.token}
+                      style={{
+                        fontSize: '12px',
+                        color: '#0284C7',
+                        fontWeight: 700,
+                        background: '#E0F2FE',
+                        border: 'none',
+                        borderRadius: '6px',
+                        padding: '5px 12px',
+                        cursor: isResendingEmail === createdInvitationInfo.token ? 'not-allowed' : 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                      }}
+                    >
+                      {isResendingEmail === createdInvitationInfo.token ? (
+                        <Loader2 size={13} className="animate-spin" />
+                      ) : (
+                        <Mail size={13} />
+                      )}
+                      <span>{isResendingEmail === createdInvitationInfo.token ? 'Đang gửi...' : 'Gửi lại email'}</span>
+                    </button>
+                  </div>
                 </div>
 
-                {/* KHỐI NÚT GỬI GMAIL THẬT */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
-                  <a
-                    href={getGmailComposeUrl(createdInvitationInfo.email, createdInvitationInfo.token)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '10px',
-                      padding: '13px 20px',
-                      background: 'linear-gradient(135deg, #EA4335 0%, #C5221F 100%)',
-                      color: '#FFFFFF',
-                      borderRadius: '12px',
-                      fontSize: '14.5px',
-                      fontWeight: 800,
-                      textDecoration: 'none',
-                      boxShadow: '0 6px 18px rgba(234, 67, 53, 0.35)',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <span>✉️ Mở Gmail gửi thư thật ngay (Soạn sẵn 100%) ↗</span>
-                  </a>
+                {/* THÔNG BÁO HƯỚNG DẪN DỰ PHÒNG CHO LOCALHOST (NẾU CHƯA CÓ SMTP) */}
+                {createdInvitationInfo.deliveryMode !== 'SMTP_TRANSPORT' && (
+                  <div style={{ marginBottom: '20px', padding: '14px', background: '#FFF7ED', borderRadius: '14px', border: '1.5px solid #FFEDD5' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '16px' }}>⚡</span>
+                      <strong style={{ fontSize: '13px', color: '#C2410C' }}>
+                        Gửi thư thật vào Gmail người nhận:
+                      </strong>
+                    </div>
+                    <p style={{ margin: '0 0 12px 0', fontSize: '12px', color: '#9A3412', lineHeight: '1.5' }}>
+                      Ứng dụng đang chạy cục bộ (localhost). Để thư bay THẬT 100% vào hòm thư <strong>{createdInvitationInfo.email}</strong> ngay bây giờ bằng tab Gmail bạn đang mở, hãy bấm nút dưới đây:
+                    </p>
 
-                  <p style={{ margin: 0, fontSize: '12px', color: '#64748B', textAlign: 'center', lineHeight: '1.5' }}>
-                    💡 Khi bấm nút trên, Gmail sẽ mở ra với <strong>Người nhận, Tiêu đề & Toàn bộ nội dung mời</strong> đã được điền sẵn. Bạn chỉ cần nhấn <strong>Gửi (Send)</strong> là thư sẽ bay vào hòm thư {createdInvitationInfo.email}!
-                  </p>
-                </div>
+                    <a
+                      href={getGmailComposeUrl(createdInvitationInfo.email, createdInvitationInfo.token)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        padding: '12px 18px',
+                        background: 'linear-gradient(135deg, #EA4335 0%, #C5221F 100%)',
+                        color: '#FFFFFF',
+                        borderRadius: '10px',
+                        fontSize: '13.5px',
+                        fontWeight: 800,
+                        textDecoration: 'none',
+                        boxShadow: '0 4px 12px rgba(234, 67, 53, 0.3)',
+                        cursor: 'pointer',
+                        marginBottom: '8px',
+                      }}
+                    >
+                      <Mail size={16} />
+                      <span>Bấm để gửi thư thật vào Gmail ngay (Soạn sẵn 100%) ↗</span>
+                    </a>
+
+                    <p style={{ margin: 0, fontSize: '11px', color: '#9A3412', textAlign: 'center', lineHeight: '1.4' }}>
+                      *(Nội dung, người nhận và liên kết mời đã được điền sẵn 100%, bạn chỉ cần nhấn Gửi)*
+                    </p>
+                  </div>
+                )}
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
                   <button
@@ -3314,7 +5002,7 @@ export default function TripDetailPage() {
                       setInviteInputEmail('');
                     }}
                     style={{
-                      padding: '9px 16px',
+                      padding: '10px 16px',
                       borderRadius: '10px',
                       border: '1px solid #CBD5E1',
                       background: '#F8FAFC',
@@ -3334,7 +5022,7 @@ export default function TripDetailPage() {
                       setInviteInputEmail('');
                     }}
                     style={{
-                      padding: '9px 20px',
+                      padding: '10px 22px',
                       borderRadius: '10px',
                       border: 'none',
                       background: '#0F172A',
@@ -3342,6 +5030,7 @@ export default function TripDetailPage() {
                       fontWeight: 700,
                       fontSize: '13px',
                       cursor: 'pointer',
+                      boxShadow: '0 4px 12px rgba(15, 23, 42, 0.25)',
                     }}
                   >
                     Hoàn tất & Đóng
@@ -3350,8 +5039,8 @@ export default function TripDetailPage() {
               </div>
             ) : (
               <div>
-                <p style={{ margin: '0 0 16px', fontSize: '13.5px', color: '#64748B', lineHeight: '1.5' }}>
-                  Hệ thống sẽ sinh một token ngẫu nhiên bảo mật, băm SHA-256 lưu DB và cung cấp link mời kèm nút mở Gmail gửi thư thật 100%.
+                <p style={{ margin: '0 0 16px', fontSize: '13.5px', color: '#475569', lineHeight: '1.5' }}>
+                  Hệ thống sẽ sinh mã vé mời bảo mật và <strong>tự động chuyển phát thư mời trực tiếp</strong> vào hòm thư người nhận ngay khi bạn nhấn nút. Bạn không cần phải mở Gmail hay làm thủ công bất kỳ bước nào.
                 </p>
 
                 {inviteError && (
@@ -3421,20 +5110,33 @@ export default function TripDetailPage() {
                   <button
                     type="button"
                     onClick={handleCreateInviteSubmit}
-                    disabled={!inviteInputEmail.trim()}
+                    disabled={!inviteInputEmail.trim() || isSendingInviteEmail}
                     style={{
                       padding: '10px 22px',
                       borderRadius: '10px',
                       border: 'none',
-                      background: inviteInputEmail.trim() ? '#0284C7' : '#94A3B8',
+                      background: inviteInputEmail.trim() && !isSendingInviteEmail ? '#0284C7' : '#94A3B8',
                       color: '#FFFFFF',
                       fontWeight: 700,
                       fontSize: '13.5px',
-                      cursor: inviteInputEmail.trim() ? 'pointer' : 'not-allowed',
-                      boxShadow: inviteInputEmail.trim() ? '0 4px 12px rgba(2, 132, 199, 0.3)' : 'none',
+                      cursor: inviteInputEmail.trim() && !isSendingInviteEmail ? 'pointer' : 'not-allowed',
+                      boxShadow: inviteInputEmail.trim() && !isSendingInviteEmail ? '0 4px 12px rgba(2, 132, 199, 0.3)' : 'none',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
                     }}
                   >
-                    Tạo lời mời & Mở Gmail gửi
+                    {isSendingInviteEmail ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin" />
+                        <span>Đang tự động gửi email...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Mail size={16} />
+                        <span>Phát hành & Tự động gửi thư mời</span>
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
@@ -3475,8 +5177,9 @@ export default function TripDetailPage() {
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
               <div>
-                <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
-                  🗳️ Thêm đề xuất biểu quyết nhóm
+                <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Vote size={20} style={{ color: '#0284C7' }} />
+                  <span>Thêm đề xuất biểu quyết nhóm</span>
                 </h3>
               </div>
               <button

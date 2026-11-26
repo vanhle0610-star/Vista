@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/ensure-ai.mjs",
     "dev": "next dev",
     "build": "next build",
     "test": "node scripts/test-map-gps.mjs && node scripts/test-route-planner.mjs && node scripts/test-routing-server.mjs && node --test scripts/test-api-auth.mjs",
@@ -14,7 +15,8 @@
     "@types/three": "^0.186.0",
     "lucide-react": "^1.61.0",
     "maplibre-gl": "^6.15.0",
-    "next": "16.4.2",
+    "next": "^16.4.6",
+    "nodemailer": "^10.6.0",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },
@@ -23,7 +25,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.4.2",
+    "eslint-config-next": "^16.4.6",
     "typescript": "^5"
   }
 }

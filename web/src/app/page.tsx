@@ -46,6 +46,9 @@ import {
 import { VIETNAM_REAL_MAP_PATH, VIETNAM_MAP_PINS, MapPin } from './vietnamMapData';
 import { getCloudImageUrl } from '@/utils/cloudImage';
 import { SkeletonWeatherBar } from '@/components/common/Skeleton';
+import { Pillars3DCarousel } from '@/components/home/Pillars3DCarousel';
+import { InteractiveItineraryDeck } from '@/components/home/InteractiveItineraryDeck';
+import { AtmosphericHeroCanvas } from '@/components/home/AtmosphericHeroCanvas';
 import styles from './home.module.css';
 
 // ─── DATA DEFINITIONS ────────────────────────────────────────────────────────
@@ -303,6 +306,18 @@ export default function HomePage() {
   const [destFilterRegion, setDestFilterRegion] = useState<string>('all');
   const searchConsoleRef = React.useRef<HTMLDivElement>(null);
 
+  // 3D Mouse Parallax on Hero Stage
+  const [heroMouse, setHeroMouse] = useState({ x: 0, y: 0 });
+  const handleHeroMouseMove = (e: React.MouseEvent<HTMLElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+    const y = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+    setHeroMouse({ x, y });
+  };
+  const handleHeroMouseLeave = () => {
+    setHeroMouse({ x: 0, y: 0 });
+  };
+
   // Live destinations from backend
   const [liveDestinations, setLiveDestinations] = useState<DestinationShowcase[]>([]);
 
@@ -390,11 +405,12 @@ export default function HomePage() {
 
   const WAYPOINTS = useMemo(() => [
     { id: 'hero', label: '01 · Khởi hành & Tìm kiếm' },
-    { id: 'sample-itineraries', label: '02 · Lịch trình AI mẫu' },
-    { id: 'regions', label: '03 · 4 Vùng di sản' },
-    { id: 'weather', label: '04 · Khí hậu thực địa' },
-    { id: 'interactive-map', label: '05 · Tọa độ GPS & Biển đảo' },
-    { id: 'landmarks', label: '06 · Danh lam thắng cảnh' },
+    { id: 'core-pillars', label: '02 · 4 Trụ cột nghiệp vụ' },
+    { id: 'sample-itineraries', label: '03 · Lịch trình AI mẫu' },
+    { id: 'regions', label: '04 · 4 Vùng di sản' },
+    { id: 'weather', label: '05 · Khí hậu thực địa' },
+    { id: 'interactive-map', label: '06 · Tọa độ GPS & Biển đảo' },
+    { id: 'landmarks', label: '07 · Danh lam thắng cảnh' },
   ], []);
 
   React.useEffect(() => {
@@ -408,7 +424,7 @@ export default function HomePage() {
           const progress = totalHeight > 0 ? (currentScroll / totalHeight) * 100 : 0;
           setScrollProgress(Math.min(100, Math.max(0, progress)));
 
-          const waypointIds = ['hero', 'sample-itineraries', 'regions', 'weather', 'interactive-map', 'landmarks'];
+          const waypointIds = ['hero', 'core-pillars', 'sample-itineraries', 'regions', 'weather', 'interactive-map', 'landmarks'];
           for (let i = waypointIds.length - 1; i >= 0; i--) {
             const el = document.getElementById(waypointIds[i]);
             if (el) {
@@ -562,9 +578,15 @@ export default function HomePage() {
   const renderWeatherIcon = (code: number, isDay = true) => {
     if (code === 0) return <SunIcon size={26} color="#F59E0B" />;
     if ((code >= 51 && code <= 67) || (code >= 80 && code <= 99)) {
-      return <CloudRainIcon size={26} color="#0284C7" />;
+      return <CloudRainIcon size={26} color="#38BDF8" />;
     }
     return <CloudSunIcon size={26} color="#0088CC" />;
+  };
+
+  const getWeatherMood = (code: number, isDay = true): 'rain' | 'sun' | 'cloud' => {
+    if (code >= 50 && code <= 99) return 'rain';
+    if (code === 0 || (code === 1 && isDay)) return 'sun';
+    return 'cloud';
   };
 
   const filteredWeatherCities = useMemo(() => {
@@ -623,394 +645,14 @@ export default function HomePage() {
         })}
       </aside>
 
-      {/* ─── 2. HERO SECTION CINEMATIC ───────────────────────────────────── */}
-      <section className={styles.heroWrapper} id="hero" aria-label="Giới thiệu VISTA">
-        <div className={styles.heroContent}>
-          <div className={styles.heroBadge}>
-            <CompassIcon size={14} color="#7DD3FC" />
-            <span>Nền tảng du lịch thông minh Việt Nam</span>
-          </div>
+      {/* ─── 2. HERO SECTION — ATMOSPHERIC DYNAMIC WEATHER CANVAS (IDEA 1) ── */}
+      <AtmosphericHeroCanvas />
 
-          <h1 className={styles.heroTitle}>
-            Việt Nam qua lăng kính mới,
-            <span className={styles.heroHighlight}>kết nối trọn vẹn từng hành trình.</span>
-          </h1>
+      {/* ─── 3. BỐN TRỤ CỘT NGHIỆP VỤ VISTA (3D CYLINDER ORBIT CAROUSEL) ── */}
+      <Pillars3DCarousel />
 
-          <p className={styles.heroSubtitle}>
-            Khám phá 350+ điểm đến di sản được xác thực, thiết lập lịch trình cá nhân hóa bằng AI trong 30 giây, và quản lý ngân sách nhóm minh bạch với VietQR.
-          </p>
-
-          {/* Integrated Travel Search Console (Refined & Interactive) */}
-          <div className={styles.searchConsoleWrapper} ref={searchConsoleRef}>
-            <div className={styles.searchConsoleCard}>
-              {/* Field 1: Destination (Interactive Popover - No Typing Required) */}
-              <div
-                className={`${styles.searchField} ${styles.searchFieldPrimary} ${activePopover === 'destination' ? styles.searchFieldOpen : ''}`}
-                onClick={() => setActivePopover(activePopover === 'destination' ? null : 'destination')}
-              >
-                <div className={styles.searchFieldIcon}>
-                  <MapPinIcon size={18} color="#0088CC" />
-                </div>
-                <div className={styles.searchFieldContent}>
-                  <span className={styles.searchFieldLabel}>Điểm đến</span>
-                  <div className={styles.searchFieldValue}>
-                    <span>{currentDest.nameVi}</span>
-                  </div>
-                  <span className={styles.searchFieldSub}>
-                    {currentDest.region} • {currentDest.tagline}
-                  </span>
-                </div>
-                <div className={styles.searchFieldChevron}>
-                  <ChevronDownIcon size={16} />
-                </div>
-
-                {/* Destination Dropdown Popover */}
-                {activePopover === 'destination' && (
-                  <div
-                    className={`${styles.popoverMenu} ${styles.destinationPopover}`}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <div className={styles.popoverHeader}>
-                      <span className={styles.popoverTitle}>
-                        <CompassIcon size={15} color="#0088CC" />
-                        Chọn điểm đến du lịch
-                      </span>
-                      <span style={{ fontSize: '11px', color: '#64748B' }}>1 chạm chọn ngay</span>
-                    </div>
-
-                    {/* Region Filter Tabs */}
-                    <div className={styles.popoverRegionFilter}>
-                      <button
-                        type="button"
-                        className={`${styles.regionFilterPill} ${destFilterRegion === 'all' ? styles.regionFilterPillActive : ''}`}
-                        onClick={() => setDestFilterRegion('all')}
-                      >
-                        Tất cả
-                      </button>
-                      <button
-                        type="button"
-                        className={`${styles.regionFilterPill} ${destFilterRegion === 'central' ? styles.regionFilterPillActive : ''}`}
-                        onClick={() => setDestFilterRegion('central')}
-                      >
-                        Miền Trung
-                      </button>
-                      <button
-                        type="button"
-                        className={`${styles.regionFilterPill} ${destFilterRegion === 'north' ? styles.regionFilterPillActive : ''}`}
-                        onClick={() => setDestFilterRegion('north')}
-                      >
-                        Miền Bắc
-                      </button>
-                      <button
-                        type="button"
-                        className={`${styles.regionFilterPill} ${destFilterRegion === 'highlands' ? styles.regionFilterPillActive : ''}`}
-                        onClick={() => setDestFilterRegion('highlands')}
-                      >
-                        Tây Nguyên
-                      </button>
-                      <button
-                        type="button"
-                        className={`${styles.regionFilterPill} ${destFilterRegion === 'south' ? styles.regionFilterPillActive : ''}`}
-                        onClick={() => setDestFilterRegion('south')}
-                      >
-                        Miền Nam
-                      </button>
-                    </div>
-
-                    {/* Destination Cards Grid */}
-                    <div className={styles.destinationGrid}>
-                      {filteredDestinations.map((dest) => {
-                        const isSelected = destinationInput.toLowerCase().includes(dest.nameVi.toLowerCase()) || dest.nameVi.toLowerCase().includes(destinationInput.toLowerCase());
-                        return (
-                          <div
-                            key={dest.id}
-                            className={`${styles.destinationItemCard} ${isSelected ? styles.destinationItemCardActive : ''}`}
-                            onClick={() => {
-                              setDestinationInput(dest.nameVi);
-                              setActivePopover(null);
-                            }}
-                          >
-                            <div className={styles.destItemInfo}>
-                              <div className={styles.destItemNameRow}>
-                                <span className={styles.destItemName}>{dest.nameVi}</span>
-                                {isSelected ? (
-                                  <CheckIcon size={13} color="#0088CC" />
-                                ) : (
-                                  <span className={styles.destItemBadge}>{dest.region}</span>
-                                )}
-                              </div>
-                              <div className={styles.destItemTagline}>{dest.tagline}</div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className={styles.searchDivider} />
-
-              {/* Field 2: Duration (Custom Dropdown) */}
-              <div
-                className={`${styles.searchField} ${activePopover === 'duration' ? styles.searchFieldOpen : ''}`}
-                onClick={() => setActivePopover(activePopover === 'duration' ? null : 'duration')}
-              >
-                <div className={styles.searchFieldIcon}>
-                  <CalendarIcon size={18} color="#0088CC" />
-                </div>
-                <div className={styles.searchFieldContent}>
-                  <span className={styles.searchFieldLabel}>Thời lượng</span>
-                  <div className={styles.searchFieldValue}>
-                    <span>{currentDuration.label}</span>
-                  </div>
-                  <span className={styles.searchFieldSub}>{currentDuration.desc}</span>
-                </div>
-                <div className={styles.searchFieldChevron}>
-                  <ChevronDownIcon size={16} />
-                </div>
-
-                {/* Duration Popover */}
-                {activePopover === 'duration' && (
-                  <div
-                    className={`${styles.popoverMenu} ${styles.listPopover}`}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <div className={styles.popoverHeader}>
-                      <span className={styles.popoverTitle}>Thời lượng chuyến đi</span>
-                    </div>
-                    <div className={styles.simpleOptionList}>
-                      {DURATION_OPTIONS.map((opt) => {
-                        const isSelected = durationInput === opt.value;
-                        return (
-                          <div
-                            key={opt.value}
-                            className={`${styles.simpleOptionItem} ${isSelected ? styles.simpleOptionItemActive : ''}`}
-                            onClick={() => {
-                              setDurationInput(opt.value);
-                              setActivePopover(null);
-                            }}
-                          >
-                            <div className={styles.optionTextCol}>
-                              <div className={styles.optionLabelRow}>
-                                <span className={styles.optionLabel}>{opt.label}</span>
-                                {opt.recommended && <span className={styles.optionBadge}>Gợi ý</span>}
-                              </div>
-                              <div className={styles.optionDesc}>{opt.desc}</div>
-                            </div>
-                            {isSelected && <CheckIcon size={15} color="#0088CC" />}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className={styles.searchDivider} />
-
-              {/* Field 3: Budget Tier (Custom Dropdown) */}
-              <div
-                className={`${styles.searchField} ${activePopover === 'budget' ? styles.searchFieldOpen : ''}`}
-                onClick={() => setActivePopover(activePopover === 'budget' ? null : 'budget')}
-              >
-                <div className={styles.searchFieldIcon}>
-                  <WalletIcon size={18} color="#0088CC" />
-                </div>
-                <div className={styles.searchFieldContent}>
-                  <span className={styles.searchFieldLabel}>Mức chi tiêu</span>
-                  <div className={styles.searchFieldValue}>
-                    <span>{currentBudget.label}</span>
-                  </div>
-                  <span className={styles.searchFieldSub}>{currentBudget.desc}</span>
-                </div>
-                <div className={styles.searchFieldChevron}>
-                  <ChevronDownIcon size={16} />
-                </div>
-
-                {/* Budget Popover */}
-                {activePopover === 'budget' && (
-                  <div
-                    className={`${styles.popoverMenu} ${styles.listPopover}`}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <div className={styles.popoverHeader}>
-                      <span className={styles.popoverTitle}>Ngân sách cá nhân</span>
-                    </div>
-                    <div className={styles.simpleOptionList}>
-                      {BUDGET_OPTIONS.map((opt) => {
-                        const isSelected = budgetTierInput === opt.value;
-                        return (
-                          <div
-                            key={opt.value}
-                            className={`${styles.simpleOptionItem} ${isSelected ? styles.simpleOptionItemActive : ''}`}
-                            onClick={() => {
-                              setBudgetTierInput(opt.value);
-                              setActivePopover(null);
-                            }}
-                          >
-                            <div className={styles.optionTextCol}>
-                              <div className={styles.optionLabelRow}>
-                                <span className={styles.optionLabel}>{opt.label}</span>
-                                {opt.recommended && <span className={styles.optionBadge}>Khuyên dùng</span>}
-                              </div>
-                              <div className={styles.optionDesc}>{opt.desc}</div>
-                            </div>
-                            {isSelected && <CheckIcon size={15} color="#0088CC" />}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Submit Button */}
-              <button
-                type="button"
-                className={styles.btnSearchSubmit}
-                onClick={handleSearchSubmit}
-              >
-                <SparklesIcon size={17} color="#FFFFFF" />
-                <span>Lên lịch trình AI</span>
-              </button>
-            </div>
-
-            {/* Quick 1-Touch Suggestions Pills */}
-            <div className={styles.quickSuggestionsRow}>
-              <span className={styles.quickSugLabel}>
-                Gợi ý thịnh hành:
-              </span>
-              {FEATURED_DESTINATIONS.filter((d) => d.popular).slice(0, 6).map((dest) => {
-                const isActive = destinationInput.toLowerCase().includes(dest.nameVi.toLowerCase()) || dest.nameVi.toLowerCase().includes(destinationInput.toLowerCase());
-                return (
-                  <button
-                    key={dest.id}
-                    type="button"
-                    className={`${styles.quickSugChip} ${isActive ? styles.quickSugChipActive : ''}`}
-                    onClick={() => {
-                      setDestinationInput(dest.nameVi);
-                      setActivePopover(null);
-                    }}
-                  >
-                    {dest.nameVi}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── 3. TRUST & SYSTEM CAPABILITIES BAR ──────────────────────────── */}
-      <section className={styles.trustStripWrapper} aria-label="Năng lực hệ thống VISTA">
-        <div className={styles.container}>
-          <div className={`${styles.trustGrid} ${styles.revealOnScroll}`}>
-            <div className={styles.trustItem}>
-              <div className={styles.trustIconBox}>
-                <ShieldCheckIcon size={20} color="#0088CC" />
-              </div>
-              <div className={styles.trustText}>
-                <span className={styles.trustTitle}>350+ Điểm đến di sản</span>
-                <span className={styles.trustDesc}>Khảo sát thực tế & tọa độ GPS chuẩn</span>
-              </div>
-            </div>
-
-            <div className={styles.trustItem}>
-              <div className={styles.trustIconBox}>
-                <SparklesIcon size={20} color="#D97706" />
-              </div>
-              <div className={styles.trustText}>
-                <span className={styles.trustTitle}>AI Planner tức thì 30s</span>
-                <span className={styles.trustDesc}>Cá nhân hóa theo nhịp độ & sở thích</span>
-              </div>
-            </div>
-
-            <div className={styles.trustItem}>
-              <div className={styles.trustIconBox}>
-                <WalletIcon size={20} color="#0F766E" />
-              </div>
-              <div className={styles.trustText}>
-                <span className={styles.trustTitle}>Thủ quỹ & VietQR nhóm</span>
-                <span className={styles.trustDesc}>Quyết toán minh bạch, quét mã 1 chạm</span>
-              </div>
-            </div>
-
-            <div className={styles.trustItem}>
-              <div className={styles.trustIconBox}>
-                <UsersIcon size={20} color="#475569" />
-              </div>
-              <div className={styles.trustText}>
-                <span className={styles.trustTitle}>Cộng đồng xê dịch văn minh</span>
-                <span className={styles.trustDesc}>Đồng hành an toàn & chia sẻ chân thực</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── 3.5. CURATED AI SAMPLE ITINERARIES (IDEA 1) ──────────────────── */}
-      <section className={`${styles.itinerariesSection} ${styles.revealOnScroll}`} id="sample-itineraries">
-        <div className={styles.container}>
-          <div className={styles.sectionHeader}>
-            <div className={styles.sectionEyebrow}>
-              <SparklesIcon size={14} color="#0088CC" />
-              <span>Lịch trình mẫu tiêu biểu</span>
-            </div>
-            <h2 className={styles.sectionMainTitle}>Hành trình mẫu tối ưu bởi AI</h2>
-            <p className={styles.sectionDesc}>
-              Tuyển tập lộ trình kinh điển được tính toán tối ưu thời gian di chuyển, nhịp độ thư thái và dự toán chi phí minh bạch.
-            </p>
-          </div>
-
-          <div className={styles.itinerariesGrid}>
-            {SAMPLE_ITINERARIES.map((it, idx) => (
-              <div
-                key={it.id}
-                className={`${styles.itineraryCard} ${styles.revealOnScroll} ${
-                  idx === 0 ? styles.delay100 : idx === 1 ? styles.delay200 : styles.delay300
-                }`}
-              >
-                <div className={styles.itineraryMedia}>
-                  <img src={it.image} alt={it.title} />
-                  <span className={styles.itineraryBadgeTop}>{it.badge}</span>
-                  <span className={styles.itineraryCostBadge}>{it.cost}</span>
-                </div>
-
-                <div className={styles.itineraryBody}>
-                  <h3 className={styles.itineraryTitle}>{it.title}</h3>
-
-                  <div className={styles.itineraryHighlightsRow}>
-                    {it.highlights.map((h) => (
-                      <span key={h} className={styles.itineraryHighlightTag}>
-                        {h}
-                      </span>
-                    ))}
-                  </div>
-
-                  <div className={styles.itineraryTimeline}>
-                    {it.days.map((d, dIdx) => (
-                      <div key={dIdx} className={styles.timelineItem}>
-                        <div className={styles.timelineDot} />
-                        <div className={styles.timelineDayTitle}>{d.dayNum}</div>
-                        <div className={styles.timelineDayDesc}>{d.desc}</div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <Link
-                    href={`/planner?dest=${encodeURIComponent(it.dest)}&duration=${it.duration}`}
-                    className={styles.btnItineraryCustomize}
-                  >
-                    <span>Tùy biến lịch trình này</span>
-                    <ArrowRightIcon size={14} />
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* ─── 3.5. BỘ GIẢ LẬP CUNG ĐƯỜNG TƯƠNG TÁC (NOVEL INTERACTIVE FLIGHT DECK) ─── */}
+      <InteractiveItineraryDeck />
 
       {/* ─── 4. CULTURAL REGIONS (EDITORIAL PORTFOLIO) ────────────────────── */}
       <section className={`${styles.sectionBlock} ${styles.revealOnScroll}`} id="regions">
@@ -1193,65 +835,95 @@ export default function HomePage() {
                 onMouseUp={handleMouseUp}
                 onMouseMove={handleMouseMove}
               >
-                {filteredWeatherCities.map(({ key, meta, weather }) => (
-                  <div key={key} className={styles.weatherCard}>
-                    <div>
-                      {/* Card Top */}
-                      <div className={styles.weatherCardTop}>
-                        <div>
-                          <h3 className={styles.weatherCityName}>{meta.nameVi}</h3>
-                          <span className={styles.weatherRegionBadge}>{meta.region}</span>
+                {filteredWeatherCities.map(({ key, meta, weather }) => {
+                  const mood = getWeatherMood(weather?.weatherCode ?? 1, weather?.isDay ?? true);
+                  const moodClass = 
+                    mood === 'rain' ? styles.weatherCardRain :
+                    mood === 'sun' ? styles.weatherCardSun :
+                    styles.weatherCardCloud;
+
+                  return (
+                    <div key={key} className={`${styles.weatherCard} ${moodClass}`}>
+                      {/* Dynamic Weather Atmospheric FX */}
+                      {mood === 'rain' && (
+                        <div className={styles.weatherRainFx} aria-hidden="true">
+                          <span className={styles.rainDrop} style={{ left: '12%', animationDelay: '0.1s', animationDuration: '0.85s' }} />
+                          <span className={styles.rainDrop} style={{ left: '30%', animationDelay: '0.4s', animationDuration: '1.05s' }} />
+                          <span className={styles.rainDrop} style={{ left: '48%', animationDelay: '0.2s', animationDuration: '0.9s' }} />
+                          <span className={styles.rainDrop} style={{ left: '68%', animationDelay: '0.5s', animationDuration: '1.15s' }} />
+                          <span className={styles.rainDrop} style={{ left: '86%', animationDelay: '0.3s', animationDuration: '0.95s' }} />
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11px', color: '#10B981', fontWeight: 700 }}>
-                          <span className={styles.livePulseDot} />
-                          <span>LIVE</span>
+                      )}
+                      {mood === 'sun' && (
+                        <div className={styles.weatherSunFx} aria-hidden="true">
+                          <div className={styles.sunRaysGlow} />
+                        </div>
+                      )}
+                      {mood === 'cloud' && (
+                        <div className={styles.weatherCloudFx} aria-hidden="true">
+                          <div className={styles.cloudPuff1} />
+                          <div className={styles.cloudPuff2} />
+                        </div>
+                      )}
+
+                      <div style={{ position: 'relative', zIndex: 2 }}>
+                        {/* Card Top */}
+                        <div className={styles.weatherCardTop}>
+                          <div>
+                            <h3 className={styles.weatherCityName}>{meta.nameVi}</h3>
+                            <span className={styles.weatherRegionBadge}>{meta.region}</span>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11px', color: mood === 'rain' ? '#38BDF8' : mood === 'sun' ? '#D97706' : '#0284C7', fontWeight: 700 }}>
+                            <span className={styles.livePulseDot} />
+                            <span>LIVE</span>
+                          </div>
+                        </div>
+
+                        {/* Temp & Icon */}
+                        <div className={styles.weatherTempRow}>
+                          <div className={styles.weatherTempGroup}>
+                            <span className={styles.weatherDegrees}>{weather?.tempFormatted || `${weather?.temp || 26}°C`}</span>
+                            <span className={styles.weatherApparent}>Cảm nhận {weather?.apparentTemp || 28}°C</span>
+                          </div>
+                          <div className={styles.weatherIconWrapper}>
+                            {renderWeatherIcon(weather?.weatherCode ?? 1, weather?.isDay ?? true)}
+                          </div>
+                        </div>
+
+                        {/* Status */}
+                        <div className={styles.weatherStatusText}>
+                          {weather?.statusVi || 'Nắng ấm chan hòa, trời đẹp'}
+                        </div>
+
+                        {/* Metrics */}
+                        <div className={styles.weatherMetricsList}>
+                          <div className={styles.weatherMetric}>
+                            <DropletsIcon size={14} color={mood === 'rain' ? '#38BDF8' : mood === 'sun' ? '#D97706' : '#0284C7'} />
+                            <span>Độ ẩm: {weather?.humidity || 70}%</span>
+                          </div>
+                          <div className={styles.weatherMetric}>
+                            <WindIcon size={14} color={mood === 'rain' ? '#38BDF8' : mood === 'sun' ? '#D97706' : '#0284C7'} />
+                            <span>Gió: {weather?.windSpeed || 10} km/h</span>
+                          </div>
+                        </div>
+
+                        {/* Advisory */}
+                        <div className={styles.weatherTipBox}>
+                          {weather?.adviceVi || 'Thời tiết tuyệt vời cho các hoạt động tham quan ngoài trời.'}
                         </div>
                       </div>
 
-                      {/* Temp & Icon */}
-                      <div className={styles.weatherTempRow}>
-                        <div className={styles.weatherTempGroup}>
-                          <span className={styles.weatherDegrees}>{weather?.tempFormatted || `${weather?.temp || 26}°C`}</span>
-                          <span className={styles.weatherApparent}>Cảm nhận {weather?.apparentTemp || 28}°C</span>
-                        </div>
-                        <div className={styles.weatherIconWrapper}>
-                          {renderWeatherIcon(weather?.weatherCode ?? 1, weather?.isDay ?? true)}
-                        </div>
-                      </div>
-
-                      {/* Status */}
-                      <div className={styles.weatherStatusText}>
-                        {weather?.statusVi || 'Nắng ấm chan hòa, trời đẹp'}
-                      </div>
-
-                      {/* Metrics */}
-                      <div className={styles.weatherMetricsList}>
-                        <div className={styles.weatherMetric}>
-                          <DropletsIcon size={14} color="#0284C7" />
-                          <span>Độ ẩm: {weather?.humidity || 70}%</span>
-                        </div>
-                        <div className={styles.weatherMetric}>
-                          <WindIcon size={14} color="#0284C7" />
-                          <span>Gió: {weather?.windSpeed || 10} km/h</span>
-                        </div>
-                      </div>
-
-                      {/* Advisory */}
-                      <div className={styles.weatherTipBox}>
-                        {weather?.adviceVi || 'Thời tiết tuyệt vời cho các hoạt động tham quan ngoài trời.'}
-                      </div>
+                      {/* Quick Action */}
+                      <Link
+                        href={`/planner?dest=${encodeURIComponent(meta.nameVi)}`}
+                        className={styles.weatherCardAction}
+                      >
+                        <span>Lên lịch đi {meta.nameVi}</span>
+                        <ArrowRightIcon size={13} />
+                      </Link>
                     </div>
-
-                    {/* Quick Action */}
-                    <Link
-                      href={`/planner?dest=${encodeURIComponent(meta.nameVi)}`}
-                      className={styles.weatherCardAction}
-                    >
-                      <span>Lên lịch đi {meta.nameVi}</span>
-                      <ArrowRightIcon size={13} />
-                    </Link>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}

@@ -35,6 +35,8 @@ build/
 **/build/
 .gradle/
 **/.gradle/
+.gradle_cache/
+**/.gradle_cache/
 backend/.gradle-local/
 out/
 **/out/
@@ -67,6 +69,7 @@ outputs/
 work/
 test_screenshot.bat
 stitch_vista_travel_expense_app_ui/
+stitch_vista_planner_redesign/
 
 # 7. Python Artifacts
 __pycache__/

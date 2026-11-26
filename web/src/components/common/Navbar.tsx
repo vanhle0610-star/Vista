@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { apiRequest } from '@/lib/api';
@@ -34,13 +34,15 @@ export interface IncomingInvitation {
   id: string;
   tripId: string;
   tripTitle?: string;
+  destinationSummary?: string;
   destination?: string;
   startDate?: string;
   endDate?: string;
   inviterEmail?: string;
   inviterName?: string;
-  inviteeEmail: string;
-  token: string;
+  inviterAvatar?: string;
+  inviteeEmail?: string;
+  token?: string;
   status: 'PENDING' | 'ACCEPTED' | 'REVOKED' | 'EXPIRED';
   expiresAt?: string;
   createdAt?: string;
@@ -61,28 +63,6 @@ export function Navbar({
   const [incomingInvitations, setIncomingInvitations] = useState<IncomingInvitation[]>([]);
   const [activeToast, setActiveToast] = useState<IncomingInvitation | null>(null);
   const [isProcessingAction, setIsProcessingAction] = useState<string | null>(null);
-
-  const getTreasuryDestination = useCallback(() => {
-    try {
-      if (typeof window !== 'undefined') {
-        // 1. If currently inside a trip route (/trips/[tripId] or /trips/[tripId]/...), use current trip
-        if (pathname) {
-          const match = pathname.match(/\/trips\/([^/]+)/);
-          if (match && match[1] && /^[0-9a-f-]{36}$/i.test(match[1])) {
-            return `/trips/${match[1]}/treasury`;
-          }
-        }
-
-        // 2. Check recently active trip ID saved in localStorage
-        const lastTripId = localStorage.getItem('vista_last_trip_id');
-        if (lastTripId && /^[0-9a-f-]{36}$/i.test(lastTripId)) {
-          return `/trips/${lastTripId}/treasury`;
-        }
-      }
-    } catch {}
-
-    return '/trips';
-  }, [pathname]);
   const [treasuryHref, setTreasuryHref] = useState<string>('/trips');
   const [optimisticModule, setOptimisticModule] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -104,74 +84,30 @@ export function Navbar({
 
   const handleNavClick = (moduleId: string, href: string) => {
     setOptimisticModule(moduleId);
-    let targetHref = href;
-
-    if (moduleId === 'treasury') {
-      targetHref = getTreasuryDestination();
-      setTreasuryHref(targetHref);
-    }
-
     if (typeof window !== 'undefined') {
-      (window as any).__VISTA_TARGET_ROUTE__ = targetHref;
+      (window as any).__VISTA_TARGET_ROUTE__ = href;
       try {
-        sessionStorage.setItem('vista_target_route', targetHref);
+        sessionStorage.setItem('vista_target_route', href);
       } catch {}
-      window.dispatchEvent(new CustomEvent('vista-nav-change', { detail: targetHref }));
-    }
-
-    if (moduleId === 'treasury' && targetHref !== href) {
-      router.push(targetHref);
+      window.dispatchEvent(new CustomEvent('vista-nav-change', { detail: href }));
     }
   };
 
   useEffect(() => {
-    const resolveTreasuryLink = async () => {
-      const target = getTreasuryDestination();
-      setTreasuryHref(target);
-
+    const resolveTreasuryLink = () => {
       try {
-        if (typeof window !== 'undefined') {
-          const match = pathname?.match(/\/trips\/([^/]+)/);
-          if (match && match[1] && /^[0-9a-f-]{36}$/i.test(match[1])) {
-            localStorage.setItem('vista_last_trip_id', match[1]);
-          }
-
-          const token = localStorage.getItem('vista_token');
-          const savedTripId = localStorage.getItem('vista_last_trip_id');
-          const hasRealSavedTrip = !!savedTripId && /^[0-9a-f-]{36}$/i.test(savedTripId);
-          if (token && !hasRealSavedTrip) {
-            const serverTrips = await apiRequest<Array<{ id: string }>>('/trips');
-            if (serverTrips.length > 0 && serverTrips[0]?.id) {
-              const apiHref = `/trips/${serverTrips[0].id}/treasury`;
-              setTreasuryHref(apiHref);
-              localStorage.setItem('vista_last_trip_id', serverTrips[0].id);
-            }
-          }
+        const lastTripId = localStorage.getItem('vista_last_trip_id');
+        if (lastTripId && /^[0-9a-f-]{36}$/i.test(lastTripId)) {
+          setTreasuryHref(`/trips/${lastTripId}/treasury`);
+          return;
         }
       } catch {}
+      setTreasuryHref('/trips');
     };
 
     resolveTreasuryLink();
-
-    const handleTripSelected = (e: any) => {
-      const tripId = e?.detail || (typeof window !== 'undefined' ? localStorage.getItem('vista_last_trip_id') : null);
-      if (tripId && /^[0-9a-f-]{36}$/i.test(tripId)) {
-        setTreasuryHref(`/trips/${tripId}/treasury`);
-      }
-    };
-
     window.addEventListener('storage', resolveTreasuryLink);
-    window.addEventListener('vista-trip-selected', handleTripSelected);
-    window.addEventListener('vista_trip_changed', handleTripSelected);
 
-    return () => {
-      window.removeEventListener('storage', resolveTreasuryLink);
-      window.removeEventListener('vista-trip-selected', handleTripSelected);
-      window.removeEventListener('vista_trip_changed', handleTripSelected);
-    };
-  }, [pathname, getTreasuryDestination]);
-
-  useEffect(() => {
     const loadUser = () => {
       try {
         const token = localStorage.getItem('vista_token');
@@ -212,47 +148,102 @@ export function Navbar({
     };
   }, []);
 
-  // Poll and listen for incoming invitations for currentUser in real-time
+  // Poll and listen for incoming invitations for currentUser directly from Spring Boot Database
   useEffect(() => {
     if (!currentUser?.email) {
       setIncomingInvitations([]);
       return;
     }
-    const email = currentUser.email.trim().toLowerCase();
 
     const fetchInvites = async () => {
       try {
-        const res = await fetch(`/api/invitations?email=${encodeURIComponent(email)}`);
-        if (!res.ok) return;
-        const list = await res.json();
-        if (Array.isArray(list)) {
-          const pending = list.filter(
-            (inv: IncomingInvitation) =>
-              inv.inviteeEmail &&
-              inv.inviteeEmail.toLowerCase() === email &&
-              inv.status === 'PENDING'
-          );
-
-          // If a new invitation arrives that wasn't previously known, trigger toast
-          pending.forEach((p) => {
-            if (!knownTokensRef.current.has(p.token)) {
-              knownTokensRef.current.add(p.token);
-              setActiveToast(p);
-              setTimeout(() => {
-                setActiveToast((curr) => (curr?.token === p.token ? null : curr));
-              }, 7000);
-            }
-          });
-
-          setIncomingInvitations(pending);
+        const token = localStorage.getItem('vista_token');
+        if (!token && !currentUser?.email) {
+          setIncomingInvitations([]);
+          return;
         }
+
+        const combinedList: IncomingInvitation[] = [];
+        const seenKeys = new Set<string>();
+
+        // 1. Lấy từ Spring Boot backend nếu có token
+        if (token) {
+          try {
+            const list = await apiRequest<IncomingInvitation[]>('/invitations/my-pending');
+            if (Array.isArray(list)) {
+              list.forEach((inv) => {
+                const key = inv.id || (inv as any).token;
+                if (key && !seenKeys.has(key)) {
+                  seenKeys.add(key);
+                  combinedList.push(inv);
+                }
+              });
+            }
+          } catch {
+            // im lặng fallback
+          }
+        }
+
+        // 2. Lấy từ Next.js Store (.invitations_store.json) theo email hiện tại
+        if (currentUser?.email) {
+          try {
+            const cleanUserEmail = currentUser.email.trim().toLowerCase();
+            const localRes = await fetch(`/api/invitations?email=${encodeURIComponent(cleanUserEmail)}`, {
+              cache: 'no-store',
+            });
+            if (localRes.ok) {
+              const localList = await localRes.json();
+              if (Array.isArray(localList)) {
+                localList.forEach((inv: any) => {
+                  const key = inv.id || inv.token;
+                  if (inv.status === 'PENDING' && key && !seenKeys.has(key)) {
+                    seenKeys.add(key);
+                    if (inv.token) seenKeys.add(inv.token);
+                    combinedList.push({
+                      id: inv.id,
+                      tripId: inv.tripId,
+                      tripTitle: inv.tripTitle || 'Chuyến đi VISTA',
+                      destinationSummary: inv.destination,
+                      inviterName: inv.inviterName || inv.inviterEmail || 'Trưởng nhóm',
+                      inviterEmail: inv.inviterEmail,
+                      inviterAvatar: null,
+                      status: inv.status,
+                      expiresAt: inv.expiresAt,
+                      createdAt: inv.createdAt,
+                      token: inv.token,
+                    } as any);
+                  }
+                });
+              }
+            }
+          } catch {
+            // im lặng fallback
+          }
+        }
+
+        // Bật Toast thông báo cho lời mời mới tới
+        combinedList.forEach((p) => {
+          const key = p.id || (p as any).token;
+          if (key && !knownTokensRef.current.has(key)) {
+            knownTokensRef.current.add(key);
+            setActiveToast(p);
+            setTimeout(() => {
+              setActiveToast((curr) => {
+                const currKey = curr?.id || (curr as any)?.token;
+                return currKey === key ? null : curr;
+              });
+            }, 7000);
+          }
+        });
+
+        setIncomingInvitations(combinedList);
       } catch {
         // silent
       }
     };
 
     fetchInvites();
-    const interval = setInterval(fetchInvites, 3500);
+    const interval = setInterval(fetchInvites, 5000);
 
     const onCustomChange = () => fetchInvites();
     window.addEventListener('vista-invitations-change', onCustomChange);
@@ -268,71 +259,55 @@ export function Navbar({
   }, [currentUser?.email]);
 
   const handleAcceptInvite = async (inv: IncomingInvitation) => {
-    setIsProcessingAction(inv.token);
+    setIsProcessingAction(inv.id);
     try {
-      await fetch('/api/invitations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: inv.token, status: 'ACCEPTED' }),
-      });
-
-      const currentUserMember = {
-        name: currentUser?.displayName || currentUser?.email?.split('@')[0] || 'Thành viên',
-        avatar: (currentUser?.displayName || currentUser?.email || 'TV').slice(0, 2).toUpperCase(),
-        color: '#10B981',
-        role: 'Thành viên',
-        userId: currentUser?.id || 'member-stub',
-      };
-
-      const newJoinedTrip = {
-        id: inv.tripId || `trip-joined-${Date.now()}`,
-        title: inv.tripTitle || 'Chuyến đi tham gia qua lời mời',
-        destination: inv.destination || 'Việt Nam',
-        durationBadge: '4 ngày',
-        startDate: inv.startDate || 'Sắp tới',
-        endDate: inv.endDate || '2026',
-        status: 'PLANNING',
-        role: 'MEMBER',
-        budgetTotal: 15000000,
-        budgetSpent: 0,
-        progressPercent: 20,
-        members: [
-          {
-            name: inv.inviterName || 'Trưởng nhóm',
-            avatar: (inv.inviterName || 'TN').slice(0, 2).toUpperCase(),
-            color: '#0070BA',
-            role: 'Trưởng nhóm',
-            userId: 'owner-stub',
-          },
-          currentUserMember,
-        ],
-        image: 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=1200&q=80',
-        treasuryPath: `/trips/${inv.tripId || 'demo-danang-2026'}/treasury`,
-        alertType: 'BLUE',
-        alertText: `Bạn đã tham gia qua lời mời từ ${inv.inviterName || 'Trưởng nhóm'}`,
-        quickActions: [
-          { label: 'Lịch trình', actionType: 'PLAN' },
-          { label: 'Thành viên', actionType: 'MEMBERS' },
-        ],
-      };
-
+      let accepted = false;
       try {
-        const stored = localStorage.getItem('vista_custom_trips');
-        const list = stored ? JSON.parse(stored) : [];
-        if (!list.some((t: any) => t.id === newJoinedTrip.id)) {
-          list.unshift(newJoinedTrip);
-          localStorage.setItem('vista_custom_trips', JSON.stringify(list));
-        }
-      } catch {}
+        await apiRequest(`/invitations/${inv.id}/accept-by-id`, {
+          method: 'POST',
+        });
+        accepted = true;
+      } catch (backendErr) {
+        // Fallback chấp nhận qua Next.js store
+        const token = (inv as any).token || inv.id;
+        const res = await fetch('/api/invitations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: inv.id,
+            token: token,
+            status: 'ACCEPTED',
+            acceptedBy: currentUser,
+          }),
+        });
+        if (res.ok) accepted = true;
+      }
 
-      setIncomingInvitations((prev) => prev.filter((i) => i.token !== inv.token));
+      // Đảm bảo đồng bộ thành viên vào trip_members của Spring Boot database
+      if (inv.tripId && /^[0-9a-f-]{36}$/i.test(inv.tripId)) {
+        try {
+          await apiRequest('/invitations/sync-membership', {
+            method: 'POST',
+            body: JSON.stringify({ tripId: inv.tripId }),
+          });
+        } catch (e) {
+          console.warn('Membership sync to backend:', e);
+        }
+      }
+
+      setIncomingInvitations((prev) =>
+        prev.filter((i) => i.id !== inv.id && (i as any).token !== (inv as any).token)
+      );
       setNotificationsOpen(false);
       setActiveToast(null);
 
-      window.dispatchEvent(new CustomEvent('vista-invitations-change'));
-      window.dispatchEvent(new Event('storage'));
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('vista_last_trip_id', inv.tripId);
+        window.dispatchEvent(new CustomEvent('vista-trips-change'));
+        window.dispatchEvent(new CustomEvent('vista-invitations-change'));
+      }
 
-      router.push(`/trips/${newJoinedTrip.id}`);
+      router.push(`/trips/${inv.tripId}`);
     } catch (err) {
       console.error('Accept invite error:', err);
     } finally {
@@ -341,15 +316,42 @@ export function Navbar({
   };
 
   const handleDeclineInvite = async (inv: IncomingInvitation) => {
-    setIsProcessingAction(inv.token);
+    setIsProcessingAction(inv.id);
     try {
-      await fetch('/api/invitations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: inv.token, status: 'REVOKED' }),
-      });
-      setIncomingInvitations((prev) => prev.filter((i) => i.token !== inv.token));
-      setActiveToast(null);
+      try {
+        await apiRequest(`/invitations/${inv.id}/decline-by-id`, {
+          method: 'POST',
+        });
+      } catch {
+        const token = (inv as any).token || inv.id;
+        await fetch('/api/invitations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: inv.id,
+            token: token,
+            status: 'DECLINED',
+          }),
+        });
+      }
+      // Đảm bảo đồng bộ thành viên vào trip_members của Spring Boot database
+      if (inv.tripId && /^[0-9a-f-]{36}$/i.test(inv.tripId)) {
+        try {
+          await apiRequest('/invitations/sync-membership', {
+            method: 'POST',
+            body: JSON.stringify({ tripId: inv.tripId }),
+          });
+        } catch (e) {
+          console.warn('Membership sync to backend:', e);
+        }
+      }
+
+      setIncomingInvitations((prev) =>
+        prev.filter((i) => i.id !== inv.id && (i as any).token !== (inv as any).token)
+      );
+      if (activeToast?.id === inv.id || (activeToast as any)?.token === (inv as any).token) {
+        setActiveToast(null);
+      }
       window.dispatchEvent(new CustomEvent('vista-invitations-change'));
     } catch (err) {
       console.error('Decline invite error:', err);
@@ -606,7 +608,7 @@ export function Navbar({
                       </div>
                     ) : (
                       incomingInvitations.map((inv) => (
-                        <div key={inv.token} className={styles.notificationItem}>
+                        <div key={inv.id} className={styles.notificationItem}>
                           <div className={styles.notificationItemHeader}>
                             <div className={styles.notificationTripIcon}>✈️</div>
                             <div className={styles.notificationTripInfo}>
@@ -617,9 +619,16 @@ export function Navbar({
                                 Người mời: <strong style={{ color: '#0284C7' }}>{inv.inviterName || inv.inviterEmail || 'Trưởng nhóm'}</strong>
                               </div>
                               <div className={styles.notificationMeta}>
-                                <span>📍 {inv.destination || 'Việt Nam'}</span>
+                                <span>📍 {inv.destinationSummary || inv.destination || 'Việt Nam'}</span>
                                 <span>•</span>
-                                <span>⏳ {inv.expiresAt || 'Trong 7 ngày'}</span>
+                                <span>
+                                  ⏳{' '}
+                                  {inv.expiresAt
+                                    ? !isNaN(new Date(inv.expiresAt).getTime())
+                                      ? new Date(inv.expiresAt).toLocaleDateString('vi-VN')
+                                      : inv.expiresAt
+                                    : 'Trong 7 ngày tới'}
+                                </span>
                               </div>
                             </div>
                           </div>
@@ -628,21 +637,21 @@ export function Navbar({
                             <button
                               type="button"
                               className={styles.btnAcceptInvite}
-                              disabled={isProcessingAction === inv.token}
+                              disabled={isProcessingAction === inv.id}
                               onClick={() => handleAcceptInvite(inv)}
                             >
-                              <span>{isProcessingAction === inv.token ? 'Đang vào nhóm...' : '✓ Chấp nhận'}</span>
+                              <span>{isProcessingAction === inv.id ? 'Đang vào nhóm...' : '✓ Chấp nhận'}</span>
                             </button>
                             <button
                               type="button"
                               className={styles.btnDeclineInvite}
-                              disabled={isProcessingAction === inv.token}
+                              disabled={isProcessingAction === inv.id}
                               onClick={() => handleDeclineInvite(inv)}
                             >
                               Từ chối
                             </button>
                             <Link
-                              href={`/invitations/${inv.token}`}
+                              href={`/trips/${inv.tripId}`}
                               onClick={() => setNotificationsOpen(false)}
                               style={{
                                 fontSize: '11.5px',
@@ -945,7 +954,7 @@ export function Navbar({
             </button>
           </div>
           <p style={{ margin: '0 0 12px', fontSize: '12.5px', color: '#475569', lineHeight: '1.45' }}>
-            <strong>{activeToast.inviterName || activeToast.inviterEmail || 'Trưởng nhóm'}</strong> vừa mời bạn tham gia <strong>"{activeToast.tripTitle || 'Khám phá chuyến đi'}"</strong> ({activeToast.destination || 'Việt Nam'}).
+            <strong>{activeToast.inviterName || activeToast.inviterEmail || 'Trưởng nhóm'}</strong> vừa mời bạn tham gia <strong>"{activeToast.tripTitle || 'Khám phá chuyến đi'}"</strong> ({activeToast.destinationSummary || activeToast.destination || 'Việt Nam'}).
           </p>
           <div style={{ display: 'flex', gap: '8px' }}>
             <button

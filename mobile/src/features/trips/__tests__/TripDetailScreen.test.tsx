@@ -1,5 +1,6 @@
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { Alert } from 'react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { TripDetailScreen } from '../screens/TripDetailScreen';
 import { tripFeatureApi } from '../api';
 import { authStorage } from '@/services/auth/authStorage';
@@ -122,5 +123,50 @@ describe('TripDetailScreen (Bước 1 - TV3)', () => {
 
     expect(await findByText('Bạn không có quyền xem chuyến đi này')).toBeTruthy();
     expect(getByText('Quay lại trang chủ')).toBeTruthy();
+  });
+
+  it('handles 409 Conflict when deleting a trip with unsettled debts', async () => {
+    const alertSpy = jest.spyOn(Alert, 'alert');
+    (authStorage.getUser as jest.Mock).mockResolvedValue({ id: 'user-owner' });
+    (tripFeatureApi.fetchTrip as jest.Mock).mockResolvedValue({
+      id: 'trip-101',
+      ownerId: 'user-owner',
+      title: 'Đà Nẵng: Biển xanh & Núi non',
+      startDate: '2026-06-12',
+      endDate: '2026-06-15',
+      destinationSummary: 'Đà Nẵng, Việt Nam',
+      budgetTotal: 10000000,
+      currency: 'VND',
+      status: 'ACTIVE',
+      role: 'OWNER',
+      members: [],
+    });
+    (tripFeatureApi.fetchTripMembers as jest.Mock).mockResolvedValue([]);
+
+    const conflictErr = new Error('Conflict') as any;
+    conflictErr.response = {
+      status: 409,
+      data: { detail: 'Chuyến đi còn khoản chi tiêu hoặc công nợ chưa quyết toán.' },
+    };
+    (tripFeatureApi.deleteTrip as jest.Mock).mockRejectedValue(conflictErr);
+
+    const { findByText, getByText } = await render(<TripDetailScreen tripId="trip-101" />);
+
+    // Open delete modal
+    const deleteBtn = await findByText('Hủy & Xóa chuyến đi này');
+    fireEvent.press(deleteBtn);
+
+    // Confirm delete
+    const confirmBtn = await findByText('Tôi hiểu, Xóa vĩnh viễn');
+    fireEvent.press(confirmBtn);
+
+    expect(tripFeatureApi.deleteTrip).toHaveBeenCalledWith('trip-101');
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalledWith(
+        'Không thể xóa chuyến đi',
+        'Chuyến đi còn khoản chi tiêu hoặc công nợ chưa quyết toán.',
+        expect.any(Array)
+      );
+    });
   });
 });

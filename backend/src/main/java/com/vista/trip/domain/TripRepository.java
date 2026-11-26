@@ -26,9 +26,12 @@ public interface TripRepository extends JpaRepository<TripEntity, UUID> {
   @Query(
       """
       SELECT DISTINCT t FROM TripEntity t
-       LEFT JOIN t.members m
+       LEFT JOIN FETCH t.members
       WHERE t.ownerId = :userId
-         OR (m.userId = :userId AND m.status = 'ACTIVE')
+         OR EXISTS (
+           SELECT 1 FROM TripMemberEntity tm
+           WHERE tm.trip = t AND tm.userId = :userId AND tm.status = 'ACTIVE'
+         )
       ORDER BY t.createdAt DESC
       """)
   List<TripEntity> findAllAccessibleByUser(@Param("userId") UUID userId);

@@ -27,12 +27,21 @@ public class TripService {
   private final TripMemberRepository tripMemberRepository;
   private final TripAccessService tripAccessService;
   private final AuditLogService auditLogService;
+  private final TripSettlementChecker tripSettlementChecker;
 
   public TripService(
       TripRepository tripRepository,
       TripMemberRepository tripMemberRepository,
       TripAccessService tripAccessService) {
-    this(tripRepository, tripMemberRepository, tripAccessService, null);
+    this(tripRepository, tripMemberRepository, tripAccessService, null, null);
+  }
+
+  public TripService(
+      TripRepository tripRepository,
+      TripMemberRepository tripMemberRepository,
+      TripAccessService tripAccessService,
+      AuditLogService auditLogService) {
+    this(tripRepository, tripMemberRepository, tripAccessService, auditLogService, null);
   }
 
   @org.springframework.beans.factory.annotation.Autowired
@@ -41,11 +50,14 @@ public class TripService {
       TripMemberRepository tripMemberRepository,
       TripAccessService tripAccessService,
       @org.springframework.beans.factory.annotation.Autowired(required = false)
-          AuditLogService auditLogService) {
+          AuditLogService auditLogService,
+      @org.springframework.beans.factory.annotation.Autowired(required = false)
+          TripSettlementChecker tripSettlementChecker) {
     this.tripRepository = tripRepository;
     this.tripMemberRepository = tripMemberRepository;
     this.tripAccessService = tripAccessService;
     this.auditLogService = auditLogService;
+    this.tripSettlementChecker = tripSettlementChecker;
   }
 
   /** Tạo trip mới — owner tự động trở thành thành viên OWNER. */
@@ -107,10 +119,19 @@ public class TripService {
     return TripResponse.from(tripRepository.save(trip));
   }
 
-  /** Xóa trip — chỉ owner mới được phép. */
+  /** Xóa trip — chỉ owner mới được phép và không còn công nợ chưa quyết toán. */
   public void deleteTrip(UUID tripId, UUID requesterId) {
     tripAccessService.requireOwner(tripId, requesterId);
     TripEntity trip = findTripOrThrow(tripId);
+
+    // Kiểm tra ràng buộc công nợ trước khi xóa (bảo vệ dữ liệu Thủ quỹ của TV4)
+    if (tripSettlementChecker != null && tripSettlementChecker.hasUnsettledDebts(tripId)) {
+      throw new ResponseStatusException(
+          HttpStatus.CONFLICT,
+          "Không thể xóa chuyến đi khi còn khoản chi tiêu hoặc công nợ chưa quyết toán. "
+              + "Vui lòng quyết toán toàn bộ tại mục Thủ quỹ trước khi xóa.");
+    }
+
     tripRepository.delete(trip);
     if (auditLogService != null) {
       auditLogService.logAction(

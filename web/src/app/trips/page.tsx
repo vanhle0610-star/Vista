@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { apiRequest } from '@/lib/api';
 import {
   Sparkles,
   Ticket,
@@ -37,14 +38,13 @@ import {
   Clipboard,
   KeyRound,
 } from 'lucide-react';
-import { Navbar } from '@/components/common/Navbar';
-import { apiRequest } from '@/lib/api';
 import { SkeletonCardGrid } from '@/components/common/Skeleton';
 import {
   POPULAR_DESTINATIONS,
   getSampleItineraryForDestination,
   getDestinationHeroImage,
 } from '@/data/sampleItineraries';
+import { resolveTripStatus } from '@/utils/tripDateUtils';
 import styles from './trips.module.css';
 
 interface TripMember {
@@ -63,7 +63,7 @@ interface TripItem {
   durationBadge: string;
   startDate: string;
   endDate: string;
-  status: 'ACTIVE' | 'PLANNING' | 'COMPLETED';
+  status: 'ACTIVE' | 'PLANNING' | 'ONGOING' | 'COMPLETED' | 'CANCELLED';
   role: 'OWNER' | 'MEMBER';
   ownerId?: string;
   budgetTotal: number;
@@ -212,6 +212,15 @@ function getCurrentUserMember(defaultRole = 'Trưởng nhóm'): TripMember {
   };
 }
 
+function normalizeMemberText(str?: string) {
+  return (str || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/[^a-z0-9]/g, '');
+}
+
 function formatMembersForCurrentUser(
   members: Array<{ name: string; avatar?: string; color?: string; role?: string; email?: string; userId?: string }>,
   defaultRole = 'Trưởng nhóm'
@@ -225,42 +234,90 @@ function formatMembersForCurrentUser(
   }
 
   const currentEmail = (currentUser?.email || '').toLowerCase().trim();
-  const currentName = (currentUser?.displayName || currentUser?.name || '').toLowerCase().trim();
+  const currentNameNorm = normalizeMemberText(currentUser?.displayName || currentUser?.name || '');
+  const currentId = currentUser?.id || '';
 
   if (!Array.isArray(members) || members.length === 0) {
     return [getCurrentUserMember(defaultRole)];
   }
 
-  const seen = new Set<string>();
   const result: TripMember[] = [];
 
   for (const m of members) {
     if (!m) continue;
     const rawName = (m.name || '').replace(/\s*\([^)]*\)/g, '').trim();
-    const rawEmail = (m.email || '').toLowerCase().trim();
-    const key = (m.userId ? `id:${m.userId}` : '') || rawEmail || rawName.toLowerCase();
-
-    if (!key || seen.has(key)) continue;
-    seen.add(key);
+    if (!rawName) continue;
+    const nameNorm = normalizeMemberText(rawName);
+    const email = (m.email || '').toLowerCase().trim();
+    const userId = (m.userId || '').trim();
 
     const isMe = Boolean(
-      (currentUser && m.userId && currentUser.id && m.userId === currentUser.id) ||
-      (currentEmail && rawEmail && currentEmail === rawEmail) ||
-      (currentName && rawName.toLowerCase() === currentName) ||
+      (currentId && userId && currentId === userId) ||
+      (currentEmail && email && currentEmail === email) ||
+      (currentNameNorm && nameNorm && currentNameNorm === nameNorm) ||
       (m.name || '').toLowerCase().includes('(bạn)')
     );
 
-    result.push({
-      name: isMe ? `${rawName || 'Bạn'} (Bạn)` : rawName,
-      avatar: m.avatar || (rawName.slice(0, 2)).toUpperCase() || 'TV',
-      color: m.color || '#0284c7',
-      email: m.email || (isMe && currentEmail ? currentEmail : undefined),
-      role: m.role || 'Thành viên',
-      userId: m.userId || (isMe && currentUser?.id ? currentUser.id : undefined),
+    const existingIdx = result.findIndex((ex) => {
+      if (isMe && (ex as any)._isMe) return true;
+      const exNameNorm = normalizeMemberText(ex.name);
+      const exEmail = (ex.email || '').toLowerCase().trim();
+      const exUserId = (ex.userId || '').trim();
+
+      if (userId && exUserId && userId === exUserId) return true;
+      if (email && exEmail && email === exEmail) return true;
+      if (nameNorm && exNameNorm && nameNorm === exNameNorm) return true;
+      return false;
     });
+
+    const resolvedUserId = isMe ? (currentId || userId || 'u-me') : userId;
+    const resolvedEmail = isMe ? (currentEmail || email) : email;
+    const isRealEmail = resolvedEmail && !resolvedEmail.includes('@vista.vn');
+    const isRealUserId = resolvedUserId && !resolvedUserId.startsWith('u-');
+
+    if (existingIdx >= 0) {
+      const existing = result[existingIdx];
+      const isExRealEmail = existing.email && !existing.email.includes('@vista.vn');
+      const isExRealUserId = existing.userId && !existing.userId.startsWith('u-');
+
+      result[existingIdx] = {
+        ...existing,
+        name: rawName, // Clean name
+        avatar: existing.avatar || m.avatar || (rawName.slice(0, 2)).toUpperCase() || 'TV',
+        color: existing.color || m.color || '#0284c7',
+        email: isRealEmail ? resolvedEmail : (isExRealEmail ? existing.email : (resolvedEmail || existing.email)),
+        userId: isRealUserId ? resolvedUserId : (isExRealUserId ? existing.userId : (resolvedUserId || existing.userId)),
+        role: existing.role === 'Trưởng nhóm' || m.role === 'Trưởng nhóm' ? 'Trưởng nhóm' : (existing.role || m.role || 'Thành viên'),
+        _isMe: isMe || (existing as any)._isMe,
+      } as any;
+    } else {
+      result.push({
+        name: rawName, // Clean name
+        avatar: m.avatar || (rawName.slice(0, 2)).toUpperCase() || 'TV',
+        color: m.color || (result.length % 2 === 0 ? '#0284c7' : '#10b981'),
+        email: resolvedEmail || undefined,
+        userId: resolvedUserId || undefined,
+        role: m.role || (result.length === 0 ? defaultRole : 'Thành viên'),
+        _isMe: isMe,
+      } as any);
+    }
   }
 
-  return result.length > 0 ? result : [getCurrentUserMember(defaultRole)];
+  // Ensure exactly one leader (Trưởng nhóm)
+  let foundLeader = false;
+  const finalized = result.map((m) => {
+    delete (m as any)._isMe;
+    if (m.role === 'Trưởng nhóm') {
+      if (!foundLeader) {
+        foundLeader = true;
+        return m;
+      }
+      return { ...m, role: 'Thành viên' };
+    }
+    return m;
+  });
+
+  return finalized.length > 0 ? finalized : [getCurrentUserMember(defaultRole)];
 }
 
 type DateFilterType = 'all' | 'upcoming' | 'month-10' | 'month-11' | 'month-12' | 'year-2026' | 'past';
@@ -275,15 +332,16 @@ const DATE_FILTER_OPTIONS: Array<{ key: DateFilterType; label: string; desc?: st
   { key: 'past', label: 'Đã hoàn thành', desc: 'Các chuyến đi đã kết thúc' },
 ];
 
-function matchesDateFilter(trip: TripItem, filter: DateFilterType): boolean {
+function matchesDateFilter(trip: TripItem, filter: DateFilterType, now: Date = new Date()): boolean {
   if (filter === 'all') return true;
   const text = `${trip.startDate || ''} ${trip.endDate || ''}`.toLowerCase();
+  const effectiveStatus = resolveTripStatus(trip.startDate, trip.endDate, trip.status, now);
 
   if (filter === 'upcoming') {
-    return trip.status === 'PLANNING' || trip.status === 'ACTIVE';
+    return effectiveStatus === 'PLANNING' || effectiveStatus === 'ONGOING' || effectiveStatus === 'ACTIVE';
   }
   if (filter === 'past') {
-    return trip.status === 'COMPLETED' || text.includes('2025');
+    return effectiveStatus === 'COMPLETED' || text.includes('2025');
   }
   if (filter === 'month-10') {
     return text.includes('/10') || text.includes('-10-') || text.includes('10/2026') || text.includes('10/26');
@@ -395,6 +453,17 @@ export default function TripsPage() {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [currentUser, setCurrentUser] = useState<StoredUser | null>(null);
+  const [currentDateTick, setCurrentDateTick] = useState<number>(() => Date.now());
+
+  useEffect(() => {
+    const handleSyncDate = () => setCurrentDateTick(Date.now());
+    window.addEventListener('visibilitychange', handleSyncDate);
+    window.addEventListener('focus', handleSyncDate);
+    return () => {
+      window.removeEventListener('visibilitychange', handleSyncDate);
+      window.removeEventListener('focus', handleSyncDate);
+    };
+  }, []);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -481,7 +550,7 @@ export default function TripsPage() {
     );
   };
 
-  const handleOpenAssignModal = (t: TripItem) => {
+  const handleOpenAssignModal = async (t: TripItem) => {
     if (!isUserTrip(t)) {
       showToast(`⚠️ Bạn không thuộc chuyến đi "${t.title}". Chỉ thành viên nhóm mới có quyền xem phân công nhiệm vụ!`);
       return;
@@ -494,18 +563,22 @@ export default function TripsPage() {
       return !isMe;
     });
     setNewTaskAssignee(firstOther?.name || 'Cả nhóm');
-    try {
-      const stored = localStorage.getItem(`vista_trip_tasks_${t.id}`);
-      if (stored) {
-        setTripTasks((prev) => ({ ...prev, [t.id]: JSON.parse(stored) }));
-      } else {
-        const def = getDefaultTasks(t.destination || t.title);
-        setTripTasks((prev) => ({ ...prev, [t.id]: def }));
-        localStorage.setItem(`vista_trip_tasks_${t.id}`, JSON.stringify(def));
+
+    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(t.id)) {
+      try {
+        const backendTasks = await apiRequest<any[]>(`/trips/${t.id}/tasks`);
+        const mapped: TripTask[] = (backendTasks || []).map((bt) => ({
+          id: String(bt.id),
+          title: bt.title,
+          assignee: bt.assigneeId
+            ? (t.members?.find((m) => m.userId === bt.assigneeId)?.name || 'Thành viên')
+            : 'Cả nhóm',
+          done: Boolean(bt.isCompleted),
+        }));
+        setTripTasks((prev) => ({ ...prev, [t.id]: mapped }));
+      } catch (err) {
+        console.warn('Failed to load backend tasks:', err);
       }
-    } catch {
-      const def = getDefaultTasks(t.destination || t.title);
-      setTripTasks((prev) => ({ ...prev, [t.id]: def }));
     }
     setShowAssignModal(true);
   };
@@ -532,24 +605,33 @@ export default function TripsPage() {
     setShowNoteModal(true);
   };
 
-  const handleToggleTask = (tripId: string, taskId: string) => {
+  const handleToggleTask = async (tripId: string, taskId: string) => {
     if (!selectedTripForAction || !isUserTrip(selectedTripForAction)) {
       showToast('⚠️ Bạn không thuộc chuyến đi này. Thao tác bị từ chối!');
       return;
     }
-    setTripTasks((prev) => {
-      const current = prev[tripId] || [];
-      const updated = current.map((item) =>
-        item.id === taskId ? { ...item, done: !item.done } : item
-      );
+    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tripId) &&
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(taskId)) {
       try {
-        localStorage.setItem(`vista_trip_tasks_${tripId}`, JSON.stringify(updated));
-      } catch {}
-      return { ...prev, [tripId]: updated };
-    });
+        await apiRequest(`/trips/${tripId}/tasks/${taskId}/toggle`, {
+          method: 'PATCH',
+        });
+        setTripTasks((prev) => {
+          const current = prev[tripId] || [];
+          const updated = current.map((item) =>
+            item.id === taskId ? { ...item, done: !item.done } : item
+          );
+          return { ...prev, [tripId]: updated };
+        });
+        return;
+      } catch (err: any) {
+        console.error('Failed to toggle task on backend:', err);
+        showToast('Không thể cập nhật trạng thái nhiệm vụ.');
+      }
+    }
   };
 
-  const handleAddTask = (e: React.FormEvent, tripId: string) => {
+  const handleAddTask = async (e: React.FormEvent, tripId: string) => {
     e.preventDefault();
     if (!selectedTripForAction) return;
     if (!isUserTrip(selectedTripForAction)) {
@@ -561,25 +643,44 @@ export default function TripsPage() {
       return;
     }
     if (!newTaskTitle.trim()) return;
-    const newTask: TripTask = {
-      id: `task-${Date.now()}`,
-      title: newTaskTitle.trim(),
-      assignee: newTaskAssignee || 'Cả nhóm',
-      done: false,
-    };
-    setTripTasks((prev) => {
-      const current = prev[tripId] || [];
-      const updated = [...current, newTask];
+
+    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tripId)) {
       try {
-        localStorage.setItem(`vista_trip_tasks_${tripId}`, JSON.stringify(updated));
-      } catch {}
-      return { ...prev, [tripId]: updated };
-    });
-    setNewTaskTitle('');
-    showToast(`Đã giao việc cho: ${newTask.assignee}!`);
+        const targetMember = selectedTripForAction.members?.find(
+          (m) => m.name === newTaskAssignee
+        );
+        const created = await apiRequest<any>(`/trips/${tripId}/tasks`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: newTaskTitle.trim(),
+            assigneeId: targetMember?.userId || null,
+          }),
+        });
+
+        const newTask: TripTask = {
+          id: String(created.id),
+          title: created.title,
+          assignee: newTaskAssignee || 'Cả nhóm',
+          done: Boolean(created.isCompleted),
+        };
+
+        setTripTasks((prev) => ({
+          ...prev,
+          [tripId]: [...(prev[tripId] || []), newTask],
+        }));
+        setNewTaskTitle('');
+        showToast(`Đã giao việc cho: ${newTask.assignee}!`);
+        return;
+      } catch (err: any) {
+        console.error('Failed to create task on backend:', err);
+        showToast(`Lỗi tạo nhiệm vụ: ${err?.message || 'Không thể kết nối máy chủ'}`);
+        return;
+      }
+    }
   };
 
-  const handleDeleteTask = (tripId: string, taskId: string) => {
+  const handleDeleteTask = async (tripId: string, taskId: string) => {
     if (!selectedTripForAction) return;
     if (!isUserTrip(selectedTripForAction)) {
       showToast('⚠️ Bạn không thuộc chuyến đi này!');
@@ -589,15 +690,25 @@ export default function TripsPage() {
       showToast('⚠️ Chỉ Trưởng nhóm mới có quyền xóa nhiệm vụ phân công!');
       return;
     }
-    setTripTasks((prev) => {
-      const current = prev[tripId] || [];
-      const updated = current.filter((item) => item.id !== taskId);
+
+    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tripId) &&
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(taskId)) {
       try {
-        localStorage.setItem(`vista_trip_tasks_${tripId}`, JSON.stringify(updated));
-      } catch {}
-      return { ...prev, [tripId]: updated };
-    });
-    showToast('Đã xóa nhiệm vụ!');
+        await apiRequest(`/trips/${tripId}/tasks/${taskId}`, {
+          method: 'DELETE',
+        });
+        setTripTasks((prev) => {
+          const current = prev[tripId] || [];
+          const updated = current.filter((item) => item.id !== taskId);
+          return { ...prev, [tripId]: updated };
+        });
+        showToast('Đã xóa nhiệm vụ!');
+        return;
+      } catch (err: any) {
+        console.error('Failed to delete task on backend:', err);
+        showToast('Không thể xóa nhiệm vụ.');
+      }
+    }
   };
 
   const handleToggleNote = (tripId: string, noteId: string) => {
@@ -734,254 +845,159 @@ export default function TripsPage() {
     }
   };
 
-  const [tripsList, setTripsList] = useState<TripItem[]>(DEFAULT_DEMO_TRIPS);
+  const [tripsList, setTripsList] = useState<TripItem[]>([]);
   const [isSyncingTrips, setIsSyncingTrips] = useState<boolean>(true);
   const [incomingInvitations, setIncomingInvitations] = useState<any[]>([]);
 
-  // Fetch trips from PostgreSQL Database via Spring Boot API & one-time migration
-  useEffect(() => {
-    const syncTrips = async () => {
-      if (typeof window === 'undefined') return;
-
-      const currentOwner = getCurrentUserMember('Trưởng nhóm');
-
-      // Helper to map a backend trip to TripItem
-      const mapBackendTrip = (bt: any): TripItem => {
-        const dest = bt.destinationSummary || 'Việt Nam';
-        const start = bt.startDate || getTodayString();
-        const end = bt.endDate || getDefaultEndString();
-        const bTotal = typeof bt.budgetTotal === 'number' && bt.budgetTotal > 0 ? bt.budgetTotal : 15000000;
-        const isOwner = currentUser?.id ? bt.ownerId === currentUser.id : true;
-
-        const rawMembers = Array.isArray(bt.members) && bt.members.length > 0 ? bt.members : [];
-        const members: TripMember[] = rawMembers.length > 0
-          ? rawMembers.map((m: any) => ({
-              name: m.displayName || m.email || (m.role === 'OWNER' ? 'Trưởng nhóm' : 'Thành viên'),
-              avatar: (m.displayName || m.email || 'TV').slice(0, 2).toUpperCase(),
-              color: m.role === 'OWNER' ? '#0284c7' : '#10b981',
-              role: m.role === 'OWNER' ? 'Trưởng nhóm' : 'Thành viên',
-              userId: m.userId,
-              email: m.email || '',
-            }))
-          : [currentOwner];
-
-        return {
-          id: bt.id,
-          title: bt.title || 'Chuyến đi VISTA',
-          destination: dest,
-          durationBadge: '3 ngày',
-          startDate: start,
-          endDate: end,
-          status: (bt.status as any) || 'PLANNING',
-          role: isOwner ? 'OWNER' : 'MEMBER',
-          ownerId: bt.ownerId || currentOwner.userId,
-          budgetTotal: bTotal,
-          budgetSpent: 0,
-          progressPercent: 0,
-          members,
-          image: getDestinationHeroImage(dest),
-          treasuryPath: `/trips/${bt.id}/treasury`,
-          alertText: `Hành trình khám phá ${dest}`,
-          alertLinkText: 'Xem',
-          quickActions: [
-            { label: 'Lịch trình', href: `/trips/${bt.id}` },
-            { label: 'Thủ quỹ', href: `/trips/${bt.id}/treasury` },
-            { label: 'Phân công', actionType: 'ASSIGN' },
-          ],
-          itineraryDays: getSampleItineraryForDestination(dest, start),
-        };
-      };
-
-      try {
-        // 1. One-time Migration: check if legacy localStorage trips exist
-        const stored = localStorage.getItem('vista_custom_trips');
-        if (stored) {
-          try {
-            const legacyList: any[] = JSON.parse(stored);
-            if (Array.isArray(legacyList) && legacyList.length > 0) {
-              for (const leg of legacyList) {
-                // Only migrate local generated IDs, skip demo IDs
-                if (typeof leg.id === 'string' && leg.id.startsWith('trip-') && !leg.id.includes('danang') && !leg.id.includes('hagiang') && !leg.id.includes('phuquoc')) {
-                  try {
-                    await apiRequest('/trips', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({
-                        title: leg.title || 'Chuyến đi lưu trữ',
-                        startDate: leg.startDate?.includes('-') ? leg.startDate : getTodayString(),
-                        endDate: leg.endDate?.includes('-') ? leg.endDate : getDefaultEndString(),
-                        destinationSummary: leg.destination || 'Việt Nam',
-                        budgetTotal: leg.budgetTotal || 15000000,
-                        currency: 'VND',
-                      }),
-                    });
-                  } catch {
-                    // ignore individual sync failure
-                  }
-                }
-              }
-            }
-            // Once processed, clean up localStorage
-            localStorage.removeItem('vista_custom_trips');
-          } catch {
-            // ignore
-          }
-        }
-
-        // 2. Fetch live trips directly from PostgreSQL Database via Spring Boot API
-        const serverTrips = await apiRequest<any[]>('/trips');
-        if (Array.isArray(serverTrips) && serverTrips.length > 0) {
-          const loadedTrips = serverTrips.map(mapBackendTrip);
-          
-          // Merge with default demo trips for rich preview if needed
-          const merged = [...loadedTrips];
-          DEFAULT_DEMO_TRIPS.forEach((d) => {
-            if (!merged.some((m) => m.id === d.id)) {
-              merged.push(d);
-            }
-          });
-          setTripsList(merged);
-          if (merged.length > 0 && merged[0]?.id && typeof window !== 'undefined') {
-            try {
-              localStorage.setItem('vista_last_trip_id', merged[0].id);
-              window.dispatchEvent(new CustomEvent('vista-trip-selected', { detail: merged[0].id }));
-            } catch {}
-          }
-        } else {
-          setTripsList(DEFAULT_DEMO_TRIPS);
-          if (DEFAULT_DEMO_TRIPS.length > 0 && typeof window !== 'undefined') {
-            try {
-              localStorage.setItem('vista_last_trip_id', DEFAULT_DEMO_TRIPS[0].id);
-              window.dispatchEvent(new CustomEvent('vista-trip-selected', { detail: DEFAULT_DEMO_TRIPS[0].id }));
-            } catch {}
-          }
-        }
-
-        // Check if user just created a trip from Planner
-        const params = new URLSearchParams(window.location.search);
-        const createdId = params.get('created');
-        if (createdId) {
-          showToast(`🎉 Đã đồng bộ thành công chuyến đi từ AI Planner vào Database!`);
-          setActiveTab('planning');
-        }
-      } catch (err) {
-        console.warn('Trips API fetch fallback:', err);
-        setTripsList(DEFAULT_DEMO_TRIPS);
-      }
-    };
-    void syncTrips().finally(() => setIsSyncingTrips(false));
-  }, [currentUser]);
-
-  // Load incoming invitations for currently logged in user
-  useEffect(() => {
+  // Load trips exclusively from PostgreSQL Database via Spring Boot API
+  const fetchTripsFromBackend = async () => {
+    setIsSyncingTrips(true);
     try {
-      const userStr = localStorage.getItem('vista_user');
-      if (userStr) {
-        const u = JSON.parse(userStr);
-        const email = (u.email || '').toLowerCase().trim();
-        if (email) {
-          fetch(`/api/invitations?email=${encodeURIComponent(email)}`)
-            .then((r) => (r.ok ? r.json() : []))
-            .then((list) => {
-              if (Array.isArray(list)) {
-                const pending = list.filter(
-                  (inv) => inv.inviteeEmail && inv.inviteeEmail.toLowerCase() === email && inv.status === 'PENDING'
-                );
-                setIncomingInvitations(pending);
-              }
-            })
-            .catch(() => {});
-        }
+      const token = localStorage.getItem('vista_token');
+      if (!token) {
+        setTripsList([]);
+        setIsSyncingTrips(false);
+        return;
       }
-    } catch {}
-  }, []);
+      const serverTrips = await apiRequest<any[]>('/trips');
+      if (Array.isArray(serverTrips)) {
+        const mapped: TripItem[] = serverTrips.map((st) => {
+          const dest = st.destinationSummary || 'Việt Nam';
+          const isOwner = Boolean(currentUser?.id && st.ownerId === currentUser.id);
+          const start = st.startDate || '';
+          const end = st.endDate || '';
+          let durationBadge = '4 ngày';
+          if (start && end) {
+            const sTime = new Date(start).getTime();
+            const eTime = new Date(end).getTime();
+            if (!isNaN(sTime) && !isNaN(eTime)) {
+              const diffDays = Math.max(1, Math.round((eTime - sTime) / (1000 * 60 * 60 * 24)) + 1);
+              durationBadge = `${diffDays} ngày`;
+            }
+          }
+
+          return {
+            id: String(st.id),
+            title: st.title || `Chuyến đi ${dest}`,
+            destination: dest,
+            durationBadge,
+            startDate: start ? start.split('-').reverse().join('/') : '15/11',
+            endDate: end ? end.split('-').reverse().join('/') : '18/11/2026',
+            status: st.status === 'COMPLETED' ? 'COMPLETED' : (st.status === 'ONGOING' || st.status === 'ACTIVE') ? 'ONGOING' : st.status === 'CANCELLED' ? 'CANCELLED' : 'PLANNING',
+            role: isOwner ? 'OWNER' : 'MEMBER',
+            ownerId: st.ownerId,
+            budgetTotal: Number(st.budgetTotal) || 0,
+            budgetSpent: 0,
+            progressPercent: 0,
+            members: [
+              {
+                name: isOwner ? (currentUser?.displayName || 'Trưởng nhóm') : 'Trưởng nhóm',
+                avatar: (currentUser?.displayName || 'TN').slice(0, 2).toUpperCase(),
+                color: '#0284c7',
+                role: 'Trưởng nhóm',
+                userId: st.ownerId,
+              },
+            ],
+            image: getDestinationHeroImage(dest),
+            treasuryPath: `/trips/${st.id}/treasury`,
+            quickActions: [
+              { label: 'Lịch trình', href: `/trips/${st.id}` },
+              { label: 'Thủ quỹ', href: `/trips/${st.id}/treasury` },
+            ],
+          };
+        });
+        setTripsList(mapped);
+      }
+    } catch (err) {
+      console.warn('Could not load trips from backend:', err);
+    } finally {
+      setIsSyncingTrips(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTripsFromBackend();
+
+    const onTripsChange = () => fetchTripsFromBackend();
+    window.addEventListener('vista-trips-change', onTripsChange);
+    window.addEventListener('focus', onTripsChange);
+
+    return () => {
+      window.removeEventListener('vista-trips-change', onTripsChange);
+      window.removeEventListener('focus', onTripsChange);
+    };
+  }, [currentUser?.id]);
+
+  // Load incoming invitations for currently logged in user from Spring Boot API
+  useEffect(() => {
+    const fetchInvites = async () => {
+      try {
+        const token = localStorage.getItem('vista_token');
+        if (!token) return;
+        const list = await apiRequest<any[]>('/invitations/my-pending');
+        if (Array.isArray(list)) {
+          setIncomingInvitations(list);
+        }
+      } catch {}
+    };
+
+    fetchInvites();
+  }, [currentUser?.email]);
 
   const handleAcceptIncomingInvite = async (inv: any) => {
     try {
-      await fetch('/api/invitations', {
+      await apiRequest(`/invitations/${inv.id}/accept-by-id`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: inv.token, status: 'ACCEPTED' }),
       });
 
-      const currentUserMember = getCurrentUserMember('Thành viên');
-      const newJoinedTrip: TripItem = {
-        id: inv.tripId || `trip-joined-${Date.now()}`,
-        title: inv.tripTitle || 'Chuyến đi tham gia qua lời mời',
-        destination: inv.destination || 'Việt Nam',
-        durationBadge: '4 ngày',
-        startDate: inv.startDate || 'Sắp tới',
-        endDate: inv.endDate || '2026',
-        status: 'PLANNING',
-        role: 'MEMBER',
-        budgetTotal: 15000000,
-        budgetSpent: 0,
-        progressPercent: 20,
-        members: [
-          { name: inv.inviterName || 'Trưởng nhóm', avatar: (inv.inviterName || 'TN').slice(0, 2).toUpperCase(), color: '#0070BA', role: 'Trưởng nhóm', userId: 'owner-stub' },
-          currentUserMember,
-        ],
-        image: getDestinationHeroImage(inv.destination || 'Việt Nam'),
-        treasuryPath: `/trips/${inv.tripId || 'demo-danang-2026'}/treasury`,
-        alertType: 'BLUE',
-        alertText: `Bạn đã tham gia qua lời mời từ ${inv.inviterName || 'Trưởng nhóm'}`,
-        quickActions: [
-          { label: 'Lịch trình', actionType: 'PLAN' },
-          { label: 'Thành viên', actionType: 'MEMBERS' },
-        ],
-      };
-
-      setTripsList((prev) => [newJoinedTrip, ...prev]);
-
-      // If token is provided, accept on backend
-      if (inv.token) {
-        try {
-          await apiRequest(`/invitations/${inv.token}/accept`, { method: 'POST' });
-        } catch {
-          // ignore if already member or preview
-        }
-      }
-
-      setIncomingInvitations((prev) => prev.filter((i) => i.token !== inv.token));
+      setIncomingInvitations((prev) => prev.filter((i) => i.id !== inv.id));
       showToast(`🎉 Bạn đã gia nhập "${inv.tripTitle}" thành công!`);
+      await fetchTripsFromBackend();
 
-      setTimeout(() => {
-        router.push(`/trips/${newJoinedTrip.id}`);
-      }, 600);
-    } catch {
-      showToast('Có lỗi xảy ra khi chấp nhận lời mời');
+      if (inv.tripId) {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('vista_last_trip_id', inv.tripId);
+        }
+        router.push(`/trips/${inv.tripId}`);
+      }
+    } catch (err: any) {
+      showToast(err.message || 'Có lỗi xảy ra khi chấp nhận lời mời');
     }
   };
 
   const handleDeclineIncomingInvite = async (inv: any) => {
     try {
-      await fetch('/api/invitations', {
+      await apiRequest(`/invitations/${inv.id}/decline-by-id`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: inv.token, status: 'REVOKED' }),
       });
-      setIncomingInvitations((prev) => prev.filter((i) => i.token !== inv.token));
+      setIncomingInvitations((prev) => prev.filter((i) => i.id !== inv.id));
       showToast('Đã từ chối lời mời.');
-    } catch {
-      showToast('Có lỗi khi từ chối lời mời');
+    } catch (err: any) {
+      showToast(err.message || 'Có lỗi khi từ chối lời mời');
     }
   };
 
   // isUserTrip defined above
+  const currentDate = useMemo(() => new Date(currentDateTick), [currentDateTick]);
+
   const myTripsList = tripsList.filter(isUserTrip);
   const myCount = myTripsList.length;
   const totalCount = tripsList.length;
-  const planningCount = tripsList.filter((t) => t.status === 'PLANNING').length;
-  const activeCount = tripsList.filter((t) => t.status === 'ACTIVE').length;
-  const completedCount = tripsList.filter((t) => t.status === 'COMPLETED').length;
+  const planningCount = tripsList.filter((t) => resolveTripStatus(t.startDate, t.endDate, t.status, currentDate) === 'PLANNING').length;
+  const activeCount = tripsList.filter((t) => {
+    const st = resolveTripStatus(t.startDate, t.endDate, t.status, currentDate);
+    return st === 'ACTIVE' || st === 'ONGOING';
+  }).length;
+  const completedCount = tripsList.filter((t) => resolveTripStatus(t.startDate, t.endDate, t.status, currentDate) === 'COMPLETED').length;
 
   const filteredTrips = tripsList.filter((trip) => {
+    const effectiveStatus = resolveTripStatus(trip.startDate, trip.endDate, trip.status, currentDate);
     if (activeTab === 'mine' && !isUserTrip(trip)) return false;
-    if (activeTab === 'planning' && trip.status !== 'PLANNING') return false;
-    if (activeTab === 'active' && trip.status !== 'ACTIVE') return false;
-    if (activeTab === 'completed' && trip.status !== 'COMPLETED') return false;
+    if (activeTab === 'planning' && effectiveStatus !== 'PLANNING') return false;
+    if (activeTab === 'active' && effectiveStatus !== 'ACTIVE' && effectiveStatus !== 'ONGOING') return false;
+    if (activeTab === 'completed' && effectiveStatus !== 'COMPLETED') return false;
 
-    if (!matchesDateFilter(trip, dateFilter)) return false;
+    if (!matchesDateFilter(trip, dateFilter, currentDate)) return false;
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -1017,22 +1033,10 @@ export default function TripsPage() {
       return;
     }
 
-    const start = new Date(newStartDate).getTime();
-    const end = new Date(newEndDate).getTime();
-    const diffDays = Math.max(1, Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1);
-    const durationBadge = `${diffDays} ngày`;
-
-    const startParts = newStartDate.split('-');
-    const endParts = newEndDate.split('-');
-    const formattedStartDate = startParts.length === 3 ? `${startParts[2]}/${startParts[1]}` : newStartDate;
-    const formattedEndDate = endParts.length === 3 ? `${endParts[2]}/${endParts[1]}/${endParts[0]}` : newEndDate;
-
-    const currentOwner = getCurrentUserMember('Trưởng nhóm');
     const parsedBudget = Number(newBudget) > 0 ? Number(newBudget) : 20000000;
 
     try {
-      // Persist directly to PostgreSQL Database via Spring Boot API
-      const createdBackendTrip = await apiRequest<any>('/trips', {
+      const createdTrip = await apiRequest<any>('/trips', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1045,142 +1049,50 @@ export default function TripsPage() {
         }),
       });
 
-      const realId = createdBackendTrip.id;
-      const newTrip: TripItem = {
-        id: realId,
-        title: createdBackendTrip.title || newTitle,
-        destination: destinationToSave,
-        durationBadge,
-        startDate: formattedStartDate,
-        endDate: formattedEndDate,
-        status: 'PLANNING',
-        role: 'OWNER',
-        ownerId: createdBackendTrip.ownerId || currentOwner.userId,
-        budgetTotal: parsedBudget,
-        budgetSpent: 0,
-        progressPercent: 0,
-        members: [currentOwner],
-        image: getDestinationHeroImage(destinationToSave),
-        treasuryPath: `/trips/${realId}/treasury`,
-        alertText: `Hành trình ${durationBadge} khám phá ${destinationToSave}`,
-        alertLinkText: 'Xem',
-        itineraryDays: getSampleItineraryForDestination(destinationToSave, formattedStartDate),
-        quickActions: [
-          { label: 'Lịch trình', href: `/trips/${realId}` },
-          { label: 'Thủ quỹ', href: `/trips/${realId}/treasury` },
-          { label: 'Phân công', actionType: 'ASSIGN' },
-          { label: 'Ghi chú', actionType: 'NOTE' },
-        ],
-      };
+      const realTripId = createdTrip.id;
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('vista_last_trip_id', realTripId);
+      }
 
-      setTripsList((prev) => [newTrip, ...prev]);
       setShowCreateModal(false);
       setNewTitle('');
       setNewDestination('');
       setCustomCityName('');
       setIsCustomCity(false);
-      showToast(`🎉 Đã lưu thành công chuyến đi "${newTrip.title}" vào Database!`);
+      showToast(`🎉 Tạo thành công chuyến đi "${newTitle}"!`);
+      await fetchTripsFromBackend();
+      router.push(`/trips/${realTripId}`);
     } catch (err: any) {
-      showToast(`⚠️ Lỗi khi lưu chuyến đi vào Database: ${err.message || 'Lỗi kết nối'}`);
+      showToast(err.message || 'Lỗi khi tạo chuyến đi trên máy chủ');
     }
   };
 
   const handleJoinTrip = async (e: React.FormEvent) => {
     e.preventDefault();
-    const cleanCode = joinCode.trim().toUpperCase();
+    const cleanCode = joinCode.trim();
     if (!cleanCode) {
       showToast('Vui lòng nhập mã mời từ trưởng nhóm!');
       return;
     }
 
-    // Try finding in existing trips (custom or demo)
-    const allTrips = [...tripsList];
-    const matched = allTrips.find((t) => {
-      const tripCode = `VISTA-${t.id.replace(/[^a-zA-Z0-9]/g, '').slice(-6)}`.toUpperCase();
-      return (
-        cleanCode === tripCode ||
-        cleanCode === t.id.toUpperCase() ||
-        t.id.toUpperCase().includes(cleanCode.replace('VISTA-', '')) ||
-        (cleanCode.includes('DN') && t.id.includes('danang')) ||
-        (cleanCode.includes('HG') && t.id.includes('hagiang')) ||
-        (cleanCode.includes('PQ') && t.id.includes('phuquoc'))
-      );
-    });
-
-    if (matched) {
-      // Add current user as member if not yet added
-      const meMember = getCurrentUserMember('Thành viên');
-      const alreadyIn = (matched.members || []).some(
-        (m) =>
-          (m.userId && m.userId === meMember.userId) ||
-          (m.email && meMember.email && m.email.toLowerCase() === meMember.email.toLowerCase()) ||
-          m.name.toLowerCase() === meMember.name.toLowerCase()
-      );
-      if (!alreadyIn) {
-        matched.members = [...(matched.members || []), meMember];
-      }
-
-      setShowJoinModal(false);
-      setJoinCode('');
-      showToast(`Gia nhập thành công "${matched.title}"! Đang chuyển hướng...`);
-      setTimeout(() => {
-        router.push(`/trips/${matched.id}`);
-      }, 500);
-      return;
-    }
-
-    // Try joining via backend invitation token if available
     try {
-      await apiRequest(`/invitations/${cleanCode}/accept`, { method: 'POST' });
-      showToast(`🎉 Đã tham gia chuyến đi thành công qua mã ${cleanCode}!`);
+      const res = await apiRequest<any>(`/invitations/${encodeURIComponent(cleanCode)}/accept`, {
+        method: 'POST',
+      });
+
       setShowJoinModal(false);
       setJoinCode('');
-      // Re-sync trips
-      const updatedServerTrips = await apiRequest<any[]>('/trips');
-      if (Array.isArray(updatedServerTrips)) {
-        window.location.reload();
+      showToast(`🎉 Gia nhập thành công chuyến đi! Đang chuyển hướng...`);
+      await fetchTripsFromBackend();
+      if (res.tripId) {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('vista_last_trip_id', res.tripId);
+        }
+        router.push(`/trips/${res.tripId}`);
       }
-      return;
-    } catch {
-      // If code is not an active backend invitation token, provide friendly fallback
+    } catch (err: any) {
+      showToast(err.message || 'Mã mời không tồn tại hoặc đã hết hạn.');
     }
-
-    // If new custom code not matching existing, create a joined trip stub
-    const meMember = getCurrentUserMember('Thành viên');
-    const newJoinedId = `trip-joined-${Date.now()}`;
-    const newJoinedTrip: TripItem = {
-      id: newJoinedId,
-      title: `Chuyến đi theo mã ${cleanCode}`,
-      destination: 'Việt Nam',
-      durationBadge: '3 ngày',
-      startDate: 'Sắp tới',
-      endDate: '2026',
-      status: 'PLANNING',
-      role: 'MEMBER',
-      budgetTotal: 15000000,
-      budgetSpent: 0,
-      progressPercent: 0,
-      members: [
-        { name: 'Trưởng nhóm', avatar: 'TN', color: '#0070BA', role: 'Trưởng nhóm', userId: 'owner-stub' },
-        meMember,
-      ],
-      image: 'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80',
-      treasuryPath: `/trips/${newJoinedId}/treasury`,
-      alertType: 'BLUE',
-      alertText: `Bạn đã tham gia qua mã mời ${cleanCode}`,
-      quickActions: [
-        { label: 'Lịch trình', actionType: 'PLAN' },
-        { label: 'Thành viên', actionType: 'MEMBERS' },
-      ],
-    };
-
-    setTripsList((prev) => [newJoinedTrip, ...prev]);
-    setShowJoinModal(false);
-    setJoinCode('');
-    showToast(`Gia nhập thành công chuyến đi theo mã ${cleanCode}! Đang chuyển hướng...`);
-    setTimeout(() => {
-      router.push(`/trips/${newJoinedTrip.id}`);
-    }, 500);
   };
 
   const toggleVote = (id: number) => {
@@ -1623,6 +1535,8 @@ export default function TripsPage() {
                   { label: 'Ghi chú', actionType: 'NOTE' },
                 ];
 
+            const tripStatus = resolveTripStatus(trip.startDate, trip.endDate, trip.status, currentDate);
+
             return (
               <div key={trip.id} className={styles.tripCard} id={`trip-card-${trip.id}`}>
                 {/* Media Image Banner */}
@@ -1637,13 +1551,13 @@ export default function TripsPage() {
                   <div className={styles.tripMediaOverlay}>
                     {/* Top Row: Status badge + 3-dots menu */}
                     <div className={styles.mediaTopRow}>
-                      {trip.status === 'ACTIVE' && (
+                      {(tripStatus === 'ACTIVE' || tripStatus === 'ONGOING') && (
                         <span className={styles.statusPillActive}>
                           <span className={styles.liveGreenDot} />
                           <span>Đang diễn ra</span>
                         </span>
                       )}
-                      {trip.status === 'PLANNING' && (
+                      {tripStatus === 'PLANNING' && (
                         <span className={styles.statusPillPlanning}>
                           <span
                             style={{
@@ -1656,10 +1570,15 @@ export default function TripsPage() {
                           <span>Đang lên kế hoạch</span>
                         </span>
                       )}
-                      {trip.status === 'COMPLETED' && (
+                      {tripStatus === 'COMPLETED' && (
                         <span className={styles.statusPillCompleted}>
                           <Check size={12} strokeWidth={3} />
                           <span>Đã hoàn thành</span>
+                        </span>
+                      )}
+                      {tripStatus === 'CANCELLED' && (
+                        <span style={{ background: '#FEE2E2', color: '#991B1B', borderRadius: 99, padding: '2px 8px', fontSize: 11, fontWeight: 700 }}>
+                          <span>Đã hủy</span>
                         </span>
                       )}
 
@@ -1688,248 +1607,265 @@ export default function TripsPage() {
 
                 {/* Card Body */}
                 <div className={styles.tripCardBody}>
-                  {/* Row 1: Role / Rating + Date */}
-                  <div className={styles.cardHeaderRow}>
-                    {trip.rating ? (
-                      <div className={styles.ratingRow}>
-                        <Star size={13} fill="#D97706" color="#D97706" />
-                        <Star size={13} fill="#D97706" color="#D97706" />
-                        <Star size={13} fill="#D97706" color="#D97706" />
-                        <Star size={13} fill="#D97706" color="#D97706" />
-                        <Star size={13} fill="#D97706" color="#D97706" />
-                        <span>5.0</span>
-                      </div>
-                    ) : isTripOwner ? (
-                      <span className={styles.roleBadgeOwner}>Bạn là trưởng nhóm</span>
-                    ) : isTripMember ? (
-                      <span className={styles.roleBadgeMember}>Thành viên nhóm</span>
-                    ) : (
-                      <span className={styles.roleBadgeOther}>
-                        Trưởng nhóm: {trip.members?.[0]?.name || 'Khác'}
-                      </span>
-                    )}
+                  <div className={styles.cardTopSection}>
+                    {/* Row 1: Role / Rating + Date */}
+                    <div className={styles.cardHeaderRow}>
+                      {trip.rating ? (
+                        <div className={styles.ratingRow}>
+                          <Star size={13} fill="#D97706" color="#D97706" />
+                          <Star size={13} fill="#D97706" color="#D97706" />
+                          <Star size={13} fill="#D97706" color="#D97706" />
+                          <Star size={13} fill="#D97706" color="#D97706" />
+                          <Star size={13} fill="#D97706" color="#D97706" />
+                          <span>5.0</span>
+                        </div>
+                      ) : isTripOwner ? (
+                        <span className={styles.roleBadgeOwner} title="Bạn là trưởng nhóm">Bạn là trưởng nhóm</span>
+                      ) : isTripMember ? (
+                        <span className={styles.roleBadgeMember} title="Thành viên nhóm">Thành viên nhóm</span>
+                      ) : (
+                        <span className={styles.roleBadgeOther} title={`Trưởng nhóm: ${trip.members?.[0]?.name || 'Khác'}`}>
+                          Trưởng nhóm: {trip.members?.[0]?.name || 'Khác'}
+                        </span>
+                      )}
 
-                    <span className={styles.cardDateText}>
-                      <Calendar size={13} />
-                      <span>{trip.startDate} – {trip.endDate}</span>
-                    </span>
+                      <span className={styles.cardDateText}>
+                        <Calendar size={12} />
+                        <span>{trip.startDate} – {trip.endDate}</span>
+                      </span>
+                    </div>
+
+                    {/* Row 2: Trip Title */}
+                    <h3 className={styles.tripTitle} title={trip.title}>
+                      <Link href={`/trips/${trip.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                        {trip.title}
+                      </Link>
+                    </h3>
+
+                    {/* Row 3: Members Avatar Stack */}
+                    <div className={styles.membersRow}>
+                      <div className={styles.avatarStack}>
+                        {membersList.map((m, idx) => {
+                          const isMe = Boolean(
+                            currentUser && (
+                              (m.userId && currentUser.id && m.userId === currentUser.id) ||
+                              (m.email && currentUser.email && m.email.toLowerCase() === currentUser.email.toLowerCase()) ||
+                              (currentUser.displayName && m.name.toLowerCase() === currentUser.displayName.toLowerCase())
+                            )
+                          );
+                          return (
+                            <div
+                              key={idx}
+                              className={styles.avatarCircle}
+                              style={{ backgroundColor: m.color || '#0284c7' }}
+                              title={`${m.name}${isMe ? ' (Bạn)' : ''}`}
+                            >
+                              {m.avatar || 'TV'}
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <span className={styles.memberCountText}>
+                        {membersList.length} thành viên
+                      </span>
+                    </div>
+
+                    {/* Row 4: Alert Box Slot (Always fixed 46px height for perfect alignment) */}
+                    <div className={styles.cardAlertSlot}>
+                      {trip.alertType === 'AMBER' && (
+                        <div className={styles.alertBoxAmber}>
+                          <Bell size={14} style={{ flexShrink: 0 }} />
+                          <span className={styles.alertTextClamp}>{trip.alertText}</span>
+                        </div>
+                      )}
+                      {trip.alertType === 'BLUE' && (
+                        <div className={styles.alertBoxBlue}>
+                          <Shuffle size={14} style={{ flexShrink: 0 }} />
+                          <span className={styles.alertTextClamp}>{trip.alertText}</span>
+                        </div>
+                      )}
+                      {trip.alertType === 'COMPLETED' && (
+                        <div className={styles.alertBoxCompleted}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, overflow: 'hidden', flex: 1 }}>
+                            <Camera size={14} style={{ flexShrink: 0 }} />
+                            <span className={styles.alertTextClamp}>{trip.alertText}</span>
+                          </div>
+                          <span
+                            className={styles.alertLinkBtn}
+                            onClick={() => showToast('Mở bộ sưu tập 148 ảnh & hóa đơn')}
+                          >
+                            {trip.alertLinkText || 'Xem'}
+                          </span>
+                        </div>
+                      )}
+                      {!['AMBER', 'BLUE', 'COMPLETED'].includes(trip.alertType as any) && trip.alertText && (
+                        <div className={styles.alertBoxBlue}>
+                          <Shuffle size={14} style={{ flexShrink: 0 }} />
+                          <span className={styles.alertTextClamp}>{trip.alertText}</span>
+                        </div>
+                      )}
+                      {!trip.alertText && (
+                        <div className={styles.alertBoxNeutral}>
+                          <Sparkles size={13} style={{ flexShrink: 0, color: '#0284C7' }} />
+                          <span className={styles.alertTextClamp}>Kế hoạch & trải nghiệm đang diễn ra</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Row 2: Trip Title */}
-                  <h3 className={styles.tripTitle}>
-                    <Link href={`/trips/${trip.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
-                      {trip.title}
-                    </Link>
-                  </h3>
-
-                  {/* Row 3: Members Avatar Stack */}
-                  <div className={styles.membersRow}>
-                    <div className={styles.avatarStack}>
-                      {membersList.map((m, idx) => {
-                        const isMe = Boolean(
-                          currentUser && (
-                            (m.userId && currentUser.id && m.userId === currentUser.id) ||
-                            (m.email && currentUser.email && m.email.toLowerCase() === currentUser.email.toLowerCase()) ||
-                            (currentUser.displayName && m.name.toLowerCase() === currentUser.displayName.toLowerCase())
-                          )
-                        );
-                        return (
-                          <div
-                            key={idx}
-                            className={styles.avatarCircle}
-                            style={{ backgroundColor: m.color || '#0284c7' }}
-                            title={`${m.name}${isMe ? ' (Bạn)' : ''}`}
-                          >
-                            {m.avatar || 'TV'}
+                  <div className={styles.cardBottomSection}>
+                    {/* Row 5: Progress Bar / Budget */}
+                    <div className={styles.cardProgressGroup}>
+                      {tripStatus === 'COMPLETED' ? (
+                        <>
+                          <div className={styles.progressLabelRow}>
+                            <span>Tổng chi tiêu hoàn tất</span>
+                            <span className={styles.progressValueBold}>
+                              {(trip.budgetSpent ?? 0).toLocaleString('vi-VN')}đ / {(trip.budgetTotal ?? 0).toLocaleString('vi-VN')}đ
+                            </span>
                           </div>
+                          <div className={styles.progressBarTrack}>
+                            <div
+                              className={styles.progressBarFillNavy}
+                              style={{ width: `${trip.progressPercent ?? 100}%` }}
+                            />
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className={styles.progressLabelRow}>
+                            <span>Chi phí đã chi</span>
+                            <span className={styles.progressValueBold}>{trip.progressPercent ?? 0}%</span>
+                          </div>
+                          <div className={styles.progressBarTrack}>
+                            <div
+                              className={styles.progressBarFillCyan}
+                              style={{ width: `${trip.progressPercent ?? 0}%` }}
+                            />
+                          </div>
+                          <div className={styles.progressLabelRow}>
+                            <span>Ngân sách chuyến đi</span>
+                            <span className={styles.progressValueBold}>
+                              {(trip.budgetSpent ?? 0).toLocaleString('vi-VN')}đ / {(trip.budgetTotal ?? 0).toLocaleString('vi-VN')}đ
+                            </span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Row 6: Primary CTA Button */}
+                    <Link
+                      href={`/trips/${trip.id}`}
+                      className={
+                        tripStatus === 'ACTIVE'
+                          ? styles.btnCardMainPrimary
+                          : styles.btnCardMainSoft
+                      }
+                      id={`btn-cta-${trip.id}`}
+                    >
+                      {tripStatus === 'COMPLETED' ? 'Xem lại hành trình' : 'Xem chi tiết'}
+                    </Link>
+
+                    {/* Row 7: Secondary Action Pills */}
+                    <div
+                      className={
+                        actions.length === 2
+                          ? styles.secondaryActionsRow2
+                          : styles.secondaryActionsRow
+                      }
+                    >
+                      {actions.map((act, aIdx) => {
+                        const isItinerary = act.label.toLowerCase().includes('lịch trình') || act.actionType === 'PLAN';
+                        const isAssign = act.label.toLowerCase().includes('phân công') || act.actionType === 'ASSIGN';
+                        const isNote = act.label.toLowerCase().includes('ghi chú') || act.actionType === 'NOTE';
+                        const isVote = act.label.toLowerCase().includes('biểu quyết') || act.actionType === 'VOTE';
+
+                        if (isItinerary) {
+                          return (
+                            <Link
+                              key={aIdx}
+                              href={`/trips/${trip.id}?tab=itinerary`}
+                              className={styles.btnSecondaryPill}
+                              title="Mở lịch trình từng ngày của chuyến đi"
+                            >
+                              <Calendar size={12} style={{ marginRight: 3, flexShrink: 0 }} />
+                              <span>{act.label}</span>
+                            </Link>
+                          );
+                        }
+
+                        if (isAssign) {
+                          return (
+                            <button
+                              key={aIdx}
+                              type="button"
+                              className={styles.btnSecondaryPill}
+                              onClick={() => handleOpenAssignModal(trip)}
+                              title={isTripMember ? "Mở bảng phân công nhiệm vụ nhóm" : "Chỉ thành viên chuyến đi mới có quyền xem phân công"}
+                              style={!isTripMember ? { opacity: 0.65 } : undefined}
+                            >
+                              <Users size={12} style={{ marginRight: 3, flexShrink: 0 }} />
+                              <span>{act.label}</span>
+                              {!isTripMember && <Lock size={10} style={{ marginLeft: 3, opacity: 0.7, flexShrink: 0 }} />}
+                            </button>
+                          );
+                        }
+
+                        if (isNote) {
+                          return (
+                            <button
+                              key={aIdx}
+                              type="button"
+                              className={styles.btnSecondaryPill}
+                              onClick={() => handleOpenNoteModal(trip)}
+                              title={isTripMember ? "Mở ghi chú và danh sách chuẩn bị" : "Chỉ thành viên chuyến đi mới có quyền xem ghi chú"}
+                              style={!isTripMember ? { opacity: 0.65 } : undefined}
+                            >
+                              <CheckSquare size={12} style={{ marginRight: 3, flexShrink: 0 }} />
+                              <span>{act.label}</span>
+                              {!isTripMember && <Lock size={10} style={{ marginLeft: 3, opacity: 0.7, flexShrink: 0 }} />}
+                            </button>
+                          );
+                        }
+
+                        if (isVote) {
+                          return (
+                            <button
+                              key={aIdx}
+                              type="button"
+                              className={styles.btnSecondaryPill}
+                              onClick={() => setShowVoteModal(true)}
+                            >
+                              <ThumbsUp size={12} style={{ marginRight: 3, flexShrink: 0 }} />
+                              <span>{act.label}</span>
+                            </button>
+                          );
+                        }
+
+                        if (act.href) {
+                          return (
+                            <Link
+                              key={aIdx}
+                              href={act.href}
+                              className={styles.btnSecondaryPill}
+                            >
+                              <span>{act.label}</span>
+                            </Link>
+                          );
+                        }
+
+                        return (
+                          <button
+                            key={aIdx}
+                            type="button"
+                            className={styles.btnSecondaryPill}
+                            onClick={() => showToast(`Mở tính năng: ${act.label}`)}
+                          >
+                            <span>{act.label}</span>
+                          </button>
                         );
                       })}
                     </div>
-                    <span className={styles.memberCountText}>
-                      {membersList.length} thành viên
-                    </span>
-                  </div>
-
-                  {/* Row 4: Alert Box */}
-                  {trip.alertType === 'AMBER' && (
-                    <div className={styles.alertBoxAmber}>
-                      <Bell size={14} style={{ flexShrink: 0 }} />
-                      <span>{trip.alertText}</span>
-                    </div>
-                  )}
-                  {trip.alertType === 'BLUE' && (
-                    <div className={styles.alertBoxBlue}>
-                      <Shuffle size={14} style={{ flexShrink: 0 }} />
-                      <span>{trip.alertText}</span>
-                    </div>
-                  )}
-                  {trip.alertType === 'COMPLETED' && (
-                    <div className={styles.alertBoxCompleted}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <Camera size={14} style={{ flexShrink: 0 }} />
-                        <span>{trip.alertText}</span>
-                      </div>
-                      <span
-                        className={styles.alertLinkBtn}
-                        onClick={() => showToast('Mở bộ sưu tập 148 ảnh & hóa đơn')}
-                      >
-                        {trip.alertLinkText || 'Xem'}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Row 5: Progress Bar / Budget */}
-                  <div className={styles.cardProgressGroup}>
-                    {trip.status === 'COMPLETED' ? (
-                      <div className={styles.progressLabelRow}>
-                        <span>Tổng chi tiêu hoàn tất</span>
-                        <span className={styles.progressValueBold}>
-                          {trip.budgetSpent.toLocaleString('vi-VN')}đ / {trip.budgetTotal.toLocaleString('vi-VN')}đ
-                        </span>
-                      </div>
-                    ) : (
-                      <>
-                        <div className={styles.progressLabelRow}>
-                          <span>Chi phí đã chi</span>
-                          <span className={styles.progressValueBold}>{trip.progressPercent}%</span>
-                        </div>
-                        <div className={styles.progressBarTrack}>
-                          <div
-                            className={styles.progressBarFillCyan}
-                            style={{ width: `${trip.progressPercent}%` }}
-                          />
-                        </div>
-                        <div className={styles.progressLabelRow}>
-                          <span>Ngân sách chuyến đi</span>
-                          <span className={styles.progressValueBold}>
-                            {trip.budgetSpent.toLocaleString('vi-VN')}đ / {trip.budgetTotal.toLocaleString('vi-VN')}đ
-                          </span>
-                        </div>
-                      </>
-                    )}
-
-                    {trip.status === 'COMPLETED' && (
-                      <div className={styles.progressBarTrack}>
-                        <div
-                          className={styles.progressBarFillNavy}
-                          style={{ width: `${trip.progressPercent}%` }}
-                        />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Row 6: Primary CTA Button */}
-                  <Link
-                    href={`/trips/${trip.id}`}
-                    className={
-                      trip.status === 'ACTIVE'
-                        ? styles.btnCardMainPrimary
-                        : styles.btnCardMainSoft
-                    }
-                    id={`btn-cta-${trip.id}`}
-                  >
-                    {trip.status === 'COMPLETED' ? 'Xem lại hành trình' : 'Xem chi tiết'}
-                  </Link>
-
-                  {/* Row 7: Secondary Action Pills */}
-                  <div
-                    className={
-                      actions.length === 2
-                        ? styles.secondaryActionsRow2
-                        : styles.secondaryActionsRow
-                    }
-                  >
-                    {actions.map((act, aIdx) => {
-                      const isItinerary = act.label.toLowerCase().includes('lịch trình') || act.actionType === 'PLAN';
-                      const isAssign = act.label.toLowerCase().includes('phân công') || act.actionType === 'ASSIGN';
-                      const isNote = act.label.toLowerCase().includes('ghi chú') || act.actionType === 'NOTE';
-                      const isVote = act.label.toLowerCase().includes('biểu quyết') || act.actionType === 'VOTE';
-
-                      if (isItinerary) {
-                        return (
-                          <Link
-                            key={aIdx}
-                            href={`/trips/${trip.id}?tab=itinerary`}
-                            className={styles.btnSecondaryPill}
-                            title="Mở lịch trình từng ngày của chuyến đi"
-                          >
-                            <Calendar size={13} style={{ marginRight: 4 }} />
-                            <span>{act.label}</span>
-                          </Link>
-                        );
-                      }
-
-                      if (isAssign) {
-                        return (
-                          <button
-                            key={aIdx}
-                            type="button"
-                            className={styles.btnSecondaryPill}
-                            onClick={() => handleOpenAssignModal(trip)}
-                            title={isTripMember ? "Mở bảng phân công nhiệm vụ nhóm" : "Chỉ thành viên chuyến đi mới có quyền xem phân công"}
-                            style={!isTripMember ? { opacity: 0.65 } : undefined}
-                          >
-                            <Users size={13} style={{ marginRight: 4 }} />
-                            <span>{act.label}</span>
-                            {!isTripMember && <Lock size={10} style={{ marginLeft: 3, opacity: 0.7 }} />}
-                          </button>
-                        );
-                      }
-
-                      if (isNote) {
-                        return (
-                          <button
-                            key={aIdx}
-                            type="button"
-                            className={styles.btnSecondaryPill}
-                            onClick={() => handleOpenNoteModal(trip)}
-                            title={isTripMember ? "Mở ghi chú và danh sách chuẩn bị" : "Chỉ thành viên chuyến đi mới có quyền xem ghi chú"}
-                            style={!isTripMember ? { opacity: 0.65 } : undefined}
-                          >
-                            <CheckSquare size={13} style={{ marginRight: 4 }} />
-                            <span>{act.label}</span>
-                            {!isTripMember && <Lock size={10} style={{ marginLeft: 3, opacity: 0.7 }} />}
-                          </button>
-                        );
-                      }
-
-                      if (isVote) {
-                        return (
-                          <button
-                            key={aIdx}
-                            type="button"
-                            className={styles.btnSecondaryPill}
-                            onClick={() => setShowVoteModal(true)}
-                          >
-                            <ThumbsUp size={13} style={{ marginRight: 4 }} />
-                            <span>{act.label}</span>
-                          </button>
-                        );
-                      }
-
-                      if (act.href) {
-                        return (
-                          <Link
-                            key={aIdx}
-                            href={act.href}
-                            className={styles.btnSecondaryPill}
-                          >
-                            <span>{act.label}</span>
-                          </Link>
-                        );
-                      }
-
-                      return (
-                        <button
-                          key={aIdx}
-                          type="button"
-                          className={styles.btnSecondaryPill}
-                          onClick={() => showToast(`Mở tính năng: ${act.label}`)}
-                        >
-                          <span>{act.label}</span>
-                        </button>
-                      );
-                    })}
                   </div>
                 </div>
               </div>

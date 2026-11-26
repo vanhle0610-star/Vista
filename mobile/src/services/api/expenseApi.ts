@@ -42,6 +42,15 @@ export interface SettlementTransferDto {
   amount: number;
 }
 
+export interface SettlementAccountDto {
+  userId: string;
+  displayName: string;
+  bankCode?: string | null;
+  bankBin?: string | null;
+  bankAccountNumber?: string | null;
+  bankAccountName?: string | null;
+}
+
 export interface TripExpenseSummaryDto {
   tripId: string;
   totalSpent: number;
@@ -122,6 +131,15 @@ export const expenseApi = {
       {
         params: budgetTarget ? { budgetTarget } : undefined,
       },
+    );
+    return res.data;
+  },
+
+  async fetchSettlementAccounts(
+    tripId: string,
+  ): Promise<SettlementAccountDto[]> {
+    const res = await api.get<SettlementAccountDto[]>(
+      `/trips/${tripId}/settlement-accounts`,
     );
     return res.data;
   },

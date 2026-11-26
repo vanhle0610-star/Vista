@@ -14,6 +14,11 @@ jest.mock('expo-location', () => ({
   hasServicesEnabledAsync: jest.fn(),
   watchPositionAsync: jest.fn(),
   Accuracy: { Balanced: 3 },
+  PermissionStatus: {
+    GRANTED: 'granted',
+    DENIED: 'denied',
+    UNDETERMINED: 'undetermined',
+  },
 }));
 const permission = (granted: boolean) =>
   ({
@@ -34,7 +39,7 @@ beforeEach(() => {
     .mockResolvedValue(permission(false));
   jest
     .mocked(Location.requestForegroundPermissionsAsync)
-    .mockResolvedValue({ ...permission(false), status: 'denied' as Location.PermissionStatus });
+    .mockResolvedValue({ ...permission(false), status: Location.PermissionStatus.DENIED });
   jest.mocked(Location.hasServicesEnabledAsync).mockResolvedValue(true);
   jest.mocked(api.get).mockResolvedValue({
     data: {

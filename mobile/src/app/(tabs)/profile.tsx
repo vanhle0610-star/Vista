@@ -17,12 +17,18 @@ import { AppCard } from '../../components/ui/AppCard';
 import { tokens } from '../../theme/tokens';
 import { useFavorites, useDestinationHistory } from '../../features/favorites';
 import { authStorage } from '@/services/auth/authStorage';
+import { userApi, UserProfileResponse } from '@/services/api/userApi';
+import Constants from 'expo-constants';
 
 interface StoredUser {
   id?: string;
   email?: string;
   displayName?: string;
   role?: string;
+  phoneNumber?: string | null;
+  bio?: string | null;
+  bankAccountNumber?: string | null;
+  bankCode?: string | null;
 }
 
 export default function ProfileRoute() {
@@ -49,8 +55,29 @@ export default function ProfileRoute() {
       setCurrentUser(null);
       return;
     }
-    const u = await authStorage.getUser<StoredUser>();
-    setCurrentUser(u);
+    try {
+      const profile = await userApi.getProfile();
+      const updatedUser: StoredUser = {
+        id: profile.id,
+        email: profile.email,
+        displayName: profile.displayName,
+        role: profile.roles?.[0] || 'USER',
+        phoneNumber: profile.phoneNumber,
+        bio: profile.bio,
+        bankAccountNumber: profile.bankAccountNumber,
+        bankCode: profile.bankCode,
+      };
+      setCurrentUser(updatedUser);
+      await authStorage.setUser({
+        id: profile.id,
+        email: profile.email,
+        displayName: profile.displayName,
+        roles: profile.roles,
+      });
+    } catch {
+      const u = await authStorage.getUser<StoredUser>();
+      setCurrentUser(u);
+    }
   }, []);
 
   useEffect(() => {
@@ -335,7 +362,9 @@ export default function ProfileRoute() {
       )}
 
       <View style={styles.versionSection}>
-        <AppText style={styles.versionText}>VISTA Mobile • Phiên bản 2.0 (Editorial Travel)</AppText>
+        <AppText style={styles.versionText}>
+          VISTA Mobile • Phiên bản {Constants.expoConfig?.version || '1.0.0'}
+        </AppText>
       </View>
     </ScreenContainer>
   );

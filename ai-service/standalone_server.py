@@ -1,6 +1,15 @@
 import json
 import os
 import sys
+
+# Ensure UTF-8 output on Windows consoles to prevent cp1252 charmap encoding crash
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 import hmac
 import logging
 from http.server import HTTPServer, BaseHTTPRequestHandler

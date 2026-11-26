@@ -638,7 +638,10 @@ class DestinationDataLoader:
             return False
 
         # Reject raw multi-segment addresses like "Dong lang - khang cuong - yen khanh - ninh binh"
-        if n_low.count(" - ") >= 2 or n_low.count("-") >= 3:
+        # Be careful not to penalize hyphenated province names like "Bà Rịa - Vũng Tàu" or "Phan Rang - Tháp Chàm"
+        prov_norm = unicodedata.normalize("NFC", (province or "").lower().strip())
+        n_without_prov = n_low.replace(prov_norm, "")
+        if n_without_prov.count(" - ") >= 2 or n_without_prov.count("-") >= 3:
             return False
 
         junk_substrings = [
@@ -666,11 +669,11 @@ class DestinationDataLoader:
 
         return True
 
-    def _load_osm_supplement_into(self, loaded: List[Destination], max_per_province: int = 100) -> int:
+    def _load_osm_supplement_into(self, loaded: List[Destination], max_per_province: int = 150) -> int:
         """
-        Loads verified real OpenStreetMap POIs (osm-node-*, osm-way-*) from database/vista_destinations.db
-        as Tier-2 supplementary destinations (restaurants, cafes, regional attractions) while strictly
-        rejecting any synthetic osm-gen-% records or non-tourism OSM clutter.
+        Loads verified real destinations and regional POIs from database/vista_destinations.db
+        as Tier-2 supplementary destinations (restaurants, cafes, regional attractions) while maintaining
+        high data quality standards.
         """
         import sqlite3
         base_dir = os.path.dirname(__file__)
@@ -704,8 +707,8 @@ class DestinationDataLoader:
                        walking_load, indoor_outdoor, suitable_slots,
                        description, photo_url, verified_at
                 FROM destinations
-                WHERE (id LIKE 'osm-node-%' OR id LIKE 'osm-way-%')
-                  AND id NOT LIKE 'osm-gen-%'
+                WHERE (id LIKE 'osm-node-%' OR id LIKE 'osm-way-%' OR id LIKE 'dest-%')
+                AND id NOT LIKE 'osm-gen-%'
             """)
             rows = cur.fetchall()
             conn.close()
@@ -715,7 +718,7 @@ class DestinationDataLoader:
 
         for r in rows:
             osm_id = str(r["id"] or "").strip()
-            if not osm_id or osm_id in existing_ids or osm_id.startswith("osm-gen-"):
+            if not osm_id or osm_id in existing_ids:
                 continue
             prov = str(r["province"] or "").strip()
             name = str(r["name"] or "").strip()
@@ -726,6 +729,8 @@ class DestinationDataLoader:
 
             norm_n = normalize_text(name)
             ascii_n = self._strip_accents_key(name)
+            if "(co so" in ascii_n or "(cơ sở" in name.lower() or "cơ sở " in name.lower():
+                continue
             if norm_n in seen_prov_names.get(prov, set()) or ascii_n in seen_prov_ascii.get(prov, set()):
                 continue
 
