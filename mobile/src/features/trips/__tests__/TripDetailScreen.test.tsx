@@ -1,6 +1,6 @@
 import React from 'react';
 import { Alert } from 'react-native';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import { TripDetailScreen } from '../screens/TripDetailScreen';
 import { tripFeatureApi } from '../api';
 import { authStorage } from '@/services/auth/authStorage';
@@ -143,28 +143,33 @@ describe('TripDetailScreen (Bước 1 - TV3)', () => {
     });
     (tripFeatureApi.fetchTripMembers as jest.Mock).mockResolvedValue([]);
 
-    const conflictErr = new Error('Conflict') as any;
-    conflictErr.response = {
+    const error409 = new Error('Conflict') as any;
+    error409.response = {
       status: 409,
-      data: { detail: 'Chuyến đi còn khoản chi tiêu hoặc công nợ chưa quyết toán.' },
+      data: {
+        code: 'TRIP_HAS_UNSETTLED_DEBTS',
+        detail: 'Chuyến đi còn khoản chi tiêu hoặc công nợ chưa quyết toán. Vui lòng vào mục Thủ quỹ để quyết toán toàn bộ trước khi xóa.',
+      },
     };
-    (tripFeatureApi.deleteTrip as jest.Mock).mockRejectedValue(conflictErr);
+    (tripFeatureApi.deleteTrip as jest.Mock).mockRejectedValueOnce(error409);
 
-    const { findByText, getByText } = await render(<TripDetailScreen tripId="trip-101" />);
+    const { findByText } = await render(<TripDetailScreen tripId="trip-101" />);
 
-    // Open delete modal
     const deleteBtn = await findByText('Hủy & Xóa chuyến đi này');
-    fireEvent.press(deleteBtn);
+    await act(async () => {
+      fireEvent.press(deleteBtn);
+    });
 
-    // Confirm delete
     const confirmBtn = await findByText('Tôi hiểu, Xóa vĩnh viễn');
-    fireEvent.press(confirmBtn);
+    await act(async () => {
+      fireEvent.press(confirmBtn);
+    });
 
     expect(tripFeatureApi.deleteTrip).toHaveBeenCalledWith('trip-101');
     await waitFor(() => {
       expect(alertSpy).toHaveBeenCalledWith(
         'Không thể xóa chuyến đi',
-        'Chuyến đi còn khoản chi tiêu hoặc công nợ chưa quyết toán.',
+        expect.stringContaining('chưa quyết toán'),
         expect.any(Array)
       );
     });

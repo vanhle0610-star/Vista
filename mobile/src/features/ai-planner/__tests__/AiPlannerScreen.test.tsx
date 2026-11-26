@@ -1,11 +1,15 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
+import { render, screen, fireEvent, act } from '@testing-library/react-native';
 import { AiPlannerScreen } from '../screens/AiPlannerScreen';
 import { expenseApi } from '../../../services/api/expenseApi';
 
 jest.mock('expo-router', () => ({
   router: { push: jest.fn(), replace: jest.fn(), back: jest.fn() },
 }));
+
+// Ensure React 18 act environment is enabled
+// @ts-ignore
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 jest.mock('../../../services/api/expenseApi', () => ({
   expenseApi: {
@@ -16,6 +20,8 @@ jest.mock('../../../services/api/expenseApi', () => ({
 
 describe('AiPlannerScreen', () => {
   beforeEach(() => {
+    // @ts-ignore
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true;
     jest.clearAllMocks();
   });
 
@@ -66,34 +72,34 @@ describe('AiPlannerScreen', () => {
       ],
     });
 
-    await render(<AiPlannerScreen />);
+    const { getByText, findByText } = await render(<AiPlannerScreen />);
 
-    const generateBtn = screen.getByText('✨ LẬP LỊCH TRÌNH TỐI ƯU');
-    fireEvent.press(generateBtn);
-
-    await waitFor(() => {
-      expect(screen.getByText('✨ Gemini 2.5 Flash Live AI')).toBeTruthy();
-      expect(screen.getByText(/3.200.000/)).toBeTruthy();
-      expect(screen.getByText(/THỦ QUỸ & CHIA TIỀN NHÓM/)).toBeTruthy();
-      expect(screen.getByText('Ngày 1: Biển Mỹ Khê & Bán đảo Sơn Trà')).toBeTruthy();
-      expect(screen.getByText('Bán đảo Sơn Trà & Chùa Linh Ứng')).toBeTruthy();
+    const generateBtn = getByText('✨ LẬP LỊCH TRÌNH TỐI ƯU');
+    await act(async () => {
+      fireEvent.press(generateBtn);
     });
+
+    await findByText('✨ Gemini 2.5 Flash Live AI');
+    expect(getByText(/3.200.000/)).toBeTruthy();
+    expect(getByText(/THỦ QUỸ & CHIA TIỀN NHÓM/)).toBeTruthy();
+    expect(getByText('Ngày 1: Biển Mỹ Khê & Bán đảo Sơn Trà')).toBeTruthy();
+    expect(getByText('Bán đảo Sơn Trà & Chùa Linh Ứng')).toBeTruthy();
   });
 
   it('shows error state with retry button and does not inject mock data when API call fails', async () => {
     (expenseApi.fetchAiQuickPlan as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
     (expenseApi.fetchAiItinerarySuggestions as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
 
-    await render(<AiPlannerScreen />);
+    const { getByText, findByText, queryByText } = await render(<AiPlannerScreen />);
 
-    const generateBtn = screen.getByText('✨ LẬP LỊCH TRÌNH TỐI ƯU');
-    fireEvent.press(generateBtn);
-
-    await waitFor(() => {
-      expect(screen.getByText(/Không thể kết nối hoặc khởi tạo lịch trình AI lúc này/)).toBeTruthy();
-      expect(screen.getByText('🔄 Thử lại')).toBeTruthy();
-      // Ensure no mock data leaked
-      expect(screen.queryByText('⚡ Lộ trình chuẩn hóa')).toBeNull();
+    const generateBtn = getByText('✨ LẬP LỊCH TRÌNH TỐI ƯU');
+    await act(async () => {
+      fireEvent.press(generateBtn);
     });
+
+    await findByText(/Không thể kết nối hoặc khởi tạo lịch trình AI lúc này/);
+    expect(getByText('🔄 Thử lại')).toBeTruthy();
+    // Ensure no mock data leaked
+    expect(queryByText('⚡ Lộ trình chuẩn hóa')).toBeNull();
   });
 });

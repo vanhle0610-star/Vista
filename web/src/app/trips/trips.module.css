@@ -523,24 +523,28 @@
 .tripCard {
   background: #FFFFFF;
   border: 1px solid #E2E8F0;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.04);
+  border-radius: 18px;
+  overflow: visible;
+  position: relative;
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.04);
   display: flex;
   flex-direction: column;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
 }
 
 .tripCard:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 16px 36px -4px rgba(15, 23, 42, 0.09);
+  transform: translateY(-3px);
+  box-shadow: 0 14px 30px -4px rgba(15, 23, 42, 0.08);
+  border-color: #CBD5E1;
 }
 
 /* Media Banner on Top of Card */
 .tripMediaWrapper {
   position: relative;
-  height: 200px;
+  height: 190px;
   width: 100%;
+  border-radius: 18px 18px 0 0;
+  overflow: hidden;
   background-size: cover;
   background-position: center;
 }
@@ -553,11 +557,11 @@
   bottom: 0;
   background: linear-gradient(
     180deg,
-    rgba(15, 23, 42, 0.5) 0%,
-    rgba(15, 23, 42, 0.1) 40%,
+    rgba(15, 23, 42, 0.55) 0%,
+    rgba(15, 23, 42, 0.08) 45%,
     rgba(15, 23, 42, 0.85) 100%
   );
-  padding: 16px;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -567,6 +571,60 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  position: relative;
+}
+
+.cardMenuWrapper {
+  position: relative;
+}
+
+.cardDropdownMenu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 170px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -4px rgba(15, 23, 42, 0.12), 0 4px 6px -2px rgba(15, 23, 42, 0.05);
+  padding: 6px;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  animation: fadeInDown 0.15s ease-out;
+}
+
+.cardDropdownItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.cardDropdownItem:hover {
+  background: #F8FAFC;
+  color: #0F172A;
+}
+
+.cardDropdownDanger {
+  color: #E11D48 !important;
+}
+
+.cardDropdownDanger:hover {
+  background: #FFF1F2 !important;
+  color: #BE123C !important;
 }
 
 .statusPillActive {
@@ -574,12 +632,13 @@
   align-items: center;
   gap: 6px;
   padding: 4px 12px;
-  background: rgba(16, 185, 129, 0.9);
+  background: rgba(16, 185, 129, 0.95);
   color: #FFFFFF;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 700;
   backdrop-filter: blur(8px);
+  letter-spacing: 0.01em;
 }
 
 .statusPillPlanning {
@@ -587,12 +646,13 @@
   align-items: center;
   gap: 6px;
   padding: 4px 12px;
-  background: rgba(2, 132, 199, 0.9);
+  background: rgba(2, 132, 199, 0.92);
   color: #FFFFFF;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 700;
   backdrop-filter: blur(8px);
+  letter-spacing: 0.01em;
 }
 
 .statusPillCompleted {
@@ -600,10 +660,10 @@
   align-items: center;
   gap: 6px;
   padding: 4px 12px;
-  background: rgba(71, 85, 105, 0.88);
+  background: rgba(71, 85, 105, 0.9);
   color: #FFFFFF;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 700;
   backdrop-filter: blur(8px);
 }
@@ -613,7 +673,7 @@
   height: 32px;
   border-radius: 50%;
   background: rgba(15, 23, 42, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.35);
   color: #FFFFFF;
   display: flex;
   align-items: center;
@@ -650,11 +710,12 @@
 }
 
 .mediaDurationBadge {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   padding: 3px 10px;
-  background: rgba(15, 23, 42, 0.7);
-  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
   backdrop-filter: blur(8px);
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
@@ -666,6 +727,8 @@
   flex-direction: column;
   justify-content: space-between;
   flex: 1;
+  background: #FFFFFF;
+  border-radius: 0 0 18px 18px;
 }
 
 .cardTopSection {
@@ -679,13 +742,13 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  min-height: 26px;
+  min-height: 24px;
 }
 
 .roleBadgeOwner {
   font-size: 11.5px;
   font-weight: 700;
-  color: #B45309;
+  color: #92400E;
   background: #FEF3C7;
   padding: 3px 9px;
   border-radius: 6px;
@@ -774,15 +837,15 @@
 }
 
 .avatarCircle {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   border: 2px solid #FFFFFF;
-  margin-left: -8px;
+  margin-left: -7px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
   color: #FFFFFF;
 }
@@ -792,104 +855,74 @@
 }
 
 .avatarCountBadge {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   border: 2px solid #FFFFFF;
-  margin-left: -8px;
+  margin-left: -7px;
   background: #0284C7;
   color: #FFFFFF;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
 }
 
 .memberCountText {
-  font-size: 13px;
-  color: #475569;
+  font-size: 12.5px;
+  color: #64748B;
   font-weight: 500;
 }
 
-/* Alert Notification Banner Slot within Card - ALWAYS UNIFORM 46px */
+/* Alert Notification Banner Slot within Card */
 .cardAlertSlot {
-  height: 46px;
-  min-height: 46px;
-  max-height: 46px;
-  display: flex;
-  align-items: center;
   margin: 2px 0 0;
 }
 
 .alertBoxAmber {
-  width: 100%;
-  height: 100%;
-  box-sizing: border-box;
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 12px;
-  border-radius: 9px;
+  padding: 6px 12px;
+  border-radius: 8px;
   background: #FFFBEB;
   border: 1px solid #FDE68A;
   color: #92400E;
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 600;
 }
 
 .alertBoxBlue {
-  width: 100%;
-  height: 100%;
-  box-sizing: border-box;
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 12px;
-  border-radius: 9px;
+  padding: 6px 12px;
+  border-radius: 8px;
   background: #EFF6FF;
   border: 1px solid #BFDBFE;
   color: #1E40AF;
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 600;
 }
 
 .alertBoxCompleted {
-  width: 100%;
-  height: 100%;
-  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 0 12px;
-  border-radius: 9px;
+  padding: 6px 12px;
+  border-radius: 8px;
   background: #EFF6FF;
   border: 1px solid #BFDBFE;
   color: #1E40AF;
-  font-size: 12.5px;
-  font-weight: 600;
-}
-
-.alertBoxNeutral {
-  width: 100%;
-  height: 100%;
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 12px;
-  border-radius: 9px;
-  background: #F8FAFC;
-  border: 1px dashed #CBD5E1;
-  color: #64748B;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .alertTextClamp {
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
   line-height: 1.35;
@@ -897,9 +930,9 @@
 }
 
 .alertLinkBtn {
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 700;
-  color: #0070BA;
+  color: #0284C7;
   text-decoration: underline;
   cursor: pointer;
   flex-shrink: 0;
@@ -910,30 +943,38 @@
   margin-top: auto;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding-top: 10px;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #F1F5F9;
 }
 
-/* Progress Section */
+/* Progress & Budget Section */
 .cardProgressGroup {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 5px;
-  min-height: 54px;
+  gap: 6px;
 }
 
-.progressLabelRow {
+.budgetCompactRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
   font-size: 12px;
-  color: #64748B;
 }
 
-.progressValueBold {
+.budgetSpentLabel {
+  color: #64748B;
+  font-weight: 500;
+}
+
+.budgetSpentLabel strong {
+  color: #0284C7;
   font-weight: 700;
-  color: #0F172A;
+}
+
+.budgetTotalLabel {
+  color: #475569;
+  font-weight: 600;
 }
 
 .progressBarTrack {
@@ -946,107 +987,70 @@
 
 .progressBarFillCyan {
   height: 100%;
-  background: #0070BA;
+  background: linear-gradient(90deg, #0284C7 0%, #38BDF8 100%);
   border-radius: 999px;
+  transition: width 0.4s ease;
 }
 
 .progressBarFillNavy {
   height: 100%;
-  background: #0070BA;
+  background: #0F172A;
   border-radius: 999px;
 }
 
-/* Primary CTA Button */
-.btnCardMainPrimary {
-  width: 100%;
-  height: 40px;
-  box-sizing: border-box;
-  border-radius: 9px;
-  background: #0070BA;
+/* Modern Balanced Action Row */
+.cardActionsRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.btnActionPrimary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 38px;
+  border-radius: 10px;
+  background: #0284C7;
   color: #FFFFFF;
   border: none;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
-  cursor: pointer;
-  text-align: center;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s ease, transform 0.2s ease;
-  box-shadow: 0 3px 10px rgba(0, 112, 186, 0.2);
-}
-
-.btnCardMainPrimary:hover {
-  background: #005A96;
-  transform: translateY(-1px);
-}
-
-.btnCardMainSoft {
-  width: 100%;
-  height: 40px;
-  box-sizing: border-box;
-  border-radius: 9px;
-  background: #EFF6FF;
-  color: #0070BA;
-  border: 1px solid #BFDBFE;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  text-align: center;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s ease, transform 0.2s ease;
-}
-
-.btnCardMainSoft:hover {
-  background: #DBEAFE;
-  transform: translateY(-1px);
-}
-
-/* Secondary Actions Bar */
-.secondaryActionsRow {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-  height: 35px;
-}
-
-.secondaryActionsRow2 {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 6px;
-  height: 35px;
-}
-
-.btnSecondaryPill {
-  height: 100%;
-  box-sizing: border-box;
-  padding: 0 4px;
-  background: #F8FAFC;
-  border: 1px solid #E2E8F0;
-  border-radius: 7px;
-  color: #475569;
-  font-size: 12px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
   text-decoration: none;
   cursor: pointer;
   transition: all 0.2s ease;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.2);
 }
 
-.btnSecondaryPill:hover {
+.btnActionPrimary:hover {
+  background: #0369A1;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+  transform: translateY(-1px);
+}
+
+.btnActionSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 38px;
+  border-radius: 10px;
+  background: #F8FAFC;
+  color: #334155;
+  border: 1px solid #E2E8F0;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btnActionSecondary:hover {
   background: #F1F5F9;
   color: #0F172A;
   border-color: #CBD5E1;
+  transform: translateY(-1px);
 }
 
 /* ─── 5. BOTTOM INSPIRATION & CTA BANNER ─────────────────────────────── */

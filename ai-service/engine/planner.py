@@ -908,9 +908,17 @@ class VistaMasterPlanner:
 
                 if not reasons:
                     missing_slots = [s for s in available_slots if not any(act.time_slot == s for act in day_slots)]
-                    reasons.append(f"thiếu điểm mở cửa hoặc thỏa mãn trần di chuyển cho khung {'/'.join(missing_slots) if missing_slots else 'còn lại'}")
-                reason_str = " và ".join(reasons)
-                warning_msg = f"Ngày {day_num} chỉ xếp được {len(day_slots)} điểm vì {reason_str}."
+                    slot_label = '/'.join(missing_slots) if missing_slots else 'còn lại'
+                    warning_msg = (
+                        f"Ngày {day_num} được tối ưu cân đối {len(day_slots)} điểm để đảm bảo thời gian tham quan thong thả và di chuyển an toàn. "
+                        f"💡 Gợi ý: Bạn có thể chọn thêm các điểm ẩm thực, phố đêm hoặc cà phê gần trung tâm cho khung {slot_label}."
+                    )
+                else:
+                    reason_str = " và ".join(reasons)
+                    warning_msg = (
+                        f"Ngày {day_num} được sắp xếp {len(day_slots)} điểm phù hợp ({reason_str}). "
+                        f"💡 Gợi ý: Bạn có thể chọn thêm các điểm tham quan lân cận nếu muốn lịch trình dày dặn hơn."
+                    )
                 if warning_msg not in plan_warnings:
                     plan_warnings.append(warning_msg)
 
@@ -932,7 +940,10 @@ class VistaMasterPlanner:
                         ))
 
             if "NOON" in available_slots and len(day_slots) > 0 and not any(act.time_slot == "NOON" or getattr(act, "item_type", "") in ("MEAL", "MEAL_BREAK") for act in day_slots):
-                noon_warn = f"Ngày {day_num} không có điểm ẩm thực phù hợp trong dữ liệu; khung giờ trưa (NOON) được để trống để du khách tự túc dùng bữa."
+                noon_warn = (
+                    f"Khung giờ trưa Ngày {day_num} được để trống để đoàn linh hoạt tự túc thưởng thức đặc sản địa phương. "
+                    f"💡 Mẹo: Bạn có thể chọn thêm quán ăn hoặc nhà hàng đặc sản gần khu vực buổi sáng để nhận gợi ý thuận tiện nhất."
+                )
                 if noon_warn not in plan_warnings:
                     plan_warnings.append(noon_warn)
 
@@ -1077,7 +1088,10 @@ class VistaMasterPlanner:
         for day in plan.days:
             for act in day.activities:
                 if act.travel_time_from_prev_min >= 45:
-                    w = f"Chặng di chuyển đến {act.destination_name} mất ~{act.travel_time_from_prev_min} phút, đoàn cần lưu ý thời gian ngồi xe."
+                    w = (
+                        f"Chặng di chuyển đến {act.destination_name} mất khoảng {act.travel_time_from_prev_min} phút. "
+                        f"💡 Gợi ý: Đoàn nên chuẩn bị phương tiện thoải mái, hoặc có thể đổi sang các điểm lân cận gần hơn nếu muốn rút ngắn thời gian ngồi xe."
+                    )
                     if w not in plan.warnings:
                         plan.warnings.append(w)
 
@@ -1119,7 +1133,10 @@ class VistaMasterPlanner:
                         if is_outdoor_exposed and act.destination_name not in outdoor_rain_names:
                             outdoor_rain_names.append(act.destination_name)
             if outdoor_rain_names:
-                w = f"Các điểm ngoài trời ({', '.join(outdoor_rain_names)}) nằm trong mùa mưa ước tính theo mùa, đoàn nên chuẩn bị ô/áo mưa và theo dõi dự báo thời tiết."
+                w = (
+                    f"Dự báo theo mùa có thể có mưa rải rác tại các điểm ngoài trời ({', '.join(outdoor_rain_names)}). "
+                    f"💡 Gợi ý: Đoàn nên chuẩn bị ô/áo mưa, hoặc có thể chọn thêm phương án dự phòng trong nhà (Bảo tàng, Di tích có mái che)."
+                )
                 if w not in plan.warnings:
                     plan.warnings.append(w)
 
@@ -1157,6 +1174,11 @@ class VistaMasterPlanner:
         plan.min_fluctuation_vnd = budget_summary["min_fluctuation_vnd"]
         plan.max_fluctuation_vnd = budget_summary["max_fluctuation_vnd"]
         plan.breakdown = budget_summary.get("breakdown")
+        plan.intercity_transit = budget_summary.get("intercity_transit")
+        if plan.intercity_transit and plan.intercity_transit.get("is_intercity"):
+            transit_summary_txt = plan.intercity_transit.get("summary")
+            if transit_summary_txt and transit_summary_txt not in plan.assumptions:
+                plan.assumptions.append(transit_summary_txt)
 
         if max_budget and max_budget > 0 and plan.estimated_total_cost_vnd > max_budget:
             if constraints.budget_tier != "economy":
@@ -1167,6 +1189,11 @@ class VistaMasterPlanner:
                 plan.min_fluctuation_vnd = budget_summary["min_fluctuation_vnd"]
                 plan.max_fluctuation_vnd = budget_summary["max_fluctuation_vnd"]
                 plan.breakdown = budget_summary.get("breakdown")
+        plan.intercity_transit = budget_summary.get("intercity_transit")
+        if plan.intercity_transit and plan.intercity_transit.get("is_intercity"):
+            transit_summary_txt = plan.intercity_transit.get("summary")
+            if transit_summary_txt and transit_summary_txt not in plan.assumptions:
+                plan.assumptions.append(transit_summary_txt)
 
             if plan.estimated_total_cost_vnd > max_budget:
                 opt_summary, opt_notes = BudgetCalculatorEngine.optimize_for_budget_ceiling(
