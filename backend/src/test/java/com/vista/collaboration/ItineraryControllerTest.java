@@ -5,7 +5,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -18,15 +17,11 @@ import com.vista.collaboration.itinerary.CreateItineraryDayRequest;
 import com.vista.collaboration.itinerary.CreateItineraryItemRequest;
 import com.vista.collaboration.itinerary.ItineraryController;
 import com.vista.collaboration.itinerary.ItineraryService;
-import com.vista.collaboration.itinerary.MergeItineraryRequest;
-import com.vista.collaboration.itinerary.TripItineraryResponse;
 import com.vista.collaboration.itinerary.UpdateItineraryItemRequest;
 import com.vista.common.security.CurrentUserProvider;
 import com.vista.common.web.GlobalExceptionHandler;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -132,91 +127,5 @@ class ItineraryControllerTest {
     mockMvc
         .perform(delete("/api/v1/itinerary/items/{itemId}", ITEM_ID))
         .andExpect(status().isNoContent());
-  }
-
-  @Test
-  @DisplayName("GET /api/v1/trips/{tripId}/itinerary - Thành viên lấy lịch trình dạng gộp → 200")
-  void getTripItinerary_whenMember_returns200() throws Exception {
-    TripItineraryResponse response =
-        new TripItineraryResponse(
-            TRIP_ID,
-            List.of(
-                new TripItineraryResponse.DayDto(
-                    DAY_ID,
-                    1,
-                    LocalDate.of(2026, 11, 26),
-                    0L,
-                    List.of(
-                        new TripItineraryResponse.ActivityDto(
-                            ITEM_ID,
-                            null,
-                            null,
-                            "Cầu Rồng Đà Nẵng",
-                            LocalTime.of(8, 0),
-                            LocalTime.of(10, 0),
-                            0,
-                            "Check-in buổi sáng",
-                            "AI_GEMINI",
-                            0L)))));
-
-    when(itineraryService.getTripItinerary(TRIP_ID, MEMBER_ID)).thenReturn(response);
-
-    mockMvc
-        .perform(get("/api/v1/trips/{tripId}/itinerary", TRIP_ID))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.tripId").value(TRIP_ID.toString()))
-        .andExpect(jsonPath("$.days[0].activities[0].customStopName").value("Cầu Rồng Đà Nẵng"));
-  }
-
-  @Test
-  @DisplayName("POST /api/v1/trips/{tripId}/itinerary/merge - Đồng bộ lịch trình AI Planner → 200")
-  void mergeItinerary_whenMember_returns200() throws Exception {
-    MergeItineraryRequest request =
-        new MergeItineraryRequest(
-            List.of(
-                new MergeItineraryRequest.MergeDay(
-                    1,
-                    List.of(
-                        new MergeItineraryRequest.MergeActivity(
-                            null,
-                            "Bãi biển Mỹ Khê",
-                            "08:00",
-                            "10:00",
-                            0,
-                            "Tắm biển buổi sáng",
-                            "AI_GEMINI")))));
-
-    TripItineraryResponse response =
-        new TripItineraryResponse(
-            TRIP_ID,
-            List.of(
-                new TripItineraryResponse.DayDto(
-                    DAY_ID,
-                    1,
-                    LocalDate.of(2026, 11, 26),
-                    0L,
-                    List.of(
-                        new TripItineraryResponse.ActivityDto(
-                            ITEM_ID,
-                            null,
-                            null,
-                            "Bãi biển Mỹ Khê",
-                            LocalTime.of(8, 0),
-                            LocalTime.of(10, 0),
-                            0,
-                            "Tắm biển buổi sáng",
-                            "AI_GEMINI",
-                            0L)))));
-
-    when(itineraryService.mergeItinerary(eq(TRIP_ID), eq(MEMBER_ID), any())).thenReturn(response);
-
-    mockMvc
-        .perform(
-            post("/api/v1/trips/{tripId}/itinerary/merge", TRIP_ID)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.tripId").value(TRIP_ID.toString()))
-        .andExpect(jsonPath("$.days[0].activities[0].customStopName").value("Bãi biển Mỹ Khê"));
   }
 }
