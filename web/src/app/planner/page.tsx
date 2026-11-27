@@ -5196,6 +5196,12 @@ export default function PlannerPage() {
             const found = planHistoryList.find((p) => p.id === tripId);
             if (found) handleRestoreFromHistory(found);
           }}
+          onDeleteSavedTrip={(tripId) => {
+            const updated = deletePlanFromHistory(tripId);
+            setPlanHistoryList(updated);
+            triggerToast('Đã xóa kế hoạch khỏi lịch sử.');
+          }}
+          onClearAllSavedTrips={handleClearAllHistory}
           allDestinations={DESTINATION_LIST}
           weatherData={realtimeWeather}
           weatherInsight={destWeatherInsight}
@@ -8081,8 +8087,13 @@ export default function PlannerPage() {
                   <label className={styles.fieldLabel}>Ngày khởi hành</label>
                   <input
                     type="date"
+                    min={getTodayIso()}
                     value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      const today = getTodayIso();
+                      setStartDate(val && val < today ? today : val);
+                    }}
                     style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
                   />
                 </div>

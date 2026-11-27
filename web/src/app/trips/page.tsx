@@ -68,6 +68,8 @@ interface TripItem {
   durationBadge: string;
   startDate: string;
   endDate: string;
+  rawStartDate?: string;
+  rawEndDate?: string;
   status: 'ACTIVE' | 'PLANNING' | 'ONGOING' | 'COMPLETED' | 'CANCELLED';
   role: 'OWNER' | 'MEMBER';
   ownerId?: string;
@@ -82,7 +84,115 @@ interface TripItem {
   alertText?: string;
   alertLinkText?: string;
   quickActions: Array<{ label: string; href?: string; actionType?: string }>;
-  itineraryDays?: unknown[];
+  itineraryDays?: Array<{
+    dayNumber?: number;
+    dateStr?: string;
+    title?: string;
+    activities?: Array<{ id?: string; title?: string }>;
+  }>;
+}
+
+function parseTripLocalDate(dateStr?: string): Date | null {
+  if (!dateStr) return null;
+  const clean = dateStr.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(clean)) {
+    const [y, m, d] = clean.split('-').map(Number);
+    const dt = new Date(y, m - 1, d, 12, 0, 0);
+    return isNaN(dt.getTime()) ? null : dt;
+  }
+  if (clean.includes('/')) {
+    const parts = clean.split('/').map(Number);
+    if (parts.length >= 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+      const y = parts.length >= 3 && parts[2] > 1900 ? parts[2] : new Date().getFullYear();
+      const dt = new Date(y, parts[1] - 1, parts[0], 12, 0, 0);
+      return isNaN(dt.getTime()) ? null : dt;
+    }
+  }
+  return null;
+}
+
+function formatTicketDateRange(start?: string, end?: string): string {
+  const s = parseTripLocalDate(start);
+  const e = parseTripLocalDate(end);
+  if (!s && !e) return '';
+  if (s && !e) {
+    return `${String(s.getDate()).padStart(2, '0')}/${String(s.getMonth() + 1).padStart(2, '0')}/${s.getFullYear()}`;
+  }
+  if (!s && e) {
+    return `${String(e.getDate()).padStart(2, '0')}/${String(e.getMonth() + 1).padStart(2, '0')}/${e.getFullYear()}`;
+  }
+  if (!s || !e) return '';
+  const sd = String(s.getDate()).padStart(2, '0');
+  const sm = String(s.getMonth() + 1).padStart(2, '0');
+  const ed = String(e.getDate()).padStart(2, '0');
+  const em = String(e.getMonth() + 1).padStart(2, '0');
+  if (s.getFullYear() === e.getFullYear() && s.getMonth() === e.getMonth()) {
+    return s.getDate() === e.getDate()
+      ? `${sd}/${sm}/${s.getFullYear()}`
+      : `${sd}–${ed}/${sm}/${s.getFullYear()}`;
+  }
+  if (s.getFullYear() === e.getFullYear()) {
+    return `${sd}/${sm} – ${ed}/${em}/${s.getFullYear()}`;
+  }
+  return `${sd}/${sm}/${s.getFullYear()} – ${ed}/${em}/${e.getFullYear()}`;
+}
+
+interface TimelineNodeItem {
+  dayNumber: number;
+  dateLabel: string;
+  stopLabel: string;
+  isToday: boolean;
+  isPast: boolean;
+}
+
+function buildTripTimelineData(trip: TripItem, now: Date) {
+  const startDt = parseTripLocalDate(trip.rawStartDate || trip.startDate);
+  const endDt = parseTripLocalDate(trip.rawEndDate || trip.endDate);
+  const todayNoon = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
+
+  let totalDays: number | null = null;
+  if (startDt && endDt && endDt.getTime() >= startDt.getTime()) {
+    totalDays = Math.round((endDt.getTime() - startDt.getTime()) / 86400000) + 1;
+  } else if (Array.isArray(trip.itineraryDays) && trip.itineraryDays.length > 0) {
+    totalDays = trip.itineraryDays.length;
+  }
+
+  let currentDayIndex: number | null = null;
+  if (startDt && endDt && todayNoon.getTime() >= startDt.getTime() && todayNoon.getTime() <= endDt.getTime()) {
+    currentDayIndex = Math.round((todayNoon.getTime() - startDt.getTime()) / 86400000) + 1;
+  }
+
+  const rawDays = Array.isArray(trip.itineraryDays) ? trip.itineraryDays : [];
+  const nodes: TimelineNodeItem[] = rawDays.map((d, idx) => {
+    const dayNum = d.dayNumber || idx + 1;
+    let dateLabel = '';
+    if (startDt) {
+      const dt = new Date(startDt);
+      dt.setDate(startDt.getDate() + (dayNum - 1));
+      dateLabel = `${String(dt.getDate()).padStart(2, '0')}/${String(dt.getMonth() + 1).padStart(2, '0')}`;
+    } else if (d.dateStr) {
+      dateLabel = d.dateStr;
+    } else {
+      dateLabel = `Ngày ${dayNum}`;
+    }
+    const firstAct = Array.isArray(d.activities) && d.activities.length > 0 ? d.activities[0]?.title : '';
+    const stopLabel = firstAct || d.title || `Ngày ${dayNum}`;
+    return {
+      dayNumber: dayNum,
+      dateLabel,
+      stopLabel,
+      isToday: currentDayIndex !== null && currentDayIndex === dayNum,
+      isPast: currentDayIndex !== null && dayNum < currentDayIndex,
+    };
+  });
+
+  return {
+    totalDays,
+    currentDayIndex,
+    isTodayInTrip: currentDayIndex !== null,
+    dateRangeText: formatTicketDateRange(trip.rawStartDate || trip.startDate, trip.rawEndDate || trip.endDate),
+    nodes,
+  };
 }
 
 interface StoredUser {
@@ -493,10 +603,11 @@ export default function TripsPage() {
 
   const [activeTab, setActiveTab] = useState<'all' | 'mine' | 'planning' | 'active' | 'completed'>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const [dateFilter, setDateFilter] = useState<DateFilterType>('all');
   const [dateDropdownOpen, setDateDropdownOpen] = useState(false);
   const [activeMenuTripId, setActiveMenuTripId] = useState<string | null>(null);
+  const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
   const dateDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -915,40 +1026,72 @@ export default function TripsPage() {
           const isOwner = Boolean(currentUser?.id && st.ownerId === currentUser.id);
           const start = st.startDate || '';
           const end = st.endDate || '';
-          let durationBadge = '4 ngày';
+          let durationBadge = '';
           if (start && end) {
-            const sTime = new Date(start).getTime();
-            const eTime = new Date(end).getTime();
-            if (!isNaN(sTime) && !isNaN(eTime)) {
-              const diffDays = Math.max(1, Math.round((eTime - sTime) / (1000 * 60 * 60 * 24)) + 1);
+            const sDt = parseTripLocalDate(start);
+            const eDt = parseTripLocalDate(end);
+            if (sDt && eDt && eDt.getTime() >= sDt.getTime()) {
+              const diffDays = Math.max(1, Math.round((eDt.getTime() - sDt.getTime()) / (1000 * 60 * 60 * 24)) + 1);
               durationBadge = `${diffDays} ngày`;
             }
           }
+
+          const mappedMembers: TripMember[] = Array.isArray(st.members) && st.members.length > 0
+            ? st.members.map((m: any) => ({
+                name: m.displayName || m.name || (m.role === 'OWNER' ? 'Trưởng nhóm' : 'Thành viên'),
+                avatar: (m.displayName || m.name || 'TV').slice(0, 2).toUpperCase(),
+                color: m.role === 'OWNER' ? '#0284c7' : '#10b981',
+                role: m.role === 'OWNER' ? 'Trưởng nhóm' : 'Thành viên',
+                userId: m.userId,
+                email: m.email,
+              }))
+            : [
+                {
+                  name: isOwner ? (currentUser?.displayName || 'Trưởng nhóm') : 'Trưởng nhóm',
+                  avatar: (currentUser?.displayName || 'TN').slice(0, 2).toUpperCase(),
+                  color: '#0284c7',
+                  role: 'Trưởng nhóm',
+                  userId: st.ownerId,
+                },
+              ];
+
+          let cachedItinerary: TripItem['itineraryDays'] | undefined = Array.isArray(st.itineraryDays) && st.itineraryDays.length > 0
+            ? st.itineraryDays
+            : undefined;
+          if (!cachedItinerary && typeof window !== 'undefined') {
+            try {
+              const rawCached = localStorage.getItem(`vista_trip_itinerary_${st.id}`);
+              if (rawCached) {
+                const parsed = JSON.parse(rawCached);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                  cachedItinerary = parsed;
+                }
+              }
+            } catch {}
+          }
+
+          const realImage = st.coverImageUrl || st.imageUrl || st.image || '';
+          const resolvedImage = realImage || (st.destinationSummary ? getDestinationHeroImage(dest) : '');
 
           return {
             id: String(st.id),
             title: st.title || `Chuyến đi ${dest}`,
             destination: dest,
             durationBadge,
-            startDate: start ? start.split('-').reverse().join('/') : '15/11',
-            endDate: end ? end.split('-').reverse().join('/') : '18/11/2026',
+            startDate: start ? start.split('-').reverse().join('/') : '',
+            endDate: end ? end.split('-').reverse().join('/') : '',
+            rawStartDate: start,
+            rawEndDate: end,
             status: st.status === 'COMPLETED' ? 'COMPLETED' : (st.status === 'ONGOING' || st.status === 'ACTIVE') ? 'ONGOING' : st.status === 'CANCELLED' ? 'CANCELLED' : 'PLANNING',
             role: isOwner ? 'OWNER' : 'MEMBER',
             ownerId: st.ownerId,
             budgetTotal: Number(st.budgetTotal) || 0,
             budgetSpent: 0,
             progressPercent: 0,
-            members: [
-              {
-                name: isOwner ? (currentUser?.displayName || 'Trưởng nhóm') : 'Trưởng nhóm',
-                avatar: (currentUser?.displayName || 'TN').slice(0, 2).toUpperCase(),
-                color: '#0284c7',
-                role: 'Trưởng nhóm',
-                userId: st.ownerId,
-              },
-            ],
-            image: getDestinationHeroImage(dest),
+            members: mappedMembers,
+            image: resolvedImage,
             treasuryPath: `/trips/${st.id}/treasury`,
+            itineraryDays: cachedItinerary,
             quickActions: [
               { label: 'Lịch trình', href: `/trips/${st.id}` },
               { label: 'Thủ quỹ', href: `/trips/${st.id}/treasury` },
@@ -1299,123 +1442,31 @@ export default function TripsPage() {
 
   return (
     <div className={styles.tripsPage}>
-      {/* ─── 1. TOP HEADER & ACTION ROW ───────────────────────────────── */}
-      <section className={styles.headerSection}>
-        <div className={styles.container}>
-          <div className={styles.headerRow}>
-            <div className={styles.headerText}>
-              <div className={styles.headerBadge}>
-                <span className={styles.badgeDot} />
-                <span>Quản lý hành trình</span>
-              </div>
-              <h1 className={styles.pageTitle}>Chuyến đi của bạn</h1>
-              <p className={styles.pageSubtitle}>
-                Lên kế hoạch, đồng hành và quản lý mọi hoạt động của nhóm trong cùng một nơi.
-              </p>
-            </div>
-
-            <div className={styles.headerActions}>
-              <div className={styles.headerActionsRow}>
-                <button
-                  type="button"
-                  className={styles.btnAiPlan}
-                  onClick={handleQuickCreateDemoTrip}
-                  disabled={isCreatingTrip}
-                  title="Tạo nhanh 1 chuyến đi Đà Nẵng – Hội An 3N2Đ có sẵn ảnh & lộ trình để demo"
-                  style={{ cursor: isCreatingTrip ? 'not-allowed' : 'pointer', opacity: isCreatingTrip ? 0.7 : 1 }}
-                >
-                  <Sparkles size={16} />
-                  <span>{isCreatingTrip ? 'Đang tạo chuyến Demo...' : 'Tạo Demo có ảnh'}</span>
-                </button>
-                <button
-                  type="button"
-                  className={styles.btnJoinCode}
-                  onClick={() => setShowJoinModal(true)}
-                  id="btn-join-trip-modal"
-                >
-                  <Ticket size={16} />
-                  <span>Tham gia bằng mã mới</span>
-                </button>
-              </div>
-
-              <button
-                type="button"
-                className={styles.btnCreateTripPrimary}
-                onClick={() => setShowCreateModal(true)}
-                id="btn-create-trip-modal"
-              >
-                <Plus size={16} strokeWidth={2.5} />
-                <span>Tạo chuyến đi mới</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── 2. KPI METRICS CARDS ROW (4 CARDS) ───────────────────────── */}
       <div className={styles.container}>
-        <div className={styles.kpiGrid}>
-          {/* Card 1: Tổng chuyến đi */}
-          <div className={styles.kpiCard}>
-            <div className={styles.kpiInfo}>
-              <span className={styles.kpiLabel}>Tổng chuyến đi</span>
-              <div className={styles.kpiValueRow}>
-                <span className={styles.kpiValue}>{totalCount}</span>
-              </div>
-              <span className={styles.kpiSubtext}>Đã đồng bộ hồ sơ</span>
-            </div>
-            <div className={styles.kpiIconBox}>
-              <Briefcase size={20} />
-            </div>
+        {/* ─── 1. TOP HEADER & ACTION ROW ───────────────────────────────── */}
+        <header className={styles.pageHeaderRow}>
+          <h1 className={styles.pageTitle}>Chuyến đi của bạn</h1>
+          <div className={styles.pageHeaderActions}>
+            <button
+              type="button"
+              className={styles.btnCreateTripPrimary}
+              onClick={() => setShowCreateModal(true)}
+              id="btn-create-trip-modal"
+            >
+              <Plus size={16} strokeWidth={2.5} />
+              <span>Tạo chuyến đi</span>
+            </button>
+            <button
+              type="button"
+              className={styles.btnJoinCode}
+              onClick={() => setShowJoinModal(true)}
+              id="btn-join-trip-modal"
+            >
+              <Ticket size={15} />
+              <span>Tham gia bằng mã</span>
+            </button>
           </div>
-
-          {/* Card 2: Đang lên kế hoạch */}
-          <div className={styles.kpiCard}>
-            <div className={styles.kpiInfo}>
-              <span className={styles.kpiLabel}>Đang lên kế hoạch</span>
-              <div className={styles.kpiValueRow}>
-                <span className={styles.kpiValue}>{planningCount}</span>
-              </div>
-              <span className={`${styles.kpiSubtext} ${styles.kpiSubtextAccent}`}>
-                Chờ biểu quyết chặng
-              </span>
-            </div>
-            <div className={styles.kpiIconBox}>
-              <Calendar size={20} />
-            </div>
-          </div>
-
-          {/* Card 3: Đang diễn ra */}
-          <div className={styles.kpiCard}>
-            <div className={styles.kpiInfo}>
-              <span className={styles.kpiLabel}>Đang diễn ra</span>
-              <div className={styles.kpiValueRow}>
-                <span className={styles.kpiValue}>{activeCount}</span>
-                {activeCount > 0 && <span className={styles.liveGreenDot} />}
-              </div>
-              <span className={`${styles.kpiSubtext} ${styles.kpiSubtextLive}`}>
-                {activeCount > 0 ? 'Đang ở Quảng Nam' : 'Chưa có chuyến đi'}
-              </span>
-            </div>
-            <div className={styles.kpiIconBox}>
-              <Compass size={20} />
-            </div>
-          </div>
-
-          {/* Card 4: Đã hoàn thành */}
-          <div className={styles.kpiCard}>
-            <div className={styles.kpiInfo}>
-              <span className={styles.kpiLabel}>Đã hoàn thành</span>
-              <div className={styles.kpiValueRow}>
-                <span className={styles.kpiValue}>{completedCount}</span>
-              </div>
-              <span className={styles.kpiSubtext}>Lưu trữ ảnh & chi phí</span>
-            </div>
-            <div className={styles.kpiIconBox}>
-              <CheckCircle2 size={20} />
-            </div>
-          </div>
-        </div>
+        </header>
 
         {/* ─── 2.5 HỘP THƯ LỜI MỜI THAM GIA CHUYẾN ĐI (W3-TV3-01) ─── */}
         {incomingInvitations.length > 0 && (
@@ -1532,8 +1583,8 @@ export default function TripsPage() {
           </div>
         )}
 
-        {/* ─── 3. FILTER TABS & SEARCH CONTROLS TOOLBAR ───────────────── */}
-        <div className={styles.toolbarRow}>
+        {/* ─── 2. STATUS TABS & SEARCH CONTROLS ───────────────────────── */}
+        <div className={styles.tabsRowWrapper}>
           <div className={styles.filterTabs}>
             <button
               type="button"
@@ -1571,103 +1622,105 @@ export default function TripsPage() {
               Đã hoàn thành ({completedCount})
             </button>
           </div>
+        </div>
 
-          <div className={styles.toolbarRight}>
-            <div className={styles.searchBoxWrapper}>
-              <Search size={15} className={styles.searchIcon} />
-              <input
-                type="text"
-                className={styles.searchInput}
-                placeholder="Tìm theo tên chuyến đi hoặc điểm đến"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+        <div className={styles.controlsRow}>
+          <div className={styles.searchBoxWrapper}>
+            <Search size={15} className={styles.searchIcon} />
+            <input
+              type="text"
+              className={styles.searchInput}
+              placeholder="Tìm theo tên chuyến đi hoặc điểm đến"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+
+          <div style={{ position: 'relative' }} ref={dateDropdownRef}>
+            <button
+              type="button"
+              className={`${styles.dateFilterBtn} ${dateFilter !== 'all' ? styles.dateFilterBtnActive : ''}`}
+              onClick={() => setDateDropdownOpen((prev) => !prev)}
+              id="btn-date-filter-toggle"
+              title="Lọc chuyến đi theo thời gian"
+            >
+              <Calendar size={15} color={dateFilter !== 'all' ? '#0070BA' : '#64748B'} />
+              <span>
+                {dateFilter === 'all'
+                  ? 'Thời gian'
+                  : DATE_FILTER_OPTIONS.find((o) => o.key === dateFilter)?.label.replace(' / 2026', '')}
+              </span>
+              <ChevronDown
+                size={14}
+                style={{
+                  transition: 'transform 0.2s ease',
+                  transform: dateDropdownOpen ? 'rotate(180deg)' : 'none',
+                }}
               />
-            </div>
+            </button>
 
-            <div style={{ position: 'relative' }} ref={dateDropdownRef}>
-              <button
-                type="button"
-                className={`${styles.dateFilterBtn} ${dateFilter !== 'all' ? styles.dateFilterBtnActive : ''}`}
-                onClick={() => setDateDropdownOpen((prev) => !prev)}
-                id="btn-date-filter-toggle"
-                title="Lọc chuyến đi theo thời gian"
-              >
-                <Calendar size={15} color={dateFilter !== 'all' ? '#0070BA' : '#64748B'} />
-                <span>
-                  {dateFilter === 'all'
-                    ? 'Thời gian'
-                    : DATE_FILTER_OPTIONS.find((o) => o.key === dateFilter)?.label.replace(' / 2026', '')}
-                </span>
-                <ChevronDown
-                  size={14}
-                  style={{
-                    transition: 'transform 0.2s ease',
-                    transform: dateDropdownOpen ? 'rotate(180deg)' : 'none',
-                  }}
-                />
-              </button>
-
-              {dateDropdownOpen && (
-                <div className={styles.dateDropdownMenu}>
-                  <div className={styles.dateDropdownHeader}>
-                    <span>Lọc theo thời gian</span>
-                    {dateFilter !== 'all' && (
+            {dateDropdownOpen && (
+              <div className={styles.dateDropdownMenu}>
+                <div className={styles.dateDropdownHeader}>
+                  <span>Lọc theo thời gian</span>
+                  {dateFilter !== 'all' && (
+                    <button
+                      type="button"
+                      className={styles.dateDropdownClear}
+                      onClick={() => {
+                        setDateFilter('all');
+                        setDateDropdownOpen(false);
+                      }}
+                    >
+                      Đặt lại
+                    </button>
+                  )}
+                </div>
+                <div className={styles.dateDropdownList}>
+                  {DATE_FILTER_OPTIONS.map((opt) => {
+                    const isSelected = dateFilter === opt.key;
+                    return (
                       <button
+                        key={opt.key}
                         type="button"
-                        className={styles.dateDropdownClear}
+                        className={`${styles.dateDropdownItem} ${isSelected ? styles.dateDropdownItemActive : ''}`}
                         onClick={() => {
-                          setDateFilter('all');
+                          setDateFilter(opt.key);
                           setDateDropdownOpen(false);
                         }}
                       >
-                        Đặt lại
+                        <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
+                          <span className={styles.dateOptionLabel}>{opt.label}</span>
+                          {opt.desc && <span className={styles.dateOptionDesc}>{opt.desc}</span>}
+                        </div>
+                        {isSelected && <Check size={14} color="#0070BA" />}
                       </button>
-                    )}
-                  </div>
-                  <div className={styles.dateDropdownList}>
-                    {DATE_FILTER_OPTIONS.map((opt) => {
-                      const isSelected = dateFilter === opt.key;
-                      return (
-                        <button
-                          key={opt.key}
-                          type="button"
-                          className={`${styles.dateDropdownItem} ${isSelected ? styles.dateDropdownItemActive : ''}`}
-                          onClick={() => {
-                            setDateFilter(opt.key);
-                            setDateDropdownOpen(false);
-                          }}
-                        >
-                          <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
-                            <span className={styles.dateOptionLabel}>{opt.label}</span>
-                            {opt.desc && <span className={styles.dateOptionDesc}>{opt.desc}</span>}
-                          </div>
-                          {isSelected && <Check size={14} color="#0070BA" />}
-                        </button>
-                      );
-                    })}
-                  </div>
+                    );
+                  })}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+          </div>
 
-            <div className={styles.viewToggleGroup}>
-              <button
-                type="button"
-                className={`${styles.viewToggleBtn} ${viewMode === 'grid' ? styles.viewToggleBtnActive : ''}`}
-                onClick={() => setViewMode('grid')}
-                title="Xem dạng lưới"
-              >
-                <LayoutGrid size={15} />
-              </button>
-              <button
-                type="button"
-                className={`${styles.viewToggleBtn} ${viewMode === 'list' ? styles.viewToggleBtnActive : ''}`}
-                onClick={() => setViewMode('list')}
-                title="Xem dạng danh sách"
-              >
-                <List size={15} />
-              </button>
-            </div>
+          <div className={styles.viewToggleGroup}>
+            <button
+              type="button"
+              className={`${styles.viewToggleBtn} ${viewMode === 'grid' ? styles.viewToggleBtnActive : ''}`}
+              onClick={() => setViewMode('grid')}
+              title="Xem dạng lưới"
+              aria-label="Xem dạng lưới"
+            >
+              <LayoutGrid size={15} />
+            </button>
+            <button
+              type="button"
+              className={`${styles.viewToggleBtn} ${viewMode === 'list' ? styles.viewToggleBtnActive : ''}`}
+              onClick={() => setViewMode('list')}
+              title="Xem dạng danh sách"
+              aria-label="Xem dạng danh sách"
+            >
+              <List size={15} />
+            </button>
           </div>
         </div>
 
@@ -1677,414 +1730,371 @@ export default function TripsPage() {
         ) : (
         <div className={viewMode === 'list' ? styles.tripsListView : styles.tripsGrid}>
           {filteredTrips.map((trip) => {
-            const currentOwnerMember = getCurrentUserMember('Trưởng nhóm');
-            const membersList = Array.isArray(trip.members) && trip.members.length > 0
-              ? trip.members
-              : [currentOwnerMember];
-
-            const isTripOwner = Boolean(
-              currentUser && (
-                (trip.ownerId && (trip.ownerId === currentUser.id || (currentUser.email && trip.ownerId === currentUser.email))) ||
-                (trip.members?.[0] && (
-                  (trip.members[0].userId && (trip.members[0].userId === currentUser.id || (currentUser.email && trip.members[0].userId === currentUser.email))) ||
-                  (trip.members[0].email && currentUser.email && trip.members[0].email.toLowerCase() === currentUser.email.toLowerCase()) ||
-                  (currentUser.displayName && trip.members[0].name && trip.members[0].name.trim().toLowerCase() === currentUser.displayName.trim().toLowerCase())
-                ))
-              )
-            );
-
-            const isTripMember = Boolean(
-              currentUser && (
-                isTripOwner ||
-                trip.members?.some((m) =>
-                  (m.userId && (m.userId === currentUser.id || (currentUser.email && m.userId === currentUser.email))) ||
-                  (m.email && currentUser.email && m.email.toLowerCase() === currentUser.email.toLowerCase()) ||
-                  (currentUser.displayName && m.name && m.name.trim().toLowerCase() === currentUser.displayName.trim().toLowerCase())
-                )
-              )
-            );
-
-            const actions = Array.isArray(trip.quickActions) && trip.quickActions.length > 0
-              ? trip.quickActions
-              : [
-                  { label: 'Lịch trình', href: `/planner?tripId=${trip.id}&dest=${encodeURIComponent(trip.destination || '')}` },
-                  { label: 'Phân công', actionType: 'ASSIGN' },
-                  { label: 'Ghi chú', actionType: 'NOTE' },
-                ];
-
             const tripStatus = resolveTripStatus(trip.startDate, trip.endDate, trip.status, currentDate);
+            const timelineData = buildTripTimelineData(trip, currentDate);
+            const hasImage = Boolean(trip.image) && !imageErrors[trip.id];
+            const visibleNodes = timelineData.nodes.slice(0, 4);
+            const remainingDaysCount = Math.max(0, timelineData.nodes.length - 4);
 
-            return (
-              <div key={trip.id} className={styles.tripCard} id={`trip-card-${trip.id}`}>
-                {/* Media Image Banner */}
-                <div
-                  className={styles.tripMediaWrapper}
-                  style={{
-                    backgroundImage: trip.image ? `url(${trip.image})` : 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                  }}
+            const statusBadge = (
+              <div className={styles.ticketStatusRow}>
+                {tripStatus === 'ACTIVE' || tripStatus === 'ONGOING' ? (
+                  <span className={styles.ticketStatusActive}>
+                    <span className={styles.ticketDotActive} />
+                    <span>Đang diễn ra</span>
+                  </span>
+                ) : tripStatus === 'PLANNING' ? (
+                  <span className={styles.ticketStatusPlanning}>
+                    <span className={styles.ticketDotPlanning} />
+                    <span>Đang lên kế hoạch</span>
+                  </span>
+                ) : tripStatus === 'COMPLETED' ? (
+                  <span className={styles.ticketStatusCompleted}>
+                    <span className={styles.ticketDotCompleted} />
+                    <span>Đã hoàn thành</span>
+                  </span>
+                ) : (
+                  <span className={styles.ticketStatusCancelled}>
+                    <span className={styles.ticketDotCancelled} />
+                    <span>Đã hủy</span>
+                  </span>
+                )}
+              </div>
+            );
+
+            const cardMenu = (
+              <div className={styles.cardMenuWrapper}>
+                <button
+                  type="button"
+                  className={styles.ticketMoreBtn}
+                  title="Tùy chọn khác"
+                  aria-label="Tùy chọn khác"
+                  onClick={() => setActiveMenuTripId(activeMenuTripId === trip.id ? null : trip.id)}
                 >
-                  <div className={styles.tripMediaOverlay}>
-                    {/* Top Row: Status badge + 3-dots menu */}
-                    <div className={styles.mediaTopRow}>
-                      {(tripStatus === 'ACTIVE' || tripStatus === 'ONGOING') && (
-                        <span className={styles.statusPillActive}>
-                          <span className={styles.liveGreenDot} />
-                          <span>Đang diễn ra</span>
-                        </span>
-                      )}
-                      {tripStatus === 'PLANNING' && (
-                        <span className={styles.statusPillPlanning}>
-                          <span
-                            style={{
-                              width: 6,
-                              height: 6,
-                              borderRadius: '50%',
-                              background: '#FFFFFF',
-                            }}
-                          />
-                          <span>Đang lên kế hoạch</span>
-                        </span>
-                      )}
-                      {tripStatus === 'COMPLETED' && (
-                        <span className={styles.statusPillCompleted}>
-                          <Check size={12} strokeWidth={3} />
-                          <span>Đã hoàn thành</span>
-                        </span>
-                      )}
-                      {tripStatus === 'CANCELLED' && (
-                        <span style={{ background: '#FEE2E2', color: '#991B1B', borderRadius: 99, padding: '2px 8px', fontSize: 11, fontWeight: 700 }}>
-                          <span>Đã hủy</span>
-                        </span>
-                      )}
-
-                      <div className={styles.cardMenuWrapper}>
-                        <button
-                          type="button"
-                          className={styles.btnMoreMenu}
-                          title="Tùy chọn khác"
-                          onClick={() => setActiveMenuTripId(activeMenuTripId === trip.id ? null : trip.id)}
-                        >
-                          <MoreHorizontal size={16} />
-                        </button>
-                        {activeMenuTripId === trip.id && (
-                          <div className={styles.cardDropdownMenu} onMouseLeave={() => setActiveMenuTripId(null)}>
-                            <Link
-                              href={`/trips/${trip.id}?tab=itinerary`}
-                              className={styles.cardDropdownItem}
-                              onClick={() => setActiveMenuTripId(null)}
-                            >
-                              <Calendar size={14} />
-                              <span>Lịch trình chi tiết</span>
-                            </Link>
-                            <Link
-                              href={`/trips/${trip.id}/treasury`}
-                              className={styles.cardDropdownItem}
-                              onClick={() => setActiveMenuTripId(null)}
-                            >
-                              <CreditCard size={14} />
-                              <span>Ví & Chi tiêu</span>
-                            </Link>
-                            <button
-                              type="button"
-                              className={styles.cardDropdownItem}
-                              onClick={() => {
-                                setActiveMenuTripId(null);
-                                handleOpenAssignModal(trip);
-                              }}
-                            >
-                              <Users size={14} />
-                              <span>Phân công việc</span>
-                            </button>
-                            <button
-                              type="button"
-                              className={styles.cardDropdownItem}
-                              onClick={() => {
-                                setActiveMenuTripId(null);
-                                handleOpenNoteModal(trip);
-                              }}
-                            >
-                              <CheckSquare size={14} />
-                              <span>Ghi chú chuẩn bị</span>
-                            </button>
-                            {isTripOwnerUser(trip) && (
-                              <button
-                                type="button"
-                                className={`${styles.cardDropdownItem} ${styles.cardDropdownDanger}`}
-                                onClick={() => {
-                                  setActiveMenuTripId(null);
-                                  setTripToDelete(trip);
-                                }}
-                              >
-                                <Trash2 size={14} />
-                                <span>Xóa chuyến đi</span>
-                              </button>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Bottom Row: Location + Duration badge */}
-                    <div className={styles.mediaBottomRow}>
-                      <div className={styles.mediaLocation}>
-                        <MapPin size={14} />
-                        <span>{trip.destination}</span>
-                      </div>
-                      <div className={styles.mediaDurationBadge}>
-                        {trip.durationBadge}
-                      </div>
-                    </div>
+                  <MoreHorizontal size={16} />
+                </button>
+                {activeMenuTripId === trip.id && (
+                  <div className={styles.cardDropdownMenu} onMouseLeave={() => setActiveMenuTripId(null)}>
+                    <Link
+                      href={`/trips/${trip.id}?tab=itinerary`}
+                      className={styles.cardDropdownItem}
+                      onClick={() => setActiveMenuTripId(null)}
+                    >
+                      <Calendar size={14} />
+                      <span>Lịch trình chi tiết</span>
+                    </Link>
+                    <Link
+                      href={`/trips/${trip.id}/treasury`}
+                      className={styles.cardDropdownItem}
+                      onClick={() => setActiveMenuTripId(null)}
+                    >
+                      <CreditCard size={14} />
+                      <span>Ví & Chi tiêu</span>
+                    </Link>
+                    <button
+                      type="button"
+                      className={styles.cardDropdownItem}
+                      onClick={() => {
+                        setActiveMenuTripId(null);
+                        handleOpenAssignModal(trip);
+                      }}
+                    >
+                      <Users size={14} />
+                      <span>Phân công việc</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.cardDropdownItem}
+                      onClick={() => {
+                        setActiveMenuTripId(null);
+                        handleOpenNoteModal(trip);
+                      }}
+                    >
+                      <CheckSquare size={14} />
+                      <span>Ghi chú chuẩn bị</span>
+                    </button>
+                    {isTripOwnerUser(trip) && (
+                      <button
+                        type="button"
+                        className={`${styles.cardDropdownItem} ${styles.cardDropdownDanger}`}
+                        onClick={() => {
+                          setActiveMenuTripId(null);
+                          setTripToDelete(trip);
+                        }}
+                      >
+                        <Trash2 size={14} />
+                        <span>Xóa chuyến đi</span>
+                      </button>
+                    )}
                   </div>
-                </div>
+                )}
+              </div>
+            );
 
-                {/* Card Body */}
-                <div className={styles.tripCardBody}>
-                  <div className={styles.cardTopSection}>
-                    {/* Row 1: Role / Rating + Date */}
-                    <div className={styles.cardHeaderRow}>
-                      {trip.rating ? (
-                        <div className={styles.ratingRow}>
-                          <Star size={13} fill="#D97706" color="#D97706" />
-                          <Star size={13} fill="#D97706" color="#D97706" />
-                          <Star size={13} fill="#D97706" color="#D97706" />
-                          <Star size={13} fill="#D97706" color="#D97706" />
-                          <Star size={13} fill="#D97706" color="#D97706" />
-                          <span>5.0</span>
-                        </div>
-                      ) : isTripOwner ? (
-                        <span className={styles.roleBadgeOwner} title="Bạn là trưởng nhóm">Bạn là trưởng nhóm</span>
-                      ) : isTripMember ? (
-                        <span className={styles.roleBadgeMember} title="Thành viên nhóm">Thành viên nhóm</span>
-                      ) : (
-                        <span className={styles.roleBadgeOther} title={`Trưởng nhóm: ${trip.members?.[0]?.name || 'Khác'}`}>
-                          Trưởng nhóm: {trip.members?.[0]?.name || 'Khác'}
-                        </span>
-                      )}
+            if (viewMode === 'list') {
+              return (
+                <article key={trip.id} className={styles.ticketCard} id={`trip-card-${trip.id}`}>
+                  {/* Left Zone: Cover Image or Light-Blue Placeholder */}
+                  <div className={styles.ticketMediaZone}>
+                    {hasImage ? (
+                      <img
+                        src={trip.image}
+                        alt={trip.title}
+                        className={styles.ticketMediaImg}
+                        onError={() => setImageErrors((prev) => ({ ...prev, [trip.id]: true }))}
+                      />
+                    ) : (
+                      <div className={styles.ticketMediaPlaceholder}>
+                        <MapPin size={28} color="#0284C7" />
+                      </div>
+                    )}
+                  </div>
 
-                      <span className={styles.cardDateText}>
-                        <Calendar size={12} />
-                        <span>{trip.startDate} – {trip.endDate}</span>
-                      </span>
-                    </div>
+                  {/* Middle Zone: Status, Title, Destination, Timeline */}
+                  <div className={styles.ticketBodyZone}>
+                    {statusBadge}
 
-                    {/* Row 2: Trip Title */}
-                    <h3 className={styles.tripTitle} title={trip.title}>
-                      <Link href={`/trips/${trip.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                    <h3 className={styles.ticketTitle} title={trip.title}>
+                      <Link href={`/trips/${trip.id}`} className={styles.ticketTitleLink}>
                         {trip.title}
                       </Link>
                     </h3>
 
-                    {/* Row 3: Members Avatar Stack */}
-                    <div className={styles.membersRow}>
-                      <div className={styles.avatarStack}>
-                        {membersList.map((m, idx) => {
-                          const isMe = Boolean(
-                            currentUser && (
-                              (m.userId && currentUser.id && m.userId === currentUser.id) ||
-                              (m.email && currentUser.email && m.email.toLowerCase() === currentUser.email.toLowerCase()) ||
-                              (currentUser.displayName && m.name.toLowerCase() === currentUser.displayName.toLowerCase())
-                            )
-                          );
-                          return (
-                            <div
-                              key={idx}
-                              className={styles.avatarCircle}
-                              style={{ backgroundColor: m.color || '#0284c7' }}
-                              title={`${m.name}${isMe ? ' (Bạn)' : ''}`}
-                            >
-                              {m.avatar || 'TV'}
-                            </div>
-                          );
-                        })}
-                      </div>
-                      <span className={styles.memberCountText}>
-                        {membersList.length} thành viên
-                      </span>
+                    <div className={styles.ticketLocation}>
+                      <MapPin size={14} />
+                      <span>{trip.destination}</span>
                     </div>
 
-                    {/* Row 4: Alert Box Slot (Only rendered when there is a real operational notice) */}
-                    {trip.alertType === 'AMBER' && trip.alertText && (
-                      <div className={styles.cardAlertSlot}>
-                        <div className={styles.alertBoxAmber}>
-                          <Bell size={13} style={{ flexShrink: 0 }} />
-                          <span className={styles.alertTextClamp}>{trip.alertText}</span>
+                    {visibleNodes.length > 0 ? (
+                      <div className={styles.timelineWrap}>
+                        <div className={styles.timelineTrack} />
+                        <div className={styles.timelineNodes}>
+                          {visibleNodes.map((node) => (
+                            <div key={node.dayNumber} className={styles.timelineNode}>
+                              <div className={styles.timelineTodaySlot}>
+                                {node.isToday && (
+                                  <span className={styles.timelineTodayBadge}>Hôm nay</span>
+                                )}
+                              </div>
+                              <div
+                                className={`${styles.timelineDot} ${
+                                  node.isToday
+                                    ? styles.timelineDotToday
+                                    : node.isPast
+                                    ? styles.timelineDotPast
+                                    : ''
+                                }`}
+                              />
+                              <span
+                                className={`${styles.timelineDate} ${
+                                  node.isToday ? styles.timelineDateToday : ''
+                                }`}
+                              >
+                                {node.dateLabel}
+                              </span>
+                              <span className={styles.timelineStop} title={node.stopLabel}>
+                                {node.stopLabel}
+                              </span>
+                            </div>
+                          ))}
+                          {remainingDaysCount > 0 && (
+                            <div className={styles.timelineMoreNode}>
+                              <div className={styles.timelineTodaySlot} />
+                              <span className={styles.timelineMoreBadge}>+{remainingDaysCount} ngày</span>
+                            </div>
+                          )}
                         </div>
                       </div>
-                    )}
-                    {trip.alertType === 'BLUE' && trip.alertText && (
-                      <div className={styles.cardAlertSlot}>
-                        <div className={styles.alertBoxBlue}>
-                          <Shuffle size={13} style={{ flexShrink: 0 }} />
-                          <span className={styles.alertTextClamp}>{trip.alertText}</span>
-                        </div>
+                    ) : (
+                      <div className={styles.ticketNoTimeline}>
+                        <Calendar size={13} color="#64748B" />
+                        <span>
+                          {timelineData.dateRangeText
+                            ? `Thời gian: ${timelineData.dateRangeText}`
+                            : 'Chưa có lịch trình chi tiết theo ngày'}
+                        </span>
                       </div>
                     )}
-                    {trip.alertType === 'COMPLETED' && trip.alertText && (
-                      <div className={styles.cardAlertSlot}>
-                        <div className={styles.alertBoxCompleted}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, overflow: 'hidden', flex: 1 }}>
-                            <Camera size={13} style={{ flexShrink: 0 }} />
-                            <span className={styles.alertTextClamp}>{trip.alertText}</span>
-                          </div>
-                          <span
-                            className={styles.alertLinkBtn}
-                            onClick={() => showToast('Mở bộ sưu tập ảnh & hóa đơn')}
-                          >
-                            {trip.alertLinkText || 'Xem'}
+                  </div>
+
+                  {/* Right Zone: Actions & Progress */}
+                  <div className={styles.ticketActionZone}>
+                    <div className={styles.ticketActionTop}>{cardMenu}</div>
+
+                    <div className={styles.ticketMetaCenter}>
+                      {timelineData.isTodayInTrip && timelineData.totalDays ? (
+                        <div className={styles.ticketDayProgress}>
+                          <Calendar size={15} color="#475569" />
+                          <span>
+                            Ngày {timelineData.currentDayIndex} / {timelineData.totalDays}
                           </span>
                         </div>
-                      </div>
-                    )}
-                  </div>
+                      ) : timelineData.totalDays ? (
+                        <div className={styles.ticketDayProgress}>
+                          <Calendar size={15} color="#475569" />
+                          <span>{timelineData.totalDays} ngày</span>
+                        </div>
+                      ) : null}
 
-                  <div className={styles.cardBottomSection}>
-                    {/* Row 5: Compact Budget Bar */}
-                    <div className={styles.cardProgressGroup}>
-                      <div className={styles.budgetCompactRow}>
-                        <span className={styles.budgetSpentLabel}>
-                          Đã chi: <strong>{(trip.budgetSpent ?? 0).toLocaleString('vi-VN')}đ</strong> ({trip.progressPercent ?? 0}%)
-                        </span>
-                        <span className={styles.budgetTotalLabel}>
-                          Tổng: <strong>{(trip.budgetTotal ?? 0).toLocaleString('vi-VN')}đ</strong>
-                        </span>
-                      </div>
-                      <div className={styles.progressBarTrack}>
-                        <div
-                          className={styles.progressBarFillCyan}
-                          style={{ width: `${Math.min(100, trip.progressPercent ?? 0)}%` }}
-                        />
-                      </div>
+                      {timelineData.dateRangeText && (
+                        <div className={styles.ticketDateRange}>{timelineData.dateRangeText}</div>
+                      )}
                     </div>
 
-                    {/* Row 6: Balanced Dual Action Buttons */}
-                    <div className={styles.cardActionsRow}>
-                      <Link
-                        href={`/trips/${trip.id}`}
-                        className={styles.btnActionPrimary}
-                        id={`btn-cta-${trip.id}`}
-                      >
-                        <Compass size={14} />
-                        <span>Xem chi tiết</span>
-                      </Link>
-                      <Link
-                        href={`/trips/${trip.id}?tab=itinerary`}
-                        className={styles.btnActionSecondary}
-                      >
-                        <Calendar size={14} />
-                        <span>Lịch trình</span>
-                      </Link>
-                    </div>
+                    <Link
+                      href={`/trips/${trip.id}`}
+                      className={styles.btnOpenTrip}
+                      id={`btn-cta-${trip.id}`}
+                    >
+                      <span>Mở chuyến đi</span>
+                      <ArrowRight size={15} />
+                    </Link>
                   </div>
+                </article>
+              );
+            }
+
+            // Grid mode: compact vertical card
+            return (
+              <article key={trip.id} className={styles.gridCard} id={`trip-card-${trip.id}`}>
+                <div className={styles.gridMediaZone}>
+                  {hasImage ? (
+                    <img
+                      src={trip.image}
+                      alt={trip.title}
+                      className={styles.gridMediaImg}
+                      onError={() => setImageErrors((prev) => ({ ...prev, [trip.id]: true }))}
+                    />
+                  ) : (
+                    <div className={styles.ticketMediaPlaceholder}>
+                      <MapPin size={28} color="#0284C7" />
+                    </div>
+                  )}
                 </div>
-              </div>
+
+                <div className={styles.gridCardBody}>
+                  <div className={styles.gridCardTop}>
+                    {statusBadge}
+                    {cardMenu}
+                  </div>
+
+                  <h3 className={styles.gridCardTitle} title={trip.title}>
+                    <Link href={`/trips/${trip.id}`} className={styles.ticketTitleLink}>
+                      {trip.title}
+                    </Link>
+                  </h3>
+
+                  <div className={styles.ticketLocation}>
+                    <MapPin size={13} />
+                    <span>{trip.destination}</span>
+                  </div>
+
+                  <div className={styles.gridCardMeta}>
+                    <div className={styles.gridCardDateRow}>
+                      <Calendar size={13} color="#64748B" />
+                      <span>
+                        {timelineData.isTodayInTrip && timelineData.totalDays
+                          ? `Ngày ${timelineData.currentDayIndex}/${timelineData.totalDays} · ${timelineData.dateRangeText}`
+                          : timelineData.dateRangeText || (timelineData.totalDays ? `${timelineData.totalDays} ngày` : 'Chưa có ngày')}
+                      </span>
+                    </div>
+                  </div>
+
+                  <Link
+                    href={`/trips/${trip.id}`}
+                    className={styles.btnOpenTrip}
+                    id={`btn-cta-${trip.id}`}
+                  >
+                    <span>Mở chuyến đi</span>
+                    <ArrowRight size={15} />
+                  </Link>
+                </div>
+              </article>
             );
           })}
           {filteredTrips.length === 0 && (
-            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '4rem 1.5rem', background: '#ffffff', borderRadius: 16, border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
-              <Compass size={48} color="#0284c7" style={{ margin: '0 auto 1rem' }} />
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0f172a', marginBottom: '0.5rem' }}>
+            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '4rem 1.5rem', background: '#ffffff', borderRadius: 16, border: '1px solid #e2e8f0' }}>
+              <Compass size={44} color="#0284c7" style={{ margin: '0 auto 1rem' }} />
+              <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#0f172a', marginBottom: '0.5rem' }}>
                 Chưa có chuyến đi nào
               </h3>
-              <p style={{ color: '#64748b', fontSize: '0.95rem', maxWidth: 440, margin: '0 auto 1.5rem' }}>
-                Bạn chưa tham gia chuyến đi nào. Hãy bắt đầu bằng cách tạo chuyến đi mới hoặc dùng AI Planner để thiết kế lịch trình tự động!
+              <p style={{ color: '#64748b', fontSize: '0.92rem', maxWidth: 420, margin: '0 auto 1.5rem' }}>
+                Bạn chưa có chuyến đi phù hợp. Tạo chuyến đi mới hoặc nhập mã lời mời để bắt đầu.
               </p>
               <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
                 <button
                   type="button"
-                  className={styles.btnPrimaryAction}
+                  className={styles.btnCreateTripPrimary}
                   onClick={() => setShowCreateModal(true)}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
                 >
-                  <Plus size={16} /> Tạo chuyến đi mới
+                  <Plus size={16} />
+                  <span>Tạo chuyến đi</span>
                 </button>
-                <Link
-                  href="/planner"
-                  className={styles.btnSecondaryPill}
-                  style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.65rem 1.25rem' }}
+                <button
+                  type="button"
+                  className={styles.btnJoinCode}
+                  onClick={() => setShowJoinModal(true)}
                 >
-                  <Sparkles size={16} color="#0284c7" /> Lên lịch với AI Planner
-                </Link>
+                  <Ticket size={15} />
+                  <span>Tham gia bằng mã</span>
+                </button>
               </div>
-
-              {typeof window !== 'undefined' && localStorage.getItem('vista_last_generated_plan') && (
-                <div style={{ marginTop: '1.5rem', padding: '12px 16px', background: '#F0F9FF', border: '1px solid #BAE6FD', borderRadius: '12px', display: 'inline-flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: '#0369A1' }}>
-                  <span>💡 Bạn có lịch trình AI vừa thiết kế chưa lưu thành chuyến đi.</span>
-                  <Link href="/planner" style={{ fontWeight: 700, color: '#0284C7', textDecoration: 'underline' }}>
-                    Quay lại lưu chuyến đi ngay →
-                  </Link>
-                </div>
-              )}
             </div>
           )}
         </div>
-
         )}
-
-        {/* ─── 5. BOTTOM INSPIRATION & CTA BANNER ───────────────────────── */}
-        <section className={styles.bottomCtaSection}>
-          <div className={styles.bottomSuitcaseCircle}>
-            <Briefcase size={26} />
-          </div>
-          <div className={styles.bottomEyebrow}>CẢM HỨNG ĐIỂM ĐẾN</div>
-          <h2 className={styles.bottomTitle}>Hành trình mới đang chờ bạn</h2>
-          <p className={styles.bottomSubtitle}>
-            Tạo chuyến đi đầu tiên hoặc nhập mã mới để đồng hành cùng bạn bè và tối ưu từng trải nghiệm khắp Việt Nam.
-          </p>
-          <div className={styles.bottomBtnGroup}>
-            <button
-              type="button"
-              className={styles.btnBottomPrimary}
-              onClick={() => setShowCreateModal(true)}
-            >
-              Tạo chuyến đi đầu tiên
-            </button>
-            <button
-              type="button"
-              className={styles.btnBottomSoft}
-              onClick={() => setShowJoinModal(true)}
-            >
-              Tôi có mã lời mời
-            </button>
-          </div>
-        </section>
       </div>
 
-      {/* ─── 6. FOOTER ─────────────────────────────────────────────────── */}
-      <footer className={styles.tripsFooter}>
-        <div className={styles.footerContainer}>
-          <div className={styles.footerLogoBrand}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M12 2L2 7L12 12L22 7L12 2Z"
-                stroke="#0070BA"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M2 17L12 22L22 17"
-                stroke="#0070BA"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M2 12L12 17L22 12"
-                stroke="#0070BA"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            <span>© 2025 VISTA - Vietnam Smart Travel Platform. Bảo lưu mọi quyền.</span>
+      {/* ─── 6. EDITORIAL FOOTER (Đồng nhất Homepage) ───────────────────── */}
+      <footer className={styles.footerRoot}>
+        <div className={styles.footerInnerContainer}>
+          <div className={styles.footerGrid}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+                <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#0088CC', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF' }}>
+                  <Compass size={18} color="#FFFFFF" />
+                </div>
+                <span style={{ fontSize: '18px', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.3px' }}>VISTA</span>
+              </div>
+              <p style={{ fontSize: '13.5px', color: '#94A3B8', lineHeight: 1.6, maxWidth: '320px', margin: 0 }}>
+                Nền tảng du lịch thông minh Việt Nam, tiên phong kết nối di sản văn hóa, trí tuệ nhân tạo và trải nghiệm cộng tác nhóm trọn vẹn.
+              </p>
+            </div>
+
+            <div>
+              <h4 className={styles.footerColTitle}>Sản phẩm</h4>
+              <div className={styles.footerLinksList}>
+                <Link href="/planner" className={styles.footerLink}>AI Planner Pro</Link>
+                <Link href="/map" className={styles.footerLink}>Bản đồ số GPS</Link>
+                <Link href="/trips" className={styles.footerLink}>Quản lý chuyến đi</Link>
+                <Link href="/trips" className={styles.footerLink}>Thủ quỹ &amp; VietQR</Link>
+              </div>
+            </div>
+
+            <div>
+              <h4 className={styles.footerColTitle}>Di sản 4 miền</h4>
+              <div className={styles.footerLinksList}>
+                <Link href="/planner?dest=Hà Nội" className={styles.footerLink}>Hà Nội &amp; Miền Bắc</Link>
+                <Link href="/planner?dest=Thừa Thiên Huế" className={styles.footerLink}>Cố đô Huế &amp; Miền Trung</Link>
+                <Link href="/planner?dest=Hồ Chí Minh" className={styles.footerLink}>Sài Gòn &amp; Nam Bộ</Link>
+                <Link href="/planner?dest=Lâm Đồng" className={styles.footerLink}>Đà Lạt &amp; Tây Nguyên</Link>
+              </div>
+            </div>
+
+            <div>
+              <h4 className={styles.footerColTitle}>Dự án VISTA</h4>
+              <div className={styles.footerLinksList}>
+                <span className={styles.footerLink}>Đồ án tốt nghiệp 2026</span>
+                <span className={styles.footerLink}>Kiến trúc Monolith &amp; Next.js</span>
+                <span className={styles.footerLink}>Bảo mật RBAC &amp; Supabase</span>
+                <span className={styles.footerLink}>Tích hợp AI Gemini</span>
+              </div>
+            </div>
           </div>
 
-          <div className={styles.footerLinks}>
-            <Link href="#">Điều khoản</Link>
-            <Link href="#">Chính sách bảo mật</Link>
-            <Link href="#">Trung tâm trợ giúp</Link>
+          <div className={styles.footerBottom}>
+            <span>© 2026 VISTA Travel Platform. Bản quyền thuộc về Đội ngũ phát triển VISTA.</span>
+            <span>Tự hào lan tỏa vẻ đẹp non nước Việt Nam 🇻🇳</span>
           </div>
         </div>
       </footer>

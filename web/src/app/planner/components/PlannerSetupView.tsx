@@ -23,6 +23,7 @@ import {
   Train,
   Bus,
   AlertCircle,
+  Trash2,
 } from 'lucide-react';
 import { calculateIntercityTransit, getAvailableTransportModes } from '@/lib/intercityTransit';
 
@@ -82,6 +83,8 @@ export interface PlannerSetupProps {
     startDate: string;
   }>;
   onOpenSavedTrip?: (tripId: string) => void;
+  onDeleteSavedTrip?: (tripId: string) => void;
+  onClearAllSavedTrips?: () => void;
   allDestinations?: Array<{ id: string; nameVi: string; region?: string }>;
   weatherData?: {
     temp?: number;
@@ -144,6 +147,8 @@ export function PlannerSetupView({
   onApplyTemplateItem,
   savedTrips = [],
   onOpenSavedTrip,
+  onDeleteSavedTrip,
+  onClearAllSavedTrips,
   allDestinations = [],
   weatherData = null,
   weatherInsight = null,
@@ -154,7 +159,16 @@ export function PlannerSetupView({
   const [showChildInput, setShowChildInput] = useState(false);
   const [childCount, setChildCount] = useState(0);
   const [activeQuickDate, setActiveQuickDate] = useState<'today' | 'tomorrow' | 'weekend'>('weekend');
+  const [showAllSavedTrips, setShowAllSavedTrips] = useState(false);
   const dateInputId = useId();
+
+  const formatLocalIso = (d: Date) => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  };
+  const todayIso = formatLocalIso(new Date());
 
   // Get initials for destination avatar
   const getInitials = (name: string) => {
@@ -202,17 +216,17 @@ export function PlannerSetupView({
     setActiveQuickDate(preset);
     const today = new Date();
     if (preset === 'today') {
-      onChangeStartDate(today.toISOString().split('T')[0]);
+      onChangeStartDate(formatLocalIso(today));
     } else if (preset === 'tomorrow') {
       const tomorrow = new Date(today);
       tomorrow.setDate(today.getDate() + 1);
-      onChangeStartDate(tomorrow.toISOString().split('T')[0]);
+      onChangeStartDate(formatLocalIso(tomorrow));
     } else if (preset === 'weekend') {
       const sat = new Date(today);
       const dayOfWeek = sat.getDay();
       const diffToSaturday = (6 - dayOfWeek + 7) % 7 || 7;
       sat.setDate(today.getDate() + diffToSaturday);
-      onChangeStartDate(sat.toISOString().split('T')[0]);
+      onChangeStartDate(formatLocalIso(sat));
     }
   };
 
@@ -540,8 +554,16 @@ export function PlannerSetupView({
                     <input
                       id={dateInputId}
                       type="date"
+                      min={todayIso}
                       value={startDate}
-                      onChange={(e) => onChangeStartDate(e.target.value)}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val && val < todayIso) {
+                          onChangeStartDate(todayIso);
+                          return;
+                        }
+                        onChangeStartDate(val);
+                      }}
                       style={{
                         border: 'none',
                         outline: 'none',
@@ -958,7 +980,7 @@ export function PlannerSetupView({
               className={`${styles.rightTabBtn} ${activeRightTab === 'SAVED' ? styles.rightTabBtnActive : ''}`}
               onClick={() => setActiveRightTab('SAVED')}
             >
-              Hành trình đã lưu ({savedTrips.length || 2})
+              Hành trình đã lưu ({savedTrips.length})
             </button>
           </div>
 
@@ -1187,74 +1209,115 @@ export function PlannerSetupView({
                 <Bookmark size={14} color="#0088CC" />
                 <span>Chuyến đi đã lưu gần đây</span>
               </span>
-              <span style={{ color: '#0088CC', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>
-                Xem tất cả ({savedTrips.length || 2})
-              </span>
-            </div>
-
-            {savedTrips.length > 0 ? (
-              savedTrips.slice(0, 2).map((trip) => (
-                <div key={trip.id} className={styles.savedMiniCard}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div className={styles.savedCityBadge}>{getInitials(trip.destination)}</div>
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                        <span style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A' }}>{trip.destination}</span>
-                        <span style={{ fontSize: '9px', fontWeight: 700, color: '#16A34A', background: '#DCFCE7', padding: '1px 4px', borderRadius: '3px' }}>Đã lưu</span>
-                      </div>
-                      <div style={{ fontSize: '10.5px', color: '#64748B' }}>
-                        {trip.durationLabel} · {trip.peopleCount} khách · Khởi hành {trip.startDate}
-                      </div>
-                    </div>
-                  </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                {savedTrips.length > 0 && onClearAllSavedTrips && (
                   <button
                     type="button"
-                    onClick={() => onOpenSavedTrip && onOpenSavedTrip(trip.id)}
+                    onClick={onClearAllSavedTrips}
                     style={{
-                      background: '#F0F9FF',
-                      border: '1px solid #BAE6FD',
-                      color: '#0088CC',
-                      borderRadius: '5px',
-                      padding: '3px 8px',
+                      background: 'none',
+                      border: 'none',
+                      padding: 0,
+                      color: '#E11D48',
                       fontSize: '11px',
-                      fontWeight: 700,
+                      fontWeight: 600,
                       cursor: 'pointer',
                     }}
                   >
-                    Mở lại
+                    Xóa tất cả
                   </button>
-                </div>
-              ))
-            ) : (
-              <div className={styles.savedMiniCard}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div className={styles.savedCityBadge}>SG</div>
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                      <span style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A' }}>TP. Hồ Chí Minh</span>
-                      <span style={{ fontSize: '9px', fontWeight: 700, color: '#16A34A', background: '#DCFCE7', padding: '1px 4px', borderRadius: '3px' }}>Đã lưu</span>
+                )}
+                {savedTrips.length > 2 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowAllSavedTrips((prev) => !prev)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      padding: 0,
+                      color: '#0088CC',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {showAllSavedTrips ? 'Thu gọn' : `Xem tất cả (${savedTrips.length})`}
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {savedTrips.length > 0 ? (
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px',
+                  maxHeight: showAllSavedTrips ? '320px' : 'none',
+                  overflowY: showAllSavedTrips ? 'auto' : 'visible',
+                  paddingRight: showAllSavedTrips ? '4px' : 0,
+                }}
+              >
+                {(showAllSavedTrips ? savedTrips : savedTrips.slice(0, 2)).map((trip) => (
+                  <div key={trip.id} className={styles.savedMiniCard}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div className={styles.savedCityBadge}>{getInitials(trip.destination)}</div>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                          <span style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A' }}>{trip.destination}</span>
+                          <span style={{ fontSize: '9px', fontWeight: 700, color: '#16A34A', background: '#DCFCE7', padding: '1px 4px', borderRadius: '3px' }}>Đã lưu</span>
+                        </div>
+                        <div style={{ fontSize: '10.5px', color: '#64748B' }}>
+                          {trip.durationLabel} · {trip.peopleCount} khách · Khởi hành {trip.startDate}
+                        </div>
+                      </div>
                     </div>
-                    <div style={{ fontSize: '10.5px', color: '#64748B' }}>
-                      4N3Đ · 2 khách · Khởi hành 21/11/2026
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <button
+                        type="button"
+                        onClick={() => onOpenSavedTrip && onOpenSavedTrip(trip.id)}
+                        style={{
+                          background: '#F0F9FF',
+                          border: '1px solid #BAE6FD',
+                          color: '#0088CC',
+                          borderRadius: '5px',
+                          padding: '3px 8px',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Mở lại
+                      </button>
+                      {onDeleteSavedTrip && (
+                        <button
+                          type="button"
+                          onClick={() => onDeleteSavedTrip(trip.id)}
+                          title="Xóa lịch trình này"
+                          aria-label="Xóa lịch trình này"
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: '24px',
+                            height: '24px',
+                            borderRadius: '5px',
+                            border: '1px solid #FECDD3',
+                            background: '#FFF1F2',
+                            color: '#E11D48',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      )}
                     </div>
                   </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => onChangeDestination('TP. Hồ Chí Minh')}
-                  style={{
-                    background: '#F0F9FF',
-                    border: '1px solid #BAE6FD',
-                    color: '#0088CC',
-                    borderRadius: '5px',
-                    padding: '3px 8px',
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                  }}
-                >
-                  Mở lại
-                </button>
+                ))}
+              </div>
+            ) : (
+              <div style={{ fontSize: '12px', color: '#64748B', textAlign: 'center', padding: '14px 8px', background: '#F8FAFC', borderRadius: '8px', border: '1px dashed #CBD5E1' }}>
+                Chưa có lịch trình nào được lưu. Hãy tạo lịch trình AI đầu tiên của bạn!
               </div>
             )}
           </div>

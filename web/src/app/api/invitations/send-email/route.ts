@@ -26,8 +26,16 @@ export async function POST(request: Request) {
     }
 
     const cleanToken = token.trim().toUpperCase();
+    const requestOrigin = (() => {
+      try {
+        return new URL(request.url).origin;
+      } catch {
+        return '';
+      }
+    })();
+    const siteBase = (process.env.NEXT_PUBLIC_SITE_URL || requestOrigin || 'http://localhost:3000').replace(/\/+$/, '');
     const resolvedInviteUrl =
-      inviteUrl || `http://localhost:3000/invitations/${encodeURIComponent(cleanToken)}`;
+      inviteUrl || `${siteBase}/invitations/${encodeURIComponent(cleanToken)}`;
 
     const subject = `[VISTA] ✈️ Lời mời tham gia chuyến đi: ${tripTitle}`;
     const plainText = [

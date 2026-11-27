@@ -88,13 +88,13 @@ public class DatabaseTripAccessService implements TripAccessService {
     if (isOwner(tripId, userId)) {
       return true;
     }
-    // 2. Active EDITOR has write access
+    // 2. Active OWNER, EDITOR, or MEMBER has write access (chỉ chặn VIEWER và outsider)
     try {
       Integer count =
           jdbcClient
               .sql(
                   "SELECT count(*) FROM trip_members WHERE trip_id = :tripId AND user_id = :userId"
-                      + " AND role = 'EDITOR' AND status = 'ACTIVE'")
+                      + " AND role IN ('OWNER', 'EDITOR', 'MEMBER') AND status = 'ACTIVE'")
               .param("tripId", tripId)
               .param("userId", userId)
               .query(Integer.class)
